@@ -28,11 +28,11 @@ module GraphQL
         @storage.save_trace(operation_name, duration_ms, timestamp, trace_data)
       end
 
-      # @param first [Integer]
-      # @param after [String] Timestamp
+      # @param last [Integer]
+      # @param before [Integer] Timestamp in milliseconds since epoch
       # @return [Enumerable<StoredTrace>]
-      def traces(first: nil, after: nil)
-        @storage.traces(first: first, after: after)
+      def traces(last: nil, before: nil)
+        @storage.traces(last: last, before: before)
       end
 
       # @return [StoredTrace, nil]

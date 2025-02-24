@@ -10,8 +10,16 @@ module GraphQL
           @traces = {}
         end
 
-        def traces(first:, after:)
-          @traces.values
+        def traces(last:, before:)
+          page = []
+          @traces.values.reverse_each do |trace|
+            if page.size == last
+              break
+            elsif before.nil? || trace.timestamp < before
+              page << trace
+            end
+          end
+          page
         end
 
         def find_trace(id)

@@ -9,6 +9,7 @@ module Graphql
       root "landings#show"
       resources :statics, only: :show, constraints: { id: /[0-9A-Za-z\-.]+/ }
       resources :traces, only: [:index, :show, :destroy]
+      delete "/traces/delete_all", to: "traces#delete_all", as: :traces_delete_all
     end
 
     class ApplicationController < ActionController::Base
@@ -53,7 +54,9 @@ module Graphql
       def index
         @perfetto_sampler_installed = !!schema_class.perfetto_sampler
         if @perfetto_sampler_installed
-          @traces = schema_class.perfetto_sampler.traces(first: 50, after: params["after"])
+          @last = params[:last]&.to_i || 50
+          @before = params[:before]&.to_i
+          @traces = schema_class.perfetto_sampler.traces(last: @last, before: @before)
         end
       end
 
@@ -64,6 +67,11 @@ module Graphql
 
       def destroy
         schema_class.perfetto_sampler.delete_trace(params[:id])
+        head :no_content
+      end
+
+      def destroy_all
+        schema_class.perfetto_sampler.delete_all_traces
         head :no_content
       end
     end
@@ -96,5 +104,7 @@ module Graphql
   end
 end
 
-
+# Rails expects the engine to be called `Graphql::Dashboard`,
+# but `GraphQL::Dashboard` is consistent with this gem's naming.
+# So define both constants to refer to the same class.
 GraphQL::Dashboard = Graphql::Dashboard

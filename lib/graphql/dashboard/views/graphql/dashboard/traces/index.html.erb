@@ -48,13 +48,16 @@
             <tr>
               <td><%= trace.operation_name %></td>
               <td><%= trace.duration_ms.round(2) %></td>
-              <td><%= trace.timestamp %></td>
+              <td><%= Time.at(trace.timestamp / 1000.0).strftime("%Y-%m-%d %H:%M:%S.%L") %></td>
               <td><%= link_to "View ↗", "#", data: { perfetto_open: trace.operation_name, perfetto_path: "#{graphql_dashboard.traces_path}/#{trace.id}" } %></td>
               <td><%= link_to "Delete", "#", data: { perfetto_delete: "#{graphql_dashboard.traces_path}/#{trace.id}" }, class: "text-danger" %></td>
             </tr>
           <% end %>
         </tbody>
       </table>
+      <% if @last && @traces.size >= @last %>
+        <%= link_to("Previous >", graphql_dashboard.traces_path(last: @last, before: @traces.last.timestamp), class: "btn btn-outline-primary") %>
+      <% end %>
     </div>
   </div>
 <% end %>
