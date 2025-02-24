@@ -8,8 +8,8 @@ module Graphql
     routes.draw do
       root "landings#show"
       resources :statics, only: :show, constraints: { id: /[0-9A-Za-z\-.]+/ }
-      resources :traces, only: [:index, :show, :destroy]
       delete "/traces/delete_all", to: "traces#delete_all", as: :traces_delete_all
+      resources :traces, only: [:index, :show, :destroy]
     end
 
     class ApplicationController < ActionController::Base
@@ -70,7 +70,7 @@ module Graphql
         head :no_content
       end
 
-      def destroy_all
+      def delete_all
         schema_class.perfetto_sampler.delete_all_traces
         head :no_content
       end

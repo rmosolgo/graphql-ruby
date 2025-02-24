@@ -55,7 +55,7 @@ class DashboardTracesControllerTest < ActionDispatch::IntegrationTest
     DummySchema.execute("{ str }", context: { trace_mode: :perfetto_sample })
     assert_equal 1, DummySchema.perfetto_sampler.traces.size
     id = DummySchema.perfetto_sampler.traces.first.id
-    delete graphql_dashboard.trace_path(id: id)
+    delete graphql_dashboard.trace_path(id)
     assert_equal 0, DummySchema.perfetto_sampler.traces.size
   end
 
