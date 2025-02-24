@@ -10,7 +10,11 @@ describe GraphQL::Tracing::DetailedTrace do
     query(Query)
     use GraphQL::Tracing::DetailedTrace, memory: true
     def self.detailed_trace?(query)
-      query.context[:profile] != false
+      if query.is_a?(GraphQL::Execution::Multiplex)
+        query.queries.all? { |q| q.context[:profile] != false }
+      else
+        query.context[:profile] != false
+      end
     end
   end
 
@@ -47,5 +51,21 @@ describe GraphQL::Tracing::DetailedTrace do
       end
     end
     assert_equal "Pass `redis: ...` to store traces in Redis for later review", err.message
+  end
+
+  it "calls detailed_profile? on a Multiplex" do
+    assert_equal 0, SamplerSchema.detailed_trace.traces.size
+
+    SamplerSchema.multiplex([
+      { query: "{ truthy }", context: { profile: false } },
+      { query: "{ truthy }", context: { profile: true } },
+    ])
+    assert_equal 0, SamplerSchema.detailed_trace.traces.size
+
+    SamplerSchema.multiplex([
+      { query: "{ truthy }", context: { profile: true } },
+      { query: "{ truthy }", context: { profile: true } },
+    ])
+    assert_equal 1, SamplerSchema.detailed_trace.traces.size
   end
 end
