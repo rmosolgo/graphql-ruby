@@ -5,15 +5,16 @@ require "graphql/tracing/perfetto_sampler/redis_backend"
 module GraphQL
   module Tracing
     class PerfettoSampler
-      def self.use(schema, trace_mode: :perfetto_sample, memory: false, redis: nil, active_record: true)
+      # @param trace_mode [Symbol] When this is set as `context[:trace_mode]`, a profile will be taken
+      # @param redis [Redis] If provided, profiles will be stored in Redis for later review
+      # @param limit [Integer] A maximum number of profiles to store
+      def self.use(schema, trace_mode: :perfetto_sample, memory: false, redis: nil, limit: nil)
         storage = if redis
-          RedisBackend.new(redis: redis)
+          RedisBackend.new(redis: redis, limit: limit)
         elsif memory
-          MemoryBackend.new
-        elsif active_record != false
-          ActiveRecordBackend.new
+          MemoryBackend.new(limit: limit)
         else
-          raise ArgumentError, "A storage option must be chosen"
+          raise ArgumentError, "Pass `redis: ...` to store traces in Redis for later review"
         end
         schema.perfetto_sampler = self.new(storage: storage)
         schema.trace_with(PerfettoTrace, mode: trace_mode, save_trace_mode: trace_mode)

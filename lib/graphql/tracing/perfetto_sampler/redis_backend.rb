@@ -5,9 +5,10 @@ module GraphQL
     class PerfettoSampler
       class RedisBackend
         KEY_PREFIX = "gql:trace:"
-        def initialize(redis:)
+        def initialize(redis:, limit: nil)
           @redis = redis
           @key = KEY_PREFIX + "traces"
+          @remrangebyrank_limit = limit ? -limit - 1 : nil
         end
 
         def traces(last:, before:)
@@ -44,7 +45,12 @@ module GraphQL
         def save_trace(operation_name, duration_ms, begin_ms, trace_data)
           id = begin_ms
           data = JSON.dump({ "o" => operation_name, "d" => duration_ms, "b" => begin_ms, "t" => Base64.encode64(trace_data) })
-          @redis.zadd(@key, id, data)
+          @redis.pipelined do |pipeline|
+            pipeline.zadd(@key, id, data)
+            if @remrangebyrank_limit
+              pipeline.zremrangebyrank(@key, 0, @remrangebyrank_limit)
+            end
+          end
           id
         end
 

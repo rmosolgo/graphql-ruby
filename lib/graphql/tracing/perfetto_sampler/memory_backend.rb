@@ -6,8 +6,10 @@ module GraphQL
       # An in-memory trace storage backend. Suitable for testing and development only.
       # It won't work for multi-process deployments and everything is erased when the app is restarted.
       class MemoryBackend
-        def initialize
+        def initialize(limit: nil)
+          @limit = limit
           @traces = {}
+          @next_id = 0
         end
 
         def traces(last:, before:)
@@ -27,7 +29,7 @@ module GraphQL
         end
 
         def delete_trace(id)
-          @traces.delete(id.to_i)
+          @traces.delete(id)
           nil
         end
 
@@ -37,7 +39,8 @@ module GraphQL
         end
 
         def save_trace(operation_name, duration, timestamp, trace_data)
-          id = @traces.size
+          id = @next_id
+          @next_id += 1
           @traces[id] = PerfettoSampler::StoredTrace.new(
             id: id,
             operation_name: operation_name,
@@ -45,6 +48,10 @@ module GraphQL
             timestamp: timestamp,
             trace_data: trace_data
           )
+          if @limit && @traces.size > @limit
+            del_keys = @traces.keys[0...-@limit]
+            del_keys.each { |k| @traces.delete(k) }
+          end
           id
         end
       end

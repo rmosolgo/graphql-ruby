@@ -5,6 +5,7 @@ module GraphQLTracingPerfettoSamplerBackendAssertions
     child_class.instance_eval do
       describe "BackendAssertions" do
         before do
+          @backend = new_backend
           @backend.delete_all_traces
         end
 
@@ -56,6 +57,38 @@ module GraphQLTracingPerfettoSamplerBackendAssertions
 
         it "returns nil for nonexistent IDs" do
           assert_nil @backend.find_trace(999_999_999)
+        end
+
+        it "implements a limit" do
+          limit_backend = new_backend(limit: 10)
+
+          10.times do |n|
+            limit_backend.save_trace(
+              "Trace#{n}",
+              1.5,
+              5000 + n,
+              "some-data"
+            )
+          end
+
+          all_traces = limit_backend.traces(last: nil, before: nil)
+          assert_equal 10, all_traces.size
+          assert_equal "Trace9", all_traces.first.operation_name
+          assert_equal "Trace0", all_traces.last.operation_name
+
+          3.times do |n|
+            limit_backend.save_trace(
+              "Trace 2-#{n}",
+              1.5,
+              5020 + n,
+              "some-data"
+            )
+          end
+
+          all_traces = limit_backend.traces(last: nil, before: nil)
+          assert_equal 10, all_traces.size
+          assert_equal "Trace 2-2", all_traces.first.operation_name
+          assert_equal "Trace3", all_traces.last.operation_name
         end
       end
     end

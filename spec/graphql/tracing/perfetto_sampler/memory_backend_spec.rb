@@ -4,8 +4,7 @@ require_relative "./backend_assertions"
 
 describe GraphQL::Tracing::PerfettoSampler::MemoryBackend do
   include GraphQLTracingPerfettoSamplerBackendAssertions
-
-  before do
-    @backend = GraphQL::Tracing::PerfettoSampler::MemoryBackend.new
+  def new_backend(**kwargs)
+    GraphQL::Tracing::PerfettoSampler::MemoryBackend.new(**kwargs)
   end
 end
