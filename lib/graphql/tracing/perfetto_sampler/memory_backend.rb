@@ -10,7 +10,7 @@ module GraphQL
           @traces = {}
         end
 
-        def traces
+        def traces(first:, after:)
           @traces.values
         end
 
@@ -19,7 +19,7 @@ module GraphQL
         end
 
         def delete_trace(id)
-          @traces.delete(id)
+          @traces.delete(id.to_i)
           nil
         end
 

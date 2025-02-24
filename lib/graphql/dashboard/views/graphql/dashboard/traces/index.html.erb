@@ -4,7 +4,7 @@
     <h1>Perfetto Traces</h1>
   </div>
 </div>
-<% if !@perfetto_sampler %>
+<% if !@perfetto_sampler_installed %>
   <div class="row">
     <div class="col-md col-lg-6 mx-auto">
       <div class="card mt-4">
@@ -27,7 +27,6 @@
 <% else %>
   <div class="row">
     <div class="col">
-      <% perfetto_traces = @perfetto_sampler.traces %>
       <table class="table table-striped">
         <thead>
           <tr>
@@ -38,14 +37,14 @@
           </tr>
         </thead>
         <tbody>
-          <% if perfetto_traces.empty? %>
+          <% if @traces.empty? %>
             <tr>
               <td colspan="4" class="text-center">
                 <em>No traces saved yet. Read about saving traces <%= link_to "in the docs", "#" %>.</em>
               </td>
             </tr>
           <% end %>
-          <% perfetto_traces.each do |trace| %>
+          <% @traces.each do |trace| %>
             <tr>
               <td><%= trace.operation_name %></td>
               <td><%= trace.duration_ms.round(2) %></td>

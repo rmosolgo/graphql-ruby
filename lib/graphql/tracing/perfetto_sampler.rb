@@ -23,22 +23,29 @@ module GraphQL
         @storage = storage
       end
 
+      # @return [String] ID of saved trace
       def save_trace(operation_name, duration_ms, timestamp, trace_data)
         @storage.save_trace(operation_name, duration_ms, timestamp, trace_data)
       end
 
-      def traces
-        @storage.traces
+      # @param first [Integer]
+      # @param after [String] Timestamp
+      # @return [Enumerable<StoredTrace>]
+      def traces(first: nil, after: nil)
+        @storage.traces(first: first, after: after)
       end
 
+      # @return [StoredTrace, nil]
       def find_trace(id)
         @storage.find_trace(id)
       end
 
+      # @return [void]
       def delete_trace(id)
         @storage.delete_trace(id)
       end
 
+      # @return [void]
       def delete_all_traces
         @storage.delete_all_traces
       end

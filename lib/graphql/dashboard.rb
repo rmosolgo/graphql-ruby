@@ -29,13 +29,16 @@ module Graphql
       end
 
       def schema_class
-        @schema_class ||= case params[:schema]
-        when Class
-          params[:schema]
-        when String
-          params[:schema].constantize
-        else
-          raise "Missing `params[:schema]`, please provide a class or string to `mount GraphQL::Dashboard, schema: ...`"
+        @schema_class ||= begin
+          schema_param = request.query_parameters["schema"] || params[:schema]
+          case schema_param
+          when Class
+            schema_param
+          when String
+            schema_param.constantize
+          else
+            raise "Missing `params[:schema]`, please provide a class or string to `mount GraphQL::Dashboard, schema: ...`"
+          end
         end
       end
       helper_method :schema_class
@@ -48,7 +51,10 @@ module Graphql
 
     class TracesController < ApplicationController
       def index
-        @perfetto_sampler = schema_class.perfetto_sampler
+        @perfetto_sampler_installed = !!schema_class.perfetto_sampler
+        if @perfetto_sampler_installed
+          @traces = schema_class.perfetto_sampler.traces(first: 50, after: params["after"])
+        end
       end
 
       def show
