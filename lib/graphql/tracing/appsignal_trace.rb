@@ -4,6 +4,12 @@ require "graphql/tracing/platform_trace"
 
 module GraphQL
   module Tracing
+    # Instrumentation for reporting GraphQL-Ruby times to Appsignal.
+    #
+    # @example Installing the tracer
+    #   class MySchema < GraphQL::Schema
+    #     trace_with GraphQL::Tracing::AppsignalTrace
+    #   end
     module AppsignalTrace
       include PlatformTrace
 

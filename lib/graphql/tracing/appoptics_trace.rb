@@ -22,9 +22,11 @@ module GraphQL
       # These GraphQL events will show up as 'graphql.execute' spans
       EXEC_KEYS = ['execute_multiplex', 'execute_query', 'execute_query_lazy'].freeze
 
+
       # During auto-instrumentation this version of AppOpticsTracing is compared
       # with the version provided in the appoptics_apm gem, so that the newer
       # version of the class can be used
+
 
       def self.version
         Gem::Version.new('1.0.0')

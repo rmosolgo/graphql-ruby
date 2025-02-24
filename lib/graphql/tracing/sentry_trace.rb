@@ -4,6 +4,11 @@ require "graphql/tracing/platform_trace"
 
 module GraphQL
   module Tracing
+    # A tracer for reporting GraphQL-Ruby times to Sentry.
+    # @example Installing the tracer
+    #   class MySchema < GraphQL::Schema
+    #     trace_with GraphQL::Tracing::SentryTrace
+    #   end
     module SentryTrace
       include PlatformTrace
 

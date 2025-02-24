@@ -2,6 +2,36 @@
 require 'rails/engine'
 
 module Graphql
+  # `GraphQL::Dashboard` is a `Rails::Engine`-based dashboard for viewing metadata about your GraphQL schema.
+  #
+  # Pass the class name of your schema when mounting it.
+  # @see GraphQL::Tracing::DetailedTrace DetailedTrace for viewing production traces in the Dashboard
+  #
+  # @example Mounting the Dashboard in your app
+  #   mount GraphQL::Dashboard, at: "graphql_dashboard", schema: "MySchema"
+  #
+  # @example Authenticating the Dashboard with HTTP Basic Auth
+  #   # config/initializers/graphql_dashboard.rb
+  #   GraphQL::Dashboard.middleware.use(Rack::Auth::Basic) do |username, password|
+  #     # Compare the provided username/password to an application setting:
+  #     ActiveSupport::SecurityUtils.secure_compare(Rails.application.credentials.graphql_dashboard_username, username) &&
+  #       ActiveSupport::SecurityUtils.secure_compare(Rails.application.credentials.graphql_dashboard_username, password)
+  #   end
+  #
+  # @example Custom Rails authentication
+  #   # config/initializers/graphql_dashboard.rb
+  #   ActiveSupport.on_load(:graphql_dashboard_application_controller) do
+  #     # context here is GraphQL::Dashboard::ApplicationController
+  #
+  #     before_action do
+  #       raise ActionController::RoutingError.new('Not Found') unless current_user&.admin?
+  #     end
+  #
+  #     def current_user
+  #       # load current user
+  #     end
+  #   end
+  #
   class Dashboard < Rails::Engine
     engine_name "graphql_dashboard"
     isolate_namespace(Graphql::Dashboard)
@@ -52,26 +82,26 @@ module Graphql
 
     class TracesController < ApplicationController
       def index
-        @perfetto_sampler_installed = !!schema_class.perfetto_sampler
-        if @perfetto_sampler_installed
+        @detailed_trace_installed = !!schema_class.detailed_trace
+        if @detailed_trace_installed
           @last = params[:last]&.to_i || 50
           @before = params[:before]&.to_i
-          @traces = schema_class.perfetto_sampler.traces(last: @last, before: @before)
+          @traces = schema_class.detailed_trace.traces(last: @last, before: @before)
         end
       end
 
       def show
-        trace = schema_class.perfetto_sampler.find_trace(params[:id].to_i)
+        trace = schema_class.detailed_trace.find_trace(params[:id].to_i)
         send_data(trace.trace_data)
       end
 
       def destroy
-        schema_class.perfetto_sampler.delete_trace(params[:id])
+        schema_class.detailed_trace.delete_trace(params[:id])
         head :no_content
       end
 
       def delete_all
-        schema_class.perfetto_sampler.delete_all_traces
+        schema_class.detailed_trace.delete_all_traces
         head :no_content
       end
     end
@@ -108,3 +138,5 @@ end
 # but `GraphQL::Dashboard` is consistent with this gem's naming.
 # So define both constants to refer to the same class.
 GraphQL::Dashboard = Graphql::Dashboard
+
+ActiveSupport.run_load_hooks(:graphql_dashboard_application_controller, GraphQL::Dashboard::ApplicationController)

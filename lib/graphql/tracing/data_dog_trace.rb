@@ -4,6 +4,11 @@ require "graphql/tracing/platform_trace"
 
 module GraphQL
   module Tracing
+    # A tracer for reporting to DataDog
+    # @example Adding this tracer to your schema
+    #   class MySchema < GraphQL::Schema
+    #     trace_with GraphQL::Tracing::DataDogTrace
+    #   end
     module DataDogTrace
       # @param tracer [#trace] Deprecated
       # @param analytics_enabled [Boolean] Deprecated

@@ -3,7 +3,7 @@ require "test_helper"
 
 class DashboardTracesControllerTest < ActionDispatch::IntegrationTest
   def teardown
-    DummySchema.perfetto_sampler.delete_all_traces
+    DummySchema.detailed_trace.delete_all_traces
   end
 
   def test_it_renders_not_installed
@@ -21,25 +21,25 @@ class DashboardTracesControllerTest < ActionDispatch::IntegrationTest
   def test_it_renders_trace_listing_with_pagination
     20.times do |n|
       sleep 0.05
-      DummySchema.execute("query Query#{n} { str }", context: { trace_mode: :perfetto_sample })
+      DummySchema.execute("query Query#{n} { str }", context: { profile: true })
     end
-    assert_equal 20, DummySchema.perfetto_sampler.traces.size
+    assert_equal 20, DummySchema.detailed_trace.traces.size
 
     get graphql_dashboard.traces_path, params: { last: 10 }
 
     assert_includes response.body, "Query19"
     assert_includes response.body, "Query10"
     refute_includes response.body, "Query9"
-    last_trace = DummySchema.perfetto_sampler.traces[9]
-    last_ts = last_trace.timestamp
+    last_trace = DummySchema.detailed_trace.traces[9]
+    last_ts = last_trace.begin_ms
     assert_includes response.body, "<td>#{Time.at(last_ts / 1000.0).strftime("%Y-%m-%d %H:%M:%S.%L")}</td>"
     assert_includes response.body, "<a class=\"btn btn-outline-primary\" href=\"/dash/traces?before=#{last_ts}&amp;last=10\">Previous &gt;</a>"
     get graphql_dashboard.traces_path, params: { last: 10, before: last_ts }
     assert_includes response.body, "Query9"
     assert_includes response.body, "Query0"
     refute_includes response.body, "Query10"
-    very_last_trace = DummySchema.perfetto_sampler.traces.last
-    very_last_ts = very_last_trace.timestamp
+    very_last_trace = DummySchema.detailed_trace.traces.last
+    very_last_ts = very_last_trace.begin_ms
     very_last_td = "<td>#{Time.at(very_last_ts / 1000.0).strftime("%Y-%m-%d %H:%M:%S.%L")}</td>"
     assert_includes response.body, very_last_td
     very_last_previous_link = "<a class=\"btn btn-outline-primary\" href=\"/dash/traces?before=#{very_last_ts}&amp;last=10\">Previous &gt;</a>"
@@ -52,17 +52,17 @@ class DashboardTracesControllerTest < ActionDispatch::IntegrationTest
   end
 
   def test_it_deletes_one_trace
-    DummySchema.execute("{ str }", context: { trace_mode: :perfetto_sample })
-    assert_equal 1, DummySchema.perfetto_sampler.traces.size
-    id = DummySchema.perfetto_sampler.traces.first.id
+    DummySchema.execute("{ str }", context: { profile: true })
+    assert_equal 1, DummySchema.detailed_trace.traces.size
+    id = DummySchema.detailed_trace.traces.first.id
     delete graphql_dashboard.trace_path(id)
-    assert_equal 0, DummySchema.perfetto_sampler.traces.size
+    assert_equal 0, DummySchema.detailed_trace.traces.size
   end
 
   def test_it_deletes_all_traces
-    DummySchema.execute("{ str }", context: { trace_mode: :perfetto_sample })
-    assert_equal 1, DummySchema.perfetto_sampler.traces.size
+    DummySchema.execute("{ str }", context: { profile: true })
+    assert_equal 1, DummySchema.detailed_trace.traces.size
     delete graphql_dashboard.traces_delete_all_path
-    assert_equal 0, DummySchema.perfetto_sampler.traces.size
+    assert_equal 0, DummySchema.detailed_trace.traces.size
   end
 end

@@ -6,5 +6,9 @@ class DummySchema < GraphQL::Schema
   end
 
   query(Query)
-  use GraphQL::Tracing::PerfettoSampler, memory: true
+  use GraphQL::Tracing::DetailedTrace, memory: true
+
+  def self.detailed_trace?(query)
+    query.context[:profile]
+  end
 end

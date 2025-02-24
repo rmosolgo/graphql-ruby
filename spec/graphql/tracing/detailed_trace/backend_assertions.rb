@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GraphQLTracingPerfettoSamplerBackendAssertions
+module GraphQLTracingDetailedTraceBackendAssertions
   def self.included(child_class)
     child_class.instance_eval do
       describe "BackendAssertions" do
@@ -19,11 +19,11 @@ module GraphQLTracingPerfettoSamplerBackendAssertions
           )
 
           trace = @backend.find_trace(trace_id)
-          assert_kind_of GraphQL::Tracing::PerfettoSampler::StoredTrace, trace
+          assert_kind_of GraphQL::Tracing::DetailedTrace::StoredTrace, trace
           assert_equal trace_id, trace.id
           assert_equal "GetStuff", trace.operation_name
           assert_equal 100.56, trace.duration_ms
-          assert_equal "2024-01-01 04:44:33.694", Time.at(trace.timestamp / 1000.0).utc.strftime("%Y-%m-%d %H:%M:%S.%L")
+          assert_equal "2024-01-01 04:44:33.694", Time.at(trace.begin_ms / 1000.0).utc.strftime("%Y-%m-%d %H:%M:%S.%L")
           assert_equal data, trace.trace_data
 
 

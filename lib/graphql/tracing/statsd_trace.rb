@@ -4,6 +4,15 @@ require "graphql/tracing/platform_trace"
 
 module GraphQL
   module Tracing
+    # A tracer for reporting GraphQL-Ruby times to Statsd.
+    # Passing any Statsd client that implements `.time(name) { ... }` will work.
+    #
+    # @example Installing this tracer
+    #   # eg:
+    #   # $statsd = Statsd.new 'localhost', 9125
+    #   class MySchema < GraphQL::Schema
+    #     use GraphQL::Tracing::StatsdTrace, statsd: $statsd
+    #   end
     module StatsdTrace
       include PlatformTrace
 

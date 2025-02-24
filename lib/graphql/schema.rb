@@ -1366,7 +1366,15 @@ module GraphQL
         }.freeze
       end
 
-      attr_accessor :perfetto_sampler
+      # @return [GraphQL::Tracing::DetailedTrace] if it has been configured for this schema
+      attr_accessor :detailed_trace
+
+      # @param query [GraphQL::Query, GraphQL::Execution::Multiplex] Called with a multiplex when multiple queries are executed at once (with {.multiplex})
+      # @return [Boolean] When `true`, save a detailed trace for this query.
+      # @see Tracing::DetailedTrace DetailedTrace saves traces when this method returns true
+      def detailed_trace?(query)
+        raise "#{self} must implement `def.detailed_trace?(query)` to use DetailedTrace. Implement this method in your schema definition."
+      end
 
       def tracer(new_tracer, silence_deprecation_warning: false)
         if !silence_deprecation_warning
@@ -1385,14 +1393,22 @@ module GraphQL
         find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
       end
 
-      # Mix `trace_mod` into this schema's `Trace` class so that its methods
-      # will be called at runtime.
+      # Mix `trace_mod` into this schema's `Trace` class so that its methods will be called at runtime.
+      #
+      # You can attach a module to run in only _some_ circumstances by using `mode:`. When a module is added with `mode:`,
+      # it will only run for queries with a matching `context[:trace_mode]`.
+      #
+      # Any custom trace modes _also_ include the default `trace_with ...` modules (that is, those added _without_ any particular `mode: ...` configuration).
+      #
+      # @example Adding a trace in a special mode
+      #   # only runs when `query.context[:trace_mode]` is `:special`
+      #   trace_with SpecialTrace, mode: :special
       #
       # @param trace_mod [Module] A module that implements tracing methods
       # @param mode [Symbol] Trace module will only be used for this trade mode
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [void]
-      # @see GraphQL::Tracing::Trace for available tracing methods
+      # @see GraphQL::Tracing::Trace Tracing::Trace for available tracing methods
       def trace_with(trace_mod, mode: :default, **options)
         if mode.is_a?(Array)
           mode.each { |m| trace_with(trace_mod, mode: m, **options) }
@@ -1442,12 +1458,33 @@ module GraphQL
       #
       # If no `mode:` is given, then {default_trace_mode} will be used.
       #
+      # If this schema is using {Tracing::DetailedTrace} and {.detailed_trace?} returns `true`, then
+      # DetailedTrace's mode will override the passed-in `mode`.
+      #
       # @param mode [Symbol] Trace modules for this trade mode will be included
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [Tracing::Trace]
       def new_trace(mode: nil, **options)
-        target = options[:query] || options[:multiplex]
-        mode ||= target && target.context[:trace_mode]
+        should_sample = if detailed_trace
+          if (query = options[:query])
+            detailed_trace?(query)
+          elsif (multiplex = options[:multiplex])
+            if multiplex.queries.length == 1
+              detailed_trace?(multiplex.queries.first)
+            else
+              detailed_trace?(multiplex)
+            end
+          end
+        else
+          false
+        end
+
+        if should_sample
+          mode = detailed_trace.trace_mode
+        else
+          target = options[:query] || options[:multiplex]
+          mode ||= target && target.context[:trace_mode]
+        end
 
         trace_mode = mode || default_trace_mode
         base_trace_options = trace_options_for(trace_mode)

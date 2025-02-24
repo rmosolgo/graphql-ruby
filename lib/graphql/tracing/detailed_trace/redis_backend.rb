@@ -2,7 +2,7 @@
 
 module GraphQL
   module Tracing
-    class PerfettoSampler
+    class DetailedTrace
       class RedisBackend
         KEY_PREFIX = "gql:trace:"
         def initialize(redis:, limit: nil)
@@ -62,7 +62,7 @@ module GraphQL
             id: id,
             operation_name: data["o"],
             duration_ms: data["d"].to_f,
-            timestamp: data["b"].to_i,
+            begin_ms: data["b"].to_i,
             trace_data: Base64.decode64(data["t"]),
           )
         end

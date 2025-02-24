@@ -2,7 +2,7 @@
 
 module GraphQL
   module Tracing
-    class PerfettoSampler
+    class DetailedTrace
       # An in-memory trace storage backend. Suitable for testing and development only.
       # It won't work for multi-process deployments and everything is erased when the app is restarted.
       class MemoryBackend
@@ -17,7 +17,7 @@ module GraphQL
           @traces.values.reverse_each do |trace|
             if page.size == last
               break
-            elsif before.nil? || trace.timestamp < before
+            elsif before.nil? || trace.begin_ms < before
               page << trace
             end
           end
@@ -38,14 +38,14 @@ module GraphQL
           nil
         end
 
-        def save_trace(operation_name, duration, timestamp, trace_data)
+        def save_trace(operation_name, duration, begin_ms, trace_data)
           id = @next_id
           @next_id += 1
-          @traces[id] = PerfettoSampler::StoredTrace.new(
+          @traces[id] = DetailedTrace::StoredTrace.new(
             id: id,
             operation_name: operation_name,
             duration_ms: duration,
-            timestamp: timestamp,
+            begin_ms: begin_ms,
             trace_data: trace_data
           )
           if @limit && @traces.size > @limit

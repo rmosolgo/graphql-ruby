@@ -4,6 +4,12 @@ require "graphql/tracing/platform_trace"
 
 module GraphQL
   module Tracing
+    # A tracer for sending GraphQL-Ruby times to Scout
+    #
+    # @example Adding this tracer to your schema
+    #   class MySchema < GraphQL::Schema
+    #     trace_with GraphQL::Tracing::ScoutTrace
+    #   end
     module ScoutTrace
       include PlatformTrace
 
