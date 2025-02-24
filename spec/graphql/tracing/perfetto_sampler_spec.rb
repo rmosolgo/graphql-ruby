@@ -40,9 +40,9 @@ describe GraphQL::Tracing::PerfettoSampler do
   it "raises when no storage is configured" do
     err = assert_raises ArgumentError do
       Class.new(GraphQL::Schema) do
-        use GraphQL::Tracing::PerfettoSampler, active_record: false
+        use GraphQL::Tracing::PerfettoSampler
       end
     end
-    assert_equal "A storage option must be chosen", err.message
+    assert_equal "Pass `redis: ...` to store traces in Redis for later review", err.message
   end
 end
