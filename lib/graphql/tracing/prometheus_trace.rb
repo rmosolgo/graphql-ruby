@@ -4,6 +4,28 @@ require "graphql/tracing/platform_trace"
 
 module GraphQL
   module Tracing
+    # A tracer for reporting GraphQL-Ruby times to Prometheus.
+    #
+    # The PrometheusExporter server must be run with a custom type collector that extends `GraphQL::Tracing::PrometheusTracing::GraphQLCollector`.
+    #
+    # @example Adding this trace to your schema
+    #   require 'prometheus_exporter/client'
+    #
+    #   class MySchema < GraphQL::Schema
+    #     trace_with GraphQL::Tracing::PrometheusTrace
+    #   end
+    #
+    # @example Running a custom type collector
+    #   # lib/graphql_collector.rb
+    #   if defined?(PrometheusExporter::Server)
+    #     require 'graphql/tracing'
+    #
+    #     class GraphQLCollector < GraphQL::Tracing::PrometheusTrace::GraphQLCollector
+    #     end
+    #   end
+    #
+    #    # Then run:
+    #    # bundle exec prometheus_exporter -a lib/graphql_collector.rb
     module PrometheusTrace
       if defined?(PrometheusExporter::Server)
         autoload :GraphQLCollector, "graphql/tracing/prometheus_trace/graphql_collector"

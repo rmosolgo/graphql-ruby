@@ -125,6 +125,10 @@ def testing_mongoid?
   defined?(::Mongoid)
 end
 
+def testing_redis?
+  defined?(::Redis)
+end
+
 if testing_rails?
   require "integration/rails/spec_helper"
 end

@@ -61,8 +61,10 @@ module GraphQL
       DA_STR_VAL_NIL_IID = 14
 
       # @param active_support_notifications_pattern [String, RegExp, false] A filter for `ActiveSupport::Notifications`, if it's present. Or `false` to skip subscribing.
-      def initialize(active_support_notifications_pattern: nil, **_rest)
+      def initialize(active_support_notifications_pattern: nil, save_profile: false, **_rest)
         super
+        @save_profile = save_profile
+        Fiber[:graphql_flow_stack] = nil
         @sequence_id = object_id
         @pid = Process.pid
         @flow_ids = Hash.new { |h, source_inst| h[source_inst] = [] }.compare_by_identity
@@ -108,6 +110,7 @@ module GraphQL
         @fibers_counter_id = :fibers_counter.object_id
         @fields_counter_id = :fields_counter.object_id
         @begin_validate = nil
+        @begin_time = nil
         @packets = []
         @packets << TracePacket.new(
           track_descriptor: TrackDescriptor.new(
@@ -172,6 +175,8 @@ module GraphQL
       end
 
       def begin_execute_multiplex(m)
+        @operation_name = m.queries.map { |q| q.selected_operation_name || "anonymous" }.join(",")
+        @begin_time = Time.now
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
@@ -189,6 +194,12 @@ module GraphQL
           track_uuid: fid,
         )
         unsubscribe_from_active_support_notifications
+        if @save_profile
+          begin_ts = (@begin_time.to_f * 1000).round
+          end_ts = (Time.now.to_f * 1000).round
+          duration_ms = end_ts - begin_ts
+          m.schema.detailed_trace.save_trace(@operation_name, duration_ms, begin_ts, Trace.encode(Trace.new(packet: @packets)))
+        end
         super
       end
 

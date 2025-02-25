@@ -4,6 +4,15 @@ require "graphql/tracing/platform_trace"
 
 module GraphQL
   module Tracing
+    # A tracer for reporting GraphQL-Ruby time to New Relic
+    #
+    # @example Installing the tracer
+    #   class MySchema < GraphQL::Schema
+    #     trace_with GraphQL::Tracing::NewRelicTrace
+    #
+    #     # Optional, use the operation name to set the new relic transaction name:
+    #     # trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true
+    #   end
     module NewRelicTrace
       # @param set_transaction_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
       #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
