@@ -473,7 +473,7 @@ module GraphQL
                 # When this comes from a list item, use the parent object:
                 parent_type = selection_result.is_a?(GraphQLResultArray) ? selection_result.graphql_parent.graphql_result_type : selection_result.graphql_result_type
                 # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
-                err = parent_type::InvalidNullError.new(parent_type, field, value)
+                err = parent_type::InvalidNullError.new(parent_type, field, value, ast_node)
                 schema.type_error(err, context)
               end
             else
