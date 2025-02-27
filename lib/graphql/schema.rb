@@ -827,11 +827,12 @@ module GraphQL
         elsif defined?(@validate_timeout)
           @validate_timeout
         else
-          find_inherited_value(:validate_timeout)
+          find_inherited_value(:validate_timeout) || 10
         end
       end
 
       # Validate a query string according to this schema.
+      # default is 10 seconds if not specified
       # @param string_or_document [String, GraphQL::Language::Nodes::Document]
       # @return [Array<GraphQL::StaticValidation::Error >]
       def validate(string_or_document, rules: nil, context: nil)
