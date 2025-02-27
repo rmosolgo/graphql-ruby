@@ -160,7 +160,7 @@ describe GraphQL::Schema::Enum do
     class MultipleNameTestEnum < GraphQL::Schema::Enum
       value "A"
       value "B", value: :a
-      value "B", value: :b, value_method: false
+      value "B", value: :b
     end
 
     it "doesn't allow it from enum_values" do

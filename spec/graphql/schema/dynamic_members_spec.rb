@@ -175,7 +175,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class Language < BaseEnum
       value "RUBY"
-      value "PERL6", deprecation_reason: "Use RAKU instead", future_schema: true, value_method: false
+      value "PERL6", deprecation_reason: "Use RAKU instead", future_schema: true
       value "PERL6", future_schema: false
       value "RAKU", future_schema: true
       value "COFFEE_SCRIPT", future_schema: false
@@ -1026,7 +1026,7 @@ GRAPHQL
       class DuplicateEnumValue < GraphQL::Schema::Enum
         enum_value_class(BaseEnumValue)
         value "ONE", description: "second definition", allow_for: [2, 3]
-        value "ONE", description: "first definition", allow_for: [1, 2], value_method: false
+        value "ONE", description: "first definition", allow_for: [1, 2]
       end
 
       class DuplicateFieldObject < GraphQL::Schema::Object

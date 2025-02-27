@@ -108,7 +108,6 @@ module GraphQL
                   enum_value["name"],
                   description: enum_value["description"],
                   deprecation_reason: enum_value["deprecationReason"],
-                  value_method: respond_to?(enum_value["name"].downcase) ? false : nil
                 )
               end
             end
