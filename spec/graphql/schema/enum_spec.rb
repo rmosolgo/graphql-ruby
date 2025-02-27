@@ -11,12 +11,21 @@ describe GraphQL::Schema::Enum do
   end
 
   describe "value methods" do
-    it "defines default methods to fetch graphql names" do
-      assert_equal enum.string, "STRING"
-      assert_equal enum.woodwind, "WOODWIND"
-      assert_equal enum.brass, "BRASS"
-      assert_equal enum.didgeridoo, "DIDGERIDOO"
-      assert_equal enum.keys, "KEYS"
+    class EnumWithValueMethods < GraphQL::Schema::Enum
+      value_methods(true)
+      value :SOMETHING
+      value :SOMETHING_ELSE, value_method: false
+      value :SOMETHING_CUSTOM, value_method: :custom
+    end
+    it "defines methods to fetch graphql names when configured" do
+      assert_equal "SOMETHING", EnumWithValueMethods.something
+      assert_equal "SOMETHING", EnumWithValueMethods.something
+    end
+
+    it "inherits a value_methods config" do
+      new_enum = Class.new(EnumWithValueMethods)
+      new_enum.value(:NEW_VALUE)
+      assert_equal "NEW_VALUE", new_enum.new_value
     end
 
     describe "when value_method is configured" do
@@ -27,22 +36,28 @@ describe GraphQL::Schema::Enum do
     end
 
     describe "when value_method conflicts with existing method" do
+      class ConflictEnum < GraphQL::Schema::Enum
+        value_methods(true)
+      end
       it "does not define method and emits warning" do
         expected_message = "Failed to define value method for :value, because ConflictEnum already responds to that method. Use `value_method:` to override the method name or `value_method: false` to disable Enum value method generation.\n"
         assert_warns(expected_message) do
-          conflict_enum = Class.new(GraphQL::Schema::Enum)
-          Object.const_set("ConflictEnum", conflict_enum)
-          already_defined_method = conflict_enum.method(:value)
-          conflict_enum.value "VALUE", "Makes conflict"
-          assert_equal conflict_enum.method(:value), already_defined_method
+          already_defined_method = ConflictEnum.method(:value)
+          ConflictEnum.value "VALUE", "Makes conflict"
+          assert_equal ConflictEnum.method(:value), already_defined_method
         end
       end
     end
 
     describe "when value_method = false" do
       it "does not define method" do
-        assert_equal enum.respond_to?(:silence), false
+        assert_equal EnumWithValueMethods.respond_to?(:something_else), false
       end
+    end
+    it "doesn't define value methods by default" do
+      enum = Class.new(GraphQL::Schema::Enum) { graphql_name("SomeEnum") }
+      enum.value("SOME_VALUE")
+      refute enum.respond_to?(:some_value)
     end
   end
 
