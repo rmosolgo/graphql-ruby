@@ -1298,7 +1298,10 @@ module GraphQL
       def type_error(type_error, ctx)
         case type_error
         when GraphQL::InvalidNullError
-          ctx.errors << type_error
+          execution_error = GraphQL::ExecutionError.new(type_error.message, ast_node: type_error.ast_node)
+          execution_error.path = ctx[:current_path]
+
+          ctx.errors << execution_error
         when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
           raise type_error
         when GraphQL::IntegerDecodingError
