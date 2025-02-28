@@ -821,8 +821,8 @@ module GraphQL
 
       attr_writer :validate_timeout
 
-      def validate_timeout(new_validate_timeout = nil)
-        if new_validate_timeout
+      def validate_timeout(new_validate_timeout = :not_provided)
+        if new_validate_timeout != :not_provided
           @validate_timeout = new_validate_timeout
         elsif defined?(@validate_timeout)
           @validate_timeout
@@ -832,7 +832,6 @@ module GraphQL
       end
 
       # Validate a query string according to this schema.
-      # default is 10 seconds if not specified
       # @param string_or_document [String, GraphQL::Language::Nodes::Document]
       # @return [Array<GraphQL::StaticValidation::Error >]
       def validate(string_or_document, rules: nil, context: nil)
