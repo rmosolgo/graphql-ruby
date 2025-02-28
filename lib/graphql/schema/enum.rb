@@ -70,7 +70,9 @@ module GraphQL
           kwargs[:owner] = self
           value = enum_value_class.new(*args, **kwargs, &block)
 
-          generate_value_method(value, value_method)
+          if value_method || (value_methods && value_method != false)
+            generate_value_method(value, value_method)
+          end
 
           key = value.graphql_name
           prev_value = own_values[key]
@@ -159,6 +161,18 @@ module GraphQL
           end
         end
 
+        def value_methods(new_value = NOT_CONFIGURED)
+          if NOT_CONFIGURED.equal?(new_value)
+            if @value_methods != nil
+              @value_methods
+            else
+              find_inherited_value(:value_methods, false)
+            end
+          else
+            @value_methods = new_value
+          end
+        end
+
         def kind
           GraphQL::TypeKinds::ENUM
         end
@@ -220,6 +234,7 @@ module GraphQL
             # because they would end up with names like `#<Class0x1234>::UnresolvedValueError` which messes up bug trackers
             child_class.const_set(:UnresolvedValueError, Class.new(Schema::Enum::UnresolvedValueError))
           end
+          child_class.class_eval { @value_methods = nil }
           super
         end
 

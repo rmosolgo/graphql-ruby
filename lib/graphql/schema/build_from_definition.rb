@@ -298,7 +298,6 @@ module GraphQL
                 description: enum_value_definition.description,
                 directives: builder.prepare_directives(enum_value_definition, type_resolver),
                 ast_node: enum_value_definition,
-                value_method: GraphQL::Schema::Enum.respond_to?(enum_value_definition.name.downcase) ? false : nil,
               )
             end
           end

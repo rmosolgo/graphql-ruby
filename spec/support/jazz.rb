@@ -246,7 +246,7 @@ module Jazz
     value "KEYS" do
       description "Neither here nor there, really"
     end
-    value "SILENCE", "Makes no sound", value: false, value_method: false
+    value "SILENCE", "Makes no sound", value: false
   end
 
   class InstrumentType < BaseObject

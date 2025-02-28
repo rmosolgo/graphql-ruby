@@ -19,8 +19,7 @@ describe GraphQL::Schema::Loader do
 
       value "FOO", value: :foo
       value "BAR", deprecation_reason: "Don't use BAR"
-      value "NAME", value_method: false
-      value "foo", value_method: false
+      value "foo"
     end
 
     sub_input_type = Class.new(GraphQL::Schema::InputObject) do
