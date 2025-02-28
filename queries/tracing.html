@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.4.10/">API</a>
+            <a href="/api-doc/2.4.11/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -157,24 +157,13 @@
 <h1 class="guide-header">Tracing</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
-  <ol class='contents-list'><li class='contents-entry'><a href='#trace-modes'>Trace Modes
-</a></li><li class='contents-entry'><a href='#perfetto-traces'>Perfetto Traces
-</a></li><li class='contents-entry'><a href='#activesupport-notifications'>ActiveSupport::Notifications
-</a></li><li class='contents-entry'><a href='#monitoring'>Monitoring
-</a></li><li class='contents-entry'><a href='#appoptics'>AppOptics
-</a></li><li class='contents-entry'><a href='#appsignal'>Appsignal
-</a></li><li class='contents-entry'><a href='#new-relic'>New Relic
-</a></li><li class='contents-entry'><a href='#scout'>Scout
-</a></li><li class='contents-entry'><a href='#skylight'>Skylight
-</a></li><li class='contents-entry'><a href='#datadog'>Datadog
-</a></li><li class='contents-entry'><a href='#prometheus'>Prometheus
-</a></li><li class='contents-entry'><a href='#sentry'>Sentry
-</a></li><li class='contents-entry'><a href='#statsd'>Statsd
+  <ol class='contents-list'><li class='contents-entry'><a href='#detailed-traces'>Detailed Traces
+</a></li><li class='contents-entry'><a href='#external-monitoring-platforms'>External Monitoring Platforms
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
-  <p><a href="/api-doc/2.4.10/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a> provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with <a href="/api-doc/2.4.10/GraphQL/Schema#trace_with-class_method" target="_blank" title="API docs for GraphQL::Schema.trace_with"><code>Schema.trace_with</code></a>.</p>
+  <p><a href="/api-doc/2.4.11/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a> provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with <a href="/api-doc/2.4.11/GraphQL/Schema#trace_with-class_method" target="_blank" title="API docs for GraphQL::Schema.trace_with"><code>Schema.trace_with</code></a>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">CustomTrace</span>
   <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">query_string</span><span class="p">:)</span>
@@ -194,202 +183,36 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>For a full list of methods and their arguments, see <a href="/api-doc/2.4.10/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a>.</p>
+<p>For a full list of methods and their arguments, see <a href="/api-doc/2.4.11/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a>.</p>
 
 <p>By default, GraphQL-Ruby makes a new trace instance when it runs a query. You can pass an existing instance as <code class="language-plaintext highlighter-rouge">context: { trace: ... }</code>. Also, <code class="language-plaintext highlighter-rouge">GraphQL.parse( ..., trace: ...)</code> accepts a trace instance.</p>
 
-<h2 id="trace-modes">Trace Modes</h2>
+<h2 id="detailed-traces">Detailed Traces</h2>
 
-<p>You can attach a trace module to run only in some circumstances by using <code class="language-plaintext highlighter-rouge">mode:</code>. For example, to add detailed tracing for only some requests:</p>
+<p>You can capture detailed traces of query execution with <a href="/api-doc/2.4.11/GraphQL/Tracing/DetailedTrace" target="_blank" title="API docs for GraphQL::Tracing::DetailedTrace"><code>Tracing::DetailedTrace</code></a>. They can be viewed in Google’s <a href="https://ui.perfetto.dev">Perfetto Trace Viewer</a>. They include a per-Fiber breakdown with links between fields and Dataloader sources.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trace_with</span> <span class="no">DetailedTrace</span><span class="p">,</span> <span class="ss">mode: :detailed_metrics</span>
-</code></pre></div></div>
-
-<p>Then, to opt into that trace, use <code class="language-plaintext highlighter-rouge">context: { trace_mode: :detailed_metrics, ... }</code> when executing queries.</p>
-
-<p>Any custom trace modes <em>also</em> include the default <code class="language-plaintext highlighter-rouge">trace_with ...</code> modules (that is, those added <em>without</em> any particular <code class="language-plaintext highlighter-rouge">mode: ...</code> configuration).</p>
-
-<h2 id="perfetto-traces">Perfetto Traces</h2>
-
-<p>For detailed profiles of complex queries, try <a href="/api-doc/2.4.10/GraphQL/Tracing/PerfettoTrace" target="_blank" title="API docs for GraphQL::Tracing::PerfettoTrace"><code>Tracing::PerfettoTrace</code></a>. Its trace can be viewed in Google’s <a href="https://ui.perfetto.dev">Perfetto Trace Viewer</a>. They include a per-Fiber breakdown with links between fields and Dataloader sources.</p>
-
-<div class="monitoring-img-group">
-  <a href="/queries/perfetto_example.png" target="_blank" class="img-link">
+<p><a href="/queries/perfetto_example.png" target="_blank" class="img-link">
   <img src="/queries/perfetto_example.png" title="GraphQL-Ruby Dataloader Perfetto Trace" alt="GraphQL-Ruby Dataloader Perfetto Trace" />
-</a>
+</a></p>
 
-</div>
+<p>Learn how to set it up in the <a href="/api-doc/2.4.11/GraphQL/Tracing/DetailedTrace" target="_blank" title="API docs for GraphQL::Tracing::DetailedTrace"><code>Tracing::DetailedTrace</code></a> docs.</p>
 
-<h2 id="activesupportnotifications">ActiveSupport::Notifications</h2>
+<h2 id="external-monitoring-platforms">External Monitoring Platforms</h2>
 
-<p>You can emit events to <code class="language-plaintext highlighter-rouge">ActiveSupport::Notifications</code> with an experimental tracer, <code class="language-plaintext highlighter-rouge">ActiveSupportNotificationsTrace</code>.</p>
+<p>There integrations for GraphQL-Ruby with several other monitoring systems:</p>
 
-<p>To enable it, install the tracer:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Send execution events to ActiveSupport::Notifications</span>
-<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">trace_with</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">ActiveSupportNotificationsTrace</span><span class="p">)</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<h2 id="monitoring">Monitoring</h2>
-
-<p>Several monitoring platforms are supported out-of-the box by GraphQL-Ruby (see platforms below).</p>
-
-<p>Leaf fields are <em>not</em> monitored (to avoid high cardinality in the metrics service).</p>
-
-<h2 id="appoptics">AppOptics</h2>
-
-<p><a href="https://appoptics.com/">AppOptics</a> instrumentation will be automatic starting
-with appoptics_apm-4.11.0.gem. For earlier gem versions please add appoptics_apm
-tracing as follows:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'appoptics_apm'</span>
-
-<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">AppOpticsTrace</span>
-<span class="k">end</span>
-</code></pre></div></div>
-<div class="monitoring-img-group">
-  <a href="/queries/appoptics_example.png" target="_blank" class="img-link">
-  <img src="/queries/appoptics_example.png" title="appoptics monitoring" alt="appoptics monitoring" />
-</a>
-
-</div>
-
-<h2 id="appsignal">Appsignal</h2>
-
-<p>To add <a href="https://appsignal.com/">AppSignal</a> instrumentation:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">AppsignalTrace</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<div class="monitoring-img-group">
-  <a href="/queries/appsignal_example.png" target="_blank" class="img-link">
-  <img src="/queries/appsignal_example.png" title="appsignal monitoring" alt="appsignal monitoring" />
-</a>
-
-</div>
-
-<h2 id="new-relic">New Relic</h2>
-
-<p>To add <a href="https://newrelic.com/">New Relic</a> instrumentation:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">NewRelicTrace</span>
-  <span class="c1"># Optional, use the operation name to set the new relic transaction name:</span>
-  <span class="c1"># trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<div class="monitoring-img-group">
-  <a href="/queries/new_relic_example.png" target="_blank" class="img-link">
-  <img src="/queries/new_relic_example.png" title="new relic monitoring" alt="new relic monitoring" />
-</a>
-
-</div>
-
-<h2 id="scout">Scout</h2>
-
-<p>To add <a href="https://scoutapp.com/">Scout APM</a> instrumentation:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">ScoutTrace</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<div class="monitoring-img-group">
-  <a href="/queries/scout_example.png" target="_blank" class="img-link">
-  <img src="/queries/scout_example.png" title="scout monitoring" alt="scout monitoring" />
-</a>
-
-</div>
-
-<h2 id="skylight">Skylight</h2>
-
-<p>To add <a href="https://www.skylight.io">Skylight</a> instrumentation, you may either enable the <a href="https://www.skylight.io/support/getting-more-from-skylight#graphql">GraphQL probe</a> or use <a href="/queries/tracing.html#activesupportnotifications">ActiveSupportNotificationsTracing</a>.</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/application.rb</span>
-<span class="n">config</span><span class="p">.</span><span class="nf">skylight</span><span class="p">.</span><span class="nf">probes</span> <span class="o">&lt;&lt;</span> <span class="s2">"graphql"</span>
-</code></pre></div></div>
-
-<div class="monitoring-img-group">
-  <a href="/queries/skylight_example.png" target="_blank" class="img-link">
-  <img src="/queries/skylight_example.png" title="skylight monitoring" alt="skylight monitoring" />
-</a>
-
-</div>
-
-<p>GraphQL instrumentation for Skylight is available in versions &gt;= 4.2.0.</p>
-
-<h2 id="datadog">Datadog</h2>
-
-<p>To add <a href="https://www.datadoghq.com">Datadog</a> instrumentation:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">DataDogTrace</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>For more details about Datadog’s tracing API, check out the <a href="https://github.com/DataDog/dd-trace-rb/blob/master/docs/GettingStarted.md">Ruby documentation</a> or the <a href="https://docs.datadoghq.com/tracing/">APM documentation</a> for more product information.</p>
-
-<h2 id="prometheus">Prometheus</h2>
-
-<p>To add <a href="https://prometheus.io">Prometheus</a> instrumentation:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'prometheus_exporter/client'</span>
-
-<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">PrometheusTrace</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>The PrometheusExporter server must be run with a custom type collector that extends
-<code class="language-plaintext highlighter-rouge">GraphQL::Tracing::PrometheusTracing::GraphQLCollector</code>:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># lib/graphql_collector.rb</span>
-<span class="k">if</span> <span class="k">defined?</span><span class="p">(</span><span class="no">PrometheusExporter</span><span class="o">::</span><span class="no">Server</span><span class="p">)</span>
-  <span class="nb">require</span> <span class="s1">'graphql/tracing'</span>
-
-  <span class="k">class</span> <span class="nc">GraphQLCollector</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">PrometheusTrace</span><span class="o">::</span><span class="no">GraphQLCollector</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle <span class="nb">exec </span>prometheus_exporter <span class="nt">-a</span> lib/graphql_collector.rb
-</code></pre></div></div>
-
-<h2 id="sentry">Sentry</h2>
-
-<p>To add <a href="https://sentry.io">Sentry</a> instrumentation:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">SentryTrace</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<div class="monitoring-img-group">
-  <a href="/queries/sentry_example.png" target="_blank" class="img-link">
-  <img src="/queries/sentry_example.png" title="sentry monitoring" alt="sentry monitoring" />
-</a>
-
-</div>
-
-<h2 id="statsd">Statsd</h2>
-
-<p>You can add Statsd instrumentation by initializing a statsd client and passing it to <a href="/api-doc/2.4.10/GraphQL/Tracing/StatsdTrace" target="_blank" title="API docs for GraphQL::Tracing::StatsdTrace"><code>GraphQL::Tracing::StatsdTrace</code></a>:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="vg">$statsd</span> <span class="o">=</span> <span class="no">Statsd</span><span class="p">.</span><span class="nf">new</span> <span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">9125</span>
-<span class="c1"># ...</span>
-
-<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">StatsdTrace</span><span class="p">,</span> <span class="ss">statsd: </span><span class="vg">$statsd</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>Any Statsd client that implements <code class="language-plaintext highlighter-rouge">.time(name) { ... }</code> will work.</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">ActiveSupport::Notifications</code>: See <a href="/api-doc/2.4.11/GraphQL/Tracing/ActiveSupportNotificationsTrace" target="_blank" title="API docs for GraphQL::Tracing::ActiveSupportNotificationsTrace"><code>Tracing::ActiveSupportNotificationsTrace</code></a>.</li>
+  <li><a href="https://appoptics.com/">AppOptics</a> instrumentation is automatic in <code class="language-plaintext highlighter-rouge">appoptics_apm</code> v4.11.0+.</li>
+  <li><a href="https://appsignal.com/">AppSignal</a>: See <a href="/api-doc/2.4.11/GraphQL/Tracing/AppsignalTrace" target="_blank" title="API docs for GraphQL::Tracing::AppsignalTrace"><code>Tracing::AppsignalTrace</code></a>.</li>
+  <li><a href="https://www.datadoghq.com">Datadog</a>: See <a href="/api-doc/2.4.11/GraphQL/Tracing/DataDogTrace" target="_blank" title="API docs for GraphQL::Tracing::DataDogTrace"><code>Tracing::DataDogTrace</code></a>.</li>
+  <li><a href="https://newrelic.com/">NewRelic</a>: See <a href="/api-doc/2.4.11/GraphQL/Tracing/NewRelicTrace" target="_blank" title="API docs for GraphQL::Tracing::NewRelicTrace"><code>Tracing::NewRelicTrace</code></a>.</li>
+  <li><a href="https://prometheus.io">Prometheus</a>: See <a href="/api-doc/2.4.11/GraphQL/Tracing/PrometheusTrace" target="_blank" title="API docs for GraphQL::Tracing::PrometheusTrace"><code>Tracing::PrometheusTrace</code></a>.</li>
+  <li><a href="https://scoutapp.com/">Scout APM</a>: See <a href="/api-doc/2.4.11/GraphQL/Tracing/ScoutTrace" target="_blank" title="API docs for GraphQL::Tracing::ScoutTrace"><code>Tracing::ScoutTrace</code></a>.</li>
+  <li><a href="https://sentry.io">Sentry</a>: See <a href="/api-doc/2.4.11/GraphQL/Tracing/SentryTrace" target="_blank" title="API docs for GraphQL::Tracing::SentryTrace"><code>Tracing::SentryTrace</code></a>.</li>
+  <li><a href="https://www.skylight.io">Skylight</a>:  either enable the <a href="https://www.skylight.io/support/getting-more-from-skylight#graphql">GraphQL probe</a> or use <a href="/api-doc/2.4.11/GraphQL/Tracing/ActiveSupportNotificationsTrace" target="_blank" title="API docs for GraphQL::Tracing::ActiveSupportNotificationsTrace"><code>Tracing::ActiveSupportNotificationsTrace</code></a>.</li>
+  <li>Statsd: See <a href="/api-doc/2.4.11/GraphQL/Tracing/StatsdTrace" target="_blank" title="API docs for GraphQL::Tracing::StatsdTrace"><code>Tracing::StatsdTrace</code></a>.</li>
+</ul>
 
 </div>
 <p class="guide-footer">

@@ -1,10 +1,18 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.10/GraphQL/Tracing/NewRelicTrace" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.11/GraphQL/Tracing/NewRelicTrace" />
   </head>
   <body>
     <p>Module: GraphQL::Tracing::NewRelicTrace
+A tracer for reporting GraphQL-Ruby time to New Relic 
+Examples:</p>
+<h1 id="installing-the-tracer">Installing the tracer</h1>
+<p>class MySchema &lt; GraphQL::Schema
+trace_with GraphQL::Tracing::NewRelicTrace</p>
+<h1 id="optional-use-the-operation-name-to-set-the-new-relic-transaction-name">Optional, use the operation name to set the new relic transaction name:</h1>
+<h1 id="trace_with-graphqltracingnewrelictrace-set_transaction_name-true">trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true</h1>
+<p>end
 Instance methods:
 begin_analyze_multiplex, begin_authorized, begin_dataloader,
 begin_dataloader_source, begin_execute_field,

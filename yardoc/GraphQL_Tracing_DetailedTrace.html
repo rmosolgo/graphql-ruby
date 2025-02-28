@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.11/GraphQL/Tracing/DetailedTrace" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Tracing::DetailedTrace &lt; Object
+<code class="language-plaintext highlighter-rouge">DetailedTrace</code> can make detailed profiles for a subset of
+production traffic. 
+When <code class="language-plaintext highlighter-rouge">MySchema.detailed_trace?(query)</code> returns <code class="language-plaintext highlighter-rouge">true</code>, a
+profiler-specific <code class="language-plaintext highlighter-rouge">trace_mode: ...</code> will be used for the query,
+overriding the one in <code class="language-plaintext highlighter-rouge">context[:trace_mode]</code>. 
+<strong>Redis</strong>: The sampler stores its results in a provided Redis
+database. Depending on your needs, You can configure this database
+to retail all data (persistent) or to expire data according to your
+rules. If you need to save traces indefinitely, you can download
+them from Perfetto after opening them there. 
+Examples:</p>
+<h1 id="adding-the-sampler-to-your-schema">Adding the sampler to your schema</h1>
+<p>class MySchema &lt; GraphQL::Schema</p>
+<h1 id="add-the-sampler">Add the sampler:</h1>
+<p>use GraphQL::Tracing::DetailedTrace, redis: Redis.new(…), limit: 100</p>
+<h1 id="and-implement-this-hook-to-tell-it-when-to-take-a-sample">And implement this hook to tell it when to take a sample:</h1>
+<p>def self.detailed_trace?(query)</p>
+<h1 id="could-use-querycontext-queryselected_operation_name-queryquery_string-here">Could use <code class="language-plaintext highlighter-rouge">query.context</code>, <code class="language-plaintext highlighter-rouge">query.selected_operation_name</code>, <code class="language-plaintext highlighter-rouge">query.query_string</code> here</h1>
+<h1 id="could-call-out-to-flipper-etc">Could call out to Flipper, etc</h1>
+<p>rand &lt;= 0.000_1 # one in ten thousand
+end
+end
+See Also:</p>
+<ul>
+  <li>Graphql::Dashboard - GraphQL::Dashboard for viewing stored results
+Class methods:
+use
+Instance methods:
+delete_all_traces, delete_trace, find_trace, initialize, save_trace,
+traces</li>
+</ul>
+
+
+  </body>
+</html>

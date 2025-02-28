@@ -1,10 +1,16 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.10/GraphQL/Tracing/ScoutTrace" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.11/GraphQL/Tracing/ScoutTrace" />
   </head>
   <body>
     <p>Module: GraphQL::Tracing::ScoutTrace
+A tracer for sending GraphQL-Ruby times to Scout 
+Examples:</p>
+<h1 id="adding-this-tracer-to-your-schema">Adding this tracer to your schema</h1>
+<p>class MySchema &lt; GraphQL::Schema
+trace_with GraphQL::Tracing::ScoutTrace
+end
 Includes:
 GraphQL::Tracing::PlatformTrace
 Instance methods:

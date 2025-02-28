@@ -1,10 +1,16 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.10/GraphQL/Tracing/SentryTrace" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.11/GraphQL/Tracing/SentryTrace" />
   </head>
   <body>
     <p>Module: GraphQL::Tracing::SentryTrace
+A tracer for reporting GraphQL-Ruby times to Sentry. 
+Examples:</p>
+<h1 id="installing-the-tracer">Installing the tracer</h1>
+<p>class MySchema &lt; GraphQL::Schema
+trace_with GraphQL::Tracing::SentryTrace
+end
 Includes:
 GraphQL::Tracing::PlatformTrace
 Instance methods:

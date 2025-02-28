@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.11/Graphql/Dashboard" />
+  </head>
+  <body>
+    <p>Class: Graphql::Dashboard &lt; Rails::Engine
+<code class="language-plaintext highlighter-rouge">GraphQL::Dashboard</code> is a <code class="language-plaintext highlighter-rouge">Rails::Engine</code>-based dashboard for
+viewing metadata about your GraphQL schema. 
+Pass the class name of your schema when mounting it. 
+Examples:</p>
+<h1 id="mounting-the-dashboard-in-your-app">Mounting the Dashboard in your app</h1>
+<p>mount GraphQL::Dashboard, at: “graphql_dashboard”, schema: “MySchema”</p>
+<h1 id="authenticating-the-dashboard-with-http-basic-auth">Authenticating the Dashboard with HTTP Basic Auth</h1>
+<h1 id="configinitializersgraphql_dashboardrb">config/initializers/graphql_dashboard.rb</h1>
+<p>GraphQL::Dashboard.middleware.use(Rack::Auth::Basic) do |username, password|</p>
+<h1 id="compare-the-provided-usernamepassword-to-an-application-setting">Compare the provided username/password to an application setting:</h1>
+<p>ActiveSupport::SecurityUtils.secure_compare(Rails.application.credentials.graphql_dashboard_username, username) &amp;&amp;
+ActiveSupport::SecurityUtils.secure_compare(Rails.application.credentials.graphql_dashboard_username, password)
+end</p>
+<h1 id="custom-rails-authentication">Custom Rails authentication</h1>
+<h1 id="configinitializersgraphql_dashboardrb-1">config/initializers/graphql_dashboard.rb</h1>
+<p>ActiveSupport.on_load(:graphql_dashboard_application_controller) do</p>
+<h1 id="context-here-is-graphqldashboardapplicationcontroller">context here is GraphQL::Dashboard::ApplicationController</h1>
+<p>before_action do
+raise ActionController::RoutingError.new(‘Not Found’) unless current_user&amp;.admin?
+end
+def current_user</p>
+<h1 id="load-current-user">load current user</h1>
+<p>end
+end
+See Also:</p>
+<ul>
+  <li>GraphQL::Tracing::DetailedTrace - DetailedTrace for viewing production
+traces in the Dashboard</li>
+</ul>
+
+
+  </body>
+</html>
