@@ -10,6 +10,19 @@
 
 ### Bug fixes
 
+# 2.4.11 (28 Feb 2025)
+
+### New features
+
+- `InvalidNullError`: Improve default handling to add path and locations #5257
+- `DetailedTrace`: Add a sampling profiler for creating detailed traces #5244
+
+### Bug fixes
+
+- `Enum`: Make value methods optional; Add `value_methods(true)` to your base enum class to opt back in. #5255
+- `InvalidNullError`: use `GraphQL::Error` as a base class #5248
+- CI: test on Mongoid 8 and 9 #5251
+
 # 2.4.10 (18 Feb 2025)
 
 ### New features
