@@ -13,6 +13,8 @@ module GraphQL
         super
       end
 
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
+
       {
         "lex" => "lex.graphql",
         "parse" => "parse.graphql",
@@ -42,6 +44,8 @@ module GraphQL
           end
         RUBY
       end
+
+      # rubocop:enable Development/NoEvalCop
 
       def platform_execute_field(platform_key)
         Appsignal.instrument(platform_key) do

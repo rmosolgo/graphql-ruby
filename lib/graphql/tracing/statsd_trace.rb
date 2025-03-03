@@ -11,6 +11,8 @@ module GraphQL
         super(**rest)
       end
 
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
+
       {
         'lex' => "graphql.lex",
         'parse' => "graphql.parse",
@@ -29,6 +31,8 @@ module GraphQL
           end
         RUBY
       end
+
+      # rubocop:enable Development/NoEvalCop
 
       def platform_execute_field(platform_key, &block)
         @statsd.time(platform_key, &block)

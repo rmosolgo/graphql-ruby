@@ -39,6 +39,9 @@ module GraphQL
           include(BaseKeyCache)
         }
         child_class.const_set(:KeyCache, key_methods_class)
+
+        # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
+
         [:execute_field, :execute_field_lazy].each do |field_trace_method|
           if !child_class.method_defined?(field_trace_method)
             child_class.module_eval <<-RUBY, __FILE__, __LINE__
@@ -91,6 +94,8 @@ module GraphQL
               end
             RUBY
           end
+
+          # rubocop:enable Development/NoEvalCop
         end
       end
 
