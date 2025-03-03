@@ -21,6 +21,7 @@ module GraphQL
           @document
         end
       end
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
 
       # We don't use `alias` here because it breaks `super`
       def self.make_visit_methods(ast_node_class)
@@ -54,6 +55,48 @@ module GraphQL
           end
         RUBY
       end
+
+      [
+        Language::Nodes::Argument,
+        Language::Nodes::Directive,
+        Language::Nodes::DirectiveDefinition,
+        Language::Nodes::DirectiveLocation,
+        Language::Nodes::Document,
+        Language::Nodes::Enum,
+        Language::Nodes::EnumTypeDefinition,
+        Language::Nodes::EnumTypeExtension,
+        Language::Nodes::EnumValueDefinition,
+        Language::Nodes::Field,
+        Language::Nodes::FieldDefinition,
+        Language::Nodes::FragmentDefinition,
+        Language::Nodes::FragmentSpread,
+        Language::Nodes::InlineFragment,
+        Language::Nodes::InputObject,
+        Language::Nodes::InputObjectTypeDefinition,
+        Language::Nodes::InputObjectTypeExtension,
+        Language::Nodes::InputValueDefinition,
+        Language::Nodes::InterfaceTypeDefinition,
+        Language::Nodes::InterfaceTypeExtension,
+        Language::Nodes::ListType,
+        Language::Nodes::NonNullType,
+        Language::Nodes::NullValue,
+        Language::Nodes::ObjectTypeDefinition,
+        Language::Nodes::ObjectTypeExtension,
+        Language::Nodes::OperationDefinition,
+        Language::Nodes::ScalarTypeDefinition,
+        Language::Nodes::ScalarTypeExtension,
+        Language::Nodes::SchemaDefinition,
+        Language::Nodes::SchemaExtension,
+        Language::Nodes::TypeName,
+        Language::Nodes::UnionTypeDefinition,
+        Language::Nodes::UnionTypeExtension,
+        Language::Nodes::VariableDefinition,
+        Language::Nodes::VariableIdentifier,
+      ].each do |ast_node_class|
+        make_visit_methods(ast_node_class)
+      end
+
+      # rubocop:disable Development/NoEvalCop
 
       def on_document_children(document_node)
         document_node.children.each do |child_node|
@@ -121,46 +164,6 @@ module GraphQL
             raise ArgumentError, "Invariant: unexpected argument value node #{value_node.class} (#{value_node.inspect})"
           end
         end
-      end
-
-      [
-        Language::Nodes::Argument,
-        Language::Nodes::Directive,
-        Language::Nodes::DirectiveDefinition,
-        Language::Nodes::DirectiveLocation,
-        Language::Nodes::Document,
-        Language::Nodes::Enum,
-        Language::Nodes::EnumTypeDefinition,
-        Language::Nodes::EnumTypeExtension,
-        Language::Nodes::EnumValueDefinition,
-        Language::Nodes::Field,
-        Language::Nodes::FieldDefinition,
-        Language::Nodes::FragmentDefinition,
-        Language::Nodes::FragmentSpread,
-        Language::Nodes::InlineFragment,
-        Language::Nodes::InputObject,
-        Language::Nodes::InputObjectTypeDefinition,
-        Language::Nodes::InputObjectTypeExtension,
-        Language::Nodes::InputValueDefinition,
-        Language::Nodes::InterfaceTypeDefinition,
-        Language::Nodes::InterfaceTypeExtension,
-        Language::Nodes::ListType,
-        Language::Nodes::NonNullType,
-        Language::Nodes::NullValue,
-        Language::Nodes::ObjectTypeDefinition,
-        Language::Nodes::ObjectTypeExtension,
-        Language::Nodes::OperationDefinition,
-        Language::Nodes::ScalarTypeDefinition,
-        Language::Nodes::ScalarTypeExtension,
-        Language::Nodes::SchemaDefinition,
-        Language::Nodes::SchemaExtension,
-        Language::Nodes::TypeName,
-        Language::Nodes::UnionTypeDefinition,
-        Language::Nodes::UnionTypeExtension,
-        Language::Nodes::VariableDefinition,
-        Language::Nodes::VariableIdentifier,
-      ].each do |ast_node_class|
-        make_visit_methods(ast_node_class)
       end
     end
   end
