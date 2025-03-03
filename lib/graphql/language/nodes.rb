@@ -267,6 +267,7 @@ module GraphQL
               RUBY
             end
           end
+          # rubocop:enable Development/NoEvalCop
         end
       end
 
