@@ -276,10 +276,9 @@ module GraphQL
                   #{assignments.join("\n")}
                 end
               RUBY
-
-              # rubocop:enable Development/NoEvalCop
             end
           end
+          # rubocop:enable Development/NoEvalCop
         end
       end
 
