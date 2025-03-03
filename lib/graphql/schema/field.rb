@@ -369,7 +369,7 @@ module GraphQL
           if @definition_block.arity == 1
             @definition_block.call(self)
           else
-            instance_eval(&@definition_block)
+            instance_exec(self, &@definition_block)
           end
           self.extensions.each(&:after_define_apply)
           @call_after_define = true

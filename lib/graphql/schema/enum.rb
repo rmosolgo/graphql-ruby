@@ -234,7 +234,7 @@ module GraphQL
             # because they would end up with names like `#<Class0x1234>::UnresolvedValueError` which messes up bug trackers
             child_class.const_set(:UnresolvedValueError, Class.new(Schema::Enum::UnresolvedValueError))
           end
-          child_class.class_eval { @value_methods = nil }
+          child_class.class_exec { @value_methods = nil }
           super
         end
 

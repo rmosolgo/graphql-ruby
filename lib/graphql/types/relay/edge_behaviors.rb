@@ -8,7 +8,7 @@ module GraphQL
           child_class.description("An edge in a connection.")
           child_class.field(:cursor, String, null: false, description: "A cursor for use in pagination.")
           child_class.extend(ClassMethods)
-          child_class.class_eval { self.node_type = nil }
+          child_class.class_exec { self.node_type = nil }
           child_class.node_nullable(true)
           child_class.default_broadcastable(nil)
         end
