@@ -256,7 +256,7 @@ module GraphQL
             return
           end
 
-          instance_eval("def #{value_method_name}; #{value.graphql_name.inspect}; end;", __FILE__, __LINE__)
+          define_singleton_method(value_method_name) { value.graphql_name }
         end
       end
 

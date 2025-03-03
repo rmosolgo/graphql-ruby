@@ -4,7 +4,7 @@ require 'rubocop'
 module Cop
   module Development
     class NoEvalCop < RuboCop::Cop::Base
-      MSG_TEMPLATE = "Don't use `%{eval_method_name}` which accept strings and may result in unexpected code being generated. Use `%{exec_method_name}` instead, and pass a block."
+      MSG_TEMPLATE = "Don't use `%{eval_method_name}` which accepts strings and may result evaluating unexpected code. Use `%{exec_method_name}` instead, and pass a block."
 
       def on_send(node)
         case node.method_name

@@ -42,6 +42,7 @@ module GraphQL
         raise GraphQL::RequiredImplementationMissingError
       end
 
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
       class << self
         private
 
@@ -72,7 +73,7 @@ module GraphQL
       build_visitor_hooks :variable_definition
       build_visitor_hooks :variable_identifier
       build_visitor_hooks :abstract_node
-
+      # rubocop:enable Development/NoEvalCop
       protected
 
       # @return [GraphQL::Query, GraphQL::Execution::Multiplex] Whatever this analyzer is analyzing

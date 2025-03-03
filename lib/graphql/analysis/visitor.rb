@@ -64,6 +64,7 @@ module GraphQL
         @response_path.dup
       end
 
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
       # Visitor Hooks
       [
         :operation_definition, :fragment_definition,
@@ -92,6 +93,7 @@ module GraphQL
 
         RUBY
       end
+      # rubocop:enable Development/NoEvalCop
 
       def on_operation_definition(node, parent)
         object_type = @schema.root_type_for_operation(node.operation_type)
