@@ -21,6 +21,75 @@ module GraphQL
           @document
         end
       end
+
+      def on_document_children(document_node)
+        document_node.children.each do |child_node|
+          visit_method = child_node.visit_method
+          public_send(visit_method, child_node, document_node)
+        end
+      end
+
+      def on_field_children(new_node)
+        new_node.arguments.each do |arg_node| # rubocop:disable Development/ContextIsPassedCop
+          on_argument(arg_node, new_node)
+        end
+        visit_directives(new_node)
+        visit_selections(new_node)
+      end
+
+      def visit_directives(new_node)
+        new_node.directives.each do |dir_node|
+          on_directive(dir_node, new_node)
+        end
+      end
+
+      def visit_selections(new_node)
+        new_node.selections.each do |selection|
+          case selection
+          when GraphQL::Language::Nodes::Field
+            on_field(selection, new_node)
+          when GraphQL::Language::Nodes::InlineFragment
+            on_inline_fragment(selection, new_node)
+          when GraphQL::Language::Nodes::FragmentSpread
+            on_fragment_spread(selection, new_node)
+          else
+            raise ArgumentError, "Invariant: unexpected field selection #{selection.class} (#{selection.inspect})"
+          end
+        end
+      end
+
+      def on_fragment_definition_children(new_node)
+        visit_directives(new_node)
+        visit_selections(new_node)
+      end
+
+      alias :on_inline_fragment_children :on_fragment_definition_children
+
+      def on_operation_definition_children(new_node)
+        new_node.variables.each do |arg_node|
+          on_variable_definition(arg_node, new_node)
+        end
+        visit_directives(new_node)
+        visit_selections(new_node)
+      end
+
+      def on_argument_children(new_node)
+        new_node.children.each do |value_node|
+          case value_node
+          when Language::Nodes::VariableIdentifier
+            on_variable_identifier(value_node, new_node)
+          when Language::Nodes::InputObject
+            on_input_object(value_node, new_node)
+          when Language::Nodes::Enum
+            on_enum(value_node, new_node)
+          when Language::Nodes::NullValue
+            on_null_value(value_node, new_node)
+          else
+            raise ArgumentError, "Invariant: unexpected argument value node #{value_node.class} (#{value_node.inspect})"
+          end
+        end
+      end
+
       # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
 
       # We don't use `alias` here because it breaks `super`
@@ -97,74 +166,6 @@ module GraphQL
       end
 
       # rubocop:disable Development/NoEvalCop
-
-      def on_document_children(document_node)
-        document_node.children.each do |child_node|
-          visit_method = child_node.visit_method
-          public_send(visit_method, child_node, document_node)
-        end
-      end
-
-      def on_field_children(new_node)
-        new_node.arguments.each do |arg_node| # rubocop:disable Development/ContextIsPassedCop
-          on_argument(arg_node, new_node)
-        end
-        visit_directives(new_node)
-        visit_selections(new_node)
-      end
-
-      def visit_directives(new_node)
-        new_node.directives.each do |dir_node|
-          on_directive(dir_node, new_node)
-        end
-      end
-
-      def visit_selections(new_node)
-        new_node.selections.each do |selection|
-          case selection
-          when GraphQL::Language::Nodes::Field
-            on_field(selection, new_node)
-          when GraphQL::Language::Nodes::InlineFragment
-            on_inline_fragment(selection, new_node)
-          when GraphQL::Language::Nodes::FragmentSpread
-            on_fragment_spread(selection, new_node)
-          else
-            raise ArgumentError, "Invariant: unexpected field selection #{selection.class} (#{selection.inspect})"
-          end
-        end
-      end
-
-      def on_fragment_definition_children(new_node)
-        visit_directives(new_node)
-        visit_selections(new_node)
-      end
-
-      alias :on_inline_fragment_children :on_fragment_definition_children
-
-      def on_operation_definition_children(new_node)
-        new_node.variables.each do |arg_node|
-          on_variable_definition(arg_node, new_node)
-        end
-        visit_directives(new_node)
-        visit_selections(new_node)
-      end
-
-      def on_argument_children(new_node)
-        new_node.children.each do |value_node|
-          case value_node
-          when Language::Nodes::VariableIdentifier
-            on_variable_identifier(value_node, new_node)
-          when Language::Nodes::InputObject
-            on_input_object(value_node, new_node)
-          when Language::Nodes::Enum
-            on_enum(value_node, new_node)
-          when Language::Nodes::NullValue
-            on_null_value(value_node, new_node)
-          else
-            raise ArgumentError, "Invariant: unexpected argument value node #{value_node.class} (#{value_node.inspect})"
-          end
-        end
-      end
     end
   end
 end

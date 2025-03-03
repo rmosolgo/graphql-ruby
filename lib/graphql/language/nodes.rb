@@ -343,10 +343,9 @@ module GraphQL
                   @line, @col, @filename #{marshalling_method_names.map { |n| ", @#{n}"}.join} = values
                 end
               RUBY
-
-              # rubocop:enable Development/NoEvalCop
             end
           end
+          # rubocop:enable Development/NoEvalCop
         end
       end
 
