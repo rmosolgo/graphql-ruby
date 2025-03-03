@@ -22,7 +22,6 @@ module GraphQL
       include Schema::Member::GraphQLTypeNames
       # Really we only need description & comment from here, but:
       extend Schema::Member::BaseDSLMethods
-      extend Member::BaseDSLMethods::ConfigurationExtension
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasValidators
       include Schema::Member::HasPath
@@ -402,6 +401,11 @@ module GraphQL
           else
             own_exts || EMPTY_ARRAY
           end
+        end
+
+        def inherited(child_class)
+          child_class.description(description)
+          super
         end
 
         private
