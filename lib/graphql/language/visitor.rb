@@ -73,6 +73,7 @@ module GraphQL
           @document
         end
       end
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
 
       # Call the user-defined handler for `node`.
       def visit_node(node, parent)
