@@ -55,6 +55,7 @@ module GraphQL
       def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
+        NameValidator.validate!(@name)
         @type_expr = type_expr || type
         @description = desc || description
         @null = !required
