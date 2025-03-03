@@ -79,11 +79,8 @@ module GraphQL
         self.validates(validates)
 
         if definition_block
-          if definition_block.arity == 1
-            instance_exec(self, &definition_block)
-          else
-            instance_eval(&definition_block)
-          end
+          # `self` will still be self, it will also be the first argument to the block:
+          instance_exec(self, &definition_block)
         end
       end
 
