@@ -316,10 +316,9 @@ module GraphQL
                   self.new(filename: filename, line: line, col: col, #{keywords.join(", ")})
                 end
               RUBY
-
-              # rubocop:enable Development/NoEvalCop
             end
           end
+          # rubocop:enable Development/NoEvalCop
         end
       end
 
