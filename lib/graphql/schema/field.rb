@@ -233,7 +233,7 @@ module GraphQL
 
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
-
+        NameValidator.validate!(@name)
         @description = description
         @type = @owner_type = @own_validators = @own_directives = @own_arguments = @arguments_statically_coercible = nil # these will be prepared later if necessary
 
