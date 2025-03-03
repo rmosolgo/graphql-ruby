@@ -29,7 +29,7 @@ module GraphQL
             const_set(:DefinitionMethods, defn_methods_module)
             extend(self::DefinitionMethods)
           end
-          self::DefinitionMethods.module_eval(&block)
+          self::DefinitionMethods.module_exec(&block)
         end
 
         # @see {Schema::Warden} hides interfaces without visible implementations
