@@ -125,12 +125,8 @@ module GraphQL
         def argument(*args, **kwargs, &block)
           argument_defn = super(*args, **kwargs, &block)
           # Add a method access
-          method_name = argument_defn.keyword
-          class_eval <<-RUBY, __FILE__, __LINE__
-            def #{method_name}
-              self[#{method_name.inspect}]
-            end
-          RUBY
+          define_accessor_method(argument_defn.keyword)
+          argument_defn
         end
 
         def to_graphql
@@ -238,6 +234,13 @@ module GraphQL
           end
 
           result
+        end
+
+        private
+
+        def define_accessor_method(method_name)
+          define_method(method_name) { self[method_name] }
+          alias_method(method_name, method_name)
         end
       end
     end
