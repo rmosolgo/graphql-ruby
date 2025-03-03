@@ -426,15 +426,16 @@ module GraphQL
 
             # Don't do this for interfaces
             if default_resolve
-              owner.class_eval <<-RUBY, __FILE__, __LINE__
-                # frozen_string_literal: true
-                def #{resolve_method_name}(**args)
-                  field_instance = self.class.get_field("#{field_definition.name}")
-                  context.schema.definition_default_resolve.call(self.class, field_instance, object, args, context)
-                end
-              RUBY
+              define_field_resolve_method(owner, resolve_method_name, field_definition.name)
             end
           end
+        end
+
+        def define_field_resolve_method(owner, method_name, field_name)
+          owner.define_method(method_name) { |**args|
+            field_instance = self.class.get_field(field_name)
+            context.schema.definition_default_resolve.call(self.class, field_instance, object, args, context)
+          }
         end
 
         def build_resolve_type(lookup_hash, directives, missing_type_handler)
