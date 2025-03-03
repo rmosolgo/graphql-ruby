@@ -133,7 +133,7 @@ module GraphQL
 
         def inherited(subclass)
           super
-          subclass.class_eval do
+          subclass.class_exec do
             @own_interface_type_memberships ||= nil
           end
         end
