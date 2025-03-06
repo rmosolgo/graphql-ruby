@@ -269,7 +269,7 @@ module GraphQL
       end
 
       def check_timeout
-        if Process.clock_gettime(:CLOCK_MONOTONIC, :float_second) > @timeout_time
+        if Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_second) > @timeout_time
           raise GraphQL::Analysis::TimeoutError
         end
       end
