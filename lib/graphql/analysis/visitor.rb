@@ -25,7 +25,7 @@ module GraphQL
         @response_path = []
         @skip_stack = [false]
         @timeout_time = if timeout
-          Process.clock_gettime(:CLOCK_MONOTONIC, :float_second) + timeout
+          Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_second) + timeout
         else
           Float::INFINITY
         end
