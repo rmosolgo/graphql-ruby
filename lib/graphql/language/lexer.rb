@@ -13,17 +13,21 @@ module GraphQL
         @pos = nil
         @max_tokens = max_tokens || Float::INFINITY
         @tokens_count = 0
+        @finished = false
       end
 
-      def eos?
-        @scanner.eos?
+      def finished?
+        @finished
       end
 
       attr_reader :pos, :tokens_count
 
       def advance
         @scanner.skip(IGNORE_REGEXP)
-        return false if @scanner.eos?
+        if @scanner.eos?
+          @finished = true
+          return false
+        end
         @tokens_count += 1
         if @tokens_count > @max_tokens
           raise_parse_error("This query is too large to execute.")
