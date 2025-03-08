@@ -604,4 +604,24 @@ To add other types to your schema, you might want `extra_types`: https://graphql
       assert_equal expected_errors, schema.execute(query_str).to_h['errors']
     end
   end
+  describe ".validate_timeout" do
+    it "provides a default timeout when not explicitly set" do
+      schema = Class.new(GraphQL::Schema)
+      assert_equal 3, schema.validate_timeout
+    end
+
+    it "allows overriding the default timeout" do
+      schema = Class.new(GraphQL::Schema) do
+        validate_timeout 15
+      end
+      assert_equal 15, schema.validate_timeout
+    end
+
+    it "allows disabling the timeout" do
+      schema = Class.new(GraphQL::Schema) do
+        validate_timeout nil
+      end
+      assert_nil schema.validate_timeout
+    end
+  end
 end
