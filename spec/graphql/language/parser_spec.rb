@@ -89,6 +89,12 @@ createRecord(data: {
     }
   end
 
+  it "raises a parse error when there's a dangling identifier" do
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse('{ foo } fooagain')
+    }
+  end
+
   describe "when there are no selections" do
     it 'raises a ParseError' do
       assert_raises(GraphQL::ParseError) {
