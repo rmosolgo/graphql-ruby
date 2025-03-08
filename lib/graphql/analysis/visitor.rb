@@ -10,7 +10,7 @@ module GraphQL
     #
     # @see {GraphQL::Analysis::Analyzer} AST Analyzers for queries
     class Visitor < GraphQL::Language::StaticVisitor
-      def initialize(query:, analyzers:)
+      def initialize(query:, analyzers:, timeout:)
         @analyzers = analyzers
         @path = []
         @object_types = []
@@ -24,6 +24,11 @@ module GraphQL
         @types = query.types
         @response_path = []
         @skip_stack = [false]
+        @timeout_time = if timeout
+          Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_second) + timeout
+        else
+          Float::INFINITY
+        end
         super(query.selected_operation)
       end
 
@@ -72,21 +77,17 @@ module GraphQL
         module_eval <<-RUBY, __FILE__, __LINE__
         def call_on_enter_#{node_type}(node, parent)
           @analyzers.each do |a|
-            begin
-              a.on_enter_#{node_type}(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
+            a.on_enter_#{node_type}(node, parent, self)
+          rescue AnalysisError => err
+            @rescued_errors << err
           end
         end
 
         def call_on_leave_#{node_type}(node, parent)
           @analyzers.each do |a|
-            begin
-              a.on_leave_#{node_type}(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
+            a.on_leave_#{node_type}(node, parent, self)
+          rescue AnalysisError => err
+            @rescued_errors << err
           end
         end
 
@@ -94,6 +95,7 @@ module GraphQL
       end
 
       def on_operation_definition(node, parent)
+        check_timeout
         object_type = @schema.root_type_for_operation(node.operation_type)
         @object_types.push(object_type)
         @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
@@ -104,31 +106,27 @@ module GraphQL
         @path.pop
       end
 
-      def on_fragment_definition(node, parent)
-        on_fragment_with_type(node) do
-          @path.push("fragment #{node.name}")
-          @in_fragment_def = false
-          call_on_enter_fragment_definition(node, parent)
-          super
-          @in_fragment_def = false
-          call_on_leave_fragment_definition(node, parent)
-        end
-      end
-
       def on_inline_fragment(node, parent)
-        on_fragment_with_type(node) do
-          @path.push("...#{node.type ? " on #{node.type.name}" : ""}")
-          @skipping = @skip_stack.last || skip?(node)
-          @skip_stack << @skipping
-
-          call_on_enter_inline_fragment(node, parent)
-          super
-          @skipping = @skip_stack.pop
-          call_on_leave_inline_fragment(node, parent)
+        check_timeout
+        object_type = if node.type
+          @types.type(node.type.name)
+        else
+          @object_types.last
         end
+        @object_types.push(object_type)
+        @path.push("...#{node.type ? " on #{node.type.name}" : ""}")
+        @skipping = @skip_stack.last || skip?(node)
+        @skip_stack << @skipping
+        call_on_enter_inline_fragment(node, parent)
+        super
+        @skipping = @skip_stack.pop
+        call_on_leave_inline_fragment(node, parent)
+        @object_types.pop
+        @path.pop
       end
 
       def on_field(node, parent)
+        check_timeout
         @response_path.push(node.alias || node.name)
         parent_type = @object_types.last
         # This could be nil if the previous field wasn't found:
@@ -156,6 +154,7 @@ module GraphQL
       end
 
       def on_directive(node, parent)
+        check_timeout
         directive_defn = @schema.directives[node.name]
         @directive_definitions.push(directive_defn)
         call_on_enter_directive(node, parent)
@@ -165,6 +164,7 @@ module GraphQL
       end
 
       def on_argument(node, parent)
+        check_timeout
         argument_defn = if (arg = @argument_definitions.last)
           arg_type = arg.type.unwrap
           if arg_type.kind.input_object?
@@ -190,6 +190,7 @@ module GraphQL
       end
 
       def on_fragment_spread(node, parent)
+        check_timeout
         @path.push("... #{node.name}")
         @skipping = @skip_stack.last || skip?(node)
         @skip_stack << @skipping
@@ -267,16 +268,10 @@ module GraphQL
         !dir.empty? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
       end
 
-      def on_fragment_with_type(node)
-        object_type = if node.type
-          @types.type(node.type.name)
-        else
-          @object_types.last
+      def check_timeout
+        if Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_second) > @timeout_time
+          raise GraphQL::Analysis::TimeoutError
         end
-        @object_types.push(object_type)
-        yield(node)
-        @object_types.pop
-        @path.pop
       end
     end
   end

@@ -577,8 +577,39 @@ describe GraphQL::Analysis do
   describe ".validate_timeout" do
     class AnalysisTimeoutSchema < GraphQL::Schema
       class SlowAnalyzer < GraphQL::Analysis::Analyzer
+        def initialize(...)
+          super
+          if query.context[:initialize_sleep]
+            sleep 0.6
+          end
+        end
+
         def on_enter_field(node, parent, visitor)
+          if node.name != "__typename"
+            sleep 0.1
+          end
+          super
+        end
+
+        def on_enter_directive(...)
           sleep 0.1
+          super
+        end
+
+        def on_enter_argument(...)
+          sleep 0.1
+          super
+        end
+
+        def on_enter_inline_fragment(...)
+          sleep 0.1
+          super
+        end
+
+        def on_enter_fragment_spread(node, _parent, _visitor)
+          if !node.name.include?("NoSleep")
+            sleep 0.1
+          end
           super
         end
 
@@ -588,13 +619,26 @@ describe GraphQL::Analysis do
       end
 
       class Query < GraphQL::Schema::Object
-        field :f1, Int
+        field :f1, Int do
+          argument :a, String, required: false
+          argument :b, String, required: false
+          argument :c, String, required: false
+          argument :d, String, required: false
+          argument :e, String, required: false
+          argument :f, String, required: false
+        end
 
-        def f1
+        def f1(...)
           context[:int] ||= 0
           context[:int] += 1
         end
       end
+
+      class Nothing < GraphQL::Schema::Directive
+        locations(GraphQL::Schema::Directive::FIELD)
+        repeatable(true)
+      end
+      directive(Nothing)
 
       query(Query)
       query_analyzer(SlowAnalyzer)
@@ -607,6 +651,57 @@ describe GraphQL::Analysis do
 
       res2 = AnalysisTimeoutSchema.execute("{ f1: f1, f2: f1, f3: f1, f4: f1, f5: f1, f6: f1}")
       assert_equal ["Timeout on validation of query"], res2["errors"].map { |e| e["message"]}
+    end
+
+    it "covers directives" do
+      res = AnalysisTimeoutSchema.execute("{ f1 @nothing @nothing }")
+      assert_equal({ "f1" => 1 }, res["data"])
+
+      res2 = AnalysisTimeoutSchema.execute("{ f1 @nothing @nothing @nothing @nothing @nothing }")
+      assert_equal ["Timeout on validation of query"], res2["errors"].map { |e| e["message"]}
+    end
+
+    it "covers arguments" do
+      res = AnalysisTimeoutSchema.execute("{ f1(a: \"a\", b: \"b\")}")
+      assert_equal({ "f1" => 1 }, res["data"])
+
+      res2 = AnalysisTimeoutSchema.execute('{ f1(a: "a", b: "b", c: "c", d: "d", e: "e", f: "f") }')
+      assert_equal ["Timeout on validation of query"], res2["errors"].map { |e| e["message"]}
+    end
+
+    it "covers inline fragments" do
+      res = AnalysisTimeoutSchema.execute("{ ... { f1 } ... { f1 } }")
+      assert_equal({ "f1" => 1 }, res["data"])
+
+      res2 = AnalysisTimeoutSchema.execute("{ ... { f1 } ... { f1 } ... { f1 } ... { f1 } ... { f1 } ... { f1 } }")
+      assert_equal ["Timeout on validation of query"], res2["errors"].map { |e| e["message"]}
+    end
+
+    it "covers operation definitions" do
+      res = AnalysisTimeoutSchema.execute('query Q1 { __typename }', operation_name: "Q1")
+      assert_equal({ "__typename" => "Query" }, res["data"])
+
+      res = AnalysisTimeoutSchema.execute('query Q1 { __typename }', operation_name: "Q1", context: { initialize_sleep: true })
+      assert_equal({ "__typename" => "Query" }, res["data"])
+    end
+
+    it "covers fragment spreads" do
+      res = AnalysisTimeoutSchema.execute("{ ...F } fragment F on Query { f1 }")
+      assert_equal({ "f1" => 1 }, res["data"])
+
+      res2 = AnalysisTimeoutSchema.execute('{ ...F ...F ...F ...F ...F ...F } fragment F on Query { f1 }')
+      assert_equal ["Timeout on validation of query"], res2["errors"].map { |e| e["message"]}
+    end
+
+    it "can be ignored" do
+      no_timeout_schema = Class.new(AnalysisTimeoutSchema) do
+        validate_timeout(nil)
+      end
+      res = no_timeout_schema.execute("{ f1 @nothing @nothing @nothing @nothing @nothing }")
+      assert_equal({ "f1" => 1 }, res["data"])
+
+      res2 = no_timeout_schema.execute('{ ...F ...F ...F ...F ...F ...F } fragment F on Query { f1 }')
+      assert_equal({ "f1" => 1 }, res2["data"])
     end
   end
 end

@@ -6,11 +6,16 @@ require "graphql/analysis/query_complexity"
 require "graphql/analysis/max_query_complexity"
 require "graphql/analysis/query_depth"
 require "graphql/analysis/max_query_depth"
-require "timeout"
-
 module GraphQL
   module Analysis
     AST = self
+
+    class TimeoutError < AnalysisError
+      def initialize(...)
+        super("Timeout on validation of query")
+      end
+    end
+
     module_function
     # Analyze a multiplex, and all queries within.
     # Multiplex analyzers are ran for all queries, keeping state.
@@ -61,13 +66,11 @@ module GraphQL
           if !analyzers_to_run.empty?
             visitor = GraphQL::Analysis::Visitor.new(
               query: query,
-              analyzers: analyzers_to_run
+              analyzers: analyzers_to_run,
+              timeout: query.validate_timeout_remaining,
             )
 
-            # `nil` or `0` causes no timeout
-            Timeout::timeout(query.validate_timeout_remaining) do
-              visitor.visit
-            end
+            visitor.visit
 
             if !visitor.rescued_errors.empty?
               return visitor.rescued_errors
@@ -79,8 +82,8 @@ module GraphQL
           []
         end
       end
-    rescue Timeout::Error
-      [GraphQL::AnalysisError.new("Timeout on validation of query")]
+    rescue TimeoutError => err
+      [err]
     rescue GraphQL::UnauthorizedError, GraphQL::ExecutionError
       # This error was raised during analysis and will be returned the client before execution
       []
