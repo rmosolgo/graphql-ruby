@@ -142,12 +142,6 @@ module GraphQL
               raise InvalidDocumentError, "Type \"#{type_name}\" not found in document.", err_backtrace
             end
 
-            object_types.each do |t|
-              t.interfaces.each do |int_t|
-                int_t.orphan_types(t)
-              end
-            end
-
             if default_resolve.respond_to?(:resolve_type)
               def self.resolve_type(*args)
                 self.definition_default_resolve.resolve_type(*args)
