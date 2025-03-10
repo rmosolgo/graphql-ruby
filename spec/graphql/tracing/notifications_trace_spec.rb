@@ -41,7 +41,7 @@ describe GraphQL::Tracing::NotificationsTrace do
     class Schema < GraphQL::Schema
       query Query
       trace_with OtherTrace
-      trace_with GraphQL::Tracing::NotificationsTrace, engine: DummyEngine.new
+      trace_with GraphQL::Tracing::NotificationsTrace, engine: DummyEngine, trace_scalars: true
     end
   end
 
