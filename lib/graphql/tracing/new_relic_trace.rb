@@ -46,14 +46,11 @@ module GraphQL
         super
       end
 
-      def begin_parse(query_str)
+      def parse(query_string:)
         @nr_parse = NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: "GraphQL/parse", category: :web)
         super
-      end
-
-      def end_parse(query_str)
+      ensure
         @nr_parse.finish
-        super
       end
 
       def begin_validate(query, validate)
@@ -76,7 +73,7 @@ module GraphQL
         super
       end
 
-      def begin_execute_multiplex(multiplex)
+      def execute_multiplex(multiplex:)
         query = multiplex.queries.first
         set_this_txn_name = query.context[:set_new_relic_transaction_name]
         if set_this_txn_name || (set_this_txn_name.nil? && @set_transaction_name)
@@ -84,11 +81,8 @@ module GraphQL
         end
         @nr_execute = NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: "GraphQL/execute", category: :web)
         super
-      end
-
-      def end_execute_multiplex(multiplex)
+      ensure
         @nr_execute.finish
-        super
       end
 
       def begin_execute_field(field, object, arguments, query)

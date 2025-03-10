@@ -21,6 +21,27 @@ describe GraphQL::Tracing::NotificationsTrace do
         dispatched_events << [event, payload]
         yield if block_given?
       end
+
+      def self.new_event(event, payload)
+        Event.new(event, payload)
+      end
+
+      def self.publish_event(event)
+        @dispatched_events << [event.name, event.payload]
+        nil
+      end
+
+      class Event
+        def initialize(name, payload)
+          @name = name
+          @payload = payload
+        end
+
+        attr_reader :name, :payload
+
+        def start!; end
+        def finish!; end
+      end
     end
 
     module OtherTrace
@@ -47,16 +68,13 @@ describe GraphQL::Tracing::NotificationsTrace do
       NotificationsTraceTest::Schema.execute "query X { int }"
       dispatched_events = NotificationsTraceTest::DummyEngine.dispatched_events.to_h
       expected_event_keys = [
-        'execute_multiplex.graphql',
-        'analyze_multiplex.graphql',
+        'execute.graphql',
         (USING_C_PARSER ? 'lex.graphql' : nil),
         'parse.graphql',
         'validate.graphql',
-        'analyze_query.graphql',
-        'execute_query.graphql',
+        'analyze.graphql',
         'authorized.graphql',
-        'execute_field.graphql',
-        'execute_query_lazy.graphql'
+        'execute_field.graphql'
       ].compact
 
       assert_equal expected_event_keys, dispatched_events.keys

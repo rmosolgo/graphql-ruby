@@ -174,33 +174,33 @@ module GraphQL
         end
       end
 
-      def begin_execute_multiplex(m)
-        @operation_name = m.queries.map { |q| q.selected_operation_name || "anonymous" }.join(",")
+      def execute_multiplex(multiplex:)
+        @operation_name = multiplex.queries.map { |q| q.selected_operation_name || "anonymous" }.join(",")
         @begin_time = Time.now
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
           name: "Multiplex",
           debug_annotations: [
-            payload_to_debug("query_string", m.queries.map(&:sanitized_query_string).join("\n\n"))
+            payload_to_debug("query_string", multiplex.queries.map(&:sanitized_query_string).join("\n\n"))
           ]
         )
-        super
-      end
+        result = super
 
-      def end_execute_multiplex(m)
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
         )
+
+        result
+      ensure
         unsubscribe_from_active_support_notifications
         if @save_profile
           begin_ts = (@begin_time.to_f * 1000).round
           end_ts = (Time.now.to_f * 1000).round
           duration_ms = end_ts - begin_ts
-          m.schema.detailed_trace.save_trace(@operation_name, duration_ms, begin_ts, Trace.encode(Trace.new(packet: @packets)))
+          multiplex.schema.detailed_trace.save_trace(@operation_name, duration_ms, begin_ts, Trace.encode(Trace.new(packet: @packets)))
         end
-        super
       end
 
       def begin_execute_field(field, object, arguments, query)
@@ -261,7 +261,7 @@ module GraphQL
         super
       end
 
-      def begin_parse(str)
+      def parse(query_string:)
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
@@ -269,17 +269,14 @@ module GraphQL
           extra_counter_values: [count_allocations],
           name: "Parse"
         )
-        super
-      end
-
-      def end_parse(str)
+        result = super
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
         )
-        super
+        result
       end
 
       def begin_validate(query, validate)
