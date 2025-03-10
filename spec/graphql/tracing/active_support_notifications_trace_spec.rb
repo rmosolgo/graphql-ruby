@@ -61,6 +61,7 @@ if testing_rails?
       ].compact
 
       assert_equal expected_names, events.map(&:first)
+      assert_equal [Hash], events.map(&:last).map(&:class).uniq
     end
   end
 end

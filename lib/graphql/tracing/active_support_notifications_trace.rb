@@ -26,15 +26,17 @@ module GraphQL
           lex: "lex.graphql",
         }.compare_by_identity
 
-        def instrument(keyword, payload = {}, &block)
+        def instrument(keyword, data, &block)
           asn_name = EVENT_NAMES[keyword] || raise(ArgumentError, "No event name for #{key.inspect}")
-          ActiveSupport::Notifications.instrument(asn_name, payload, &block)
+          # TODO backwards compat for payload
+          ActiveSupport::Notifications.instrument(asn_name, {}, &block)
         end
 
         class Event < NotificationsTrace::Engine::Event
           def start
             asn_name = EVENT_NAMES[keyword] || raise(ArgumentError, "No event name for #{key.inspect}")
-            @asn_event = ActiveSupport::Notifications.instrumenter.new_event(asn_name, payload)
+            # TODO backwards compat for payload
+            @asn_event = ActiveSupport::Notifications.instrumenter.new_event(asn_name, {})
             @asn_event.start!
           end
 
@@ -45,7 +47,8 @@ module GraphQL
         end
       end
 
-      def initialize(engine: ActiveSupportNotificationsEngine.new, **rest)
+      # @param trace_scalars [Boolean] Set to `true` for backwards compatibility
+      def initialize(engine: ActiveSupportNotificationsEngine, trace_scalars: true, **rest)
         super
       end
     end

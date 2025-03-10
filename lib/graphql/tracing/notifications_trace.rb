@@ -8,33 +8,59 @@ module GraphQL
     # ActiveSupport::Notifications or Dry::Monitor::Notifications)
     # with a `graphql` suffix.
     module NotificationsTrace
-
       class Engine
+        def initialize(set_transaction_name:)
+          @set_transaction_name = set_transaction_name
+          @platform_field_key_cache = Hash.new { |h, k| h[k] = platform_field_key(k) }.compare_by_identity
+          @platform_authorized_key_cache = Hash.new { |h, k| h[k] = platform_authorized_key(k) }.compare_by_identity
+          @platform_resolve_type_key_cache = Hash.new { |h, k| h[k] = platform_resolve_type_key(k) }.compare_by_identity
+          @platform_source_key_cache = Hash.new { |h, source_cls| h[k] = platform_source_class_key(source_cls) }.compare_by_identity
+        end
+
         def instrument(keyword, payload, &block)
           raise "Implement #{self.class}#instrument to measure the block"
         end
 
         def start_event(keyword, payload)
-          ev = self.class::Event.new(keyword, payload)
+          ev = self.class::Event.new(self, keyword, payload)
           ev.start
           ev
         end
 
+        # Get the transaction name based on the operation type and name if possible, or fall back to a user provided
+        # one. Useful for anonymous queries.
+        def transaction_name(query)
+          selected_op = query.selected_operation
+          txn_name = if selected_op
+            op_type = selected_op.operation_type
+            op_name = selected_op.name || fallback_transaction_name(query.context) || "anonymous"
+            "#{op_type}.#{op_name}"
+          else
+            "query.anonymous"
+          end
+          "GraphQL/#{txn_name}"
+        end
+
+        def fallback_transaction_name(context)
+          context[:tracing_fallback_transaction_name]
+        end
+
         class Event
-          def initialize(keyword, payload)
+          def initialize(engine, keyword, payload)
+            @engine = engine
             @keyword = keyword
             @payload = payload
           end
 
           attr_reader :keyword, :payload
-        end
 
-        def start
-          raise "Implement #{self.class}#start to begin a new event (#{inspect})"
-        end
+          def start
+            raise "Implement #{self.class}#start to begin a new event (#{inspect})"
+          end
 
-        def finish
-          raise "Implement #{self.class}#finish to end this event (#{inspect})"
+          def finish
+            raise "Implement #{self.class}#finish to end this event (#{inspect})"
+          end
         end
       end
 
@@ -68,30 +94,34 @@ module GraphQL
         end
       end
 
-      # @param engine [#instrument(key, metadata, block)] The notifications engine to use
-      def initialize(engine:, **rest)
+      # @param engine [Class<Engine>] The notifications engine to use -- other modules often provide a default here
+      # @param set_transaction_name [Boolean] If `true`, use the GraphQL operation name as the request name on the monitoring platform
+      # @param trace_scalars [Boolean] If `true`, leaf fields will be traced too (Scalars _and_ Enums)
+      def initialize(engine:, set_transaction_name: false, trace_scalars: false, **rest)
         if defined?(Dry::Monitor) && engine == Dry::Monitor
           # Backwards compat
-          engine = DryMonitoringEngine.new
+          engine = DryMonitoringEngine
         end
-        @notifications_engine = engine
+
+        @trace_scalars = trace_scalars
+        @notifications_engine = engine.new(set_transaction_name: set_transaction_name)
         super
       end
 
       def parse(query_string:)
-        @notifications_engine.instrument(:parse, { query_string: query_string }) do
+        @notifications_engine.instrument(:parse, query_string) do
           super
         end
       end
 
       def lex(query_string:)
-        @notifications_engine.instrument(:lex, { query_string: query_string }) do
+        @notifications_engine.instrument(:lex, query_string) do
           super
         end
       end
 
       def validate(query:, validate:)
-        @notifications_engine.instrument(:validate, { validate: validate, query: query }) do
+        @notifications_engine.instrument(:validate, query) do
           super
         end
       end
@@ -107,13 +137,22 @@ module GraphQL
       end
 
       def execute_multiplex(multiplex:)
-        @notifications_engine.instrument(:execute) do
+        @notifications_engine.instrument(:execute, multiplex) do
           super
         end
       end
 
       def begin_execute_field(field, object, arguments, query)
-        begin_notifications_event(:execute_field)
+        return_type = field.type.unwrap
+        trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+          (field.trace.nil? && @trace_scalars) || field.trace
+        else
+          true
+        end
+
+        if trace_field
+          begin_notifications_event(:execute_field, field)
+        end
         super
       end
 
@@ -134,7 +173,7 @@ module GraphQL
       end
 
       def begin_authorized(type, object, context)
-        begin_notifications_event(:authorized)
+        begin_notifications_event(:authorized, type)
         super
       end
 
@@ -144,7 +183,7 @@ module GraphQL
       end
 
       def begin_resolve_type(type, value, context)
-        begin_notifications_event(:resolve_type)
+        begin_notifications_event(:resolve_type, type)
         super
       end
 
@@ -154,7 +193,7 @@ module GraphQL
       end
 
       def begin_dataloader_source(source)
-        begin_notifications_event(:dataloader_source)
+        begin_notifications_event(:dataloader_source, source)
         super
       end
 
