@@ -16,9 +16,9 @@ module GraphQL
     #
     # @example Installing without trace events for `authorized?` or `resolve_type` calls
     #   trace_with GraphQL::Tracing::NewRelicTrace, trace_authorized: false, trace_resolve_type: false
+    NewRelicTrace = MonitorTrace.create_module("newrelic")
     module NewRelicTrace
-      include MonitorTrace
-      class NewRelicMonitor < MonitorTrace::Monitor
+      class NewrelicMonitor < MonitorTrace::Monitor
         PARSE_NAME = "GraphQL/parse"
         LEX_NAME = "GraphQL/lex"
         VALIDATE_NAME = "GraphQL/validate"
@@ -62,12 +62,6 @@ module GraphQL
             @nr_ev.finish
           end
         end
-      end
-
-      # @see MonitorTrace Parent module documents configuration options
-      def initialize(**_rest)
-        super
-        @monitor = NewRelicMonitor.new(set_transaction_name: @set_transaction_name)
       end
     end
   end

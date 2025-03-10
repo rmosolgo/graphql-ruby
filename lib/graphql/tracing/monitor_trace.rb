@@ -83,129 +83,146 @@ module GraphQL
         end
       end
 
-      # @param set_transaction_name [Boolean] If `true`, use the GraphQL operation name as the request name on the monitoring platform
-      # @param trace_scalars [Boolean] If `true`, leaf fields will be traced too (Scalars _and_ Enums)
-      # @param trace_authorized [Boolean] If `false`, skip tracing `authorized?` calls
-      # @param trace_resolve_type [Boolean] If `false`, skip tracing `resolve_type?` calls
-      def initialize(set_transaction_name: false, trace_scalars: false, trace_authorized: true, trace_resolve_type: true, **rest)
-        @trace_scalars = trace_scalars
-        @trace_authorized = trace_authorized
-        @trace_resolve_type = trace_resolve_type
-        @set_transaction_name = set_transaction_name
-        super
+      def self.create_module(monitor_name)
+        if !monitor_name.match?(/[a-z]+/)
+          raise ArgumentError, "monitor name must be [a-z]+, not: #{monitor_name.inspect}"
+        end
+
+        trace_module = Module.new
+        code = MODULE_TEMPLATE % {
+          monitor: monitor_name,
+          monitor_class: monitor_name.capitalize + "Monitor",
+        }
+        trace_module.module_eval(code, __FILE__, __LINE__ + 5)
+        trace_module
       end
 
-      def parse(query_string:)
-        @monitor.instrument(:parse, query_string) do
+      MODULE_TEMPLATE = <<~RUBY
+        # @param set_transaction_name [Boolean] If `true`, use the GraphQL operation name as the request name on the monitoring platform
+        # @param trace_scalars [Boolean] If `true`, leaf fields will be traced too (Scalars _and_ Enums)
+        # @param trace_authorized [Boolean] If `false`, skip tracing `authorized?` calls
+        # @param trace_resolve_type [Boolean] If `false`, skip tracing `resolve_type?` calls
+        def initialize(set_transaction_name: false, trace_scalars: false, trace_authorized: true, trace_resolve_type: true, **rest)
+          @trace_scalars = trace_scalars
+          @trace_authorized = trace_authorized
+          @trace_resolve_type = trace_resolve_type
+          @set_transaction_name = set_transaction_name
+          @%{monitor} = %{monitor_class}.new(set_transaction_name: @set_transaction_name)
           super
         end
-      end
 
-      def lex(query_string:)
-        @monitor.instrument(:lex, query_string) do
+        def parse(query_string:)
+          @%{monitor}.instrument(:parse, query_string) do
+            super
+          end
+        end
+
+        def lex(query_string:)
+          @%{monitor}.instrument(:lex, query_string) do
+            super
+          end
+        end
+
+        def validate(query:, validate:)
+          @%{monitor}.instrument(:validate, query) do
+            super
+          end
+        end
+
+        def begin_analyze_multiplex(multiplex, analyzers)
+          begin_%{monitor}_event(:analyze, nil)
           super
         end
-      end
 
-      def validate(query:, validate:)
-        @monitor.instrument(:validate, query) do
+        def end_analyze_multiplex(multiplex, analyzers)
+          finish_%{monitor}_event
           super
         end
-      end
 
-      def begin_analyze_multiplex(multiplex, analyzers)
-        begin_notifications_event(:analyze, nil)
-        super
-      end
+        def execute_multiplex(multiplex:)
+          @%{monitor}.instrument(:execute, multiplex) do
+            super
+          end
+        end
 
-      def end_analyze_multiplex(multiplex, analyzers)
-        finish_notifications_event
-        super
-      end
+        def begin_execute_field(field, object, arguments, query)
+          return_type = field.type.unwrap
+          trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+            (field.trace.nil? && @trace_scalars) || field.trace
+          else
+            true
+          end
 
-      def execute_multiplex(multiplex:)
-        @monitor.instrument(:execute, multiplex) do
+          if trace_field
+            begin_%{monitor}_event(:execute_field, field)
+          end
           super
         end
-      end
 
-      def begin_execute_field(field, object, arguments, query)
-        return_type = field.type.unwrap
-        trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-          (field.trace.nil? && @trace_scalars) || field.trace
-        else
-          true
+        def end_execute_field(field, object, arguments, query, result)
+          finish_%{monitor}_event
+          super
         end
 
-        if trace_field
-          begin_notifications_event(:execute_field, field)
+        def dataloader_fiber_yield(source)
+          Fiber[PREVIOUS_EV_KEY] = finish_%{monitor}_event
+          super
         end
-        super
-      end
 
-      def end_execute_field(field, object, arguments, query, result)
-        finish_notifications_event
-        super
-      end
-
-      def dataloader_fiber_yield(source)
-        Fiber[PREVIOUS_EV_KEY] = finish_notifications_event
-        super
-      end
-
-      def dataloader_fiber_resume(source)
-        prev_ev = Fiber[PREVIOUS_EV_KEY]
-        begin_notifications_event(prev_ev.keyword, prev_ev.object)
-        super
-      end
-
-      def begin_authorized(type, object, context)
-        @trace_authorized && begin_notifications_event(:authorized, type)
-        super
-      end
-
-      def end_authorized(type, object, context, result)
-        finish_notifications_event
-        super
-      end
-
-      def begin_resolve_type(type, value, context)
-        @trace_resolve_type && begin_notifications_event(:resolve_type, type)
-        super
-      end
-
-      def end_resolve_type(type, value, context, resolved_type)
-        finish_notifications_event
-        super
-      end
-
-      def begin_dataloader_source(source)
-        begin_notifications_event(:dataloader_source, source)
-        super
-      end
-
-      def end_dataloader_source(source)
-        finish_notifications_event
-        super
-      end
-
-      CURRENT_EV_KEY = :__notifications_graphql_trace_event
-      PREVIOUS_EV_KEY = :__notifications_graphql_trace_previous_event
-
-      private
-
-      def begin_notifications_event(keyword, object)
-        Fiber[CURRENT_EV_KEY] = @monitor.start_event(keyword, object)
-      end
-
-      def finish_notifications_event
-        if ev = Fiber[CURRENT_EV_KEY]
-          ev.finish
-          # Use `false` to prevent grabbing an event from a parent fiber
-          Fiber[CURRENT_EV_KEY] = false
-          ev
+        def dataloader_fiber_resume(source)
+          prev_ev = Fiber[PREVIOUS_EV_KEY]
+          begin_%{monitor}_event(prev_ev.keyword, prev_ev.object)
+          super
         end
-      end
+
+        def begin_authorized(type, object, context)
+          @trace_authorized && begin_%{monitor}_event(:authorized, type)
+          super
+        end
+
+        def end_authorized(type, object, context, result)
+          finish_%{monitor}_event
+          super
+        end
+
+        def begin_resolve_type(type, value, context)
+          @trace_resolve_type && begin_%{monitor}_event(:resolve_type, type)
+          super
+        end
+
+        def end_resolve_type(type, value, context, resolved_type)
+          finish_%{monitor}_event
+          super
+        end
+
+        def begin_dataloader_source(source)
+          begin_%{monitor}_event(:dataloader_source, source)
+          super
+        end
+
+        def end_dataloader_source(source)
+          finish_%{monitor}_event
+          super
+        end
+
+        CURRENT_EV_KEY = :__graphql_%{monitor}_trace_event
+        PREVIOUS_EV_KEY = :__graphql_%{monitor}_trace_previous_event
+
+        private
+
+        def begin_%{monitor}_event(keyword, object)
+          Fiber[CURRENT_EV_KEY] = @%{monitor}.start_event(keyword, object)
+        end
+
+        def finish_%{monitor}_event
+          if ev = Fiber[CURRENT_EV_KEY]
+            ev.finish
+            # Use `false` to prevent grabbing an event from a parent fiber
+            Fiber[CURRENT_EV_KEY] = false
+            ev
+          end
+        end
+      RUBY
     end
   end
 end

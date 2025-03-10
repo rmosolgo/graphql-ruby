@@ -11,9 +11,8 @@ module GraphQL
     #     trace_with GraphQL::Tracing::SentryTrace
     #   end
     # @see MonitorTrace Configuration Options in the parent module
+    SentryTrace = MonitorTrace.create_module("sentry")
     module SentryTrace
-      include MonitorTrace
-
       class SentryMonitor < MonitorTrace::Monitor
         def instrument(keyword, object)
           return yield unless Sentry.initialized?
@@ -96,11 +95,6 @@ module GraphQL
             @span&.finish
           end
         end
-      end
-
-      def initialize(...)
-        super
-        @monitor = SentryMonitor.new(set_transaction_name: @set_transaction_name)
       end
     end
   end
