@@ -827,7 +827,7 @@ module GraphQL
         elsif defined?(@validate_timeout)
           @validate_timeout
         else
-          find_inherited_value(:validate_timeout)
+          find_inherited_value(:validate_timeout) || 3
         end
       end
 
