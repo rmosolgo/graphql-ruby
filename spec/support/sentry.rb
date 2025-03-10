@@ -19,13 +19,21 @@ module Sentry
     Time.now.utc
   end
 
+  def self.get_current_scope
+    self
+  end
+
+  def self.get_span
+    DummySpan
+  end
+
   def self.with_child_span(**args, &block)
     SPAN_OPS << args[:op]
-    yield DummySpan.new
+    yield DummySpan
   end
 
   def self.configure_scope(&block)
-    yield DummyScope.new
+    yield DummyScope
   end
 
   def self.clear_all
@@ -35,7 +43,8 @@ module Sentry
     TRANSACTION_NAMES.clear
   end
 
-  class DummySpan
+  module DummySpan
+    module_function
     def set_data(key, value)
       Sentry::SPAN_DATA << [key, value]
     end
@@ -44,12 +53,17 @@ module Sentry
       Sentry::SPAN_DESCRIPTIONS << description
     end
 
+    def start_child(op:)
+      SPAN_OPS << op
+    end
+
     def finish
       # no-op
     end
   end
 
-  class DummyScope
+  module DummyScope
+    module_function
     def set_transaction_name(name)
       TRANSACTION_NAMES << name
     end
