@@ -69,12 +69,19 @@ module Cop
             # Not really necessary for making a good trace:
             :lex, :analyze_query, :execute_query, :execute_query_lazy,
             # Only useful for isolated event tracking:
+            :begin_dataloader, :end_dataloader,
             :dataloader_fiber_exit, :dataloader_spawn_execution_fiber, :dataloader_spawn_source_fiber
           ]
           missing_defs.each do |missing_def|
             if all_defs.include?(:"begin_#{missing_def}") && all_defs.include?(:"end_#{missing_def}")
               redundant_defs << missing_def
               redundant_defs << :"#{missing_def}_lazy"
+            end
+            missing_name = missing_def.to_s
+            if missing_name.start_with?("begin") && all_defs.include?(:"#{missing_name.sub("begin_", "")}")
+              redundant_defs << missing_def
+            elsif missing_name.start_with?("end") && all_defs.include?(:"#{missing_name.sub("end_", "")}")
+              redundant_defs << missing_def
             end
           end
 

@@ -48,7 +48,7 @@ Development/NoFocusCop:
 Development/TraceMethodsCop:
   Include:
     - "lib/graphql/tracing/perfetto_trace.rb"
-    - "lib/graphql/tracing/new_relic_trace.rb"
+    - "lib/graphql/tracing/notifications_trace.rb"
 
 # def ...
 # end

@@ -140,6 +140,7 @@ describe GraphQL::Tracing::NewRelicTrace do
   it "handles fiber pauses" do
     NewRelicTraceTest::SchemaWithTransactionName.execute("{ other { name } }")
     expected_steps = [
+      (USING_C_PARSER ? "GraphQL/lex" : nil),
       "GraphQL/parse",
       "GraphQL/execute",
 
@@ -164,13 +165,14 @@ describe GraphQL::Tracing::NewRelicTrace do
         "FINISH GraphQL/Query/other",
         "GraphQL/Authorized/Other",
         "FINISH GraphQL/Authorized/Other",
-    ]
+    ].compact
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
 
   it "can skip authorized and resolve type" do
     NewRelicTraceTest::SchemaWithoutAuthorizedOrResolveType.execute("{ nameable { name } }")
     expected_steps = [
+      (USING_C_PARSER ? "GraphQL/lex" : nil),
       "GraphQL/parse",
       "GraphQL/execute",
       "GraphQL/analyze",
@@ -184,7 +186,7 @@ describe GraphQL::Tracing::NewRelicTrace do
       # "FINISH GraphQL/ResolveType/Nameable",
       # "GraphQL/Authorized/Other",
       # "FINISH GraphQL/Authorized/Other",
-    ]
+    ].compact
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
 
@@ -197,6 +199,7 @@ describe GraphQL::Tracing::NewRelicTrace do
   it "handles lazies" do
     NewRelicTraceTest::SchemaWithTransactionName.execute("{ lazyNameable { name } }", context: { lazy: true })
     expected_steps = [
+      (USING_C_PARSER ? "GraphQL/lex" : nil),
       "GraphQL/parse",
       "GraphQL/execute",
       "GraphQL/analyze",
@@ -222,7 +225,7 @@ describe GraphQL::Tracing::NewRelicTrace do
       "FINISH GraphQL/Authorized/Other",
       "GraphQL/Authorized/Other",
       "FINISH GraphQL/Authorized/Other",
-    ]
+    ].compact
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
 end
