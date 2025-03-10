@@ -50,25 +50,12 @@ module GraphQL
           end
         end
 
-        def name_for(keyword, payload)
-          case keyword
-          when :execute_field
-            @platform_field_key_cache[payload]
-          when :authorized
-            @platform_authorized_key_cache[payload]
-          when :resolve_type
-            @platform_resolve_type_key_cache[payload]
-          when :dataloader_source
-            @platform_source_class_key[payload.class]
-          when :parse then "graphql.parse"
-          when :lex then "graphql.lex"
-          when :execute then "graphql.execute"
-          when :analyze then "graphql.analyze"
-          when :validate then "graphql.validate"
-          else
-            raise "No name for #{keyword.inspect}"
-          end
-        end
+        PARSE_NAME = "graphql.parse"
+        LEX_NAME = "graphql.lex"
+        VALIDATE_NAME = "graphql.validate"
+        EXECUTE_NAME = "graphql.execute"
+        ANALYZE_NAME = "graphql.analyze"
+
         private
 
         def operation_name(query)

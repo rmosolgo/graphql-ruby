@@ -14,7 +14,7 @@ module GraphQL
           @platform_field_key_cache = Hash.new { |h, k| h[k] = platform_field_key(k) }.compare_by_identity
           @platform_authorized_key_cache = Hash.new { |h, k| h[k] = platform_authorized_key(k) }.compare_by_identity
           @platform_resolve_type_key_cache = Hash.new { |h, k| h[k] = platform_resolve_type_key(k) }.compare_by_identity
-          @platform_source_key_cache = Hash.new { |h, source_cls| h[k] = platform_source_class_key(source_cls) }.compare_by_identity
+          @platform_source_class_key_cache = Hash.new { |h, source_cls| h[source_cls] = platform_source_class_key(source_cls) }.compare_by_identity
         end
 
         def instrument(keyword, payload, &block)
@@ -43,6 +43,26 @@ module GraphQL
 
         def fallback_transaction_name(context)
           context[:tracing_fallback_transaction_name]
+        end
+
+        def name_for(keyword, payload)
+          case keyword
+          when :execute_field
+            @platform_field_key_cache[payload]
+          when :authorized
+            @platform_authorized_key_cache[payload]
+          when :resolve_type
+            @platform_resolve_type_key_cache[payload]
+          when :dataloader_source
+            @platform_source_class_key_cache[payload.class]
+          when :parse then self.class::PARSE_NAME
+          when :lex then self.class::LEX_NAME
+          when :execute then self.class::EXECUTE_NAME
+          when :analyze then self.class::ANALYZE_NAME
+          when :validate then self.class::VALIDATE_NAME
+          else
+            raise "No name for #{keyword.inspect}"
+          end
         end
 
         class Event
@@ -97,13 +117,17 @@ module GraphQL
       # @param engine [Class<Engine>] The notifications engine to use -- other modules often provide a default here
       # @param set_transaction_name [Boolean] If `true`, use the GraphQL operation name as the request name on the monitoring platform
       # @param trace_scalars [Boolean] If `true`, leaf fields will be traced too (Scalars _and_ Enums)
-      def initialize(engine:, set_transaction_name: false, trace_scalars: false, **rest)
+      # @param trace_authorized [Boolean] If `false`, skip tracing `authorized?` calls
+      # @param trace_resolve_type [Boolean] If `false`, skip tracing `resolve_type?` calls
+      def initialize(engine:, set_transaction_name: false, trace_scalars: false, trace_authorized: true, trace_resolve_type: true, **rest)
         if defined?(Dry::Monitor) && engine == Dry::Monitor
           # Backwards compat
           engine = DryMonitoringEngine
         end
 
         @trace_scalars = trace_scalars
+        @trace_authorized = trace_authorized
+        @trace_resolve_type = trace_resolve_type
         @notifications_engine = engine.new(set_transaction_name: set_transaction_name)
         super
       end
@@ -173,7 +197,7 @@ module GraphQL
       end
 
       def begin_authorized(type, object, context)
-        begin_notifications_event(:authorized, type)
+        @trace_authorized && begin_notifications_event(:authorized, type)
         super
       end
 
@@ -183,7 +207,7 @@ module GraphQL
       end
 
       def begin_resolve_type(type, value, context)
-        begin_notifications_event(:resolve_type, type)
+        @trace_resolve_type && begin_notifications_event(:resolve_type, type)
         super
       end
 
@@ -207,23 +231,17 @@ module GraphQL
 
       private
 
-      def begin_notifications_event(keyword, payload = nil, set_current: true)
-        ev = @notifications_engine.start_event(keyword, payload)
-        if set_current
-          Fiber[CURRENT_EV_KEY] = ev
-        end
-        ev
+      def begin_notifications_event(keyword, payload = nil)
+        Fiber[CURRENT_EV_KEY] = @notifications_engine.start_event(keyword, payload)
       end
 
-      def finish_notifications_event(ev = nil)
-        finish_ev = ev || Fiber[CURRENT_EV_KEY]
-        if finish_ev
-          finish_ev.finish
-          if ev.nil?
-            Fiber.current.storage.delete(CURRENT_EV_KEY)
-          end
+      def finish_notifications_event
+        if ev = Fiber[CURRENT_EV_KEY]
+          ev.finish
+          # Use `false` to prevent grabbing an event from a parent fiber
+          Fiber[CURRENT_EV_KEY] = false
+          ev
         end
-        finish_ev
       end
     end
   end

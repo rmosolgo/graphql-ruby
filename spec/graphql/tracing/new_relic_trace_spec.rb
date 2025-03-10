@@ -141,12 +141,10 @@ describe GraphQL::Tracing::NewRelicTrace do
     NewRelicTraceTest::SchemaWithTransactionName.execute("{ other { name } }")
     expected_steps = [
       "GraphQL/parse",
-      "FINISH GraphQL/parse",
       "GraphQL/execute",
 
         "GraphQL/analyze",
           "GraphQL/validate",
-          "FINISH GraphQL/validate",
         "FINISH GraphQL/analyze",
 
         "GraphQL/Authorized/Query",
@@ -166,9 +164,6 @@ describe GraphQL::Tracing::NewRelicTrace do
         "FINISH GraphQL/Query/other",
         "GraphQL/Authorized/Other",
         "FINISH GraphQL/Authorized/Other",
-        "GraphQL/Other/name",
-        "FINISH GraphQL/Other/name",
-      "FINISH GraphQL/execute"
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
@@ -177,11 +172,9 @@ describe GraphQL::Tracing::NewRelicTrace do
     NewRelicTraceTest::SchemaWithoutAuthorizedOrResolveType.execute("{ nameable { name } }")
     expected_steps = [
       "GraphQL/parse",
-      "FINISH GraphQL/parse",
       "GraphQL/execute",
       "GraphQL/analyze",
       "GraphQL/validate",
-      "FINISH GraphQL/validate",
       "FINISH GraphQL/analyze",
       # "GraphQL/Authorized/Query",
       # "FINISH GraphQL/Authorized/Query",
@@ -191,9 +184,6 @@ describe GraphQL::Tracing::NewRelicTrace do
       # "FINISH GraphQL/ResolveType/Nameable",
       # "GraphQL/Authorized/Other",
       # "FINISH GraphQL/Authorized/Other",
-      "GraphQL/Other/name",
-      "FINISH GraphQL/Other/name",
-      "FINISH GraphQL/execute"
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
@@ -208,11 +198,9 @@ describe GraphQL::Tracing::NewRelicTrace do
     NewRelicTraceTest::SchemaWithTransactionName.execute("{ lazyNameable { name } }", context: { lazy: true })
     expected_steps = [
       "GraphQL/parse",
-      "FINISH GraphQL/parse",
       "GraphQL/execute",
       "GraphQL/analyze",
       "GraphQL/validate",
-      "FINISH GraphQL/validate",
       "FINISH GraphQL/analyze",
       "GraphQL/Authorized/Query",
       "FINISH GraphQL/Authorized/Query",
@@ -234,10 +222,6 @@ describe GraphQL::Tracing::NewRelicTrace do
       "FINISH GraphQL/Authorized/Other",
       "GraphQL/Authorized/Other",
       "FINISH GraphQL/Authorized/Other",
-
-      "GraphQL/Other/name",
-      "FINISH GraphQL/Other/name",
-      "FINISH GraphQL/execute",
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
