@@ -8,35 +8,96 @@ module GraphQL
     # ActiveSupport::Notifications or Dry::Monitor::Notifications)
     # with a `graphql` suffix.
     module NotificationsTrace
-      # Initialize a new NotificationsTracing instance
-      #
+
+      class Engine
+        def instrument(keyword, payload, &block)
+          raise "Implement #{self.class}#instrument to measure the block"
+        end
+
+        def start_event(keyword, payload)
+          ev = self.class::Event.new(keyword, payload)
+          ev.start
+          ev
+        end
+
+        class Event
+          def initialize(keyword, payload)
+            @keyword = keyword
+            @payload = payload
+          end
+
+          attr_reader :keyword, :payload
+        end
+
+        def start
+          raise "Implement #{self.class}#start to begin a new event (#{inspect})"
+        end
+
+        def finish
+          raise "Implement #{self.class}#finish to end this event (#{inspect})"
+        end
+      end
+
+      class DryMonitorEngine < Engine
+        EVENT_NAMES = {
+          execute_field: "execute_field.graphql",
+          dataloader_source: "dataloader_source.graphql",
+          authorized: "authorized.graphql",
+          resolve_type: "resolve_type.graphql",
+          execute: "execute.graphql",
+          parse: "parse.graphql",
+          validate: "validate.graphql",
+          analyze: "analyze.graphql",
+          lex: "lex.graphql",
+        }.compare_by_identity
+
+        def instrument(keyword, payload, &block)
+          name = EVENT_NAMES.fetch(keyword)
+          Dry::Monitor.instrument(name, payload, &block)
+        end
+
+        class Event < NotificationsTrace::Engine::Event
+          def start
+            @name = EVENT_NAMES.fetch(@keyword)
+            Dry::Monitor.start(@name, @payload)
+          end
+
+          def finish
+            Dry::Monitor.stop(@name, @payload)
+          end
+        end
+      end
+
       # @param engine [#instrument(key, metadata, block)] The notifications engine to use
       def initialize(engine:, **rest)
+        if defined?(Dry::Monitor) && engine == Dry::Monitor
+          # Backwards compat
+          engine = DryMonitoringEngine.new
+        end
         @notifications_engine = engine
-        @notifications_analyze_event = nil
         super
       end
 
       def parse(query_string:)
-        @notifications_engine.instrument("parse.graphql", query_string: query_string) do
+        @notifications_engine.instrument(:parse, { query_string: query_string }) do
           super
         end
       end
 
       def lex(query_string:)
-        @notifications_engine.instrument("lex.graphql", query_string: query_string) do
+        @notifications_engine.instrument(:lex, { query_string: query_string }) do
           super
         end
       end
 
       def validate(query:, validate:)
-        @notifications_engine.instrument("validate.graphql", validate: validate, query: query) do
+        @notifications_engine.instrument(:validate, { validate: validate, query: query }) do
           super
         end
       end
 
       def begin_analyze_multiplex(multiplex, analyzers)
-        begin_notifications_event("analyze.graphql", EmptyObjects::EMPTY_HASH)
+        begin_notifications_event(:analyze)
         super
       end
 
@@ -46,13 +107,13 @@ module GraphQL
       end
 
       def execute_multiplex(multiplex:)
-        @notifications_engine.instrument("execute.graphql", multiplex: multiplex) do
+        @notifications_engine.instrument(:execute) do
           super
         end
       end
 
       def begin_execute_field(field, object, arguments, query)
-        begin_notifications_event("execute_field.graphql", EmptyObjects::EMPTY_HASH)
+        begin_notifications_event(:execute_field)
         super
       end
 
@@ -68,12 +129,12 @@ module GraphQL
 
       def dataloader_fiber_resume(source)
         prev_ev = Fiber[PREVIOUS_EV_KEY]
-        begin_notifications_event(prev_ev.name, prev_ev.payload)
+        begin_notifications_event(prev_ev.keyword, prev_ev.payload)
         super
       end
 
       def begin_authorized(type, object, context)
-        begin_notifications_event("authorized.graphql", EmptyObjects::EMPTY_HASH)
+        begin_notifications_event(:authorized)
         super
       end
 
@@ -83,7 +144,7 @@ module GraphQL
       end
 
       def begin_resolve_type(type, value, context)
-        begin_notifications_event("resolve_type.graphql", EmptyObjects::EMPTY_HASH)
+        begin_notifications_event(:resolve_type)
         super
       end
 
@@ -92,13 +153,23 @@ module GraphQL
         super
       end
 
+      def begin_dataloader_source(source)
+        begin_notifications_event(:dataloader_source)
+        super
+      end
+
+      def end_dataloader_source(source)
+        finish_notifications_event
+        super
+      end
+
       CURRENT_EV_KEY = :__notifications_graphql_trace_event
       PREVIOUS_EV_KEY = :__notifications_graphql_trace_previous_event
+
       private
 
-      def begin_notifications_event(name, payload, set_current: true)
-        ev = @notifications_engine.new_event(name, payload)
-        ev.start!
+      def begin_notifications_event(keyword, payload = nil, set_current: true)
+        ev = @notifications_engine.start_event(keyword, payload)
         if set_current
           Fiber[CURRENT_EV_KEY] = ev
         end
@@ -108,8 +179,7 @@ module GraphQL
       def finish_notifications_event(ev = nil)
         finish_ev = ev || Fiber[CURRENT_EV_KEY]
         if finish_ev
-          finish_ev.finish!
-          @notifications_engine.publish_event(finish_ev)
+          finish_ev.finish
           if ev.nil?
             Fiber.current.storage.delete(CURRENT_EV_KEY)
           end
