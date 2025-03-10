@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "graphql/tracing/notifications_trace"
+require "graphql/tracing/monitor_trace"
 
 module GraphQL
   module Tracing
@@ -10,15 +10,15 @@ module GraphQL
     #   class MySchema < GraphQL::Schema
     #     trace_with GraphQL::Tracing::SentryTrace
     #   end
-    # @see NotificationsTrace Configuration Options in the parent module
+    # @see MonitorTrace Configuration Options in the parent module
     module SentryTrace
-      include NotificationsTrace
+      include MonitorTrace
 
-      class SentryEngine < NotificationsTrace::Engine
-        def instrument(keyword, payload)
+      class SentryMonitor < MonitorTrace::Monitor
+        def instrument(keyword, object)
           return yield unless Sentry.initialized?
 
-          platform_key = name_for(keyword, payload)
+          platform_key = name_for(keyword, object)
 
           Sentry.with_child_span(op: platform_key, start_timestamp: Sentry.utc_now.to_f) do |span|
             result = yield
@@ -26,7 +26,7 @@ module GraphQL
 
             span.finish
             if keyword == :execute
-              queries = payload.queries
+              queries = object.queries
               operation_names = queries.map{|q| operation_name(q) }
               span.set_description(operation_names.join(", "))
 
@@ -83,11 +83,11 @@ module GraphQL
           "graphql.source.#{source_class.name.gsub("::", ".")}"
         end
 
-        class Event < NotificationsTrace::Engine::Event
+        class Event < MonitorTrace::Monitor::Event
           def start
             if Sentry.initialized?
               @span = Sentry.get_current_scope.get_span
-              span_name = @engine.name_for(@keyword, @payload)
+              span_name = @engine.name_for(@keyword, @object)
               @span.start_child(op: span_name)
             end
           end
@@ -98,8 +98,9 @@ module GraphQL
         end
       end
 
-      def initialize(engine: SentryEngine, **rest)
+      def initialize(...)
         super
+        @monitor = SentryMonitor.new(set_transaction_name: @set_transaction_name)
       end
     end
   end

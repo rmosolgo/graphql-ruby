@@ -12,7 +12,7 @@ describe GraphQL::Tracing::NotificationsTrace do
       end
     end
 
-    class DummyEngine < GraphQL::Tracing::NotificationsTrace::Engine
+    class DummyEngine < GraphQL::Tracing::NotificationsTrace::Adapter
       class << self
         def dispatched_events
           @dispatched_events ||= []
@@ -23,10 +23,11 @@ describe GraphQL::Tracing::NotificationsTrace do
         self.class.dispatched_events << [event, payload]
         yield
       end
-      class Event < GraphQL::Tracing::NotificationsTrace::Engine::Event
+
+      class Event < GraphQL::Tracing::NotificationsTrace::Adapter::Event
         def start; end
         def finish
-          DummyEngine.dispatched_events << [@keyword, @payload]
+          DummyEngine.dispatched_events << [@name, @payload]
         end
       end
     end
@@ -41,7 +42,7 @@ describe GraphQL::Tracing::NotificationsTrace do
     class Schema < GraphQL::Schema
       query Query
       trace_with OtherTrace
-      trace_with GraphQL::Tracing::NotificationsTrace, engine: DummyEngine, trace_scalars: true
+      trace_with GraphQL::Tracing::NotificationsTrace, engine: DummyEngine
     end
   end
 
@@ -49,19 +50,18 @@ describe GraphQL::Tracing::NotificationsTrace do
     NotificationsTraceTest::DummyEngine.dispatched_events.clear
   end
 
-
   describe "Observing" do
-    it "dispatches the event to the notifications engine with a keyword" do
+    it "dispatches the event to the notifications engine with a suffix" do
       NotificationsTraceTest::Schema.execute "query X { int }"
       dispatched_events = NotificationsTraceTest::DummyEngine.dispatched_events.to_h
       expected_event_keys = [
-        :execute,
-        (USING_C_PARSER ? :lex : nil),
-        :parse,
-        :validate,
-        :analyze,
-        :authorized,
-        :execute_field
+        "execute.graphql",
+        (USING_C_PARSER ? "lex.graphql" : nil),
+        "parse.graphql",
+        "validate.graphql",
+        "analyze.graphql",
+        "authorized.graphql",
+        "execute_field.graphql"
       ].compact
 
       assert_equal expected_event_keys, dispatched_events.keys

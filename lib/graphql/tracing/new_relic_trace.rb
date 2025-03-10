@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "graphql/tracing/notifications_trace"
+require "graphql/tracing/monitor_trace"
 
 module GraphQL
   module Tracing
@@ -17,8 +17,8 @@ module GraphQL
     # @example Installing without trace events for `authorized?` or `resolve_type` calls
     #   trace_with GraphQL::Tracing::NewRelicTrace, trace_authorized: false, trace_resolve_type: false
     module NewRelicTrace
-      include NotificationsTrace
-      class NewRelicEngine < NotificationsTrace::Engine
+      include MonitorTrace
+      class NewRelicMonitor < MonitorTrace::Monitor
         PARSE_NAME = "GraphQL/parse"
         LEX_NAME = "GraphQL/lex"
         VALIDATE_NAME = "GraphQL/validate"
@@ -52,9 +52,9 @@ module GraphQL
           "GraphQL/ResolveType/#{type.graphql_name}"
         end
 
-        class Event < NotificationsTrace::Engine::Event
+        class Event < MonitorTrace::Monitor::Event
           def start
-            name = @engine.name_for(keyword, payload)
+            name = @engine.name_for(keyword, object)
             @nr_ev = NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: name, category: :web)
           end
 
@@ -64,9 +64,10 @@ module GraphQL
         end
       end
 
-      # @see NotificationsTrace Parent module documents configuration options
-      def initialize(engine: NewRelicEngine, **_rest)
+      # @see MonitorTrace Parent module documents configuration options
+      def initialize(**_rest)
         super
+        @monitor = NewRelicMonitor.new(set_transaction_name: @set_transaction_name)
       end
     end
   end
