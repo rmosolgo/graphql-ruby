@@ -22,10 +22,12 @@ module GraphQL
       #   It can also be specified per-query with `context[:set_new_relic_transaction_name]`.
       # @param trace_authorized [Boolean] If `false`, skip tracing `authorized?` calls
       # @param trace_resolve_type [Boolean] If `false`, skip tracing `resolve_type?` calls
-      def initialize(set_transaction_name: false, trace_authorized: true, trace_resolve_type: true, **_rest)
+      # @param trace_scalars [Boolean] If `true`, Enum and Scalar fields will be traced by default
+      def initialize(set_transaction_name: false, trace_authorized: true, trace_resolve_type: true, trace_scalars: false, **_rest)
         @set_transaction_name = set_transaction_name
         @trace_authorized = trace_authorized
         @trace_resolve_type = trace_resolve_type
+        @trace_scalars = trace_scalars
         @nr_field_names = Hash.new do |h, field|
           h[field] = "GraphQL/#{field.owner.graphql_name}/#{field.graphql_name}"
         end.compare_by_identity
@@ -92,78 +94,88 @@ module GraphQL
       end
 
       def begin_execute_field(field, object, arguments, query)
-        nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: @nr_field_names[field], category: :web)
+        return_type = field.type.unwrap
+        trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+          (field.trace.nil? && @trace_scalars) || field.trace
+        else
+          true
+        end
+        if trace_field
+          start_segment(partial_name: @nr_field_names[field], category: :web)
+        end
         super
       end
 
       def end_execute_field(field, objects, arguments, query, result)
-        nr_segment_stack.pop.finish
+        finish_segment
         super
       end
 
       def begin_authorized(type, obj, ctx)
         if @trace_authorized
-          nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: @nr_authorized_names[type], category: :web)
+          start_segment(partial_name: @nr_authorized_names[type], category: :web)
         end
         super
       end
 
       def end_authorized(type, obj, ctx, is_authed)
         if @trace_authorized
-          nr_segment_stack.pop.finish
+          finish_segment
         end
         super
       end
 
       def begin_resolve_type(type, value, context)
         if @trace_resolve_type
-          nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: @nr_resolve_type_names[type], category: :web)
+          start_segment(partial_name: @nr_resolve_type_names[type], category: :web)
         end
         super
       end
 
       def end_resolve_type(type, value, context, resolved_type)
         if @trace_resolve_type
-          nr_segment_stack.pop.finish
+          finish_segment
         end
         super
       end
 
-      def begin_dataloader(dl)
-        super
-      end
-
-      def end_dataloader(dl)
-        super
-      end
-
       def begin_dataloader_source(source)
-        nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: @nr_source_names[source], category: :web)
+        start_segment(partial_name: @nr_source_names[source], category: :web)
         super
       end
 
       def end_dataloader_source(source)
-        nr_segment_stack.pop.finish
+        finish_segment
         super
       end
 
       def dataloader_fiber_yield(source)
-        current_segment = nr_segment_stack.last
-        current_segment.finish
+        prev_segment = finish_segment
+        Fiber[:graphql_nr_previous_segment] = prev_segment
         super
       end
 
       def dataloader_fiber_resume(source)
-        prev_segment = nr_segment_stack.pop
+        prev_segment = Fiber[:graphql_nr_previous_segment]
+        Fiber[:graphql_nr_previous_segment] = nil
         seg_partial_name = prev_segment.name.sub(/^.*(GraphQL.*)$/, '\1')
-        nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: seg_partial_name, category: :web)
+        start_segment(partial_name: seg_partial_name, category: :web)
         super
       end
 
       private
 
-      def nr_segment_stack
-        Fiber[:graphql_nr_segment_stack] ||= []
+      def start_segment(...)
+        Fiber[:graphql_nr_segment] = NewRelic::Agent::Tracer.start_transaction_or_segment(...)
+      end
+
+      def finish_segment
+        segment = Fiber[:graphql_nr_segment]
+        if segment
+          segment.finish
+          Fiber[:graphql_nr_segment] = nil
+          segment
+        end
       end
 
       def transaction_name(query)
