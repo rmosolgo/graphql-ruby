@@ -83,6 +83,18 @@ createRecord(data: {
     assert GraphQL.parse("{ a(b: \"\\u0000\") }")
   end
 
+  it "raises a parse error when there's a dangling close curly brace" do
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse('{ foo } }')
+    }
+  end
+
+  it "raises a parse error when there's a dangling identifier" do
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse('{ foo } fooagain')
+    }
+  end
+
   describe "when there are no selections" do
     it 'raises a ParseError' do
       assert_raises(GraphQL::ParseError) {

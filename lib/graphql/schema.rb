@@ -821,8 +821,8 @@ module GraphQL
 
       attr_writer :validate_timeout
 
-      def validate_timeout(new_validate_timeout = :not_provided)
-        if new_validate_timeout != :not_provided
+      def validate_timeout(new_validate_timeout = NOT_CONFIGURED)
+        if !NOT_CONFIGURED.equal?(new_validate_timeout)
           @validate_timeout = new_validate_timeout
         elsif defined?(@validate_timeout)
           @validate_timeout

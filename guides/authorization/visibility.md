@@ -151,8 +151,8 @@ For big schemas, this can be a worthwhile speed-up.
 - `Visibility` speeds up Rails app boot because it doesn't require all types to be loaded during boot and only loads types as they are used by queries.
 - `Visibility` supports predefined, reusable visibility profiles which speeds up queries using complicated `visible?` checks.
 - `Visibility` hides types differently in a few edge cases:
-  - Previously, `Warden` hide interface and union types which had no possible types. `Visibility` doesn't check possible types (in order to support performance improvements), so those types must return `false` for `visible?` in the same cases where all possible types were hidden. Otherwise, that interface or union type will be visible but have no possible types.
-  - Some other thing, see TODO
+  - Previously, `Warden` hid interface and union types which had no possible types. `Visibility` doesn't check possible types (in order to support performance improvements), so those types must return `false` for `visible?` in the same cases where all possible types were hidden. Otherwise, that interface or union type will be visible but have no possible types.
+  - When an object type is connected to the schema as a field return type or a union member, and also implements and interface, if the object type's _other_ connection(s) to the schema are hidden, then it won't appear as an implementer of that interface unless it's registered with `orphan_types` (either by the schema or interface). `Warden` used a "global" map of types so it could discover object types in this case, but `Visibility` doesn't have that global map. (Since time of writing, `Visibility` _does_ have some global type tracking, so maybe this could be fixed.)
 - When `Visibility` is used, several (Ruby-level) Schema introspection methods don't work because the caches they draw on haven't been calculated (`Schema.references_to`, `Schema.union_memberships`). If you're using these, please get in touch so that we can find a way forward.
 
 ### Migration Mode

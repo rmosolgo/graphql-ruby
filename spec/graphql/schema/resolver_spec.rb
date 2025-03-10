@@ -726,6 +726,19 @@ describe GraphQL::Schema::Resolver do
     end
   end
 
+  describe "graphql_name" do
+    class NameParentResolver < GraphQL::Schema::Resolver
+      graphql_name "NameOverride"
+    end
+
+    class NameChildResolver < NameParentResolver
+    end
+    it "isn't inherited" do
+      assert_equal "NameOverride", NameParentResolver.graphql_name
+      assert_equal "NameChildResolver", NameChildResolver.graphql_name
+    end
+  end
+
   describe "description" do
     it "is inherited" do
       expected_desc = "Adds object.value to ast_node.name.size"
