@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.11/GraphQL/Tracing/NewRelicTrace" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.12/GraphQL/Tracing/NewRelicTrace" />
   </head>
   <body>
     <p>Module: GraphQL::Tracing::NewRelicTrace
@@ -12,17 +12,18 @@ Examples:</p>
 trace_with GraphQL::Tracing::NewRelicTrace</p>
 <h1 id="optional-use-the-operation-name-to-set-the-new-relic-transaction-name">Optional, use the operation name to set the new relic transaction name:</h1>
 <h1 id="trace_with-graphqltracingnewrelictrace-set_transaction_name-true">trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true</h1>
-<p>end
+<p>end</p>
+<h1 id="installing-without-trace-events-for-authorized-or-resolve_type-calls">Installing without trace events for <code class="language-plaintext highlighter-rouge">authorized?</code> or <code class="language-plaintext highlighter-rouge">resolve_type</code> calls</h1>
+<p>trace_with GraphQL::Tracing::NewRelicTrace, trace_authorized: false, trace_resolve_type: false
 Instance methods:
-begin_analyze_multiplex, begin_authorized, begin_dataloader,
-begin_dataloader_source, begin_execute_field,
-begin_execute_multiplex, begin_parse, begin_resolve_type,
-begin_validate, dataloader_fiber_resume, dataloader_fiber_yield,
-end_analyze_multiplex, end_authorized, end_dataloader,
+begin_analyze_multiplex, begin_authorized, begin_dataloader_source,
+begin_execute_field, begin_execute_multiplex, begin_parse,
+begin_resolve_type, begin_validate, dataloader_fiber_resume,
+dataloader_fiber_yield, end_analyze_multiplex, end_authorized,
 end_dataloader_source, end_execute_field, end_execute_multiplex,
 end_parse, end_resolve_type, end_validate,
-fallback_transaction_name, initialize, nr_segment_stack,
-transaction_name</p>
+fallback_transaction_name, finish_segment, initialize,
+start_segment, transaction_name</p>
 
 
   </body>

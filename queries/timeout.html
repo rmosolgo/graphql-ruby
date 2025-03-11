@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.4.11/">API</a>
+            <a href="/api-doc/2.4.12/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -192,7 +192,7 @@
 
 <h2 id="customizing-the-timeout-window">Customizing the Timeout Window</h2>
 
-<p>To dynamically pick a timeout duration (or bypass it), override <a href="/api-doc/2.4.11/GraphQL/Schema/Timeout#max_seconds-instance_method" target="_blank" title="API docs for GraphQL::Schema::Timeout#max_seconds"><code>GraphQL::Schema::Timeout#max_seconds</code></a> in your subclass. To bypass the timeout altogether, <code class="language-plaintext highlighter-rouge">max_seconds</code> can return <code class="language-plaintext highlighter-rouge">false</code>.</p>
+<p>To dynamically pick a timeout duration (or bypass it), override <a href="/api-doc/2.4.12/GraphQL/Schema/Timeout#max_seconds-instance_method" target="_blank" title="API docs for GraphQL::Schema::Timeout#max_seconds"><code>GraphQL::Schema::Timeout#max_seconds</code></a> in your subclass. To bypass the timeout altogether, <code class="language-plaintext highlighter-rouge">max_seconds</code> can return <code class="language-plaintext highlighter-rouge">false</code>.</p>
 
 <p>For example:</p>
 
@@ -220,13 +220,19 @@
 
 <p>Queries can originate from a user, and may be crafted in a manner to take a long time to validate against the schema.</p>
 
-<p>It is possible to limit how many seconds the static validation rules and analysers are allowed to run before returning a validation timeout error. The default is no timeout.</p>
+<p>It is possible to limit how many seconds the static validation rules and analysers are allowed to run before returning a validation timeout error. By default, validation and query analysis have a 3-second timeout. You can customize this timeout or disable it completely:</p>
 
 <p>For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Customize timeout (in seconds)</span>
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Applies to static validation and query analysis</span>
   <span class="n">validate_timeout</span> <span class="mi">10</span>
+<span class="k">end</span>
+
+<span class="c1"># OR disable timeout completely</span>
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">validate_timeout</span> <span class="kp">nil</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
