@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index (G)</a> &raquo;
+    
+    
+    <span class="title">GraphQL</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  <dl>
+      <dt>Extended by:</dt>
+      <dd><span class='object_link'><a href="GraphQL/Autoload.html" title="GraphQL::Autoload (module)">Autoload</a></span></dd>
+  </dl>
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql.rb<span class="defines">,<br />
+  lib/graphql/dig.rb,<br /> lib/graphql/query.rb,<br /> lib/graphql/types.rb,<br /> lib/graphql/schema.rb,<br /> lib/graphql/current.rb,<br /> lib/graphql/railtie.rb,<br /> lib/graphql/tracing.rb,<br /> lib/graphql/version.rb,<br /> lib/graphql/analysis.rb,<br /> lib/graphql/autoload.rb,<br /> lib/graphql/language.rb,<br /> lib/graphql/types/id.rb,<br /> lib/graphql/backtrace.rb,<br /> lib/graphql/execution.rb,<br /> lib/graphql/rake_task.rb,<br /> lib/graphql/types/int.rb,<br /> lib/graphql/dataloader.rb,<br /> lib/graphql/type_kinds.rb,<br /> lib/graphql/types/json.rb,<br /> lib/graphql/parse_error.rb,<br /> lib/graphql/schema/enum.rb,<br /> lib/graphql/schema/list.rb,<br /> lib/graphql/types/float.rb,<br /> lib/graphql/types/relay.rb,<br /> lib/graphql/query/result.rb,<br /> lib/graphql/schema/field.rb,<br /> lib/graphql/schema/union.rb,<br /> lib/graphql/types/string.rb,<br /> lib/graphql/introspection.rb,<br /> lib/graphql/query/context.rb,<br /> lib/graphql/schema/finder.rb,<br /> lib/graphql/schema/loader.rb,<br /> lib/graphql/schema/member.rb,<br /> lib/graphql/schema/object.rb,<br /> lib/graphql/schema/scalar.rb,<br /> lib/graphql/schema/warden.rb,<br /> lib/graphql/subscriptions.rb,<br /> lib/graphql/tracing/trace.rb,<br /> lib/graphql/types/big_int.rb,<br /> lib/graphql/types/boolean.rb,<br /> lib/graphql/analysis_error.rb,<br /> lib/graphql/coercion_error.rb,<br /> lib/graphql/execution/lazy.rb,<br /> lib/graphql/language/cache.rb,<br /> lib/graphql/language/lexer.rb,<br /> lib/graphql/language/nodes.rb,<br /> lib/graphql/name_validator.rb,<br /> lib/graphql/schema/printer.rb,<br /> lib/graphql/schema/timeout.rb,<br /> lib/graphql/schema/wrapper.rb,<br /> lib/graphql/backtrace/table.rb,<br /> lib/graphql/execution_error.rb,<br /> lib/graphql/language/parser.rb,<br /> lib/graphql/query/variables.rb,<br /> lib/graphql/relay/range_add.rb,<br /> lib/graphql/schema/addition.rb,<br /> lib/graphql/schema/argument.rb,<br /> lib/graphql/schema/mutation.rb,<br /> lib/graphql/schema/non_null.rb,<br /> lib/graphql/schema/resolver.rb,<br /> lib/graphql/testing/helpers.rb,<br /> lib/graphql/analysis/visitor.rb,<br /> lib/graphql/execution/errors.rb,<br /> lib/graphql/language/comment.rb,<br /> lib/graphql/language/printer.rb,<br /> lib/graphql/language/visitor.rb,<br /> lib/graphql/schema/directive.rb,<br /> lib/graphql/schema/interface.rb,<br /> lib/graphql/schema/validator.rb,<br /> lib/graphql/types/relay/node.rb,<br /> lib/graphql/analysis/analyzer.rb,<br /> lib/graphql/dataloader/source.rb,<br /> lib/graphql/query/fingerprint.rb,<br /> lib/graphql/schema/enum_value.rb,<br /> lib/graphql/schema/visibility.rb,<br /> lib/graphql/dataloader/request.rb,<br /> lib/graphql/invalid_name_error.rb,<br /> lib/graphql/invalid_null_error.rb,<br /> lib/graphql/query/null_context.rb,<br /> lib/graphql/rake_task/validate.rb,<br /> lib/graphql/runtime_type_error.rb,<br /> lib/graphql/tracing/null_trace.rb,<br /> lib/graphql/unauthorized_error.rb,<br /> lib/graphql/date_encoding_error.rb,<br /> lib/graphql/execution/lookahead.rb,<br /> lib/graphql/execution/multiplex.rb,<br /> lib/graphql/language/generation.rb,<br /> lib/graphql/schema/input_object.rb,<br /> lib/graphql/schema/subscription.rb,<br /> lib/graphql/subscriptions/event.rb,<br /> lib/graphql/tracing/scout_trace.rb,<br /> lib/graphql/types/iso_8601_date.rb,<br /> lib/graphql/analysis/field_usage.rb,<br /> lib/graphql/analysis/query_depth.rb,<br /> lib/graphql/schema/member/scoped.rb,<br /> lib/graphql/tracing/legacy_trace.rb,<br /> lib/graphql/tracing/sentry_trace.rb,<br /> lib/graphql/tracing/statsd_trace.rb,<br /> lib/graphql/execution/interpreter.rb,<br /> lib/graphql/language/block_string.rb,<br /> lib/graphql/pagination/connection.rb,<br /> lib/graphql/schema/always_visible.rb,<br /> lib/graphql/schema/built_in_types.rb,<br /> lib/graphql/schema/directive/skip.rb,<br /> lib/graphql/string_encoding_error.rb,<br /> lib/graphql/tracing/scout_tracing.rb,<br /> lib/graphql/types/relay/base_edge.rb,<br /> lib/graphql/types/relay/page_info.rb,<br /> lib/graphql/unresolved_type_error.rb,<br /> lib/graphql/backtrace/traced_error.rb,<br /> lib/graphql/dataloader/request_all.rb,<br /> lib/graphql/integer_decoding_error.rb,<br /> lib/graphql/integer_encoding_error.rb,<br /> lib/graphql/pagination/connections.rb,<br /> lib/graphql/schema/base_64_encoder.rb,<br /> lib/graphql/schema/field_extension.rb,<br /> lib/graphql/schema/late_bound_type.rb,<br /> lib/graphql/schema/member/has_path.rb,<br /> lib/graphql/schema/type_expression.rb,<br /> lib/graphql/schema/type_membership.rb,<br /> lib/graphql/tracing/data_dog_trace.rb,<br /> lib/graphql/tracing/detailed_trace.rb,<br /> lib/graphql/tracing/perfetto_trace.rb,<br /> lib/graphql/tracing/platform_trace.rb,<br /> lib/graphql/tracing/statsd_tracing.rb,<br /> lib/graphql/duration_encoding_error.rb,<br /> lib/graphql/introspection/type_type.rb,<br /> lib/graphql/language/static_visitor.rb,<br /> lib/graphql/schema/directive/one_of.rb,<br /> lib/graphql/schema/visibility/visit.rb,<br /> lib/graphql/static_validation/error.rb,<br /> lib/graphql/subscriptions/serialize.rb,<br /> lib/graphql/tracing/appoptics_trace.rb,<br /> lib/graphql/tracing/appsignal_trace.rb,<br /> lib/graphql/tracing/new_relic_trace.rb,<br /> lib/graphql/types/iso_8601_duration.rb,<br /> lib/graphql/analysis/max_query_depth.rb,<br /> lib/graphql/introspection/field_type.rb,<br /> lib/graphql/rubocop/graphql/base_cop.rb,<br /> lib/graphql/schema/directive/feature.rb,<br /> lib/graphql/schema/directive/flagged.rb,<br /> lib/graphql/schema/directive/include.rb,<br /> lib/graphql/schema/member/build_type.rb,<br /> lib/graphql/schema/member/has_fields.rb,<br /> lib/graphql/tracing/data_dog_tracing.rb,<br /> lib/graphql/tracing/platform_tracing.rb,<br /> lib/graphql/tracing/prometheus_trace.rb,<br /> lib/graphql/types/iso_8601_date_time.rb,<br /> lib/graphql/unauthorized_field_error.rb,<br /> lib/graphql/analysis/query_complexity.rb,<br /> lib/graphql/introspection/base_object.rb,<br /> lib/graphql/introspection/schema_type.rb,<br /> lib/graphql/language/definition_slice.rb,<br /> lib/graphql/query/validation_pipeline.rb,<br /> lib/graphql/schema/unique_within_type.rb,<br /> lib/graphql/schema/visibility/profile.rb,<br /> lib/graphql/tracing/appoptics_tracing.rb,<br /> lib/graphql/tracing/appsignal_tracing.rb,<br /> lib/graphql/tracing/new_relic_tracing.rb,<br /> lib/graphql/dataloader/null_dataloader.rb,<br /> lib/graphql/execution/directive_checks.rb,<br /> lib/graphql/introspection/entry_points.rb,<br /> lib/graphql/language/sanitized_printer.rb,<br /> lib/graphql/schema/directive/transform.rb,<br /> lib/graphql/schema/member/has_ast_node.rb,<br /> lib/graphql/tracing/legacy_hooks_trace.rb,<br /> lib/graphql/tracing/prometheus_tracing.rb,<br /> lib/graphql/types/relay/edge_behaviors.rb,<br /> lib/graphql/types/relay/has_node_field.rb,<br /> lib/graphql/types/relay/node_behaviors.rb,<br /> lib/graphql/dataloader/async_dataloader.rb,<br /> lib/graphql/pagination/array_connection.rb,<br /> lib/graphql/schema/directive/deprecated.rb,<br /> lib/graphql/schema/find_inherited_value.rb,<br /> lib/graphql/schema/introspection_system.rb,<br /> lib/graphql/schema/member/has_arguments.rb,<br /> lib/graphql/schema/visibility/migration.rb,<br /> lib/graphql/static_validation/all_rules.rb,<br /> lib/graphql/static_validation/validator.rb,<br /> lib/graphql/tracing/call_legacy_tracers.rb,<br /> lib/graphql/tracing/notifications_trace.rb,<br /> lib/graphql/types/relay/base_connection.rb,<br /> lib/graphql/types/relay/has_nodes_field.rb,<br /> lib/graphql/introspection/directive_type.rb,<br /> lib/graphql/introspection/dynamic_fields.rb,<br /> lib/graphql/introspection/type_kind_enum.rb,<br /> lib/graphql/query/context/scoped_context.rb,<br /> lib/graphql/schema/build_from_definition.rb,<br /> lib/graphql/schema/field/scope_extension.rb,<br /> lib/graphql/schema/member/has_dataloader.rb,<br /> lib/graphql/schema/member/has_directives.rb,<br /> lib/graphql/schema/member/has_interfaces.rb,<br /> lib/graphql/schema/member/has_validators.rb,<br /> lib/graphql/analysis/max_query_complexity.rb,<br /> lib/graphql/execution/interpreter/resolve.rb,<br /> lib/graphql/execution/interpreter/runtime.rb,<br /> lib/graphql/introspection/enum_value_type.rb,<br /> lib/graphql/query/input_validation_result.rb,<br /> lib/graphql/schema/directive/specified_by.rb,<br /> lib/graphql/schema/member/relay_shortcuts.rb,<br /> lib/graphql/schema/member/validates_input.rb,<br /> lib/graphql/schema/relay_classic_mutation.rb,<br /> lib/graphql/tracing/notifications_tracing.rb,<br /> lib/graphql/unauthorized_enum_value_error.rb,<br /> lib/graphql/execution/lazy/lazy_method_map.rb,<br /> lib/graphql/introspection/input_value_type.rb,<br /> lib/graphql/pagination/relation_connection.rb,<br /> lib/graphql/schema/member/base_dsl_methods.rb,<br /> lib/graphql/schema/validator/all_validator.rb,<br /> lib/graphql/static_validation/base_visitor.rb,<br /> lib/graphql/dataloader/active_record_source.rb,<br /> lib/graphql/execution/interpreter/arguments.rb,<br /> lib/graphql/query/variable_validation_error.rb,<br /> lib/graphql/tracing/perfetto_trace/trace_pb.rb,<br /> lib/graphql/types/relay/page_info_behaviors.rb,<br /> lib/graphql/schema/has_single_input_argument.rb,<br /> lib/graphql/schema/member/graphql_type_names.rb,<br /> lib/graphql/schema/resolver/has_payload_type.rb,<br /> lib/graphql/subscriptions/broadcast_analyzer.rb,<br /> lib/graphql/types/relay/connection_behaviors.rb,<br /> lib/graphql/rubocop/graphql/default_null_true.rb,<br /> lib/graphql/schema/field/connection_extension.rb,<br /> lib/graphql/schema/member/type_system_helpers.rb,<br /> lib/graphql/schema/validator/format_validator.rb,<br /> lib/graphql/schema/validator/length_validator.rb,<br /> lib/graphql/rubocop/graphql/field_type_in_block.rb,<br /> lib/graphql/rubocop/graphql/root_types_in_block.rb,<br /> lib/graphql/schema/validator/required_validator.rb,<br /> lib/graphql/static_validation/literal_validator.rb,<br /> lib/graphql/execution/interpreter/argument_value.rb,<br /> lib/graphql/load_application_object_failed_error.rb,<br /> lib/graphql/pagination/sequel_dataset_connection.rb,<br /> lib/graphql/schema/member/has_deprecation_reason.rb,<br /> lib/graphql/schema/validator/exclusion_validator.rb,<br /> lib/graphql/schema/validator/inclusion_validator.rb,<br /> lib/graphql/static_validation/validation_context.rb,<br /> lib/graphql/tracing/detailed_trace/redis_backend.rb,<br /> lib/graphql/execution/interpreter/arguments_cache.rb,<br /> lib/graphql/introspection/directive_location_enum.rb,<br /> lib/graphql/rubocop/graphql/default_required_true.rb,<br /> lib/graphql/schema/validator/allow_null_validator.rb,<br /> lib/graphql/static_validation/interpreter_visitor.rb,<br /> lib/graphql/tracing/detailed_trace/memory_backend.rb,<br /> lib/graphql/execution/interpreter/execution_errors.rb,<br /> lib/graphql/pagination/mongoid_relation_connection.rb,<br /> lib/graphql/schema/validator/allow_blank_validator.rb,<br /> lib/graphql/execution/interpreter/handles_raw_value.rb,<br /> lib/graphql/schema/member/has_unresolved_type_error.rb,<br /> lib/graphql/schema/validator/numericality_validator.rb,<br /> lib/graphql/language/document_from_schema_definition.rb,<br /> lib/graphql/schema/build_from_definition/resolve_map.rb,<br /> lib/graphql/subscriptions/action_cable_subscriptions.rb,<br /> lib/graphql/static_validation/definition_dependencies.rb,<br /> lib/graphql/static_validation/rules/fields_will_merge.rb,<br /> lib/graphql/static_validation/rules/query_root_exists.rb,<br /> lib/graphql/static_validation/rules/fragments_are_used.rb,<br /> lib/graphql/static_validation/validation_timeout_error.rb,<br /> lib/graphql/tracing/active_support_notifications_trace.rb,<br /> lib/graphql/tracing/prometheus_trace/graphql_collector.rb,<br /> lib/graphql/dataloader/active_record_association_source.rb,<br /> lib/graphql/static_validation/rules/fragments_are_named.rb,<br /> lib/graphql/execution/interpreter/runtime/graphql_result.rb,<br /> lib/graphql/pagination/active_record_relation_connection.rb,<br /> lib/graphql/static_validation/rules/fragment_types_exist.rb,<br /> lib/graphql/static_validation/rules/fragments_are_finite.rb,<br /> lib/graphql/static_validation/rules/mutation_root_exists.rb,<br /> lib/graphql/tracing/active_support_notifications_tracing.rb,<br /> lib/graphql/static_validation/rules/arguments_are_defined.rb,<br /> lib/graphql/static_validation/rules/directives_are_defined.rb,<br /> lib/graphql/static_validation/rules/fields_will_merge_error.rb,<br /> lib/graphql/static_validation/rules/query_root_exists_error.rb,<br /> lib/graphql/static_validation/rules/fragments_are_used_error.rb,<br /> lib/graphql/static_validation/rules/subscription_root_exists.rb,<br /> lib/graphql/static_validation/rules/argument_names_are_unique.rb,<br /> lib/graphql/static_validation/rules/fragment_names_are_unique.rb,<br /> lib/graphql/static_validation/rules/fragments_are_named_error.rb,<br /> lib/graphql/static_validation/rules/operation_names_are_valid.rb,<br /> lib/graphql/static_validation/rules/variable_names_are_unique.rb,<br /> lib/graphql/static_validation/rules/variables_are_input_types.rb,<br /> lib/graphql/static_validation/rules/fields_are_defined_on_type.rb,<br /> lib/graphql/static_validation/rules/fragment_types_exist_error.rb,<br /> lib/graphql/static_validation/rules/fragments_are_finite_error.rb,<br /> lib/graphql/static_validation/rules/mutation_root_exists_error.rb,<br /> lib/graphql/static_validation/rules/no_definitions_are_present.rb,<br /> lib/graphql/static_validation/rules/arguments_are_defined_error.rb,<br /> lib/graphql/static_validation/rules/variable_usages_are_allowed.rb,<br /> lib/graphql/static_validation/rules/directives_are_defined_error.rb,<br /> lib/graphql/subscriptions/default_subscription_resolve_extension.rb,<br /> lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb,<br /> lib/graphql/static_validation/rules/input_object_names_are_unique.rb,<br /> lib/graphql/static_validation/rules/one_of_input_objects_are_valid.rb,<br /> lib/graphql/static_validation/rules/required_arguments_are_present.rb,<br /> lib/graphql/static_validation/rules/subscription_root_exists_error.rb,<br /> lib/graphql/static_validation/rules/unique_directives_per_location.rb,<br /> lib/graphql/static_validation/rules/variables_are_used_and_defined.rb,<br /> lib/graphql/static_validation/rules/argument_names_are_unique_error.rb,<br /> lib/graphql/static_validation/rules/fragment_names_are_unique_error.rb,<br /> lib/graphql/static_validation/rules/operation_names_are_valid_error.rb,<br /> lib/graphql/static_validation/rules/variable_names_are_unique_error.rb,<br /> lib/graphql/static_validation/rules/variables_are_input_types_error.rb,<br /> lib/graphql/schema/build_from_definition/resolve_map/default_resolve.rb,<br /> lib/graphql/static_validation/rules/argument_literals_are_compatible.rb,<br /> lib/graphql/static_validation/rules/fields_are_defined_on_type_error.rb,<br /> lib/graphql/static_validation/rules/fragments_are_on_composite_types.rb,<br /> lib/graphql/static_validation/rules/no_definitions_are_present_error.rb,<br /> lib/graphql/static_validation/rules/directives_are_in_valid_locations.rb,<br /> lib/graphql/static_validation/rules/variable_usages_are_allowed_error.rb,<br /> lib/graphql/static_validation/rules/fields_have_appropriate_selections.rb,<br /> lib/graphql/static_validation/rules/fragment_spreads_are_possible_error.rb,<br /> lib/graphql/static_validation/rules/input_object_names_are_unique_error.rb,<br /> lib/graphql/static_validation/rules/one_of_input_objects_are_valid_error.rb,<br /> lib/graphql/static_validation/rules/required_arguments_are_present_error.rb,<br /> lib/graphql/static_validation/rules/unique_directives_per_location_error.rb,<br /> lib/graphql/static_validation/rules/variables_are_used_and_defined_error.rb,<br /> lib/graphql/static_validation/rules/argument_literals_are_compatible_error.rb,<br /> lib/graphql/static_validation/rules/fragments_are_on_composite_types_error.rb,<br /> lib/graphql/static_validation/rules/directives_are_in_valid_locations_error.rb,<br /> lib/graphql/static_validation/rules/fields_have_appropriate_selections_error.rb,<br /> lib/graphql/static_validation/rules/variable_default_values_are_correctly_typed.rb,<br /> lib/graphql/static_validation/rules/required_input_object_attributes_are_present.rb,<br /> lib/graphql/static_validation/rules/variable_default_values_are_correctly_typed_error.rb,<br /> lib/graphql/static_validation/rules/required_input_object_attributes_are_present_error.rb</span>
+</dd>
+  </dl>
+  
+</div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="GraphQL/Analysis.html" title="GraphQL::Analysis (module)">Analysis</a></span>, <span class='object_link'><a href="GraphQL/Autoload.html" title="GraphQL::Autoload (module)">Autoload</a></span>, <span class='object_link'><a href="GraphQL/Current.html" title="GraphQL::Current (module)">Current</a></span>, <span class='object_link'><a href="GraphQL/Dig.html" title="GraphQL::Dig (module)">Dig</a></span>, <span class='object_link'><a href="GraphQL/EmptyObjects.html" title="GraphQL::EmptyObjects (module)">EmptyObjects</a></span>, <span class='object_link'><a href="GraphQL/Execution.html" title="GraphQL::Execution (module)">Execution</a></span>, <span class='object_link'><a href="GraphQL/Introspection.html" title="GraphQL::Introspection (module)">Introspection</a></span>, <span class='object_link'><a href="GraphQL/Language.html" title="GraphQL::Language (module)">Language</a></span>, <span class='object_link'><a href="GraphQL/Pagination.html" title="GraphQL::Pagination (module)">Pagination</a></span>, <span class='object_link'><a href="GraphQL/Relay.html" title="GraphQL::Relay (module)">Relay</a></span>, <span class='object_link'><a href="GraphQL/Rubocop.html" title="GraphQL::Rubocop (module)">Rubocop</a></span>, <span class='object_link'><a href="GraphQL/StaticValidation.html" title="GraphQL::StaticValidation (module)">StaticValidation</a></span>, <span class='object_link'><a href="GraphQL/Testing.html" title="GraphQL::Testing (module)">Testing</a></span>, <span class='object_link'><a href="GraphQL/Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span>, <span class='object_link'><a href="GraphQL/TypeKinds.html" title="GraphQL::TypeKinds (module)">TypeKinds</a></span>, <span class='object_link'><a href="GraphQL/Types.html" title="GraphQL::Types (module)">Types</a></span>
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="GraphQL/AnalysisError.html" title="GraphQL::AnalysisError (class)">AnalysisError</a></span>, <span class='object_link'><a href="GraphQL/Backtrace.html" title="GraphQL::Backtrace (class)">Backtrace</a></span>, <span class='object_link'><a href="GraphQL/CoercionError.html" title="GraphQL::CoercionError (class)">CoercionError</a></span>, <span class='object_link'><a href="GraphQL/Dataloader.html" title="GraphQL::Dataloader (class)">Dataloader</a></span>, <span class='object_link'><a href="GraphQL/DateEncodingError.html" title="GraphQL::DateEncodingError (class)">DateEncodingError</a></span>, <span class='object_link'><a href="GraphQL/DurationEncodingError.html" title="GraphQL::DurationEncodingError (class)">DurationEncodingError</a></span>, <span class='object_link'><a href="GraphQL/Error.html" title="GraphQL::Error (class)">Error</a></span>, <span class='object_link'><a href="GraphQL/ExecutionError.html" title="GraphQL::ExecutionError (class)">ExecutionError</a></span>, <span class='object_link'><a href="GraphQL/IntegerDecodingError.html" title="GraphQL::IntegerDecodingError (class)">IntegerDecodingError</a></span>, <span class='object_link'><a href="GraphQL/IntegerEncodingError.html" title="GraphQL::IntegerEncodingError (class)">IntegerEncodingError</a></span>, <span class='object_link'><a href="GraphQL/InvalidNameError.html" title="GraphQL::InvalidNameError (class)">InvalidNameError</a></span>, <span class='object_link'><a href="GraphQL/InvalidNullError.html" title="GraphQL::InvalidNullError (class)">InvalidNullError</a></span>, <span class='object_link'><a href="GraphQL/InvariantError.html" title="GraphQL::InvariantError (class)">InvariantError</a></span>, <span class='object_link'><a href="GraphQL/LoadApplicationObjectFailedError.html" title="GraphQL::LoadApplicationObjectFailedError (class)">LoadApplicationObjectFailedError</a></span>, <span class='object_link'><a href="GraphQL/NameValidator.html" title="GraphQL::NameValidator (class)">NameValidator</a></span>, <span class='object_link'><a href="GraphQL/ParseError.html" title="GraphQL::ParseError (class)">ParseError</a></span>, <span class='object_link'><a href="GraphQL/Query.html" title="GraphQL::Query (class)">Query</a></span>, <span class='object_link'><a href="GraphQL/Railtie.html" title="GraphQL::Railtie (class)">Railtie</a></span>, <span class='object_link'><a href="GraphQL/RakeTask.html" title="GraphQL::RakeTask (class)">RakeTask</a></span>, <span class='object_link'><a href="GraphQL/RequiredImplementationMissingError.html" title="GraphQL::RequiredImplementationMissingError (class)">RequiredImplementationMissingError</a></span>, <span class='object_link'><a href="GraphQL/RuntimeTypeError.html" title="GraphQL::RuntimeTypeError (class)">RuntimeTypeError</a></span>, <span class='object_link'><a href="GraphQL/Schema.html" title="GraphQL::Schema (class)">Schema</a></span>, <span class='object_link'><a href="GraphQL/StringEncodingError.html" title="GraphQL::StringEncodingError (class)">StringEncodingError</a></span>, <span class='object_link'><a href="GraphQL/Subscriptions.html" title="GraphQL::Subscriptions (class)">Subscriptions</a></span>, <span class='object_link'><a href="GraphQL/UnauthorizedEnumValueError.html" title="GraphQL::UnauthorizedEnumValueError (class)">UnauthorizedEnumValueError</a></span>, <span class='object_link'><a href="GraphQL/UnauthorizedError.html" title="GraphQL::UnauthorizedError (class)">UnauthorizedError</a></span>, <span class='object_link'><a href="GraphQL/UnauthorizedFieldError.html" title="GraphQL::UnauthorizedFieldError (class)">UnauthorizedFieldError</a></span>, <span class='object_link'><a href="GraphQL/UnresolvedTypeError.html" title="GraphQL::UnresolvedTypeError (class)">UnresolvedTypeError</a></span>
+    
+  
+</p>
+
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="VERSION-constant" class="">VERSION =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>2.4.12</span><span class='tstring_end'>&quot;</span></span></pre></dd>
+      
+        <dt id="Dashboard-constant" class="">Dashboard =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Rails expects the engine to be called <code>Graphql::Dashboard</code>,
+but <code>GraphQL::Dashboard</code> is consistent with this gem’s naming.
+So define both constants to refer to the same class.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'><span class='object_link'><a href="Graphql_.html" title="Graphql (module)">Graphql</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Graphql/Dashboard.html" title="Graphql::Dashboard (class)">Dashboard</a></span></span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+  <h2>Class Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_parser-class_method" title="default_parser (class method)">.<strong>default_parser</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reject_numbers_followed_by_names-class_method" title="reject_numbers_followed_by_names (class method)">.<strong>reject_numbers_followed_by_names</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>If true, the parser should raise when an integer or float is followed immediately by an identifier (instead of a space or punctuation).</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#eager_load!-class_method" title="eager_load! (class method)">.<strong>eager_load!</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Load all <code>autoload</code>-configured classes, and also eager-load dependents who have autoloads of their own.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse-class_method" title="parse (class method)">.<strong>parse</strong>(graphql_string, trace: GraphQL::Tracing::NullTrace, filename: nil, max_tokens: nil)  &#x21d2; GraphQL::Language::Nodes::Document </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Turn a query string or schema definition into an AST.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse_file-class_method" title="parse_file (class method)">.<strong>parse_file</strong>(filename)  &#x21d2; GraphQL::Language::Nodes::Document </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Read the contents of <code>filename</code> and parse them as GraphQL.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse_with_racc-class_method" title="parse_with_racc (class method)">.<strong>parse_with_racc</strong>(string, filename: nil, trace: GraphQL::Tracing::NullTrace)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scan-class_method" title="scan (class method)">.<strong>scan</strong>(graphql_string)  &#x21d2; Array&lt;Array&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scan_with_ruby-class_method" title="scan_with_ruby (class method)">.<strong>scan_with_ruby</strong>(graphql_string)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="GraphQL/Autoload.html" title="GraphQL::Autoload (module)">Autoload</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="GraphQL/Autoload.html#autoload-instance_method" title="GraphQL::Autoload#autoload (method)">autoload</a></span>, <span class='object_link'><a href="GraphQL/Autoload.html#eager_load!-instance_method" title="GraphQL::Autoload#eager_load! (method)">eager_load!</a></span></p>
+
+  <div id="class_attr_details" class="attr_details">
+    <h2>Class Attribute Details</h2>
+    
+      
+      <span id="default_parser=-class_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="default_parser-class_method">
+  
+    .<strong>default_parser</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+39
+40
+41</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql.rb', line 39</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_default_parser'>default_parser</span>
+  <span class='ivar'>@default_parser</span> <span class='op'>||=</span> <span class='const'><span class='object_link'><a href="" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Language/Parser.html" title="GraphQL::Language::Parser (class)">Parser</a></span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="reject_numbers_followed_by_names=-class_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="reject_numbers_followed_by_names-class_method">
+  
+    .<strong>reject_numbers_followed_by_names</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>If true, the parser should raise when an integer or float is followed immediately by an identifier (instead of a space or punctuation)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+84
+85
+86</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql.rb', line 84</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reject_numbers_followed_by_names'>reject_numbers_followed_by_names</span>
+  <span class='ivar'>@reject_numbers_followed_by_names</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="eager_load!-class_method">
+  
+    .<strong>eager_load!</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Load all <code>autoload</code>-configured classes, and also eager-load dependents who have autoloads of their own.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+14
+15
+16
+17
+18
+19</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql.rb', line 14</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_eager_load!'>eager_load!</span>
+  <span class='kw'>super</span>
+  <span class='const'><span class='object_link'><a href="GraphQL/Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='period'>.</span><span class='id identifier rubyid_eager_load!'><span class='object_link'><a href="GraphQL/Autoload.html#eager_load!-instance_method" title="GraphQL::Autoload#eager_load! (method)">eager_load!</a></span></span>
+  <span class='const'><span class='object_link'><a href="GraphQL/Types.html" title="GraphQL::Types (module)">Types</a></span></span><span class='period'>.</span><span class='id identifier rubyid_eager_load!'><span class='object_link'><a href="GraphQL/Autoload.html#eager_load!-instance_method" title="GraphQL::Autoload#eager_load! (method)">eager_load!</a></span></span>
+  <span class='const'><span class='object_link'><a href="GraphQL/Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='period'>.</span><span class='id identifier rubyid_eager_load!'><span class='object_link'><a href="GraphQL/Autoload.html#eager_load!-instance_method" title="GraphQL::Autoload#eager_load! (method)">eager_load!</a></span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parse-class_method">
+  
+    .<strong>parse</strong>(graphql_string, trace: GraphQL::Tracing::NullTrace, filename: nil, max_tokens: nil)  &#x21d2; <tt><span class='object_link'><a href="GraphQL/Language/Nodes/Document.html" title="GraphQL::Language::Nodes::Document (class)">GraphQL::Language::Nodes::Document</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Turn a query string or schema definition into an AST</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>graphql_string</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a GraphQL query string or schema definition</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="GraphQL/Language/Nodes/Document.html" title="GraphQL::Language::Nodes::Document (class)">GraphQL::Language::Nodes::Document</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_graphql_string'>graphql_string</span><span class='comma'>,</span> <span class='label'>trace:</span> <span class='const'><span class='object_link'><a href="" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Tracing.html#NullTrace-constant" title="GraphQL::Tracing::NullTrace (constant)">NullTrace</a></span></span><span class='comma'>,</span> <span class='label'>filename:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>max_tokens:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_default_parser'>default_parser</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_graphql_string'>graphql_string</span><span class='comma'>,</span> <span class='label'>trace:</span> <span class='id identifier rubyid_trace'>trace</span><span class='comma'>,</span> <span class='label'>filename:</span> <span class='id identifier rubyid_filename'>filename</span><span class='comma'>,</span> <span class='label'>max_tokens:</span> <span class='id identifier rubyid_max_tokens'>max_tokens</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parse_file-class_method">
+  
+    .<strong>parse_file</strong>(filename)  &#x21d2; <tt><span class='object_link'><a href="GraphQL/Language/Nodes/Document.html" title="GraphQL::Language::Nodes::Document (class)">GraphQL::Language::Nodes::Document</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Read the contents of <code>filename</code> and parse them as GraphQL</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>filename</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Path to a <code>.graphql</code> file containing IDL or query</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="GraphQL/Language/Nodes/Document.html" title="GraphQL::Language::Nodes::Document (class)">GraphQL::Language::Nodes::Document</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+56
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql.rb', line 56</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_parse_file'>parse_file</span><span class='lparen'>(</span><span class='id identifier rubyid_filename'>filename</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_filename'>filename</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_default_parser'>default_parser</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_content'>content</span><span class='comma'>,</span> <span class='label'>filename:</span> <span class='id identifier rubyid_filename'>filename</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parse_with_racc-class_method">
+  
+    .<strong>parse_with_racc</strong>(string, filename: nil, trace: GraphQL::Tracing::NullTrace)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+66
+67
+68
+69</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql.rb', line 66</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_parse_with_racc'>parse_with_racc</span><span class='lparen'>(</span><span class='id identifier rubyid_string'>string</span><span class='comma'>,</span> <span class='label'>filename:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>trace:</span> <span class='const'><span class='object_link'><a href="" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Tracing.html#NullTrace-constant" title="GraphQL::Tracing::NullTrace (constant)">NullTrace</a></span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>`GraphQL.parse_with_racc` is deprecated; GraphQL-Ruby no longer uses racc for parsing. Call `GraphQL.parse` or `GraphQL::Language::Parser.parse` instead.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='const'><span class='object_link'><a href="" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Language/Parser.html" title="GraphQL::Language::Parser (class)">Parser</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="GraphQL/Language/Parser.html#parse-class_method" title="GraphQL::Language::Parser.parse (method)">parse</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_string'>string</span><span class='comma'>,</span> <span class='label'>filename:</span> <span class='id identifier rubyid_filename'>filename</span><span class='comma'>,</span> <span class='label'>trace:</span> <span class='id identifier rubyid_trace'>trace</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="scan-class_method">
+  
+    .<strong>scan</strong>(graphql_string)  &#x21d2; <tt>Array&lt;Array&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Array&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+62
+63
+64</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql.rb', line 62</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='id identifier rubyid_graphql_string'>graphql_string</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_default_parser'>default_parser</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='id identifier rubyid_graphql_string'>graphql_string</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="scan_with_ruby-class_method">
+  
+    .<strong>scan_with_ruby</strong>(graphql_string)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+71
+72
+73</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql.rb', line 71</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_scan_with_ruby'>scan_with_ruby</span><span class='lparen'>(</span><span class='id identifier rubyid_graphql_string'>graphql_string</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="GraphQL/Language/Lexer.html" title="GraphQL::Language::Lexer (class)">Lexer</a></span></span><span class='period'>.</span><span class='id identifier rubyid_tokenize'><span class='object_link'><a href="GraphQL/Language/Lexer.html#tokenize-class_method" title="GraphQL::Language::Lexer.tokenize (method)">tokenize</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_graphql_string'>graphql_string</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Mar 11 09:48:17 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.7).
+</div>
+
+    </div>
+  </body>
+</html>
