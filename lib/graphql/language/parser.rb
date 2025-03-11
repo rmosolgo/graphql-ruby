@@ -110,7 +110,7 @@ module GraphQL
           # Only ignored characters is not a valid document
           raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @graphql_str)
         end
-        while !@lexer.eos?
+        while !@lexer.finished?
           defns << definition
         end
         Document.new(pos: 0, definitions: defns, filename: @filename, source: self)

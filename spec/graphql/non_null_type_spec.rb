@@ -49,7 +49,6 @@ describe "GraphQL::NonNullType" do
         assert_equal("Cannot return null for non-nullable field Cow.cantBeNullButIs", err.message)
         assert_equal("Cow", err.parent_type.graphql_name)
         assert_equal("cantBeNullButIs", err.field.name)
-        assert_nil(err.value)
       end
     end
   end

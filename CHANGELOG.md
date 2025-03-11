@@ -10,6 +10,24 @@
 
 ### Bug fixes
 
+# 2.4.12 (11 Mar 2025)
+
+### Breaking changes
+
+- Remove `InvalidNullError#value` which is always `nil` #5256
+
+### New features
+
+- `validate_timeout` is 3 seconds by default #5258
+
+### Bug fixes
+
+- New Relic: reimplement skipping scalars by default #5271
+- Resolver: revert inheriting overridden `graphql_name` #5260
+- Analysis: manually implement timeout to handle I/O better #5263
+- Parser: properly handle extra token at the end of the query string #5267
+- Validation: fix conflicting aliases inside fragment #5268
+
 # 2.4.11 (28 Feb 2025)
 
 ### New features

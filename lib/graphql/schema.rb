@@ -821,13 +821,13 @@ module GraphQL
 
       attr_writer :validate_timeout
 
-      def validate_timeout(new_validate_timeout = nil)
-        if new_validate_timeout
+      def validate_timeout(new_validate_timeout = NOT_CONFIGURED)
+        if !NOT_CONFIGURED.equal?(new_validate_timeout)
           @validate_timeout = new_validate_timeout
         elsif defined?(@validate_timeout)
           @validate_timeout
         else
-          find_inherited_value(:validate_timeout)
+          find_inherited_value(:validate_timeout) || 3
         end
       end
 
