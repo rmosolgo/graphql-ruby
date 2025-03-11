@@ -82,7 +82,7 @@ describe GraphQL::Tracing::NewRelicTrace do
 
     class SchemaWithoutAuthorizedOrResolveType < GraphQL::Schema
       query(Query)
-      trace_with(GraphQL::Tracing::NewRelicTrace, set_transaction_name: true, trace_authorized: false, trace_resolve_type: false)
+      trace_with(GraphQL::Tracing::NewRelicTrace, set_transaction_name: true, trace_authorized: false, trace_resolve_type: false, trace_scalars: true)
     end
   end
 
@@ -166,14 +166,12 @@ describe GraphQL::Tracing::NewRelicTrace do
         "FINISH GraphQL/Query/other",
         "GraphQL/Authorized/Other",
         "FINISH GraphQL/Authorized/Other",
-        "GraphQL/Other/name",
-        "FINISH GraphQL/Other/name",
       "FINISH GraphQL/execute"
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
 
-  it "can skip authorized and resolve type" do
+  it "can skip authorized and resolve type and instrument scalars" do
     NewRelicTraceTest::SchemaWithoutAuthorizedOrResolveType.execute("{ nameable { name } }")
     expected_steps = [
       "GraphQL/parse",
@@ -235,8 +233,6 @@ describe GraphQL::Tracing::NewRelicTrace do
       "GraphQL/Authorized/Other",
       "FINISH GraphQL/Authorized/Other",
 
-      "GraphQL/Other/name",
-      "FINISH GraphQL/Other/name",
       "FINISH GraphQL/execute",
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES

@@ -73,6 +73,7 @@ module Cop
             # Not really necessary for making a good trace:
             :lex, :analyze_query, :execute_query, :execute_query_lazy,
             # Only useful for isolated event tracking:
+            :begin_dataloader, :end_dataloader,
             :dataloader_fiber_exit, :dataloader_spawn_execution_fiber, :dataloader_spawn_source_fiber
           ]
           missing_defs.each do |missing_def|
