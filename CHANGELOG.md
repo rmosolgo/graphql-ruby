@@ -8,7 +8,7 @@
 
 ### Bug fixes
 
-# 1.11.8 (12 March 2025)
+# 1.11.11 (12 March 2025)
 
 - Security: Fix CVE-2025-27407
 
