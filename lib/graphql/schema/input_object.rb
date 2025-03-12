@@ -44,6 +44,19 @@ module GraphQL
         to_h
       end
 
+<<<<<<< HEAD
+=======
+      def deconstruct_keys(keys = nil)
+        if keys.nil?
+          @ruby_style_hash
+        else
+          new_h = {}
+          keys.each { |k| @ruby_style_hash.key?(k) && new_h[k] = @ruby_style_hash[k] }
+          new_h
+        end
+      end
+
+>>>>>>> d85e69690f (Disable development NoEvalCop for load-time eval calls)
       def prepare
         if @context
           object = @context[:current_object]
@@ -131,12 +144,7 @@ module GraphQL
             end
           end
           # Add a method access
-          method_name = argument_defn.keyword
-          class_eval <<-RUBY, __FILE__, __LINE__
-            def #{method_name}
-              self[#{method_name.inspect}]
-            end
-          RUBY
+          define_accessor_method(argument_defn.keyword)
           argument_defn
         end
 
@@ -241,6 +249,13 @@ module GraphQL
           end
 
           result
+        end
+
+        private
+
+        def define_accessor_method(method_name)
+          define_method(method_name) { self[method_name] }
+          alias_method(method_name, method_name)
         end
       end
 
