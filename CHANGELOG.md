@@ -8,6 +8,10 @@
 
 ### Bug fixes
 
+# 1.12.25 (12 Mar 2025)
+
+- Security: Fix CVE-2025-27407
+
 # 1.12.24 (4 February 2022)
 
 ### Bug fixes
