@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 1.13.24 (12 Mar 2025)
+
+- Security: Fix CVE-2025-27407
+
 # 1.13.22 (28 Feb 2024)
 
 - Fix compatibility with Ruby 3.4-dev #4860
