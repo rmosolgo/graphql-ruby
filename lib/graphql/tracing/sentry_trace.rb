@@ -30,6 +30,8 @@ module GraphQL
         instrument_sentry_execution("graphql.execute", "execute_query", data) { super }
       end
 
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
+
       {
         "lex" => "graphql.lex",
         "parse" => "graphql.parse",
@@ -45,6 +47,8 @@ module GraphQL
         end
         RUBY
       end
+
+      # rubocop:enable Development/NoEvalCop
 
       def platform_execute_field(platform_key, &block)
         instrument_sentry_execution(platform_key, "execute_field", &block)

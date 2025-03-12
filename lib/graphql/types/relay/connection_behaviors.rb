@@ -13,7 +13,7 @@ module GraphQL
           child_class.node_nullable(true)
           child_class.edges_nullable(true)
           child_class.edge_nullable(true)
-          child_class.module_eval {
+          child_class.module_exec {
             self.edge_type = nil
             self.node_type = nil
             self.edge_class = nil

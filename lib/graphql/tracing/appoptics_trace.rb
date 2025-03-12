@@ -32,6 +32,8 @@ module GraphQL
         Gem::Version.new('1.0.0')
       end
 
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
+
       [
         'lex',
         'parse',
@@ -58,6 +60,8 @@ module GraphQL
           end
         RUBY
       end
+
+      # rubocop:enable Development/NoEvalCop
 
       def execute_field(query:, field:, ast_node:, arguments:, object:)
         return_type = field.type.unwrap

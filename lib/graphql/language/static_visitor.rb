@@ -22,39 +22,6 @@ module GraphQL
         end
       end
 
-      # We don't use `alias` here because it breaks `super`
-      def self.make_visit_methods(ast_node_class)
-        node_method = ast_node_class.visit_method
-        children_of_type = ast_node_class.children_of_type
-        child_visit_method = :"#{node_method}_children"
-
-        class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
-          # The default implementation for visiting an AST node.
-          # It doesn't _do_ anything, but it continues to visiting the node's children.
-          # To customize this hook, override one of its make_visit_methods (or the base method?)
-          # in your subclasses.
-          #
-          # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
-          # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
-          # @return [void]
-          def #{node_method}(node, parent)
-            #{
-              if method_defined?(child_visit_method)
-                "#{child_visit_method}(node)"
-              elsif children_of_type
-                children_of_type.map do |child_accessor, child_class|
-                  "node.#{child_accessor}.each do |child_node|
-                    #{child_class.visit_method}(child_node, node)
-                  end"
-                end.join("\n")
-              else
-                ""
-              end
-            }
-          end
-        RUBY
-      end
-
       def on_document_children(document_node)
         document_node.children.each do |child_node|
           visit_method = child_node.visit_method
@@ -123,6 +90,41 @@ module GraphQL
         end
       end
 
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
+
+      # We don't use `alias` here because it breaks `super`
+      def self.make_visit_methods(ast_node_class)
+        node_method = ast_node_class.visit_method
+        children_of_type = ast_node_class.children_of_type
+        child_visit_method = :"#{node_method}_children"
+
+        class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
+          # The default implementation for visiting an AST node.
+          # It doesn't _do_ anything, but it continues to visiting the node's children.
+          # To customize this hook, override one of its make_visit_methods (or the base method?)
+          # in your subclasses.
+          #
+          # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
+          # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
+          # @return [void]
+          def #{node_method}(node, parent)
+            #{
+              if method_defined?(child_visit_method)
+                "#{child_visit_method}(node)"
+              elsif children_of_type
+                children_of_type.map do |child_accessor, child_class|
+                  "node.#{child_accessor}.each do |child_node|
+                    #{child_class.visit_method}(child_node, node)
+                  end"
+                end.join("\n")
+              else
+                ""
+              end
+            }
+          end
+        RUBY
+      end
+
       [
         Language::Nodes::Argument,
         Language::Nodes::Directive,
@@ -162,6 +164,8 @@ module GraphQL
       ].each do |ast_node_class|
         make_visit_methods(ast_node_class)
       end
+
+      # rubocop:disable Development/NoEvalCop
     end
   end
 end

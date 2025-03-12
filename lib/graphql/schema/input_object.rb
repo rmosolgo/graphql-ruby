@@ -59,7 +59,7 @@ module GraphQL
         else
           new_h = {}
           keys.each { |k| @ruby_style_hash.key?(k) && new_h[k] = @ruby_style_hash[k] }
-          new_h 
+          new_h
         end
       end
 
@@ -150,14 +150,8 @@ module GraphQL
             end
           end
           # Add a method access
-          method_name = argument_defn.keyword
           suppress_redefinition_warning do
-            class_eval <<-RUBY, __FILE__, __LINE__
-              def #{method_name}
-                self[#{method_name.inspect}]
-              end
-              alias_method #{method_name.inspect}, #{method_name.inspect}
-            RUBY
+            define_accessor_method(argument_defn.keyword)
           end
           argument_defn
         end
@@ -292,6 +286,11 @@ module GraphQL
           yield
         ensure
           $VERBOSE = verbose
+        end
+
+        def define_accessor_method(method_name)
+          define_method(method_name) { self[method_name] }
+          alias_method(method_name, method_name)
         end
       end
 

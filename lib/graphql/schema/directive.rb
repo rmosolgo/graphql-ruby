@@ -99,7 +99,7 @@ module GraphQL
 
         def inherited(subclass)
           super
-          subclass.class_eval do
+          subclass.class_exec do
             @default_graphql_name ||= nil
           end
         end
