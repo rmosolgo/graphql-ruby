@@ -185,7 +185,7 @@ module GraphQL
 
         def inherited(subclass)
           super
-          subclass.class_eval do
+          subclass.class_exec do
             @own_fields ||= nil
             @field_class ||= nil
           end

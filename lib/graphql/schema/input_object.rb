@@ -132,14 +132,8 @@ module GraphQL
             end
           end
           # Add a method access
-          method_name = argument_defn.keyword
           suppress_redefinition_warning do
-            class_eval <<-RUBY, __FILE__, __LINE__
-              def #{method_name}
-                self[#{method_name.inspect}]
-              end
-              alias_method :#{method_name}, :#{method_name}
-            RUBY
+            define_accessor_method(argument_defn.keyword)
           end
           argument_defn
         end
@@ -255,6 +249,11 @@ module GraphQL
           yield
         ensure
           $VERBOSE = verbose
+        end
+
+        def define_accessor_method(method_name)
+          define_method(method_name) { self[method_name] }
+          alias_method(method_name, method_name)
         end
       end
 

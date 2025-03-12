@@ -6,7 +6,7 @@ module GraphQL
       module HasDirectives
         def self.extended(child_cls)
           super
-          child_cls.module_eval { self.own_directives = nil }
+          child_cls.module_exec { self.own_directives = nil }
         end
 
         def inherited(child_cls)
