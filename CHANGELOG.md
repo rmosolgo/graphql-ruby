@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.4.13 (12 Mar 2025)
+
+- Security: Fix CVE-2025-27407
+
 # 2.4.12 (11 Mar 2025)
 
 ### Breaking changes
