@@ -111,12 +111,16 @@ module GraphQLBenchmark
         end
 
         obj_ts = 100.times.map do |n|
+          input_obj_t = Class.new(GraphQL::Schema::InputObject) do
+            graphql_name("Input#{n}")
+            argument :arg, String
+          end
           obj_t = Class.new(GraphQL::Schema::Object) do
             graphql_name("Object#{n}")
             implements(*int_ts)
             20.times do |n2|
               field :"field#{n2}", String do
-                argument :arg, String
+                argument :input, input_obj_t
               end
 
             end
@@ -153,8 +157,9 @@ module GraphQLBenchmark
     end
     StackProf::Report.new(result).print_text
 
+    retained_schema = nil
     report = MemoryProfiler.report do
-      build_large_schema
+      retained_schema = build_large_schema
     end
 
     report.pretty_print

@@ -76,67 +76,6 @@ module GraphQL
         end
       end
 
-      # We don't use `alias` here because it breaks `super`
-      def self.make_visit_methods(ast_node_class)
-        node_method = ast_node_class.visit_method
-        children_of_type = ast_node_class.children_of_type
-        child_visit_method = :"#{node_method}_children"
-
-        class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
-          # The default implementation for visiting an AST node.
-          # It doesn't _do_ anything, but it continues to visiting the node's children.
-          # To customize this hook, override one of its make_visit_methods (or the base method?)
-          # in your subclasses.
-          #
-          # For compatibility, it calls hook procs, too.
-          # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
-          # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
-          # @return [Array, nil] If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
-          def #{node_method}(node, parent)
-            if node.equal?(DELETE_NODE)
-              # This might be passed to `super(DELETE_NODE, ...)`
-              # by a user hook, don't want to keep visiting in that case.
-              [node, parent]
-            else
-              # Run hooks if there are any
-              new_node = node
-              no_hooks = !@visitors.key?(node.class)
-              if no_hooks || begin_visit(new_node, parent)
-                #{
-                  if method_defined?(child_visit_method)
-                    "new_node = #{child_visit_method}(new_node)"
-                  elsif children_of_type
-                    children_of_type.map do |child_accessor, child_class|
-                      "node.#{child_accessor}.each do |child_node|
-                        new_child_and_node = #{child_class.visit_method}_with_modifications(child_node, new_node)
-                        # Reassign `node` in case the child hook makes a modification
-                        if new_child_and_node.is_a?(Array)
-                          new_node = new_child_and_node[1]
-                        end
-                      end"
-                    end.join("\n")
-                  else
-                    ""
-                  end
-                }
-              end
-              end_visit(new_node, parent) unless no_hooks
-
-              if new_node.equal?(node)
-                [node, parent]
-              else
-                [new_node, parent]
-              end
-            end
-          end
-
-          def #{node_method}_with_modifications(node, parent)
-            new_node_and_new_parent = #{node_method}(node, parent)
-            apply_modifications(node, parent, new_node_and_new_parent)
-          end
-        RUBY
-      end
-
       def on_document_children(document_node)
         new_node = document_node
         document_node.children.each do |child_node|
@@ -237,6 +176,68 @@ module GraphQL
         new_node
       end
 
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
+
+      def self.make_visit_methods(ast_node_class)
+        node_method = ast_node_class.visit_method
+        children_of_type = ast_node_class.children_of_type
+        child_visit_method = :"#{node_method}_children"
+
+        class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
+          # The default implementation for visiting an AST node.
+          # It doesn't _do_ anything, but it continues to visiting the node's children.
+          # To customize this hook, override one of its make_visit_methods (or the base method?)
+          # in your subclasses.
+          #
+          # For compatibility, it calls hook procs, too.
+          # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
+          # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
+          # @return [Array, nil] If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
+          def #{node_method}(node, parent)
+            if node.equal?(DELETE_NODE)
+              # This might be passed to `super(DELETE_NODE, ...)`
+              # by a user hook, don't want to keep visiting in that case.
+              [node, parent]
+            else
+              # Run hooks if there are any
+              new_node = node
+              no_hooks = !@visitors.key?(node.class)
+              if no_hooks || begin_visit(new_node, parent)
+                #{
+                  if method_defined?(child_visit_method)
+                    "new_node = #{child_visit_method}(new_node)"
+                  elsif children_of_type
+                    children_of_type.map do |child_accessor, child_class|
+                      "node.#{child_accessor}.each do |child_node|
+                        new_child_and_node = #{child_class.visit_method}_with_modifications(child_node, new_node)
+                        # Reassign `node` in case the child hook makes a modification
+                        if new_child_and_node.is_a?(Array)
+                          new_node = new_child_and_node[1]
+                        end
+                      end"
+                    end.join("\n")
+                  else
+                    ""
+                  end
+                }
+              end
+              end_visit(new_node, parent) unless no_hooks
+              if new_node.equal?(node)
+                [node, parent]
+              else
+                [new_node, parent]
+              end
+            end
+          end
+          def #{node_method}_with_modifications(node, parent)
+            new_node_and_new_parent = #{node_method}(node, parent)
+            apply_modifications(node, parent, new_node_and_new_parent)
+          end
+        RUBY
+      end
+
+
+
       [
         Language::Nodes::Argument,
         Language::Nodes::Directive,
@@ -276,6 +277,8 @@ module GraphQL
       ].each do |ast_node_class|
         make_visit_methods(ast_node_class)
       end
+
+      # rubocop:enable Development/NoEvalCop
 
       private
 
