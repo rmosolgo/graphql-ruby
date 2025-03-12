@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.3.21 (12 Mar 2025)
+
+- Security: Fix CVE-2025-27407
+
 # 2.3.20 (31 Oct 2024)
 
 ### Bug fixes
