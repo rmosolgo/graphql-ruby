@@ -55,7 +55,7 @@ module GraphQL
         end
 
         if block_given?
-          instance_eval(&block)
+          instance_exec(self, &block)
         end
       end
 

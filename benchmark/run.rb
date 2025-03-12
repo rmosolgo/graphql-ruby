@@ -82,7 +82,7 @@ module GraphQLBenchmark
             graphql_name("Object#{n}")
             20.times do |n2|
               field :"field#{n2}", String do
-                argument :arg, String
+                argument :input, input_obj_t
               end
             end
           end

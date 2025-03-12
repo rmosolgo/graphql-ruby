@@ -232,6 +232,7 @@ module GraphQL
 
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
+        NameValidator.validate!(@name)
         @description = description
         if field.is_a?(GraphQL::Schema::Field)
           raise ArgumentError, "Instead of passing a field as `field:`, use `add_field(field)` to add an already-defined field."
