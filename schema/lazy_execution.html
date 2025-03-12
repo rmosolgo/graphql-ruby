@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.4.12/">API</a>
+            <a href="/api-doc/2.4.13/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -161,7 +161,7 @@
 
 <ul>
   <li>Define a lazy-loading class with <em>one</em> method for loading &amp; returning a value</li>
-  <li>Connect it to your schema with <a href="/api-doc/2.4.12/GraphQL/Schema#lazy_resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema#lazy_resolve"><code>GraphQL::Schema#lazy_resolve</code></a></li>
+  <li>Connect it to your schema with <a href="/api-doc/2.4.13/GraphQL/Schema#lazy_resolve-instance_method" target="_blank" title="API docs for GraphQL::Schema#lazy_resolve"><code>GraphQL::Schema#lazy_resolve</code></a></li>
   <li>In <code class="language-plaintext highlighter-rouge">resolve</code> methods, return instances of the lazy-loading class</li>
 </ul>
 
@@ -244,7 +244,7 @@
 <p>The example above is simple and has some shortcomings. Consider the following gems for a robust solution to batched resolution:</p>
 
 <ul>
-  <li><a href="/api-doc/2.4.12/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> is a built-in, Fiber-based approach to batching. See the <a href="/dataloader/overview">Dataloader guide</a> for more information.</li>
+  <li><a href="/api-doc/2.4.13/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> is a built-in, Fiber-based approach to batching. See the <a href="/dataloader/overview">Dataloader guide</a> for more information.</li>
   <li><a href="https://github.com/shopify/graphql-batch"><code class="language-plaintext highlighter-rouge">graphql-batch</code></a> provides a powerful, flexible toolkit for lazy resolution with GraphQL.</li>
   <li><a href="https://github.com/sheerun/dataloader"><code class="language-plaintext highlighter-rouge">dataloader</code></a> is more general promise-based utility for batching queries within the same thread.</li>
   <li><a href="https://github.com/exAspArk/batch-loader"><code class="language-plaintext highlighter-rouge">batch-loader</code></a> works with any Ruby code including GraphQL, no extra dependencies or primitives.</li>
