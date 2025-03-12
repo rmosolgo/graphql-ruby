@@ -29,6 +29,9 @@
                     <li class="nav-item">
                       <%= link_to "Traces", graphql_dashboard.traces_path, class: "nav-link #{params[:controller] == "graphql/dashboard/traces" ? "active" : ""}" %>
                     </li>
+                    <li class="nav-item">
+                      <%= link_to "Stored Operations", graphql_dashboard.operation_store_clients_path, class: "nav-link #{params[:controller].include?("operation_store") ? "active" : ""}" %>
+                    </li>
                   </ul>
                   <span class="navbar-text pe-2">
                     <%= link_to ".", "#", class: "nav-link", id: "themeToggle" %>

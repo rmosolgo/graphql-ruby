@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require 'rails/engine'
-
 module Graphql
   # `GraphQL::Dashboard` is a `Rails::Engine`-based dashboard for viewing metadata about your GraphQL schema.
   #
@@ -40,6 +39,16 @@ module Graphql
       resources :statics, only: :show, constraints: { id: /[0-9A-Za-z\-.]+/ }
       delete "/traces/delete_all", to: "traces#delete_all", as: :traces_delete_all
       resources :traces, only: [:index, :show, :destroy]
+
+      namespace :operation_store do
+        resources :clients, param: :name do
+          resources :operations
+        end
+
+        resources :operations
+        resources :index_entries, only: [:index, :show]
+
+      end
     end
 
     class ApplicationController < ActionController::Base
@@ -133,6 +142,8 @@ module Graphql
     end
   end
 end
+
+require 'graphql/dashboard/operation_store'
 
 # Rails expects the engine to be called `Graphql::Dashboard`,
 # but `GraphQL::Dashboard` is consistent with this gem's naming.

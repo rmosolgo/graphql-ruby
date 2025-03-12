@@ -1,0 +1,50 @@
+<div class="row mt-3">
+  <div class="col">
+    <h3>
+      <%= pluralize(@clients_page.total_count, "Client") %>
+    </h3>
+  </div>
+  <div class="col">
+    <p>
+      <%= link_to("New Client", graphql_dashboard.new_operation_store_client_path, class: "btn btn-outline-primary") %>
+    </p>
+  </div>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th><%= link_to("Name", graphql_dashboard.operation_store_clients_path, params: { order_by: "name", order_dir: ((@order_by == "name" && @order_dir != :desc) ? "desc" : "asc" )}) %></th>
+      <th>Operations</th>
+      <th>Created At</th>
+      <th>Last Updated</th>
+      <th><%= link_to("Last Used At",  graphql_dashboard.operation_store_clients_path, params: { order_by: "last_used_at", order_dir: ((@order_by == "last_used_at" && @order_dir != :desc) ? "desc": "asc")}) %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @clients_page.items.each do |client| %>
+      <tr>
+        <td><%= link_to(client.name, graphql_dashboard.operation_store_client_operations_path(client_name: client.name)) %></td>
+        <td><%= client.operations_count %><% if client.archived_operations_count > 0 %> <span class="muted">(<%=client.archived_operations_count%> archived)</span><% end %></td>
+        <td><%=
+          # localize_date(client.created_at)
+          %></td>
+        <td>
+          <% if client.operations_count == 0 %>
+            &mdash;
+          <% else %>
+            <%=
+              # localize_date(client.last_synced_at)
+            %>
+          <% end %>
+        </td>
+        <td><%=
+          # localize_date(client.last_used_at)
+          %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%
+  # render_partial("_pagination")
+%>
