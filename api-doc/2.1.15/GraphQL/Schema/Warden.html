@@ -1,0 +1,2382 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::Warden
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::Warden";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (W)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span>
+     &raquo; 
+    <span class="title">Warden</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::Warden
+  
+  
+  <span class="private note title">Private</span>
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Schema::Warden</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/warden.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This class is part of a private API.</strong>
+  You should avoid using this class if possible, as it may be removed or be changed in the future.
+</p>
+<p>Restrict access to a <span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">GraphQL::Schema</a></span> with a user-defined <code>visible?</code> implementations.</p>
+
+<p>When validating and executing a query, all access to schema members
+should go through a warden. If you access the schema directly,
+you may show a client something that it shouldn’t be allowed to see.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Warden/NullWarden.html" title="GraphQL::Schema::Warden::NullWarden (class)">NullWarden</a></span>, <span class='object_link'><a href="Warden/PassThruWarden.html" title="GraphQL::Schema::Warden::PassThruWarden (class)">PassThruWarden</a></span>
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#from_context-class_method" title="from_context (class method)">.<strong>from_context</strong>(context)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_entry%3F-class_method" title="visible_entry? (class method)">.<strong>visible_entry?</strong>(visibility_method, entry, context, warden = Warden.from_context(context))  &#x21d2; Object<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#arguments-instance_method" title="#arguments (instance method)">#<strong>arguments</strong>(argument_owner, ctx = nil)  &#x21d2; Array&lt;GraphQL::Argument&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Visible arguments on <code>argument_owner</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#directives-instance_method" title="#directives (instance method)">#<strong>directives</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#enum_values-instance_method" title="#enum_values (instance method)">#<strong>enum_values</strong>(enum_defn)  &#x21d2; Array&lt;GraphQL::EnumType::EnumValue&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Visible members of <code>enum_defn</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fields-instance_method" title="#fields (instance method)">#<strong>fields</strong>(type_defn)  &#x21d2; Array&lt;GraphQL::Field&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fields on <code>type_defn</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get_argument-instance_method" title="#get_argument (instance method)">#<strong>get_argument</strong>(parent_type, argument_name)  &#x21d2; GraphQL::Argument<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>The argument named <code>argument_name</code> on <code>parent_type</code>, if it exists and is visible.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get_field-instance_method" title="#get_field (instance method)">#<strong>get_field</strong>(parent_type, field_name)  &#x21d2; GraphQL::Field<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>The field named <code>field_name</code> on <code>parent_type</code>, if it exists.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get_type-instance_method" title="#get_type (instance method)">#<strong>get_type</strong>(type_name)  &#x21d2; GraphQL::BaseType<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>The type named <code>type_name</code>, if it exists (else <code>nil</code>).</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(context:, schema:)  &#x21d2; Warden </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Warden.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#interface_type_memberships-instance_method" title="#interface_type_memberships (instance method)">#<strong>interface_type_memberships</strong>(obj_type, _ctx = nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#interfaces-instance_method" title="#interfaces (instance method)">#<strong>interfaces</strong>(obj_type)  &#x21d2; Array&lt;GraphQL::InterfaceType&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Visible interfaces implemented by <code>obj_type</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#loadable%3F-instance_method" title="#loadable? (instance method)">#<strong>loadable?</strong>(type, _ctx)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>True if this type is used for <code>loads:</code> but not in the schema otherwise and not <em>explicitly</em> hidden.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#possible_types-instance_method" title="#possible_types (instance method)">#<strong>possible_types</strong>(type_defn)  &#x21d2; Array&lt;GraphQL::BaseType&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>The types which may be member of <code>type_defn</code>.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reachable_type%3F-instance_method" title="#reachable_type? (instance method)">#<strong>reachable_type?</strong>(type_name)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Boolean True if the type is visible and reachable in the schema.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#reachable_types-instance_method" title="#reachable_types (instance method)">#<strong>reachable_types</strong>  &#x21d2; Array&lt;GraphQL::BaseType&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Visible and reachable types in the schema.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#root_type_for_operation-instance_method" title="#root_type_for_operation (instance method)">#<strong>root_type_for_operation</strong>(op_name)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#types-instance_method" title="#types (instance method)">#<strong>types</strong>  &#x21d2; Hash&lt;String, GraphQL::BaseType&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Visible types in the schema.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_argument%3F-instance_method" title="#visible_argument? (instance method)">#<strong>visible_argument?</strong>(arg_defn, _ctx = nil)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_enum_value%3F-instance_method" title="#visible_enum_value? (instance method)">#<strong>visible_enum_value?</strong>(enum_value, _ctx = nil)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_field%3F-instance_method" title="#visible_field? (instance method)">#<strong>visible_field?</strong>(field_defn, _ctx = nil, owner = field_defn.owner)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_type%3F-instance_method" title="#visible_type? (instance method)">#<strong>visible_type?</strong>(type_defn, _ctx = nil)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_type_membership%3F-instance_method" title="#visible_type_membership? (instance method)">#<strong>visible_type_membership?</strong>(type_membership, _ctx = nil)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(context:, schema:)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Schema::Warden (class)">Warden</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns a new instance of Warden.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>schema</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">GraphQL::Schema</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 96</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>context:</span><span class='comma'>,</span> <span class='label'>schema:</span><span class='rparen'>)</span>
+  <span class='ivar'>@schema</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span>
+  <span class='comment'># Cache these to avoid repeated hits to the inheritance chain when one isn&#39;t present
+</span>  <span class='ivar'>@query</span> <span class='op'>=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span>
+  <span class='ivar'>@mutation</span> <span class='op'>=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_mutation'>mutation</span>
+  <span class='ivar'>@subscription</span> <span class='op'>=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_subscription'>subscription</span>
+  <span class='ivar'>@context</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span>
+  <span class='ivar'>@visibility_cache</span> <span class='op'>=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_m'>m</span><span class='op'>|</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_m'>m</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='ivar'>@visibility_cache</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+  <span class='comment'># Initialize all ivars to improve object shape consistency:
+</span>  <span class='ivar'>@types</span> <span class='op'>=</span> <span class='ivar'>@visible_types</span> <span class='op'>=</span> <span class='ivar'>@reachable_types</span> <span class='op'>=</span> <span class='ivar'>@visible_parent_fields</span> <span class='op'>=</span>
+    <span class='ivar'>@visible_possible_types</span> <span class='op'>=</span> <span class='ivar'>@visible_fields</span> <span class='op'>=</span> <span class='ivar'>@visible_arguments</span> <span class='op'>=</span> <span class='ivar'>@visible_enum_arrays</span> <span class='op'>=</span>
+    <span class='ivar'>@visible_enum_values</span> <span class='op'>=</span> <span class='ivar'>@visible_interfaces</span> <span class='op'>=</span> <span class='ivar'>@type_visibility</span> <span class='op'>=</span> <span class='ivar'>@type_memberships</span> <span class='op'>=</span>
+    <span class='ivar'>@visible_and_reachable_type</span> <span class='op'>=</span> <span class='ivar'>@unions</span> <span class='op'>=</span> <span class='ivar'>@unfiltered_interfaces</span> <span class='op'>=</span>
+    <span class='ivar'>@reachable_type_set</span> <span class='op'>=</span>
+      <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="from_context-class_method">
+  
+    .<strong>from_context</strong>(context)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+15
+16
+17
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 15</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_from_context'>from_context</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_warden'>warden</span> <span class='op'>||</span> <span class='const'><span class='object_link'><a href="Warden/PassThruWarden.html" title="GraphQL::Schema::Warden::PassThruWarden (class)">PassThruWarden</a></span></span>
+<span class='kw'>rescue</span> <span class='const'>NoMethodError</span>
+  <span class='comment'># this might be a hash which won&#39;t respond to #warden
+</span>  <span class='const'><span class='object_link'><a href="Warden/PassThruWarden.html" title="GraphQL::Schema::Warden::PassThruWarden (class)">PassThruWarden</a></span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_entry?-class_method">
+  
+    .<strong>visible_entry?</strong>(visibility_method, entry, context, warden = Warden.from_context(context))  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>visibility_method</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a Warden method to call for this entry</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>entry</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>, <tt>Array&lt;<span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>One or more definitions for a given name in a GraphQL Schema</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>warden</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="GraphQL::Schema::Warden (class)">Warden</a></span></tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>Warden.from_context(context)</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p><code>entry</code> or one of <code>entry</code>’s items if exactly one of them is visible for this context</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>If neither <code>entry</code> nor any of <code>entry</code>’s items are visible for this context</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 28</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_visible_entry?'>visible_entry?</span><span class='lparen'>(</span><span class='id identifier rubyid_visibility_method'>visibility_method</span><span class='comma'>,</span> <span class='id identifier rubyid_entry'>entry</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_warden'>warden</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="" title="GraphQL::Schema::Warden (class)">Warden</a></span></span><span class='period'>.</span><span class='id identifier rubyid_from_context'><span class='object_link'><a href="#from_context-class_method" title="GraphQL::Schema::Warden.from_context (method)">from_context</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_entry'>entry</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_visible_item'>visible_item</span> <span class='op'>=</span> <span class='kw'>nil</span>
+    <span class='id identifier rubyid_entry'>entry</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_item'>item</span><span class='op'>|</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='id identifier rubyid_visibility_method'>visibility_method</span><span class='comma'>,</span> <span class='id identifier rubyid_item'>item</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_visible_item'>visible_item</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+          <span class='id identifier rubyid_visible_item'>visible_item</span> <span class='op'>=</span> <span class='id identifier rubyid_item'>item</span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="DuplicateNamesError.html" title="GraphQL::Schema::DuplicateNamesError (class)">DuplicateNamesError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="DuplicateNamesError.html#initialize-instance_method" title="GraphQL::Schema::DuplicateNamesError#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+            <span class='label'>duplicated_name:</span> <span class='id identifier rubyid_item'>item</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='label'>duplicated_definition_1:</span> <span class='id identifier rubyid_visible_item'>visible_item</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='comma'>,</span> <span class='label'>duplicated_definition_2:</span> <span class='id identifier rubyid_item'>item</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span>
+          <span class='rparen'>)</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_visible_item'>visible_item</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_warden'>warden</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='id identifier rubyid_visibility_method'>visibility_method</span><span class='comma'>,</span> <span class='id identifier rubyid_entry'>entry</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_entry'>entry</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="arguments-instance_method">
+  
+    #<strong>arguments</strong>(argument_owner, ctx = nil)  &#x21d2; <tt>Array&lt;GraphQL::Argument&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Visible arguments on <code>argument_owner</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>argument_owner</span>
+      
+      
+        <span class='type'>(<tt>GraphQL::Field</tt>, <tt>GraphQL::InputObjectType</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;GraphQL::Argument&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Visible arguments on <code>argument_owner</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 197</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_argument_owner'>argument_owner</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@visible_arguments</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_o'>o</span><span class='op'>|</span>
+    <span class='id identifier rubyid_args'>args</span> <span class='op'>=</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='ivar'>@context</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+      <span class='id identifier rubyid_args'>args</span> <span class='op'>=</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span>
+      <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_select!'>select!</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='op'>|</span> <span class='id identifier rubyid_visible_argument?'>visible_argument?</span><span class='lparen'>(</span><span class='id identifier rubyid_a'>a</span><span class='comma'>,</span> <span class='ivar'>@context</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+      <span class='id identifier rubyid_args'>args</span>
+    <span class='kw'>else</span>
+      <span class='const'><span class='object_link'><a href="../EmptyObjects.html" title="GraphQL::EmptyObjects (module)">EmptyObjects</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../EmptyObjects.html#EMPTY_ARRAY-constant" title="GraphQL::EmptyObjects::EMPTY_ARRAY (constant)">EMPTY_ARRAY</a></span></span>
+    <span class='kw'>end</span>
+  <span class='rbrace'>}</span>
+  <span class='ivar'>@visible_arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_argument_owner'>argument_owner</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="directives-instance_method">
+  
+    #<strong>directives</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+240
+241
+242</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 240</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_directives'>directives</span>
+  <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_directives'>directives</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_d'>d</span><span class='op'>|</span> <span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_d'>d</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="enum_values-instance_method">
+  
+    #<strong>enum_values</strong>(enum_defn)  &#x21d2; <tt>Array&lt;GraphQL::EnumType::EnumValue&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Visible members of <code>enum_defn</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;GraphQL::EnumType::EnumValue&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Visible members of <code>enum_defn</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 212</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='id identifier rubyid_enum_defn'>enum_defn</span><span class='rparen'>)</span>
+  <span class='ivar'>@visible_enum_arrays</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span>
+    <span class='id identifier rubyid_values'>values</span> <span class='op'>=</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='ivar'>@context</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>==</span> <span class='int'>0</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Enum.html" title="GraphQL::Schema::Enum (class)">Enum</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Enum/MissingValuesError.html" title="GraphQL::Schema::Enum::MissingValuesError (class)">MissingValuesError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Enum/MissingValuesError.html#initialize-instance_method" title="GraphQL::Schema::Enum::MissingValuesError#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_values'>values</span>
+  <span class='rbrace'>}</span>
+  <span class='ivar'>@visible_enum_arrays</span><span class='lbracket'>[</span><span class='id identifier rubyid_enum_defn'>enum_defn</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fields-instance_method">
+  
+    #<strong>fields</strong>(type_defn)  &#x21d2; <tt>Array&lt;GraphQL::Field&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Fields on <code>type_defn</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>type_defn</span>
+      
+      
+        <span class='type'>(<tt>GraphQL::ObjectType</tt>, <tt>GraphQL::InterfaceType</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;GraphQL::Field&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Fields on <code>type_defn</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+190
+191
+192
+193</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 190</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fields'>fields</span><span class='lparen'>(</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='rparen'>)</span>
+  <span class='ivar'>@visible_fields</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_get_fields'>get_fields</span><span class='lparen'>(</span><span class='id identifier rubyid_t'>t</span><span class='comma'>,</span> <span class='ivar'>@context</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span> <span class='rbrace'>}</span>
+  <span class='ivar'>@visible_fields</span><span class='lbracket'>[</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="get_argument-instance_method">
+  
+    #<strong>get_argument</strong>(parent_type, argument_name)  &#x21d2; <tt>GraphQL::Argument</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns The argument named <code>argument_name</code> on <code>parent_type</code>, if it exists and is visible.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>GraphQL::Argument</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The argument named <code>argument_name</code> on <code>parent_type</code>, if it exists and is visible</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+174
+175
+176
+177</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 174</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get_argument'>get_argument</span><span class='lparen'>(</span><span class='id identifier rubyid_parent_type'>parent_type</span><span class='comma'>,</span> <span class='id identifier rubyid_argument_name'>argument_name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_argument'>argument</span> <span class='op'>=</span> <span class='id identifier rubyid_parent_type'>parent_type</span><span class='period'>.</span><span class='id identifier rubyid_get_argument'>get_argument</span><span class='lparen'>(</span><span class='id identifier rubyid_argument_name'>argument_name</span><span class='comma'>,</span> <span class='ivar'>@context</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_argument'>argument</span> <span class='kw'>if</span> <span class='id identifier rubyid_argument'>argument</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_visible_argument?'>visible_argument?</span><span class='lparen'>(</span><span class='id identifier rubyid_argument'>argument</span><span class='comma'>,</span> <span class='ivar'>@context</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="get_field-instance_method">
+  
+    #<strong>get_field</strong>(parent_type, field_name)  &#x21d2; <tt>GraphQL::Field</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns The field named <code>field_name</code> on <code>parent_type</code>, if it exists.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>GraphQL::Field</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The field named <code>field_name</code> on <code>parent_type</code>, if it exists</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 158</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get_field'>get_field</span><span class='lparen'>(</span><span class='id identifier rubyid_parent_type'>parent_type</span><span class='comma'>,</span> <span class='id identifier rubyid_field_name'>field_name</span><span class='rparen'>)</span>
+  <span class='ivar'>@visible_parent_fields</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_type'>type</span><span class='op'>|</span>
+    <span class='id identifier rubyid_read_through'>read_through</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_f_name'>f_name</span><span class='op'>|</span>
+      <span class='id identifier rubyid_field_defn'>field_defn</span> <span class='op'>=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_get_field'>get_field</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_f_name'>f_name</span><span class='comma'>,</span> <span class='ivar'>@context</span><span class='rparen'>)</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_field_defn'>field_defn</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_visible_field?'>visible_field?</span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_field_defn'>field_defn</span>
+      <span class='kw'>else</span>
+        <span class='kw'>nil</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@visible_parent_fields</span><span class='lbracket'>[</span><span class='id identifier rubyid_parent_type'>parent_type</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='id identifier rubyid_field_name'>field_name</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="get_type-instance_method">
+  
+    #<strong>get_type</strong>(type_name)  &#x21d2; <tt>GraphQL::BaseType</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns The type named <code>type_name</code>, if it exists (else <code>nil</code>).</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>GraphQL::BaseType</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The type named <code>type_name</code>, if it exists (else <code>nil</code>)</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 133</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get_type'>get_type</span><span class='lparen'>(</span><span class='id identifier rubyid_type_name'>type_name</span><span class='rparen'>)</span>
+  <span class='ivar'>@visible_types</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='op'>|</span>
+    <span class='id identifier rubyid_type_defn'>type_defn</span> <span class='op'>=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_get_type'>get_type</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='ivar'>@context</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_type_defn'>type_defn</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_visible_and_reachable_type?'>visible_and_reachable_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_type_defn'>type_defn</span>
+    <span class='kw'>else</span>
+      <span class='kw'>nil</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@visible_types</span><span class='lbracket'>[</span><span class='id identifier rubyid_type_name'>type_name</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="interface_type_memberships-instance_method">
+  
+    #<strong>interface_type_memberships</strong>(obj_type, _ctx = nil)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+277
+278
+279
+280
+281
+282</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 277</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_interface_type_memberships'>interface_type_memberships</span><span class='lparen'>(</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='comma'>,</span> <span class='id identifier rubyid__ctx'>_ctx</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@type_memberships</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_obj_t'>obj_t</span><span class='op'>|</span>
+    <span class='id identifier rubyid_obj_t'>obj_t</span><span class='period'>.</span><span class='id identifier rubyid_interface_type_memberships'>interface_type_memberships</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@type_memberships</span><span class='lbracket'>[</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="interfaces-instance_method">
+  
+    #<strong>interfaces</strong>(obj_type)  &#x21d2; <tt>Array&lt;GraphQL::InterfaceType&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Visible interfaces implemented by <code>obj_type</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;GraphQL::InterfaceType&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Visible interfaces implemented by <code>obj_type</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 229</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_interfaces'>interfaces</span><span class='lparen'>(</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='rparen'>)</span>
+  <span class='ivar'>@visible_interfaces</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span>
+    <span class='id identifier rubyid_ints'>ints</span> <span class='op'>=</span> <span class='id identifier rubyid_t'>t</span><span class='period'>.</span><span class='id identifier rubyid_interfaces'>interfaces</span><span class='lparen'>(</span><span class='ivar'>@context</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_ints'>ints</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>
+      <span class='id identifier rubyid_ints'>ints</span><span class='period'>.</span><span class='id identifier rubyid_select!'>select!</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='id identifier rubyid_visible_type?'>visible_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_i'>i</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_ints'>ints</span>
+  <span class='rbrace'>}</span>
+  <span class='ivar'>@visible_interfaces</span><span class='lbracket'>[</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="loadable?-instance_method">
+  
+    #<strong>loadable?</strong>(type, _ctx)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns True if this type is used for <code>loads:</code> but not in the schema otherwise and not <em>explicitly</em> hidden.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>True if this type is used for <code>loads:</code> but not in the schema otherwise and not <em>explicitly</em> hidden.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+128
+129
+130</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 128</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_loadable?'>loadable?</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid__ctx'>_ctx</span><span class='rparen'>)</span>
+  <span class='op'>!</span><span class='id identifier rubyid_reachable_type_set'>reachable_type_set</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_visible_type?'>visible_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="possible_types-instance_method">
+  
+    #<strong>possible_types</strong>(type_defn)  &#x21d2; <tt>Array&lt;GraphQL::BaseType&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns The types which may be member of <code>type_defn</code>.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;GraphQL::BaseType&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The types which may be member of <code>type_defn</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+180
+181
+182
+183
+184
+185
+186</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 180</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='rparen'>)</span>
+  <span class='ivar'>@visible_possible_types</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='op'>|</span>
+    <span class='id identifier rubyid_pt'>pt</span> <span class='op'>=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='comma'>,</span> <span class='ivar'>@context</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_pt'>pt</span><span class='period'>.</span><span class='id identifier rubyid_select'>select</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_t'>t</span><span class='op'>|</span> <span class='id identifier rubyid_visible_and_reachable_type?'>visible_and_reachable_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_t'>t</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='rbrace'>}</span>
+  <span class='ivar'>@visible_possible_types</span><span class='lbracket'>[</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reachable_type?-instance_method">
+  
+    #<strong>reachable_type?</strong>(type_name)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Boolean True if the type is visible and reachable in the schema.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Boolean True if the type is visible and reachable in the schema</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+152
+153
+154
+155</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 152</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reachable_type?'>reachable_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_type_name'>type_name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_type'>type</span> <span class='op'>=</span> <span class='id identifier rubyid_get_type'>get_type</span><span class='lparen'>(</span><span class='id identifier rubyid_type_name'>type_name</span><span class='rparen'>)</span> <span class='comment'># rubocop:disable Development/ContextIsPassedCop -- `self` is query-aware
+</span>  <span class='id identifier rubyid_type'>type</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_reachable_type_set'>reachable_type_set</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="reachable_types-instance_method">
+  
+    #<strong>reachable_types</strong>  &#x21d2; <tt>Array&lt;GraphQL::BaseType&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Visible and reachable types in the schema.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;GraphQL::BaseType&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Visible and reachable types in the schema</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+147
+148
+149</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 147</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_reachable_types'>reachable_types</span>
+  <span class='ivar'>@reachable_types</span> <span class='op'>||=</span> <span class='id identifier rubyid_reachable_type_set'>reachable_type_set</span><span class='period'>.</span><span class='id identifier rubyid_to_a'>to_a</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="root_type_for_operation-instance_method">
+  
+    #<strong>root_type_for_operation</strong>(op_name)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+244
+245
+246
+247
+248
+249
+250
+251</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 244</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_root_type_for_operation'>root_type_for_operation</span><span class='lparen'>(</span><span class='id identifier rubyid_op_name'>op_name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_root_type'>root_type</span> <span class='op'>=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_root_type_for_operation'>root_type_for_operation</span><span class='lparen'>(</span><span class='id identifier rubyid_op_name'>op_name</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_root_type'>root_type</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_root_type'>root_type</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_root_type'>root_type</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="types-instance_method">
+  
+    #<strong>types</strong>  &#x21d2; <tt>Hash&lt;String, GraphQL::BaseType&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Returns Visible types in the schema.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;String, GraphQL::BaseType&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Visible types in the schema</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 115</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_types'>types</span>
+  <span class='ivar'>@types</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+    <span class='id identifier rubyid_vis_types'>vis_types</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+    <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span><span class='lparen'>(</span><span class='ivar'>@context</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='comma'>,</span> <span class='id identifier rubyid_t'>t</span><span class='op'>|</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_visible_and_reachable_type?'>visible_and_reachable_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_t'>t</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_vis_types'>vis_types</span><span class='lbracket'>[</span><span class='id identifier rubyid_n'>n</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_t'>t</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_vis_types'>vis_types</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_argument?-instance_method">
+  
+    #<strong>visible_argument?</strong>(arg_defn, _ctx = nil)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+264
+265
+266</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 264</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_argument?'>visible_argument?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='comma'>,</span> <span class='id identifier rubyid__ctx'>_ctx</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_visible_and_reachable_type?'>visible_and_reachable_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_enum_value?-instance_method">
+  
+    #<strong>visible_enum_value?</strong>(enum_value, _ctx = nil)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+223
+224
+225
+226</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 223</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_enum_value?'>visible_enum_value?</span><span class='lparen'>(</span><span class='id identifier rubyid_enum_value'>enum_value</span><span class='comma'>,</span> <span class='id identifier rubyid__ctx'>_ctx</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@visible_enum_values</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ev'>ev</span><span class='op'>|</span> <span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_ev'>ev</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='ivar'>@visible_enum_values</span><span class='lbracket'>[</span><span class='id identifier rubyid_enum_value'>enum_value</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_field?-instance_method">
+  
+    #<strong>visible_field?</strong>(field_defn, _ctx = nil, owner = field_defn.owner)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>owner</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>, <tt>Module</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>field_defn.owner</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If provided, confirm that field has the given owner.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+254
+255
+256
+257
+258
+259
+260
+261
+262</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 254</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_field?'>visible_field?</span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='comma'>,</span> <span class='id identifier rubyid__ctx'>_ctx</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_owner'>owner</span> <span class='op'>=</span> <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_owner'>owner</span><span class='rparen'>)</span>
+  <span class='comment'># This field is visible in its own right
+</span>  <span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span>
+    <span class='comment'># This field&#39;s return type is visible
+</span>    <span class='id identifier rubyid_visible_and_reachable_type?'>visible_and_reachable_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span>
+    <span class='comment'># This field is either defined on this object type,
+</span>    <span class='comment'># or the interface it&#39;s inherited from is also visible
+</span>    <span class='lparen'>(</span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:owner</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_field_defn'>field_defn</span><span class='period'>.</span><span class='id identifier rubyid_owner'>owner</span> <span class='op'>==</span> <span class='id identifier rubyid_owner'>owner</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_field_on_visible_interface?'>field_on_visible_interface?</span><span class='lparen'>(</span><span class='id identifier rubyid_field_defn'>field_defn</span><span class='comma'>,</span> <span class='id identifier rubyid_owner'>owner</span><span class='rparen'>)</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_type?-instance_method">
+  
+    #<strong>visible_type?</strong>(type_defn, _ctx = nil)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+268
+269
+270
+271</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 268</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_type?'>visible_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='comma'>,</span> <span class='id identifier rubyid__ctx'>_ctx</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@type_visibility</span> <span class='op'>||=</span> <span class='id identifier rubyid_read_through'>read_through</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='op'>|</span> <span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='ivar'>@type_visibility</span><span class='lbracket'>[</span><span class='id identifier rubyid_type_defn'>type_defn</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_type_membership?-instance_method">
+  
+    #<strong>visible_type_membership?</strong>(type_membership, _ctx = nil)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+273
+274
+275</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 273</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_type_membership?'>visible_type_membership?</span><span class='lparen'>(</span><span class='id identifier rubyid_type_membership'>type_membership</span><span class='comma'>,</span> <span class='id identifier rubyid__ctx'>_ctx</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_type_membership'>type_membership</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Wed Mar 12 20:06:53 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.28 (ruby-3.2.7).
+</div>
+
+    </div>
+  </body>
+</html>
