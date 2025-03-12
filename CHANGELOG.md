@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.1.15 (12 Mar 2025)
+
+- Fix bad merge #5273
+
 # 2.1.14 (12 Mar 2025)
 
 - Security: fix CVE-2025-27407
