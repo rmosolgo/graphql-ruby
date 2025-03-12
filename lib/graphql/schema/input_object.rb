@@ -44,19 +44,6 @@ module GraphQL
         to_h
       end
 
-<<<<<<< HEAD
-=======
-      def deconstruct_keys(keys = nil)
-        if keys.nil?
-          @ruby_style_hash
-        else
-          new_h = {}
-          keys.each { |k| @ruby_style_hash.key?(k) && new_h[k] = @ruby_style_hash[k] }
-          new_h
-        end
-      end
-
->>>>>>> d85e69690f (Disable development NoEvalCop for load-time eval calls)
       def prepare
         if @context
           object = @context[:current_object]
