@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.2.17 (12 Mar 2025)
+
+- Security: fix CVE-2025-27407
+
 # 2.2.16 (17 Jul 2024)
 
 - Fix path on errors raised in Dataloader Sources #5026
