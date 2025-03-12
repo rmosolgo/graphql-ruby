@@ -138,6 +138,8 @@ module GraphQL
         end
 
         class << self
+          # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
+
           # Add a default `#visit_method` and `#children_method_name` using the class name
           def inherited(child_class)
             super
@@ -316,6 +318,7 @@ module GraphQL
               RUBY
             end
           end
+          # rubocop:enable Development/NoEvalCop
         end
       end
 
