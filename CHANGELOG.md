@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.0.32 (12 Mar 2025)
+
+- Security: fix CVE-2025-27407
+
 # 2.0.31 (13 Jun 2024)
 
 - Runtime: fix directives inside nested fragments #4988
