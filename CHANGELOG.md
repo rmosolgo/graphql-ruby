@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.4.14 (13 Mar 2025)
+
+### Bug fixes
+
+- New Relic tracing: fix dataloaded, skipped scalars #5277
+
 # 2.4.13 (12 Mar 2025)
 
 - Security: Fix CVE-2025-27407
