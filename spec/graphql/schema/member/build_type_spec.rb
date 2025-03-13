@@ -59,6 +59,16 @@ describe GraphQL::Schema::Member::BuildType do
 
       assert_equal "T", GraphQL::Schema::Member::BuildType.to_type_name(list_req_t)
     end
+
+    it "works with procs" do
+      t = Class.new(GraphQL::Schema::Object) do
+        graphql_name "T"
+      end
+
+      type_expr = -> { t }
+
+      assert_equal "T", GraphQL::Schema::Member::BuildType.to_type_name(type_expr)
+    end
   end
 
   describe ".camelize" do

@@ -119,6 +119,8 @@ module GraphQL
             end
           when GraphQL::Schema::NonNull, GraphQL::Schema::List
             to_type_name(something.unwrap)
+          when Proc
+            to_type_name(something.call)
           else
             raise "Unhandled to_type_name input: #{something} (#{something.class})"
           end
