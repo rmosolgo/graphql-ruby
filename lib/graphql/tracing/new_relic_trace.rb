@@ -158,8 +158,10 @@ module GraphQL
       def dataloader_fiber_resume(source)
         prev_segment = Fiber[:graphql_nr_previous_segment]
         Fiber[:graphql_nr_previous_segment] = nil
-        seg_partial_name = prev_segment.name.sub(/^.*(GraphQL.*)$/, '\1')
-        start_segment(partial_name: seg_partial_name, category: :web)
+        if prev_segment
+          seg_partial_name = prev_segment.name.sub(/^.*(GraphQL.*)$/, '\1')
+          start_segment(partial_name: seg_partial_name, category: :web)
+        end
         super
       end
 

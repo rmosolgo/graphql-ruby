@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Tracing::NewRelicTrace do
   module NewRelicTraceTest
-    class NestedSource < GraphQL::Dataloader::Source
+    class EchoSource < GraphQL::Dataloader::Source
       def fetch(keys)
         keys
       end
@@ -11,7 +11,7 @@ describe GraphQL::Tracing::NewRelicTrace do
 
     class OtherSource < GraphQL::Dataloader::Source
       def fetch(keys)
-        dataloader.with(NestedSource).load_all(keys)
+        dataloader.with(EchoSource).load_all(keys)
       end
     end
     class Thing < GraphQL::Schema::Object
@@ -31,7 +31,11 @@ describe GraphQL::Tracing::NewRelicTrace do
       def self.authorized?(obj, ctx)
         ctx[:lazy] ? -> { true } : true
       end
-      field :name, String, fallback_value: "other"
+      field :name, String
+
+      def name
+        dataload(EchoSource, "name")
+      end
     end
 
     class Query < GraphQL::Schema::Object
@@ -83,6 +87,7 @@ describe GraphQL::Tracing::NewRelicTrace do
     class SchemaWithoutAuthorizedOrResolveType < GraphQL::Schema
       query(Query)
       trace_with(GraphQL::Tracing::NewRelicTrace, set_transaction_name: true, trace_authorized: false, trace_resolve_type: false, trace_scalars: true)
+      use GraphQL::Dataloader
     end
   end
 
@@ -157,8 +162,8 @@ describe GraphQL::Tracing::NewRelicTrace do
         "GraphQL/Source/NewRelicTraceTest::OtherSource",
         "FINISH GraphQL/Source/NewRelicTraceTest::OtherSource",
           # Nested source:
-          "GraphQL/Source/NewRelicTraceTest::NestedSource",
-          "FINISH GraphQL/Source/NewRelicTraceTest::NestedSource",
+          "GraphQL/Source/NewRelicTraceTest::EchoSource",
+          "FINISH GraphQL/Source/NewRelicTraceTest::EchoSource",
         "GraphQL/Source/NewRelicTraceTest::OtherSource",
         "FINISH GraphQL/Source/NewRelicTraceTest::OtherSource",
         # And back to the field:
@@ -166,6 +171,8 @@ describe GraphQL::Tracing::NewRelicTrace do
         "FINISH GraphQL/Query/other",
         "GraphQL/Authorized/Other",
         "FINISH GraphQL/Authorized/Other",
+          "GraphQL/Source/NewRelicTraceTest::EchoSource",
+          "FINISH GraphQL/Source/NewRelicTraceTest::EchoSource",
       "FINISH GraphQL/execute"
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
@@ -191,6 +198,12 @@ describe GraphQL::Tracing::NewRelicTrace do
       # "FINISH GraphQL/Authorized/Other",
       "GraphQL/Other/name",
       "FINISH GraphQL/Other/name",
+
+      "GraphQL/Source/NewRelicTraceTest::EchoSource",
+      "FINISH GraphQL/Source/NewRelicTraceTest::EchoSource",
+      "GraphQL/Other/name",
+      "FINISH GraphQL/Other/name",
+
       "FINISH GraphQL/execute"
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
@@ -232,6 +245,8 @@ describe GraphQL::Tracing::NewRelicTrace do
       "FINISH GraphQL/Authorized/Other",
       "GraphQL/Authorized/Other",
       "FINISH GraphQL/Authorized/Other",
+      "GraphQL/Source/NewRelicTraceTest::EchoSource",
+      "FINISH GraphQL/Source/NewRelicTraceTest::EchoSource",
 
       "FINISH GraphQL/execute",
     ]
