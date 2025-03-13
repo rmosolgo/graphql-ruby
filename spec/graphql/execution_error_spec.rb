@@ -400,6 +400,101 @@ describe GraphQL::ExecutionError do
     assert_equal(expected_errors, result["errors"])
   end
 
+  describe "when ExecutionError is raised in resolve_type" do
+    let(:schema) do
+      test_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Test"
+        field :dummy, GraphQL::Types::Boolean
+      end
+
+      test_union = Class.new(GraphQL::Schema::Union) do
+        graphql_name "TestUnion"
+        possible_types test_type
+      end
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+
+        field :test, test_union
+        define_method(:test) do
+          1
+        end
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+
+        define_singleton_method(:resolve_type) do |abstract_type, obj, ctx|
+          raise GraphQL::ExecutionError.new("resolve_type")
+        end
+      end
+    end
+
+    it "return execution error with location and path" do
+      query = "{ test { ...on Test { dummy }  } }"
+      result = schema.execute(query)
+      expected_result = {
+        "errors"=>[
+          {
+            "message"=>"resolve_type",
+            "locations"=>[{"line"=>1, "column"=>3}],
+            "path"=>["test"]
+          }
+        ],
+        "data"=>{"test"=>nil}
+      }
+      assert_equal(expected_result, result.to_h)
+    end
+
+    describe "when using DataLoaders" do
+      let(:schema) do
+        test_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Test"
+          field :dummy, GraphQL::Types::Boolean
+        end
+
+        test_union = Class.new(GraphQL::Schema::Union) do
+          graphql_name "TestUnion"
+          possible_types test_type
+        end
+
+        query_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+
+          field :test, test_union
+          define_method(:test) do
+            1
+          end
+        end
+
+        Class.new(GraphQL::Schema) do
+          query query_type
+          use GraphQL::Dataloader
+
+          define_singleton_method(:resolve_type) do |abstract_type, obj, ctx|
+            raise GraphQL::ExecutionError.new("resolve_type")
+          end
+        end
+      end
+
+      it "return execution error with location and path" do
+        query = "{ test { ...on Test { dummy }  } }"
+        result = schema.execute(query)
+        expected_result = {
+          "errors"=>[
+            {
+              "message"=>"resolve_type",
+              "locations"=>[{"line"=>1, "column"=>3}],
+              "path"=>["test"]
+            }
+          ],
+          "data"=>{"test"=>nil}
+        }
+        assert_equal(expected_result, result.to_h)
+      end
+    end
+  end
+
  describe "when using DataLoaders" do
     let(:schema) do
       item_error_loader = Class.new(GraphQL::Dataloader::Source) do
