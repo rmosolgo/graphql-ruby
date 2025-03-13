@@ -237,4 +237,29 @@ describe GraphQL::Tracing::NewRelicTrace do
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
+
+  describe "multiplex queries" do
+    it "handles multiplex" do
+      NewRelicTraceTest::SchemaWithTransactionName.multiplex([
+        {
+          query: "query Q1 { int }",
+          variables: {},
+          operation_name: "Q1"
+        },
+        {
+          query: "query Q2 { int }",
+          variables: {},
+          operation_name: "Q2"
+        }
+      ])
+
+      assert_equal ["GraphQL/query.Q1"], NewRelic::TRANSACTION_NAMES
+    end
+
+    it "handles empty multiplex" do
+      NewRelicTraceTest::SchemaWithTransactionName.multiplex([])
+
+      assert_equal [], NewRelic::TRANSACTION_NAMES
+    end
+  end
 end
