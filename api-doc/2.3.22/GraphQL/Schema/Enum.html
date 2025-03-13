@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::Enum
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::Enum";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (E)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span>
+     &raquo; 
+    <span class="title">Enum</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::Enum
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Member.html" title="GraphQL::Schema::Member (class)">Member</a></span></li>
+          
+            <li class="next">GraphQL::Schema::Enum</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  <dl>
+      <dt>Extended by:</dt>
+      <dd><span class='object_link'><a href="Member/ValidatesInput.html" title="GraphQL::Schema::Member::ValidatesInput (module)">Member::ValidatesInput</a></span></dd>
+  </dl>
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/enum.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Extend this class to define GraphQL enums in your schema.</p>
+
+<p>By default, GraphQL enum values are translated into Ruby strings.
+You can provide a custom value with the <code>value:</code> keyword.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='comment'># equivalent to
+</span><span class='comment'># enum PizzaTopping {
+</span><span class='comment'>#   MUSHROOMS
+</span><span class='comment'>#   ONIONS
+</span><span class='comment'>#   PEPPERS
+</span><span class='comment'># }
+</span><span class='kw'>class</span> <span class='const'>PizzaTopping</span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'>Enum</span>
+  <span class='id identifier rubyid_value'>value</span> <span class='symbol'>:MUSHROOMS</span>
+  <span class='id identifier rubyid_value'>value</span> <span class='symbol'>:ONIONS</span>
+  <span class='id identifier rubyid_value'>value</span> <span class='symbol'>:PEPPERS</span>
+<span class='kw'>end</span></code></pre>
+    
+  </div>
+
+
+</div><div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="../Introspection/DirectiveLocationEnum.html" title="GraphQL::Introspection::DirectiveLocationEnum (class)">Introspection::DirectiveLocationEnum</a></span>, <span class='object_link'><a href="../Introspection/TypeKindEnum.html" title="GraphQL::Introspection::TypeKindEnum (class)">Introspection::TypeKindEnum</a></span></p>
+</div>
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Enum/MissingValuesError.html" title="GraphQL::Schema::Enum::MissingValuesError (class)">MissingValuesError</a></span>, <span class='object_link'><a href="Enum/UnresolvedValueError.html" title="GraphQL::Schema::Enum::UnresolvedValueError (class)">UnresolvedValueError</a></span>
+    
+  
+</p>
+
+
+
+  <h2>Constant Summary</h2>
+  
+  <h3 class="inherited">Constants included
+     from <span class='object_link'><a href="Member/GraphQLTypeNames.html" title="GraphQL::Schema::Member::GraphQLTypeNames (module)">Member::GraphQLTypeNames</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/GraphQLTypeNames.html#Boolean-constant" title="GraphQL::Schema::Member::GraphQLTypeNames::Boolean (constant)">Member::GraphQLTypeNames::Boolean</a></span>, <span class='object_link'><a href="Member/GraphQLTypeNames.html#ID-constant" title="GraphQL::Schema::Member::GraphQLTypeNames::ID (constant)">Member::GraphQLTypeNames::ID</a></span>, <span class='object_link'><a href="Member/GraphQLTypeNames.html#Int-constant" title="GraphQL::Schema::Member::GraphQLTypeNames::Int (constant)">Member::GraphQLTypeNames::Int</a></span></p>
+
+
+
+
+  <h2>Instance Attribute Summary</h2>
+  
+  <h3 class="inherited">Attributes included from <span class='object_link'><a href="Member/BaseDSLMethods.html" title="GraphQL::Schema::Member::BaseDSLMethods (module)">Member::BaseDSLMethods</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/BaseDSLMethods.html#default_graphql_name-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#default_graphql_name (method)">#default_graphql_name</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#graphql_name-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#graphql_name (method)">#graphql_name</a></span></p>
+
+  
+  
+  <h3 class="inherited">Attributes included from <span class='object_link'><a href="Member/RelayShortcuts.html" title="GraphQL::Schema::Member::RelayShortcuts (module)">Member::RelayShortcuts</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/RelayShortcuts.html#connection_type-instance_method" title="GraphQL::Schema::Member::RelayShortcuts#connection_type (method)">#connection_type</a></span>, <span class='object_link'><a href="Member/RelayShortcuts.html#connection_type_class-instance_method" title="GraphQL::Schema::Member::RelayShortcuts#connection_type_class (method)">#connection_type_class</a></span>, <span class='object_link'><a href="Member/RelayShortcuts.html#edge_type-instance_method" title="GraphQL::Schema::Member::RelayShortcuts#edge_type (method)">#edge_type</a></span>, <span class='object_link'><a href="Member/RelayShortcuts.html#edge_type_class-instance_method" title="GraphQL::Schema::Member::RelayShortcuts#edge_type_class (method)">#edge_type_class</a></span></p>
+
+  
+  
+  <h3 class="inherited">Attributes included from <span class='object_link'><a href="Member/HasAstNode.html" title="GraphQL::Schema::Member::HasAstNode (module)">Member::HasAstNode</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/HasAstNode.html#ast_node-instance_method" title="GraphQL::Schema::Member::HasAstNode#ast_node (method)">#ast_node</a></span></p>
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#all_enum_value_definitions-class_method" title="all_enum_value_definitions (class method)">.<strong>all_enum_value_definitions</strong>  &#x21d2; Array&lt;Schema::EnumValue&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>An unfiltered list of all definitions.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce_input-class_method" title="coerce_input (class method)">.<strong>coerce_input</strong>(value_name, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called by the runtime with incoming string representations from a query.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce_result-class_method" title="coerce_result (class method)">.<strong>coerce_result</strong>(value, ctx)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called by the runtime when a field returns a value to give back to the client.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#enum_value_class-class_method" title="enum_value_class (class method)">.<strong>enum_value_class</strong>(new_enum_value_class = nil)  &#x21d2; Class </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>For handling <code>value(...)</code> inputs and building <code>GraphQL::Enum::EnumValue</code>s out of them.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#enum_values-class_method" title="enum_values (class method)">.<strong>enum_values</strong>(context = GraphQL::Query::NullContext.instance)  &#x21d2; Array&lt;GraphQL::Schema::EnumValue&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Possible values of this enum.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#kind-class_method" title="kind (class method)">.<strong>kind</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#validate_non_null_input-class_method" title="validate_non_null_input (class method)">.<strong>validate_non_null_input</strong>(value_name, ctx, max_errors: nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value-class_method" title="value (class method)">.<strong>value</strong>(*args, **kwargs, &amp;block)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Define a value for this enum.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#values-class_method" title="values (class method)">.<strong>values</strong>(context = GraphQL::Query::NullContext.instance)  &#x21d2; Hash&lt;String =&gt; GraphQL::Schema::EnumValue&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Possible values of this enum, keyed by name.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/ValidatesInput.html" title="GraphQL::Schema::Member::ValidatesInput (module)">Member::ValidatesInput</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/ValidatesInput.html#coerce_isolated_input-instance_method" title="GraphQL::Schema::Member::ValidatesInput#coerce_isolated_input (method)">coerce_isolated_input</a></span>, <span class='object_link'><a href="Member/ValidatesInput.html#coerce_isolated_result-instance_method" title="GraphQL::Schema::Member::ValidatesInput#coerce_isolated_result (method)">coerce_isolated_result</a></span>, <span class='object_link'><a href="Member/ValidatesInput.html#valid_input%3F-instance_method" title="GraphQL::Schema::Member::ValidatesInput#valid_input? (method)">valid_input?</a></span>, <span class='object_link'><a href="Member/ValidatesInput.html#valid_isolated_input%3F-instance_method" title="GraphQL::Schema::Member::ValidatesInput#valid_isolated_input? (method)">valid_isolated_input?</a></span>, <span class='object_link'><a href="Member/ValidatesInput.html#validate_input-instance_method" title="GraphQL::Schema::Member::ValidatesInput#validate_input (method)">validate_input</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/BaseDSLMethods.html" title="GraphQL::Schema::Member::BaseDSLMethods (module)">Member::BaseDSLMethods</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/BaseDSLMethods.html#authorized%3F-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#authorized? (method)">#authorized?</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#comment-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#comment (method)">#comment</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#default_relay-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#default_relay (method)">#default_relay</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#description-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#description (method)">#description</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#introspection-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#introspection (method)">#introspection</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#introspection%3F-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#introspection? (method)">#introspection?</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#mutation-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#mutation (method)">#mutation</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#name-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#name (method)">#name</a></span>, <span class='object_link'><a href="Member/BaseDSLMethods.html#visible%3F-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods#visible? (method)">#visible?</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/BaseDSLMethods/ConfigurationExtension.html" title="GraphQL::Schema::Member::BaseDSLMethods::ConfigurationExtension (module)">Member::BaseDSLMethods::ConfigurationExtension</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/BaseDSLMethods/ConfigurationExtension.html#inherited-instance_method" title="GraphQL::Schema::Member::BaseDSLMethods::ConfigurationExtension#inherited (method)">#inherited</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/TypeSystemHelpers.html" title="GraphQL::Schema::Member::TypeSystemHelpers (module)">Member::TypeSystemHelpers</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/TypeSystemHelpers.html#initialize-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#initialize (method)">#initialize</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#kind-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#kind (method)">#kind</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#list%3F-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#list? (method)">#list?</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#non_null%3F-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#non_null? (method)">#non_null?</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#to_list_type-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#to_list_type (method)">#to_list_type</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#to_non_null_type-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#to_non_null_type (method)">#to_non_null_type</a></span>, <span class='object_link'><a href="Member/TypeSystemHelpers.html#to_type_signature-instance_method" title="GraphQL::Schema::Member::TypeSystemHelpers#to_type_signature (method)">#to_type_signature</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/Scoped.html" title="GraphQL::Schema::Member::Scoped (module)">Member::Scoped</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/Scoped.html#inherited-instance_method" title="GraphQL::Schema::Member::Scoped#inherited (method)">#inherited</a></span>, <span class='object_link'><a href="Member/Scoped.html#reauthorize_scoped_objects-instance_method" title="GraphQL::Schema::Member::Scoped#reauthorize_scoped_objects (method)">#reauthorize_scoped_objects</a></span>, <span class='object_link'><a href="Member/Scoped.html#scope_items-instance_method" title="GraphQL::Schema::Member::Scoped#scope_items (method)">#scope_items</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/HasPath.html" title="GraphQL::Schema::Member::HasPath (module)">Member::HasPath</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/HasPath.html#path-instance_method" title="GraphQL::Schema::Member::HasPath#path (method)">#path</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/HasAstNode.html" title="GraphQL::Schema::Member::HasAstNode (module)">Member::HasAstNode</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/HasAstNode.html#inherited-instance_method" title="GraphQL::Schema::Member::HasAstNode#inherited (method)">#inherited</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="Member/HasDirectives.html" title="GraphQL::Schema::Member::HasDirectives (module)">Member::HasDirectives</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Member/HasDirectives.html#add_directive-class_method" title="GraphQL::Schema::Member::HasDirectives.add_directive (method)">add_directive</a></span>, <span class='object_link'><a href="Member/HasDirectives.html#directive-instance_method" title="GraphQL::Schema::Member::HasDirectives#directive (method)">#directive</a></span>, <span class='object_link'><a href="Member/HasDirectives.html#directives-instance_method" title="GraphQL::Schema::Member::HasDirectives#directives (method)">#directives</a></span>, <span class='object_link'><a href="Member/HasDirectives.html#get_directives-class_method" title="GraphQL::Schema::Member::HasDirectives.get_directives (method)">get_directives</a></span>, <span class='object_link'><a href="Member/HasDirectives.html#inherited-instance_method" title="GraphQL::Schema::Member::HasDirectives#inherited (method)">#inherited</a></span>, <span class='object_link'><a href="Member/HasDirectives.html#remove_directive-instance_method" title="GraphQL::Schema::Member::HasDirectives#remove_directive (method)">#remove_directive</a></span>, <span class='object_link'><a href="Member/HasDirectives.html#remove_directive-class_method" title="GraphQL::Schema::Member::HasDirectives.remove_directive (method)">remove_directive</a></span></p>
+
+  
+  
+  
+  
+  
+  
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="all_enum_value_definitions-class_method">
+  
+    .<strong>all_enum_value_definitions</strong>  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="EnumValue.html" title="GraphQL::Schema::EnumValue (class)">Schema::EnumValue</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns An unfiltered list of all definitions.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="EnumValue.html" title="GraphQL::Schema::EnumValue (class)">Schema::EnumValue</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>An unfiltered list of all definitions</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/enum.rb', line 109</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_all_enum_value_definitions'>all_enum_value_definitions</span>
+  <span class='id identifier rubyid_all_defns'>all_defns</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:all_enum_value_definitions</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_all_enum_value_definitions'>all_enum_value_definitions</span>
+  <span class='kw'>else</span>
+    <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@own_values</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@own_values</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid__key'>_key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_all_defns'>all_defns</span><span class='period'>.</span><span class='id identifier rubyid_concat'>concat</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_all_defns'>all_defns</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_value'>value</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_all_defns'>all_defns</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="coerce_input-class_method">
+  
+    .<strong>coerce_input</strong>(value_name, ctx)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Called by the runtime with incoming string representations from a query.
+It will match the string to a configured by name or by Ruby value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value_name</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>A string from a GraphQL query, or a Ruby value matching a <code>value(..., value: ...)</code> configuration</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ctx</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The Ruby value for the matched <span class='object_link'><a href="EnumValue.html" title="GraphQL::Schema::EnumValue (class)">GraphQL::Schema::EnumValue</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../UnauthorizedEnumValueError.html" title="GraphQL::UnauthorizedEnumValueError (class)">GraphQL::UnauthorizedEnumValueError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if an <span class='object_link'><a href="EnumValue.html" title="GraphQL::Schema::EnumValue (class)">GraphQL::Schema::EnumValue</a></span> matches but returns false for <code>.authorized?</code>. Goes to <span class='object_link'><a href="../Schema.html#unauthorized_object-class_method" title="GraphQL::Schema.unauthorized_object (method)">GraphQL::Schema.unauthorized_object</a></span>.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/enum.rb', line 183</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce_input'>coerce_input</span><span class='lparen'>(</span><span class='id identifier rubyid_value_name'>value_name</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_all_values'>all_values</span> <span class='op'>=</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span> <span class='op'>?</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span>
+
+  <span class='comment'># This tries matching by incoming GraphQL string, then checks Ruby-defined values
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_all_values'>all_values</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_val'>val</span><span class='op'>|</span> <span class='id identifier rubyid_val'>val</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span> <span class='op'>==</span> <span class='id identifier rubyid_value_name'>value_name</span> <span class='rbrace'>}</span> <span class='op'>||</span> <span class='id identifier rubyid_all_values'>all_values</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_val'>val</span><span class='op'>|</span> <span class='id identifier rubyid_val'>val</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>==</span> <span class='id identifier rubyid_value_name'>value_name</span> <span class='rbrace'>}</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../UnauthorizedEnumValueError.html" title="GraphQL::UnauthorizedEnumValueError (class)">UnauthorizedEnumValueError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../UnauthorizedEnumValueError.html#initialize-instance_method" title="GraphQL::UnauthorizedEnumValueError#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>type:</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='label'>enum_value:</span> <span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="coerce_result-class_method">
+  
+    .<strong>coerce_result</strong>(value, ctx)  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Called by the runtime when a field returns a value to give back to the client.
+This method checks that the incoming <span class='object_link'><a href="#value-class_method" title="GraphQL::Schema::Enum.value (method)">value</a></span> matches one of the enum’s defined values.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Any value matching the values for this enum.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ctx</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The GraphQL-ready string for <span class='object_link'><a href="#value-class_method" title="GraphQL::Schema::Enum.value (method)">value</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Enum/UnresolvedValueError.html" title="GraphQL::Schema::Enum::UnresolvedValueError (class)">GraphQL::Schema::Enum::UnresolvedValueError</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if <span class='object_link'><a href="#value-class_method" title="GraphQL::Schema::Enum.value (method)">value</a></span> doesn’t match a configured value or if the matching value isn’t authorized.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/enum.rb', line 166</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce_result'>coerce_result</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_types'>types</span> <span class='op'>=</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span>
+  <span class='id identifier rubyid_all_values'>all_values</span> <span class='op'>=</span> <span class='id identifier rubyid_types'>types</span> <span class='op'>?</span> <span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='id identifier rubyid_values'>values</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span>
+  <span class='id identifier rubyid_enum_value'>enum_value</span> <span class='op'>=</span> <span class='id identifier rubyid_all_values'>all_values</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_val'>val</span><span class='op'>|</span> <span class='id identifier rubyid_val'>val</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span> <span class='op'>==</span> <span class='id identifier rubyid_value'>value</span> <span class='rbrace'>}</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_enum_value'>enum_value</span> <span class='op'>&amp;&amp;</span> <span class='lparen'>(</span><span class='id identifier rubyid_was_authed'>was_authed</span> <span class='op'>=</span> <span class='id identifier rubyid_enum_value'>enum_value</span><span class='period'>.</span><span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_enum_value'>enum_value</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='kw'>self</span><span class='op'>::</span><span class='const'>UnresolvedValueError</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>enum:</span> <span class='kw'>self</span><span class='comma'>,</span> <span class='label'>value:</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='label'>authorized:</span> <span class='id identifier rubyid_was_authed'>was_authed</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="enum_value_class-class_method">
+  
+    .<strong>enum_value_class</strong>(new_enum_value_class = nil)  &#x21d2; <tt>Class</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns for handling <code>value(...)</code> inputs and building <code>GraphQL::Enum::EnumValue</code>s out of them.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Class</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>for handling <code>value(...)</code> inputs and building <code>GraphQL::Enum::EnumValue</code>s out of them</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+133
+134
+135
+136
+137
+138
+139
+140
+141</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/enum.rb', line 133</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_enum_value_class'>enum_value_class</span><span class='lparen'>(</span><span class='id identifier rubyid_new_enum_value_class'>new_enum_value_class</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_new_enum_value_class'>new_enum_value_class</span>
+    <span class='ivar'>@enum_value_class</span> <span class='op'>=</span> <span class='id identifier rubyid_new_enum_value_class'>new_enum_value_class</span>
+  <span class='kw'>elsif</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='ivar'>@enum_value_class</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@enum_value_class</span>
+    <span class='ivar'>@enum_value_class</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_superclass'>superclass</span> <span class='op'>&lt;=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="GraphQL::Schema::Enum (class)">Enum</a></span></span> <span class='op'>?</span> <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_enum_value_class'>enum_value_class</span> <span class='op'>:</span> <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="enum_values-class_method">
+  
+    .<strong>enum_values</strong>(context = GraphQL::Query::NullContext.instance)  &#x21d2; <tt>Array&lt;<span class='object_link'><a href="EnumValue.html" title="GraphQL::Schema::EnumValue (class)">GraphQL::Schema::EnumValue</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Possible values of this enum.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;<span class='object_link'><a href="EnumValue.html" title="GraphQL::Schema::EnumValue (class)">GraphQL::Schema::EnumValue</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Possible values of this enum</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/enum.rb', line 86</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query/NullContext.html" title="GraphQL::Query::NullContext (class)">NullContext</a></span></span><span class='period'>.</span><span class='id identifier rubyid_instance'>instance</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_inherited_values'>inherited_values</span> <span class='op'>=</span> <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:enum_values</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_visible_values'>visible_values</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_warden'>warden</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Warden.html" title="GraphQL::Schema::Warden (class)">Warden</a></span></span><span class='period'>.</span><span class='id identifier rubyid_from_context'><span class='object_link'><a href="Warden.html#from_context-class_method" title="GraphQL::Schema::Warden.from_context (method)">from_context</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_own_values'>own_values</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_values_entry'>values_entry</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Warden.html" title="GraphQL::Schema::Warden (class)">Warden</a></span></span><span class='period'>.</span><span class='id identifier rubyid_visible_entry?'><span class='object_link'><a href="Warden.html#visible_entry%3F-class_method" title="GraphQL::Schema::Warden.visible_entry? (method)">visible_entry?</a></span></span><span class='lparen'>(</span><span class='symbol'>:visible_enum_value?</span><span class='comma'>,</span> <span class='id identifier rubyid_values_entry'>values_entry</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_warden'>warden</span><span class='rparen'>)</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_visible_values'>visible_values</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_v'>v</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_inherited_values'>inherited_values</span>
+    <span class='comment'># Local values take precedence over inherited ones
+</span>    <span class='id identifier rubyid_inherited_values'>inherited_values</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_i_val'>i_val</span><span class='op'>|</span>
+      <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_visible_values'>visible_values</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span> <span class='op'>==</span> <span class='id identifier rubyid_i_val'>i_val</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span> <span class='rbrace'>}</span>
+        <span class='id identifier rubyid_visible_values'>visible_values</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_i_val'>i_val</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_visible_values'>visible_values</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="kind-class_method">
+  
+    .<strong>kind</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+143
+144
+145</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/enum.rb', line 143</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_kind'>kind</span>
+  <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../TypeKinds.html" title="GraphQL::TypeKinds (module)">TypeKinds</a></span></span><span class='op'>::</span><span class='const'>ENUM</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="validate_non_null_input-class_method">
+  
+    .<strong>validate_non_null_input</strong>(value_name, ctx, max_errors: nil)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/enum.rb', line 147</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_validate_non_null_input'>validate_non_null_input</span><span class='lparen'>(</span><span class='id identifier rubyid_value_name'>value_name</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='label'>max_errors:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_allowed_values'>allowed_values</span> <span class='op'>=</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_matching_value'>matching_value</span> <span class='op'>=</span> <span class='id identifier rubyid_allowed_values'>allowed_values</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span> <span class='op'>==</span> <span class='id identifier rubyid_value_name'>value_name</span> <span class='rbrace'>}</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_matching_value'>matching_value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query/InputValidationResult.html" title="GraphQL::Query::InputValidationResult (class)">InputValidationResult</a></span></span><span class='period'>.</span><span class='id identifier rubyid_from_problem'><span class='object_link'><a href="../Query/InputValidationResult.html#from_problem-class_method" title="GraphQL::Query::InputValidationResult.from_problem (method)">from_problem</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Expected </span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='period'>.</span><span class='id identifier rubyid_serialize'><span class='object_link'><a href="../Language.html#serialize-class_method" title="GraphQL::Language.serialize (method)">serialize</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_value_name'>value_name</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> to be one of: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_allowed_values'>allowed_values</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:graphql_name</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>, </span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='comment'># rescue MissingValuesError
+</span><span class='comment'>#   nil
+</span><span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value-class_method">
+  
+    .<strong>value</strong>(*args, **kwargs, &amp;block)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Define a value for this enum</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>kwargs</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>a customizable set of options</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  
+    
+    
+    
+    
+    <p class="tag_title">Options Hash (<tt>**kwargs</tt>):</p>
+    <ul class="option">
+      
+        <li>
+          <span class="name">:graphql_name</span>
+          <span class="type">(<tt>String</tt>, <tt>Symbol</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>the GraphQL value for this, usually <code>SCREAMING_CASE</code></p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:description,</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>the GraphQL description for this value, present in documentation</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:comment,</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>the GraphQL comment for this value, present in documentation</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:value</span>
+          <span class="type">(<tt>::Object</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>the translated Ruby value for this object (defaults to <code>graphql_name</code>)</p>
+</div>
+          
+        </li>
+      
+        <li>
+          <span class="name">:deprecation_reason</span>
+          <span class="type">(<tt>String</tt>)</span>
+          <span class="default">
+            
+          </span>
+          
+            &mdash; <div class='inline'><p>if this object is deprecated, include a message here</p>
+</div>
+          
+        </li>
+      
+    </ul>
+  
+    
+    
+
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>which handles these inputs by default</li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/enum.rb', line 67</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_kwargs'>kwargs</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_kwargs'>kwargs</span><span class='lbracket'>[</span><span class='symbol'>:owner</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>self</span>
+  <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_enum_value_class'>enum_value_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_kwargs'>kwargs</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_key'>key</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span>
+  <span class='id identifier rubyid_prev_value'>prev_value</span> <span class='op'>=</span> <span class='id identifier rubyid_own_values'>own_values</span><span class='lbracket'>[</span><span class='id identifier rubyid_key'>key</span><span class='rbracket'>]</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_prev_value'>prev_value</span>
+  <span class='kw'>when</span> <span class='kw'>nil</span>
+    <span class='id identifier rubyid_own_values'>own_values</span><span class='lbracket'>[</span><span class='id identifier rubyid_key'>key</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="EnumValue.html" title="GraphQL::Schema::EnumValue (class)">EnumValue</a></span></span>
+    <span class='id identifier rubyid_own_values'>own_values</span><span class='lbracket'>[</span><span class='id identifier rubyid_key'>key</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_prev_value'>prev_value</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rbracket'>]</span>
+  <span class='kw'>when</span> <span class='const'>Array</span>
+    <span class='id identifier rubyid_prev_value'>prev_value</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_value'>value</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invariant: Unexpected enum value for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_key'>key</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_prev_value'>prev_value</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_value'>value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="values-class_method">
+  
+    .<strong>values</strong>(context = GraphQL::Query::NullContext.instance)  &#x21d2; <tt>Hash&lt;String =&gt; <span class='object_link'><a href="EnumValue.html" title="GraphQL::Schema::EnumValue (class)">GraphQL::Schema::EnumValue</a></span>&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Possible values of this enum, keyed by name.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash&lt;String =&gt; <span class='object_link'><a href="EnumValue.html" title="GraphQL::Schema::EnumValue (class)">GraphQL::Schema::EnumValue</a></span>&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Possible values of this enum, keyed by name.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+128
+129
+130</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/enum.rb', line 128</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_values'>values</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query/NullContext.html" title="GraphQL::Query::NullContext (class)">NullContext</a></span></span><span class='period'>.</span><span class='id identifier rubyid_instance'>instance</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_enum_values'>enum_values</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_val'>val</span><span class='comma'>,</span> <span class='id identifier rubyid_obj'>obj</span><span class='op'>|</span> <span class='id identifier rubyid_obj'>obj</span><span class='lbracket'>[</span><span class='id identifier rubyid_val'>val</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_val'>val</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Mar 13 13:33:44 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.7).
+</div>
+
+    </div>
+  </body>
+</html>
