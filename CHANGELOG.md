@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.3.22 (13 Mar 2025)
+
+### Bug fixes
+
+- Validation: don't allow conflicting aliases inside fragments on interfaces #5275
+
 # 2.3.21 (12 Mar 2025)
 
 - Security: Fix CVE-2025-27407
