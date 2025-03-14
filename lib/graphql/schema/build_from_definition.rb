@@ -86,7 +86,13 @@ module GraphQL
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition, GraphQL::Language::Nodes::DirectiveDefinition
               nil # already handled
-            when GraphQL::Language::Nodes::SchemaExtension
+            when GraphQL::Language::Nodes::SchemaExtension,
+              GraphQL::Language::Nodes::ScalarTypeExtension,
+              GraphQL::Language::Nodes::ObjectTypeExtension,
+              GraphQL::Language::Nodes::InterfaceTypeExtension,
+              GraphQL::Language::Nodes::UnionTypeExtension,
+              GraphQL::Language::Nodes::EnumTypeExtension,
+              GraphQL::Language::Nodes::InputObjectTypeExtension
               schema_extensions ||= []
               schema_extensions << definition
             else
@@ -203,7 +209,34 @@ module GraphQL
 
           if schema_extensions
             schema_extensions.each do |ext|
-              build_directives(schema_class, ext, type_resolver)
+              case ext
+              when GraphQL::Language::Nodes::SchemaExtension
+                build_directives(schema_class, ext, type_resolver)
+              when GraphQL::Language::Nodes::ScalarTypeExtension
+                build_directives(schema_class.get_type(ext.name), ext, type_resolver)
+              when GraphQL::Language::Nodes::ObjectTypeExtension
+                object_type = schema_class.get_type(ext.name)
+                build_directives(object_type, ext, type_resolver)
+                build_fields(object_type, ext.fields, type_resolver, default_resolve: true)
+                build_interfaces(object_type, ext.interfaces, type_resolver)
+              when GraphQL::Language::Nodes::InterfaceTypeExtension
+                interface_type = schema_class.get_type(ext.name)
+                build_directives(interface_type, ext, type_resolver)
+                build_fields(interface_type, ext.fields, type_resolver, default_resolve: nil)
+                build_interfaces(interface_type, ext.interfaces, type_resolver)
+              when GraphQL::Language::Nodes::UnionTypeExtension
+                union_type = schema_class.get_type(ext.name)
+                build_directives(union_type, ext, type_resolver)
+                union_type.possible_types(*ext.types.map { |type_name| type_resolver.call(type_name) })
+              when GraphQL::Language::Nodes::EnumTypeExtension
+                enum_type = schema_class.get_type(ext.name)
+                build_directives(enum_type, ext, type_resolver)
+                build_values(enum_type, ext.values, type_resolver)
+              when GraphQL::Language::Nodes::InputObjectTypeExtension
+                input_object_type = schema_class.get_type(ext.name)
+                build_directives(input_object_type, ext, type_resolver)
+                build_arguments(input_object_type, ext.fields, type_resolver)
+              end
             end
           end
 
@@ -300,15 +333,19 @@ module GraphQL
             builder.build_directives(self, enum_type_definition, type_resolver)
             description(enum_type_definition.description)
             ast_node(enum_type_definition)
-            enum_type_definition.values.each do |enum_value_definition|
-              value(enum_value_definition.name,
-                value: enum_value_definition.name,
-                deprecation_reason: builder.build_deprecation_reason(enum_value_definition.directives),
-                description: enum_value_definition.description,
-                directives: builder.prepare_directives(enum_value_definition, type_resolver),
-                ast_node: enum_value_definition,
-              )
-            end
+            builder.build_values(self, enum_type_definition.values, type_resolver)
+          end
+        end
+
+        def build_values(type_class, enum_value_definitions, type_resolver)
+          enum_value_definitions.each do |enum_value_definition|
+            type_class.value(enum_value_definition.name,
+              value: enum_value_definition.name,
+              deprecation_reason: build_deprecation_reason(enum_value_definition.directives),
+              description: enum_value_definition.description,
+              directives: prepare_directives(enum_value_definition, type_resolver),
+              ast_node: enum_value_definition,
+            )
           end
         end
 
@@ -364,16 +401,17 @@ module GraphQL
             description(object_type_definition.description)
             ast_node(object_type_definition)
             builder.build_directives(self, object_type_definition, type_resolver)
-
-            object_type_definition.interfaces.each do |interface_name|
-              interface_defn = type_resolver.call(interface_name)
-              implements(interface_defn)
-            end
-
+            builder.build_interfaces(self, object_type_definition.interfaces, type_resolver)
             builder.build_fields(self, object_type_definition.fields, type_resolver, default_resolve: true)
           end
         end
 
+        def build_interfaces(type_class, interface_names, type_resolver)
+          interface_names.each do |interface_name|
+            type_class.implements(type_resolver.call(interface_name))
+          end
+        end
+        
         def build_input_object_type(input_object_type_definition, type_resolver, base_type)
           builder = self
           Class.new(base_type) do
@@ -442,10 +480,7 @@ module GraphQL
             include base_type
             graphql_name(interface_type_definition.name)
             description(interface_type_definition.description)
-            interface_type_definition.interfaces.each do |interface_name|
-              interface_defn = type_resolver.call(interface_name)
-              implements(interface_defn)
-            end
+            builder.build_interfaces(self, interface_type_definition.interfaces, type_resolver)
             ast_node(interface_type_definition)
             builder.build_directives(self, interface_type_definition, type_resolver)
 

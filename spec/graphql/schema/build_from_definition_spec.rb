@@ -1792,6 +1792,112 @@ type ReachableType implements Node {
     end
   end
 
+  describe "Type extensions" do
+    it "Extends object types with fields and directives" do
+      sdl = %|
+        directive @a on OBJECT
+        directive @b on OBJECT
+        type T @a { a:Int }
+        extend type T @b { b:Int }
+        type Query { t:T }
+      |
+      schema = GraphQL::Schema.from_definition(sdl)
+      assert_equal ["a", "b"], schema.get_type("T").fields.keys.sort
+      assert_equal ["a", "b"], schema.get_type("T").directives.map(&:graphql_name).sort
+    end
+
+    it "Extends object types with interfaces" do
+      sdl = %|
+        interface A { a:Int }
+        interface B { b:Int }
+        type T implements A { a:Int }
+        extend type T implements B { b:Int }
+        type Query { t:T }
+      |
+      schema = GraphQL::Schema.from_definition(sdl)
+      assert_equal ["A", "B"], schema.get_type("T").interfaces.map(&:graphql_name).sort
+    end
+
+    it "Extends interface types with fields and directives" do
+      sdl = %|
+        directive @a on INTERFACE
+        directive @b on INTERFACE
+        interface I @a { a:Int }
+        extend interface I @b { b:Int }
+        type T implements I { a:Int b:Int }
+        type Query { t:T }
+      |
+      schema = GraphQL::Schema.from_definition(sdl)
+      assert_equal ["a", "b"], schema.get_type("I").fields.keys.sort
+      assert_equal ["a", "b"], schema.get_type("I").directives.map(&:graphql_name).sort
+    end
+
+    it "Extends interface types with interfaces" do
+      sdl = %|
+        interface A { a:Int }
+        interface B { b:Int }
+        extend interface A implements B { b:Int }
+        type T implements A { a:Int b:Int }
+        type Query { t:T }
+      |
+      schema = GraphQL::Schema.from_definition(sdl)
+      assert_equal ["B"], schema.get_type("A").interfaces.map(&:graphql_name).sort
+    end
+
+    it "Extends scalar types with directives" do
+      sdl = %|
+        directive @a on SCALAR
+        directive @b on SCALAR
+        scalar T @a
+        extend scalar T @b
+        type Query { t:T }
+      |
+      schema = GraphQL::Schema.from_definition(sdl)
+      assert_equal ["a", "b"], schema.get_type("T").directives.map(&:graphql_name).sort
+    end
+
+    it "Extends enum types with values and directives" do
+      sdl = %|
+        directive @a on ENUM
+        directive @b on ENUM
+        enum T @a { YES }
+        extend enum T @b { NO }
+        type Query { t:T }
+      |
+      schema = GraphQL::Schema.from_definition(sdl)
+      assert_equal ["NO", "YES"], schema.get_type("T").values.keys.sort
+      assert_equal ["a", "b"], schema.get_type("T").directives.map(&:graphql_name).sort
+    end
+
+    it "Extends input object types with arguments and directives" do
+      sdl = %|
+        directive @a on INPUT_OBJECT
+        directive @b on INPUT_OBJECT
+        input T @a { a:Int }
+        extend input T @b { b:Int }
+        type Query { t:T }
+      |
+      schema = GraphQL::Schema.from_definition(sdl)
+      assert_equal ["a", "b"], schema.get_type("T").arguments.keys.sort
+      assert_equal ["a", "b"], schema.get_type("T").directives.map(&:graphql_name).sort
+    end
+
+    it "Extends union types with types and directives" do
+      sdl = %|
+        directive @a on UNION
+        directive @b on UNION
+        type A { a:Int }
+        type B { b:Int }
+        union T @a = A
+        extend union T @b = B
+        type Query { t:T }
+      |
+      schema = GraphQL::Schema.from_definition(sdl)
+      assert_equal ["A", "B"], schema.possible_types(schema.get_type("T")).map(&:graphql_name).sort
+      assert_equal ["a", "b"], schema.get_type("T").directives.map(&:graphql_name).sort
+    end
+  end
+
   if USING_C_PARSER
     it "makes frozen identifiers with CParser" do
       schema_class = GraphQL::Schema.from_definition("type Query { f: Boolean }")
