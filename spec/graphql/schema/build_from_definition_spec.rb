@@ -1750,6 +1750,48 @@ type ReachableType implements Node {
     assert_equal schema_str, schema.to_definition
   end
 
+  describe "Custom base types" do
+    class MyObject < GraphQL::Schema::Object; end
+    class MyUnion < GraphQL::Schema::Union; end
+    class MyScalar < GraphQL::Schema::Scalar; end
+    class MyEnum < GraphQL::Schema::Enum; end
+    class MyInputObject < GraphQL::Schema::InputObject; end
+    module MyInterface
+      include GraphQL::Schema::Interface
+    end
+
+    it "Builds a schema using custom base types" do
+      schema = GraphQL::Schema.from_definition(%|
+        interface A { a:Int }
+        type B implements A { a:Int }
+        union C = B
+        scalar D
+        enum E { YES }
+        input F { f:Int }
+        type Query {
+          a(f:F): A
+          c: C
+          d: D
+          e: E
+        }
+      |, base_types: {
+        object: MyObject,
+        interface: MyInterface,
+        union: MyUnion,
+        scalar: MyScalar,
+        enum: MyEnum,
+        input_object: MyInputObject,
+      })
+
+      assert schema.get_type("A") <= MyInterface
+      assert schema.get_type("B") <= MyObject
+      assert schema.get_type("C") <= MyUnion
+      assert schema.get_type("D") <= MyScalar
+      assert schema.get_type("E") <= MyEnum
+      assert schema.get_type("F") <= MyInputObject
+    end
+  end
+
   if USING_C_PARSER
     it "makes frozen identifiers with CParser" do
       schema_class = GraphQL::Schema.from_definition("type Query { f: Boolean }")
