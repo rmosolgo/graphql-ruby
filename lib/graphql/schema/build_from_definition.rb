@@ -20,8 +20,8 @@ module GraphQL
           from_document(schema_superclass, parser.parse_file(definition_path), **kwargs)
         end
 
-        def from_document(schema_superclass, document, default_resolve:, using: {}, relay: false)
-          Builder.build(schema_superclass, document, default_resolve: default_resolve || {}, relay: relay, using: using)
+        def from_document(schema_superclass, document, default_resolve:, using: {}, base_types: {}, relay: false)
+          Builder.build(schema_superclass, document, default_resolve: default_resolve || {}, relay: relay, using: using, base_types: base_types)
         end
       end
 
@@ -30,8 +30,17 @@ module GraphQL
         include GraphQL::EmptyObjects
         extend self
 
-        def build(schema_superclass, document, default_resolve:, using: {}, relay:)
+        def build(schema_superclass, document, default_resolve:, using: {}, base_types: {}, relay:)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
+
+          base_types = {
+            object: GraphQL::Schema::Object,
+            interface: GraphQL::Schema::Interface,
+            union: GraphQL::Schema::Union,
+            scalar: GraphQL::Schema::Scalar,
+            enum: GraphQL::Schema::Enum,
+            input_object: GraphQL::Schema::InputObject,
+          }.merge!(base_types)
 
           if default_resolve.is_a?(Hash)
             default_resolve = ResolveMap.new(default_resolve)
@@ -53,7 +62,7 @@ module GraphQL
             types[type_name] ||= begin
               defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
               if defn
-                build_definition_from_node(defn, directive_type_resolver, default_resolve)
+                build_definition_from_node(defn, directive_type_resolver, default_resolve, base_types)
               elsif (built_in_defn = GraphQL::Schema::BUILT_IN_TYPES[type_name])
                 built_in_defn
               else
@@ -84,7 +93,7 @@ module GraphQL
               # It's possible that this was already loaded by the directives
               prev_type = types[definition.name]
               if prev_type.nil? || prev_type.is_a?(Schema::LateBoundType)
-                types[definition.name] = build_definition_from_node(definition, type_resolver, default_resolve)
+                types[definition.name] = build_definition_from_node(definition, type_resolver, default_resolve, base_types)
               end
             end
           end
@@ -205,20 +214,20 @@ module GraphQL
           raise(GraphQL::RequiredImplementationMissingError, "Generated Schema cannot use Interface or Union types for execution. Implement resolve_type on your resolver.")
         }
 
-        def build_definition_from_node(definition, type_resolver, default_resolve)
+        def build_definition_from_node(definition, type_resolver, default_resolve, base_types)
           case definition
           when GraphQL::Language::Nodes::EnumTypeDefinition
-            build_enum_type(definition, type_resolver)
+            build_enum_type(definition, type_resolver, base_types[:enum])
           when GraphQL::Language::Nodes::ObjectTypeDefinition
-            build_object_type(definition, type_resolver)
+            build_object_type(definition, type_resolver, base_types[:object])
           when GraphQL::Language::Nodes::InterfaceTypeDefinition
-            build_interface_type(definition, type_resolver)
+            build_interface_type(definition, type_resolver, base_types[:interface])
           when GraphQL::Language::Nodes::UnionTypeDefinition
-            build_union_type(definition, type_resolver)
+            build_union_type(definition, type_resolver, base_types[:union])
           when GraphQL::Language::Nodes::ScalarTypeDefinition
-            build_scalar_type(definition, type_resolver, default_resolve: default_resolve)
+            build_scalar_type(definition, type_resolver, base_types[:scalar], default_resolve: default_resolve)
           when GraphQL::Language::Nodes::InputObjectTypeDefinition
-            build_input_object_type(definition, type_resolver)
+            build_input_object_type(definition, type_resolver, base_types[:input_object])
           end
         end
 
@@ -284,9 +293,9 @@ module GraphQL
           end
         end
 
-        def build_enum_type(enum_type_definition, type_resolver)
+        def build_enum_type(enum_type_definition, type_resolver, base_type)
           builder = self
-          Class.new(GraphQL::Schema::Enum) do
+          Class.new(base_type) do
             graphql_name(enum_type_definition.name)
             builder.build_directives(self, enum_type_definition, type_resolver)
             description(enum_type_definition.description)
@@ -313,9 +322,9 @@ module GraphQL
           reason.value
         end
 
-        def build_scalar_type(scalar_type_definition, type_resolver, default_resolve:)
+        def build_scalar_type(scalar_type_definition, type_resolver, base_type, default_resolve:)
           builder = self
-          Class.new(GraphQL::Schema::Scalar) do
+          Class.new(base_type) do
             graphql_name(scalar_type_definition.name)
             description(scalar_type_definition.description)
             ast_node(scalar_type_definition)
@@ -336,9 +345,9 @@ module GraphQL
           end
         end
 
-        def build_union_type(union_type_definition, type_resolver)
+        def build_union_type(union_type_definition, type_resolver, base_type)
           builder = self
-          Class.new(GraphQL::Schema::Union) do
+          Class.new(base_type) do
             graphql_name(union_type_definition.name)
             description(union_type_definition.description)
             possible_types(*union_type_definition.types.map { |type_name| type_resolver.call(type_name) })
@@ -347,10 +356,10 @@ module GraphQL
           end
         end
 
-        def build_object_type(object_type_definition, type_resolver)
+        def build_object_type(object_type_definition, type_resolver, base_type)
           builder = self
 
-          Class.new(GraphQL::Schema::Object) do
+          Class.new(base_type) do
             graphql_name(object_type_definition.name)
             description(object_type_definition.description)
             ast_node(object_type_definition)
@@ -365,9 +374,9 @@ module GraphQL
           end
         end
 
-        def build_input_object_type(input_object_type_definition, type_resolver)
+        def build_input_object_type(input_object_type_definition, type_resolver, base_type)
           builder = self
-          Class.new(GraphQL::Schema::InputObject) do
+          Class.new(base_type) do
             graphql_name(input_object_type_definition.name)
             description(input_object_type_definition.description)
             ast_node(input_object_type_definition)
@@ -427,10 +436,10 @@ module GraphQL
           end
         end
 
-        def build_interface_type(interface_type_definition, type_resolver)
+        def build_interface_type(interface_type_definition, type_resolver, base_type)
           builder = self
           Module.new do
-            include GraphQL::Schema::Interface
+            include base_type
             graphql_name(interface_type_definition.name)
             description(interface_type_definition.description)
             interface_type_definition.interfaces.each do |interface_name|
