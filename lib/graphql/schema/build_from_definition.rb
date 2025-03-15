@@ -139,6 +139,34 @@ module GraphQL
 
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
+          schema_extensions&.each do |ext|
+            next if ext.is_a?(GraphQL::Language::Nodes::SchemaExtension)
+
+            built_type = types[ext.name]
+
+            case ext
+            when GraphQL::Language::Nodes::ScalarTypeExtension
+              build_directives(built_type, ext, type_resolver)
+            when GraphQL::Language::Nodes::ObjectTypeExtension
+              build_directives(built_type, ext, type_resolver)
+              build_fields(built_type, ext.fields, type_resolver, default_resolve: true)
+              build_interfaces(built_type, ext.interfaces, type_resolver)
+            when GraphQL::Language::Nodes::InterfaceTypeExtension
+              build_directives(built_type, ext, type_resolver)
+              build_fields(built_type, ext.fields, type_resolver, default_resolve: nil)
+              build_interfaces(built_type, ext.interfaces, type_resolver)
+            when GraphQL::Language::Nodes::UnionTypeExtension
+              build_directives(built_type, ext, type_resolver)
+              built_type.possible_types(*ext.types.map { |type_name| type_resolver.call(type_name) })
+            when GraphQL::Language::Nodes::EnumTypeExtension
+              build_directives(built_type, ext, type_resolver)
+              build_values(built_type, ext.values, type_resolver)
+            when GraphQL::Language::Nodes::InputObjectTypeExtension
+              build_directives(built_type, ext, type_resolver)
+              build_arguments(built_type, ext.fields, type_resolver)
+            end
+          end
+
           builder = self
 
           found_types = types.values
@@ -207,36 +235,9 @@ module GraphQL
             end
           end
 
-          if schema_extensions
-            schema_extensions.each do |ext|
-              case ext
-              when GraphQL::Language::Nodes::SchemaExtension
-                build_directives(schema_class, ext, type_resolver)
-              when GraphQL::Language::Nodes::ScalarTypeExtension
-                build_directives(schema_class.get_type(ext.name), ext, type_resolver)
-              when GraphQL::Language::Nodes::ObjectTypeExtension
-                object_type = schema_class.get_type(ext.name)
-                build_directives(object_type, ext, type_resolver)
-                build_fields(object_type, ext.fields, type_resolver, default_resolve: true)
-                build_interfaces(object_type, ext.interfaces, type_resolver)
-              when GraphQL::Language::Nodes::InterfaceTypeExtension
-                interface_type = schema_class.get_type(ext.name)
-                build_directives(interface_type, ext, type_resolver)
-                build_fields(interface_type, ext.fields, type_resolver, default_resolve: nil)
-                build_interfaces(interface_type, ext.interfaces, type_resolver)
-              when GraphQL::Language::Nodes::UnionTypeExtension
-                union_type = schema_class.get_type(ext.name)
-                build_directives(union_type, ext, type_resolver)
-                union_type.possible_types(*ext.types.map { |type_name| type_resolver.call(type_name) })
-              when GraphQL::Language::Nodes::EnumTypeExtension
-                enum_type = schema_class.get_type(ext.name)
-                build_directives(enum_type, ext, type_resolver)
-                build_values(enum_type, ext.values, type_resolver)
-              when GraphQL::Language::Nodes::InputObjectTypeExtension
-                input_object_type = schema_class.get_type(ext.name)
-                build_directives(input_object_type, ext, type_resolver)
-                build_arguments(input_object_type, ext.fields, type_resolver)
-              end
+          schema_extensions&.each do |ext|
+            if ext.is_a?(GraphQL::Language::Nodes::SchemaExtension)
+              build_directives(schema_class, ext, type_resolver)
             end
           end
 
@@ -411,7 +412,7 @@ module GraphQL
             type_class.implements(type_resolver.call(interface_name))
           end
         end
-        
+
         def build_input_object_type(input_object_type_definition, type_resolver, base_type)
           builder = self
           Class.new(base_type) do
