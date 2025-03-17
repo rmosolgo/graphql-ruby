@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 1.11.12 (17 March 2025)
+
+### Bug fixes
+
+- Oops, due to a git mistake, 1.11.11 was released _without_ the changes from 1.11.9 and 1.11.10. This version includes those changes again, along with the patch from 1.11.11.
+
 # 1.11.11 (12 March 2025)
 
 - Security: Fix CVE-2025-27407
