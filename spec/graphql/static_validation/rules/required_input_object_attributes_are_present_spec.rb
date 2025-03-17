@@ -83,4 +83,44 @@ describe GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent do
       end
     end
   end
+
+  describe "with error limiting" do
+    describe("disabled") do
+      let(:args) {
+        { max_errors: nil }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages.length, 10)
+        assert_equal(error_messages, [
+          "Argument 'id' on Field 'stringCheese' has an invalid value (\"aasdlkfj\"). Expected type 'Int!'.",
+          "Argument 'if' on Directive 'skip' has an invalid value (\"whatever\"). Expected type 'Boolean!'.",
+          "Argument 'source' on InputObject 'DairyProductInput' has an invalid value (1.1). Expected type 'DairyAnimal!'.",
+          "Argument 'source' on InputObject 'DairyProductInput' is required. Expected type DairyAnimal!",
+          "Argument 'source' on InputObject 'DairyProductInput' is required. Expected type DairyAnimal!",
+          "Argument 'direction' on InputObject 'ResourceOrderType' is required. Expected type String!",
+          "Argument 'source' on InputObject 'DairyProductInput' is required. Expected type DairyAnimal!",
+          "Argument 'direction' on InputObject 'ResourceOrderType' is required. Expected type String!",
+          "InputObject 'DairyProductInput' doesn't accept argument 'wacky'",
+          "Argument 'source' on Field 'similarCheese' has an invalid value (4.5). Expected type '[DairyAnimal!]!'."
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 4 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages.length, 4)
+        assert_equal(error_messages, [
+          "Argument 'id' on Field 'stringCheese' has an invalid value (\"aasdlkfj\"). Expected type 'Int!'.",
+          "Argument 'if' on Directive 'skip' has an invalid value (\"whatever\"). Expected type 'Boolean!'.",
+          "Argument 'source' on InputObject 'DairyProductInput' has an invalid value (1.1). Expected type 'DairyAnimal!'.",
+          "Argument 'source' on InputObject 'DairyProductInput' is required. Expected type DairyAnimal!",
+        ])
+      end
+    end
+  end
 end
