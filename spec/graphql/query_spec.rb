@@ -42,6 +42,13 @@ describe GraphQL::Query do
   )}
   let(:result) { query.result }
 
+  it "applies the max validation errors config" do
+    limited_schema = Class.new(schema) { validate_max_errors(2) }
+    res = limited_schema.execute("{ a b c d }")
+    assert_equal 2, res["errors"].size
+    refute res.key?("data")
+  end
+
   describe "when passed both a query string and a document" do
     it "returns an error to the client when query kwarg is used" do
       assert_raises ArgumentError do
