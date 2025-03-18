@@ -78,28 +78,51 @@ module GraphQL
             end
           end
 
-
           object = result.graphql_application_value.object.inspect
-          ast_node = result.graphql_selections.find { |s| s.alias == last_part || s.name == last_part }
-          field_defn = query.get_field(result.graphql_result_type, ast_node.name)
-          args = query.arguments_for(ast_node, field_defn).to_h
-          field_path = field_defn.path
-          if ast_node.alias
-            field_path += " as #{ast_node.alias}"
+          ast_node = nil
+          result.graphql_selections.each do |s|
+            found_ast_node = find_ast_node(s, last_part)
+            if found_ast_node
+              ast_node = found_ast_node
+              break
+            end
           end
 
-          rows << [
-            ast_node.position.join(":"),
-            field_path,
-            "#{object}",
-            args.inspect,
-            inspect_result(@override_value)
-          ]
+          if ast_node
+            field_defn = query.get_field(result.graphql_result_type, ast_node.name)
+            args = query.arguments_for(ast_node, field_defn).to_h
+            field_path = field_defn.path
+            if ast_node.alias
+              field_path += " as #{ast_node.alias}"
+            end
+
+            rows << [
+              ast_node.position.join(":"),
+              field_path,
+              "#{object}",
+              args.inspect,
+              inspect_result(@override_value)
+            ]
+          end
 
           rows << HEADERS
           rows.reverse!
           rows
         end
+      end
+
+      def find_ast_node(node, last_part)
+        return nil unless node
+        return node if node.respond_to?(:alias) && node.respond_to?(:name) && (node.alias == last_part || node.name == last_part)
+        return nil unless node.respond_to?(:selections)
+        return nil if node.selections.nil? || node.selections.empty?
+
+        node.selections.each do |child|
+          child_ast_node = find_ast_node(child, last_part)
+          return child_ast_node if child_ast_node
+        end
+
+        nil
       end
 
       # @return [String]
