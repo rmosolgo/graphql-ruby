@@ -26,6 +26,10 @@ module ValidatorHelpers
       argument :b, arg_type, required: false
       argument :c, arg_type, required: false
       validates(validates_config)
+
+      def prepare
+        self
+      end
     end
 
     validated_resolver = Class.new(GraphQL::Schema::Resolver) do
