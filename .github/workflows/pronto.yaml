@@ -1,0 +1,19 @@
+name: Pronto
+on:
+  - pull_request_target
+
+jobs:
+  pronto:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - run: git fetch --no-tags --prune --unshallow origin +refs/heads/*:refs/remotes/origin/*
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+      - name: Setup pronto
+        run: gem install undercover pronto pronto-rubocop pronto-undercover
+      - name: Run Pronto
+        run: PRONTO_PULL_REQUEST_ID="${{ github.event.pull_request.number }}" PRONTO_GITHUB_ACCESS_TOKEN="${{ github.token }}" pronto run -f github_pr -c origin/${{ github.base_ref }}
