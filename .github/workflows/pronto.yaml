@@ -13,6 +13,8 @@ jobs:
       - run: git fetch --no-tags --prune --unshallow origin +refs/heads/*:refs/remotes/origin/*
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4
       - name: Setup pronto
         run: gem install undercover pronto pronto-rubocop pronto-undercover
       - name: Run Pronto
