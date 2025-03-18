@@ -44,8 +44,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "simplecov"
   s.add_development_dependency "simplecov-lcov"
   s.add_development_dependency "undercover"
-  s.add_development_dependency "pronto"
-  s.add_development_dependency "pronto-undercover"
   # website stuff
   s.add_development_dependency "jekyll"
   s.add_development_dependency "jekyll-sass-converter", "~>2.2"
