@@ -64,14 +64,7 @@ module GraphQL
       end
 
       def prepare
-        if @context
-          object = @context[:current_object]
-          # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
-          Schema::Validator.validate!(self.class.validators, object, @context, @ruby_style_hash, as: self.class)
-          self
-        else
-          self
-        end
+        self
       end
 
       def unwrap_value(value)
@@ -109,6 +102,14 @@ module GraphQL
       # A copy of the Ruby-style hash
       def to_kwargs
         @ruby_style_hash.dup
+      end
+
+      # @api private
+      def validate_for(context)
+        object = context[:current_object]
+        # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
+        Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
+        nil
       end
 
       class << self

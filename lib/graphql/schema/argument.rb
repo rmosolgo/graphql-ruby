@@ -217,7 +217,7 @@ module GraphQL
       # @api private
       def prepare_value(obj, value, context: nil)
         if type.unwrap.kind.input_object?
-          value = recursively_prepare_input_object(value, type)
+          value = recursively_prepare_input_object(value, type, context)
         end
 
         Schema::Validator.validate!(validators, obj, context, value)
@@ -398,15 +398,16 @@ module GraphQL
 
       private
 
-      def recursively_prepare_input_object(value, type)
+      def recursively_prepare_input_object(value, type, context)
         if type.non_null?
           type = type.of_type
         end
 
         if type.list? && !value.nil?
           inner_type = type.of_type
-          value.map { |v| recursively_prepare_input_object(v, inner_type) }
+          value.map { |v| recursively_prepare_input_object(v, inner_type, context) }
         elsif value.is_a?(GraphQL::Schema::InputObject)
+          value.validate_for(context)
           value.prepare
         else
           value
