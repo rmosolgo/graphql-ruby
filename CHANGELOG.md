@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.4.15 (19 Mar 2025)
+
+### New features
+
+- `Schema.from_definition`: support custom base type classes #5282
+- `Schema.from_definition`: support type extensions #5281
+
+### Bug fixes
+
+- Handle `GraphQL::ExecutionError` from `resolve_type` #5274
+- Backtrace: handle inline fragments # 5274
+- `run_graphql_field`: fix when `.authorized?` calls Dataloader #5289
+- InputObject: run validators even when custom `def prepare` is present #5285
+- Multiplex: don't attempt to execute zero queries #5278
+
 # 2.4.14 (13 Mar 2025)
 
 ### Bug fixes
