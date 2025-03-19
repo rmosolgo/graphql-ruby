@@ -171,4 +171,26 @@ describe("ActionCableLink", () => {
 
     expect(subscription.params["test"]).toEqual(1)
   })
+
+  it('allows passing custom callbacks', () => {
+    var connected = jest.fn()
+    var received = jest.fn()
+    var disconnected = jest.fn()
+
+    var observable = new ActionCableLink(
+      Object.assign(options, { callbacks: { connected, received, disconnected } })
+    ).request(operation, null as any)
+
+    // unpack the underlying subscription
+    var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+
+    subscription.received({ result: { data: "data 1" }, more: true })
+    subscription.received({ result: { data: "data 2" }, more: false })
+    subscription.disconnected()
+
+    expect(connected).toHaveBeenCalledTimes(1)
+    expect(received).toHaveBeenCalledWith({ result: { data: "data 1" }, more: true })
+    expect(received).toHaveBeenCalledWith({ result: { data: "data 2" }, more: false })
+    expect(disconnected).toHaveBeenCalledTimes(1)
+  })
 })
