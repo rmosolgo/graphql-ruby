@@ -81,6 +81,13 @@ describe GraphQL::Testing::Helpers do
       end
     end
 
+    class AuthorizedObject < GraphQL::Schema::Object
+      def self.authorized?(object, context)
+        context.dataloader.with(BillSource).load(object)[:amount] > 5
+      end
+
+      field :id, ID
+    end
     class Query < GraphQL::Schema::Object
       field :students, [Student]
 
@@ -97,6 +104,8 @@ describe GraphQL::Testing::Helpers do
       def lookahead_selections(lookahead:)
         lookahead.selections.to_s
       end
+
+      field :authorized_object, AuthorizedObject
     end
 
     query(Query)
@@ -197,6 +206,10 @@ describe GraphQL::Testing::Helpers do
           run_graphql_field(AssertionsSchema, "Student.ssn", {})
         end
         assert_equal "An instance of Hash failed AssertionsSchema::Student's authorization check on field ssn", err.message
+      end
+
+      it "works when .authorized? calls dataloader" do
+        assert_equal "100", run_graphql_field(AssertionsSchema, "AuthorizedObject.id", { id: "100" })
       end
 
       it "raises when the type doesn't exist" do

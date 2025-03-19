@@ -43,18 +43,21 @@ module GraphQL
         type_name, *field_names = field_path.split(".")
         dummy_query = GraphQL::Query.new(schema, "{ __typename }", context: context)
         query_context = dummy_query.context
+        dataloader = query_context.dataloader
         object_type = dummy_query.types.type(type_name) # rubocop:disable Development/ContextIsPassedCop
         if object_type
           graphql_result = object
           field_names.each do |field_name|
             inner_object = graphql_result
-            graphql_result = object_type.wrap(inner_object, query_context)
+            dataloader.run_isolated {
+              graphql_result = object_type.wrap(inner_object, query_context)
+            }
             if graphql_result.nil?
               return nil
             end
             visible_field = dummy_query.types.field(object_type, field_name) # rubocop:disable Development/ContextIsPassedCop
             if visible_field
-              dummy_query.context.dataloader.run_isolated {
+              dataloader.run_isolated {
                 query_context[:current_field] = visible_field
                 field_args = visible_field.coerce_arguments(graphql_result, arguments, query_context)
                 field_args = schema.sync_lazy(field_args)
