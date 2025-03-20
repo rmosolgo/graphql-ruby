@@ -28,9 +28,6 @@ module GraphQL
             #{risk_warning}
 
             #{suggestion}
-
-            This warning appears because your schema is using a custom validator.
-            To disable this warning, set Schema#validate_timeout to a higher value.
             #{border}
           WARNING
 
@@ -46,7 +43,7 @@ module GraphQL
         end
 
         def warning_header
-          colorize("⚠️  WARNING! CUSTOM VALIDATOR DETECTED ⚠️", :red)
+          colorize("⚠️ CUSTOM VALIDATOR DETECTED ⚠️", :red)
         end
 
         def validator_info
