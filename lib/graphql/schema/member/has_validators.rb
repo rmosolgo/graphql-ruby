@@ -12,10 +12,13 @@ module GraphQL
         def validates(validation_config)
           validation_config.each do |validator_name, _options|
             if validator_name.is_a?(Class) || !GraphQL::Schema::Validator.all_validators.key?(validator_name)
-              GraphQL::Schema::Validator::CustomValidatorWarning.print(validator_name)
+                warn <<~WARN
+                  WARNING: GraphQL Custom validator '#{validator_name}' detected at #{caller(1,1).first}
+                  Custom validators with I/O operations may fail unexpectedly due to GraphQL's default validate_timeout setting. Long-running I/O operations may not be killed halfway through, resulting in unpredictable behavior. See https://graphql-ruby.org/queries/timeout.html#validation-and-analysis for more information.
+                WARN
             end
           end
-          
+
           new_validators = GraphQL::Schema::Validator.from_config(self, validation_config)
           @own_validators ||= []
           @own_validators.concat(new_validators)
