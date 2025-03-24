@@ -94,7 +94,7 @@ module GraphQL
           monitor: monitor_name,
           monitor_class: monitor_name.capitalize + "Monitor",
         }
-        trace_module.module_eval(code, __FILE__, __LINE__ + 5)
+        trace_module.module_eval(code, __FILE__, __LINE__ + 5) # rubocop:disable Development/NoEvalCop This is build-time with a validated string
         trace_module
       end
 
