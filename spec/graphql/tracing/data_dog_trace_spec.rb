@@ -82,6 +82,9 @@ describe GraphQL::Tracing::DataDogTrace do
     expected_custom_tags = [
       (USING_C_PARSER ? ["custom:lex", "query_string"] : nil),
       ["custom:parse", "String"],
+      ["selected_operation_name", nil],
+      ["selected_operation_type", "query"],
+      ["query_string", "{ thing { str } }"],
       ["custom:execute", "GraphQL::Execution::Multiplex"],
       ["custom:validate", "GraphQL::Query"],
     ].compact
