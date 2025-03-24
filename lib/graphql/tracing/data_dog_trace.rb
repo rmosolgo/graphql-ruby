@@ -1,6 +1,5 @@
 # frozen_string_literal: true
-
-require "graphql/tracing/platform_trace"
+require "graphql/tracing/monitor_trace"
 
 module GraphQL
   module Tracing
@@ -43,9 +42,9 @@ module GraphQL
               end
               span.resource = resource if resource
 
-              span.set_tag(:selected_operation_name, first_query.selected_operation_name)
-              span.set_tag(:selected_operation_type, first_query.selected_operation&.operation_type)
-              span.set_tag(:query_string, first_query.query_string)
+              span.set_tag("selected_operation_name", first_query.selected_operation_name)
+              span.set_tag("selected_operation_type", first_query.selected_operation&.operation_type)
+              span.set_tag("query_string", first_query.query_string)
             end
 
             if @has_prepare_span
