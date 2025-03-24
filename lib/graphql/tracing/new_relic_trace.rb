@@ -54,7 +54,7 @@ module GraphQL
 
         class Event < MonitorTrace::Monitor::Event
           def start
-            name = @engine.name_for(keyword, object)
+            name = @monitor.name_for(keyword, object)
             @nr_ev = NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: name, category: :web)
           end
 

@@ -86,7 +86,7 @@ module GraphQL
           def start
             if Sentry.initialized?
               @span = Sentry.get_current_scope.get_span
-              span_name = @engine.name_for(@keyword, @object)
+              span_name = @monitor.name_for(@keyword, @object)
               @span.start_child(op: span_name)
             end
           end

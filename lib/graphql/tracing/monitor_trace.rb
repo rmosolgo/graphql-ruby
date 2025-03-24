@@ -8,7 +8,8 @@ module GraphQL
     # @see ActiveSupportNotificationsTrace Integration via ActiveSupport::Notifications, an alternative approach.
     module MonitorTrace
       class Monitor
-        def initialize(set_transaction_name:)
+        def initialize(trace:, set_transaction_name:, **_rest)
+          @trace = trace
           @set_transaction_name = set_transaction_name
           @platform_field_key_cache = Hash.new { |h, k| h[k] = platform_field_key(k) }.compare_by_identity
           @platform_authorized_key_cache = Hash.new { |h, k| h[k] = platform_authorized_key(k) }.compare_by_identity
@@ -65,8 +66,8 @@ module GraphQL
         end
 
         class Event
-          def initialize(engine, keyword, object)
-            @engine = engine
+          def initialize(monitor, keyword, object)
+            @monitor = monitor
             @keyword = keyword
             @object = object
           end
@@ -107,7 +108,7 @@ module GraphQL
           @trace_authorized = trace_authorized
           @trace_resolve_type = trace_resolve_type
           @set_transaction_name = set_transaction_name
-          @%{monitor} = %{monitor_class}.new(set_transaction_name: @set_transaction_name)
+          @%{monitor} = %{monitor_class}.new(trace: self, set_transaction_name: @set_transaction_name, **rest)
           super
         end
 
