@@ -171,7 +171,9 @@ module GraphQL
 
         def dataloader_fiber_resume(source)
           prev_ev = Fiber[PREVIOUS_EV_KEY]
-          begin_%{monitor}_event(prev_ev.keyword, prev_ev.object)
+          if prev_ev
+            begin_%{monitor}_event(prev_ev.keyword, prev_ev.object)
+          end
           super
         end
 

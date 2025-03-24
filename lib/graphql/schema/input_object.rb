@@ -59,19 +59,12 @@ module GraphQL
         else
           new_h = {}
           keys.each { |k| @ruby_style_hash.key?(k) && new_h[k] = @ruby_style_hash[k] }
-          new_h 
+          new_h
         end
       end
 
       def prepare
-        if @context
-          object = @context[:current_object]
-          # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
-          Schema::Validator.validate!(self.class.validators, object, @context, @ruby_style_hash, as: self.class)
-          self
-        else
-          self
-        end
+        self
       end
 
       def unwrap_value(value)
@@ -109,6 +102,14 @@ module GraphQL
       # A copy of the Ruby-style hash
       def to_kwargs
         @ruby_style_hash.dup
+      end
+
+      # @api private
+      def validate_for(context)
+        object = context[:current_object]
+        # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
+        Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
+        nil
       end
 
       class << self
@@ -150,14 +151,8 @@ module GraphQL
             end
           end
           # Add a method access
-          method_name = argument_defn.keyword
           suppress_redefinition_warning do
-            class_eval <<-RUBY, __FILE__, __LINE__
-              def #{method_name}
-                self[#{method_name.inspect}]
-              end
-              alias_method #{method_name.inspect}, #{method_name.inspect}
-            RUBY
+            define_accessor_method(argument_defn.keyword)
           end
           argument_defn
         end
@@ -292,6 +287,11 @@ module GraphQL
           yield
         ensure
           $VERBOSE = verbose
+        end
+
+        def define_accessor_method(method_name)
+          define_method(method_name) { self[method_name] }
+          alias_method(method_name, method_name)
         end
       end
 

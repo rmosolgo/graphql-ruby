@@ -33,6 +33,7 @@ module GraphQL
             end
           end
 
+          return GraphQL::EmptyObjects::EMPTY_ARRAY if queries.empty?
 
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
           Fiber[:__graphql_current_multiplex] = multiplex

@@ -587,7 +587,17 @@ module GraphQL
             set_result(selection_result, result_name, r, false, is_non_null)
             r
           when "UNION", "INTERFACE"
-            resolved_type_or_lazy = resolve_type(current_type, value)
+            resolved_type_or_lazy = begin
+                                      resolve_type(current_type, value)
+                                    rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+                                      return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
+                                    rescue StandardError => err
+                                      begin
+                                        query.handle_or_reraise(err)
+                                      rescue GraphQL::ExecutionError => ex_err
+                                        return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
+                                      end
+                                    end
             after_lazy(resolved_type_or_lazy, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_type_result, runtime_state|
               if resolved_type_result.is_a?(Array) && resolved_type_result.length == 2
                 resolved_type, resolved_value = resolved_type_result

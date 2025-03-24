@@ -159,6 +159,43 @@ describe GraphQL::Backtrace do
       assert_includes err.message, "more lines"
     end
 
+    it "annotates crashes from user code when using inline fragments" do
+      err = assert_raises(GraphQL::Backtrace::TracedError) {
+        backtrace_schema.execute <<-GRAPHQL, root_value: "Root"
+        query($msg: String = \"Boom\") {
+          field1 {
+            ... on Thing {
+              boomError: raiseField(message: $msg)
+            }
+          }
+        }
+        GRAPHQL
+      }
+
+      # GraphQL backtrace is present
+      expected_graphql_backtrace = [
+        "4:15: Thing.raiseField as boomError",
+        "2:11: Query.field1",
+        "1:9: query",
+      ]
+      assert_equal expected_graphql_backtrace, err.graphql_backtrace
+
+      hash_inspect = { message: "Boom" }.inspect
+      # The message includes the GraphQL context
+      rendered_table = [
+        'Loc  | Field                         | Object     | ' + "Arguments".ljust(hash_inspect.size) + ' | Result',
+        '4:15 | Thing.raiseField as boomError | :something | ' + hash_inspect + ' | #<RuntimeError: This is broken: Boom>',
+        '2:11 | Query.field1                  | "Root"     | ' + "{}".ljust(hash_inspect.size) + ' | {}',
+        '1:9  | query                         | "Root"     | ' + {"msg" => "Boom"}.inspect.ljust(hash_inspect.size) + ' | {field1: {...}}',
+      ].join("\n")
+
+      assert_includes err.message, "\n" + rendered_table
+      # The message includes the original error message
+      assert_includes err.message, "This is broken: Boom"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:49", "It includes the original backtrace"
+      assert_includes err.message, "more lines"
+    end
+
     it "annotates errors from Query#result" do
       query_str = "query StrField { field2 { strField } __typename }"
       context = { backtrace: true }

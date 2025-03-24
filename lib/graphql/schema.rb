@@ -111,7 +111,7 @@ module GraphQL
       # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
       # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
       # @return [Class] the schema described by `document`
-      def from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {})
+      def from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {}, base_types: {})
         # If the file ends in `.graphql` or `.graphqls`, treat it like a filepath
         if definition_or_path.end_with?(".graphql") || definition_or_path.end_with?(".graphqls")
           GraphQL::Schema::BuildFromDefinition.from_definition_path(
@@ -120,6 +120,7 @@ module GraphQL
             default_resolve: default_resolve,
             parser: parser,
             using: using,
+            base_types: base_types,
           )
         else
           GraphQL::Schema::BuildFromDefinition.from_definition(
@@ -128,6 +129,7 @@ module GraphQL
             default_resolve: default_resolve,
             parser: parser,
             using: using,
+            base_types: base_types,
           )
         end
       end
@@ -821,13 +823,13 @@ module GraphQL
 
       attr_writer :validate_timeout
 
-      def validate_timeout(new_validate_timeout = nil)
-        if new_validate_timeout
+      def validate_timeout(new_validate_timeout = NOT_CONFIGURED)
+        if !NOT_CONFIGURED.equal?(new_validate_timeout)
           @validate_timeout = new_validate_timeout
         elsif defined?(@validate_timeout)
           @validate_timeout
         else
-          find_inherited_value(:validate_timeout)
+          find_inherited_value(:validate_timeout) || 3
         end
       end
 

@@ -26,7 +26,7 @@ module GraphQL
         ANALYZE_NAME = "GraphQL/analyze"
 
         def instrument(keyword, payload, &block)
-          if keyword == :execute && payload.queries.size == 1
+          if keyword == :execute
             query = payload.queries.first
             set_this_txn_name = query.context[:set_new_relic_transaction_name]
             if set_this_txn_name || (set_this_txn_name.nil? && @set_transaction_name)

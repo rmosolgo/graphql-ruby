@@ -53,6 +53,7 @@ module GraphQL
       def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, comment: nil, ast_node: nil, default_value: NOT_CONFIGURED, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
+        NameValidator.validate!(@name)
         @type_expr = type_expr || type
         @description = desc || description
         @comment = comment
@@ -89,11 +90,8 @@ module GraphQL
         end
 
         if definition_block
-          if definition_block.arity == 1
-            instance_exec(self, &definition_block)
-          else
-            instance_eval(&definition_block)
-          end
+          # `self` will still be self, it will also be the first argument to the block:
+          instance_exec(self, &definition_block)
         end
       end
 
@@ -219,7 +217,7 @@ module GraphQL
       # @api private
       def prepare_value(obj, value, context: nil)
         if type.unwrap.kind.input_object?
-          value = recursively_prepare_input_object(value, type)
+          value = recursively_prepare_input_object(value, type, context)
         end
 
         Schema::Validator.validate!(validators, obj, context, value)
@@ -400,15 +398,16 @@ module GraphQL
 
       private
 
-      def recursively_prepare_input_object(value, type)
+      def recursively_prepare_input_object(value, type, context)
         if type.non_null?
           type = type.of_type
         end
 
         if type.list? && !value.nil?
           inner_type = type.of_type
-          value.map { |v| recursively_prepare_input_object(v, inner_type) }
+          value.map { |v| recursively_prepare_input_object(v, inner_type, context) }
         elsif value.is_a?(GraphQL::Schema::InputObject)
+          value.validate_for(context)
           value.prepare
         else
           value
