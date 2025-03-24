@@ -117,6 +117,8 @@ module GraphQL
           return
         else
           next_offset = relation_offset(items) || 0
+          relation_limit = relation_limit(items)
+
           if after_offset
             next_offset += after_offset
           end
