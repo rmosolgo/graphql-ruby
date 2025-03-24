@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 1.13.25 (24 Mar 2025)
+
+### Bug fixes
+
+- Connections: fix handling ActiveRecord::Relations that already have a limit #5294
+
 # 1.13.24 (12 Mar 2025)
 
 - Security: Fix CVE-2025-27407
