@@ -31,11 +31,18 @@ module Datadog
     def set_tag(key, value)
       SPAN_TAGS << [key, value]
     end
+
+    def finish
+    end
   end
 
   module Tracing
     def self.trace(platform_key, *args)
-      yield DummySpan.new
+      if block_given?
+        yield DummySpan.new
+      else
+        DummySpan.new
+      end
     end
   end
 end

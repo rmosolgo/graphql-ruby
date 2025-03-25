@@ -23,12 +23,6 @@ module GraphQL
         yield
       end
 
-      # @param query_str [String]
-      # @return [void]
-      def begin_parse(query_str); end;
-      # @param query_str [String]
-      # @return [void]
-      def end_parse(query_str); end;
       # @param query_string [String]
       # @return [void]
       def parse(query_string:)
@@ -62,17 +56,6 @@ module GraphQL
       def analyze_query(query:)
         yield
       end
-
-      # This is the first event in the tracing lifecycle.
-      # Every Query is technically run _inside_ a {GraphQL::Multiplex}.
-      # @param multiplex [GraphQL::Execution::Multiplex]
-      # @return [void]
-      def begin_execute_multiplex(multiplex); end;
-
-      # This is the last event of the tracing lifecycle.
-      # @param multiplex [GraphQL::Execution::Multiplex]
-      # @return [void]
-      def end_execute_multiplex(multiplex); end;
 
       # This wraps an entire `.execute` call.
       # @param multiplex [GraphQL::Execution::Multiplex]

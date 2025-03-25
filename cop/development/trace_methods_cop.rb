@@ -16,8 +16,6 @@ module Cop
         :begin_dataloader,
         :begin_dataloader_source,
         :begin_execute_field,
-        :begin_execute_multiplex,
-        :begin_parse,
         :begin_resolve_type,
         :begin_validate,
         :dataloader_fiber_exit,
@@ -30,8 +28,6 @@ module Cop
         :end_dataloader,
         :end_dataloader_source,
         :end_execute_field,
-        :end_execute_multiplex,
-        :end_parse,
         :end_resolve_type,
         :end_validate,
         :execute_field,
@@ -80,6 +76,12 @@ module Cop
             if all_defs.include?(:"begin_#{missing_def}") && all_defs.include?(:"end_#{missing_def}")
               redundant_defs << missing_def
               redundant_defs << :"#{missing_def}_lazy"
+            end
+            missing_name = missing_def.to_s
+            if missing_name.start_with?("begin") && all_defs.include?(:"#{missing_name.sub("begin_", "")}")
+              redundant_defs << missing_def
+            elsif missing_name.start_with?("end") && all_defs.include?(:"#{missing_name.sub("end_", "")}")
+              redundant_defs << missing_def
             end
           end
 
