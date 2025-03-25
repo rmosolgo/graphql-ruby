@@ -21,10 +21,11 @@ describe GraphQL::Tracing::PrometheusTracing do
   describe "Observing" do
     it "sends JSON to Prometheus client" do
       client = Minitest::Mock.new
-
+      send_json_called = false
       client.expect :send_json, true do |obj|
+        send_json_called = true
         obj[:type] == 'graphql' &&
-          obj[:key] == 'execute_field' &&
+          obj[:key] == :execute_field &&
           obj[:platform_key] == 'Query.int'
       end
 
@@ -32,7 +33,8 @@ describe GraphQL::Tracing::PrometheusTracing do
         client: client,
         trace_scalars: true
 
-        PrometheusTraceTest::Schema.execute "query X { int }"
+      PrometheusTraceTest::Schema.execute "query X { int }"
+      assert send_json_called, "send_json was called"
     end
   end
 end
