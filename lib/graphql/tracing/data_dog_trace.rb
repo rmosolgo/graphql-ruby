@@ -9,7 +9,7 @@ module GraphQL
     #     trace_with GraphQL::Tracing::DataDogTrace
     #   end
     # @example Skipping `resolve_type` and `authorized` events
-    #   trace_with GraphQL::Tracing::DataDogTrace, skip_authorized: true, skip_resolve_type: true
+    #   trace_with GraphQL::Tracing::DataDogTrace, trace_authorized: false, trace_resolve_type: false
     DataDogTrace = MonitorTrace.create_module("datadog")
     module DataDogTrace
       class DatadogMonitor < MonitorTrace::Monitor
