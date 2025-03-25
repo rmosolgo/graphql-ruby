@@ -30,7 +30,7 @@ describe GraphQL::Tracing::DataDogTracing do
 
     class TestSchema < GraphQL::Schema
       query(Query)
-      use(GraphQL::Tracing::DataDogTracing, legacy_tracing: true)
+      use(GraphQL::Tracing::DataDogTracing)
     end
 
     class CustomTracerTestSchema < GraphQL::Schema
