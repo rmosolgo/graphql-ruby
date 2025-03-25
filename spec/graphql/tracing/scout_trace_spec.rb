@@ -37,10 +37,11 @@ describe GraphQL::Tracing::ScoutTrace do
     expected_events = [
       "execute.graphql",
       "analyze.graphql",
+      (USING_C_PARSER ? "lex.graphql" : nil),
       "parse.graphql",
       "validate.graphql",
       "Query.authorized"
-    ]
+    ].compact
     assert_equal expected_events, ScoutApm::EVENTS
   end
 
@@ -48,12 +49,13 @@ describe GraphQL::Tracing::ScoutTrace do
     ScoutApmTraceTest::SchemaWithTransactionName.execute "query X { int }"
     assert_equal ["GraphQL/query.X"], ScoutApm::TRANSACTION_NAMES
     expected_events = [
+      (USING_C_PARSER ? "lex.graphql" : nil),
       "parse.graphql",
       "execute.graphql",
       "analyze.graphql",
       "validate.graphql",
       "Query.int"
-    ]
+    ].compact
     assert_equal expected_events, ScoutApm::EVENTS
   end
 
