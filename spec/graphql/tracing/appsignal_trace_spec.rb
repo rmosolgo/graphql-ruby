@@ -13,6 +13,20 @@ module Appsignal
   def instrumented
     @instrumented ||= []
   end
+
+  def current
+    self
+  end
+
+  def start_event
+    # pass
+  end
+
+  def finish_event(name, title, body)
+    instrumented << name
+  end
+
+  Transaction = self
 end
 
 describe GraphQL::Tracing::AppsignalTrace do
@@ -67,19 +81,16 @@ describe GraphQL::Tracing::AppsignalTrace do
     _res = AppsignalTraceTest::TestSchema.execute("{ int thing { str } named { ... on Thing { str } } }")
     expected_trace = [
       "execute.graphql",
-      "analyze.graphql",
       (USING_C_PARSER ? "lex.graphql" : nil),
       "parse.graphql",
       "validate.graphql",
       "analyze.graphql",
-      "execute.graphql",
       "Query.authorized.graphql",
       "Query.thing.graphql",
       "Thing.authorized.graphql",
       "Query.named.graphql",
       "Named.resolve_type.graphql",
       "Thing.authorized.graphql",
-      "execute.graphql",
     ].compact
     assert_equal expected_trace, Appsignal.instrumented
   end
@@ -111,17 +122,14 @@ describe GraphQL::Tracing::AppsignalTrace do
         "execute.graphql",
         (USING_C_PARSER ? "lex.graphql" : nil),
         "parse.graphql",
-        "analyze.graphql",
         "validate.graphql",
         "analyze.graphql",
-        "execute.graphql",
         "Query.authorized.graphql",
         "Query.thing.graphql",
         "Thing.authorized.graphql",
         "Query.named.graphql",
         "Named.resolve_type.graphql",
         "Thing.authorized.graphql",
-        "execute.graphql",
       ].compact
 
       expected_datadog_trace = [
@@ -147,17 +155,14 @@ describe GraphQL::Tracing::AppsignalTrace do
         (USING_C_PARSER ? "lex.graphql" : nil),
         "parse.graphql",
         "execute.graphql",
-        "analyze.graphql",
         "validate.graphql",
         "analyze.graphql",
-        "execute.graphql",
         "Query.authorized.graphql",
         "Query.thing.graphql",
         "Thing.authorized.graphql",
         "Query.named.graphql",
         "Named.resolve_type.graphql",
         "Thing.authorized.graphql",
-        "execute.graphql",
       ].compact
 
       expected_datadog_trace = [

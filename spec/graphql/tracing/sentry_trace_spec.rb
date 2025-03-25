@@ -80,7 +80,7 @@ describe GraphQL::Tracing::SentryTrace do
       "graphql.parse",
       "graphql.validate",
       "graphql.authorized.Query",
-      "graphql.field.Query.thing",
+      "graphql.Query.thing",
       "graphql.authorized.Thing",
     ].compact
 

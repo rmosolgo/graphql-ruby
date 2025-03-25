@@ -9,7 +9,7 @@ module GraphQL
     #     trace_with GraphQL::Tracing::DataDogTrace
     #   end
     # @example Skipping `resolve_type` and `authorized` events
-    #   trace_with GraphQL::Tracing::DataDogTrace, skip_authorized: true, skip_resolve_type: true
+    #   trace_with GraphQL::Tracing::DataDogTrace, trace_authorized: false, trace_resolve_type: false
     DataDogTrace = MonitorTrace.create_module("datadog")
     module DataDogTrace
       class DatadogMonitor < MonitorTrace::Monitor
@@ -54,29 +54,7 @@ module GraphQL
           end
         end
 
-        PARSE_NAME = "parse.graphql"
-        LEX_NAME = "lex.graphql"
-        VALIDATE_NAME = "validate.graphql"
-        EXECUTE_NAME = "execute.graphql"
-        ANALYZE_NAME = "analyze.graphql"
-
-        private
-
-        def platform_field_key(field)
-          field.path
-        end
-
-        def platform_authorized_key(type)
-          "#{type.graphql_name}.authorized"
-        end
-
-        def platform_resolve_type_key(type)
-          "#{type.graphql_name}.resolve_type"
-        end
-
-        def platform_source_key(source_class)
-          "#{source_class.name.gsub("::", "_").name.underscore}.fetch"
-        end
+        include MonitorTrace::Monitor::GraphQLSuffixNames
         class Event < MonitorTrace::Monitor::Event
           def start
             name = @monitor.name_for(keyword, object)
