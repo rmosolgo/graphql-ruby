@@ -32,14 +32,12 @@ module GraphQL
         autoload :GraphQLCollector, "graphql/tracing/prometheus_trace/graphql_collector"
       end
 
-      alias :old_initialize :initialize
-
       def initialize(client: PrometheusExporter::Client.default, keys_whitelist: [:execute_field], collector_type: "graphql", **rest)
         @prometheus_client = client
         @prometheus_keys_whitelist = keys_whitelist.map(&:to_sym) # handle previous string keys
         @prometheus_collector_type = collector_type
-        old_initialize(**rest)
-        super(**rest)
+        setup_prometheus_monitor(**rest)
+        super
       end
 
       attr_reader :prometheus_collector_type, :prometheus_client, :prometheus_keys_whitelist

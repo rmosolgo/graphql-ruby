@@ -103,13 +103,17 @@ module GraphQL
         # @param trace_scalars [Boolean] If `true`, leaf fields will be traced too (Scalars _and_ Enums)
         # @param trace_authorized [Boolean] If `false`, skip tracing `authorized?` calls
         # @param trace_resolve_type [Boolean] If `false`, skip tracing `resolve_type?` calls
-        def initialize(set_transaction_name: false, trace_scalars: false, trace_authorized: true, trace_resolve_type: true, **rest)
+        def initialize(...)
+          setup_%{monitor}_monitor(...)
+          super
+        end
+
+        def setup_%{monitor}_monitor(trace_scalars: false, trace_authorized: true, trace_resolve_type: true, set_transaction_name: false, **kwargs)
           @trace_scalars = trace_scalars
           @trace_authorized = trace_authorized
           @trace_resolve_type = trace_resolve_type
           @set_transaction_name = set_transaction_name
-          @%{monitor} = %{monitor_class}.new(trace: self, set_transaction_name: @set_transaction_name, **rest)
-          super
+          @%{monitor} = %{monitor_class}.new(trace: self, set_transaction_name: @set_transaction_name, **kwargs)
         end
 
         def parse(query_string:)

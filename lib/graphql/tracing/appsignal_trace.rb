@@ -11,14 +11,13 @@ module GraphQL
     #   end
     AppsignalTrace = MonitorTrace.create_module("appsignal")
     module AppsignalTrace
-      alias :old_initialize :initialize
       # @param set_action_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
       #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
       #   It can also be specified per-query with `context[:set_appsignal_action_name]`.
       def initialize(set_action_name: false, **rest)
         rest[:set_transaction_name] ||= set_action_name
-        old_initialize(**rest)
-        super(**rest)
+        setup_appsignal_monitor(**rest)
+        super
       end
 
       class AppsignalMonitor < MonitorTrace::Monitor
