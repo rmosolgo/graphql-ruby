@@ -54,29 +54,7 @@ module GraphQL
           end
         end
 
-        PARSE_NAME = "parse.graphql"
-        LEX_NAME = "lex.graphql"
-        VALIDATE_NAME = "validate.graphql"
-        EXECUTE_NAME = "execute.graphql"
-        ANALYZE_NAME = "analyze.graphql"
-
-        private
-
-        def platform_field_key(field)
-          field.path
-        end
-
-        def platform_authorized_key(type)
-          "#{type.graphql_name}.authorized"
-        end
-
-        def platform_resolve_type_key(type)
-          "#{type.graphql_name}.resolve_type"
-        end
-
-        def platform_source_key(source_class)
-          "#{source_class.name.gsub("::", "_").name.underscore}.fetch"
-        end
+        include MonitorTrace::Monitor::GraphQLSuffixNames
         class Event < MonitorTrace::Monitor::Event
           def start
             name = @monitor.name_for(keyword, object)

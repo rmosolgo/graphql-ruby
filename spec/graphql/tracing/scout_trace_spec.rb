@@ -40,7 +40,7 @@ describe GraphQL::Tracing::ScoutTrace do
       (USING_C_PARSER ? "lex.graphql" : nil),
       "parse.graphql",
       "validate.graphql",
-      "Query.authorized"
+      "Query.authorized.graphql"
     ].compact
     assert_equal expected_events, ScoutApm::EVENTS
   end
@@ -54,7 +54,7 @@ describe GraphQL::Tracing::ScoutTrace do
       "execute.graphql",
       "analyze.graphql",
       "validate.graphql",
-      "Query.int"
+      "Query.int.graphql"
     ].compact
     assert_equal expected_events, ScoutApm::EVENTS
   end

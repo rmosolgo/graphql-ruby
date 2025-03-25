@@ -26,7 +26,7 @@ describe GraphQL::Tracing::PrometheusTracing do
         send_json_called = true
         obj[:type] == 'graphql' &&
           obj[:key] == :execute_field &&
-          obj[:platform_key] == 'Query.int'
+          obj[:platform_key] == 'graphql.Query.int'
       end
 
       PrometheusTraceTest::Schema.trace_with GraphQL::Tracing::PrometheusTrace,

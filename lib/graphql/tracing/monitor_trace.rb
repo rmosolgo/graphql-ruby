@@ -82,6 +82,56 @@ module GraphQL
             raise "Implement #{self.class}#finish to end this event (#{inspect})"
           end
         end
+
+        module GraphQLSuffixNames
+          PARSE_NAME = "parse.graphql"
+          LEX_NAME = "lex.graphql"
+          VALIDATE_NAME = "validate.graphql"
+          EXECUTE_NAME = "execute.graphql"
+          ANALYZE_NAME = "analyze.graphql"
+
+          private
+
+          def platform_field_key(field)
+            "#{field.path}.graphql"
+          end
+
+          def platform_authorized_key(type)
+            "#{type.graphql_name}.authorized.graphql"
+          end
+
+          def platform_resolve_type_key(type)
+            "#{type.graphql_name}.resolve_type.graphql"
+          end
+
+          def platform_source_key(source_class)
+            "#{source_class.name.gsub("::", "_").name.underscore}.fetch.graphql"
+          end
+        end
+
+        module GraphQLPrefixNames
+          PARSE_NAME = "graphql.parse"
+          LEX_NAME = "graphql.lex"
+          VALIDATE_NAME = "graphql.validate"
+          EXECUTE_NAME = "graphql.execute"
+          ANALYZE_NAME = "graphql.analyze"
+
+          def platform_field_key(field)
+            "graphql.#{field.path}"
+          end
+
+          def platform_authorized_key(type)
+            "graphql.authorized.#{type.graphql_name}"
+          end
+
+          def platform_resolve_type_key(type)
+            "graphql.resolve_type.#{type.graphql_name}"
+          end
+
+          def platform_source_class_key(source_class)
+            "graphql.fetch.#{source_class.name.gsub("::", "_")}"
+          end
+        end
       end
 
       def self.create_module(monitor_name)
