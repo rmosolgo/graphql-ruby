@@ -171,3 +171,4 @@ require "graphql/schema/validator/allow_blank_validator"
 GraphQL::Schema::Validator.install(:allow_blank, GraphQL::Schema::Validator::AllowBlankValidator)
 require "graphql/schema/validator/all_validator"
 GraphQL::Schema::Validator.install(:all, GraphQL::Schema::Validator::AllValidator)
+require "graphql/schema/validator/custom_validator_warning"
