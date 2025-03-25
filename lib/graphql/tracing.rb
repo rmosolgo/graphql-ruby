@@ -25,7 +25,6 @@ module GraphQL
     autoload :AppOpticsTrace, "graphql/tracing/appoptics_trace"
     autoload :AppsignalTrace, "graphql/tracing/appsignal_trace"
     autoload :DataDogTrace, "graphql/tracing/data_dog_trace"
-    autoload :MonitorTrace, "graphql/tracing/monitor_trace"
     autoload :NewRelicTrace, "graphql/tracing/new_relic_trace"
     autoload :NotificationsTrace, "graphql/tracing/notifications_trace"
     autoload :SentryTrace, "graphql/tracing/sentry_trace"

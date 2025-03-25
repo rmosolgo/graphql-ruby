@@ -125,20 +125,26 @@ describe GraphQL::Tracing::AppsignalTrace do
       ].compact
 
       expected_datadog_trace = [
-        ["component", "graphql"],
-        ["operation", "execute"],
-        ["component", "graphql"],
-        *(USING_C_PARSER ? [["operation", "lex"], ["component", "graphql"]] : []),
-        ["operation", "parse"],
-        ["selected_operation_name", nil],
-        ["selected_operation_type", "query"],
-        ["query_string", "{ int thing { str } named { ... on Thing { str } } }"],
-        ["component", "graphql"],
-        ["operation", "validate"]
-      ]
+        "graphql.execute_multiplex",
+        (USING_C_PARSER ? "graphql.lex" : nil),
+        "graphql.parse",
+        "graphql.analyze_multiplex",
+        "graphql.validate",
+        "graphql.analyze_query",
+        "graphql.execute_query",
+        "graphql.authorized",
+        "graphql.execute_field",
+        "graphql.authorized",
+        "graphql.execute_field",
+        "graphql.resolve_type",
+        "graphql.authorized",
+        "graphql.execute_query_lazy",
+      ].compact
 
       assert_equal expected_appsignal_trace, Appsignal.instrumented
       assert_equal expected_datadog_trace, Datadog::SPAN_TAGS
+        .select { |t| t[0].is_a?(String) }
+        .each_slice(2).map { |(p1, p2)| "#{p1[1]}.#{p2[1]}" }
     end
 
     it "works when the modules are included in reverse order" do
@@ -161,20 +167,26 @@ describe GraphQL::Tracing::AppsignalTrace do
       ].compact
 
       expected_datadog_trace = [
-        ["component", "graphql"],
-        ["operation", "execute"],
-        *(USING_C_PARSER ? [["component", "graphql"], ["operation", "lex"]] : []),
-        ["component", "graphql"],
-        ["operation", "parse"],
-        ["selected_operation_name", nil],
-        ["selected_operation_type", "query"],
-        ["query_string", "{ int thing { str } named { ... on Thing { str } } }"],
-        ["component", "graphql"],
-        ["operation", "validate"]
-      ]
+        "graphql.execute_multiplex",
+        (USING_C_PARSER ? "graphql.lex" : nil),
+        "graphql.parse",
+        "graphql.analyze_multiplex",
+        "graphql.validate",
+        "graphql.analyze_query",
+        "graphql.execute_query",
+        "graphql.authorized",
+        "graphql.execute_field",
+        "graphql.authorized",
+        "graphql.execute_field",
+        "graphql.resolve_type",
+        "graphql.authorized",
+        "graphql.execute_query_lazy",
+      ].compact
 
       assert_equal expected_appsignal_trace, Appsignal.instrumented
       assert_equal expected_datadog_trace, Datadog::SPAN_TAGS
+        .select { |t| t[0].is_a?(String) }
+        .each_slice(2).map { |(p1, p2)| "#{p1[1]}.#{p2[1]}" }
     end
   end
 end
