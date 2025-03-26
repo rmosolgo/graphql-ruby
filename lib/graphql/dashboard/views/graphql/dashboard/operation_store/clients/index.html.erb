@@ -44,7 +44,7 @@
               <%= client.last_synced_at %>
             <% end %>
           </td>
-          <td><%= client.last_used_at %></td>
+          <td><%= client.last_used_at || "—" %></td>
         </tr>
       <% end %>
     <% end %>

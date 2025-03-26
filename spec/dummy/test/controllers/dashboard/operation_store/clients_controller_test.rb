@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 require "test_helper"
 
-class DashboardOperationStoreControllerTest < ActionDispatch::IntegrationTest
-
+class DashboardOperationStoreClientsControllerTest < ActionDispatch::IntegrationTest
   def test_it_manages_clients
     assert_equal 0, DummySchema.operation_store.all_clients(page: 1, per_page: 1).total_count
     get graphql_dashboard.operation_store_clients_path

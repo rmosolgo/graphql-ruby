@@ -1,4 +1,12 @@
-<%= content_for(:title, "Operations") %>
+<% if @client_operations %>
+  <%= content_for(:title, "#{params[:client_name]} Operations") %>
+  <h3><%= params[:client_name] %></h3>
+  <p><%= pluralize(@operations_page.total_count, "Operations") %></p>
+<% else %>
+  <%= content_for(:title, "Operations") %>
+  <h3><%= pluralize(@operations_page.total_count, "Operations") %></h3>
+<% end %>
+
 <div class="row">
   <div class="col">
     <table class="table table-striped">
@@ -16,18 +24,26 @@
         </tr>
       </thead>
       <tbody>
-        <% @operations_page.items.each do |operation| %>
+        <% if @operations_page.total_count == 0 %>
           <tr>
-            <td><%= link_to(operation.name, graphql_dashboard.operation_store_operation_path(digest: operation.digest)) %></td>
-            <% if @client_operations %>
-              <td><code><%= operation.operation_alias %></code></td>
-            <% else %>
-              <td><%= operation.clients_count %></td>
-            <% end %>
-            <td><code><%= operation.digest %></code></td>
-            <td><%= operation.last_used_at %></td>
-            <td><input type="checkbox" value="<%= operation.digest %>" class="archive-check"/></td>
+            <td colspan="5" class="text-center">
+              <em>Add your first stored operations with <%= link_to "sync", "https://graphql-ruby.org/operation_store/client_workflow.html" %>.</em>
+            </td>
           </tr>
+        <% else %>
+          <% @operations_page.items.each do |operation| %>
+            <tr>
+              <td><%= link_to(operation.name, graphql_dashboard.operation_store_operation_path(digest: operation.digest)) %></td>
+              <% if @client_operations %>
+                <td><code><%= operation.operation_alias %></code></td>
+              <% else %>
+                <td><%= operation.clients_count %></td>
+              <% end %>
+              <td><code><%= operation.digest %></code></td>
+              <td><%= operation.last_used_at %></td>
+              <td><input type="checkbox" value="<%= operation.digest %>" class="archive-check"/></td>
+            </tr>
+          <% end %>
         <% end %>
       </tbody>
     </table>

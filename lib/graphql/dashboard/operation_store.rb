@@ -2,8 +2,19 @@
 module Graphql
   class Dashboard < Rails::Engine
     module OperationStore
+      module CheckInstalled
+        def self.included(child_module)
+          child_module.before_action(:check_installed)
+        end
+
+        def check_installed
+          if !schema_class.respond_to?(:operation_store) || schema_class.operation_store.nil?
+            render "graphql/dashboard/operation_store/not_installed"
+          end
+        end
+      end
       class ClientsController < Dashboard::ApplicationController
-        before_action :check_installed
+        include CheckInstalled
 
         def index
           @order_by = params[:order_by] || "name"
@@ -50,12 +61,6 @@ module Graphql
 
         private
 
-        def check_installed
-          if !schema_class.respond_to?(:operation_store) || schema_class.operation_store.nil?
-            render "graphql/dashboard/operation_store/not_installed"
-          end
-        end
-
         def init_client(name: nil, secret: nil)
           GraphQL::Pro::OperationStore::ClientRecord.new(
             name: name,
@@ -70,19 +75,30 @@ module Graphql
       end
 
       class OperationsController < Dashboard::ApplicationController
+        include CheckInstalled
+
         def index
           @client_operations = client_name = params[:client_name]
-          if @client_operations
-            @operations_page = schema_class.operation_store.get_client_operations_by_client(
+          per_page = params[:per_page]&.to_i || 25
+          page = params[:page]&.to_i || 1
+          is_archived = params[:status] == :archived
+          @operations_page = if @client_operations
+            schema_class.operation_store.get_client_operations_by_client(
               client_name,
-              page:1,
-              per_page: 100,
-              is_archived: false,
+              page: page,
+              per_page: per_page,
+              is_archived: is_archived,
               order_by: "name",
               order_dir: "asc",
             )
           else
-            raise :TODO
+            schema_class.operation_store.all_operations(
+              page: page,
+              per_page: per_page,
+              is_archived: is_archived,
+              order_by: "name",
+              order_dir: "asc",
+            )
           end
         end
 
