@@ -70,6 +70,34 @@ module Graphql
       end
 
       class OperationsController < Dashboard::ApplicationController
+        def index
+          @client_operations = client_name = params[:client_name]
+          if @client_operations
+            @operations_page = schema_class.operation_store.get_client_operations_by_client(
+              client_name,
+              page:1,
+              per_page: 100,
+              is_archived: false,
+              order_by: "name",
+              order_dir: "asc",
+            )
+          else
+            raise :TODO
+          end
+        end
+
+        def show
+          digest = params[:digest]
+          @operation = schema_class.operation_store.get_operation_by_digest(digest)
+          if @operation
+            # Parse & re-format the query
+            document = GraphQL.parse(@operation.body)
+            @graphql_source = document.to_query_string
+
+            @client_operations = schema_class.operation_store.get_client_operations_by_digest(digest)
+            @entries = schema_class.operation_store.get_index_entries_by_digest(digest)
+          end
+        end
       end
 
       class IndexEntriesController < Dashboard::ApplicationController

@@ -1,0 +1,35 @@
+<%= content_for(:title, "Operations") %>
+<div class="row">
+  <div class="col">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <% if @client_operations %>
+            <th>Alias</th>
+          <% else %>
+            <th># Clients</th>
+          <% end %>
+          <th>Digest</th>
+          <th>Last Used At</th>
+          <th>Archive/Unarchive</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @operations_page.items.each do |operation| %>
+          <tr>
+            <td><%= link_to(operation.name, graphql_dashboard.operation_store_operation_path(digest: operation.digest)) %></td>
+            <% if @client_operations %>
+              <td><code><%= operation.operation_alias %></code></td>
+            <% else %>
+              <td><%= operation.clients_count %></td>
+            <% end %>
+            <td><code><%= operation.digest %></code></td>
+            <td><%= operation.last_used_at %></td>
+            <td><input type="checkbox" value="<%= operation.digest %>" class="archive-check"/></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
