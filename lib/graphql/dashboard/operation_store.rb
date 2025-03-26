@@ -9,8 +9,8 @@ module Graphql
           @order_by = params[:order_by] || "name"
           @order_dir = params[:order_dir].presence || "asc"
           clients_page = schema_class.operation_store.all_clients(
-            page: params[:page].presence || 1,
-            per_page: params[:per_page].presence || 25,
+            page: params[:page]&.to_i || 1,
+            per_page: params[:per_page]&.to_i || 25,
             order_by: @order_by,
             order_dir: @order_dir,
           )

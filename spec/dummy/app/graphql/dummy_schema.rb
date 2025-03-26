@@ -14,7 +14,7 @@ class DummySchema < GraphQL::Schema
   use GraphQL::Tracing::DetailedTrace, memory: true
 
   if defined?(GraphQL::Pro)
-    use GraphQL::Pro::OperationStore, redis: Redis.new
+    use GraphQL::Pro::OperationStore, redis: Redis.new(db: Rails.env.test? ? 1 : 0)
   end
 
   def self.detailed_trace?(query)
