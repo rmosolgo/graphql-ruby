@@ -41,6 +41,16 @@
             </nav>
           </div>
         </div>
+        <% flash.each do |flash_type, flash_message| %>
+          <div class="row mt-2">
+            <div class="col">
+              <div class="alert alert-<%= flash_type %> alert-dismissible fade show" role="alert">
+                <%= flash_message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            </div>
+          </div>
+        <% end %>
       </div>
       <div class="container-fluid">
         <%= yield %>

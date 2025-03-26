@@ -1,5 +1,27 @@
 # frozen_string_literal: true
 Rails.application.configure do
+  gem_path = File.expand_path("../../../../../lib/graphql", __FILE__)
+  gem_loader = Zeitwerk::Registry.loader_for_gem(gem_path, namespace: GraphQL, warn_on_extra_files: false)
+  gem_loader.enable_reloading
+  gem_loader.setup
+
+  # Create a file watcher that will reload the gem classes when a file changes
+  files = Dir.glob(File.join(gem_path, '**/*'))
+  file_watcher = ActiveSupport::FileUpdateChecker.new(files) do
+    gem_loader.reload
+  end
+
+  # Plug it to Rails to be executed on each request
+  Rails.application.reloaders << Class.new do
+    def initialize(file_watcher)
+      @file_watcher = file_watcher
+    end
+
+    def updated?
+      @file_watcher.execute_if_updated
+    end
+  end.new(file_watcher)
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # In the development environment your application's code is reloaded on
