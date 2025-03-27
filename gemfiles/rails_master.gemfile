@@ -25,5 +25,6 @@ gem 'selenium-webdriver'
 
 gemspec path: "../"
 
-# TODO remove just for testing
-gem "graphql-pro", path: "~/code/graphql-pro"
+if ENV["BUNDLE_GEMS__GRAPHQL__PRO"]
+  gem "graphql-pro", source: "https://gems.graphql.pro"
+end

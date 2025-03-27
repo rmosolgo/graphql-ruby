@@ -21,10 +21,12 @@ jobs:
         ruby-version: 3.4
         bundler-cache: true
       env:
+        BUNDLE_GEMS__GRAPHQL__PRO: ${{ secrets.BUNDLE_GEMS__GRAPHQL__PRO }}
         BUNDLE_GEMFILE: gemfiles/rails_master.gemfile
     - run: bin/rails test:all
       working-directory: ./spec/dummy
       env:
+        BUNDLE_GEMS__GRAPHQL__PRO: ${{ secrets.BUNDLE_GEMS__GRAPHQL__PRO }}
         BUNDLE_GEMFILE: ../../gemfiles/rails_master.gemfile
   # Some coverage goals of these tests:
   # - Test once without Rails at all
