@@ -1,0 +1,81 @@
+<div class="row mt-2">
+  <% if @client_operations %>
+    <%= content_for(:title, "#{params[:client_name]} Operations") %>
+    <div class="col">
+      <h3><%= params[:client_name] %></h3>
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <%= link_to "#{@unarchived_operations_count} Active", graphql_dashboard.operation_store_client_operations_path(client_name: params[:client_name]), class: "nav-link #{@is_archived ? "" : "active"}" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "#{@archived_operations_count} Archived", graphql_dashboard.archived_operation_store_client_operations_path(client_name: params[:client_name]), class: "nav-link #{@is_archived ? "active" : ""}" %>
+        </li>
+      </ul>
+    </div>
+  <% else %>
+    <%= content_for(:title, "Operations") %>
+    <div class="col">
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <%= link_to "#{@unarchived_operations_count} Active", graphql_dashboard.operation_store_operations_path, class: "nav-link #{@is_archived ? "" : "active"}" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "#{@archived_operations_count} Archived", graphql_dashboard.archived_operation_store_operations_path, class: "nav-link #{@is_archived ? "active" : ""}" %>
+        </li>
+      </ul>
+    </div>
+  <% end %>
+</div>
+
+<div class="row">
+  <div class="col">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th><%= link_to "Name", graphql_dashboard.operation_store_operations_path({ order_by: "name", order_dir: params[:order_dir] == "asc" ? "desc" : "asc" }) %></th>
+          <% if @client_operations %>
+            <th>Alias</th>
+          <% else %>
+            <th># Clients</th>
+          <% end %>
+          <th>Digest</th>
+          <th><%= link_to "Last Used At", graphql_dashboard.operation_store_operations_path({ order_by: "last_used_at", order_dir: params[:order_dir] == "asc" ? "desc" : "asc" }) %></th>
+          <th>
+            <button class="btn btn-sm btn-outline-primary" data-archive-client="<%= params[:client_name] %>" data-archive-all="<%= params[:client_name] ? nil : "true" %>">
+              <%= @is_archived ? "Unarchive" : "Archive" %>
+            </button>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if @operations_page.total_count == 0 %>
+          <tr>
+            <td colspan="5" class="text-center">
+              <% if @is_archived %>
+                <em><%= link_to "Archived operations", "https://graphql-ruby.org/operation_store/server_management.html#archiving-and-deleting-data" %> will appear here.</em>
+              <% else %>
+                <em>Add your first stored operations with <%= link_to "sync", "https://graphql-ruby.org/operation_store/client_workflow.html" %>.</em>
+              <% end %>
+            </td>
+          </tr>
+        <% else %>
+          <% @operations_page.items.each do |operation| %>
+            <tr>
+              <td><%= link_to(operation.name, graphql_dashboard.operation_store_operation_path(digest: operation.digest)) %></td>
+              <% if @client_operations %>
+                <td><code><%= operation.operation_alias %></code></td>
+              <% else %>
+                <td><%= operation.clients_count %></td>
+              <% end %>
+              <td><code><%= operation.digest %></code></td>
+              <td><%= operation.last_used_at %></td>
+              <td>
+                <%= check_box_tag("value", (@client_operations ? operation.operation_alias : operation.digest), class: "archive-check form-check-input") %>
+              </td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

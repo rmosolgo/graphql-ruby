@@ -1,0 +1,71 @@
+<% content_for(:title, "View #{params[:digest]}") %>
+<% if @operation.nil? %>
+  <div class="row">
+    <div class="col">
+      <p>No stored operation found for <code><%= params[:digest] %></code>
+    </div>
+  </div>
+<% else %>
+  <div class="row">
+    <div class="col">
+      <h2>
+        <%= @operation.name %>
+        <% if @operation.is_archived %><small> (archived)</small><% end %>
+      </h2>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <p>Aliases</p>
+      <% if @client_operations.empty? %>
+        <p><em>None</em></p>
+      <% else %>
+        <ul>
+          <% @client_operations.each do |cl_op| %>
+            <li>
+              <code><%= cl_op.operation_alias %></code>
+              <%= link_to(cl_op.client_name, graphql_dashboard.operation_store_client_operations_path(client_name: cl_op.client_name)) %>
+              <%= cl_op.is_archived ?  " (archived)" : "" %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <p>Last Used At</p>
+      <p><code><%= @operation.last_used_at %></code></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <p>Source</p>
+      <%= textarea_tag "_source", @graphql_source, class: "graphql-highlight form-control", disabled: true, rows: @graphql_source.count("\n") + 1 %>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <p>References</p>
+      <ul>
+        <% @entries.each do |entry| %>
+          <li>
+            <%= link_to(entry.name, graphql_dashboard.operation_store_index_entry_path(name: entry.name)) %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <p>Digest</p>
+      <p><code><%= @operation.digest %></code></p>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <p>Minified Source</p>
+      <%= textarea_tag "_source", @operation.body, class: "graphql-highlight form-control", disabled: true, rows: @operation.body.count("\n") + 1 %>
+    </div>
+  </div>
+<% end %>

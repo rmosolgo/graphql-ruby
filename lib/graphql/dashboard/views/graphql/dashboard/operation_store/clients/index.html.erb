@@ -1,0 +1,69 @@
+<% content_for(:title, "Clients") %>
+<div class="row mt-3 justify-content-between">
+  <div class="col-4">
+    <h3>
+      <%= pluralize(@clients_page.total_count, "Client") %>
+    </h3>
+  </div>
+  <div class="col-auto">
+    <%= link_to("New Client", graphql_dashboard.new_operation_store_client_path, class: "btn btn-outline-primary") %>
+  </div>
+</div>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th><%= link_to("Name", graphql_dashboard.operation_store_clients_path, params: { order_by: "name", order_dir: ((@order_by == "name" && @order_dir != :desc) ? "desc" : "asc" )}) %></th>
+      <th>Operations</th>
+      <th>Created At</th>
+      <th>Last Updated</th>
+      <th><%= link_to("Last Used At",  graphql_dashboard.operation_store_clients_path, params: { order_by: "last_used_at", order_dir: ((@order_by == "last_used_at" && @order_dir != :desc) ? "desc": "asc")}) %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if @clients_page.total_count == 0 %>
+      <tr>
+        <td colspan="5" class="text-center">
+          <em>To get started, create a <%= link_to "new client", graphql_dashboard.new_operation_store_client_path %>, then <%= link_to "sync operations", "https://graphql-ruby.org/operation_store/client_workflow.html" %> to your schema.</em>
+        </td>
+      </tr>
+    <% else %>
+      <% @clients_page.items.each do |client| %>
+        <tr>
+          <td><%= link_to(client.name, graphql_dashboard.edit_operation_store_client_path(name: client.name)) %></td>
+          <td>
+            <%= link_to(graphql_dashboard.operation_store_client_operations_path(client_name: client.name)) do %>
+              <%= client.operations_count %><% if client.archived_operations_count > 0 %> <span class="muted">(<%=client.archived_operations_count%> archived)</span><% end %>
+            <% end %>
+          </td>
+          <td><%= client.created_at %></td>
+          <td>
+            <% if client.operations_count == 0 %>
+              &mdash;
+            <% else %>
+              <%= client.last_synced_at %>
+            <% end %>
+          </td>
+          <td><%= client.last_used_at || "—" %></td>
+        </tr>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>
+
+<div class="row">
+  <div class="col-auto">
+    <% if @clients_page.prev_page %>
+      <%= link_to("« prev", graphql_dashboard.operation_store_clients_path(per_page: params[:per_page], page: @clients_page.prev_page), class: "btn btn-outline-secondary") %>
+    <% else %>
+      <button class="btn btn-outline-secondary" disabled>« prev</button>
+    <% end %>
+  </div>
+  <div class="col-auto">
+    <% if @clients_page.next_page %>
+      <%= link_to("next »", graphql_dashboard.operation_store_clients_path(per_page: params[:per_page], page: @clients_page.next_page), class: "btn btn-outline-secondary") %>
+    <% else %>
+      <button class="btn btn-outline-secondary" disabled>next »</button>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<%= form_tag((@client.persisted? ? graphql_dashboard.operation_store_client_path(name: @client.name) : graphql_dashboard.operation_store_clients_path), method: (@client.persisted? ? "patch" : "post")) do %>
+  <div class="row">
+    <label class="col-2 col-form-label">Name</label>
+    <div class="col">
+      <%= text_field_tag "client[name]", @client.name, class: "form-control", disabled: @client.persisted? %>
+      <div class="form-text">a unique identifier for this owner of persisted operations</div>
+    </div>
+  </div>
+  <div class="row">
+    <label class="col-2 col-form-label">Secret</label>
+    <div class="col">
+      <%= textarea_tag "client[secret]", @client.secret, class: "form-control" %>
+      <div class="form-text">authentication credential for <code>sync</code> transactions</div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-auto">
+      <%= submit_tag "Save", class: "btn btn-outline-primary" %>
+    </div>
+    <div class="col-auto">
+      <%= link_to "Back", graphql_dashboard.operation_store_clients_path, class: "btn btn-outline-secondary" %>
+    </div>
+<% end %>

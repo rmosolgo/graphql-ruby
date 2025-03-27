@@ -1,0 +1,39 @@
+<% content_for(:title, "Index#{@search_term ? " - #{@search_term}" : ""}") %>
+<div class="row mt-2">
+  <h3>Schema Index</h3>
+  <div class="col">
+    <p style="margin-left: 15px;">
+      <%= pluralize(@index_entries_page.total_count, @search_term ? "result" : "entry") %>
+    </p>
+  </div>
+  <div class="col">
+    <form method="GET" action="<%= graphql_dashboard.operation_store_index_entries_path %>" style="margin-left: auto; margin-top:-5px;">
+      <div class="input-group">
+        <%= text_field_tag "q", @search_term, class: "form-control", placeholder: "Find types, fields, arguments, or enum values" %>
+        <input type="submit" value="Search" class="btn btn-outline-primary btn-sm"/>
+      </div>
+    </form>
+  </div>
+</div>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th># Usages</th>
+      <th>Last Used At</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @index_entries_page.items.each do |entry| %>
+      <tr>
+        <td><%= link_to(entry.name, graphql_dashboard.operation_store_index_entry_path(name: entry.name)) %></td>
+        <td><%= entry.references_count %><% if entry.archived_references_count.nil? %><span class="muted">(missing data - call `YourSchema.operation_store.reindex` to repair index)</span><% elsif entry.archived_references_count > 0 %> <span class="muted">(<%= entry.archived_references_count %> archived)</span><% end %></td>
+        <td><%= entry.last_used_at %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%=
+# render_partial("_pagination")
+%>

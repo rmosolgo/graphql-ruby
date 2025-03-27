@@ -1,0 +1,32 @@
+<% name = @chain.pop %>
+<% content_for(:title, "Index - #{@entry.name}") %>
+<div class="row mt-2">
+  <div class="col">
+    <%= link_to("Index", graphql_dashboard.operation_store_index_entries_path) %>
+    <% @chain.each do |c| %>
+      > <%= link_to(c.split(".").last, graphql_dashboard.operation_store_index_entry_path(name: c)) %>
+    <% end %>
+    > <%= name.split(".").last %>
+  </div>
+</div>
+<div class="row mt-2">
+  <div class="col">
+    <h3><%= name %></h3>
+    <p>
+      Used By:
+      <% if @operations.any? %>
+        <ul>
+          <% @operations.each do |operation| %>
+            <li>
+              <%= link_to(operation.name, graphql_dashboard.operation_store_operation_path(digest: operation.digest)) %><% if operation.is_archived %> <span class="muted">(archived)</span><% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <i>none</i>
+      <% end %>
+    </p>
+
+    <p>Last used at: <%= @entry.last_used_at || "—" %></p>
+  </div>
+</div>

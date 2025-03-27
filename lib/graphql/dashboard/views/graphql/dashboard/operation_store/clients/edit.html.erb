@@ -1,0 +1,21 @@
+<% content_for(:title, "Edit #{@client.name}") %>
+<div class="row">
+  <div class="col">
+    <h1>Edit <%= @client.name %></h1>
+  </div>
+<div>
+<%= render partial: "graphql/dashboard/operation_store/clients/form" %>
+
+<hr class="mt-5"/>
+<div class="row mt-5">
+  <div class="col">
+    <div class="alert alert-danger">
+      <h4>Delete <%= @client.name %></h4>
+      <p>If you delete this client, it will no longer be able to use stored operations.</p>
+      <p>There is no way to undo this action.</p>
+      <%= form_tag(graphql_dashboard.operation_store_client_path(name: @client.name), method: "delete") do %>
+        <%= submit_tag "Permanently Delete #{@client.name.inspect}", class: "btn btn-outline-danger" %>
+      <% end %>
+    </div>
+  </div>
+</div>
