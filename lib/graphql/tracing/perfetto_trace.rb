@@ -687,6 +687,7 @@ module GraphQL
 
       def unsubscribe_from_active_support_notifications
         if defined?(@as_subscriber)
+          puts "Unsubscribe ASN"
           ActiveSupport::Notifications.unsubscribe(@as_subscriber)
         end
       end

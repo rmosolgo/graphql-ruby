@@ -58,7 +58,7 @@ module Graphql
             post :unarchive, to: "operations#update", modification: :unarchive, as: :unarchive
           end
         end
-        resources :index_entries, only: [:index, :show], param: :name
+        resources :index_entries, only: [:index, :show], param: :name, constraints: { name: /[A-Za-z0-9_.]+/}
       end
     end
 

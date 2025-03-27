@@ -171,6 +171,26 @@ module Graphql
       end
 
       class IndexEntriesController < Dashboard::ApplicationController
+        def index
+          @search_term = if request.params["q"] && request.params["q"].length > 0
+            request.params["q"]
+          else
+            nil
+          end
+
+          @index_entries_page = schema_class.operation_store.all_index_entries(
+            search_term: @search_term,
+            page: params[:page]&.to_i || 1,
+            per_page: params[:per_page]&.to_i || 25,
+          )
+        end
+
+        def show
+          name = params[:name]
+          @entry = schema_class.operation_store.index.get_entry(name)
+          @chain = schema_class.operation_store.index.index_entry_chain(name)
+          @operations = schema_class.operation_store.get_operations_by_index_entry(name)
+        end
       end
     end
   end
