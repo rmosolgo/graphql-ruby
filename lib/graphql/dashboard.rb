@@ -43,13 +43,21 @@ module Graphql
       namespace :operation_store do
         resources :clients, param: :name do
           resources :operations, param: :digest, only: [:index] do
-            get :archived, to: "operations#index", status: :archived
-            post :archive, to: "operations#update", modification: :archive
-            post :unarchive, to: "operations#update", modification: :unarchive
+            collection do
+              get :archived, to: "operations#index", archived_status: :archived, as: :archived
+              post :archive, to: "operations#update", modification: :archive, as: :archive
+              post :unarchive, to: "operations#update", modification: :unarchive, as: :unarchive
+            end
           end
         end
 
-        resources :operations, param: :digest, only: [:index, :show]
+        resources :operations, param: :digest, only: [:index, :show] do
+          collection do
+            get :archived, to: "operations#index", archived_status: :archived, as: :archived
+            post :archive, to: "operations#update", modification: :archive, as: :archive
+            post :unarchive, to: "operations#update", modification: :unarchive, as: :unarchive
+          end
+        end
         resources :index_entries, only: [:index, :show], param: :name
       end
     end

@@ -81,24 +81,49 @@ module Graphql
           @client_operations = client_name = params[:client_name]
           per_page = params[:per_page]&.to_i || 25
           page = params[:page]&.to_i || 1
-          is_archived = params[:status] == :archived
-          @operations_page = if @client_operations
-            schema_class.operation_store.get_client_operations_by_client(
+          @is_archived = params[:archived_status] == :archived
+          order_by = params[:order_by] || "name"
+          order_dir = params[:order_dir]&.to_sym || :asc
+          if @client_operations
+            @operations_page = schema_class.operation_store.get_client_operations_by_client(
               client_name,
               page: page,
               per_page: per_page,
-              is_archived: is_archived,
-              order_by: "name",
-              order_dir: "asc",
+              is_archived: @is_archived,
+              order_by: order_by,
+              order_dir: order_dir,
             )
+            opposite_archive_mode_count = schema_class.operation_store.get_client_operations_by_client(
+              client_name,
+              page: 1,
+              per_page: 1,
+              is_archived: !@is_archived,
+              order_by: order_by,
+              order_dir: order_dir,
+            ).total_count
           else
-            schema_class.operation_store.all_operations(
+            @operations_page = schema_class.operation_store.all_operations(
               page: page,
               per_page: per_page,
-              is_archived: is_archived,
-              order_by: "name",
-              order_dir: "asc",
+              is_archived: @is_archived,
+              order_by: order_by,
+              order_dir: order_dir,
             )
+            opposite_archive_mode_count = schema_class.operation_store.all_operations(
+              page: 1,
+              per_page: 1,
+              is_archived: !@is_archived,
+              order_by: order_by,
+              order_dir: order_dir,
+            ).total_count
+          end
+
+          if @is_archived
+            @archived_operations_count = @operations_page.total_count
+            @unarchived_operations_count = opposite_archive_mode_count
+          else
+            @archived_operations_count = opposite_archive_mode_count
+            @unarchived_operations_count = @operations_page.total_count
           end
         end
 
@@ -113,6 +138,35 @@ module Graphql
             @client_operations = schema_class.operation_store.get_client_operations_by_digest(digest)
             @entries = schema_class.operation_store.get_index_entries_by_digest(digest)
           end
+        end
+
+        def update
+          is_archived = case params[:modification]
+          when :archive
+            true
+          when :unarchive
+            false
+          else
+            raise ArgumentError, "Unexpected modification: #{params[:modification].inspect}"
+          end
+
+          if (client_name = params[:client_name])
+            operation_aliases = params[:operation_aliases]
+            schema_class.operation_store.archive_client_operations(
+              client_name: client_name,
+              operation_aliases: operation_aliases,
+              is_archived: is_archived
+            )
+            flash[:success] = "#{is_archived ? "Archived" : "Activated"} #{operation_aliases.size} #{"operation".pluralize(operation_aliases.size)}"
+          else
+            digests = params[:digests]
+            schema_class.operation_store.archive_operations(
+              digests: digests,
+              is_archived: is_archived
+            )
+            flash[:success] = "#{is_archived ? "Archived" : "Activated"} #{digests.size} #{"operation".pluralize(digests.size)}"
+          end
+          head :no_content
         end
       end
 

@@ -7,12 +7,18 @@ class DashboardOperationStoreOperationsControllerTest < ActionDispatch::Integrat
     DummySchema.operation_store.delete_client("client-2")
     super
   end
-  def test_it_lists_and_shows_operations
+  def test_it_lists_shows_and_archives_operations
     get graphql_dashboard.operation_store_operations_path
     assert_includes response.body, "Add your first stored operations with"
 
     get graphql_dashboard.operation_store_operations_path(client_name: "client-5000")
     assert_includes response.body, "Add your first stored operations with"
+
+    get graphql_dashboard.archived_operation_store_operations_path
+    assert_includes response.body, "Archived operations</a> will appear here."
+
+    get graphql_dashboard.archived_operation_store_client_operations_path(client_name: "client-5000")
+    assert_includes response.body, "Archived operations</a> will appear here."
 
     os = DummySchema.operation_store
     os.upsert_client("client-1", "abcdef")
@@ -23,12 +29,20 @@ class DashboardOperationStoreOperationsControllerTest < ActionDispatch::Integrat
     os.add(body: "query GetTypename { __typename }", operation_alias: "GetTypename2", client_name: "client-2")
 
     get graphql_dashboard.operation_store_operations_path
-    assert_includes response.body, "2 Operations"
+    assert_includes response.body, "2 Active"
     assert_includes response.body, "GetTypename"
     assert_includes response.body, "GetAliasedTypename"
 
+    get graphql_dashboard.operation_store_operations_path(sort_by: "name", order_dir: "asc", per_page: 1)
+    refute_includes response.body, "GetTypename"
+    assert_includes response.body, "GetAliasedTypename"
+
+    get graphql_dashboard.operation_store_operations_path(sort_by: "name", order_dir: "desc", per_page: 1)
+    assert_includes response.body, "GetTypename"
+    refute_includes response.body, "GetAliasedTypename"
+
     get graphql_dashboard.operation_store_operations_path(client_name: "client-2")
-    assert_includes response.body, "1 Operations"
+    assert_includes response.body, "1 Active"
     assert_includes response.body, "GetTypename"
     refute_includes response.body, "GetAliasedTypename"
 
@@ -36,14 +50,21 @@ class DashboardOperationStoreOperationsControllerTest < ActionDispatch::Integrat
     assert_includes response.body, "GetAliasedTypename"
     assert_includes response.body, "client-1"
     assert_includes response.body, "Query.__typename"
-  end
 
-  def test_it_archives_and_unarchives_operations
-    skip "Todo"
-  end
+    post graphql_dashboard.archive_operation_store_client_operations_path(client_name: "client-1", operation_aliases: ["get-aliased-typename"])
+    post graphql_dashboard.archive_operation_store_operations_path(digests: ["b161214b11847649e7f36cc50e1257a1"])
 
-  def test_it_sorts_operations
-    skip "TODO -- merge into previous test"
+    get graphql_dashboard.operation_store_operations_path
+    assert_includes response.body, "0 Active"
+    assert_includes response.body, "2 Archived"
+
+    get graphql_dashboard.archived_operation_store_operations_path
+    assert_includes response.body, "2 Archived"
+    assert_includes response.body, "0 Active"
+
+    get graphql_dashboard.operation_store_operations_path(client_name: "client-2")
+    assert_includes response.body, "0 Active"
+    assert_includes response.body, "1 Archived"
   end
 
   def test_it_checks_installed
