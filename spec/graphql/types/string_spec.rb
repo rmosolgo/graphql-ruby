@@ -37,8 +37,7 @@ describe GraphQL::Types::String do
 
         it "raises GraphQL::StringEncodingError" do
           err = assert_raises(GraphQL::StringEncodingError) { subject }
-          assert_equal "String \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\" was encoded as ASCII-8BIT. GraphQL requires an encoding compatible with UTF-8.", err.message
-          assert_equal string, err.string
+          assert_equal "String cannot represent value: \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\"", err.message
         end
       end
 
@@ -57,14 +56,6 @@ describe GraphQL::Types::String do
             query(query_type)
           end
         }
-
-        it "includes location in the error message" do
-          err = assert_raises GraphQL::StringEncodingError do
-            schema.execute("{ badString }")
-          end
-          expected_err = "String \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\" was encoded as ASCII-8BIT @ badString (Query.badString). GraphQL requires an encoding compatible with UTF-8."
-          assert_equal expected_err, err.message
-        end
       end
     end
 
@@ -143,6 +134,67 @@ describe GraphQL::Types::String do
       assert_equal "\\u006", res["data"]["example2"]
       assert_equal "\\n", res["data"]["example3"]
       assert_equal "\\u0064", res["data"]["example4"]
+    end
+  end
+
+  describe "with Schema.spec_compliant_scalar_coercion_errors" do
+    class StringErrorsSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :string, GraphQL::Types::String do
+          argument :value, GraphQL::Types::String
+        end
+
+        field :bad_string, GraphQL::Types::String
+
+        def string(value:)
+          value
+        end
+
+        def bad_string
+          "\0\0\0foo\255\255\255".dup.force_encoding("BINARY")
+        end
+      end
+
+      query(Query)
+    end
+
+    class StringSpecCompliantErrors < StringErrorsSchema
+      spec_compliant_scalar_coercion_errors true
+    end
+
+    class StringNonSpecComplaintErrors < StringErrorsSchema
+      spec_compliant_scalar_coercion_errors false
+    end
+
+    it "returns GraphQL execution errors with spec_compliant_scalar_coercion_errors enabled" do
+      query = "{ badString }"
+      result = StringSpecCompliantErrors.execute(query)
+
+      assert_equal(
+        {
+          "errors" => [
+            {
+              "message" =>  "String cannot represent value: \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\"",
+              "locations" => [{ "line" => 1, "column" => 3 }],
+              "path" => ["badString"],
+            },
+          ],
+          "data" => {
+            "badString" => nil,
+          }
+        },
+        result.to_h
+      )
+    end
+
+    it "raises Ruby exceptions with spec_compliant_scalar_coercion_errors disabled" do
+      query = "{ badString }"
+
+      error = assert_raises(GraphQL::StringEncodingError) do
+        StringNonSpecComplaintErrors.execute(query)
+      end
+
+      assert_equal("String cannot represent value: \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\"", error.message)
     end
   end
 end
