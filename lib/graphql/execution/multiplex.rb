@@ -32,10 +32,10 @@ module GraphQL
         @queries = queries
         @queries.each { |q| q.multiplex = self }
         @context = context
-        @current_trace = @context[:trace] || schema.new_trace(multiplex: self)
         @dataloader = @context[:dataloader] ||= @schema.dataloader_class.new
         @tracers = schema.tracers + (context[:tracers] || [])
         @max_complexity = max_complexity
+        @current_trace = context[:trace] ||= schema.new_trace(multiplex: self)
       end
     end
   end
