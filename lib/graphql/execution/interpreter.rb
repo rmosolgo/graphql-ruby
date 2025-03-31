@@ -22,25 +22,23 @@ module GraphQL
         # @param max_complexity [Integer, nil]
         # @return [Array<GraphQL::Query::Result>] One result per query
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
-          multiplex = Execution::Multiplex.new(schema: schema, queries: [], context: context, max_complexity: max_complexity)
-          trace = multiplex.current_trace
-          Fiber[:__graphql_current_multiplex] = multiplex
           queries = query_options.map do |opts|
             query = case opts
             when Hash
-              schema.query_class.new(schema, nil, multiplex: multiplex, **opts)
+              schema.query_class.new(schema, nil, **opts)
             when GraphQL::Query
-              opts.multiplex = multiplex
               opts
             else
               raise "Expected Hash or GraphQL::Query, not #{opts.class} (#{opts.inspect})"
             end
-            multiplex.queries.push(query)
             query
           end
 
           return GraphQL::EmptyObjects::EMPTY_ARRAY if queries.empty?
 
+          multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
+          trace = multiplex.current_trace
+          Fiber[:__graphql_current_multiplex] = multiplex
           trace.begin_execute_multiplex(multiplex)
           trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
