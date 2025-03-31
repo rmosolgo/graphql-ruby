@@ -60,6 +60,12 @@ module Graphql
         end
         resources :index_entries, only: [:index, :show], param: :name, constraints: { name: /[A-Za-z0-9_.]+/}
       end
+
+      namespace :subscriptions do
+        resources :topics, only: [:index, :show], param: :name, constraints: { name: /.*/ }
+        resources :subscriptions, only: [:show], constraints: { id: /[a-zA-Z0-9\-]+/ }
+        post "/subscriptions/clear_all", to: "subscriptions#clear_all", as: :clear_all
+      end
     end
 
     class ApplicationController < ActionController::Base
@@ -155,6 +161,7 @@ module Graphql
 end
 
 require 'graphql/dashboard/operation_store'
+require 'graphql/dashboard/subscriptions'
 
 # Rails expects the engine to be called `Graphql::Dashboard`,
 # but `GraphQL::Dashboard` is consistent with this gem's naming.
