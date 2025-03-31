@@ -30,7 +30,7 @@ module GraphQL
 
         def inherited(subclass)
           super
-          subclass.class_eval do
+          subclass.class_exec do
             @reauthorize_scoped_objects = nil
           end
         end

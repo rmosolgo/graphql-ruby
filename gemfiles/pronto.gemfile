@@ -1,0 +1,6 @@
+source "https://rubygems.org"
+
+gem "pronto"
+gem "pronto-rubocop"
+gem "pronto-undercover"
+gem "base64"

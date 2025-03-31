@@ -39,6 +39,8 @@ module GraphQL
             query
           end
 
+          return GraphQL::EmptyObjects::EMPTY_ARRAY if queries.empty?
+
           trace.begin_execute_multiplex(multiplex)
           trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema

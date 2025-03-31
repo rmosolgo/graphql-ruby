@@ -949,4 +949,25 @@ describe GraphQL::Execution::Interpreter do
       assert_equal(expected_result, res["data"])
     end
   end
+
+  describe "multiplex queries" do
+    it "runs multiplex queries" do
+      result = InterpreterTest::Schema.multiplex([
+        {
+          query: "query Card($name: String!) { card(name: $name) { colors } }",
+          variables: { name: "Dark Confidant" },
+          operation_name: "Card"
+        },
+        {
+          query: "query Expansion($expansion: String!) { expansion(sym: $expansion) { cards { name } } }",
+          variables: { expansion: "RAV" },
+          operation_name: "Expansion"
+        }
+      ])
+
+      assert_equal ["BLACK"], result[0]["data"]["card"]["colors"]
+      assert_equal [{"name" => "Dark Confidant"}], result[1]["data"]["expansion"]["cards"]
+      assert_nil Fiber[:__graphql_runtime_info]
+    end
+  end
 end

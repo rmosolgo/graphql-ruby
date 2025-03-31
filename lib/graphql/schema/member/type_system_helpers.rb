@@ -42,7 +42,7 @@ module GraphQL
         private
 
         def inherited(subclass)
-          subclass.class_eval do
+          subclass.class_exec do
             @to_non_null_type ||= nil
             @to_list_type ||= nil
           end

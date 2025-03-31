@@ -765,7 +765,7 @@ describe GraphQL::Schema::InputObject do
     input_object = InputObjectDigTest::TestInput2.new(
       nil,
       ruby_kwargs: arg_values,
-      context: nil,
+      context: GraphQL::Query::NullContext.instance,
       defaults_used: Set.new
     )
     it "returns the value at that key" do
@@ -808,7 +808,7 @@ describe GraphQL::Schema::InputObject do
     input_object = InputObjectPatternTest::TestInput2.new(
       nil,
       ruby_kwargs: arg_values,
-      context: nil,
+      context: GraphQL::Query::NullContext.instance,
       defaults_used: Set.new
     )
     it "matches the value at that key" do
