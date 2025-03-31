@@ -1,0 +1,61 @@
+<% content_for(:title, "Subscriptions - Topics") %>
+<div class="row mt-3 justify-content-between">
+  <div class="col-auto">
+    <h3>
+      <%= pluralize(@all_topics_count, "Subscription Topic") %>
+    </h3>
+  </div>
+  <div class="col-auto">
+    <form style="margin-left: auto;" action="#" method="post">
+      <button type="submit" class="btn btn-outline-danger"
+        onClick='return confirm("This will:\n\n- Remove all subscriptions from the database\n- Stop updates to all current subscribers\n\nAre you sure?")'
+        >
+        Reset
+      </button>
+    </form>
+  </div>
+</div>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th># Subscriptions</th>
+      <th>Last Triggered At</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if @all_topics_count == 0 %>
+      <tr>
+        <td colspan="3" class="text-center">
+          <em>There aren't any subscriptions right now.</em>
+        </td>
+      </tr>
+    <% else %>
+      <% @topics.each do |topic| %>
+        <tr>
+          <td><%= link_to(topic.name, graphql_dashboard.subscriptions_topic_path(name: topic.name)) %></td>
+          <td><%= topic.subscriptions_count %></td>
+          <td><%= topic.last_triggered_at || "--" %></td>
+        </tr>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>
+
+<div class="row">
+  <div class="col-auto">
+    <% if @page > 1 %>
+      <%= link_to("« prev", graphql_dashboard.subscriptions_topics_path(per_page: params[:per_page], page: @page - 1), class: "btn btn-outline-secondary") %>
+    <% else %>
+      <button class="btn btn-outline-secondary" disabled>« prev</button>
+    <% end %>
+  </div>
+  <div class="col-auto">
+    <% if @has_next_page %>
+      <%= link_to("next »", graphql_dashboard.subscriptions_topics_path(per_page: params[:per_page], page: @page + 1), class: "btn btn-outline-secondary") %>
+    <% else %>
+      <button class="btn btn-outline-secondary" disabled>next »</button>
+    <% end %>
+  </div>
+</div>

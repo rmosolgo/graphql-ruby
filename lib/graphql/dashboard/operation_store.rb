@@ -1,21 +1,19 @@
 # frozen_string_literal: true
+require_relative "./installable"
 module Graphql
   class Dashboard < Rails::Engine
     module OperationStore
-      module CheckInstalled
-        def self.included(child_module)
-          child_module.before_action(:check_installed)
-        end
+      class BaseController < Dashboard::ApplicationController
+        include Installable
 
-        def check_installed
-          if !schema_class.respond_to?(:operation_store) || schema_class.operation_store.nil?
-            render "graphql/dashboard/operation_store/not_installed"
-          end
+        private
+
+        def feature_installed?
+          schema_class.respond_to?(:operation_store) && schema_class.operation_store.is_a?(GraphQL::Pro::OperationStore)
         end
       end
-      class ClientsController < Dashboard::ApplicationController
-        include CheckInstalled
 
+      class ClientsController < BaseController
         def index
           @order_by = params[:order_by] || "name"
           @order_dir = params[:order_dir].presence || "asc"
@@ -74,9 +72,7 @@ module Graphql
         end
       end
 
-      class OperationsController < Dashboard::ApplicationController
-        include CheckInstalled
-
+      class OperationsController < BaseController
         def index
           @client_operations = client_name = params[:client_name]
           per_page = params[:per_page]&.to_i || 25
@@ -170,7 +166,7 @@ module Graphql
         end
       end
 
-      class IndexEntriesController < Dashboard::ApplicationController
+      class IndexEntriesController < BaseController
         def index
           @search_term = if request.params["q"] && request.params["q"].length > 0
             request.params["q"]

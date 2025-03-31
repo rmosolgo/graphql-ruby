@@ -29,8 +29,6 @@
                     <li class="nav-item">
                       <%= link_to "Traces", graphql_dashboard.traces_path, class: "nav-link #{params[:controller] == "graphql/dashboard/traces" ? "active" : ""}" %>
                     </li>
-                    <li class="nav-item">
-                    </li>
                     <li class="nav-item dropdown">
                       <a class="nav-link dropdown-toggle <%= params[:controller].include?("operation_store") ? "active" : "" %>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         OperationStore
@@ -46,6 +44,9 @@
                           <%= link_to "Index", graphql_dashboard.operation_store_index_entries_path, class: "dropdown-item" %>
                         </li>
                       </ul>
+                    </li>
+                    <li class="nav-item">
+                      <%= link_to "Subscriptions", graphql_dashboard.subscriptions_topics_path, class: "nav-link #{params[:controller] == "graphql/dashboard/subscriptions" ? "active" : ""}" %>
                     </li>
 
                   </ul>
