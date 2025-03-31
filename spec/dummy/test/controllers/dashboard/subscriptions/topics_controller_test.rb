@@ -21,7 +21,7 @@ class DashboardSubscriptionsTopicsControllerTest < ActionDispatch::IntegrationTe
 
   def test_it_lists_topics_and_shows_detail
     DummySchema.subscriptions.clear
-    res1 = DummySchema.execute("subscription { message(channel: \"cats\") }")
+    _res1 = DummySchema.execute("subscription { message(channel: \"cats\") }")
     res2 = DummySchema.execute("subscription { message(channel: \"dogs\") }")
     DummySchema.subscriptions.trigger(:message, { channel: "dogs"}, "Woof!")
     get graphql_dashboard.subscriptions_topics_path
