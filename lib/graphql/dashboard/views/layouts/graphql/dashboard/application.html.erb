@@ -48,7 +48,24 @@
                     <li class="nav-item">
                       <%= link_to "Subscriptions", graphql_dashboard.subscriptions_topics_path, class: "nav-link #{params[:controller] == "graphql/dashboard/subscriptions" ? "active" : ""}" %>
                     </li>
-
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle <%= params[:controller].include?("limiters") ? "active" : "" %>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Rate Limiters
+                      </a>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <%= link_to "Runtime", graphql_dashboard.limiters_limiter_path("runtime"), class: "dropdown-item" %>
+                        </li>
+                        <li>
+                          <%= link_to "Active Operations", graphql_dashboard.limiters_limiter_path("active_operations"), class: "dropdown-item" %>
+                        </li>
+                        <% if schema_class.respond_to?(:enterprise_mutation_limiter) && schema_class.enterprise_mutation_limiter %>
+                          <li>
+                            <%= link_to "Mutations", graphql_dashboard.limiters_limiter_path("mutations"), class: "dropdown-item" %>
+                          </li>
+                        <% end %>
+                      </ul>
+                    </li>
                   </ul>
                   <span class="navbar-text pe-2">
                     <%= link_to ".", "#", class: "nav-link", id: "themeToggle" %>

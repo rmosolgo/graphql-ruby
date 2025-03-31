@@ -40,6 +40,10 @@ module Graphql
       delete "/traces/delete_all", to: "traces#delete_all", as: :traces_delete_all
       resources :traces, only: [:index, :show, :destroy]
 
+      namespace :limiters do
+        resources :limiters, only: [:show], param: :name
+      end
+
       namespace :operation_store do
         resources :clients, param: :name do
           resources :operations, param: :digest, only: [:index] do
@@ -160,6 +164,7 @@ module Graphql
   end
 end
 
+require 'graphql/dashboard/limiters'
 require 'graphql/dashboard/operation_store'
 require 'graphql/dashboard/subscriptions'
 

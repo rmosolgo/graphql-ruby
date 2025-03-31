@@ -11,6 +11,12 @@ module Graphql
         def feature_installed?
           schema_class.respond_to?(:operation_store) && schema_class.operation_store.is_a?(GraphQL::Pro::OperationStore)
         end
+
+        INSTALLABLE_COMPONENT_HEADER_HTML = "<code>OperationStore</code> isn't installed for this schema yet.".html_safe
+        INSTALLABLE_COMPONENT_MESSAGE_HTML = <<-HTML.html_safe
+          Learn more about improving performance and security with stored operations
+          in the <a href="https://graphql-ruby.org/operation_store/overview.html"><code>OperationStore</code> docs</a>.
+        HTML
       end
 
       class ClientsController < BaseController
