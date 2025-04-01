@@ -10,6 +10,17 @@
 
 ### Bug fixes
 
+# 2.4.16 (1 Apr 2025)
+
+### New features
+
+- Move some more modules into GraphQL::Dashboard #5308 #5310
+
+### Bug fixes
+
+- Parser: raise when variable definitions don't include a type name #5305
+- PerfettoTrace: Don't create zombie ActiveSupport::Notifications subscribers #5307
+
 # 2.4.15 (19 Mar 2025)
 
 ### New features

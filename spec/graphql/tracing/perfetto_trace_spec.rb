@@ -99,6 +99,11 @@ if testing_rails?
           model_name, db_id = id.split("-")
           dataload_record(Object.const_get(model_name), db_id)
         end
+
+        field :crash, Int
+        def crash
+          raise "Crash the query"
+        end
       end
 
       query(Query)
@@ -162,6 +167,11 @@ if testing_rails?
       trace_instance.begin_execute_multiplex(multiplex)
       assert ActiveSupport::Notifications.notifier.listening?("event.nonsense")
       trace_instance.end_execute_multiplex(multiplex)
+      refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
+
+      assert_raises do
+        PerfettoSchema.execute("{ crash }")
+      end
       refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
     end
   end
