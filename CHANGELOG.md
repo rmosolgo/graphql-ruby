@@ -66,6 +66,10 @@
 
 # 2.4.11 (28 Feb 2025)
 
+### Breaking changes
+
+- Enums: enum value accessor methods have been switched to opt-in.  Add `value_methods(true)` to your base enum class to opt back in. #5255
+
 ### New features
 
 - `InvalidNullError`: Improve default handling to add path and locations #5257
@@ -73,7 +77,6 @@
 
 ### Bug fixes
 
-- `Enum`: Make value methods optional; Add `value_methods(true)` to your base enum class to opt back in. #5255
 - `InvalidNullError`: use `GraphQL::Error` as a base class #5248
 - CI: test on Mongoid 8 and 9 #5251
 
