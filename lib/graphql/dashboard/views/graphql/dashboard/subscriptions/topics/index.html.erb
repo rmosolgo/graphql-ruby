@@ -6,13 +6,7 @@
     </h3>
   </div>
   <div class="col-auto">
-    <form style="margin-left: auto;" action="#" method="post">
-      <button type="submit" class="btn btn-outline-danger"
-        onClick='return confirm("This will:\n\n- Remove all subscriptions from the database\n- Stop updates to all current subscribers\n\nAre you sure?")'
-        >
-        Reset
-      </button>
-    </form>
+    <%= button_tag "Clear All", class: "btn btn-outline-danger", data: { subscriptions_delete_all: graphql_dashboard.subscriptions_clear_all_path } %>
   </div>
 </div>
 

@@ -12,8 +12,9 @@ module Graphql
 
       def check_installed
         if !feature_installed?
-          dashboard_module = self.class.name.split("::")[-2]
-          render "graphql/dashboard/#{dashboard_module.underscore}/not_installed"
+          @component_header_html = self.class::INSTALLABLE_COMPONENT_HEADER_HTML
+          @component_message_html = self.class::INSTALLABLE_COMPONENT_MESSAGE_HTML
+          render "graphql/dashboard/not_installed"
         end
       end
     end

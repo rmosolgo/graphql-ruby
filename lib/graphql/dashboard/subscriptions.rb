@@ -8,6 +8,14 @@ module Graphql
         def feature_installed?
           schema_class.subscriptions.is_a?(GraphQL::Pro::Subscriptions)
         end
+
+        INSTALLABLE_COMPONENT_HEADER_HTML = "GraphQL-Pro Subscriptions aren't installed on this schema yet.".html_safe
+        INSTALLABLE_COMPONENT_MESSAGE_HTML = <<-HTML.html_safe
+          Deliver live updates over
+          <a href="https://graphql-ruby.org/subscriptions/pusher_implementation.html">Pusher</a> or
+          <a href="https://graphql-ruby.org/subscriptions/ably_implementation.html"> Ably</a>
+          with GraphQL-Pro's subscription integrations.
+        HTML
       end
 
       class TopicsController < BaseController
@@ -80,7 +88,7 @@ module Graphql
         def clear_all
           schema_class.subscriptions.clear
           flash[:success] = "All subscription data cleared."
-          redirect_to graphql_dashboard.subscriptions_topics_path
+          head :no_content
         end
       end
     end
