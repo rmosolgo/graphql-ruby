@@ -63,6 +63,7 @@ module GraphQL
       # @param active_support_notifications_pattern [String, RegExp, false] A filter for `ActiveSupport::Notifications`, if it's present. Or `false` to skip subscribing.
       def initialize(active_support_notifications_pattern: nil, save_profile: false, **_rest)
         super
+        @active_support_notifications_pattern = active_support_notifications_pattern
         @save_profile = save_profile
         Fiber[:graphql_flow_stack] = nil
         @sequence_id = object_id
@@ -168,13 +169,12 @@ module GraphQL
           track_uuid: @fields_counter_id,
           counter_value: count_fields,
         )
-
-        if defined?(ActiveSupport::Notifications) && active_support_notifications_pattern != false
-          subscribe_to_active_support_notifications(active_support_notifications_pattern)
-        end
       end
 
       def execute_multiplex(multiplex:)
+        if defined?(ActiveSupport::Notifications) && @active_support_notifications_pattern != false
+          subscribe_to_active_support_notifications(@active_support_notifications_pattern)
+        end
         @operation_name = multiplex.queries.map { |q| q.selected_operation_name || "anonymous" }.join(",")
         @begin_time = Time.now
         @packets << trace_packet(

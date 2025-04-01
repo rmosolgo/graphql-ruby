@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.14.6 (25 Mar 2025)
+
+- `ActionCableLink`: accept ActionCable subscription callbacks #5288
+
 # 1.14.5 (8 Nov 2024)
 
 - `sync`: Fix `--dump-payload` with `--outfile` #5152

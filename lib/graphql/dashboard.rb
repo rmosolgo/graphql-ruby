@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require 'rails/engine'
-
 module Graphql
   # `GraphQL::Dashboard` is a `Rails::Engine`-based dashboard for viewing metadata about your GraphQL schema.
   #
@@ -38,8 +37,45 @@ module Graphql
     routes.draw do
       root "landings#show"
       resources :statics, only: :show, constraints: { id: /[0-9A-Za-z\-.]+/ }
-      delete "/traces/delete_all", to: "traces#delete_all", as: :traces_delete_all
-      resources :traces, only: [:index, :show, :destroy]
+
+      namespace :detailed_traces do
+        resources :traces, only: [:index, :show, :destroy] do
+          collection do
+            delete :delete_all, to: "traces#delete_all", as: :delete_all
+          end
+        end
+      end
+
+      namespace :limiters do
+        resources :limiters, only: [:show, :update], param: :name
+      end
+
+      namespace :operation_store do
+        resources :clients, param: :name do
+          resources :operations, param: :digest, only: [:index] do
+            collection do
+              get :archived, to: "operations#index", archived_status: :archived, as: :archived
+              post :archive, to: "operations#update", modification: :archive, as: :archive
+              post :unarchive, to: "operations#update", modification: :unarchive, as: :unarchive
+            end
+          end
+        end
+
+        resources :operations, param: :digest, only: [:index, :show] do
+          collection do
+            get :archived, to: "operations#index", archived_status: :archived, as: :archived
+            post :archive, to: "operations#update", modification: :archive, as: :archive
+            post :unarchive, to: "operations#update", modification: :unarchive, as: :unarchive
+          end
+        end
+        resources :index_entries, only: [:index, :show], param: :name, constraints: { name: /[A-Za-z0-9_.]+/}
+      end
+
+      namespace :subscriptions do
+        resources :topics, only: [:index, :show], param: :name, constraints: { name: /.*/ }
+        resources :subscriptions, only: [:show], constraints: { id: /[a-zA-Z0-9\-]+/ }
+        post "/subscriptions/clear_all", to: "subscriptions#clear_all", as: :clear_all
+      end
     end
 
     class ApplicationController < ActionController::Base
@@ -80,32 +116,6 @@ module Graphql
       end
     end
 
-    class TracesController < ApplicationController
-      def index
-        @detailed_trace_installed = !!schema_class.detailed_trace
-        if @detailed_trace_installed
-          @last = params[:last]&.to_i || 50
-          @before = params[:before]&.to_i
-          @traces = schema_class.detailed_trace.traces(last: @last, before: @before)
-        end
-      end
-
-      def show
-        trace = schema_class.detailed_trace.find_trace(params[:id].to_i)
-        send_data(trace.trace_data)
-      end
-
-      def destroy
-        schema_class.detailed_trace.delete_trace(params[:id])
-        head :no_content
-      end
-
-      def delete_all
-        schema_class.detailed_trace.delete_all_traces
-        head :no_content
-      end
-    end
-
     class StaticsController < ApplicationController
       skip_after_action :verify_same_origin_request
       # Use an explicit list of files to avoid any chance of reading other files from disk
@@ -114,6 +124,7 @@ module Graphql
       [
         "icon.png",
         "header-icon.png",
+        "charts.min.css",
         "dashboard.css",
         "dashboard.js",
         "bootstrap-5.3.3.min.css",
@@ -133,6 +144,11 @@ module Graphql
     end
   end
 end
+
+require 'graphql/dashboard/detailed_traces'
+require 'graphql/dashboard/limiters'
+require 'graphql/dashboard/operation_store'
+require 'graphql/dashboard/subscriptions'
 
 # Rails expects the engine to be called `Graphql::Dashboard`,
 # but `GraphQL::Dashboard` is consistent with this gem's naming.

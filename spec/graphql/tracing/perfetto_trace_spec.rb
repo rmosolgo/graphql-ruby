@@ -99,6 +99,11 @@ if testing_rails?
           model_name, db_id = id.split("-")
           dataload_record(Object.const_get(model_name), db_id)
         end
+
+        field :crash, Int
+        def crash
+          raise "Crash the query"
+        end
       end
 
       query(Query)
@@ -152,6 +157,22 @@ if testing_rails?
     it "provides an error when google-protobuf isn't available" do
       stderr_and_stdout, _status = Open3.capture2e(%|ruby -e 'require "bundler/inline"; gemfile(true) { source("https://rubygems.org"); gem("graphql", path: "./") }; class MySchema < GraphQL::Schema; trace_with(GraphQL::Tracing::PerfettoTrace); end;'|)
       assert_includes stderr_and_stdout, "GraphQL::Tracing::PerfettoTrace can't be used because the `google-protobuf` gem wasn't available. Add it to your project, then try again."
+    end
+
+    it "doesn't leave AS::N subscriptions behind" do
+      refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
+      trace_instance = PerfettoSchema.new_trace
+      refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
+      multiplex = GraphQL::Execution::Multiplex.new(schema: PerfettoSchema, queries: [], context: { trace: trace_instance }, max_complexity: nil)
+      trace_instance.begin_execute_multiplex(multiplex)
+      assert ActiveSupport::Notifications.notifier.listening?("event.nonsense")
+      trace_instance.end_execute_multiplex(multiplex)
+      refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
+
+      assert_raises do
+        PerfettoSchema.execute("{ crash }")
+      end
+      refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
     end
   end
 end

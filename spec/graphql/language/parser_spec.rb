@@ -664,4 +664,30 @@ GRAPHQL
     assert_equal "parse", parse_trace[:key]
     assert_instance_of GraphQL::Language::Nodes::Document, parse_trace[:result]
   end
+
+  it "returns a parse error for var types without type names" do
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse <<-GRAPHQL
+        query GetStuff($things: []) { stuff }
+      GRAPHQL
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected RBRACKET (\"]\") at [1, 34]"
+    else
+      "Missing type definition for variable: $things at [1, 35]"
+    end
+    assert_equal expected_message, err.message
+
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse <<-GRAPHQL
+        query GetStuff($things: !) { stuff }
+      GRAPHQL
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected BANG (\"!\") at [1, 33]"
+    else
+      "Missing type definition for variable: $things at [1, 33]"
+    end
+    assert_equal expected_message, err.message
+  end
 end
