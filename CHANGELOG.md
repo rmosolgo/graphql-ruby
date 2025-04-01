@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 2.5.0
+
+### Breaking changes
+
+- Subscriptions: GraphQL-Ruby now implements the spec's requirement that a subscription has only one root selection #5250
+
+### New features
+
+- Tracers: APM tracers have been updated to reflect Dataloader's fiber stops and starts #5296 #5298
+
 # 2.4.16 (1 Apr 2025)
 
 ### New features
