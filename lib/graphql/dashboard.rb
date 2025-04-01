@@ -41,7 +41,7 @@ module Graphql
       resources :traces, only: [:index, :show, :destroy]
 
       namespace :limiters do
-        resources :limiters, only: [:show], param: :name
+        resources :limiters, only: [:show, :update], param: :name
       end
 
       namespace :operation_store do
@@ -84,7 +84,7 @@ module Graphql
         policy.img_src(:self, :data) if policy.img_src(*policy.img_src).blank?
         policy.object_src(:none) if policy.object_src(*policy.object_src).blank?
         policy.script_src(:self) if policy.script_src(*policy.script_src).blank?
-        policy.style_src(:self) if policy.style_src(*policy.style_src).blank?
+        policy.style_src(:self, :unsafe_inline) if policy.style_src(*policy.style_src).blank?
         policy.form_action(:self) if policy.form_action(*policy.form_action).blank?
         policy.frame_ancestors(:none) if policy.frame_ancestors(*policy.frame_ancestors).blank?
       end
@@ -144,6 +144,7 @@ module Graphql
       [
         "icon.png",
         "header-icon.png",
+        "charts.min.css",
         "dashboard.css",
         "dashboard.js",
         "bootstrap-5.3.3.min.css",

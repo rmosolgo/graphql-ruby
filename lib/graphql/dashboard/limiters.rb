@@ -23,14 +23,9 @@ module Graphql
           if limiter.nil?
             @install_path = "http://graphql-ruby.org/limiters/#{name}"
           else
-            @chart_mode = case request.params["chart"]
-            when "hour", "day", "month"
-              request.params["chart"]
-            else
-              "day"
-            end
+            @chart_mode = params[:chart] || "day"
             @current_soft = limiter.soft_limit_enabled?
-            @histogram = limiter.dashboard_histogram(chart_mode)
+            @histogram = limiter.dashboard_histogram(@chart_mode)
           end
         end
 
@@ -39,14 +34,16 @@ module Graphql
           limiter = limiter_for(name)
           if limiter
             limiter.toggle_soft_limit
-            flash[:success] = "Updated \"soft\" setting."
+            flash[:success] = if limiter.soft_limit_enabled?
+              "Enabled soft limiting -- over-limit traffic will be logged but not rejected."
+            else
+              "Disabled soft limiting -- over-limit traffic will be rejected."
+            end
           else
             flash[:warning] = "No limiter configured for #{name.inspect}"
           end
 
-          # TODO chart?
-          # redirect_to("/limiter/#{name}", params: { chart: request.params["chart"]})
-          redirect_to graphql_dashboard.limiter_limiter_path(name)
+          redirect_to graphql_dashboard.limiters_limiter_path(name, chart: params[:chart])
         end
 
         private
