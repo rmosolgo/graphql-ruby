@@ -5,6 +5,7 @@ module Graphql
     module Limiters
       class LimitersController < Dashboard::ApplicationController
         include Installable
+        FALLBACK_CSP_NONCE_GENERATOR = ->(_req) { SecureRandom.hex(32) }
 
         def show
           name = params[:name]
@@ -26,6 +27,15 @@ module Graphql
             @chart_mode = params[:chart] || "day"
             @current_soft = limiter.soft_limit_enabled?
             @histogram = limiter.dashboard_histogram(@chart_mode)
+
+            # These configs may have already been defined by the application; provide overrides here if not.
+            request.content_security_policy_nonce_generator ||= FALLBACK_CSP_NONCE_GENERATOR
+            nonce_dirs = request.content_security_policy_nonce_directives || []
+            if !nonce_dirs.include?("style-src")
+              nonce_dirs += ["style-src"]
+              request.content_security_policy_nonce_directives = nonce_dirs
+            end
+            @csp_nonce = request.content_security_policy_nonce
           end
         end
 

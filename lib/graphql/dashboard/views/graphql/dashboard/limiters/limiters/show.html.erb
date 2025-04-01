@@ -35,11 +35,11 @@
             <th scope="col">Unlimited Requests</th>
           </thead>
           <tbody>
-            <% @histogram.columns.each do |col| %>
+            <% @histogram.columns.each_with_index do |col, col_idx| %>
               <tr>
                 <th scope="row" class="text-end"><%= col.label %></th>
-                <% col.values.each do |value| %>
-                  <td style="--size: <%= value.value.to_f / @histogram.max_column_value %>">
+                <% col.values.each_with_index do |value, val_idx| %>
+                  <td id="data-<%= col_idx %>-<%= val_idx %>">
                     <span class="data"><%= value.formatted_value %></span>
                     <span class="tooltip"><%= value.label %>: <%= value.formatted_value %><br><%= col.label %></span>
                   </td>
@@ -51,4 +51,12 @@
       </div>
     </div>
   </div>
+  <%= content_tag "style", nonce: @csp_nonce do %>
+    <% @histogram.columns.each_with_index do |col, col_idx| %>
+      <% col_max = @histogram.max_column_value.to_f %>
+      <% col.values.each_with_index do |val, val_idx| %>
+        #data-<%= col_idx %>-<%= val_idx %> { --size: <%= val.value / col_max %>}
+      <% end %>
+    <% end %>
+  <% end %>
 <% end %>
