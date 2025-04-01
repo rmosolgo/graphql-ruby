@@ -88,7 +88,7 @@ module Graphql
         def clear_all
           schema_class.subscriptions.clear
           flash[:success] = "All subscription data cleared."
-          redirect_to graphql_dashboard.subscriptions_topics_path
+          head :no_content
         end
       end
     end
