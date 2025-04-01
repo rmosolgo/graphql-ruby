@@ -1,39 +1,14 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.15/GraphQL/Tracing/PrometheusTrace" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.0/GraphQL/Tracing/PrometheusTrace" />
   </head>
   <body>
     <p>Module: GraphQL::Tracing::PrometheusTrace
-A tracer for reporting GraphQL-Ruby times to Prometheus. 
-The PrometheusExporter server must be run with a custom type
-collector that extends
-<code class="language-plaintext highlighter-rouge">GraphQL::Tracing::PrometheusTracing::GraphQLCollector</code>. 
-Examples:</p>
-<h1 id="adding-this-trace-to-your-schema">Adding this trace to your schema</h1>
-<p>require ‘prometheus_exporter/client’
-class MySchema &lt; GraphQL::Schema
-trace_with GraphQL::Tracing::PrometheusTrace
-end</p>
-<h1 id="running-a-custom-type-collector">Running a custom type collector</h1>
-<h1 id="libgraphql_collectorrb">lib/graphql_collector.rb</h1>
-<p>if defined?(PrometheusExporter::Server)
-require ‘graphql/tracing’
-class GraphQLCollector &lt; GraphQL::Tracing::PrometheusTrace::GraphQLCollector
-end
-end</p>
-<h1 id="then-run">Then run:</h1>
-<h1 id="bundle-exec-prometheus_exporter--a-libgraphql_collectorrb">bundle exec prometheus_exporter -a lib/graphql_collector.rb</h1>
-<p>Defined Under Namespace:
-GraphQLCollector (classes)
-Includes:
-GraphQL::Tracing::PlatformTrace
+Defined Under Namespace:
+GraphQLCollector, PrometheusMonitor (classes)
 Instance methods:
-initialize, instrument_prometheus_execution, platform_authorized,
-platform_authorized_key, platform_authorized_lazy,
-platform_execute_field, platform_execute_field_lazy,
-platform_field_key, platform_resolve_type,
-platform_resolve_type_key, platform_resolve_type_lazy</p>
+initialize</p>
 
 
   </body>

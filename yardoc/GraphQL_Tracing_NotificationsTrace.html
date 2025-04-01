@@ -1,17 +1,27 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.15/GraphQL/Tracing/NotificationsTrace" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.0/GraphQL/Tracing/NotificationsTrace" />
   </head>
   <body>
     <p>Module: GraphQL::Tracing::NotificationsTrace
 This implementation forwards events to a notification handler (i.e.
 ActiveSupport::Notifications or Dry::Monitor::Notifications) with a
 <code class="language-plaintext highlighter-rouge">graphql</code> suffix. 
-Includes:
-GraphQL::Tracing::PlatformTrace
+See Also:</p>
+<ul>
+  <li>ActiveSupportNotificationsTrace - ActiveSupport::Notifications
+integration
+Defined Under Namespace:
+ActiveSupportNotificationsAdapter, Adapter, DryMonitorAdapter (classes)
 Instance methods:
-initialize</p>
+begin_analyze_multiplex, begin_authorized, begin_dataloader_source,
+begin_execute_field, begin_notifications_event, begin_resolve_type,
+dataloader_fiber_resume, dataloader_fiber_yield,
+end_analyze_multiplex, end_authorized, end_dataloader_source,
+end_execute_field, end_resolve_type, execute_multiplex,
+finish_notifications_event, initialize, lex, parse, validate</li>
+</ul>
 
 
   </body>

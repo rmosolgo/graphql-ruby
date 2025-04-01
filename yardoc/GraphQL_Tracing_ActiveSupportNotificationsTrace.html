@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.15/GraphQL/Tracing/ActiveSupportNotificationsTrace" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.0/GraphQL/Tracing/ActiveSupportNotificationsTrace" />
   </head>
   <body>
     <p>Module: GraphQL::Tracing::ActiveSupportNotificationsTrace
@@ -11,6 +11,11 @@ Examples:</p>
 <h1 id="sending-execution-events-to-activesupportnotifications">Sending execution events to ActiveSupport::Notifications</h1>
 <p>class MySchema &lt; GraphQL::Schema
 trace_with(GraphQL::Tracing::ActiveSupportNotificationsTrace)
+end</p>
+<h1 id="subscribing-to-graphql-events-with-activesupportnotifications">Subscribing to GraphQL events with ActiveSupport::Notifications</h1>
+<p>ActiveSupport::Notifications.subscribe(/graphql/) do |event|
+pp event.name
+pp event.payload
 end
 Includes:
 GraphQL::Tracing::NotificationsTrace

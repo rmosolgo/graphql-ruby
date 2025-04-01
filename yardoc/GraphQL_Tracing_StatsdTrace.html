@@ -1,25 +1,12 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.15/GraphQL/Tracing/StatsdTrace" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.0/GraphQL/Tracing/StatsdTrace" />
   </head>
   <body>
     <p>Module: GraphQL::Tracing::StatsdTrace
-A tracer for reporting GraphQL-Ruby times to Statsd. Passing any
-Statsd client that implements <code class="language-plaintext highlighter-rouge">.time(name) { ... }</code> will work. 
-Examples:</p>
-<h1 id="installing-this-tracer">Installing this tracer</h1>
-<h1 id="eg">eg:</h1>
-<h1 id="statsd--statsdnew-localhost-9125">$statsd = Statsd.new ‘localhost’, 9125</h1>
-<p>class MySchema &lt; GraphQL::Schema
-use GraphQL::Tracing::StatsdTrace, statsd: $statsd
-end
-Includes:
-GraphQL::Tracing::PlatformTrace
-Instance methods:
-initialize, platform_authorized, platform_authorized_key,
-platform_execute_field, platform_field_key,
-platform_resolve_type_key</p>
+Defined Under Namespace:
+StatsdMonitor (classes)</p>
 
 
   </body>
