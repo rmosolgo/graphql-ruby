@@ -39,7 +39,6 @@ module GraphQL
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
           trace = multiplex.current_trace
           Fiber[:__graphql_current_multiplex] = multiplex
-          trace.begin_execute_multiplex(multiplex)
           trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
