@@ -27,13 +27,24 @@ class DummySchema < GraphQL::Schema
   end
   subscription(Subscription)
 
-  use GraphQL::Tracing::DetailedTrace, memory: true
+  DB_NUMBER = Rails.env.test? ? 1 : 2
+  use GraphQL::Tracing::DetailedTrace, redis: Redis.new(db: DB_NUMBER)
 
   if defined?(GraphQL::Pro)
-    DB_NUMBER = Rails.env.test? ? 1 : 2
     use GraphQL::Pro::OperationStore, redis: Redis.new(db: DB_NUMBER)
     use GraphQL::Pro::PusherSubscriptions, redis: Redis.new(db: DummySchema::DB_NUMBER), pusher: MockPusher.new
-    use GraphQL::Enterprise::RuntimeLimiter,
+    class KeyNotRequiredLimiter < GraphQL::Enterprise::RuntimeLimiter
+      def limiter_key(query)
+        query.
+        context[:limiter_key] || "unlimited"
+      end
+
+      def limit_for(key, query)
+        key == "unlimited" ? nil : super
+      end
+    end
+
+    use KeyNotRequiredLimiter,
       redis: Redis.new(db: DummySchema::DB_NUMBER),
       limit_ms: 100
   end

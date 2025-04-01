@@ -37,8 +37,14 @@ module Graphql
     routes.draw do
       root "landings#show"
       resources :statics, only: :show, constraints: { id: /[0-9A-Za-z\-.]+/ }
-      delete "/traces/delete_all", to: "traces#delete_all", as: :traces_delete_all
-      resources :traces, only: [:index, :show, :destroy]
+
+      namespace :detailed_traces do
+        resources :traces, only: [:index, :show, :destroy] do
+          collection do
+            delete :delete_all, to: "traces#delete_all", as: :delete_all
+          end
+        end
+      end
 
       namespace :limiters do
         resources :limiters, only: [:show, :update], param: :name
@@ -110,32 +116,6 @@ module Graphql
       end
     end
 
-    class TracesController < ApplicationController
-      def index
-        @detailed_trace_installed = !!schema_class.detailed_trace
-        if @detailed_trace_installed
-          @last = params[:last]&.to_i || 50
-          @before = params[:before]&.to_i
-          @traces = schema_class.detailed_trace.traces(last: @last, before: @before)
-        end
-      end
-
-      def show
-        trace = schema_class.detailed_trace.find_trace(params[:id].to_i)
-        send_data(trace.trace_data)
-      end
-
-      def destroy
-        schema_class.detailed_trace.delete_trace(params[:id])
-        head :no_content
-      end
-
-      def delete_all
-        schema_class.detailed_trace.delete_all_traces
-        head :no_content
-      end
-    end
-
     class StaticsController < ApplicationController
       skip_after_action :verify_same_origin_request
       # Use an explicit list of files to avoid any chance of reading other files from disk
@@ -165,6 +145,7 @@ module Graphql
   end
 end
 
+require 'graphql/dashboard/detailed_traces'
 require 'graphql/dashboard/limiters'
 require 'graphql/dashboard/operation_store'
 require 'graphql/dashboard/subscriptions'
