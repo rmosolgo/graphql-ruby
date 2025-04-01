@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Tracing::NewRelicTrace
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Tracing::NewRelicTrace";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (N)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span>
+     &raquo; 
+    <span class="title">NewRelicTrace</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Tracing::NewRelicTrace
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/tracing/new_relic_trace.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>A tracer for reporting GraphQL-Ruby time to New Relic</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+        <h5 class="example_title"><div class='inline'><p>Installing the tracer</p>
+</div></h5>
+      
+      <pre class="example code"><code><span class='kw'>class</span> <span class='const'>MySchema</span> <span class='op'>&lt;</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span>
+  <span class='id identifier rubyid_trace_with'>trace_with</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span><span class='op'>::</span><span class='const'>NewRelicTrace</span>
+
+  <span class='comment'># Optional, use the operation name to set the new relic transaction name:
+</span>  <span class='comment'># trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true
+</span><span class='kw'>end</span></code></pre>
+    
+      
+        <h5 class="example_title"><div class='inline'><p>Installing without trace events for <code>authorized?</code> or <code>resolve_type</code> calls</p>
+</div></h5>
+      
+      <pre class="example code"><code><span class='id identifier rubyid_trace_with'>trace_with</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span><span class='op'>::</span><span class='const'>NewRelicTrace</span><span class='comma'>,</span> <span class='label'>trace_authorized:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>trace_resolve_type:</span> <span class='kw'>false</span></code></pre>
+    
+  </div>
+
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_analyze_multiplex-instance_method" title="#begin_analyze_multiplex (instance method)">#<strong>begin_analyze_multiplex</strong>(multiplex, analyzers)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_authorized-instance_method" title="#begin_authorized (instance method)">#<strong>begin_authorized</strong>(type, obj, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_dataloader_source-instance_method" title="#begin_dataloader_source (instance method)">#<strong>begin_dataloader_source</strong>(source)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_execute_field-instance_method" title="#begin_execute_field (instance method)">#<strong>begin_execute_field</strong>(field, object, arguments, query)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_execute_multiplex-instance_method" title="#begin_execute_multiplex (instance method)">#<strong>begin_execute_multiplex</strong>(multiplex)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_parse-instance_method" title="#begin_parse (instance method)">#<strong>begin_parse</strong>(query_str)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_resolve_type-instance_method" title="#begin_resolve_type (instance method)">#<strong>begin_resolve_type</strong>(type, value, context)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_validate-instance_method" title="#begin_validate (instance method)">#<strong>begin_validate</strong>(query, validate)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dataloader_fiber_resume-instance_method" title="#dataloader_fiber_resume (instance method)">#<strong>dataloader_fiber_resume</strong>(source)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dataloader_fiber_yield-instance_method" title="#dataloader_fiber_yield (instance method)">#<strong>dataloader_fiber_yield</strong>(source)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_analyze_multiplex-instance_method" title="#end_analyze_multiplex (instance method)">#<strong>end_analyze_multiplex</strong>(multiplex, analyzers)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_authorized-instance_method" title="#end_authorized (instance method)">#<strong>end_authorized</strong>(type, obj, ctx, is_authed)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_dataloader_source-instance_method" title="#end_dataloader_source (instance method)">#<strong>end_dataloader_source</strong>(source)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_execute_field-instance_method" title="#end_execute_field (instance method)">#<strong>end_execute_field</strong>(field, objects, arguments, query, result)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_execute_multiplex-instance_method" title="#end_execute_multiplex (instance method)">#<strong>end_execute_multiplex</strong>(multiplex)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_parse-instance_method" title="#end_parse (instance method)">#<strong>end_parse</strong>(query_str)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_resolve_type-instance_method" title="#end_resolve_type (instance method)">#<strong>end_resolve_type</strong>(type, value, context, resolved_type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_validate-instance_method" title="#end_validate (instance method)">#<strong>end_validate</strong>(query, validate, validation_errors)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(set_transaction_name: false, trace_authorized: true, trace_resolve_type: true, trace_scalars: false, **_rest)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="begin_analyze_multiplex-instance_method">
+  
+    #<strong>begin_analyze_multiplex</strong>(multiplex, analyzers)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+71
+72
+73
+74</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 71</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_analyze_multiplex'>begin_analyze_multiplex</span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex'>multiplex</span><span class='comma'>,</span> <span class='id identifier rubyid_analyzers'>analyzers</span><span class='rparen'>)</span>
+  <span class='ivar'>@nr_analyze</span> <span class='op'>=</span> <span class='const'>NewRelic</span><span class='op'>::</span><span class='const'>Agent</span><span class='op'>::</span><span class='const'>Tracer</span><span class='period'>.</span><span class='id identifier rubyid_start_transaction_or_segment'>start_transaction_or_segment</span><span class='lparen'>(</span><span class='label'>partial_name:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL/analyze</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>category:</span> <span class='symbol'>:web</span><span class='rparen'>)</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_authorized-instance_method">
+  
+    #<strong>begin_authorized</strong>(type, obj, ctx)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+114
+115
+116
+117
+118
+119</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 114</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_authorized'>begin_authorized</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@trace_authorized</span>
+    <span class='id identifier rubyid_start_segment'>start_segment</span><span class='lparen'>(</span><span class='label'>partial_name:</span> <span class='ivar'>@nr_authorized_names</span><span class='lbracket'>[</span><span class='id identifier rubyid_type'>type</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>category:</span> <span class='symbol'>:web</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_dataloader_source-instance_method">
+  
+    #<strong>begin_dataloader_source</strong>(source)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+142
+143
+144
+145</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 142</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_dataloader_source'>begin_dataloader_source</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_start_segment'>start_segment</span><span class='lparen'>(</span><span class='label'>partial_name:</span> <span class='ivar'>@nr_source_names</span><span class='lbracket'>[</span><span class='id identifier rubyid_source'>source</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>category:</span> <span class='symbol'>:web</span><span class='rparen'>)</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_execute_field-instance_method">
+  
+    #<strong>begin_execute_field</strong>(field, object, arguments, query)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 96</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_execute_field'>begin_execute_field</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_return_type'>return_type</span> <span class='op'>=</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span>
+  <span class='id identifier rubyid_trace_field'>trace_field</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_return_type'>return_type</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_scalar?'>scalar?</span> <span class='op'>||</span> <span class='id identifier rubyid_return_type'>return_type</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_enum?'>enum?</span>
+    <span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_trace'>trace</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@trace_scalars</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_trace'>trace</span>
+  <span class='kw'>else</span>
+    <span class='kw'>true</span>
+  <span class='kw'>end</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_trace_field'>trace_field</span>
+    <span class='id identifier rubyid_start_segment'>start_segment</span><span class='lparen'>(</span><span class='label'>partial_name:</span> <span class='ivar'>@nr_field_names</span><span class='lbracket'>[</span><span class='id identifier rubyid_field'>field</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>category:</span> <span class='symbol'>:web</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_execute_multiplex-instance_method">
+  
+    #<strong>begin_execute_multiplex</strong>(multiplex)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+81
+82
+83
+84
+85
+86
+87
+88
+89</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 81</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_execute_multiplex'>begin_execute_multiplex</span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex'>multiplex</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_query'>query</span> <span class='op'>=</span> <span class='id identifier rubyid_multiplex'>multiplex</span><span class='period'>.</span><span class='id identifier rubyid_queries'>queries</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
+  <span class='id identifier rubyid_set_this_txn_name'>set_this_txn_name</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='symbol'>:set_new_relic_transaction_name</span><span class='rbracket'>]</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_set_this_txn_name'>set_this_txn_name</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='id identifier rubyid_set_this_txn_name'>set_this_txn_name</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@set_transaction_name</span><span class='rparen'>)</span>
+    <span class='const'>NewRelic</span><span class='op'>::</span><span class='const'>Agent</span><span class='period'>.</span><span class='id identifier rubyid_set_transaction_name'>set_transaction_name</span><span class='lparen'>(</span><span class='id identifier rubyid_transaction_name'>transaction_name</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@nr_execute</span> <span class='op'>=</span> <span class='const'>NewRelic</span><span class='op'>::</span><span class='const'>Agent</span><span class='op'>::</span><span class='const'>Tracer</span><span class='period'>.</span><span class='id identifier rubyid_start_transaction_or_segment'>start_transaction_or_segment</span><span class='lparen'>(</span><span class='label'>partial_name:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL/execute</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>category:</span> <span class='symbol'>:web</span><span class='rparen'>)</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_parse-instance_method">
+  
+    #<strong>begin_parse</strong>(query_str)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+51
+52
+53
+54</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 51</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_parse'>begin_parse</span><span class='lparen'>(</span><span class='id identifier rubyid_query_str'>query_str</span><span class='rparen'>)</span>
+  <span class='ivar'>@nr_parse</span> <span class='op'>=</span> <span class='const'>NewRelic</span><span class='op'>::</span><span class='const'>Agent</span><span class='op'>::</span><span class='const'>Tracer</span><span class='period'>.</span><span class='id identifier rubyid_start_transaction_or_segment'>start_transaction_or_segment</span><span class='lparen'>(</span><span class='label'>partial_name:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL/parse</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>category:</span> <span class='symbol'>:web</span><span class='rparen'>)</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_resolve_type-instance_method">
+  
+    #<strong>begin_resolve_type</strong>(type, value, context)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+128
+129
+130
+131
+132
+133</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 128</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_resolve_type'>begin_resolve_type</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@trace_resolve_type</span>
+    <span class='id identifier rubyid_start_segment'>start_segment</span><span class='lparen'>(</span><span class='label'>partial_name:</span> <span class='ivar'>@nr_resolve_type_names</span><span class='lbracket'>[</span><span class='id identifier rubyid_type'>type</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>category:</span> <span class='symbol'>:web</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_validate-instance_method">
+  
+    #<strong>begin_validate</strong>(query, validate)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+61
+62
+63
+64</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 61</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_validate'>begin_validate</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_validate'>validate</span><span class='rparen'>)</span>
+  <span class='ivar'>@nr_validate</span> <span class='op'>=</span> <span class='const'>NewRelic</span><span class='op'>::</span><span class='const'>Agent</span><span class='op'>::</span><span class='const'>Tracer</span><span class='period'>.</span><span class='id identifier rubyid_start_transaction_or_segment'>start_transaction_or_segment</span><span class='lparen'>(</span><span class='label'>partial_name:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL/validate</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='label'>category:</span> <span class='symbol'>:web</span><span class='rparen'>)</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dataloader_fiber_resume-instance_method">
+  
+    #<strong>dataloader_fiber_resume</strong>(source)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+158
+159
+160
+161
+162
+163
+164
+165
+166</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 158</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_dataloader_fiber_resume'>dataloader_fiber_resume</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_prev_segment'>prev_segment</span> <span class='op'>=</span> <span class='const'>Fiber</span><span class='lbracket'>[</span><span class='symbol'>:graphql_nr_previous_segment</span><span class='rbracket'>]</span>
+  <span class='const'>Fiber</span><span class='lbracket'>[</span><span class='symbol'>:graphql_nr_previous_segment</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_prev_segment'>prev_segment</span>
+    <span class='id identifier rubyid_seg_partial_name'>seg_partial_name</span> <span class='op'>=</span> <span class='id identifier rubyid_prev_segment'>prev_segment</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^.*(GraphQL.*)$</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>\1</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_start_segment'>start_segment</span><span class='lparen'>(</span><span class='label'>partial_name:</span> <span class='id identifier rubyid_seg_partial_name'>seg_partial_name</span><span class='comma'>,</span> <span class='label'>category:</span> <span class='symbol'>:web</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dataloader_fiber_yield-instance_method">
+  
+    #<strong>dataloader_fiber_yield</strong>(source)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+152
+153
+154
+155
+156</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 152</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_dataloader_fiber_yield'>dataloader_fiber_yield</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_prev_segment'>prev_segment</span> <span class='op'>=</span> <span class='id identifier rubyid_finish_segment'>finish_segment</span>
+  <span class='const'>Fiber</span><span class='lbracket'>[</span><span class='symbol'>:graphql_nr_previous_segment</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_prev_segment'>prev_segment</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_analyze_multiplex-instance_method">
+  
+    #<strong>end_analyze_multiplex</strong>(multiplex, analyzers)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+76
+77
+78
+79</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 76</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_analyze_multiplex'>end_analyze_multiplex</span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex'>multiplex</span><span class='comma'>,</span> <span class='id identifier rubyid_analyzers'>analyzers</span><span class='rparen'>)</span>
+  <span class='ivar'>@nr_analyze</span><span class='period'>.</span><span class='id identifier rubyid_finish'>finish</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_authorized-instance_method">
+  
+    #<strong>end_authorized</strong>(type, obj, ctx, is_authed)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+121
+122
+123
+124
+125
+126</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 121</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_authorized'>end_authorized</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_obj'>obj</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='id identifier rubyid_is_authed'>is_authed</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@trace_authorized</span>
+    <span class='id identifier rubyid_finish_segment'>finish_segment</span>
+  <span class='kw'>end</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_dataloader_source-instance_method">
+  
+    #<strong>end_dataloader_source</strong>(source)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+147
+148
+149
+150</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 147</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_dataloader_source'>end_dataloader_source</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_finish_segment'>finish_segment</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_execute_field-instance_method">
+  
+    #<strong>end_execute_field</strong>(field, objects, arguments, query, result)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+109
+110
+111
+112</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 109</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_execute_field'>end_execute_field</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='id identifier rubyid_objects'>objects</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_result'>result</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_finish_segment'>finish_segment</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_execute_multiplex-instance_method">
+  
+    #<strong>end_execute_multiplex</strong>(multiplex)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+91
+92
+93
+94</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 91</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_execute_multiplex'>end_execute_multiplex</span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex'>multiplex</span><span class='rparen'>)</span>
+  <span class='ivar'>@nr_execute</span><span class='period'>.</span><span class='id identifier rubyid_finish'>finish</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_parse-instance_method">
+  
+    #<strong>end_parse</strong>(query_str)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+56
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 56</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_parse'>end_parse</span><span class='lparen'>(</span><span class='id identifier rubyid_query_str'>query_str</span><span class='rparen'>)</span>
+  <span class='ivar'>@nr_parse</span><span class='period'>.</span><span class='id identifier rubyid_finish'>finish</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_resolve_type-instance_method">
+  
+    #<strong>end_resolve_type</strong>(type, value, context, resolved_type)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+135
+136
+137
+138
+139
+140</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 135</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_resolve_type'>end_resolve_type</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_resolved_type'>resolved_type</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@trace_resolve_type</span>
+    <span class='id identifier rubyid_finish_segment'>finish_segment</span>
+  <span class='kw'>end</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_validate-instance_method">
+  
+    #<strong>end_validate</strong>(query, validate, validation_errors)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+66
+67
+68
+69</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 66</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_validate'>end_validate</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_validate'>validate</span><span class='comma'>,</span> <span class='id identifier rubyid_validation_errors'>validation_errors</span><span class='rparen'>)</span>
+  <span class='ivar'>@nr_validate</span><span class='period'>.</span><span class='id identifier rubyid_finish'>finish</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(set_transaction_name: false, trace_authorized: true, trace_resolve_type: true, trace_scalars: false, **_rest)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>set_transaction_name</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If true, the GraphQL operation name will be used as the transaction name.
+This is not advised if you run more than one query per HTTP request, for example, with <code>graphql-client</code> or multiplexing.
+It can also be specified per-query with <code>context[:set_new_relic_transaction_name]</code>.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>trace_authorized</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>true</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If <code>false</code>, skip tracing <code>authorized?</code> calls</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>trace_resolve_type</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>true</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If <code>false</code>, skip tracing <code>resolve_type?</code> calls</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>trace_scalars</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>If <code>true</code>, Enum and Scalar fields will be traced by default</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/new_relic_trace.rb', line 26</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>set_transaction_name:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>trace_authorized:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>trace_resolve_type:</span> <span class='kw'>true</span><span class='comma'>,</span> <span class='label'>trace_scalars:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid__rest'>_rest</span><span class='rparen'>)</span>
+  <span class='ivar'>@set_transaction_name</span> <span class='op'>=</span> <span class='id identifier rubyid_set_transaction_name'>set_transaction_name</span>
+  <span class='ivar'>@trace_authorized</span> <span class='op'>=</span> <span class='id identifier rubyid_trace_authorized'>trace_authorized</span>
+  <span class='ivar'>@trace_resolve_type</span> <span class='op'>=</span> <span class='id identifier rubyid_trace_resolve_type'>trace_resolve_type</span>
+  <span class='ivar'>@trace_scalars</span> <span class='op'>=</span> <span class='id identifier rubyid_trace_scalars'>trace_scalars</span>
+  <span class='ivar'>@nr_field_names</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_field'>field</span><span class='op'>|</span>
+    <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_field'>field</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_owner'>owner</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+
+  <span class='ivar'>@nr_authorized_names</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='op'>|</span>
+    <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_type'>type</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL/Authorized/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+
+  <span class='ivar'>@nr_resolve_type_names</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='op'>|</span>
+    <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_type'>type</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL/ResolveType/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+
+  <span class='ivar'>@nr_source_names</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_source_inst'>source_inst</span><span class='op'>|</span>
+    <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_source_inst'>source_inst</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL/Source/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_source_inst'>source_inst</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+
+  <span class='ivar'>@nr_parse</span> <span class='op'>=</span> <span class='ivar'>@nr_validate</span> <span class='op'>=</span> <span class='ivar'>@nr_analyze</span> <span class='op'>=</span> <span class='ivar'>@nr_execute</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Apr  1 15:03:14 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.8).
+</div>
+
+    </div>
+  </body>
+</html>
