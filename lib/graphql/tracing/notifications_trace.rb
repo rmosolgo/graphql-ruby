@@ -1,49 +1,193 @@
 # frozen_string_literal: true
 
-require "graphql/tracing/platform_trace"
-
 module GraphQL
   module Tracing
-    # This implementation forwards events to a notification handler (i.e.
-    # ActiveSupport::Notifications or Dry::Monitor::Notifications)
-    # with a `graphql` suffix.
+    # This implementation forwards events to a notification handler
+    # (i.e. ActiveSupport::Notifications or Dry::Monitor::Notifications) with a `graphql` suffix.
+    #
+    # @see ActiveSupportNotificationsTrace ActiveSupport::Notifications integration
     module NotificationsTrace
-      # Initialize a new NotificationsTracing instance
-      #
-      # @param engine [#instrument(key, metadata, block)] The notifications engine to use
+      # @api private
+      class Adapter
+        def instrument(keyword, payload, &block)
+          raise "Implement #{self.class}#instrument to measure the block"
+        end
+
+        def start_event(keyword, payload)
+          ev = self.class::Event.new(keyword, payload)
+          ev.start
+          ev
+        end
+
+        class Event
+          def initialize(name, payload)
+            @name = name
+            @payload = payload
+          end
+
+          attr_reader :name, :payload
+
+          def start
+            raise "Implement #{self.class}#start to begin a new event (#{inspect})"
+          end
+
+          def finish
+            raise "Implement #{self.class}#finish to end this event (#{inspect})"
+          end
+        end
+      end
+
+      # @api private
+      class DryMonitorAdapter < Adapter
+        def instrument(...)
+          Dry::Monitor.instrument(...)
+        end
+
+        class Event < Adapter::Event
+          def start
+            Dry::Monitor.start(@name, @payload)
+          end
+
+          def finish
+            Dry::Monitor.stop(@name, @payload)
+          end
+        end
+      end
+
+      # @api private
+      class ActiveSupportNotificationsAdapter < Adapter
+        def instrument(...)
+          ActiveSupport::Notifications.instrument(...)
+        end
+
+        class Event < Adapter::Event
+          def start
+            @asn_event = ActiveSupport::Notifications.instrumenter.new_event(@name, @payload)
+            @asn_event.start!
+          end
+
+          def finish
+            @asn_event.finish!
+            ActiveSupport::Notifications.publish_event(@asn_event)
+          end
+        end
+      end
+
+      # @param engine [Class] The notifications engine to use, eg `Dry::Monitor` or `ActiveSupport::Notifications`
       def initialize(engine:, **rest)
-        @notifications_engine = engine
+        adapter = if defined?(Dry::Monitor) && engine == Dry::Monitor
+          DryMonitoringAdapter
+        elsif defined?(ActiveSupport::Notifications) && engine == ActiveSupport::Notifications
+          ActiveSupportNotificationsAdapter
+        else
+          engine
+        end
+        @notifications = adapter.new
         super
       end
 
-      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
-
-      {
-        "lex" => "lex.graphql",
-        "parse" => "parse.graphql",
-        "validate" => "validate.graphql",
-        "analyze_multiplex" => "analyze_multiplex.graphql",
-        "analyze_query" => "analyze_query.graphql",
-        "execute_multiplex" => "execute_multiplex.graphql",
-        "execute_query" => "execute_query.graphql",
-        "execute_query_lazy" => "execute_query_lazy.graphql",
-        "execute_field" => "execute_field.graphql",
-        "execute_field_lazy" => "execute_field_lazy.graphql",
-        "authorized" => "authorized.graphql",
-        "authorized_lazy" => "authorized_lazy.graphql",
-        "resolve_type" => "resolve_type.graphql",
-        "resolve_type_lazy" => "resolve_type.graphql",
-      }.each do |trace_method, platform_key|
-        module_eval <<-RUBY, __FILE__, __LINE__
-          def #{trace_method}(**metadata, &block)
-            @notifications_engine.instrument("#{platform_key}", metadata) { super(**metadata, &block) }
-          end
-        RUBY
+      def parse(**payload)
+        @notifications.instrument("parse.graphql", payload) do
+          super
+        end
       end
 
-      # rubocop:enable Development/NoEvalCop
+      def lex(**payload)
+        @notifications.instrument("lex.graphql", payload) do
+          super
+        end
+      end
 
-      include PlatformTrace
+      def validate(**payload)
+        @notifications.instrument("validate.graphql", payload) do
+          super
+        end
+      end
+
+      def begin_analyze_multiplex(multiplex, analyzers)
+        begin_notifications_event("analyze.graphql", {multiplex: multiplex, analyzers: analyzers})
+        super
+      end
+
+      def end_analyze_multiplex(_multiplex, _analyzers)
+        finish_notifications_event
+        super
+      end
+
+      def execute_multiplex(**payload)
+        @notifications.instrument("execute.graphql", payload) do
+          super
+        end
+      end
+
+      def begin_execute_field(field, object, arguments, query)
+        begin_notifications_event("execute_field.graphql", {field: field, object: object, arguments: arguments, query: query})
+        super
+      end
+
+      def end_execute_field(_field, _object, _arguments, _query, _result)
+        finish_notifications_event
+        super
+      end
+
+      def dataloader_fiber_yield(source)
+        Fiber[PREVIOUS_EV_KEY] = finish_notifications_event
+        super
+      end
+
+      def dataloader_fiber_resume(source)
+        prev_ev = Fiber[PREVIOUS_EV_KEY]
+        begin_notifications_event(prev_ev.name, prev_ev.payload)
+        super
+      end
+
+      def begin_authorized(type, object, context)
+        begin_notifications_event("authorized.graphql", {type: type, object: object, context: context})
+        super
+      end
+
+      def end_authorized(type, object, context, result)
+        finish_notifications_event
+        super
+      end
+
+      def begin_resolve_type(type, object, context)
+        begin_notifications_event("resolve_type.graphql", {type: type, object: object, context: context})
+        super
+      end
+
+      def end_resolve_type(type, object, context, resolved_type)
+        finish_notifications_event
+        super
+      end
+
+      def begin_dataloader_source(source)
+        begin_notifications_event("dataloader_source.graphql", { source: source })
+        super
+      end
+
+      def end_dataloader_source(source)
+        finish_notifications_event
+        super
+      end
+
+      CURRENT_EV_KEY = :__notifications_graphql_trace_event
+      PREVIOUS_EV_KEY = :__notifications_graphql_trace_previous_event
+
+      private
+
+      def begin_notifications_event(name, payload)
+        Fiber[CURRENT_EV_KEY] = @notifications.start_event(name, payload)
+      end
+
+      def finish_notifications_event
+        if ev = Fiber[CURRENT_EV_KEY]
+          ev.finish
+          # Use `false` to prevent grabbing an event from a parent fiber
+          Fiber[CURRENT_EV_KEY] = false
+          ev
+        end
+      end
     end
   end
 end

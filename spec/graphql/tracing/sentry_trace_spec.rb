@@ -58,13 +58,15 @@ describe GraphQL::Tracing::SentryTrace do
     end
   end
 
-  describe "When Sentry.with_child_span returns nil" do
+  describe "When Sentry.with_child_span / start_child returns nil" do
     it "does not initialize any spans" do
       Sentry.stub(:with_child_span, nil) do
-        SentryTraceTest::SchemaWithoutTransactionName.execute("{ int thing { str } }")
-        assert_equal [], Sentry::SPAN_DATA
-        assert_equal [], Sentry::SPAN_DESCRIPTIONS
-        assert_equal [], Sentry::SPAN_OPS
+        Sentry::DummySpan.stub(:start_child, nil) do
+          SentryTraceTest::SchemaWithoutTransactionName.execute("{ int thing { str } }")
+          assert_equal [], Sentry::SPAN_DATA
+          assert_equal [], Sentry::SPAN_DESCRIPTIONS
+          assert_equal [], Sentry::SPAN_OPS
+        end
       end
     end
   end
@@ -72,17 +74,14 @@ describe GraphQL::Tracing::SentryTrace do
   it "sets the expected spans" do
     SentryTraceTest::SchemaWithoutTransactionName.execute("{ int thing { str } }")
     expected_span_ops = [
-      "graphql.execute_multiplex",
-      "graphql.analyze_multiplex",
+      "graphql.execute",
+      "graphql.analyze",
       (USING_C_PARSER ? "graphql.lex" : nil),
       "graphql.parse",
       "graphql.validate",
-      "graphql.analyze",
-      "graphql.execute",
       "graphql.authorized.Query",
-      "graphql.field.Query.thing",
+      "graphql.Query.thing",
       "graphql.authorized.Thing",
-      "graphql.execute"
     ].compact
 
     assert_equal expected_span_ops, Sentry::SPAN_OPS
@@ -91,7 +90,7 @@ describe GraphQL::Tracing::SentryTrace do
   it "sets span descriptions for an anonymous query" do
     SentryTraceTest::SchemaWithoutTransactionName.execute("{ int }")
 
-    assert_equal ["query", "query"], Sentry::SPAN_DESCRIPTIONS
+    assert_equal ["query"], Sentry::SPAN_DESCRIPTIONS
   end
 
   it "sets span data for an anonymous query" do
@@ -107,7 +106,7 @@ describe GraphQL::Tracing::SentryTrace do
   it "sets span descriptions for a named query" do
     SentryTraceTest::SchemaWithoutTransactionName.execute("query Ab { int }")
 
-    assert_equal ["query Ab", "query Ab"], Sentry::SPAN_DESCRIPTIONS
+    assert_equal ["query Ab"], Sentry::SPAN_DESCRIPTIONS
   end
 
   it "sets span data for a named query" do

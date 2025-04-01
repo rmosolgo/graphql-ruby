@@ -161,12 +161,7 @@ if testing_rails?
 
     it "doesn't leave AS::N subscriptions behind" do
       refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
-      trace_instance = PerfettoSchema.new_trace
-      refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
-      multiplex = GraphQL::Execution::Multiplex.new(schema: PerfettoSchema, queries: [], context: { trace: trace_instance }, max_complexity: nil)
-      trace_instance.begin_execute_multiplex(multiplex)
-      assert ActiveSupport::Notifications.notifier.listening?("event.nonsense")
-      trace_instance.end_execute_multiplex(multiplex)
+      _trace_instance = PerfettoSchema.new_trace
       refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
 
       assert_raises do

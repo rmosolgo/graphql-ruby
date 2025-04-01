@@ -29,10 +29,6 @@ module NewRelic
           @partial_name = name
         end
 
-        def name
-          "Controller/#{@partial_name}"
-        end
-
         def finish
           EXECUTION_SCOPES << "FINISH #{@partial_name}"
           nil
