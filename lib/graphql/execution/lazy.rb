@@ -12,6 +12,41 @@ module GraphQL
     # - It has no error-catching functionality
     # @api private
     class Lazy
+      module FieldIntegration
+        def resolve(_obj, _args, ctx)
+          result = super
+          if ctx.runtime.lazy?(result, legacy: true)
+            ctx.dataloader.with(GraphQL::Dataloader::LazySource, :field_resolve, ctx).load(result)
+          else
+            result
+          end
+        end
+      end
+
+      module ObjectIntegration
+        def self.included(child_class)
+          child_class.extend(ClassMethods)
+          child_class.prepend(Authorized)
+        end
+
+        module ClassMethods
+          def inherited(child_class)
+            child_class.prepend(Authorized)
+            super
+          end
+        end
+
+        module Authorized
+          def authorized?(obj, ctx)
+            result = super
+            if ctx.runtime.lazy?(result, legacy: true)
+              ctx.dataloader.with(GraphQL::Dataloader::LazySource, :object_wrap, ctx).load(result)
+            else
+              result
+            end
+          end
+        end
+      end
       attr_reader :field
 
       # Create a {Lazy} which will get its inner value by calling the block

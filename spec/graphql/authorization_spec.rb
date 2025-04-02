@@ -351,6 +351,7 @@ describe "GraphQL::Authorization" do
       mutation(Mutation)
       directive(Nothing)
       use GraphQL::Schema::Warden if ADD_WARDEN
+      legacy_sync_lazy(true)
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
@@ -369,6 +370,7 @@ describe "GraphQL::Authorization" do
     class SchemaWithFieldHook < GraphQL::Schema
       query(Query)
       use GraphQL::Schema::Warden if ADD_WARDEN
+      legacy_sync_lazy(true)
       lazy_resolve(Box, :value)
 
       def self.unauthorized_field(err)
@@ -651,6 +653,7 @@ describe "GraphQL::Authorization" do
             it "returns nil if not authorized" do
               query = "{ unauthorized }"
               response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: false })
+
               assert_nil response["data"].fetch("unauthorized")
               assert_equal ["Unauthorized field unauthorized on Query: 34"], response["errors"].map { |e| e["message"] }
             end

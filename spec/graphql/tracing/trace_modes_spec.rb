@@ -286,6 +286,7 @@ describe "Trace modes for schemas" do
   CustomTraceClass = Class.new(GraphQL::Tracing::Trace)
 
   class BaseSchemaWithCustomTraceClass < GraphQL::Schema
+    legacy_sync_lazy(true)
     use(GraphQL::Batch)
     trace_class(CustomTraceClass)
     trace_with(SomeTraceMod)

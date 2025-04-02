@@ -80,6 +80,10 @@ module GraphQL
         result_keys.map { |k| result_for(k) }
       end
 
+      def defer?
+        false
+      end
+
       # Subclasses must implement this method to return a value for each of `keys`
       # @param keys [Array<Object>] keys passed to {#load}, {#load_all}, {#request}, or {#request_all}
       # @return [Array<Object>] A loaded value for each of `keys`. The array must match one-for-one to the list of `keys`.
