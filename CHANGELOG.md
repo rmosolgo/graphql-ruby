@@ -15,6 +15,7 @@
 ### Breaking changes
 
 - Subscriptions: GraphQL-Ruby now implements the spec's requirement that a subscription has only one root selection #5250
+- Datadog trace: the custom `prepare_span` hook now receives an execution-related object instead of a hash of keywords. #5298
 
 ### New features
 
