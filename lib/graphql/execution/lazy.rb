@@ -26,12 +26,12 @@ module GraphQL
       module ObjectIntegration
         def self.included(child_class)
           child_class.extend(ClassMethods)
-          child_class.prepend(Authorized)
+          child_class.singleton_class.prepend(Authorized)
         end
 
         module ClassMethods
           def inherited(child_class)
-            child_class.prepend(Authorized)
+            child_class.singleton_class.prepend(Authorized)
             super
           end
         end
