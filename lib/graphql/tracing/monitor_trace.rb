@@ -90,8 +90,6 @@ module GraphQL
           EXECUTE_NAME = "execute.graphql"
           ANALYZE_NAME = "analyze.graphql"
 
-          private
-
           def platform_field_key(field)
             "#{field.path}.graphql"
           end
@@ -104,8 +102,8 @@ module GraphQL
             "#{type.graphql_name}.resolve_type.graphql"
           end
 
-          def platform_source_key(source_class)
-            "#{source_class.name.gsub("::", "_").name.underscore}.fetch.graphql"
+          def platform_source_class_key(source_class)
+            "#{source_class.name.gsub("::", "_").underscore}.fetch.graphql"
           end
         end
 
