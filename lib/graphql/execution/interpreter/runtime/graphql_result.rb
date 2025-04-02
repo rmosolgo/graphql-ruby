@@ -44,6 +44,7 @@ module GraphQL
           def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             super
             @graphql_result_data = {}
+            @ordered_result_keys = @graphql_selections.map { |s| s.alias || s.name }
           end
 
           include GraphQLResult
@@ -64,6 +65,17 @@ module GraphQL
             end
 
             @graphql_result_data[key] = value
+
+            if @ordered_result_keys.index(key) < @graphql_result_data.size - 1
+              backup_data = @graphql_result_data.dup
+              @graphql_result_data.clear
+              @ordered_result_keys.each do |k|
+                if backup_data.key?(k)
+                  @graphql_result_data[k] = backup_data[k]
+                end
+              end
+            end
+
             # keep this up-to-date if it's been initialized
             @graphql_metadata && @graphql_metadata[key] = value
 
@@ -75,6 +87,16 @@ module GraphQL
               t.set_child_result(key, value)
             end
             @graphql_result_data[key] = value.graphql_result_data
+            if @ordered_result_keys.index(key) < @graphql_result_data.size - 1
+              backup_data = @graphql_result_data.dup
+              @graphql_result_data.clear
+              @ordered_result_keys.each do |k|
+                if backup_data.key?(k)
+                  @graphql_result_data[k] = backup_data[k]
+                end
+              end
+            end
+
             # If we encounter some part of this response that requires metadata tracking,
             # then create the metadata hash if necessary. It will be kept up-to-date after this.
             (@graphql_metadata ||= @graphql_result_data.dup)[key] = value

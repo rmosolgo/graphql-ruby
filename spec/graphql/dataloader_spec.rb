@@ -626,11 +626,13 @@ describe GraphQL::Dataloader do
           assert_equal({"setCache" => "Salad", "getCache" => "1"}, res["data"])
         end
 
+        focus
         it "batch-loads" do
           res = schema.execute <<-GRAPHQL
           {
             i1: ingredient(id: 1) { id name }
             i2: ingredient(id: 2) { name }
+            __typename
             r1: recipe(id: 5) {
               # This loads Ingredients 3 and 4
               ingredients { name }
@@ -645,6 +647,7 @@ describe GraphQL::Dataloader do
           expected_data = {
             "i1" => { "id" => "1", "name" => "Wheat" },
             "i2" => { "name" => "Corn" },
+            "__typename" => "Query",
             "r1" => {
               "ingredients" => [
                 { "name" => "Wheat" },
@@ -657,7 +660,7 @@ describe GraphQL::Dataloader do
               "name" => "Cheese",
             },
           }
-          assert_equal(expected_data, res["data"])
+          assert_graphql_equal(expected_data, res["data"])
 
           expected_log = [
             [:mget, [
@@ -771,7 +774,7 @@ describe GraphQL::Dataloader do
               "name" => "Wheat",
             }
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works when the parent field didn't yield" do
@@ -801,7 +804,7 @@ describe GraphQL::Dataloader do
               ]},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -826,7 +829,7 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+        assert_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
