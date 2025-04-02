@@ -47,6 +47,13 @@ describe GraphQL::Tracing::SentryTrace do
     assert res.context[:other_trace_ran]
   end
 
+  it "handles cases when Sentry has no current span" do
+    Sentry.use_nil_span = true
+    assert SentryTraceTest::SchemaWithoutTransactionName.execute("{ int }")
+  ensure
+    Sentry.use_nil_span = false
+  end
+
   describe "When Sentry is not configured" do
     it "does not initialize any spans" do
       Sentry.stub(:initialized?, false) do
