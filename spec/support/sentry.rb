@@ -11,6 +11,10 @@ module Sentry
   SPAN_DESCRIPTIONS = []
   TRANSACTION_NAMES = []
 
+  class << self
+    attr_accessor :use_nil_span
+  end
+
   def self.initialized?
     true
   end
@@ -24,7 +28,7 @@ module Sentry
   end
 
   def self.get_span
-    DummySpan
+    use_nil_span ? nil : DummySpan
   end
 
   def self.with_child_span(**args, &block)
