@@ -696,4 +696,75 @@ describe GraphQL::Schema::Subscription do
       assert_nil PrivateSubscription.subscription_scope
     end
   end
+
+  describe "writing during resolution" do
+    class DirectWriteSchema < GraphQL::Schema
+      class WriteCheckSubscriptions
+        def use(schema)
+          schema.subscriptions = self
+        end
+
+        def write_subscription(query, events)
+          query.context[:write_subscription_count] ||= 0
+          query.context[:write_subscription_count] += 1
+          evs = query.context[:written_events] ||= []
+          evs << events
+          nil
+        end
+      end
+      class ImplicitWrite < GraphQL::Schema::Subscription
+        type String
+
+        def subscribe
+          "#{context[:written_events]&.size.inspect} / #{context[:write_subscription_count].inspect} / #{subscription_written?}"
+        end
+      end
+
+      class DirectWrite < ImplicitWrite
+        type String
+        def subscribe
+          write_subscription
+          super
+        end
+      end
+
+      class DirectWriteTwice < DirectWrite
+        type String
+        def subscribe
+          write_subscription
+          super
+        end
+      end
+
+      class Subscription < GraphQL::Schema::Object
+        field :direct, subscription: DirectWrite
+        field :implicit, subscription: ImplicitWrite
+        field :direct_twice, subscription: DirectWriteTwice
+      end
+
+      use WriteCheckSubscriptions.new
+      subscription(Subscription)
+    end
+
+    it "only calls write_subscription once" do
+      res = DirectWriteSchema.execute("subscription { direct }")
+      assert_equal "1 / 1 / true", res["data"]["direct"]
+      assert_equal 1, res.context[:write_subscription_count]
+      assert_equal [1], res.context[:written_events].map(&:size)
+      assert_equal true, res.context.namespace(:subscriptions)[:subscriptions].values.first.subscription_written?
+
+      res = DirectWriteSchema.execute("subscription { implicit }")
+      assert_equal "nil / nil / false", res["data"]["implicit"]
+      assert_equal 1, res.context[:write_subscription_count]
+      assert_equal [1], res.context[:written_events].map(&:size)
+      assert_equal false, res.context.namespace(:subscriptions)[:subscriptions].values.first.subscription_written?
+    end
+
+    it "raises if write_subscription is called twice" do
+      err = assert_raises GraphQL::Error do
+        DirectWriteSchema.execute("subscription { directTwice }")
+      end
+      assert_equal "`write_subscription` was called but `DirectWriteSchema::DirectWriteTwice#subscription_written?` is already true. Remove a call to `write subscription`.", err.message
+    end
+  end
 end

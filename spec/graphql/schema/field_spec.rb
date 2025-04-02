@@ -836,6 +836,9 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     # This is custom state added by some test schemas:
     custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata, :@admin_only]
 
+    # Remove any invalid (non-retained) field instances from the heap
+    GC.start
+
     ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
       field_ivars = field_obj.instance_variables
       custom_ivars.each do |ivar|

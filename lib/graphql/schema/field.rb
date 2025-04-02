@@ -255,7 +255,7 @@ module GraphQL
 
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
-
+        NameValidator.validate!(@name)
         @description = description
         @comment = comment
         @type = @owner_type = @own_validators = @own_directives = @own_arguments = @arguments_statically_coercible = nil # these will be prepared later if necessary
@@ -369,7 +369,7 @@ module GraphQL
           if @definition_block.arity == 1
             @definition_block.call(self)
           else
-            instance_eval(&@definition_block)
+            instance_exec(self, &@definition_block)
           end
           self.extensions.each(&:after_define_apply)
           @call_after_define = true

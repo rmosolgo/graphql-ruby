@@ -1,5 +1,9 @@
 # GraphQL::CParser
 
+## 1.1.2
+
+- Fix to handle strings with null bytes #5193
+
 ## 1.1.1
 
 - Add support for `Schema.max_query_string_tokens` #4929

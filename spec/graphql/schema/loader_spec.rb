@@ -19,6 +19,7 @@ describe GraphQL::Schema::Loader do
 
       value "FOO", value: :foo
       value "BAR", deprecation_reason: "Don't use BAR"
+      value "foo"
     end
 
     sub_input_type = Class.new(GraphQL::Schema::InputObject) do
@@ -234,8 +235,10 @@ describe GraphQL::Schema::Loader do
 
     let(:loaded_schema) { GraphQL::Schema.from_introspection(schema_json) }
 
-    it "returns the schema" do
-      assert_deep_equal(schema, loaded_schema)
+    it "returns the schema without warnings" do
+      assert_warns("") do
+        assert_deep_equal(schema, loaded_schema)
+      end
     end
 
     it "can export the loaded schema" do
@@ -404,5 +407,154 @@ type Query {
 
       assert_equal arg.default_value, { 'id' => nil, 'int' => nil, 'float' => nil, 'enum' => nil, 'sub' => nil, 'bool' => nil, 'bigint' => nil }
     end
+  end
+
+  it "validates field argument names" do
+    json = {
+      "data" => {
+        "__schema" => {
+          "queryType" => {
+            "name" => "Query"
+          },
+          "mutationType" => nil,
+          "subscriptionType" => nil,
+          "types" => [
+            {
+              "kind" => "OBJECT",
+              "name" => "Query",
+              "description" => nil,
+              "fields" => [
+                {
+                  "name" => "int",
+                  "description" => nil,
+                  "type" => {
+                    "kind" => "SCALAR",
+                    "name" => "Int",
+                    "ofType" => nil,
+                  },
+                  "args" => [
+                    {
+                      "name" => "something-wrong",
+                      "description" => nil,
+                      "type" => {
+                        "kind" => "SCALAR",
+                        "name" => "Int",
+                        "ofType" => nil
+                      },
+                      "defaultValue" => nil
+                    }
+                  ],
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+    err = assert_raises GraphQL::InvalidNameError do
+      GraphQL::Schema.from_introspection(json)
+    end
+
+    assert_includes err.message, "something-wrong"
+  end
+
+  it "validates field names" do
+    json = {
+      "data" => {
+        "__schema" => {
+          "queryType" => {
+            "name" => "Query"
+          },
+          "mutationType" => nil,
+          "subscriptionType" => nil,
+          "types" => [
+            {
+              "kind" => "OBJECT",
+              "name" => "Query",
+              "description" => nil,
+              "fields" => [
+                {
+                  "name" => "bad.int",
+                  "description" => nil,
+                  "type" => {
+                    "kind" => "SCALAR",
+                    "name" => "Int",
+                    "ofType" => nil,
+                  },
+                  "args" => [],
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+    err = assert_raises GraphQL::InvalidNameError do
+      GraphQL::Schema.from_introspection(json)
+    end
+
+    assert_includes err.message, "bad.int"
+  end
+
+  it "validates input object argument names" do
+    json = {
+      "data" => {
+        "__schema" => {
+          "queryType" => {
+            "name" => "Query"
+          },
+          "mutationType" => nil,
+          "subscriptionType" => nil,
+          "types" => [
+            {
+              "kind" => "OBJECT",
+              "name" => "Query",
+              "description" => nil,
+              "fields" => [
+                {
+                  "name" => "int",
+                  "description" => nil,
+                  "type" => {
+                    "kind" => "SCALAR",
+                    "name" => "Int",
+                    "ofType" => nil,
+                  },
+                  "args" => [
+                    {
+                      "name" => "inputObject",
+                      "description" => nil,
+                      "type" => {
+                        "kind" => "INPUT_OBJECT",
+                        "name" => "SomeInputObject",
+                        "ofType" => nil
+                      },
+                      "defaultValue" => nil
+                    }
+                  ],
+                }
+              ]
+            },
+            {
+              "kind" => "INPUT_OBJECT",
+              "name" => "SomeInputObject",
+              "description" => nil,
+              "inputFields" => [
+                {
+                  "name"=>"bad, input",
+                  "type"=> { "kind" => "SCALAR", "name" => "String"},
+                  "defaultValue"=> nil,
+                  "description" => nil,
+                },
+              ]
+            }
+          ]
+        }
+      }
+    }
+    err = assert_raises GraphQL::InvalidNameError do
+      GraphQL::Schema.from_introspection(json)
+    end
+
+    assert_includes err.message, "bad, input"
   end
 end

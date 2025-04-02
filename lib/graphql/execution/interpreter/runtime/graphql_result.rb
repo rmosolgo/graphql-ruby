@@ -5,7 +5,10 @@ module GraphQL
     class Interpreter
       class Runtime
         module GraphQLResult
-          def initialize(result_name, result_type, application_value, parent_result, is_non_null_in_parent, selections, is_eager)
+          def initialize(result_name, result_type, application_value, parent_result, is_non_null_in_parent, selections, is_eager, ast_node, graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
+            @ast_node = ast_node
+            @graphql_arguments = graphql_arguments
+            @graphql_field = graphql_field
             @graphql_parent = parent_result
             @graphql_application_value = application_value
             @graphql_result_type = result_type
@@ -31,14 +34,14 @@ module GraphQL
 
           attr_accessor :graphql_dead
           attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent,
-            :graphql_application_value, :graphql_result_type, :graphql_selections, :graphql_is_eager
+            :graphql_application_value, :graphql_result_type, :graphql_selections, :graphql_is_eager, :ast_node, :graphql_arguments, :graphql_field
 
           # @return [Hash] Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
           attr_accessor :graphql_result_data
         end
 
         class GraphQLResultHash
-          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager)
+          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             super
             @graphql_result_data = {}
           end
@@ -126,7 +129,7 @@ module GraphQL
         class GraphQLResultArray
           include GraphQLResult
 
-          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager)
+          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             super
             @graphql_result_data = []
           end
@@ -167,6 +170,10 @@ module GraphQL
 
           def values
             (@graphql_metadata || @graphql_result_data)
+          end
+
+          def [](idx)
+            (@graphql_metadata || @graphql_result_data)[idx]
           end
         end
       end

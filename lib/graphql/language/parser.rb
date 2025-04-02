@@ -110,7 +110,7 @@ module GraphQL
           # Only ignored characters is not a valid document
           raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @graphql_str)
         end
-        while !@lexer.eos?
+        while !@lexer.finished?
           defns << definition
         end
         Document.new(pos: 0, definitions: defns, filename: @filename, source: self)
@@ -161,7 +161,7 @@ module GraphQL
               expect_token(:VAR_SIGN)
               var_name = parse_name
               expect_token(:COLON)
-              var_type = self.type
+              var_type = self.type || raise_parse_error("Missing type definition for variable: $#{var_name}")
               default_value = if at?(:EQUALS)
                 advance_token
                 value
@@ -488,26 +488,33 @@ module GraphQL
       end
 
       def type
-        type = case token_name
+        parsed_type = case token_name
         when :IDENTIFIER
           parse_type_name
         when :LBRACKET
           list_type
+        else
+          nil
         end
 
-        if at?(:BANG)
-          type = Nodes::NonNullType.new(pos: pos, of_type: type, source: self)
+        if at?(:BANG) && parsed_type
+          parsed_type = Nodes::NonNullType.new(pos: pos, of_type: parsed_type, source: self)
           expect_token(:BANG)
         end
-        type
+        parsed_type
       end
 
       def list_type
         loc = pos
         expect_token(:LBRACKET)
-        type = Nodes::ListType.new(pos: loc, of_type: self.type, source: self)
+        inner_type = self.type
+        parsed_list_type = if inner_type
+          Nodes::ListType.new(pos: loc, of_type: inner_type, source: self)
+        else
+          nil
+        end
         expect_token(:RBRACKET)
-        type
+        parsed_list_type
       end
 
       def parse_operation_type

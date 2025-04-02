@@ -23,7 +23,7 @@ describe GraphQL::Tracing::ScoutTrace do
     end
 
     class SchemaWithTransactionName < ScoutSchemaBase
-      trace_with GraphQL::Tracing::ScoutTrace, set_transaction_name: true
+      trace_with GraphQL::Tracing::ScoutTrace, set_transaction_name: true, trace_authorized: false, trace_scalars: true
     end
   end
 
@@ -34,11 +34,29 @@ describe GraphQL::Tracing::ScoutTrace do
   it "can leave the transaction name in place" do
     ScoutApmTraceTest::SchemaWithoutTransactionName.execute "query X { int }"
     assert_equal [], ScoutApm::TRANSACTION_NAMES
+    expected_events = [
+      "execute.graphql",
+      "analyze.graphql",
+      (USING_C_PARSER ? "lex.graphql" : nil),
+      "parse.graphql",
+      "validate.graphql",
+      "Query.authorized.graphql"
+    ].compact
+    assert_equal expected_events, ScoutApm::EVENTS
   end
 
-  it "can override the transaction name" do
+  it "can override the transaction name, skip authorized, and trace scalars" do
     ScoutApmTraceTest::SchemaWithTransactionName.execute "query X { int }"
     assert_equal ["GraphQL/query.X"], ScoutApm::TRANSACTION_NAMES
+    expected_events = [
+      (USING_C_PARSER ? "lex.graphql" : nil),
+      "parse.graphql",
+      "execute.graphql",
+      "analyze.graphql",
+      "validate.graphql",
+      "Query.int.graphql"
+    ].compact
+    assert_equal expected_events, ScoutApm::EVENTS
   end
 
   it "can override the transaction name per query" do

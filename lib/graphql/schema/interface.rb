@@ -13,6 +13,7 @@ module GraphQL
         include GraphQL::Schema::Member::Scoped
         include GraphQL::Schema::Member::HasAstNode
         include GraphQL::Schema::Member::HasUnresolvedTypeError
+        include GraphQL::Schema::Member::HasDataloader
         include GraphQL::Schema::Member::HasDirectives
         include GraphQL::Schema::Member::HasInterfaces
 
@@ -29,7 +30,7 @@ module GraphQL
             const_set(:DefinitionMethods, defn_methods_module)
             extend(self::DefinitionMethods)
           end
-          self::DefinitionMethods.module_eval(&block)
+          self::DefinitionMethods.module_exec(&block)
         end
 
         # @see {Schema::Warden} hides interfaces without visible implementations

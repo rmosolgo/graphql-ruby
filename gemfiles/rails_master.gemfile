@@ -15,5 +15,17 @@ if RUBY_ENGINE == "ruby" # This doesn't work on truffle-ruby because there's no 
   gem "libev_scheduler"
 end
 gem "async"
+gem "google-protobuf"
+gem "redis"
+
+gem 'puma'
+gem 'sprockets-rails'
+gem 'capybara'
+gem 'selenium-webdriver'
 
 gemspec path: "../"
+
+if Bundler.settings["GEMS__GRAPHQL__PRO"]
+  gem "graphql-pro", source: "https://gems.graphql.pro"
+  gem "graphql-enterprise", source: "https://gems.graphql.pro"
+end

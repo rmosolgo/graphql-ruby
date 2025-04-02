@@ -8,6 +8,18 @@
 
 ### Bug Fix
 
+# 1.5.6 (13 Dec 2024)
+
+- ObjectCache: Add `CacheableRelation` helper for top-level ActiveRecord relations
+
+# 1.5.5 (10 Dec 2024)
+
+- Changesets: Add missing `ensure_loaded` call for class-based changesets
+
+# 1.5.4 (31 Oct 2024)
+
+- ObjectCache: Add `reauthorize_cached_objects: false`
+
 # 1.5.3 (1 Oct 2024)
 
 - Limiters: Add expiration to rate limit data (to reduce Redis footprint)

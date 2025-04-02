@@ -9,10 +9,12 @@ gemfiles/*.lock
 *.db
 *.db-shm
 *.db-wal
+*.sqlite3
 .byebug_history
 .bundle/
 vendor/
 .idea/
+coverage/
 
 _site
 .sass-cache

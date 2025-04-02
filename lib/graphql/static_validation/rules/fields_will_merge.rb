@@ -345,7 +345,7 @@ module GraphQL
             fields << Field.new(node, definition, owner_type, parents)
           when GraphQL::Language::Nodes::InlineFragment
             fragment_type = node.type ? @types.type(node.type.name) : owner_type
-            find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: owner_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
+            find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: fragment_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
           when GraphQL::Language::Nodes::FragmentSpread
             fragment_spreads << FragmentSpread.new(node.name, parents)
           end

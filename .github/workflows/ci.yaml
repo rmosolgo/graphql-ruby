@@ -9,26 +9,29 @@ jobs:
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 3.3
+        ruby-version: 3.4
         bundler-cache: true
     - run: bundle exec rake rubocop
   system_tests:
     runs-on: ubuntu-latest
     steps:
+    - uses: shogo82148/actions-setup-redis@v1
+      with:
+        redis-version: "7.x"
+    - run: redis-cli ping
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 3.3
-        bundler-cache: true
-    - run: bundle exec rake compile
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 3.3
+        ruby-version: 3.4
         bundler-cache: true
       env:
-        BUNDLE_GEMFILE: ./spec/dummy/Gemfile
-    - run: bundle exec rails test:all
+        BUNDLE_GEMS__GRAPHQL__PRO: ${{ secrets.BUNDLE_GEMS__GRAPHQL__PRO }}
+        BUNDLE_GEMFILE: gemfiles/rails_master.gemfile
+    - run: bin/rails test:all
       working-directory: ./spec/dummy
+      env:
+        BUNDLE_GEMS__GRAPHQL__PRO: ${{ secrets.BUNDLE_GEMS__GRAPHQL__PRO }}
+        BUNDLE_GEMFILE: ../../gemfiles/rails_master.gemfile
   # Some coverage goals of these tests:
   # - Test once without Rails at all
   # - Test postgres, to make sure that the ActiveRecord
@@ -43,13 +46,11 @@ jobs:
       matrix:
         include:
           - gemfile: Gemfile
-            ruby: 3.2
+            ruby: 3.4
           - gemfile: Gemfile
             ruby: 2.7 # lowest supported version
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.1
-          - gemfile: gemfiles/rails_master.gemfile
-            ruby: 3.2
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.2
           - gemfile: gemfiles/rails_7.1.gemfile
@@ -57,10 +58,12 @@ jobs:
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.3
             graphql_reject_numbers_followed_by_names: 1
+            redis: 1
           - gemfile: gemfiles/rails_master.gemfile
-            ruby: 3.3
+            ruby: 3.4
             graphql_reject_numbers_followed_by_names: 1
             isolation_level_fiber: 1
+            redis: 1
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
@@ -68,12 +71,17 @@ jobs:
       if: ${{ !!matrix.graphql_reject_numbers_followed_by_names }}
     - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
       if: ${{ !!matrix.isolation_level_fiber }}
+    - uses: shogo82148/actions-setup-redis@v1
+      with:
+        redis-version: "7.x"
+      if: ${{ !!matrix.redis }}
+    - run: redis-cli ping
+      if: ${{ !!matrix.redis }}
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-        bundler: ${{ matrix.bundler || 'default' }}
     - run: bundle exec rake compile
     - run: bundle exec rake test
   javascript_test:
@@ -130,8 +138,8 @@ jobs:
       fail-fast: false
       matrix:
         gemfile:
-          - gemfiles/mongoid_6.gemfile
-          - gemfiles/mongoid_7.gemfile
+          - gemfiles/mongoid_9.gemfile
+          - gemfiles/mongoid_8.gemfile
     runs-on: ubuntu-latest
     services:
       mongodb:
@@ -143,6 +151,6 @@ jobs:
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7
+        ruby-version: 3.4
         bundler-cache: true
     - run: bundle exec rake compile test

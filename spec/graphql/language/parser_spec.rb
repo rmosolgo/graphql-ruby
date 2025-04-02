@@ -79,6 +79,22 @@ createRecord(data: {
     end
   end
 
+  it "can parse strings with null bytes" do
+    assert GraphQL.parse("{ a(b: \"\\u0000\") }")
+  end
+
+  it "raises a parse error when there's a dangling close curly brace" do
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse('{ foo } }')
+    }
+  end
+
+  it "raises a parse error when there's a dangling identifier" do
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse('{ foo } fooagain')
+    }
+  end
+
   describe "when there are no selections" do
     it 'raises a ParseError' do
       assert_raises(GraphQL::ParseError) {
@@ -179,6 +195,19 @@ createRecord(data: {
   it "allows operation names to match operation types" do
     doc = GraphQL.parse("query subscription { foo }")
     assert_equal "subscription", doc.definitions.first.name
+  end
+
+  it "raises an error for bad variables definition" do
+    err = assert_raises(GraphQL::ParseError) do
+      GraphQL.parse("query someQuery($someVariable: ,) { account { id } }")
+    end
+    expected_msg = if USING_C_PARSER
+      "syntax error, unexpected RPAREN (\")\") at [1, 33]"
+    else
+      "Missing type definition for variable: $someVariable at [1, 33]"
+    end
+
+    assert_equal expected_msg, err.message
   end
 
   it "raises an error when unicode is used as names" do
@@ -634,5 +663,31 @@ GRAPHQL
     assert_equal "{ t: __typename }", parse_trace[:query_string]
     assert_equal "parse", parse_trace[:key]
     assert_instance_of GraphQL::Language::Nodes::Document, parse_trace[:result]
+  end
+
+  it "returns a parse error for var types without type names" do
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse <<-GRAPHQL
+        query GetStuff($things: []) { stuff }
+      GRAPHQL
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected RBRACKET (\"]\") at [1, 34]"
+    else
+      "Missing type definition for variable: $things at [1, 35]"
+    end
+    assert_equal expected_message, err.message
+
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse <<-GRAPHQL
+        query GetStuff($things: !) { stuff }
+      GRAPHQL
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected BANG (\"!\") at [1, 33]"
+    else
+      "Missing type definition for variable: $things at [1, 33]"
+    end
+    assert_equal expected_message, err.message
   end
 end

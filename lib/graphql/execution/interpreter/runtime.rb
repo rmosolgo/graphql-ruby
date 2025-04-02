@@ -74,7 +74,7 @@ module GraphQL
           runtime_object = root_type.wrap(query.root_value, context)
           runtime_object = schema.sync_lazy(runtime_object)
           is_eager = root_op_type == "mutation"
-          @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, root_operation.selections, is_eager)
+          @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, root_operation.selections, is_eager, root_operation, nil, nil)
           st = get_current_runtime_state
           st.current_result = @response
 
@@ -85,7 +85,7 @@ module GraphQL
             call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
               each_gathered_selections(@response) do |selections, is_selection_array|
                 if is_selection_array
-                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager)
+                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager, root_operation, nil, nil)
                   final_response = @response
                 else
                   selection_response = @response
@@ -291,8 +291,10 @@ module GraphQL
                     result_name, field_ast_nodes_or_ast_node, selections_result
                   )
                   finished_jobs += 1
-                  if target_result && finished_jobs == enqueued_jobs
-                    selections_result.merge_into(target_result)
+                  if finished_jobs == enqueued_jobs
+                    if target_result
+                      selections_result.merge_into(target_result)
+                    end
                   end
                   @dataloader.clear_cache
                 }
@@ -302,8 +304,10 @@ module GraphQL
                     result_name, field_ast_nodes_or_ast_node, selections_result
                   )
                   finished_jobs += 1
-                  if target_result && finished_jobs == enqueued_jobs
-                    selections_result.merge_into(target_result)
+                  if finished_jobs == enqueued_jobs
+                    if target_result
+                      selections_result.merge_into(target_result)
+                    end
                   end
                 }
               end
@@ -444,6 +448,7 @@ module GraphQL
             end
             # Actually call the field resolver and capture the result
             app_result = begin
+              @current_trace.begin_execute_field(field_defn, object, kwarg_arguments, query)
               @current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
                 field_defn.resolve(object, kwarg_arguments, context)
               end
@@ -456,6 +461,7 @@ module GraphQL
                 ex_err
               end
             end
+            @current_trace.end_execute_field(field_defn, object, kwarg_arguments, query, app_result)
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_result, runtime_state|
               owner_type = selection_result.graphql_result_type
               return_type = field_defn.type
@@ -464,6 +470,8 @@ module GraphQL
                 was_scoped = runtime_state.was_authorized_by_scope_items
                 runtime_state.was_authorized_by_scope_items = nil
                 continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result, was_scoped, runtime_state)
+              else
+                nil
               end
             end
           end
@@ -538,7 +546,7 @@ module GraphQL
                 # When this comes from a list item, use the parent object:
                 parent_type = selection_result.is_a?(GraphQLResultArray) ? selection_result.graphql_parent.graphql_result_type : selection_result.graphql_result_type
                 # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
-                err = parent_type::InvalidNullError.new(parent_type, field, value)
+                err = parent_type::InvalidNullError.new(parent_type, field, ast_node)
                 schema.type_error(err, context)
               end
             else
@@ -647,12 +655,22 @@ module GraphQL
             r = begin
               current_type.coerce_result(value, context)
             rescue StandardError => err
-              schema.handle_or_reraise(context, err)
+              query.handle_or_reraise(err)
             end
             set_result(selection_result, result_name, r, false, is_non_null)
             r
           when "UNION", "INTERFACE"
-            resolved_type_or_lazy = resolve_type(current_type, value)
+            resolved_type_or_lazy = begin
+                                      resolve_type(current_type, value)
+                                    rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+                                      return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
+                                    rescue StandardError => err
+                                      begin
+                                        query.handle_or_reraise(err)
+                                      rescue GraphQL::ExecutionError => ex_err
+                                        return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
+                                      end
+                                    end
             after_lazy(resolved_type_or_lazy, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_type_result, runtime_state|
               if resolved_type_result.is_a?(Array) && resolved_type_result.length == 2
                 resolved_type, resolved_value = resolved_type_result
@@ -682,11 +700,11 @@ module GraphQL
             after_lazy(object_proxy, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_object, runtime_state|
               continue_value = continue_value(inner_object, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
-                response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false)
+                response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
                 each_gathered_selections(response_hash) do |selections, is_selection_array|
                   if is_selection_array
-                    this_result = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, selections, false)
+                    this_result = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, selections, false, ast_node, arguments, field)
                     final_result = response_hash
                   else
                     this_result = response_hash
@@ -707,35 +725,43 @@ module GraphQL
             # This is true for objects, unions, and interfaces
             use_dataloader_job = !inner_type.unwrap.kind.input?
             inner_type_non_null = inner_type.non_null?
-            response_list = GraphQLResultArray.new(result_name, current_type, owner_object, selection_result, is_non_null, next_selections, false)
+            response_list = GraphQLResultArray.new(result_name, current_type, owner_object, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
             set_result(selection_result, result_name, response_list, true, is_non_null)
             idx = nil
             list_value = begin
-              value.each do |inner_value|
-                idx ||= 0
-                this_idx = idx
-                idx += 1
-                if use_dataloader_job
-                  @dataloader.append_job do
+              begin
+                value.each do |inner_value|
+                  idx ||= 0
+                  this_idx = idx
+                  idx += 1
+                  if use_dataloader_job
+                    @dataloader.append_job do
+                      resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
+                    end
+                  else
                     resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
                   end
+                end
+
+                response_list
+              rescue NoMethodError => err
+                # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
+                if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
+                  # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
+                  raise ListResultFailedError.new(value: value, field: field, path: current_path)
                 else
-                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
+                  # This was some other NoMethodError -- let it bubble to reveal the real error.
+                  raise
+                end
+              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+                ex_err
+              rescue StandardError => err
+                begin
+                  query.handle_or_reraise(err)
+                rescue GraphQL::ExecutionError => ex_err
+                  ex_err
                 end
               end
-
-              response_list
-            rescue NoMethodError => err
-              # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
-              if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
-                # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
-                raise ListResultFailedError.new(value: value, field: field, path: current_path)
-              else
-                # This was some other NoMethodError -- let it bubble to reveal the real error.
-                raise
-              end
-            rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
-              ex_err
             rescue StandardError => err
               begin
                 query.handle_or_reraise(err)
@@ -846,8 +872,10 @@ module GraphQL
               runtime_state.was_authorized_by_scope_items = was_authorized_by_scope_items
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
+              result = nil
               inner_obj = begin
-                if trace
+                result = if trace
+                  @current_trace.begin_execute_field(field, owner_object, arguments, query)
                   @current_trace.execute_field_lazy(field: field, query: query, object: owner_object, arguments: arguments, ast_node: ast_node) do
                     schema.sync_lazy(lazy_obj)
                   end
@@ -861,6 +889,10 @@ module GraphQL
                   query.handle_or_reraise(err)
                 rescue GraphQL::ExecutionError => ex_err
                   ex_err
+                end
+              ensure
+                if trace
+                  @current_trace.end_execute_field(field, owner_object, arguments, query, result)
                 end
               end
               yield(inner_obj, runtime_state)
@@ -905,14 +937,19 @@ module GraphQL
         end
 
         def resolve_type(type, value)
+          @current_trace.begin_resolve_type(type, value, context)
           resolved_type, resolved_value = @current_trace.resolve_type(query: query, type: type, object: value) do
             query.resolve_type(type, value)
           end
+          @current_trace.end_resolve_type(type, value, context, resolved_type)
 
           if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
+              @current_trace.begin_resolve_type(type, value, context)
               @current_trace.resolve_type_lazy(query: query, type: type, object: value) do
-                schema.sync_lazy(resolved_type)
+                rt = schema.sync_lazy(resolved_type)
+                @current_trace.end_resolve_type(type, value, context, rt)
+                rt
               end
             end
           else

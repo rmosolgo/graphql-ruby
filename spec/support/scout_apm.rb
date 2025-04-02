@@ -6,20 +6,41 @@ end
 
 class ScoutApm
   TRANSACTION_NAMES = []
+  EVENTS = []
 
   def self.clear_all
     TRANSACTION_NAMES.clear
+    EVENTS.clear
   end
 
   module Tracer
-    def self.included(klass)
-      klass.extend ClassMethods
+    def self.instrument(type, name, options = {})
+      EVENTS << name
+      yield
+    end
+  end
+
+  class Layer
+    def initialize(type, name)
+      EVENTS << name
     end
 
-    module ClassMethods
-      def instrument(type, name, options = {})
-        yield
-      end
+    def subscopable!
+      nil
+    end
+  end
+
+  module RequestManager
+    def self.lookup
+      self
+    end
+
+    def self.start_layer(_layer)
+      nil
+    end
+
+    def self.stop_layer
+      nil
     end
   end
 

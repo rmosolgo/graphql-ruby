@@ -6,6 +6,11 @@
 
 ### New Features
 
+# 1.29.5 (31 Mar 2025)
+
+- OperationStore: Improve Redis cleanup when deleting a single client
+- Stable connections: Fix NULL handling on Rails 7.2 + Postgresql
+
 # 1.29.4 (18 Nov 2024)
 
 - OperationStore: Add forward compatibility for removing old validation code #5164

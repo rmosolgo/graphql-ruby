@@ -7,7 +7,6 @@ require "graphql/schema/find_inherited_value"
 require "graphql/schema/finder"
 require "graphql/schema/introspection_system"
 require "graphql/schema/late_bound_type"
-require "graphql/schema/null_mask"
 require "graphql/schema/timeout"
 require "graphql/schema/type_expression"
 require "graphql/schema/unique_within_type"
@@ -46,8 +45,6 @@ require "graphql/schema/has_single_input_argument"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
 require "graphql/schema/visibility"
-
-GraphQL.ensure_eager_load!
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -114,7 +111,7 @@ module GraphQL
       # @param parser [Object] An object for handling definition string parsing (must respond to `parse`)
       # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
       # @return [Class] the schema described by `document`
-      def from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {})
+      def from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {}, base_types: {})
         # If the file ends in `.graphql` or `.graphqls`, treat it like a filepath
         if definition_or_path.end_with?(".graphql") || definition_or_path.end_with?(".graphqls")
           GraphQL::Schema::BuildFromDefinition.from_definition_path(
@@ -123,6 +120,7 @@ module GraphQL
             default_resolve: default_resolve,
             parser: parser,
             using: using,
+            base_types: base_types,
           )
         else
           GraphQL::Schema::BuildFromDefinition.from_definition(
@@ -131,6 +129,7 @@ module GraphQL
             default_resolve: default_resolve,
             parser: parser,
             using: using,
+            base_types: base_types,
           )
         end
       end
@@ -169,9 +168,6 @@ module GraphQL
           mods.each { |mod| new_class.include(mod) }
           new_class.include(DefaultTraceClass)
           trace_mode(:default, new_class)
-          backtrace_class = Class.new(new_class)
-          backtrace_class.include(GraphQL::Backtrace::Trace)
-          trace_mode(:default_backtrace, backtrace_class)
         end
         trace_class_for(:default, build: true)
       end
@@ -217,11 +213,6 @@ module GraphQL
           base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode, build: true)) || GraphQL::Tracing::Trace
           const_set(:DefaultTrace, Class.new(base_class) do
             include DefaultTraceClass
-          end)
-        when :default_backtrace
-          schema_base_class = trace_class_for(:default, build: true)
-          const_set(:DefaultTraceBacktrace, Class.new(schema_base_class) do
-            include(GraphQL::Backtrace::Trace)
           end)
         else
           # First, see if the superclass has a custom-defined class for this.
@@ -832,13 +823,13 @@ module GraphQL
 
       attr_writer :validate_timeout
 
-      def validate_timeout(new_validate_timeout = nil)
-        if new_validate_timeout
+      def validate_timeout(new_validate_timeout = NOT_CONFIGURED)
+        if !NOT_CONFIGURED.equal?(new_validate_timeout)
           @validate_timeout = new_validate_timeout
         elsif defined?(@validate_timeout)
           @validate_timeout
         else
-          find_inherited_value(:validate_timeout)
+          find_inherited_value(:validate_timeout) || 3
         end
       end
 
@@ -1121,6 +1112,9 @@ module GraphQL
       end
 
       # @api private
+      attr_accessor :using_backtrace
+
+      # @api private
       def handle_or_reraise(context, err)
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
@@ -1133,6 +1127,10 @@ module GraphQL
           end
           handler[:handler].call(err, obj, args, context, field)
         else
+          if (context[:backtrace] || using_backtrace) && !err.is_a?(GraphQL::ExecutionError)
+            err = GraphQL::Backtrace::TracedError.new(err, context)
+          end
+
           raise err
         end
       end
@@ -1302,7 +1300,10 @@ module GraphQL
       def type_error(type_error, ctx)
         case type_error
         when GraphQL::InvalidNullError
-          ctx.errors << type_error
+          execution_error = GraphQL::ExecutionError.new(type_error.message, ast_node: type_error.ast_node)
+          execution_error.path = ctx[:current_path]
+
+          ctx.errors << execution_error
         when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
           raise type_error
         when GraphQL::IntegerDecodingError
@@ -1370,6 +1371,16 @@ module GraphQL
         }.freeze
       end
 
+      # @return [GraphQL::Tracing::DetailedTrace] if it has been configured for this schema
+      attr_accessor :detailed_trace
+
+      # @param query [GraphQL::Query, GraphQL::Execution::Multiplex] Called with a multiplex when multiple queries are executed at once (with {.multiplex})
+      # @return [Boolean] When `true`, save a detailed trace for this query.
+      # @see Tracing::DetailedTrace DetailedTrace saves traces when this method returns true
+      def detailed_trace?(query)
+        raise "#{self} must implement `def.detailed_trace?(query)` to use DetailedTrace. Implement this method in your schema definition."
+      end
+
       def tracer(new_tracer, silence_deprecation_warning: false)
         if !silence_deprecation_warning
           warn("`Schema.tracer(#{new_tracer.inspect})` is deprecated; use module-based `trace_with` instead. See: https://graphql-ruby.org/queries/tracing.html")
@@ -1387,14 +1398,22 @@ module GraphQL
         find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
       end
 
-      # Mix `trace_mod` into this schema's `Trace` class so that its methods
-      # will be called at runtime.
+      # Mix `trace_mod` into this schema's `Trace` class so that its methods will be called at runtime.
+      #
+      # You can attach a module to run in only _some_ circumstances by using `mode:`. When a module is added with `mode:`,
+      # it will only run for queries with a matching `context[:trace_mode]`.
+      #
+      # Any custom trace modes _also_ include the default `trace_with ...` modules (that is, those added _without_ any particular `mode: ...` configuration).
+      #
+      # @example Adding a trace in a special mode
+      #   # only runs when `query.context[:trace_mode]` is `:special`
+      #   trace_with SpecialTrace, mode: :special
       #
       # @param trace_mod [Module] A module that implements tracing methods
       # @param mode [Symbol] Trace module will only be used for this trade mode
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [void]
-      # @see GraphQL::Tracing::Trace for available tracing methods
+      # @see GraphQL::Tracing::Trace Tracing::Trace for available tracing methods
       def trace_with(trace_mod, mode: :default, **options)
         if mode.is_a?(Array)
           mode.each { |m| trace_with(trace_mod, mode: m, **options) }
@@ -1444,29 +1463,36 @@ module GraphQL
       #
       # If no `mode:` is given, then {default_trace_mode} will be used.
       #
+      # If this schema is using {Tracing::DetailedTrace} and {.detailed_trace?} returns `true`, then
+      # DetailedTrace's mode will override the passed-in `mode`.
+      #
       # @param mode [Symbol] Trace modules for this trade mode will be included
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [Tracing::Trace]
       def new_trace(mode: nil, **options)
-        target = options[:query] || options[:multiplex]
-        mode ||= target && target.context[:trace_mode]
-
-        trace_mode = if mode
-          mode
-        elsif target && target.context[:backtrace]
-          if default_trace_mode != :default
-            raise ArgumentError, "Can't use `context[:backtrace]` with a custom default trace mode (`#{dm.inspect}`)"
-          else
-            own_trace_modes[:default_backtrace] ||= build_trace_mode(:default_backtrace)
-            options_trace_mode = :default
-            :default_backtrace
+        should_sample = if detailed_trace
+          if (query = options[:query])
+            detailed_trace?(query)
+          elsif (multiplex = options[:multiplex])
+            if multiplex.queries.length == 1
+              detailed_trace?(multiplex.queries.first)
+            else
+              detailed_trace?(multiplex)
+            end
           end
         else
-          default_trace_mode
+          false
         end
 
-        options_trace_mode ||= trace_mode
-        base_trace_options = trace_options_for(options_trace_mode)
+        if should_sample
+          mode = detailed_trace.trace_mode
+        else
+          target = options[:query] || options[:multiplex]
+          mode ||= target && target.context[:trace_mode]
+        end
+
+        trace_mode = mode || default_trace_mode
+        base_trace_options = trace_options_for(trace_mode)
         trace_options = base_trace_options.merge(options)
         trace_class_for_mode = trace_class_for(trace_mode, build: true)
         trace_class_for_mode.new(**trace_options)

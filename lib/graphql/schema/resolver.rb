@@ -27,6 +27,7 @@ module GraphQL
       include Schema::Member::HasPath
       extend Schema::Member::HasPath
       extend Schema::Member::HasDirectives
+      include Schema::Member::HasDataloader
 
       # @param object [Object] The application object that this field is being resolved on
       # @param context [GraphQL::Query::Context]
@@ -48,11 +49,6 @@ module GraphQL
 
       # @return [GraphQL::Query::Context]
       attr_reader :context
-
-      # @return [GraphQL::Dataloader]
-      def dataloader
-        context.dataloader
-      end
 
       # @return [GraphQL::Schema::Field]
       attr_reader :field
@@ -405,6 +401,11 @@ module GraphQL
           else
             own_exts || EMPTY_ARRAY
           end
+        end
+
+        def inherited(child_class)
+          child_class.description(description)
+          super
         end
 
         private

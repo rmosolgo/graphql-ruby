@@ -12,5 +12,6 @@ gem "pg", platform: :ruby
 gem "sequel"
 gem "evt"
 gem "async"
+gem "google-protobuf"
 
 gemspec path: "../"

@@ -10,6 +10,133 @@
 
 ### Bug fixes
 
+# 2.5.0
+
+### Breaking changes
+
+- Subscriptions: GraphQL-Ruby now implements the spec's requirement that a subscription has only one root selection #5250
+- Datadog trace: the custom `prepare_span` hook now receives an execution-related object instead of a hash of keywords. #5298
+
+### New features
+
+- Tracers: APM tracers have been updated to reflect Dataloader's fiber stops and starts #5296 #5298
+
+# 2.4.16 (1 Apr 2025)
+
+### New features
+
+- Move some more modules into GraphQL::Dashboard #5308 #5310
+
+### Bug fixes
+
+- Parser: raise when variable definitions don't include a type name #5305
+- PerfettoTrace: Don't create zombie ActiveSupport::Notifications subscribers #5307
+
+# 2.4.15 (19 Mar 2025)
+
+### New features
+
+- `Schema.from_definition`: support custom base type classes #5282
+- `Schema.from_definition`: support type extensions #5281
+
+### Bug fixes
+
+- Handle `GraphQL::ExecutionError` from `resolve_type` #5274
+- Backtrace: handle inline fragments # 5274
+- `run_graphql_field`: fix when `.authorized?` calls Dataloader #5289
+- InputObject: run validators even when custom `def prepare` is present #5285
+- Multiplex: don't attempt to execute zero queries #5278
+
+# 2.4.14 (13 Mar 2025)
+
+### Bug fixes
+
+- New Relic tracing: fix dataloaded, skipped scalars #5277
+
+# 2.4.13 (12 Mar 2025)
+
+- Security: Fix CVE-2025-27407
+
+# 2.4.12 (11 Mar 2025)
+
+### Breaking changes
+
+- Remove `InvalidNullError#value` which is always `nil` #5256
+
+### New features
+
+- `validate_timeout` is 3 seconds by default #5258
+
+### Bug fixes
+
+- New Relic: reimplement skipping scalars by default #5271
+- Resolver: revert inheriting overridden `graphql_name` #5260
+- Analysis: manually implement timeout to handle I/O better #5263
+- Parser: properly handle extra token at the end of the query string #5267
+- Validation: fix conflicting aliases inside fragment #5268
+
+# 2.4.11 (28 Feb 2025)
+
+### Breaking changes
+
+- Enums: enum value accessor methods have been switched to opt-in.  Add `value_methods(true)` to your base enum class to opt back in. #5255
+
+### New features
+
+- `InvalidNullError`: Improve default handling to add path and locations #5257
+- `DetailedTrace`: Add a sampling profiler for creating detailed traces #5244
+
+### Bug fixes
+
+- `InvalidNullError`: use `GraphQL::Error` as a base class #5248
+- CI: test on Mongoid 8 and 9 #5251
+
+# 2.4.10 (18 Feb 2025)
+
+### New features
+
+- Dataloader: improve built-in Rails integration #5213
+
+### Bug fixes
+
+- `NewRelicTrace`: don't double-count time waiting on Dataloader fibers
+- Fix possible type memberships inherited from superclass #5236
+- `Visibility`: properly use configured contexts for visibility profiles #5235
+- `Enum`: reduce needless `value_method` warnings #5230 #5220
+- `Backtrace`: fix error handling with `rescue_from` #5227
+- Parser: return a proper error when variable type is missing #5225
+
+# 2.4.9 (29 Jan 2025)
+
+### New features
+
+- Enum: Enum types now have methods to access GraphQL-ready values directly #5206 #5218
+
+### Bug fixes
+
+- Validation: fix order dependency and mutual exclusion bug in `required: { one_of: [ ... ] }`
+- Backtrace: simplify trace setup and rendering code
+- Fix dependencies for Ruby 3.4 #5199
+- Resolver: inherit description from superclass #5195
+- Visibility: fix for when multiple implementations are all hidden #5191
+
+# 2.4.8 (10 Dec 2024)
+
+### New features
+
+- Subscriptions: support calling `write_subscription` within `resolve` #5142
+
+### Bug fixes
+
+- Autoloading: improve autoloading of `Tracing` classes #5190
+
+# 2.4.7 (7 Dec 2024)
+
+### Bug fixes
+
+- Remove warning when code isn't eager-loaded #5187
+- Add missing `require "ostruct"` in ActionCableSubscriptions #5184
+
 # 2.4.6 (5 Dec 2024)
 
 ### Bug fixes

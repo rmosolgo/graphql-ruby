@@ -18,7 +18,7 @@ module GraphQL
           if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
             types
           else
-            schema.visibility.profile_for(ctx, nil)
+            schema.visibility.profile_for(ctx)
           end
         end
 
@@ -159,7 +159,7 @@ module GraphQL
                 end
               end
             end
-            visible_f.ensure_loaded
+            visible_f&.ensure_loaded
           elsif f && @cached_visible_fields[owner][f.ensure_loaded]
             f
           else
@@ -319,9 +319,9 @@ module GraphQL
           case type.kind.name
           when "INTERFACE"
             pts = []
-            @schema.visibility.all_interface_type_memberships[type].each do |itm|
-              if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && referenced?(ot)
-                pts << ot
+            @schema.visibility.all_interface_type_memberships[type].each do |(itm, impl_type)|
+              if @cached_visible[itm] && @cached_visible[impl_type] && referenced?(impl_type)
+                pts << impl_type
               end
             end
             pts

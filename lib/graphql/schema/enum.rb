@@ -61,12 +61,19 @@ module GraphQL
         # @option kwargs [String] :description, the GraphQL description for this value, present in documentation
         # @option kwargs [String] :comment, the GraphQL comment for this value, present in documentation
         # @option kwargs [::Object] :value the translated Ruby value for this object (defaults to `graphql_name`)
+        # @option kwargs [::Object] :value_method, the method name to fetch `graphql_name` (defaults to `graphql_name.downcase`)
         # @option kwargs [String] :deprecation_reason if this object is deprecated, include a message here
+        # @param value_method [Symbol, false] A method to generate for this value, or `false` to skip generation
         # @return [void]
         # @see {Schema::EnumValue} which handles these inputs by default
-        def value(*args, **kwargs, &block)
+        def value(*args, value_method: nil, **kwargs, &block)
           kwargs[:owner] = self
           value = enum_value_class.new(*args, **kwargs, &block)
+
+          if value_method || (value_methods && value_method != false)
+            generate_value_method(value, value_method)
+          end
+
           key = value.graphql_name
           prev_value = own_values[key]
           case prev_value
@@ -154,6 +161,18 @@ module GraphQL
           end
         end
 
+        def value_methods(new_value = NOT_CONFIGURED)
+          if NOT_CONFIGURED.equal?(new_value)
+            if @value_methods != nil
+              @value_methods
+            else
+              find_inherited_value(:value_methods, false)
+            end
+          else
+            @value_methods = new_value
+          end
+        end
+
         def kind
           GraphQL::TypeKinds::ENUM
         end
@@ -215,6 +234,7 @@ module GraphQL
             # because they would end up with names like `#<Class0x1234>::UnresolvedValueError` which messes up bug trackers
             child_class.const_set(:UnresolvedValueError, Class.new(Schema::Enum::UnresolvedValueError))
           end
+          child_class.class_exec { @value_methods = nil }
           super
         end
 
@@ -222,6 +242,21 @@ module GraphQL
 
         def own_values
           @own_values ||= {}
+        end
+
+        def generate_value_method(value, configured_value_method)
+          return if configured_value_method == false
+
+          value_method_name = configured_value_method || value.graphql_name.downcase
+
+          if respond_to?(value_method_name.to_sym)
+            warn "Failed to define value method for :#{value_method_name}, because " \
+              "#{value.owner.name || value.owner.graphql_name} already responds to that method. Use `value_method:` to override the method name " \
+              "or `value_method: false` to disable Enum value method generation."
+            return
+          end
+
+          define_singleton_method(value_method_name) { value.graphql_name }
         end
       end
 

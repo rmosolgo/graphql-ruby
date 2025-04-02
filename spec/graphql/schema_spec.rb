@@ -560,4 +560,68 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     assert schema2.subscription
     assert schema2.instance_variable_get(:@subscription_extension_added)
   end
+
+  describe "backtrace error handling" do
+    class CustomError < RuntimeError; end
+    class Query < GraphQL::Schema::Object
+      field :test, Integer, null: false
+
+      def test
+        raise CustomError
+      end
+    end
+
+    it "raises a TracedError when backtrace is enabled" do
+      schema = Class.new(GraphQL::Schema) do
+        query(Query)
+        use GraphQL::Backtrace
+      end
+      query_str = '{ test }'
+
+      assert_raises(GraphQL::Backtrace::TracedError) do
+        schema.execute(query_str)
+      end
+    end
+
+    it "rescues them when using rescue_from with backtrace" do
+      schema = Class.new(GraphQL::Schema) do
+        query(Query)
+        use GraphQL::Backtrace
+
+        rescue_from(CustomError) do
+          raise GraphQL::ExecutionError.new('Handled CustomError')
+        end
+      end
+      query_str = '{ test }'
+      expected_errors = [
+        {
+          'message' => 'Handled CustomError',
+          'locations' => [{'line' => 1, 'column' => 3}],
+          'path' => ['test']
+        }
+      ]
+
+      assert_equal expected_errors, schema.execute(query_str).to_h['errors']
+    end
+  end
+  describe ".validate_timeout" do
+    it "provides a default timeout when not explicitly set" do
+      schema = Class.new(GraphQL::Schema)
+      assert_equal 3, schema.validate_timeout
+    end
+
+    it "allows overriding the default timeout" do
+      schema = Class.new(GraphQL::Schema) do
+        validate_timeout 15
+      end
+      assert_equal 15, schema.validate_timeout
+    end
+
+    it "allows disabling the timeout" do
+      schema = Class.new(GraphQL::Schema) do
+        validate_timeout nil
+      end
+      assert_nil schema.validate_timeout
+    end
+  end
 end

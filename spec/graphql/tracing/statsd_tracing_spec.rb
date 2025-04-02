@@ -36,7 +36,7 @@ describe GraphQL::Tracing::StatsdTracing do
 
     query(Query)
 
-    use GraphQL::Tracing::StatsdTracing, statsd: MockStatsd
+    use GraphQL::Tracing::StatsdTracing, statsd: MockStatsd, legacy_tracing: true
   end
 
   before do

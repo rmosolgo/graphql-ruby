@@ -1,7 +1,23 @@
 # frozen_string_literal: true
-
 require 'rubygems'
 require 'bundler'
+require 'simplecov'
+require 'simplecov-lcov'
+SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
+SimpleCov.formatters = [
+  SimpleCov::Formatter::HTMLFormatter,
+  SimpleCov::Formatter::LcovFormatter
+]
+SimpleCov.start do
+  enable_coverage :branch
+  add_filter "spec/"
+  add_group "Generators", "lib/generators"
+  add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /tracing/, /introspection/, /backtrace/]
+  add_group "Helpers", [/rake_task/, /testing/, /rubocop/]
+  add_group "Definition", [/types/, /relay/, /schema/]
+  add_group "Dataloader", [/dataloader/]
+end
+
 Bundler.require
 
 # Print full backtrace for failures:
@@ -109,6 +125,10 @@ def testing_mongoid?
   defined?(::Mongoid)
 end
 
+def testing_redis?
+  defined?(::Redis)
+end
+
 if testing_rails?
   require "integration/rails/spec_helper"
 end
@@ -177,4 +197,16 @@ def assert_warns(warning, printing = "")
   assert_equal warning, stderr, "It produced the expected stderr"
   assert_equal stdout, printing, "It produced the expected stdout"
   return_val
+end
+
+module Minitest
+  class Test
+    def self.it_dataloads(message, &block)
+      it(message) do
+        GraphQL::Dataloader.with_dataloading do |d|
+          self.instance_exec(d, &block)
+        end
+      end
+    end
+  end
 end

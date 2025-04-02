@@ -121,7 +121,7 @@ Additionally, {{ "Schema.resolve_type" | api_doc }} is called by GraphQL-Ruby to
 ## Production Considerations
 
 - __Parser caching__: if your application parses GraphQL _files_ (queries or schema definition), it may benefit from enabling {{ "GraphQL::Parser::Cache" | api_doc }}.
-- __Eager loading the library__: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be autoloaded instead, using `GraphQL.eager_load!`.
+- __Eager loading the library__: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be eager loaded instead, using `GraphQL.eager_load!`.
 
   - Rails: enabled automatically. (ActiveSupport calls `.eager_load!`.)
   - Sinatra: add `configure(:production) { GraphQL.eager_load! }` to your application file.

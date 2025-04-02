@@ -23,7 +23,7 @@ module GraphQL
         # @return [Array<GraphQL::Query::Result>] One result per query
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
           queries = query_options.map do |opts|
-            case opts
+            query = case opts
             when Hash
               schema.query_class.new(schema, nil, **opts)
             when GraphQL::Query, GraphQL::Query::Partial
@@ -31,11 +31,15 @@ module GraphQL
             else
               raise "Expected Hash or GraphQL::Query, not #{opts.class} (#{opts.inspect})"
             end
+            query
           end
 
+          return GraphQL::EmptyObjects::EMPTY_ARRAY if queries.empty?
+
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
+          trace = multiplex.current_trace
           Fiber[:__graphql_current_multiplex] = multiplex
-          multiplex.current_trace.execute_multiplex(multiplex: multiplex) do
+          trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
             lazies_at_depth = Hash.new { |h, k| h[k] = [] }
@@ -44,7 +48,10 @@ module GraphQL
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
             end
 
+            trace.begin_analyze_multiplex(multiplex, multiplex_analyzers)
             schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
+            trace.end_analyze_multiplex(multiplex, multiplex_analyzers)
+
             begin
               # Since this is basically the batching context,
               # share it for a whole multiplex
@@ -53,7 +60,9 @@ module GraphQL
               results = []
               queries.each_with_index do |query, idx|
                 if query.subscription? && !query.subscription_update?
-                  query.context.namespace(:subscriptions)[:events] = []
+                  subs_namespace = query.context.namespace(:subscriptions)
+                  subs_namespace[:events] = []
+                  subs_namespace[:subscriptions] = {}
                 end
                 multiplex.dataloader.append_job {
                   operation = query.selected_operation

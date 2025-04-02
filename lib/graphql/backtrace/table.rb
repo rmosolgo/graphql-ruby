@@ -36,7 +36,93 @@ module GraphQL
       private
 
       def rows
-        @rows ||= build_rows(@context, rows: [HEADERS], top: true)
+        @rows ||= begin
+          query = @context.query
+          query_ctx = @context
+          runtime_inst = query_ctx.namespace(:interpreter_runtime)[:runtime]
+          result = runtime_inst.instance_variable_get(:@response)
+          rows = []
+          result_path = []
+          last_part = nil
+          path = @context.current_path
+          path.each do |path_part|
+            value = value_at(runtime_inst, result_path)
+
+            if result_path.empty?
+              name = query.selected_operation.operation_type || "query"
+              if (n = query.selected_operation_name)
+                name += " #{n}"
+              end
+              args = query.variables
+            else
+              name = result.graphql_field.path
+              args = result.graphql_arguments
+            end
+
+            object = result.graphql_parent ? result.graphql_parent.graphql_application_value : result.graphql_application_value
+            object = object.object.inspect
+
+            rows << [
+              result.ast_node.position.join(":"),
+              name,
+              "#{object}",
+              args.to_h.inspect,
+              inspect_result(value),
+            ]
+
+            result_path << path_part
+            if path_part == path.last
+              last_part = path_part
+            else
+              result = result[path_part]
+            end
+          end
+
+          object = result.graphql_application_value.object.inspect
+          ast_node = nil
+          result.graphql_selections.each do |s|
+            found_ast_node = find_ast_node(s, last_part)
+            if found_ast_node
+              ast_node = found_ast_node
+              break
+            end
+          end
+
+          if ast_node
+            field_defn = query.get_field(result.graphql_result_type, ast_node.name)
+            args = query.arguments_for(ast_node, field_defn).to_h
+            field_path = field_defn.path
+            if ast_node.alias
+              field_path += " as #{ast_node.alias}"
+            end
+
+            rows << [
+              ast_node.position.join(":"),
+              field_path,
+              "#{object}",
+              args.inspect,
+              inspect_result(@override_value)
+            ]
+          end
+
+          rows << HEADERS
+          rows.reverse!
+          rows
+        end
+      end
+
+      def find_ast_node(node, last_part)
+        return nil unless node
+        return node if node.respond_to?(:alias) && node.respond_to?(:name) && (node.alias == last_part || node.name == last_part)
+        return nil unless node.respond_to?(:selections)
+        return nil if node.selections.nil? || node.selections.empty?
+
+        node.selections.each do |child|
+          child_ast_node = find_ast_node(child, last_part)
+          return child_ast_node if child_ast_node
+        end
+
+        nil
       end
 
       # @return [String]
@@ -75,66 +161,43 @@ module GraphQL
         table
       end
 
-      # @return [Array] 5 items for a backtrace table (not `key`)
-      def build_rows(context_entry, rows:, top: false)
-        case context_entry
-        when Backtrace::Frame
-          field_alias = context_entry.ast_node.respond_to?(:alias) && context_entry.ast_node.alias
-          value = if top && @override_value
-            @override_value
-          else
-            value_at(@context.query.context.namespace(:interpreter_runtime)[:runtime], context_entry.path)
-          end
-          rows << [
-            "#{context_entry.ast_node ? context_entry.ast_node.position.join(":") : ""}",
-            "#{context_entry.field.path}#{field_alias ? " as #{field_alias}" : ""}",
-            "#{context_entry.object.object.inspect}",
-            context_entry.arguments.to_h.inspect, # rubocop:disable Development/ContextIsPassedCop -- unrelated method
-            Backtrace::InspectResult.inspect_result(value),
-          ]
-          if (parent = context_entry.parent_frame)
-            build_rows(parent, rows: rows)
-          else
-            rows
-          end
-        when GraphQL::Query::Context
-          query = context_entry.query
-          op = query.selected_operation
-          if op
-            op_type = op.operation_type
-            position = "#{op.line}:#{op.col}"
-          else
-            op_type = "query"
-            position = "?:?"
-          end
-          op_name = query.selected_operation_name
-          object = query.root_value
-          if object.is_a?(GraphQL::Schema::Object)
-            object = object.object
-          end
-          value = value_at(context_entry.namespace(:interpreter_runtime)[:runtime], [])
-          rows << [
-            "#{position}",
-            "#{op_type}#{op_name ? " #{op_name}" : ""}",
-            "#{object.inspect}",
-            query.variables.to_h.inspect,
-            Backtrace::InspectResult.inspect_result(value),
-          ]
-        else
-          raise "Unexpected get_rows subject #{context_entry.class} (#{context_entry.inspect})"
-        end
-      end
 
       def value_at(runtime, path)
         response = runtime.final_result
         path.each do |key|
-          if response && (response = response[key])
-            next
-          else
-            break
-          end
+          response && (response = response[key])
         end
         response
+      end
+
+      def inspect_result(obj)
+        case obj
+        when Hash
+          "{" +
+            obj.map do |key, val|
+              "#{key}: #{inspect_truncated(val)}"
+            end.join(", ") +
+            "}"
+        when Array
+          "[" +
+            obj.map { |v| inspect_truncated(v) }.join(", ") +
+            "]"
+        else
+          inspect_truncated(obj)
+        end
+      end
+
+      def inspect_truncated(obj)
+        case obj
+        when Hash
+          "{...}"
+        when Array
+          "[...]"
+        when GraphQL::Execution::Lazy
+          "(unresolved)"
+        else
+          "#{obj.inspect}"
+        end
       end
     end
   end

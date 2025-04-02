@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "open3"
 
 describe GraphQL::Autoload do
   module LazyModule
@@ -46,43 +47,17 @@ describe GraphQL::Autoload do
     end
   end
 
-
-  describe "warning in production" do
-    before do
-      @prev_env = ENV.to_hash
-      ENV.update("HANAMI_ENV" => "production")
-    end
-
-    after do
-      ENV.update(@prev_env)
-    end
-
-    it "emits a warning when not eager-loading" do
-      stdout, stderr = capture_io do
-        GraphQL.ensure_eager_load!
+  describe "loading nested files in the repo" do
+    it "can load them individually" do
+      files_to_load = Dir.glob("lib/**/tracing/*.rb")
+      assert_equal 29, files_to_load.size, "It found all the expected files"
+      files_to_load.each do |file|
+        require_path = file.sub("lib/", "").sub(".rb", "")
+        stderr_and_stdout, _status = Open3.capture2e("ruby -Ilib -e 'require \"#{require_path}\"'")
+        assert_equal "", stderr_and_stdout, "It loads #{require_path.inspect} in isolation"
+        stderr_and_stdout, _status = Open3.capture2e("ruby -Ilib -e 'require \"graphql\"; require \"#{require_path}\"'")
+        assert_equal "", stderr_and_stdout, "It loads #{require_path.inspect} after loading graphql"
       end
-
-      assert_equal "", stdout
-      expected_warning = "GraphQL-Ruby thinks this is a production deployment but didn't eager-load its constants. Address this by:
-
-  - Calling `GraphQL.eager_load!` in a production-only initializer or setup hook
-  - Assign `GraphQL.env = \"...\"` to something _other_ than `\"production\"` (for example, `GraphQL.env = \"development\"`)
-
-More details: https://graphql-ruby.org/schema/definition#production-considerations
-"
-      assert_equal expected_warning, stderr
-    end
-
-    it "silences the warning when GraphQL.env is assigned" do
-      prev_env = GraphQL.env
-      GraphQL.env = "staging"
-      stdout, stderr = capture_io do
-        GraphQL.ensure_eager_load!
-      end
-      assert_equal "", stdout
-      assert_equal "", stderr
-    ensure
-      GraphQL.env = prev_env
     end
   end
 end

@@ -47,6 +47,7 @@ describe GraphQL::Backtrace do
         "name" => Proc.new { |obj| obj[:name] == :boom ? raise("Boom!") : obj[:name] },
         "listField" => Proc.new { :not_a_list },
         "raiseField" => Proc.new { |o, a| raise("This is broken: #{a[:message]}") },
+        "executionError" => Proc.new { raise GraphQL::ExecutionError, "Client-facing error" }
       },
       "ThingWrapper" => {
         "thing" => Proc.new { |obj| obj[:thing] },
@@ -69,6 +70,7 @@ describe GraphQL::Backtrace do
       name: String
       listField: [OtherThing]
       raiseField(message: String!): Int
+      executionError: Int
     }
 
     type ThingWrapper {
@@ -110,6 +112,10 @@ describe GraphQL::Backtrace do
       end
     end
 
+    it "doesn't wrap GraphQL::ExecutionError" do
+      assert_equal ["Client-facing error"], backtrace_schema.execute("{ field1 { executionError } }")["errors"].map { |e| e["message"] }
+    end
+
     it "annotates crashes from user code" do
       err = assert_raises(GraphQL::Backtrace::TracedError) {
         backtrace_schema.execute <<-GRAPHQL, root_value: "Root"
@@ -137,12 +143,50 @@ describe GraphQL::Backtrace do
       ]
       assert_equal expected_graphql_backtrace, err.graphql_backtrace
 
+      hash_inspect = { message: "Boom" }.inspect
       # The message includes the GraphQL context
       rendered_table = [
-        'Loc  | Field                         | Object     | Arguments          | Result',
-        '3:13 | Thing.raiseField as boomError | :something | {:message=>"Boom"} | #<RuntimeError: This is broken: Boom>',
-        '2:11 | Query.field1                  | "Root"     | {}                 | {}',
-        '1:9  | query                         | "Root"     | {"msg"=>"Boom"}    | {field1: {...}}',
+        'Loc  | Field                         | Object     | ' + "Arguments".ljust(hash_inspect.size) + ' | Result',
+        '3:13 | Thing.raiseField as boomError | :something | ' + hash_inspect + ' | #<RuntimeError: This is broken: Boom>',
+        '2:11 | Query.field1                  | "Root"     | ' + "{}".ljust(hash_inspect.size) + ' | {}',
+        '1:9  | query                         | "Root"     | ' + {"msg" => "Boom"}.inspect.ljust(hash_inspect.size) + ' | {field1: {...}}',
+      ].join("\n")
+
+      assert_includes err.message, "\n" + rendered_table
+      # The message includes the original error message
+      assert_includes err.message, "This is broken: Boom"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:49", "It includes the original backtrace"
+      assert_includes err.message, "more lines"
+    end
+
+    it "annotates crashes from user code when using inline fragments" do
+      err = assert_raises(GraphQL::Backtrace::TracedError) {
+        backtrace_schema.execute <<-GRAPHQL, root_value: "Root"
+        query($msg: String = \"Boom\") {
+          field1 {
+            ... on Thing {
+              boomError: raiseField(message: $msg)
+            }
+          }
+        }
+        GRAPHQL
+      }
+
+      # GraphQL backtrace is present
+      expected_graphql_backtrace = [
+        "4:15: Thing.raiseField as boomError",
+        "2:11: Query.field1",
+        "1:9: query",
+      ]
+      assert_equal expected_graphql_backtrace, err.graphql_backtrace
+
+      hash_inspect = { message: "Boom" }.inspect
+      # The message includes the GraphQL context
+      rendered_table = [
+        'Loc  | Field                         | Object     | ' + "Arguments".ljust(hash_inspect.size) + ' | Result',
+        '4:15 | Thing.raiseField as boomError | :something | ' + hash_inspect + ' | #<RuntimeError: This is broken: Boom>',
+        '2:11 | Query.field1                  | "Root"     | ' + "{}".ljust(hash_inspect.size) + ' | {}',
+        '1:9  | query                         | "Root"     | ' + {"msg" => "Boom"}.inspect.ljust(hash_inspect.size) + ' | {field1: {...}}',
       ].join("\n")
 
       assert_includes err.message, "\n" + rendered_table
@@ -201,14 +245,18 @@ describe GraphQL::Backtrace do
         backtrace_schema.execute("query { nilInspect { raiseField(message: \"pop!\") } }")
       }
 
+      hash_inspect = {message: "pop!"}.inspect # `=>` on Ruby < 3.4
       rendered_table = [
-        'Loc  | Field            | Object | Arguments          | Result',
-        '1:22 | Thing.raiseField |        | {:message=>"pop!"} | #<RuntimeError: This is broken: pop!>',
-        '1:9  | Query.nilInspect | nil    | {}                 | {}',
-        '1:1  | query            | nil    | {}                 | {nilInspect: {...}}',
+        'Loc  | Field            | Object | ' + "Arguments".ljust(hash_inspect.size) + ' | Result',
+        '1:22 | Thing.raiseField |        | ' + hash_inspect + ' | #<RuntimeError: This is broken: pop!>',
+        '1:9  | Query.nilInspect | nil    | ' + "{}".ljust(hash_inspect.size) + ' | {}',
+        '1:1  | query            | nil    | ' + "{}".ljust(hash_inspect.size) + ' | {nilInspect: {...}}',
+        '',
+        ''
       ].join("\n")
 
-      assert_includes(err.message, rendered_table)
+      table = err.message.split("GraphQL Backtrace:\n").last
+      assert_equal rendered_table, table
     end
 
     it "raises original exception instead of a TracedError when error does not occur during resolving" do
@@ -225,7 +273,13 @@ describe GraphQL::Backtrace do
   # This will get brittle when execution code moves between files
   # but I'm not sure how to be sure that the backtrace contains the right stuff!
   def assert_backtrace_includes(backtrace, file:, method:)
-    includes_tag = backtrace.any? { |s| s.include?(file) && s.include?("`" + method) }
+    includes_tag = if RUBY_VERSION < "3.4"
+      backtrace.any? { |s| s.include?(file) && s.include?("`" + method) }
+    elsif method == "block"
+      backtrace.any? { |s| s.include?(file) && s.include?("'block") }
+    else
+      backtrace.any? { |s| s.include?(file) && s.include?("#{method}'") }
+    end
     assert includes_tag, "Backtrace should include #{file} inside method #{method}\n\n#{backtrace.join("\n")}"
   end
 
@@ -283,5 +337,27 @@ describe GraphQL::Backtrace do
     end
     query = GraphQL::Query.new(schema, "{ __typename }", context: { backtrace: true })
     assert_includes query.current_trace.class.ancestors, custom_trace
+  end
+
+  describe "When validators are used" do
+    class ValidatorBacktraceSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :greeting, String do
+          argument :name, String, validates: { length: { minimum: 5 }}
+        end
+
+        def greeting(name:)
+          "Hello, #{name}!"
+        end
+      end
+
+      query(Query)
+      use GraphQL::Backtrace
+    end
+
+    it "works properly" do
+      assert_equal "Hello, Albert!", ValidatorBacktraceSchema.execute("{ greeting(name: \"Albert\") }")["data"]["greeting"]
+      assert_equal ["name is too short (minimum is 5)"], ValidatorBacktraceSchema.execute("{ greeting(name: \"Tim\") }")["errors"].map { |e| e["message"] }
+    end
   end
 end

@@ -114,7 +114,11 @@ describe GraphQL::Execution::Multiplex do
         },
         {
           "data"=>{"invalidNestedNull"=>{"value" => 2,"nullableNestedSum" => nil}},
-          "errors"=>[{"message"=>"Cannot return null for non-nullable field LazySum.nestedSum"}],
+          "errors"=>[{
+            "message"=>"Cannot return null for non-nullable field LazySum.nestedSum",
+            "path"=>["invalidNestedNull", "nullableNestedSum", "nestedSum"],
+            "locations"=>[{"line"=>5, "column"=>11}],
+          }],
         },
         {
           "errors" => [{
