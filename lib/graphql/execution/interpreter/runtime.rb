@@ -118,7 +118,7 @@ module GraphQL
           when "OBJECT"
             object_proxy = root_type.wrap(object, context)
             object_proxy = schema.sync_lazy(object_proxy)
-            @response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, false)
+            @response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, false, partial.ast_nodes.first, nil, nil)
             each_gathered_selections(@response) do |selections, is_selection_array|
               if is_selection_array == true
                 raise "This isn't supported yet"
@@ -141,10 +141,10 @@ module GraphQL
               parent_object_proxy = schema.sync_lazy(parent_object_proxy)
               field_node = partial.ast_nodes.first
               result_name = field_node.alias || field_node.name
-              @response = GraphQLResultHash.new(nil, partial.parent_type, parent_object_proxy, nil, false, nil, false)
+              @response = GraphQLResultHash.new(nil, partial.parent_type, parent_object_proxy, nil, false, nil, false, field_node, nil, nil)
               evaluate_selection(result_name, partial.ast_nodes, @response)
             else
-              @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false)
+              @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false, field_node, nil, nil)
               idx = nil
               object.each do |inner_value|
                 idx ||= 0
@@ -166,9 +166,9 @@ module GraphQL
             parent_object_type, object = resolve_type(parent_type, object)
             parent_object_proxy = parent_object_type.wrap(object, context)
             parent_object_proxy = schema.sync_lazy(parent_object_proxy)
-            @response = GraphQLResultHash.new(nil, parent_object_type, parent_object_proxy, nil, false, selections, false)
             field_node = partial.ast_nodes.first
             result_name = field_node.alias || field_node.name
+            @response = GraphQLResultHash.new(nil, parent_object_type, parent_object_proxy, nil, false, selections, false, field_node, nil, nil)
             @dataloader.append_job do
               evaluate_selection(result_name, partial.ast_nodes, @response)
             end
