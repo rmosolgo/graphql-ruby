@@ -66,9 +66,10 @@ module GraphQL
               t.set_leaf(key, value)
             end
 
+            before_size = @graphql_result_data.size
             @graphql_result_data[key] = value
-
-            if @ordered_result_keys.index(key) < @graphql_result_data.size - 1
+            after_size = @graphql_result_data.size
+            if after_size > before_size && @ordered_result_keys[before_size] != key
               fix_result_order
             end
 
@@ -82,8 +83,10 @@ module GraphQL
             if (t = @graphql_merged_into)
               t.set_child_result(key, value)
             end
+            before_size = @graphql_result_data.size
             @graphql_result_data[key] = value.graphql_result_data
-            if @ordered_result_keys.index(key) < @graphql_result_data.size - 1
+            after_size = @graphql_result_data.size
+            if after_size > before_size && @ordered_result_keys[before_size] != key
               fix_result_order
             end
 
