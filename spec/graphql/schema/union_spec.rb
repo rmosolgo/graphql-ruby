@@ -332,7 +332,7 @@ describe GraphQL::Schema::Union do
             { "type" => "Cow", "name" => "Gilly" }
           ]
         }
-        assert_equal expected_result, result["data"]
+        assert_graphql_equal expected_result, result["data"]
       end
     end
 
@@ -359,7 +359,7 @@ describe GraphQL::Schema::Union do
           {"dairyName"=>"Cheese"},
           {"dairyName"=>"Milk", "bevName"=>"Milk", "flavors"=>["Natural", "Chocolate", "Strawberry"]},
         ]
-        assert_equal expected_result, result["data"]["allDairy"]
+        assert_graphql_equal expected_result, result["data"]["allDairy"]
       end
     end
 

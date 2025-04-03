@@ -622,7 +622,7 @@ interface Timestamped implements Node {
             {"__typename"=>"Milk", "fatContent"=>0.04}
           ]
         }
-        assert_equal expected_result, result["data"]
+        assert_graphql_equal expected_result, result["data"]
       end
 
       describe "in definition_methods when implementing another interface" do

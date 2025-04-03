@@ -105,20 +105,20 @@ describe GraphQL::Execution::Multiplex do
           "data"=>{"success"=>{"value"=>2}}
         },
         {
-          "data"=>{"runtimeError"=>nil},
           "errors"=>[{
             "message"=>"13 is unlucky",
             "locations"=>[{"line"=>1, "column"=>4}],
             "path"=>["runtimeError"]
-          }]
+          }],
+          "data"=>{"runtimeError"=>nil},
         },
         {
-          "data"=>{"invalidNestedNull"=>{"value" => 2,"nullableNestedSum" => nil}},
           "errors"=>[{
             "message"=>"Cannot return null for non-nullable field LazySum.nestedSum",
             "path"=>["invalidNestedNull", "nullableNestedSum", "nestedSum"],
             "locations"=>[{"line"=>5, "column"=>11}],
           }],
+          "data"=>{"invalidNestedNull"=>{"value" => 2,"nullableNestedSum" => nil}},
         },
         {
           "errors" => [{
@@ -136,7 +136,7 @@ describe GraphQL::Execution::Multiplex do
         {query: q3},
         {query: q4},
       ])
-      assert_equal expected_res, res.map(&:to_h)
+      assert_graphql_equal expected_res, res.map(&:to_h)
     end
   end
 

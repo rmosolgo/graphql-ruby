@@ -861,9 +861,6 @@ describe GraphQL::Execution::Interpreter do
 
       result = RaisedErrorSchema.execute(querystring)
       expected_result = {
-        "data" => {
-          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
-        },
         "errors" => [
           {
             "message"=>"boom",
@@ -871,8 +868,11 @@ describe GraphQL::Execution::Interpreter do
             "path"=>["iface", "txn", "fails"]
           },
         ],
+        "data" => {
+          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
+        },
       }
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 

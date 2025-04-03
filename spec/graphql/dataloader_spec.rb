@@ -690,7 +690,7 @@ describe GraphQL::Dataloader do
             {"data"=>{"i2"=>{"name"=>"Corn"}, "r1"=>{"ingredients"=>[{"name"=>"Wheat"}, {"name"=>"Corn"}, {"name"=>"Butter"}, {"name"=>"Baking Soda"}]}}},
             {"data"=>{"i1"=>{"name"=>"Wheat"}, "ri1"=>{"name"=>"Corn"}}},
           ]
-          assert_equal expected_result, result
+          assert_graphql_equal expected_result, result
           expected_log = [
             [:mget, ["1", "2", "5"]],
             [:mget, ["3", "4"]],
@@ -1328,7 +1328,7 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 
@@ -1547,7 +1547,7 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 
@@ -1602,7 +1602,7 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 
