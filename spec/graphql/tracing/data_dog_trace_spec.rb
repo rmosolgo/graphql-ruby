@@ -93,12 +93,13 @@ describe GraphQL::Tracing::DataDogTrace do
     DataDogTraceTest::TestSchema.execute("{ str }")
     expected_keys = [
       "execute.graphql",
+      (USING_C_PARSER ? "lex.graphql" : nil),
       "parse.graphql",
       "analyze.graphql",
       "validate.graphql",
       "Query.authorized.graphql",
       "DataDogTraceTest_EchoSource.fetch.graphql"
-    ]
+    ].compact
     assert_equal expected_keys, Datadog::TRACE_KEYS
   end
 
