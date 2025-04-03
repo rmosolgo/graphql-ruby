@@ -50,7 +50,7 @@ describe GraphQL::Execution::Multiplex do
       ]
 
       res = multiplex(queries)
-      assert_equal expected_data, res
+      assert_graphql_equal expected_data, res
     end
 
     it "returns responses in the same order as their respective requests" do

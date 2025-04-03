@@ -42,7 +42,7 @@ describe GraphQL::Schema::Union do
 
       res = Jazz::Schema.execute(query_str)
       expected_data = { "name" => "Bela Fleck and the Flecktones" }
-      assert_equal expected_data, res["data"]["nowPlaying"]
+      assert_graphql_equal expected_data, res["data"]["nowPlaying"]
     end
 
     it "does not allow querying filtered types" do

@@ -44,8 +44,10 @@ module GraphQL
           def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             super
             @graphql_result_data = {}
-            @ordered_result_keys = @graphql_selections.map { |s| s.alias || s.name }
+            @ordered_result_keys = nil
           end
+
+          attr_accessor :ordered_result_keys
 
           include GraphQLResult
 

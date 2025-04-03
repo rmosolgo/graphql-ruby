@@ -83,9 +83,11 @@ module GraphQL
             @response = nil
           else
             call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-              each_gathered_selections(@response) do |selections, is_selection_array|
+              each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
+                @response.ordered_result_keys ||= ordered_result_keys
                 if is_selection_array
                   selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager, root_operation, nil, nil)
+                  selection_response.ordered_result_keys = ordered_result_keys
                   final_response = @response
                 else
                   selection_response = @response
@@ -107,17 +109,19 @@ module GraphQL
         end
 
         def each_gathered_selections(response_hash)
-          gathered_selections = gather_selections(response_hash.graphql_application_value, response_hash.graphql_result_type, response_hash.graphql_selections)
+          ordered_result_keys = []
+          gathered_selections = gather_selections(response_hash.graphql_application_value, response_hash.graphql_result_type, response_hash.graphql_selections, ordered_result_keys)
+          ordered_result_keys.uniq!
           if gathered_selections.is_a?(Array)
             gathered_selections.each do |item|
-              yield(item, true)
+              yield(item, true, ordered_result_keys)
             end
           else
-            yield(gathered_selections, false)
+            yield(gathered_selections, false, ordered_result_keys)
           end
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = {})
+        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = {}, ordered_result_keys)
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
@@ -126,6 +130,7 @@ module GraphQL
 
             if node.is_a?(GraphQL::Language::Nodes::Field)
               response_key = node.alias || node.name
+              ordered_result_keys << response_key
               selections = selections_by_name[response_key]
               # if there was already a selection of this field,
               # use an array to hold all selections,
@@ -162,14 +167,14 @@ module GraphQL
                   type_defn = query.types.type(node.type.name)
 
                   if query.types.possible_types(type_defn).include?(owner_type)
-                    result = gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                    result = gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
                     if !result.equal?(next_selections)
                       selections_to_run = result
                     end
                   end
                 else
                   # it's an untyped fragment, definitely continue
-                  result = gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                  result = gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
                   if !result.equal?(next_selections)
                     selections_to_run = result
                   end
@@ -178,7 +183,7 @@ module GraphQL
                 fragment_def = query.fragments[node.name]
                 type_defn = query.types.type(fragment_def.type.name)
                 if query.types.possible_types(type_defn).include?(owner_type)
-                  result = gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
+                  result = gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections, ordered_result_keys)
                   if !result.equal?(next_selections)
                     selections_to_run = result
                   end
@@ -207,7 +212,6 @@ module GraphQL
             finished_jobs = 0
             enqueued_jobs = gathered_selections.size
             gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
-
               # Field resolution may pause the fiber,
               # so it wouldn't get to the `Resolve` call that happens below.
               # So instead trigger a run from this outer context.
@@ -629,9 +633,11 @@ module GraphQL
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
-                each_gathered_selections(response_hash) do |selections, is_selection_array|
+                each_gathered_selections(response_hash) do |selections, is_selection_array, ordered_result_keys|
+                  response_hash.ordered_result_keys ||= ordered_result_keys
                   if is_selection_array
                     this_result = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, selections, false, ast_node, arguments, field)
+                    this_result.ordered_result_keys = ordered_result_keys
                     final_result = response_hash
                   else
                     this_result = response_hash

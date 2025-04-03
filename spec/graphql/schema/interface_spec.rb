@@ -576,7 +576,7 @@ interface Timestamped implements Node {
             {"__typename"=>"Milk", "origin"=>"Antiquity"},
           ]
 
-          assert_equal expected_data, result["data"]["allEdible"]
+          assert_graphql_equal expected_data, result["data"]["allEdible"]
         end
       end
     end
