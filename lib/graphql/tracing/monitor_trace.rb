@@ -103,7 +103,7 @@ module GraphQL
           end
 
           def platform_source_class_key(source_class)
-            "#{source_class.name.gsub("::", "_").underscore}.fetch.graphql"
+            "#{source_class.name.gsub("::", "_")}.fetch.graphql"
           end
         end
 
