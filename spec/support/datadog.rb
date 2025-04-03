@@ -7,6 +7,7 @@ end
 module Datadog
   SPAN_RESOURCE_NAMES = []
   SPAN_TAGS = []
+  TRACE_KEYS = []
 
   def self.tracer
     DummyTracer.new
@@ -15,10 +16,12 @@ module Datadog
   def self.clear_all
     SPAN_RESOURCE_NAMES.clear
     SPAN_TAGS.clear
+    TRACE_KEYS.clear
   end
 
   class DummyTracer
     def trace(platform_key, *args)
+      TRACE_KEYS << platform_key
       yield DummySpan.new
     end
   end
@@ -38,6 +41,7 @@ module Datadog
 
   module Tracing
     def self.trace(platform_key, *args)
+      TRACE_KEYS << platform_key
       if block_given?
         yield DummySpan.new
       else
