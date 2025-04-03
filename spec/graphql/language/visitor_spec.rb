@@ -229,7 +229,7 @@ query($lastName: String) {
 }
       GRAPHQL
       document, new_document = get_result(query)
-      assert_graphql_equal expected_result, new_document.to_query_string, "the result has changes"
+      assert_equal expected_result, new_document.to_query_string, "the result has changes"
       assert_equal query, document.to_query_string, "the original is unchanged"
     end
 
