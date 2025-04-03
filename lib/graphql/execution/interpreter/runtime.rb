@@ -110,7 +110,7 @@ module GraphQL
 
         def each_gathered_selections(response_hash)
           ordered_result_keys = []
-          gathered_selections = gather_selections(response_hash.graphql_application_value, response_hash.graphql_result_type, response_hash.graphql_selections, ordered_result_keys)
+          gathered_selections = gather_selections(response_hash.graphql_application_value, response_hash.graphql_result_type, response_hash.graphql_selections, nil, {}, ordered_result_keys)
           ordered_result_keys.uniq!
           if gathered_selections.is_a?(Array)
             gathered_selections.each do |item|
@@ -121,7 +121,7 @@ module GraphQL
           end
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = {}, ordered_result_keys)
+        def gather_selections(owner_object, owner_type, selections, selections_to_run, selections_by_name, ordered_result_keys)
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
