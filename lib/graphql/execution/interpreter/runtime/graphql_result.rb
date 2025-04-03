@@ -69,13 +69,7 @@ module GraphQL
             @graphql_result_data[key] = value
 
             if @ordered_result_keys.index(key) < @graphql_result_data.size - 1
-              backup_data = @graphql_result_data.dup
-              @graphql_result_data.clear
-              @ordered_result_keys.each do |k|
-                if backup_data.key?(k)
-                  @graphql_result_data[k] = backup_data[k]
-                end
-              end
+              fix_result_order
             end
 
             # keep this up-to-date if it's been initialized
@@ -90,13 +84,7 @@ module GraphQL
             end
             @graphql_result_data[key] = value.graphql_result_data
             if @ordered_result_keys.index(key) < @graphql_result_data.size - 1
-              backup_data = @graphql_result_data.dup
-              @graphql_result_data.clear
-              @ordered_result_keys.each do |k|
-                if backup_data.key?(k)
-                  @graphql_result_data[k] = backup_data[k]
-                end
-              end
+              fix_result_order
             end
 
             # If we encounter some part of this response that requires metadata tracking,
@@ -147,6 +135,14 @@ module GraphQL
               end
             end
             @graphql_merged_into = into_result
+          end
+
+          def fix_result_order
+            @ordered_result_keys.each do |k|
+              if @graphql_result_data.key?(k)
+                @graphql_result_data[k] = @graphql_result_data.delete(k)
+              end
+            end
           end
         end
 
