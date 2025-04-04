@@ -49,7 +49,15 @@ module GraphQL
 
           @cached_visible_arguments = Hash.new do |h, arg|
             h[arg] = if @cached_visible[arg] && (arg_type = arg.type.unwrap) && @cached_visible[arg_type]
-              true
+              owner = arg.owner
+              case owner
+              when GraphQL::Schema::Field
+                @cached_visible_fields[owner.owner][owner]
+              when Class
+                @cached_visible[owner]
+              else
+                raise "Unexpected argument owner for `#{arg.path}`: #{owner.inspect}"
+              end
             else
               false
             end
@@ -292,7 +300,7 @@ module GraphQL
           @all_types_loaded = true
           visit = Visibility::Visit.new(@schema) do |member|
             if member.is_a?(Module) && member.respond_to?(:kind)
-              if @cached_visible[member]
+              if @cached_visible[member] && referenced?(member)
                 type_name = member.graphql_name
                 if (prev_t = @all_types[type_name]) && !prev_t.equal?(member)
                   raise_duplicate_definition(member, prev_t)
@@ -312,7 +320,18 @@ module GraphQL
         end
 
         def referenced?(type_defn)
-          @schema.visibility.all_references[type_defn].any? { |r| r == true ||  @cached_visible[r] }
+          @schema.visibility.all_references[type_defn].any? do |ref|
+            case ref
+            when GraphQL::Schema::Argument
+              @cached_visible_arguments[ref]
+            when GraphQL::Schema::Field
+              @cached_visible_fields[ref.owner][ref]
+            when Module
+              @cached_visible[ref]
+            when true
+              true
+            end
+          end
         end
 
         def possible_types_for(type)

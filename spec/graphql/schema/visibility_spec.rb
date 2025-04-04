@@ -82,7 +82,6 @@ describe GraphQL::Schema::Visibility do
 
   it "hides unused arguments" do
     schema_sdl = VisSchema.to_definition(context: { visibility_profile: :public })
-    puts schema_sdl
     refute_includes schema_sdl, "WidgetKind"
   end
 
