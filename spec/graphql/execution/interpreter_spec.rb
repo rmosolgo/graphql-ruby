@@ -405,7 +405,7 @@ describe GraphQL::Execution::Interpreter do
       "i4" => { "value" => 4, "lazyValue" => 4},
       "i5" => { "value" => 5, "lazyValue" => 5},
     }
-    assert_equal expected_data, result["data"]
+    assert_graphql_equal expected_data, result["data"]
   end
 
   it "runs skip and include" do
@@ -427,7 +427,7 @@ describe GraphQL::Execution::Interpreter do
       "exp3" => {"name" => "Ravnica, City of Guilds"},
       "exp5" => {"name" => "Ravnica, City of Guilds"},
     }
-    assert_equal expected_data, result["data"]
+    assert_graphql_equal expected_data, result["data"]
     assert_nil Fiber[:__graphql_runtime_info]
   end
 
@@ -861,9 +861,6 @@ describe GraphQL::Execution::Interpreter do
 
       result = RaisedErrorSchema.execute(querystring)
       expected_result = {
-        "data" => {
-          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
-        },
         "errors" => [
           {
             "message"=>"boom",
@@ -871,8 +868,11 @@ describe GraphQL::Execution::Interpreter do
             "path"=>["iface", "txn", "fails"]
           },
         ],
+        "data" => {
+          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
+        },
       }
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 

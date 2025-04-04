@@ -112,6 +112,6 @@ describe GraphQL::Dataloader::AsyncDataloader do
       RailsAsyncSchema.execute(query_str)
     end
     expected_res = { "role" => "reading", "query" => { "role" => "reading" }}
-    assert_equal expected_res, result["data"]
+    assert_graphql_equal expected_res, result["data"]
   end
 end

@@ -614,7 +614,7 @@ describe GraphQL::Schema::Field do
           { "name" => "John Cleese" }
         ]
       }
-      assert_equal expected_result, result
+      assert_graphql_equal expected_result, result
     end
   end
 
@@ -678,18 +678,18 @@ describe GraphQL::Schema::Field do
 
       search_results = res["data"]["searchResults"]
       expected_result = {
+        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "lowercase" => "lowercase-works",
         "Capital" => "capital-camelize-false-works",
         "Other" => "capital-camelize-true-works",
         "OtherCapital" => "explicit-hash-key-works",
-        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "stringifiedHashKey" => "hash-key-is-tried-as-string",
         "booleanTrueWithHashKey" => true,
         "booleanFalseWithHashKey" => false,
         "booleanFalseWithSymbolizedHashKey" => false
 
       }
-      assert_equal expected_result, search_results
+      assert_graphql_equal expected_result, search_results
     end
 
     it "works with non-hash instances" do
@@ -711,17 +711,17 @@ describe GraphQL::Schema::Field do
 
       search_results = res["data"]["ostructResults"]
       expected_result = {
+        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "lowercase" => "lowercase-works",
         "Capital" => "capital-camelize-false-works",
         "Other" => "capital-camelize-true-works",
         "OtherCapital" => "explicit-hash-key-works",
-        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "stringifiedHashKey" => "hash-key-is-tried-as-string",
         "booleanTrueWithHashKey" => true,
         "booleanFalseWithHashKey" => false,
         "booleanFalseWithSymbolizedHashKey" => false
       }
-      assert_equal expected_result, search_results
+      assert_graphql_equal expected_result, search_results
     end
 
     it "populates `method_str`" do

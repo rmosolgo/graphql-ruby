@@ -310,7 +310,7 @@ describe GraphQL::Types::ISO8601Date do
       GRAPHQL
 
       expected_res = { "name" => "ISO8601Date", "kind" => "SCALAR"}
-      assert_equal expected_res, introspection_res["data"]["__type"]
+      assert_graphql_equal expected_res, introspection_res["data"]["__type"]
     end
   end
 end

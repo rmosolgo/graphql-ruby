@@ -599,7 +599,7 @@ describe GraphQL::Dataloader do
               ]
             }
           }
-          assert_equal expected_data, res
+          assert_graphql_equal expected_data, res
           assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
         end
 
@@ -631,6 +631,7 @@ describe GraphQL::Dataloader do
           {
             i1: ingredient(id: 1) { id name }
             i2: ingredient(id: 2) { name }
+            __typename
             r1: recipe(id: 5) {
               # This loads Ingredients 3 and 4
               ingredients { name }
@@ -645,6 +646,7 @@ describe GraphQL::Dataloader do
           expected_data = {
             "i1" => { "id" => "1", "name" => "Wheat" },
             "i2" => { "name" => "Corn" },
+            "__typename" => "Query",
             "r1" => {
               "ingredients" => [
                 { "name" => "Wheat" },
@@ -657,7 +659,7 @@ describe GraphQL::Dataloader do
               "name" => "Cheese",
             },
           }
-          assert_equal(expected_data, res["data"])
+          assert_graphql_equal(expected_data, res["data"])
 
           expected_log = [
             [:mget, [
@@ -688,7 +690,7 @@ describe GraphQL::Dataloader do
             {"data"=>{"i2"=>{"name"=>"Corn"}, "r1"=>{"ingredients"=>[{"name"=>"Wheat"}, {"name"=>"Corn"}, {"name"=>"Butter"}, {"name"=>"Baking Soda"}]}}},
             {"data"=>{"i1"=>{"name"=>"Wheat"}, "ri1"=>{"name"=>"Corn"}}},
           ]
-          assert_equal expected_result, result
+          assert_graphql_equal expected_result, result
           expected_log = [
             [:mget, ["1", "2", "5"]],
             [:mget, ["3", "4"]],
@@ -705,7 +707,7 @@ describe GraphQL::Dataloader do
           GRAPHQL
 
           expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" } }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           assert_equal [[:mget, ["1", "2"]]], database_log
         end
 
@@ -723,7 +725,7 @@ describe GraphQL::Dataloader do
             "i2" => { "id" => "2" },
             "i3" => nil,
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           assert_equal [[:find_by, :name, ["Butter", "Corn", "Gummi Bears"]]], database_log
         end
 
@@ -771,7 +773,7 @@ describe GraphQL::Dataloader do
               "name" => "Wheat",
             }
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works when the parent field didn't yield" do
@@ -801,7 +803,7 @@ describe GraphQL::Dataloader do
               ]},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -826,7 +828,7 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+        assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -852,7 +854,7 @@ describe GraphQL::Dataloader do
               "name" => "Wheat",
             }
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works with analyzing arguments with `loads:`, even with .request" do
@@ -891,7 +893,7 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -927,7 +929,7 @@ describe GraphQL::Dataloader do
           GRAPHQL
           res = schema.execute(query_str, variables: { id: nil })
           expected_data = { "recipe" => nil }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           query_str = <<-GRAPHQL
           query($ids: [ID]!) {
@@ -938,7 +940,7 @@ describe GraphQL::Dataloader do
           GRAPHQL
           res = schema.execute(query_str, variables: { ids: [nil] })
           expected_data = { "recipes" => nil }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works with input objects using variables, load and request" do
@@ -956,7 +958,7 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -1011,7 +1013,7 @@ describe GraphQL::Dataloader do
             "i3" => { "nameByScopedContext" => "Scoped:Butter" },
           }
           result = schema.execute(query_str)
-          assert_equal expected_data, result["data"]
+          assert_graphql_equal expected_data, result["data"]
         end
 
         it "works when the schema calls itself" do
@@ -1030,7 +1032,7 @@ describe GraphQL::Dataloader do
 
           res = schema.execute(query_str)
           expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" }, "i3" => { "name" => "Butter" } }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           expected_log = [
             # Each batch key is given to the source class:
             [:batch_key_for, "abc"],
@@ -1326,7 +1328,7 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 
@@ -1545,7 +1547,7 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 
@@ -1600,7 +1602,7 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 

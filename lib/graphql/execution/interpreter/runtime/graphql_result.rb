@@ -44,7 +44,10 @@ module GraphQL
           def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             super
             @graphql_result_data = {}
+            @ordered_result_keys = nil
           end
+
+          attr_accessor :ordered_result_keys
 
           include GraphQLResult
 
@@ -63,7 +66,13 @@ module GraphQL
               t.set_leaf(key, value)
             end
 
+            before_size = @graphql_result_data.size
             @graphql_result_data[key] = value
+            after_size = @graphql_result_data.size
+            if after_size > before_size && @ordered_result_keys[before_size] != key
+              fix_result_order
+            end
+
             # keep this up-to-date if it's been initialized
             @graphql_metadata && @graphql_metadata[key] = value
 
@@ -74,7 +83,13 @@ module GraphQL
             if (t = @graphql_merged_into)
               t.set_child_result(key, value)
             end
+            before_size = @graphql_result_data.size
             @graphql_result_data[key] = value.graphql_result_data
+            after_size = @graphql_result_data.size
+            if after_size > before_size && @ordered_result_keys[before_size] != key
+              fix_result_order
+            end
+
             # If we encounter some part of this response that requires metadata tracking,
             # then create the metadata hash if necessary. It will be kept up-to-date after this.
             (@graphql_metadata ||= @graphql_result_data.dup)[key] = value
@@ -123,6 +138,14 @@ module GraphQL
               end
             end
             @graphql_merged_into = into_result
+          end
+
+          def fix_result_order
+            @ordered_result_keys.each do |k|
+              if @graphql_result_data.key?(k)
+                @graphql_result_data[k] = @graphql_result_data.delete(k)
+              end
+            end
           end
         end
 

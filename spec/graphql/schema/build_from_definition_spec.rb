@@ -1458,7 +1458,7 @@ type ThingEdge {
             }
           }
         }
-        assert_equal expected_data, result["data"]
+        assert_graphql_equal expected_data, result["data"]
       end
 
       it "doesn't add arguments that aren't in the IDL" do
