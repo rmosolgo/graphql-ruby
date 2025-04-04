@@ -184,6 +184,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     class Schema < GraphQL::Schema
       query(Query)
       directive(CountFields)
+      legacy_sync_lazy(true)
       lazy_resolve(Proc, :call)
       use GraphQL::Dataloader
     end

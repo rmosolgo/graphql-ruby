@@ -54,6 +54,7 @@ module GraphQL
           end
           # { Class => Boolean }
           @lazy_cache = {}.compare_by_identity
+          @default_lazy_legacy = @schema.legacy_sync_lazy
         end
 
         def final_result
@@ -884,13 +885,17 @@ module GraphQL
           end
         end
 
-        def lazy?(object)
-          obj_class = object.class
-          is_lazy = @lazy_cache[obj_class]
-          if is_lazy.nil?
-            is_lazy = @lazy_cache[obj_class] = @schema.lazy?(object)
+        def lazy?(object, legacy: @default_lazy_legacy)
+          if legacy
+            obj_class = object.class
+            is_lazy = @lazy_cache[obj_class]
+            if is_lazy.nil?
+              is_lazy = @lazy_cache[obj_class] = @schema.lazy?(object, legacy: true)
+            end
+            is_lazy
+          else
+            false
           end
-          is_lazy
         end
       end
     end
