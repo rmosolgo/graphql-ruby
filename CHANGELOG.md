@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.5.1
+
+### Bug fixes
+
+- Datadog trace: fix Dataloader source tracing method #5318
+- Sentry trace: handle `nil` current span #5313
+
 # 2.5.0
 
 ### Breaking changes
