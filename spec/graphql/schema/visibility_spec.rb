@@ -16,6 +16,18 @@ describe GraphQL::Schema::Visibility do
 
     class BaseObject < GraphQL::Schema::Object
       field_class(BaseField)
+
+      def self.visible?(ctx)
+        (@admin_only ? !!ctx[:is_admin] : true) && super
+      end
+
+      def self.admin_only(new_value = nil)
+        if new_value.nil?
+          @admin_only
+        else
+          @admin_only = new_value
+        end
+      end
     end
 
     class Product < BaseObject
@@ -24,8 +36,21 @@ describe GraphQL::Schema::Visibility do
       field :cost_of_goods_sold, Integer, admin_only: true
     end
 
+    class Widget < BaseObject
+      admin_only(true)
+      field :name, String
+    end
+
+    class WidgetKind < GraphQL::Schema::Enum
+      value :FOO
+      value :BAR
+    end
+
     class Query < BaseObject
       field :products, [Product]
+      field :widget, Widget do
+        argument :type, WidgetKind
+      end
 
       def products
         [{ name: "Pool Noodle", price: 100, cost_of_goods_sold: 5 }]
@@ -53,6 +78,11 @@ describe GraphQL::Schema::Visibility do
       assert_equal DynVisSchema.types.object_id, DynVisSchema.types.object_id
       assert_equal PreloadDynVisSchema.types.object_id, PreloadDynVisSchema.types.object_id
     end
+  end
+
+  it "hides unused arguments" do
+    schema_sdl = VisSchema.to_definition(context: { visibility_profile: :public })
+    refute_includes schema_sdl, "WidgetKind"
   end
 
   describe "running queries" do
