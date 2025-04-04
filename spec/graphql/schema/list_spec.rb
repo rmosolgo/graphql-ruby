@@ -116,6 +116,12 @@ describe GraphQL::Schema::List do
         def nil_echoes(items:)
           items.first[:items]
         end
+
+        field :invalid_result, [String], null: false
+
+        def invalid_result
+          ["A", "B", nil]
+        end
       end
 
       query(Query)
@@ -124,6 +130,12 @@ describe GraphQL::Schema::List do
     it "checks non-null lists of enums" do
       res = ListValidationSchema.execute "{ echo(items: [A, B, \"C\"]) }"
       expected_error = "Argument 'items' on Field 'echo' has an invalid value ([A, B, \"C\"]). Expected type '[Item!]!'."
+      assert_equal [expected_error], res["errors"].map { |e| e["message"] }
+    end
+
+    it "reports when an element must be non-nil" do
+      res = ListValidationSchema.execute "{ invalidResult }"
+      expected_error = "Cannot return null for non-nullable element of type 'String!' for Query.invalidResult"
       assert_equal [expected_error], res["errors"].map { |e| e["message"] }
     end
 
