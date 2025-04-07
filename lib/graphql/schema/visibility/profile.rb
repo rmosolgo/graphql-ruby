@@ -47,20 +47,21 @@ module GraphQL
             end.compare_by_identity
           }.compare_by_identity
 
-          @cached_visible_arguments = Hash.new do |h, arg|
-            h[arg] = if @cached_visible[arg] && (arg_type = arg.type.unwrap) && @cached_visible[arg_type]
-              owner = arg.owner
-              case owner
-              when GraphQL::Schema::Field
-                @cached_visible_fields[owner.owner][owner]
-              when Class
-                @cached_visible[owner]
+          @cached_visible_arguments = Hash.new do |h, owner|
+            h[owner] = Hash.new do |h2, arg|
+              h2[arg] = if @cached_visible[arg] && (arg_type = arg.type.unwrap) && @cached_visible[arg_type]
+                case owner
+                when GraphQL::Schema::Field
+                  @cached_visible_fields[owner.owner][owner]
+                when Class
+                  @cached_visible[owner]
+                else
+                  raise "Unexpected argument owner for `#{arg.path}`: #{owner.inspect}"
+                end
               else
-                raise "Unexpected argument owner for `#{arg.path}`: #{owner.inspect}"
+                false
               end
-            else
-              false
-            end
+            end.compare_by_identity
           end.compare_by_identity
 
           @cached_parent_fields = Hash.new do |h, type|
@@ -90,7 +91,7 @@ module GraphQL
           end.compare_by_identity
 
           @cached_arguments = Hash.new do |h, owner|
-            h[owner] = non_duplicate_items(owner.all_argument_definitions, @cached_visible_arguments)
+            h[owner] = non_duplicate_items(owner.all_argument_definitions, @cached_visible_arguments[owner])
           end.compare_by_identity
 
           @loadable_possible_types = Hash.new { |h, union_type| h[union_type] = union_type.possible_types }.compare_by_identity
@@ -188,7 +189,7 @@ module GraphQL
           if arg.is_a?(Array)
             visible_arg = nil
             arg.each do |arg_defn|
-              if @cached_visible_arguments[arg_defn]
+              if @cached_visible_arguments[owner][arg_defn]
                 if visible_arg.nil?
                   visible_arg = arg_defn
                 else
@@ -198,7 +199,7 @@ module GraphQL
             end
             visible_arg
           else
-            if arg && @cached_visible_arguments[arg]
+            if arg && @cached_visible_arguments[owner][arg]
               arg
             else
               nil
@@ -323,7 +324,7 @@ module GraphQL
           @schema.visibility.all_references[type_defn].any? do |ref|
             case ref
             when GraphQL::Schema::Argument
-              @cached_visible_arguments[ref]
+              @cached_visible_arguments[ref.owner][ref]
             when GraphQL::Schema::Field
               @cached_visible_fields[ref.owner][ref]
             when Module
