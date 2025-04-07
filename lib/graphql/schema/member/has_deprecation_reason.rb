@@ -18,6 +18,21 @@ module GraphQL
             directive(GraphQL::Schema::Directive::Deprecated, reason: text)
           end
         end
+
+        def self.extended(child_class)
+          super
+          child_class.extend(ClassMethods)
+        end
+
+        module ClassMethods
+          def deprecation_reason(new_reason = NOT_CONFIGURED)
+            if NOT_CONFIGURED.equal?(new_reason)
+              super()
+            else
+              self.deprecation_reason = new_reason
+            end
+          end
+        end
       end
     end
   end

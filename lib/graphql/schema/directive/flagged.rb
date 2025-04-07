@@ -37,6 +37,8 @@ module GraphQL
 
         argument :by, [String], "Flags to check for this schema member"
 
+        repeatable(true)
+
         module VisibleByFlag
           def self.included(schema_class)
             schema_class.extend(self)
