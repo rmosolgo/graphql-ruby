@@ -41,10 +41,24 @@ module GraphQL
         end
       end
 
+      # @return [String, nil]
+      def deprecation_reason
+        super || @resolver_class&.deprecation_reason
+      end
+
       def directives
         if @resolver_class && !(r_dirs = @resolver_class.directives).empty?
           if !(own_dirs = super).empty?
-            own_dirs + r_dirs
+            new_dirs = own_dirs.dup
+            r_dirs.each do |r_dir|
+              if r_dir.class.repeatable? ||
+                ( (r_dir_name = r_dir.graphql_name) &&
+                  (!new_dirs.any? { |d| d.graphql_name == r_dir_name })
+                )
+                new_dirs << r_dir
+              end
+            end
+            new_dirs
           else
             r_dirs
           end
