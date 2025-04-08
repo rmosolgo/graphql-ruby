@@ -268,7 +268,8 @@ describe GraphQL::Schema::InputObject do
       { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5, instrumentId: "Instrument/Drum Kit", nested: { a: 2, b: 4, c: 6, d: 8, e: 10, instrumentId: "Instrument/Drum Kit" } }) }
       GRAPHQL
       res2 = InputObjectPrepareTest::Schema.execute(query_str2, context: { multiply_by: 3 })
-      assert_includes res2["data"]["inputs"][0], "a: 2, b2: 4, c: 6, d2: 8, e2: 60"
+      expected_hash_values =  { a: 2, b2: 4, c: 6, d2: 8, e2: 60 }.inspect.sub("{", "").sub("}", "")
+      assert_includes res2["data"]["inputs"][0], expected_hash_values
     end
 
     it "calls load_ methods for arguments when they're present" do
