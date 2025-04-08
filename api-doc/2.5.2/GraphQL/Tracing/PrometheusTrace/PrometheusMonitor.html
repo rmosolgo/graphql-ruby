@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Tracing::PrometheusTrace::PrometheusMonitor
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Tracing::PrometheusTrace::PrometheusMonitor";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (P)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../PrometheusTrace.html" title="GraphQL::Tracing::PrometheusTrace (module)">PrometheusTrace</a></span></span>
+     &raquo; 
+    <span class="title">PrometheusMonitor</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Tracing::PrometheusTrace::PrometheusMonitor
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../MonitorTrace/Monitor.html" title="GraphQL::Tracing::MonitorTrace::Monitor (class)">MonitorTrace::Monitor</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="../MonitorTrace/Monitor.html" title="GraphQL::Tracing::MonitorTrace::Monitor (class)">MonitorTrace::Monitor</a></span></li>
+          
+            <li class="next">GraphQL::Tracing::PrometheusTrace::PrometheusMonitor</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  <dl>
+      <dt>Includes:</dt>
+      <dd><span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames (module)">MonitorTrace::Monitor::GraphQLPrefixNames</a></span></dd>
+  </dl>
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/tracing/prometheus_trace.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="PrometheusMonitor/Event.html" title="GraphQL::Tracing::PrometheusTrace::PrometheusMonitor::Event (class)">Event</a></span>
+    
+  
+</p>
+
+
+
+  <h2>Constant Summary</h2>
+  
+  <h3 class="inherited">Constants included
+     from <span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames (module)">MonitorTrace::Monitor::GraphQLPrefixNames</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html#ANALYZE_NAME-constant" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames::ANALYZE_NAME (constant)">MonitorTrace::Monitor::GraphQLPrefixNames::ANALYZE_NAME</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html#EXECUTE_NAME-constant" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames::EXECUTE_NAME (constant)">MonitorTrace::Monitor::GraphQLPrefixNames::EXECUTE_NAME</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html#LEX_NAME-constant" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames::LEX_NAME (constant)">MonitorTrace::Monitor::GraphQLPrefixNames::LEX_NAME</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html#PARSE_NAME-constant" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames::PARSE_NAME (constant)">MonitorTrace::Monitor::GraphQLPrefixNames::PARSE_NAME</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html#VALIDATE_NAME-constant" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames::VALIDATE_NAME (constant)">MonitorTrace::Monitor::GraphQLPrefixNames::VALIDATE_NAME</a></span></p>
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#active%3F-instance_method" title="#active? (instance method)">#<strong>active?</strong>(keyword)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#gettime-instance_method" title="#gettime (instance method)">#<strong>gettime</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#instrument-instance_method" title="#instrument (instance method)">#<strong>instrument</strong>(keyword, object)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#send_json-instance_method" title="#send_json (instance method)">#<strong>send_json</strong>(duration, keyword, object)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods included from <span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames (module)">MonitorTrace::Monitor::GraphQLPrefixNames</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html#platform_authorized_key-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames#platform_authorized_key (method)">#platform_authorized_key</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html#platform_field_key-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames#platform_field_key (method)">#platform_field_key</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html#platform_resolve_type_key-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames#platform_resolve_type_key (method)">#platform_resolve_type_key</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor/GraphQLPrefixNames.html#platform_source_class_key-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames#platform_source_class_key (method)">#platform_source_class_key</a></span></p>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="../MonitorTrace/Monitor.html" title="GraphQL::Tracing::MonitorTrace::Monitor (class)">MonitorTrace::Monitor</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../MonitorTrace/Monitor.html#fallback_transaction_name-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor#fallback_transaction_name (method)">#fallback_transaction_name</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor.html#initialize-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor#initialize (method)">#initialize</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor.html#name_for-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor#name_for (method)">#name_for</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor.html#start_event-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor#start_event (method)">#start_event</a></span>, <span class='object_link'><a href="../MonitorTrace/Monitor.html#transaction_name-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor#transaction_name (method)">#transaction_name</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <p class="notice">This class inherits a constructor from <span class='object_link'><a href="../MonitorTrace/Monitor.html#initialize-instance_method" title="GraphQL::Tracing::MonitorTrace::Monitor#initialize (method)">GraphQL::Tracing::MonitorTrace::Monitor</a></span></p>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="active?-instance_method">
+  
+    #<strong>active?</strong>(keyword)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+58
+59
+60</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/prometheus_trace.rb', line 58</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_active?'>active?</span><span class='lparen'>(</span><span class='id identifier rubyid_keyword'>keyword</span><span class='rparen'>)</span>
+  <span class='ivar'>@trace</span><span class='period'>.</span><span class='id identifier rubyid_prometheus_keys_whitelist'>prometheus_keys_whitelist</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_keyword'>keyword</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="gettime-instance_method">
+  
+    #<strong>gettime</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+62
+63
+64</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/prometheus_trace.rb', line 62</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_gettime'>gettime</span>
+  <span class='op'>::</span><span class='const'>Process</span><span class='period'>.</span><span class='id identifier rubyid_clock_gettime'>clock_gettime</span><span class='lparen'>(</span><span class='op'>::</span><span class='const'>Process</span><span class='op'>::</span><span class='const'>CLOCK_MONOTONIC</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="instrument-instance_method">
+  
+    #<strong>instrument</strong>(keyword, object)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/prometheus_trace.rb', line 46</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_instrument'>instrument</span><span class='lparen'>(</span><span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_active?'>active?</span><span class='lparen'>(</span><span class='id identifier rubyid_keyword'>keyword</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_start'>start</span> <span class='op'>=</span> <span class='id identifier rubyid_gettime'>gettime</span>
+    <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='kw'>yield</span>
+    <span class='id identifier rubyid_duration'>duration</span> <span class='op'>=</span> <span class='id identifier rubyid_gettime'>gettime</span> <span class='op'>-</span> <span class='id identifier rubyid_start'>start</span>
+    <span class='id identifier rubyid_send_json'>send_json</span><span class='lparen'>(</span><span class='id identifier rubyid_duration'>duration</span><span class='comma'>,</span> <span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_result'>result</span>
+  <span class='kw'>else</span>
+    <span class='kw'>yield</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="send_json-instance_method">
+  
+    #<strong>send_json</strong>(duration, keyword, object)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+66
+67
+68
+69
+70
+71
+72
+73
+74</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/prometheus_trace.rb', line 66</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_send_json'>send_json</span><span class='lparen'>(</span><span class='id identifier rubyid_duration'>duration</span><span class='comma'>,</span> <span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_event_name'>event_name</span> <span class='op'>=</span> <span class='id identifier rubyid_name_for'>name_for</span><span class='lparen'>(</span><span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+  <span class='ivar'>@trace</span><span class='period'>.</span><span class='id identifier rubyid_prometheus_client'>prometheus_client</span><span class='period'>.</span><span class='id identifier rubyid_send_json'>send_json</span><span class='lparen'>(</span>
+    <span class='label'>type:</span> <span class='ivar'>@trace</span><span class='period'>.</span><span class='id identifier rubyid_prometheus_collector_type'>prometheus_collector_type</span><span class='comma'>,</span>
+    <span class='label'>duration:</span> <span class='id identifier rubyid_duration'>duration</span><span class='comma'>,</span>
+    <span class='label'>platform_key:</span> <span class='id identifier rubyid_event_name'>event_name</span><span class='comma'>,</span>
+    <span class='label'>key:</span> <span class='id identifier rubyid_keyword'>keyword</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Apr  8 10:47:59 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.8).
+</div>
+
+    </div>
+  </body>
+</html>

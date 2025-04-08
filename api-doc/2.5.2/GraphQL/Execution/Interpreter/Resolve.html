@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Execution::Interpreter::Resolve
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Execution::Interpreter::Resolve";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (R)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Execution.html" title="GraphQL::Execution (module)">Execution</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Interpreter.html" title="GraphQL::Execution::Interpreter (class)">Interpreter</a></span></span>
+     &raquo; 
+    <span class="title">Resolve</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Execution::Interpreter::Resolve
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/execution/interpreter/resolve.rb</dd>
+  </dl>
+  
+</div>
+
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve-class_method" title="resolve (class method)">.<strong>resolve</strong>(results, dataloader)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>After getting <code>results</code> back from an interpreter evaluation, continue it until you get a response-ready Ruby value.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve_all-class_method" title="resolve_all (class method)">.<strong>resolve_all</strong>(results, dataloader)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Continue field results in <code>results</code> until there’s nothing else to continue.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve_each_depth-class_method" title="resolve_each_depth (class method)">.<strong>resolve_each_depth</strong>(lazies_at_depth, dataloader)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="resolve-class_method">
+  
+    .<strong>resolve</strong>(results, dataloader)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>After getting <code>results</code> back from an interpreter evaluation,
+continue it until you get a response-ready Ruby value.</p>
+
+<p><code>results</code> is one level of <em>depth</em> of a query or multiplex.</p>
+
+<p>Resolve all lazy values in that depth before moving on
+to the next level.</p>
+
+<p>It’s assumed that the lazies will
+return <span class='object_link'><a href="../Lazy.html" title="GraphQL::Execution::Lazy (class)">Lazy</a></span> instances if there’s more work to be done,
+or return Hash/Array if the query should be continued.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/interpreter/resolve.rb', line 50</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='id identifier rubyid_results'>results</span><span class='comma'>,</span> <span class='id identifier rubyid_dataloader'>dataloader</span><span class='rparen'>)</span>
+  <span class='comment'># There might be pending jobs here that _will_ write lazies
+</span>  <span class='comment'># into the result hash. We should run them out, so we
+</span>  <span class='comment'># can be sure that all lazies will be present in the result hashes.
+</span>  <span class='comment'># A better implementation would somehow interleave (or unify)
+</span>  <span class='comment'># these approaches.
+</span>  <span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
+  <span class='id identifier rubyid_next_results'>next_results</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>while</span> <span class='op'>!</span><span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_result_value'>result_value</span> <span class='op'>=</span> <span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_result_value'>result_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Runtime.html" title="GraphQL::Execution::Interpreter::Runtime (class)">Runtime</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Runtime/GraphQLResultHash.html" title="GraphQL::Execution::Interpreter::Runtime::GraphQLResultHash (class)">GraphQLResultHash</a></span></span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_result_value'>result_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_concat'>concat</span><span class='lparen'>(</span><span class='id identifier rubyid_result_value'>result_value</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='rparen'>)</span>
+      <span class='kw'>next</span>
+    <span class='kw'>elsif</span> <span class='id identifier rubyid_result_value'>result_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Runtime.html" title="GraphQL::Execution::Interpreter::Runtime (class)">Runtime</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Runtime/GraphQLResultArray.html" title="GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray (class)">GraphQLResultArray</a></span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_concat'>concat</span><span class='lparen'>(</span><span class='id identifier rubyid_result_value'>result_value</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='rparen'>)</span>
+      <span class='kw'>next</span>
+    <span class='kw'>elsif</span> <span class='id identifier rubyid_result_value'>result_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_concat'>concat</span><span class='lparen'>(</span><span class='id identifier rubyid_result_value'>result_value</span><span class='rparen'>)</span>
+      <span class='kw'>next</span>
+    <span class='kw'>elsif</span> <span class='id identifier rubyid_result_value'>result_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../Lazy.html" title="GraphQL::Execution::Lazy (class)">Lazy</a></span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_loaded_value'>loaded_value</span> <span class='op'>=</span> <span class='id identifier rubyid_result_value'>result_value</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_loaded_value'>loaded_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../Lazy.html" title="GraphQL::Execution::Lazy (class)">Lazy</a></span></span><span class='rparen'>)</span>
+        <span class='comment'># Since this field returned another lazy,
+</span>        <span class='comment'># add it to the same queue
+</span>        <span class='id identifier rubyid_results'>results</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_loaded_value'>loaded_value</span>
+      <span class='kw'>elsif</span> <span class='id identifier rubyid_loaded_value'>loaded_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Runtime.html" title="GraphQL::Execution::Interpreter::Runtime (class)">Runtime</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Runtime/GraphQLResultHash.html" title="GraphQL::Execution::Interpreter::Runtime::GraphQLResultHash (class)">GraphQLResultHash</a></span></span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_loaded_value'>loaded_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="Runtime.html" title="GraphQL::Execution::Interpreter::Runtime (class)">Runtime</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Runtime/GraphQLResultArray.html" title="GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray (class)">GraphQLResultArray</a></span></span><span class='rparen'>)</span> <span class='op'>||</span>
+          <span class='id identifier rubyid_loaded_value'>loaded_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_loaded_value'>loaded_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+        <span class='comment'># Add these values in wholesale --
+</span>        <span class='comment'># they might be modified by later work in the dataloader.
+</span>        <span class='id identifier rubyid_next_results'>next_results</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_loaded_value'>loaded_value</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_next_results'>next_results</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='comment'># Any pending data loader jobs may populate the
+</span>    <span class='comment'># resutl arrays or result hashes accumulated in
+</span>    <span class='comment'># `next_results``. Run those **to completion**
+</span>    <span class='comment'># before continuing to resolve `next_results`.
+</span>    <span class='comment'># (Just `.append_job` doesn&#39;t work if any pending
+</span>    <span class='comment'># jobs require multiple passes.)
+</span>    <span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
+    <span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_append_job'>append_job</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='id identifier rubyid_next_results'>next_results</span><span class='comma'>,</span> <span class='id identifier rubyid_dataloader'>dataloader</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve_all-class_method">
+  
+    .<strong>resolve_all</strong>(results, dataloader)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Continue field results in <code>results</code> until there’s nothing else to continue.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+9
+10
+11
+12</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/interpreter/resolve.rb', line 9</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_resolve_all'>resolve_all</span><span class='lparen'>(</span><span class='id identifier rubyid_results'>results</span><span class='comma'>,</span> <span class='id identifier rubyid_dataloader'>dataloader</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_append_job'>append_job</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='id identifier rubyid_results'>results</span><span class='comma'>,</span> <span class='id identifier rubyid_dataloader'>dataloader</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve_each_depth-class_method">
+  
+    .<strong>resolve_each_depth</strong>(lazies_at_depth, dataloader)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/interpreter/resolve.rb', line 14</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_resolve_each_depth'>resolve_each_depth</span><span class='lparen'>(</span><span class='id identifier rubyid_lazies_at_depth'>lazies_at_depth</span><span class='comma'>,</span> <span class='id identifier rubyid_dataloader'>dataloader</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_smallest_depth'>smallest_depth</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_lazies_at_depth'>lazies_at_depth</span><span class='period'>.</span><span class='id identifier rubyid_each_key'>each_key</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_depth_key'>depth_key</span><span class='op'>|</span>
+    <span class='id identifier rubyid_smallest_depth'>smallest_depth</span> <span class='op'>||=</span> <span class='id identifier rubyid_depth_key'>depth_key</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_depth_key'>depth_key</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_smallest_depth'>smallest_depth</span>
+      <span class='id identifier rubyid_smallest_depth'>smallest_depth</span> <span class='op'>=</span> <span class='id identifier rubyid_depth_key'>depth_key</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_smallest_depth'>smallest_depth</span>
+    <span class='id identifier rubyid_lazies'>lazies</span> <span class='op'>=</span> <span class='id identifier rubyid_lazies_at_depth'>lazies_at_depth</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='id identifier rubyid_smallest_depth'>smallest_depth</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_lazies'>lazies</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+      <span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_append_job'>append_job</span> <span class='lbrace'>{</span>
+        <span class='id identifier rubyid_lazies'>lazies</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:value</span><span class='rparen'>)</span> <span class='comment'># resolve these Lazy instances
+</span>      <span class='rbrace'>}</span>
+      <span class='comment'># Run lazies _and_ dataloader, see if more are enqueued
+</span>      <span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
+      <span class='id identifier rubyid_resolve_each_depth'>resolve_each_depth</span><span class='lparen'>(</span><span class='id identifier rubyid_lazies_at_depth'>lazies_at_depth</span><span class='comma'>,</span> <span class='id identifier rubyid_dataloader'>dataloader</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Apr  8 10:47:52 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.8).
+</div>
+
+    </div>
+  </body>
+</html>
