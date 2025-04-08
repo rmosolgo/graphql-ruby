@@ -10,6 +10,17 @@
 
 ### Bug fixes
 
+# 2.5.2
+
+### New features
+
+- Resolver: accept `deprecation_reason` #5320
+
+### Bug fixes
+
+- Visibility: hide argument types whose uses are all hidden (to match Warden) #5291
+- InputObject: fix validation for nested input object with `prepare:` method configs #5321
+
 # 2.5.1
 
 ### Bug fixes
