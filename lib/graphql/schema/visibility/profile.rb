@@ -281,9 +281,11 @@ module GraphQL
 
         def non_duplicate_items(definitions, visibility_cache)
           non_dups = []
+          names = Set.new
           definitions.each do |defn|
             if visibility_cache[defn]
-              if (dup_defn = non_dups.find { |d| d.graphql_name == defn.graphql_name })
+              if !names.add?(defn.graphql_name)
+                dup_defn = non_dups.find { |d| d.graphql_name == defn.graphql_name }
                 raise_duplicate_definition(dup_defn, defn)
               end
               non_dups << defn
