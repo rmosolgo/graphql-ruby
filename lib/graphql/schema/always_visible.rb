@@ -3,6 +3,7 @@ module GraphQL
   class Schema
     module AlwaysVisible
       def self.use(schema, **opts)
+        schema.use(GraphQL::Schema::Visibility, profiles: { nil => {} })
         schema.extend(self)
       end
 
