@@ -78,6 +78,7 @@ describe GraphQL::Query::Context::ScopedContext do
     end
 
     query(Query)
+    legacy_sync_lazy(true)
     lazy_resolve(Promise, :value)
   end
 

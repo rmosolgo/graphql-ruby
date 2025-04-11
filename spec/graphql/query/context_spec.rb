@@ -227,6 +227,7 @@ describe GraphQL::Query::Context do
 
     class ContextSchema < GraphQL::Schema
       query(ContextQuery)
+      legacy_sync_lazy(true)
       lazy_resolve(LazyBlock, :value)
       use GraphQL::Dataloader
     end

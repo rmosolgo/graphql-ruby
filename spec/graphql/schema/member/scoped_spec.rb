@@ -120,6 +120,7 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     query(Query)
+    legacy_sync_lazy(true)
     lazy_resolve(Proc, :call)
   end
 

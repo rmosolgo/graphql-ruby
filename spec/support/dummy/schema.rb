@@ -569,7 +569,7 @@ module Dummy
     end
 
     use GraphQL::Dataloader
-
+    legacy_sync_lazy(true)
     lazy_resolve(Proc, :call)
   end
 

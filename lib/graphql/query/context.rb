@@ -270,6 +270,11 @@ module GraphQL
         Scoped.new(@scoped_context, current_path)
       end
 
+      # @api private
+      def runtime
+        @runtime ||= namespace(:interpreter_runtime)[:runtime]
+      end
+
       class Scoped
         def initialize(scoped_context, path)
           @path = path

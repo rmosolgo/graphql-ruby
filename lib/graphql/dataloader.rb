@@ -6,6 +6,7 @@ require "graphql/dataloader/request_all"
 require "graphql/dataloader/source"
 require "graphql/dataloader/active_record_association_source"
 require "graphql/dataloader/active_record_source"
+require "graphql/dataloader/lazy_source"
 
 module GraphQL
   # This plugin supports Fiber-based concurrency, along with {GraphQL::Dataloader::Source}.
@@ -68,6 +69,8 @@ module GraphQL
 
     # @return [Integer, nil]
     attr_reader :fiber_limit
+
+    attr_reader :source_cache
 
     def nonblocking?
       @nonblocking
@@ -211,8 +214,18 @@ module GraphQL
           end
           join_queues(job_fibers, next_job_fibers)
 
-          while (!source_fibers.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
-            while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber(trace)))
+          defer_sources = nil
+          @source_cache.each_value do |group_sources|
+            group_sources.each_value do |source_inst|
+              if source_inst.defer?
+                defer_sources ||= []
+                defer_sources << source_inst
+              end
+            end
+          end
+
+          while (!source_fibers.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any? { |s| s.pending? && (defer_sources ? !defer_sources.include?(s) : true) } })
+            while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber(trace, defer_sources)))
               if f.alive?
                 finished = run_fiber(f)
                 if !finished
@@ -304,11 +317,11 @@ module GraphQL
       end
     end
 
-    def spawn_source_fiber(trace)
+    def spawn_source_fiber(trace, defer_sources)
       pending_sources = nil
       @source_cache.each_value do |source_by_batch_params|
         source_by_batch_params.each_value do |source|
-          if source.pending?
+          if source.pending? && !defer_sources&.include?(source)
             pending_sources ||= []
             pending_sources << source
           end

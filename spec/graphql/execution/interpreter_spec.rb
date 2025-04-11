@@ -266,6 +266,7 @@ describe GraphQL::Execution::Interpreter do
     class Schema < GraphQL::Schema
       query(Query)
       mutation(Mutation)
+      legacy_sync_lazy(true)
       lazy_resolve(Box, :value)
 
       use GraphQL::Schema::AlwaysVisible
@@ -647,6 +648,7 @@ describe GraphQL::Execution::Interpreter do
       query Query
       subscription Subscription
       use InMemoryBackend::Subscriptions, extra: nil
+      legacy_sync_lazy(true)
       lazy_resolve Proc, :call
     end
 
