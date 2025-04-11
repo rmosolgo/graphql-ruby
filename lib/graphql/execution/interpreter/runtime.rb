@@ -475,9 +475,10 @@ module GraphQL
             if is_non_null
               set_result(selection_result, result_name, nil, false, is_non_null) do
                 # When this comes from a list item, use the parent object:
-                parent_type = selection_result.is_a?(GraphQLResultArray) ? selection_result.graphql_parent.graphql_result_type : selection_result.graphql_result_type
+                is_from_array = selection_result.is_a?(GraphQLResultArray)
+                parent_type = is_from_array ? selection_result.graphql_parent.graphql_result_type : selection_result.graphql_result_type
                 # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
-                err = parent_type::InvalidNullError.new(parent_type, field, ast_node)
+                err = parent_type::InvalidNullError.new(parent_type, field, ast_node, is_from_array: is_from_array)
                 schema.type_error(err, context)
               end
             else

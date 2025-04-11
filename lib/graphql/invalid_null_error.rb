@@ -12,11 +12,24 @@ module GraphQL
     # @return [GraphQL::Language::Nodes::Field] the field where the error occurred
     attr_reader :ast_node
 
-    def initialize(parent_type, field, ast_node)
+    # @return [Boolean] indicates an array result caused the error
+    attr_reader :is_from_array
+
+    def initialize(parent_type, field, ast_node, is_from_array: false)
       @parent_type = parent_type
       @field = field
       @ast_node = ast_node
-      super("Cannot return null for non-nullable field #{@parent_type.graphql_name}.#{@field.graphql_name}")
+      @is_from_array = is_from_array
+
+      # For List elements, identify the non-null error is for an
+      # element and the required element type so it's not ambiguous
+      # whether it was caused by a null instead of the list or a
+      # null element.
+      if @is_from_array
+        super("Cannot return null for non-nullable element of type '#{@field.type.of_type.of_type.to_type_signature}' for #{@parent_type.graphql_name}.#{@field.graphql_name}")
+      else
+        super("Cannot return null for non-nullable field #{@parent_type.graphql_name}.#{@field.graphql_name}")
+      end
     end
 
     class << self
