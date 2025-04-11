@@ -269,7 +269,7 @@ module GraphQL
           end
         elsif type2.non_null?
           true
-        elsif !type1.kind.fields? && !type2.kind.fields?
+        elsif type1.kind.leaf? && type2.kind.leaf?
           type1 != type2
         else
           # One or more of these are composite types,
