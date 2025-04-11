@@ -56,28 +56,6 @@ describe GraphQL::ExecutionError do
     it "the error is inserted into the errors key and the rest of the query is fulfilled" do
       expected_result = {
         "data"=>{
-          "cheese"=>{
-            "id" => 1,
-            "error1"=> nil,
-            "error2"=> nil,
-            "nonError"=> {
-              "id" => 3,
-              "flavor" => "Manchego",
-            },
-            "flavor" => "Brie",
-          },
-          "allDairy" => [
-            { "flavor" => "Brie" },
-            { "flavor" => "Gouda" },
-            { "flavor" => "Manchego" },
-            { "source" => "COW", "executionError" => nil }
-          ],
-          "dairyErrors" => [
-            { "__typename" => "Cheese" },
-            nil,
-            { "__typename" => "Cheese" },
-            { "__typename" => "Milk" }
-          ],
           "dairy" => {
             "milks" => [
               {
@@ -93,7 +71,29 @@ describe GraphQL::ExecutionError do
             ]
           },
           "executionError" => nil,
-          "valueWithExecutionError" => 0
+          "valueWithExecutionError" => 0,
+          "cheese"=>{
+            "id" => 1,
+            "flavor" => "Brie",
+            "error1"=> nil,
+            "error2"=> nil,
+            "nonError"=> {
+              "id" => 3,
+              "flavor" => "Manchego",
+            },
+          },
+          "allDairy" => [
+            { "flavor" => "Brie" },
+            { "flavor" => "Gouda" },
+            { "flavor" => "Manchego" },
+            { "source" => "COW", "executionError" => nil }
+          ],
+          "dairyErrors" => [
+            { "__typename" => "Cheese" },
+            nil,
+            { "__typename" => "Cheese" },
+            { "__typename" => "Milk" }
+          ],
         },
         "errors"=>[
           {
@@ -117,16 +117,6 @@ describe GraphQL::ExecutionError do
             "path"=>["dairy", "milks", 0, "executionError"]
           },
           {
-            "message"=>"There was an execution error",
-            "locations"=>[{"line"=>22, "column"=>9}],
-            "path"=>["allDairy", 3, "executionError"]
-          },
-          {
-            "message"=>"There was an execution error",
-            "locations"=>[{"line"=>36, "column"=>13}],
-            "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
-          },
-          {
             "message"=>"No cheeses are made from Yak milk!",
             "locations"=>[{"line"=>5, "column"=>7}],
             "path"=>["cheese", "error1"]
@@ -135,6 +125,16 @@ describe GraphQL::ExecutionError do
             "message"=>"No cheeses are made from Yak milk!",
             "locations"=>[{"line"=>8, "column"=>7}],
             "path"=>["cheese", "error2"]
+          },
+          {
+            "message"=>"There was an execution error",
+            "locations"=>[{"line"=>22, "column"=>9}],
+            "path"=>["allDairy", 3, "executionError"]
+          },
+          {
+            "message"=>"There was an execution error",
+            "locations"=>[{"line"=>36, "column"=>13}],
+            "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
           },
         ]
       }
@@ -210,6 +210,10 @@ describe GraphQL::ExecutionError do
       # This is extracted from the test above -- it kept breaking
       # when working on dataloader, so I isolated it to keep an eye
       # on the minimal reproduction
+      #
+      # It's `def self.authorized?` is lazy, and it requires
+      # _both_ a lazy resolution and a dataloader run
+      # in order to resolve properly.
       expected_result = {
         "data"=>{
           "cheese"=>{
@@ -394,5 +398,195 @@ describe GraphQL::ExecutionError do
       }
     ]
     assert_equal(expected_errors, result["errors"])
+  end
+
+  describe "when ExecutionError is raised in resolve_type" do
+    let(:schema) do
+      test_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Test"
+        field :dummy, GraphQL::Types::Boolean
+      end
+
+      test_union = Class.new(GraphQL::Schema::Union) do
+        graphql_name "TestUnion"
+        possible_types test_type
+      end
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+
+        field :test, test_union
+        define_method(:test) do
+          1
+        end
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+
+        define_singleton_method(:resolve_type) do |abstract_type, obj, ctx|
+          raise GraphQL::ExecutionError.new("resolve_type")
+        end
+      end
+    end
+
+    it "return execution error with location and path" do
+      query = "{ test { ...on Test { dummy }  } }"
+      result = schema.execute(query)
+      expected_result = {
+        "errors"=>[
+          {
+            "message"=>"resolve_type",
+            "locations"=>[{"line"=>1, "column"=>3}],
+            "path"=>["test"]
+          }
+        ],
+        "data"=>{"test"=>nil}
+      }
+      assert_equal(expected_result, result.to_h)
+    end
+
+    describe "when using DataLoaders" do
+      let(:schema) do
+        test_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Test"
+          field :dummy, GraphQL::Types::Boolean
+        end
+
+        test_union = Class.new(GraphQL::Schema::Union) do
+          graphql_name "TestUnion"
+          possible_types test_type
+        end
+
+        query_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+
+          field :test, test_union
+          define_method(:test) do
+            1
+          end
+        end
+
+        Class.new(GraphQL::Schema) do
+          query query_type
+          use GraphQL::Dataloader
+
+          define_singleton_method(:resolve_type) do |abstract_type, obj, ctx|
+            raise GraphQL::ExecutionError.new("resolve_type")
+          end
+        end
+      end
+
+      it "return execution error with location and path" do
+        query = "{ test { ...on Test { dummy }  } }"
+        result = schema.execute(query)
+        expected_result = {
+          "errors"=>[
+            {
+              "message"=>"resolve_type",
+              "locations"=>[{"line"=>1, "column"=>3}],
+              "path"=>["test"]
+            }
+          ],
+          "data"=>{"test"=>nil}
+        }
+        assert_equal(expected_result, result.to_h)
+      end
+    end
+  end
+
+ describe "when using DataLoaders" do
+    let(:schema) do
+      item_error_loader = Class.new(GraphQL::Dataloader::Source) do
+        def fetch(keys)
+          keys.map { |key| GraphQL::ExecutionError.new("Error for #{key}") }
+        end
+      end
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :item, String do
+          argument :key, String
+        end
+        define_method(:item) do |key:|
+          dataloader.with(item_error_loader).load(key)
+        end
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+        use GraphQL::Dataloader
+      end
+    end
+
+    let(:result) { schema.execute(query_string) }
+
+    describe "when querying for unique items" do
+      let(:query_string) {
+        <<-GRAPHQL
+          query {
+            query0: item(key: "a")
+            query1: item(key: "b")
+          }
+        GRAPHQL
+      }
+
+      it "returns unique execution errors locations and paths" do
+        expected_result = {
+          "data" => {
+            "query0" => nil,
+            "query1" => nil
+          },
+          "errors" => [
+            {
+              "message" => "Error for a",
+              "locations" => [{"line" => 2, "column" => 13}],
+              "path" => ["query0"]
+            },
+            {
+              "message" => "Error for b",
+              "locations" => [{"line" => 3, "column" => 13}],
+              "path" => ["query1"]
+            }
+          ]
+        }
+
+        assert_equal(expected_result, result.to_h)
+      end
+    end
+
+    describe "when querying for duplicate items" do
+      let(:query_string) {
+        <<-GRAPHQL
+          query {
+            query0: item(key: "a")
+            query1: item(key: "a")
+          }
+        GRAPHQL
+      }
+
+      it "returns execution errors for duplicate items" do
+        expected_result = {
+          "data" => {
+            "query0" => nil,
+            "query1" => nil
+          },
+          "errors" => [
+            {
+              "message" => "Error for a",
+              "locations" => [{"line" => 2, "column" => 13}],
+              "path" => ["query0"]
+            },
+            {
+              "message" => "Error for a",
+              "locations" => [{"line" => 3, "column" => 13}],
+              "path" => ["query1"]
+            }
+          ]
+        }
+
+        assert_equal(expected_result, result.to_h)
+      end
+    end
   end
 end

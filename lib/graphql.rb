@@ -4,14 +4,18 @@ require "json"
 require "set"
 require "singleton"
 require "forwardable"
+require "fiber/storage"
+require "graphql/autoload"
 
 module GraphQL
-  # forwards-compat for argument handling
-  module Ruby2Keywords
-    if RUBY_VERSION < "2.7"
-      def ruby2_keywords(*)
-      end
-    end
+  extend Autoload
+
+  # Load all `autoload`-configured classes, and also eager-load dependents who have autoloads of their own.
+  def self.eager_load!
+    super
+    Query.eager_load!
+    Types.eager_load!
+    Schema.eager_load!
   end
 
   class Error < StandardError
@@ -42,8 +46,8 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # Turn a query string or schema definition into an AST
   # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]
-  def self.parse(graphql_string, tracer: GraphQL::Tracing::NullTracer)
-    parse_with_racc(graphql_string, tracer: tracer)
+  def self.parse(graphql_string, trace: GraphQL::Tracing::NullTrace, filename: nil, max_tokens: nil)
+    default_parser.parse(graphql_string, trace: trace, filename: filename, max_tokens: max_tokens)
   end
 
   # Read the contents of `filename` and parse them as GraphQL
@@ -51,66 +55,80 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # @return [GraphQL::Language::Nodes::Document]
   def self.parse_file(filename)
     content = File.read(filename)
-    parse_with_racc(content, filename: filename)
+    default_parser.parse(content, filename: filename)
   end
 
-  def self.parse_with_racc(string, filename: nil, tracer: GraphQL::Tracing::NullTracer)
-    GraphQL::Language::Parser.parse(string, filename: filename, tracer: tracer)
-  end
-
-  # @return [Array<GraphQL::Language::Token>]
+  # @return [Array<Array>]
   def self.scan(graphql_string)
-    scan_with_ragel(graphql_string)
+    default_parser.scan(graphql_string)
   end
 
-  def self.scan_with_ragel(graphql_string)
+  def self.parse_with_racc(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
+    warn "`GraphQL.parse_with_racc` is deprecated; GraphQL-Ruby no longer uses racc for parsing. Call `GraphQL.parse` or `GraphQL::Language::Parser.parse` instead."
+    GraphQL::Language::Parser.parse(string, filename: filename, trace: trace)
+  end
+
+  def self.scan_with_ruby(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
+  end
+
+  NOT_CONFIGURED = Object.new
+  private_constant :NOT_CONFIGURED
+  module EmptyObjects
+    EMPTY_HASH = {}.freeze
+    EMPTY_ARRAY = [].freeze
+  end
+
+  class << self
+    # If true, the parser should raise when an integer or float is followed immediately by an identifier (instead of a space or punctuation)
+    attr_accessor :reject_numbers_followed_by_names
+  end
+
+  self.reject_numbers_followed_by_names = false
+
+  autoload :ExecutionError, "graphql/execution_error"
+  autoload :RuntimeTypeError, "graphql/runtime_type_error"
+  autoload :UnresolvedTypeError, "graphql/unresolved_type_error"
+  autoload :InvalidNullError, "graphql/invalid_null_error"
+  autoload :AnalysisError, "graphql/analysis_error"
+  autoload :CoercionError, "graphql/coercion_error"
+  autoload :InvalidNameError, "graphql/invalid_name_error"
+  autoload :IntegerDecodingError, "graphql/integer_decoding_error"
+  autoload :IntegerEncodingError, "graphql/integer_encoding_error"
+  autoload :StringEncodingError, "graphql/string_encoding_error"
+  autoload :DateEncodingError, "graphql/date_encoding_error"
+  autoload :DurationEncodingError, "graphql/duration_encoding_error"
+  autoload :TypeKinds, "graphql/type_kinds"
+  autoload :NameValidator, "graphql/name_validator"
+  autoload :Language, "graphql/language"
+
+  autoload :Analysis, "graphql/analysis"
+  autoload :Tracing, "graphql/tracing"
+  autoload :Dig, "graphql/dig"
+  autoload :Execution, "graphql/execution"
+  autoload :Pagination, "graphql/pagination"
+  autoload :Schema, "graphql/schema"
+  autoload :Query, "graphql/query"
+  autoload :Dataloader, "graphql/dataloader"
+  autoload :Types, "graphql/types"
+  autoload :StaticValidation, "graphql/static_validation"
+  autoload :Execution, "graphql/execution"
+  autoload :Introspection, "graphql/introspection"
+  autoload :Relay, "graphql/relay"
+  autoload :Subscriptions, "graphql/subscriptions"
+  autoload :ParseError, "graphql/parse_error"
+  autoload :Backtrace, "graphql/backtrace"
+
+  autoload :UnauthorizedError, "graphql/unauthorized_error"
+  autoload :UnauthorizedEnumValueError, "graphql/unauthorized_enum_value_error"
+  autoload :UnauthorizedFieldError, "graphql/unauthorized_field_error"
+  autoload :LoadApplicationObjectFailedError, "graphql/load_application_object_failed_error"
+  autoload :Testing, "graphql/testing"
+  autoload :Current, "graphql/current"
+  if defined?(::Rails::Engine)
+    autoload :Dashboard, 'graphql/dashboard'
   end
 end
 
-# Order matters for these:
-
-require "graphql/execution_error"
-require "graphql/runtime_type_error"
-require "graphql/unresolved_type_error"
-require "graphql/invalid_null_error"
-require "graphql/analysis_error"
-require "graphql/coercion_error"
-require "graphql/invalid_name_error"
-require "graphql/integer_decoding_error"
-require "graphql/integer_encoding_error"
-require "graphql/string_encoding_error"
-require "graphql/date_encoding_error"
-require "graphql/type_kinds"
-require "graphql/name_validator"
-require "graphql/language"
-
-require_relative "./graphql/railtie" if defined? Rails::Railtie
-
-require "graphql/analysis"
-require "graphql/tracing"
-require "graphql/dig"
-require "graphql/execution"
-require "graphql/pagination"
-require "graphql/schema"
-require "graphql/query"
-require "graphql/types"
-require "graphql/dataloader"
-require "graphql/filter"
-require "graphql/static_validation"
-require "graphql/execution"
-require "graphql/schema/built_in_types"
-require "graphql/schema/loader"
-require "graphql/schema/printer"
-require "graphql/introspection"
-require "graphql/relay"
-
 require "graphql/version"
-require "graphql/subscriptions"
-require "graphql/parse_error"
-require "graphql/backtrace"
-
-require "graphql/unauthorized_error"
-require "graphql/unauthorized_field_error"
-require "graphql/load_application_object_failed_error"
-require "graphql/deprecation"
+require "graphql/railtie" if defined? Rails::Railtie

@@ -28,7 +28,7 @@ module GraphQL
           frag_node = context.fragments[frag_spread.node.name]
           if frag_node
             fragment_child_name = frag_node.type.name
-            fragment_child = context.warden.get_type(fragment_child_name)
+            fragment_child = @types.type(fragment_child_name)
             # Might be non-existent type name
             if fragment_child
               validate_fragment_in_scope(frag_spread.parent_type, fragment_child, frag_spread.node, context, frag_spread.path)
@@ -44,8 +44,8 @@ module GraphQL
           # It's not a valid fragment type, this error was handled someplace else
           return
         end
-        parent_types = context.warden.possible_types(parent_type.unwrap)
-        child_types = context.warden.possible_types(child_type.unwrap)
+        parent_types = @types.possible_types(parent_type.unwrap)
+        child_types = @types.possible_types(child_type.unwrap)
 
         if child_types.none? { |c| parent_types.include?(c) }
           name = node.respond_to?(:name) ? " #{node.name}" : ""

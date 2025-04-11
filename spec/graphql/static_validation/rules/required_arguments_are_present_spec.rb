@@ -87,12 +87,13 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     end
 
     class HiddenArgSchema < GraphQL::Schema
+      use GraphQL::Schema::Warden if ADD_WARDEN
       query(Query)
     end
 
     it "Doesn't require a hidden input" do
       res = HiddenArgSchema.execute("{ int }")
-      assert_equal -1, res["data"]["int"]
+      assert_equal(-1, res["data"]["int"])
     end
   end
 end

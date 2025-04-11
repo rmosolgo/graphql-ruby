@@ -6,7 +6,7 @@ module Graphql
     # TODO: What other options should be supported?
     #
     # @example Generate a `GraphQL::Schema::RelayClassicMutation` by name
-    #     rails g graphql:mutation CreatePostMutation
+    #     rails g graphql:mutation DeletePostMutation
     class MutationDeleteGenerator < OrmMutationsBase
 
       desc "Scaffold a Relay Classic ORM delete mutation for the given model class"

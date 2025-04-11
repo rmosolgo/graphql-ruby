@@ -71,13 +71,10 @@ module GraphQL
           elsif inherited_extras
             inherited_extras
           else
-            NO_EXTRAS
+            GraphQL::EmptyObjects::EMPTY_ARRAY
           end
         end
       end
-
-      NO_EXTRAS = [].freeze
-      private_constant :NO_EXTRAS
 
       # Called when this extension is attached to a field.
       # The field definition may be extended during this method.
@@ -107,7 +104,7 @@ module GraphQL
             end
           end
         end
-        if (extras = self.class.extras).any?
+        if !(extras = self.class.extras).empty?
           @added_extras = extras - field.extras
           field.extras(@added_extras)
         else

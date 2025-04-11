@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema::Subscription do
   class SubscriptionFieldSchema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     TOOTS = []
     ALL_USERS = {
       "dhh" => {handle: "dhh", private: false},
@@ -80,6 +81,10 @@ describe GraphQL::Schema::Subscription do
           # don't update for one's own toots.
           # (IRL it would make more sense to implement this in `#subscribe`)
           NO_UPDATE
+        elsif context[:update_and_unsubscribe]
+          unsubscribe(super)
+        elsif context[:update_error_and_unsubscribe]
+          unsubscribe(GraphQL::ExecutionError.new("Boom!"))
         else
           # This assumes that trigger object can fulfill `{toot:, user:}`,
           # for testing that the default implementation is `return object`
@@ -170,6 +175,10 @@ describe GraphQL::Schema::Subscription do
 
     def self.object_from_id(id, ctx)
       USERS[id]
+    end
+
+    def self.resolve_type(type, obj, ctx)
+      User
     end
 
     def self.unauthorized_field(err)
@@ -446,6 +455,40 @@ describe GraphQL::Schema::Subscription do
       assert_equal 2, in_memory_subscription_count
     end
 
+    it "can unsubscribe with a final update" do
+      res = exec_query(<<-GRAPHQL, context: { update_and_unsubscribe: true })
+      subscription {
+        tootWasTooted(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal 1, in_memory_subscription_count
+      toot = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: SubscriptionFieldSchema::USERS["matz"])
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, toot)
+
+      mailbox = res.context[:subscription_mailbox]
+      assert_equal ["Merry Christmas, here's a new Ruby version"], mailbox.map { |m| m["data"]["tootWasTooted"]["toot"]["body"] }
+      assert_equal 0, in_memory_subscription_count
+    end
+
+    it "can unsubscribe with an error" do
+      res = exec_query(<<-GRAPHQL, context: { update_error_and_unsubscribe: true })
+      subscription {
+        tootWasTooted(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal 1, in_memory_subscription_count
+      toot = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: SubscriptionFieldSchema::USERS["matz"])
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, toot)
+
+      mailbox = res.context[:subscription_mailbox]
+      assert_equal ["Boom!"], mailbox.map { |m| m["errors"][0]["message"] }
+      assert_equal 0, in_memory_subscription_count
+    end
+
     it "unsubscribes if a `loads:` argument is not found" do
       res = exec_query <<-GRAPHQL
       subscription {
@@ -537,7 +580,7 @@ describe GraphQL::Schema::Subscription do
   end
 
   describe "`subscription_scope` method" do
-    it "provdes a subscription scope that is recognized in the schema" do
+    it "provides a subscription scope that is recognized in the schema" do
       scoped_subscription = SubscriptionFieldSchema::get_field("Subscription", "directTootWasTooted")
 
       assert_equal :viewer, scoped_subscription.subscription_scope
@@ -651,6 +694,77 @@ describe GraphQL::Schema::Subscription do
       PrivateSubscription.subscription_scope nil
 
       assert_nil PrivateSubscription.subscription_scope
+    end
+  end
+
+  describe "writing during resolution" do
+    class DirectWriteSchema < GraphQL::Schema
+      class WriteCheckSubscriptions
+        def use(schema)
+          schema.subscriptions = self
+        end
+
+        def write_subscription(query, events)
+          query.context[:write_subscription_count] ||= 0
+          query.context[:write_subscription_count] += 1
+          evs = query.context[:written_events] ||= []
+          evs << events
+          nil
+        end
+      end
+      class ImplicitWrite < GraphQL::Schema::Subscription
+        type String
+
+        def subscribe
+          "#{context[:written_events]&.size.inspect} / #{context[:write_subscription_count].inspect} / #{subscription_written?}"
+        end
+      end
+
+      class DirectWrite < ImplicitWrite
+        type String
+        def subscribe
+          write_subscription
+          super
+        end
+      end
+
+      class DirectWriteTwice < DirectWrite
+        type String
+        def subscribe
+          write_subscription
+          super
+        end
+      end
+
+      class Subscription < GraphQL::Schema::Object
+        field :direct, subscription: DirectWrite
+        field :implicit, subscription: ImplicitWrite
+        field :direct_twice, subscription: DirectWriteTwice
+      end
+
+      use WriteCheckSubscriptions.new
+      subscription(Subscription)
+    end
+
+    it "only calls write_subscription once" do
+      res = DirectWriteSchema.execute("subscription { direct }")
+      assert_equal "1 / 1 / true", res["data"]["direct"]
+      assert_equal 1, res.context[:write_subscription_count]
+      assert_equal [1], res.context[:written_events].map(&:size)
+      assert_equal true, res.context.namespace(:subscriptions)[:subscriptions].values.first.subscription_written?
+
+      res = DirectWriteSchema.execute("subscription { implicit }")
+      assert_equal "nil / nil / false", res["data"]["implicit"]
+      assert_equal 1, res.context[:write_subscription_count]
+      assert_equal [1], res.context[:written_events].map(&:size)
+      assert_equal false, res.context.namespace(:subscriptions)[:subscriptions].values.first.subscription_written?
+    end
+
+    it "raises if write_subscription is called twice" do
+      err = assert_raises GraphQL::Error do
+        DirectWriteSchema.execute("subscription { directTwice }")
+      end
+      assert_equal "`write_subscription` was called but `DirectWriteSchema::DirectWriteTwice#subscription_written?` is already true. Remove a call to `write subscription`.", err.message
     end
   end
 end

@@ -162,6 +162,10 @@ end
 
 In the above examples, `loads:` is provided a concrete type, but it also supports abstract types (i.e. interfaces and unions).
 
+### Resolving the type of loaded objects
+
+When `loads:` gets an object from {{ "Schema.object_from_id" | api_doc }}, it passes that object to {{ "Schema.resolve_type" | api_doc }} to confirm that it resolves to the same type originally configured with `loads:`.
+
 ### Handling failed loads
 
 If `loads:` fails to find an object or if the loaded object isn't resolved to the specified `loads:` type (using {{ "Schema.resolve_type" | api_doc }}), a {{ "GraphQL::LoadApplicationObjectFailedError" | api_doc }} is raised and returned to the client.
@@ -170,9 +174,11 @@ You can customize this behavior by implementing `def load_application_object_fai
 
 ```ruby
 def load_application_object_failed(error)
-  nil # instead of returning an error, fail silently.
+  raise GraphQL::ExecutionError, "Couldn't find an object for ID: `#{error.id}`"
 end
 ```
+
+Or, if `load_application_object_failed` returns a new object, that object will be used as the `loads:` result.
 
 ### Handling unauthorized loaded objects
 

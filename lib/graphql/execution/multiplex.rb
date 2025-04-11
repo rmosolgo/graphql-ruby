@@ -25,7 +25,7 @@ module GraphQL
     class Multiplex
       include Tracing::Traceable
 
-      attr_reader :context, :queries, :schema, :max_complexity, :dataloader
+      attr_reader :context, :queries, :schema, :max_complexity, :dataloader, :current_trace
 
       def initialize(schema:, queries:, context:, max_complexity:)
         @schema = schema
@@ -34,11 +34,8 @@ module GraphQL
         @context = context
         @dataloader = @context[:dataloader] ||= @schema.dataloader_class.new
         @tracers = schema.tracers + (context[:tracers] || [])
-        # Support `context: {backtrace: true}`
-        if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
-          @tracers << GraphQL::Backtrace::Tracer
-        end
         @max_complexity = max_complexity
+        @current_trace = context[:trace] ||= schema.new_trace(multiplex: self)
       end
     end
   end

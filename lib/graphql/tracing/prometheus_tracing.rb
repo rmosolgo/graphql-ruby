@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/tracing/platform_tracing"
+
 module GraphQL
   module Tracing
     class PrometheusTracing < PlatformTracing
@@ -27,9 +29,9 @@ module GraphQL
         super opts
       end
 
-      def platform_trace(platform_key, key, data, &block)
+      def platform_trace(platform_key, key, _data, &block)
         return yield unless @keys_whitelist.include?(key)
-        instrument_execution(platform_key, key, data, &block)
+        instrument_execution(platform_key, key, &block)
       end
 
       def platform_field_key(type, field)
@@ -46,7 +48,7 @@ module GraphQL
 
       private
 
-      def instrument_execution(platform_key, key, data, &block)
+      def instrument_execution(platform_key, key, &block)
         start = ::Process.clock_gettime ::Process::CLOCK_MONOTONIC
         result = block.call
         duration = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC) - start

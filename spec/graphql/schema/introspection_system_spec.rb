@@ -120,6 +120,14 @@ describe GraphQL::Schema::IntrospectionSystem do
       res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
       assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "overriddenName" }
     end
+
+    it "includes extra types" do
+      res = Jazz::Schema.execute('{ __type(name: "BlogPost") { name } }')
+      assert_equal "BLOGPOST", res["data"]["__type"]["name"]
+      res2 = Jazz::Schema.execute("{ __schema { types { name } } }")
+      names = res2["data"]["__schema"]["types"].map { |t| t["name"] }
+      assert_includes names, "BLOGPOST"
+    end
   end
 
   describe "copying the built-ins" do
@@ -244,6 +252,8 @@ describe GraphQL::Schema::IntrospectionSystem do
 
   describe "Dynamically hiding them" do
     class HidingIntrospectionSchema < GraphQL::Schema
+      use GraphQL::Schema::Warden if ADD_WARDEN
+
       module HideIntrospectionByContext
         def visible?(ctx)
           super &&

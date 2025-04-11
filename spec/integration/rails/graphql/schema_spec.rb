@@ -16,6 +16,7 @@ describe GraphQL::Schema do
 
   describe "#union_memberships" do
     it "returns a list of unions that include the type" do
+      skip("Not implemented for Visibility::Profile") if GraphQL::Schema.use_visibility_profile?
       assert_equal [schema.types["Animal"], schema.types["AnimalAsCow"]], schema.union_memberships(schema.types["Cow"])
     end
   end
@@ -42,12 +43,14 @@ describe GraphQL::Schema do
 
   describe "#references_to" do
     it "returns a list of Field and Arguments of that type" do
+      skip "Not implemented when using Visibility::Profile" if GraphQL::Schema.use_visibility_profile?
       cow_field = schema.get_field("Query", "cow")
-      assert_equal [cow_field], schema.references_to("Cow")
+      cow_t = schema.get_type("Cow")
+      assert_equal [cow_field], schema.references_to(cow_t)
     end
 
     it "returns an empty list when type is not referenced by any field or argument" do
-      assert_equal [], schema.references_to("Goat")
+      assert_equal [], schema.references_to(Jazz::InstrumentType)
     end
   end
 
@@ -60,15 +63,15 @@ describe GraphQL::Schema do
   describe "#resolve_type" do
     describe "when the return value is nil" do
       it "returns nil" do
-        result = relay_schema.resolve_type(123, nil, GraphQL::Query::NullContext)
-        assert_equal(nil, result)
+        result = relay_schema.resolve_type(123, nil, GraphQL::Query::NullContext.instance)
+        assert_equal([nil, nil], result)
       end
     end
 
     describe "when the return value is not a BaseType" do
       it "raises an error " do
         err = assert_raises(RuntimeError) {
-          relay_schema.resolve_type(nil, :test_error, GraphQL::Query::NullContext)
+          relay_schema.resolve_type(nil, :test_error, GraphQL::Query::NullContext.instance)
         }
         assert_includes err.message, "not_a_type (Symbol)"
       end
@@ -149,12 +152,13 @@ describe GraphQL::Schema do
       it "contains built-in directives" do
         schema = GraphQL::Schema
 
-        assert_equal ['deprecated', 'include', 'oneOf', 'skip'], schema.directives.keys.sort
+        assert_equal ['deprecated', 'include', 'oneOf', 'skip', 'specifiedBy'], schema.directives.keys.sort
 
         assert_equal GraphQL::Schema::Directive::Deprecated, schema.directives['deprecated']
         assert_equal GraphQL::Schema::Directive::Include, schema.directives['include']
         assert_equal GraphQL::Schema::Directive::Skip, schema.directives['skip']
         assert_equal GraphQL::Schema::Directive::OneOf, schema.directives['oneOf']
+        assert_equal GraphQL::Schema::Directive::SpecifiedBy, schema.directives['specifiedBy']
       end
     end
   end
@@ -207,42 +211,30 @@ type Query {
   end
 
   describe "#instrument" do
-    class VariableCountInstrumenter
-      attr_reader :counts
-      def initialize
-        @counts = []
-      end
-
-      def before_query(query)
-        @counts << query.variables.length
-      end
-
-      def after_query(query)
-        @counts << :end
+    module VariableCountTrace
+      def execute_query(query:)
+        query.context[:counter] << query.variables.length
+        super
+      ensure
+        query.context[:counter] << :end
       end
     end
 
     # Use this to assert instrumenters are called as a stack
-    class StackCheckInstrumenter
-      def initialize(counter)
-        @counter = counter
-      end
-
-      def before_query(query)
-        @counter.counts << :in
-      end
-
-      def after_query(query)
-        @counter.counts << :out
+    module StackCheckTrace
+      def execute_query(query:)
+        query.context[:counter] << :in
+        super
+      ensure
+        query.context[:counter] << :out
       end
     end
 
-    let(:variable_counter) {
-      VariableCountInstrumenter.new
+    let(:variable_counts) {
+      []
     }
 
     let(:schema) {
-      spec = self
       Class.new(GraphQL::Schema) do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
@@ -256,23 +248,23 @@ type Query {
         end
 
         query(query_type)
-        instrument(:query, StackCheckInstrumenter.new(spec.variable_counter))
-        instrument(:query, spec.variable_counter)
+        trace_with VariableCountTrace
+        trace_with StackCheckTrace
       end
     }
 
     it "can wrap query execution" do
-      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ")
-      schema.execute("query getInt($val: Int = 5, $val2: Int = 3){ int(value: $val) int2: int(value: $val2) } ")
-      assert_equal [:in, 1, :end, :out, :in, 2, :end, :out], variable_counter.counts
+      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ", context: { counter: variable_counts })
+      schema.execute("query getInt($val: Int = 5, $val2: Int = 3){ int(value: $val) int2: int(value: $val2) } ", context: { counter: variable_counts })
+      assert_equal [:in, 1, :end, :out, :in, 2, :end, :out], variable_counts
     end
 
     it "runs even when a runtime error occurs" do
-      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ")
+      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ", context: { counter: variable_counts })
       assert_raises(RuntimeError) {
-        schema.execute("query getInt($val: Int = 13){ int(value: $val) } ")
+        schema.execute("query getInt($val: Int = 13){ int(value: $val) } ", context: { counter: variable_counts })
       }
-      assert_equal [:in, 1, :end, :out, :in, 1, :end, :out], variable_counter.counts
+      assert_equal [:in, 1, :end, :out, :in, 1, :end, :out], variable_counts
     end
   end
 
@@ -359,7 +351,7 @@ type Query {
   end
 
   describe "#as_json / #to_json" do
-    it "returns the instrospection result" do
+    it "returns the introspection result" do
       result = schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
       assert_equal result, schema.as_json
       assert_equal result, JSON.parse(schema.to_json)

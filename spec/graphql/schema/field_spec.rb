@@ -32,7 +32,7 @@ describe GraphQL::Schema::Field do
 
       underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, camelize: false
-      end
+      end.ensure_loaded
 
       arg_name, arg_defn = underscored_field.arguments.first
       assert_equal 'underscored_arg', arg_name
@@ -54,17 +54,45 @@ describe GraphQL::Schema::Field do
     end
 
     it "accepts a block for definition" do
+      field_defn = nil
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
 
-        field :test, String do
+        field_defn = field :test do
           argument :test, String
           description "A Description."
+          comment "A Comment."
+          type String
         end
       end
 
+      assert_nil field_defn.description, "The block isn't called right away"
+      assert_nil field_defn.type, "The block isn't called right away"
+      field_defn.ensure_loaded
+      assert_equal "String", field_defn.type.graphql_name
+
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
+      assert_equal "A Comment.", object.fields["test"].comment
+    end
+
+    it "sets connection? when type is given in a block" do
+      field_defn = nil
+      Class.new(Jazz::BaseObject) do
+        graphql_name "JustAName"
+
+        field_defn = field :instruments do
+          type Jazz::InstrumentType.connection_type
+        end
+      end
+
+      assert_equal false, field_defn.connection?
+      assert_equal false, field_defn.scoped?
+      assert_equal [], field_defn.extensions
+      field_defn.ensure_loaded
+      assert_equal true, field_defn.scoped?
+      assert_equal true, field_defn.connection?
+      assert_equal [GraphQL::Schema::Field::ScopeExtension, GraphQL::Schema::Field::ConnectionExtension], field_defn.extensions.map(&:class)
     end
 
     it "accepts a block for definition and yields the field if the block has an arity of one" do
@@ -74,11 +102,13 @@ describe GraphQL::Schema::Field do
         field :test, String do |field|
           field.argument :test, String
           field.description "A Description."
+          field.comment "A Comment."
         end
       end
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
+      assert_equal "A Comment.", object.fields["test"].comment
     end
 
     it "accepts anonymous classes as type" do
@@ -345,11 +375,11 @@ describe GraphQL::Schema::Field do
 
             field :complexityTest, String do
               complexity 'One hundred and eighty'
-            end
+            end.ensure_loaded
           end
         end
 
-        assert_match /^Invalid complexity:/, err.message
+        assert_match(/^Invalid complexity:/, err.message)
       end
 
       it 'fails if the proc does not accept 3 parameters' do
@@ -359,11 +389,11 @@ describe GraphQL::Schema::Field do
 
             field :complexityTest, String do
               complexity ->(one, two) { 52 }
-            end
+            end.ensure_loaded
           end
         end
 
-        assert_match /^A complexity proc should always accept 3 parameters/, err.message
+        assert_match(/^A complexity proc should always accept 3 parameters/, err.message)
       end
 
       it 'fails if second argument is a mutation instead of a type' do
@@ -380,7 +410,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^Use `field :complexityTest, mutation: Mutation, ...` to provide a mutation to this field instead/, err.message
+        assert_match(/^Use `field :complexityTest, mutation: Mutation, ...` to provide a mutation to this field instead/, err.message)
       end
     end
   end
@@ -584,7 +614,7 @@ describe GraphQL::Schema::Field do
           { "name" => "John Cleese" }
         ]
       }
-      assert_equal expected_result, result
+      assert_graphql_equal expected_result, result
     end
   end
 
@@ -648,18 +678,18 @@ describe GraphQL::Schema::Field do
 
       search_results = res["data"]["searchResults"]
       expected_result = {
+        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "lowercase" => "lowercase-works",
         "Capital" => "capital-camelize-false-works",
         "Other" => "capital-camelize-true-works",
         "OtherCapital" => "explicit-hash-key-works",
-        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "stringifiedHashKey" => "hash-key-is-tried-as-string",
         "booleanTrueWithHashKey" => true,
         "booleanFalseWithHashKey" => false,
         "booleanFalseWithSymbolizedHashKey" => false
 
       }
-      assert_equal expected_result, search_results
+      assert_graphql_equal expected_result, search_results
     end
 
     it "works with non-hash instances" do
@@ -681,17 +711,17 @@ describe GraphQL::Schema::Field do
 
       search_results = res["data"]["ostructResults"]
       expected_result = {
+        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "lowercase" => "lowercase-works",
         "Capital" => "capital-camelize-false-works",
         "Other" => "capital-camelize-true-works",
         "OtherCapital" => "explicit-hash-key-works",
-        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "stringifiedHashKey" => "hash-key-is-tried-as-string",
         "booleanTrueWithHashKey" => true,
         "booleanFalseWithHashKey" => false,
         "booleanFalseWithSymbolizedHashKey" => false
       }
-      assert_equal expected_result, search_results
+      assert_graphql_equal expected_result, search_results
     end
 
     it "populates `method_str`" do
@@ -718,6 +748,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   it "Delegates many properties to its @resolver_class" do
     resolver = Class.new(GraphQL::Schema::Resolver) do
       description "description 1"
+      comment "comment 1"
       type [GraphQL::Types::Float], null: true
 
       argument :b, GraphQL::Types::Float
@@ -726,8 +757,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     field = GraphQL::Schema::Field.new(name: "blah", owner: nil, resolver_class: resolver, extras: [:blah]) do
       argument :a, GraphQL::Types::Int
     end
+    field.ensure_loaded
 
     assert_equal "description 1", field.description
+    assert_equal "comment 1", field.comment
     assert_equal "[Float!]", field.type.to_type_signature
     assert_equal 1, field.complexity
     assert_equal :resolve_with_support, field.resolver_method
@@ -739,6 +772,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     assert_equal true, field.scoped?
 
     resolver.description("description 2")
+    resolver.comment("comment 2")
     resolver.type(GraphQL::Types::String, null: false)
     resolver.complexity(5)
     resolver.resolver_method(:blah)
@@ -748,6 +782,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     resolver.argument(:c, GraphQL::Types::Boolean)
 
     assert_equal "description 2", field.description
+    assert_equal "comment 2", field.comment
     assert_equal "String!", field.type.to_type_signature
     assert_equal 5, field.complexity
     assert_equal :blah, field.resolver_method
@@ -787,9 +822,78 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     query(Query)
   end
 
-
   it "uses the overridden type for detecting connections" do
     res = ResolverConnectionOverrideSchema.execute("{ f { nodes } }")
     assert_equal [1,2,3], res["data"]["f"]["nodes"]
+  end
+
+  it "has a consistent Object shape" do
+    # This test will be inherently flaky: the `Field` instances
+    # on the heap depends on what tests ran before this one and
+    # whether or not GC ran since then.
+    shapes = Set.new
+
+    # This is custom state added by some test schemas:
+    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata, :@admin_only]
+
+    # Remove any invalid (non-retained) field instances from the heap
+    GC.start
+
+    ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
+      field_ivars = field_obj.instance_variables
+      custom_ivars.each do |ivar|
+        if field_ivars.delete(ivar) && field_obj.class == GraphQL::Schema::Field
+          raise "Invariant: a built-in-based field instance has an ivar that was expected to be custom state(#{ivar.inspect}): #{field_obj.path} (#{field_obj.inspect})"
+        end
+      end
+      shapes.add(field_ivars)
+    end
+    # To see the different shapes, uncomment this:
+    # File.open("field_shapes.txt", "wb+") do |f|
+    #   shapes.to_a.each do |shape|
+    #     f.puts(shape.inspect + "\n")
+    #   end
+    # end
+    default_field_shape = GraphQL::Introspection::TypeType.get_field("name").instance_variables
+    assert_equal [default_field_shape], shapes.to_a
+  end
+
+  it "works with implicit hash key and default value" do
+    class HashDefautSchema < GraphQL::Schema
+      class Example < GraphQL::Schema::Object
+        field :implicit_lookup, [String, null: true]
+        field :explicit_lookup, [String, null: true], hash_key: :nonexistent
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :example, Example, null: false
+
+        def example
+          Hash.new { [] }
+        end
+      end
+
+      query(Query)
+    end
+
+    res = HashDefautSchema.execute('query { example { implicitLookup explicitLookup } }').to_h
+    assert_equal({ "implicitLookup" => [], "explicitLookup" => [] }, res["data"]["example"])
+  end
+
+  module FieldConnectionTest
+    class SomeConnection < GraphQL::Schema::Object; end
+    class Connection < GraphQL::Schema::Object; end
+  end
+
+  it "Automatically detects connection, but can be overridden" do
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::SomeConnection)
+    assert field.connection?
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::SomeConnection, connection: false)
+    refute field.connection?
+
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::Connection)
+    refute field.connection?
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::Connection, connection: true)
+    assert field.connection?
   end
 end

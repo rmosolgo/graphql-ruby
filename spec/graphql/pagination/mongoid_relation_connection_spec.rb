@@ -8,9 +8,11 @@ if testing_mongoid?
       field :name, type: String
     end
 
-    # Populate the DB
-    Food.collection.drop
-    ConnectionAssertions::NAMES.each { |n| Food.create(name: n) }
+    before do
+      # Populate the DB
+      Food.collection.drop
+      ConnectionAssertions::NAMES.each { |n| Food.create(name: n) }
+    end
 
     class MongoidRelationConnectionWithTotalCount < GraphQL::Pagination::MongoidRelationConnection
       def total_count

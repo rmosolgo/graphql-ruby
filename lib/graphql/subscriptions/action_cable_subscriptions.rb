@@ -35,7 +35,7 @@ module GraphQL
     #       }
     #
     #       result = MySchema.execute(
-    #         query: query,
+    #         query,
     #         context: context,
     #         variables: variables,
     #         operation_name: operation_name
@@ -107,7 +107,7 @@ module GraphQL
         when 2
           true
         else
-          raise ArgumentError, "#{@serializer} must repond to `.load` accepting one or two arguments"
+          raise ArgumentError, "#{@serializer} must respond to `.load` accepting one or two arguments"
         end
         @transmit_ns = namespace
         super
@@ -124,7 +124,8 @@ module GraphQL
       # This subscription was re-evaluated.
       # Send it to the specific stream where this client was waiting.
       def deliver(subscription_id, result)
-        payload = { result: result.to_h, more: true }
+        has_more = !result.context.namespace(:subscriptions)[:final_update]
+        payload = { result: result.to_h, more: has_more }
         @action_cable.server.broadcast(stream_subscription_name(subscription_id), payload)
       end
 
@@ -165,11 +166,12 @@ module GraphQL
       #
       def setup_stream(channel, initial_event)
         topic = initial_event.topic
-        channel.stream_from(stream_event_name(initial_event), coder: @action_cable_coder) do |message|
+        event_stream = stream_event_name(initial_event)
+        channel.stream_from(event_stream, coder: @action_cable_coder) do |message|
           events_by_fingerprint = @events[topic]
           object = nil
           events_by_fingerprint.each do |_fingerprint, events|
-            if events.any? && events.first == initial_event
+            if !events.empty? && events.first == initial_event
               # The fingerprint has told us that this response should be shared by all subscribers,
               # so just run it once, then deliver the result to every subscriber
               first_event = events.first

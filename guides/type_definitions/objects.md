@@ -71,6 +71,7 @@ end
 
 # then...
 class Types::TodoList < Types::BaseObject
+  comment "Comment of the TodoList type"
   description "A list of items which may be completed"
 
   field :name, String, "The unique name of this list", null: false

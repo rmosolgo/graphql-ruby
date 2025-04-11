@@ -25,12 +25,20 @@ module GraphQL
       def validate_field_selections(ast_node, resolved_type)
         msg = if resolved_type.nil?
           nil
-        elsif resolved_type.kind.scalar? && ast_node.selections.any?
-          if ast_node.selections.first.is_a?(GraphQL::Language::Nodes::InlineFragment)
-            "Selections can't be made on scalars (%{node_name} returns #{resolved_type.graphql_name} but has inline fragments [#{ast_node.selections.map(&:type).map(&:name).join(", ")}])"
-          else
-            "Selections can't be made on scalars (%{node_name} returns #{resolved_type.graphql_name} but has selections [#{ast_node.selections.map(&:name).join(", ")}])"
+        elsif !ast_node.selections.empty? && resolved_type.kind.leaf?
+          selection_strs = ast_node.selections.map do |n|
+            case n
+            when GraphQL::Language::Nodes::InlineFragment
+              "\"... on #{n.type.name} { ... }\""
+            when GraphQL::Language::Nodes::Field
+              "\"#{n.name}\""
+            when GraphQL::Language::Nodes::FragmentSpread
+              "\"#{n.name}\""
+            else
+              raise "Invariant: unexpected selection node: #{n}"
+            end
           end
+          "Selections can't be made on #{resolved_type.kind.name.sub("_", " ").downcase}s (%{node_name} returns #{resolved_type.graphql_name} but has selections [#{selection_strs.join(", ")}])"
         elsif resolved_type.kind.fields? && ast_node.selections.empty?
           "Field must have selections (%{node_name} returns #{resolved_type.graphql_name} but has no selections. Did you mean '#{ast_node.name} { ... }'?)"
         else

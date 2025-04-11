@@ -3,7 +3,7 @@ layout: guide
 search: true
 section: Authorization
 title: Visibility
-desc: Programatically hide parts of the GraphQL schema from some users.
+desc: Programmatically hide parts of the GraphQL schema from some users.
 index: 1
 redirect_from:
 - /schema/limiting_visibility
@@ -18,7 +18,16 @@ Here are some reasons you might want to hide parts of your schema:
 
 ## Hiding Parts of the Schema
 
-You can customize the visibility of parts of your schema by reimplementing various `visible?` methods:
+To start limiting visibility of your schema, add the plugin:
+
+```ruby
+class MySchema < GraphQL::Schema
+  # ...
+  use GraphQL::Schema::Visibility # see below for options
+end
+```
+
+Then, you can customize the visibility of parts of your schema by reimplementing various `visible?` methods:
 
 - Type classes have a `.visible?(context)` class method
 - Fields and arguments have a `#visible?(context)` instance method
@@ -29,6 +38,33 @@ These methods are called with the query context, based on the hash you pass as `
 
 - In introspection, the member will _not_ be included in the result
 - In normal queries, if a query references that member, it will return a validation error, since that member doesn't exist
+
+## Visibility Profiles
+
+You can use named profiles to cache your schema's visibility modes. For example:
+
+```ruby
+use GraphQL::Schema::Visibility, profiles: {
+  # mode_name => example_context_hash
+  public: { public: true },
+  beta: { public: true, beta: true },
+  internal_admin: { internal_admin: true }
+}
+```
+
+Then, you can run queries with `context[:visibility_profile]` equal to one of the pre-defined profiles. When you do, GraphQL-Ruby will create a cached set of types for named profile. `.visible?` will only be called with the context hash passed to `profiles: ...`.
+
+The profile contexts passed to `profiles` will have `visibility_profile: ...` added to them, then they're frozen by GraphQL-Ruby.
+
+### Preloading profiles
+
+By default, GraphQL-Ruby will preload all named visibility profiles when `Rails.env.production?` is present and true. You can manually set this option by passing `use ... preload: true` (or `false`). Enable preloading in production to reduce latency of the first request to each visibility profile. Disable preloading in development to speed up application boot.
+
+### Dynamic profiles
+
+When you provide named visibility profiles, `context[:visibility_profile]` is required for query execution. You can also permit dynamic visibility for queries which _don't_ have that key set by passing `use ..., dynamic: true`. You could use this to support backwards compatibility or when visibility calculations are too complex to predefine.
+
+When no named profiles are defined, all queries use dynamic visibility.
 
 ## Object Visibility
 
@@ -93,3 +129,40 @@ end
 ```
 
 For this to work, the base argument class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-arguments" %}.
+
+## Opting Out
+
+By default, GraphQL-Ruby always runs visibility checks. You can opt out of this by adding to your schema class:
+
+```ruby
+class MySchema < GraphQL::Schema
+  # ...
+  # Opt out of GraphQL-Ruby's visibility feature:
+  use GraphQL::Schema::AlwaysVisible
+end
+```
+
+For big schemas, this can be a worthwhile speed-up.
+
+## Migration Notes
+
+{{ "GraphQL::Schema::Visibility" | api_doc }} is a _new_ implementation of visibility in GraphQL-Ruby. It has some slight differences from the previous implementation ({{ "GraphQL::Schema::Warden" | api_doc }}):
+
+- `Visibility` speeds up Rails app boot because it doesn't require all types to be loaded during boot and only loads types as they are used by queries.
+- `Visibility` supports predefined, reusable visibility profiles which speeds up queries using complicated `visible?` checks.
+- `Visibility` hides types differently in a few edge cases:
+  - Previously, `Warden` hid interface and union types which had no possible types. `Visibility` doesn't check possible types (in order to support performance improvements), so those types must return `false` for `visible?` in the same cases where all possible types were hidden. Otherwise, that interface or union type will be visible but have no possible types.
+  - When an object type is connected to the schema as a field return type or a union member, and also implements and interface, if the object type's _other_ connection(s) to the schema are hidden, then it won't appear as an implementer of that interface unless it's registered with `orphan_types` (either by the schema or interface). `Warden` used a "global" map of types so it could discover object types in this case, but `Visibility` doesn't have that global map. (Since time of writing, `Visibility` _does_ have some global type tracking, so maybe this could be fixed.)
+- When `Visibility` is used, several (Ruby-level) Schema introspection methods don't work because the caches they draw on haven't been calculated (`Schema.references_to`, `Schema.union_memberships`). If you're using these, please get in touch so that we can find a way forward.
+
+### Migration Mode
+
+You can use `use GraphQL::Schema::Visibility, ... migration_errors: true` to enable migration mode. In this mode, GraphQL-Ruby will make visibility checks with _both_ `Visibility` and `Warden` and compare the result, raising a descriptive error when the two systems return different results. As you migrate to `Visibility`, enable this mode in test to find any unexpected discrepancies.
+
+Sometimes, there's a discrepancy that is hard to resolve but doesn't make any _real_ difference in application behavior. To address these cases, you can use these flags in `context`:
+
+- `context[:visibility_migration_running] = true` is set in the main query context.
+- `context[:visibility_migration_warden_running] = true` is set in the _duplicate_ context which is passed to a `Warden` instance.
+- If you set `context[:skip_migration_error] = true`, then no migration error will be raised for that query.
+
+You can use these flags to conditionally handle edge cases that should be ignored in testing.

@@ -13,7 +13,7 @@ exports[`returns generated code 1`] = `
      * @private
     */
     var _aliases = {
-  \\"GetStuff\\": \\"b8086942c2fbb6ac69b97cbade848033\\"
+  "GetStuff": "b8086942c2fbb6ac69b97cbade848033"
 }
 
     /**
@@ -21,7 +21,7 @@ exports[`returns generated code 1`] = `
      * @return {String}
      * @private
     */
-    var _client = \\"test-client\\"
+    var _client = "test-client"
 
     var OperationStoreClient = {
       /**
@@ -30,7 +30,7 @@ exports[`returns generated code 1`] = `
        * @return {String} stored operation ID
       */
       getOperationId: function(operationName) {
-        return _client + \\"/\\" + OperationStoreClient.getPersistedQueryAlias(operationName)
+        return _client + "/" + OperationStoreClient.getPersistedQueryAlias(operationName)
       },
 
       /**
@@ -41,7 +41,7 @@ exports[`returns generated code 1`] = `
       getPersistedQueryAlias: function(operationName) {
         var persistedAlias = _aliases[operationName]
         if (!persistedAlias) {
-          throw new Error(\\"Failed to find persisted alias for operation name: \\" + operationName)
+          throw new Error("Failed to find persisted alias for operation name: " + operationName)
         } else {
           return persistedAlias
         }

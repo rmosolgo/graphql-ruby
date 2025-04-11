@@ -1,14 +1,16 @@
 require:
   - ./cop/development/none_without_block_cop
+  - ./cop/development/no_eval_cop
   - ./cop/development/no_focus_cop
   - ./lib/graphql/rubocop/graphql/default_null_true
   - ./lib/graphql/rubocop/graphql/default_required_true
   - ./cop/development/context_is_passed_cop
+  - ./cop/development/trace_methods_cop.rb
 
 AllCops:
   DisabledByDefault: true
   SuggestExtensions: false
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.7
   Exclude:
     - 'lib/graphql/language/lexer.rb'
     - 'lib/graphql/language/parser.rb'
@@ -22,21 +24,9 @@ Development/ContextIsPassedCop:
   Exclude:
     - 'spec/**/*'
     - 'cop/**/*'
-    # Legacy-related:
-    - 'lib/graphql/*_type.rb'
-    - 'lib/graphql/define/**/*.rb'
-    - 'lib/graphql/relay/**/*'
-    - 'lib/graphql/function.rb'
-    - 'lib/graphql/directive.rb'
-    - 'lib/graphql/field.rb'
-    - 'lib/graphql/schema/traversal.rb'
-    - 'lib/graphql/schema/possible_types.rb'
     - 'lib/graphql/schema/validation.rb'
-    - 'lib/graphql/compatibility/**/*'
-    - 'lib/graphql/static_validation/type_stack.rb'
     - 'lib/graphql/static_validation/literal_validator.rb'
     - 'lib/graphql/static_validation/rules/**/*.rb'
-    - 'lib/graphql/internal_representation/**/*.rb'
     # AST-related:
     - 'lib/graphql/schema/build_from_definition.rb'
     - 'lib/graphql/language/printer.rb'
@@ -52,9 +42,18 @@ Development/NoneWithoutBlockCop:
     - "lib/**/*"
     - "spec/**/*"
 
+Development/NoEvalCop:
+  Include:
+    - "lib/**/*"
+
 Development/NoFocusCop:
   Include:
     - "spec/**/*"
+
+Development/TraceMethodsCop:
+  Include:
+    - "lib/graphql/tracing/perfetto_trace.rb"
+    - "lib/graphql/tracing/notifications_trace.rb"
 
 # def ...
 # end

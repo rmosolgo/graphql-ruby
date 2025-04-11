@@ -2,6 +2,32 @@
 module GraphQL
   module Language
     class Printer
+      OMISSION = "... (truncated)"
+
+      class TruncatableBuffer
+        class TruncateSizeReached < StandardError; end
+
+        DEFAULT_INIT_CAPACITY = 500
+
+        def initialize(truncate_size: nil)
+          @out = String.new(capacity: truncate_size || DEFAULT_INIT_CAPACITY)
+          @truncate_size = truncate_size
+        end
+
+        def append(other)
+          if @truncate_size && (@out.size + other.size) > @truncate_size
+            @out << other.slice(0, @truncate_size - @out.size)
+            raise(TruncateSizeReached, "Truncate size reached")
+          else
+            @out << other
+          end
+        end
+
+        def to_string
+          @out
+        end
+      end
+
       # Turn an arbitrary AST node back into a string.
       #
       # @example Turning a document into a query string
@@ -14,124 +40,186 @@ module GraphQL
       #
       #  class MyPrinter < GraphQL::Language::Printer
       #    def print_argument(arg)
-      #      "#{arg.name}: <HIDDEN>"
+      #      print_string("#{arg.name}: <HIDDEN>")
       #    end
       #  end
       #
       #  MyPrinter.new.print(document)
       #  # => "mutation { pay(creditCard: <HIDDEN>) { success } }"
       #
-      #
+      # @param node [Nodes::AbstractNode]
       # @param indent [String] Whitespace to add to the printed node
+      # @param truncate_size [Integer, nil] The size to truncate to.
       # @return [String] Valid GraphQL for `node`
-      def print(node, indent: "")
+      def print(node, indent: "", truncate_size: nil)
+        truncate_size = truncate_size ? [truncate_size - OMISSION.size, 0].max : nil
+        @out = TruncatableBuffer.new(truncate_size: truncate_size)
         print_node(node, indent: indent)
+        @out.to_string
+      rescue TruncatableBuffer::TruncateSizeReached
+        @out.to_string << OMISSION
       end
 
       protected
 
+      def print_string(str)
+        @out.append(str)
+      end
+
       def print_document(document)
-        document.definitions.map { |d| print_node(d) }.join("\n\n")
+        document.definitions.each_with_index do |d, i|
+          print_node(d)
+          print_string("\n\n") if i < document.definitions.size - 1
+        end
       end
 
       def print_argument(argument)
-        "#{argument.name}: #{print_node(argument.value)}".dup
-      end
-
-      def print_directive(directive)
-        out = "@#{directive.name}".dup
-
-        if directive.arguments.any?
-          out << "(#{directive.arguments.map { |a| print_argument(a) }.join(", ")})"
-        end
-
-        out
-      end
-
-      def print_enum(enum)
-        "#{enum.name}".dup
-      end
-
-      def print_null_value
-        "null".dup
-      end
-
-      def print_field(field, indent: "")
-        out = "#{indent}".dup
-        out << "#{field.alias}: " if field.alias
-        out << "#{field.name}"
-        out << "(#{field.arguments.map { |a| print_argument(a) }.join(", ")})" if field.arguments.any?
-        out << print_directives(field.directives)
-        out << print_selections(field.selections, indent: indent)
-        out
-      end
-
-      def print_fragment_definition(fragment_def, indent: "")
-        out = "#{indent}fragment #{fragment_def.name}".dup
-        if fragment_def.type
-          out << " on #{print_node(fragment_def.type)}"
-        end
-        out << print_directives(fragment_def.directives)
-        out << print_selections(fragment_def.selections, indent: indent)
-        out
-      end
-
-      def print_fragment_spread(fragment_spread, indent: "")
-        out = "#{indent}...#{fragment_spread.name}".dup
-        out << print_directives(fragment_spread.directives)
-        out
-      end
-
-      def print_inline_fragment(inline_fragment, indent: "")
-        out = "#{indent}...".dup
-        if inline_fragment.type
-          out << " on #{print_node(inline_fragment.type)}"
-        end
-        out << print_directives(inline_fragment.directives)
-        out << print_selections(inline_fragment.selections, indent: indent)
-        out
+        print_string(argument.name)
+        print_string(": ")
+        print_node(argument.value)
       end
 
       def print_input_object(input_object)
-        "{#{input_object.arguments.map { |a| print_argument(a) }.join(", ")}}"
+        print_string("{")
+        input_object.arguments.each_with_index do |a, i|
+          print_argument(a)
+          print_string(", ") if i < input_object.arguments.size - 1
+        end
+        print_string("}")
+      end
+
+      def print_directive(directive)
+        print_string("@")
+        print_string(directive.name)
+
+        if !directive.arguments.empty?
+          print_string("(")
+          directive.arguments.each_with_index do |a, i|
+            print_argument(a)
+            print_string(", ") if i < directive.arguments.size - 1
+          end
+          print_string(")")
+        end
+      end
+
+      def print_enum(enum)
+        print_string(enum.name)
+      end
+
+      def print_null_value
+        print_string("null")
+      end
+
+      def print_field(field, indent: "")
+        print_string(indent)
+        if field.alias
+          print_string(field.alias)
+          print_string(": ")
+        end
+        print_string(field.name)
+        if !field.arguments.empty?
+          print_string("(")
+          field.arguments.each_with_index do |a, i|
+            print_argument(a)
+            print_string(", ") if i < field.arguments.size - 1
+          end
+          print_string(")")
+        end
+        print_directives(field.directives)
+        print_selections(field.selections, indent: indent)
+      end
+
+      def print_fragment_definition(fragment_def, indent: "")
+        print_string(indent)
+        print_string("fragment")
+        if fragment_def.name
+          print_string(" ")
+          print_string(fragment_def.name)
+        end
+
+        if fragment_def.type
+          print_string(" on ")
+          print_node(fragment_def.type)
+        end
+        print_directives(fragment_def.directives)
+        print_selections(fragment_def.selections, indent: indent)
+      end
+
+      def print_fragment_spread(fragment_spread, indent: "")
+        print_string(indent)
+        print_string("...")
+        print_string(fragment_spread.name)
+        print_directives(fragment_spread.directives)
+      end
+
+      def print_inline_fragment(inline_fragment, indent: "")
+        print_string(indent)
+        print_string("...")
+        if inline_fragment.type
+          print_string(" on ")
+          print_node(inline_fragment.type)
+        end
+        print_directives(inline_fragment.directives)
+        print_selections(inline_fragment.selections, indent: indent)
       end
 
       def print_list_type(list_type)
-        "[#{print_node(list_type.of_type)}]".dup
+        print_string("[")
+        print_node(list_type.of_type)
+        print_string("]")
       end
 
       def print_non_null_type(non_null_type)
-        "#{print_node(non_null_type.of_type)}!".dup
+        print_node(non_null_type.of_type)
+        print_string("!")
       end
 
       def print_operation_definition(operation_definition, indent: "")
-        out = "#{indent}#{operation_definition.operation_type}".dup
-        out << " #{operation_definition.name}" if operation_definition.name
-
-        if operation_definition.variables.any?
-          out << "(#{operation_definition.variables.map { |v| print_variable_definition(v) }.join(", ")})"
+        print_string(indent)
+        print_string(operation_definition.operation_type)
+        if operation_definition.name
+          print_string(" ")
+          print_string(operation_definition.name)
         end
 
-        out << print_directives(operation_definition.directives)
-        out << print_selections(operation_definition.selections, indent: indent)
-        out
+        if !operation_definition.variables.empty?
+          print_string("(")
+          operation_definition.variables.each_with_index do |v, i|
+            print_variable_definition(v)
+            print_string(", ") if i < operation_definition.variables.size - 1
+          end
+          print_string(")")
+        end
+
+        print_directives(operation_definition.directives)
+        print_selections(operation_definition.selections, indent: indent)
       end
 
       def print_type_name(type_name)
-        "#{type_name.name}".dup
+        print_string(type_name.name)
       end
 
       def print_variable_definition(variable_definition)
-        out = "$#{variable_definition.name}: #{print_node(variable_definition.type)}".dup
-        out << " = #{print_node(variable_definition.default_value)}" unless variable_definition.default_value.nil?
-        out
+        print_string("$")
+        print_string(variable_definition.name)
+        print_string(": ")
+        print_node(variable_definition.type)
+        unless variable_definition.default_value.nil?
+          print_string(" = ")
+          print_node(variable_definition.default_value)
+        end
+        variable_definition.directives.each do |dir|
+          print_string(" ")
+          print_directive(dir)
+        end
       end
 
       def print_variable_identifier(variable_identifier)
-        "$#{variable_identifier.name}".dup
+        print_string("$")
+        print_string(variable_identifier.name)
       end
 
-      def print_schema_definition(schema)
+      def print_schema_definition(schema, extension: false)
         has_conventional_names = (schema.query.nil? || schema.query == 'Query') &&
           (schema.mutation.nil? || schema.mutation == 'Mutation') &&
           (schema.subscription.nil? || schema.subscription == 'Subscription')
@@ -140,175 +228,252 @@ module GraphQL
           return
         end
 
-        out = "schema".dup
-        if schema.directives.any?
+        extension ? print_string("extend schema") : print_string("schema")
+
+        if !schema.directives.empty?
           schema.directives.each do |dir|
-            out << "\n  "
-            out << print_node(dir)
+            print_string("\n  ")
+            print_node(dir)
           end
+
           if !has_conventional_names
-            out << "\n"
+            print_string("\n")
           end
         end
 
         if !has_conventional_names
           if schema.directives.empty?
-            out << " "
+            print_string(" ")
           end
-          out << "{\n"
-          out << "  query: #{schema.query}\n" if schema.query
-          out << "  mutation: #{schema.mutation}\n" if schema.mutation
-          out << "  subscription: #{schema.subscription}\n" if schema.subscription
-          out << "}"
+          print_string("{\n")
+          print_string("  query: #{schema.query}\n") if schema.query
+          print_string("  mutation: #{schema.mutation}\n") if schema.mutation
+          print_string("  subscription: #{schema.subscription}\n") if schema.subscription
+          print_string("}")
         end
-        out
       end
 
-      def print_scalar_type_definition(scalar_type)
-        out = print_description(scalar_type)
-        out << "scalar #{scalar_type.name}"
-        out << print_directives(scalar_type.directives)
+
+      def print_scalar_type_definition(scalar_type, extension: false)
+        extension ? print_string("extend ") : print_description_and_comment(scalar_type)
+        print_string("scalar ")
+        print_string(scalar_type.name)
+        print_directives(scalar_type.directives)
       end
 
-      def print_object_type_definition(object_type)
-        out = print_description(object_type)
-        out << "type #{object_type.name}"
-        out << print_implements(object_type) unless object_type.interfaces.empty?
-        out << print_directives(object_type.directives)
-        out << print_field_definitions(object_type.fields)
+      def print_object_type_definition(object_type, extension: false)
+        extension ? print_string("extend ") : print_description_and_comment(object_type)
+        print_string("type ")
+        print_string(object_type.name)
+        print_implements(object_type) unless object_type.interfaces.empty?
+        print_directives(object_type.directives)
+        print_field_definitions(object_type.fields)
       end
 
       def print_implements(type)
-        " implements #{type.interfaces.map(&:name).join(" & ")}"
+        print_string(" implements ")
+        i = 0
+        type.interfaces.each do |int|
+          if i > 0
+            print_string(" & ")
+          end
+          print_string(int.name)
+          i += 1
+        end
       end
 
       def print_input_value_definition(input_value)
-        out = "#{input_value.name}: #{print_node(input_value.type)}".dup
-        out << " = #{print_node(input_value.default_value)}" unless input_value.default_value.nil?
-        out << print_directives(input_value.directives)
+        print_string(input_value.name)
+        print_string(": ")
+        print_node(input_value.type)
+        unless input_value.default_value.nil?
+          print_string(" = ")
+          print_node(input_value.default_value)
+        end
+        print_directives(input_value.directives)
       end
 
       def print_arguments(arguments, indent: "")
-        if arguments.all?{ |arg| !arg.description }
-          return "(#{arguments.map{ |arg| print_input_value_definition(arg) }.join(", ")})"
+        if arguments.all? { |arg| !arg.description && !arg.comment }
+          print_string("(")
+          arguments.each_with_index do |arg, i|
+            print_input_value_definition(arg)
+            print_string(", ") if i < arguments.size - 1
+          end
+          print_string(")")
+          return
         end
 
-        out = "(\n".dup
-        out << arguments.map.with_index{ |arg, i|
-          "#{print_description(arg, indent: "  " + indent, first_in_block: i == 0)}  #{indent}"\
-          "#{print_input_value_definition(arg)}"
-        }.join("\n")
-        out << "\n#{indent})"
+        print_string("(\n")
+        arguments.each_with_index do |arg, i|
+          print_comment(arg, indent: "  " + indent, first_in_block: i == 0)
+          print_description(arg, indent: "  " + indent, first_in_block: i == 0)
+          print_string("  ")
+          print_string(indent)
+          print_input_value_definition(arg)
+          print_string("\n") if i < arguments.size - 1
+        end
+        print_string("\n")
+        print_string(indent)
+        print_string(")")
       end
 
       def print_field_definition(field)
-        out = field.name.dup
+        print_string(field.name)
         unless field.arguments.empty?
-          out << print_arguments(field.arguments, indent: "  ")
+          print_arguments(field.arguments, indent: "  ")
         end
-        out << ": #{print_node(field.type)}"
-        out << print_directives(field.directives)
+        print_string(": ")
+        print_node(field.type)
+        print_directives(field.directives)
       end
 
-      def print_interface_type_definition(interface_type)
-        out = print_description(interface_type)
-        out << "interface #{interface_type.name}"
-        out << print_implements(interface_type) if interface_type.interfaces.any?
-        out << print_directives(interface_type.directives)
-        out << print_field_definitions(interface_type.fields)
+      def print_interface_type_definition(interface_type, extension: false)
+        extension ? print_string("extend ") : print_description_and_comment(interface_type)
+        print_string("interface ")
+        print_string(interface_type.name)
+        print_implements(interface_type) if !interface_type.interfaces.empty?
+        print_directives(interface_type.directives)
+        print_field_definitions(interface_type.fields)
       end
 
-      def print_union_type_definition(union_type)
-        out = print_description(union_type)
-        out << "union #{union_type.name}"
-        out << print_directives(union_type.directives)
-        out << " = " + union_type.types.map(&:name).join(" | ")
-      end
-
-      def print_enum_type_definition(enum_type)
-        out = print_description(enum_type)
-        out << "enum #{enum_type.name}#{print_directives(enum_type.directives)} {\n"
-        enum_type.values.each.with_index do |value, i|
-          out << print_description(value, indent: '  ', first_in_block: i == 0)
-          out << print_enum_value_definition(value)
+      def print_union_type_definition(union_type, extension: false)
+        extension ? print_string("extend ") : print_description_and_comment(union_type)
+        print_string("union ")
+        print_string(union_type.name)
+        print_directives(union_type.directives)
+        if !union_type.types.empty?
+          print_string(" = ")
+          i = 0
+          union_type.types.each do |t|
+            if i > 0
+              print_string(" | ")
+            end
+            print_string(t.name)
+            i += 1
+          end
         end
-        out << "}"
+      end
+
+      def print_enum_type_definition(enum_type, extension: false)
+        extension ? print_string("extend ") : print_description_and_comment(enum_type)
+        print_string("enum ")
+        print_string(enum_type.name)
+        print_directives(enum_type.directives)
+        if !enum_type.values.empty?
+          print_string(" {\n")
+          enum_type.values.each.with_index do |value, i|
+            print_description(value, indent: "  ", first_in_block: i == 0)
+            print_comment(value, indent: "  ", first_in_block: i == 0)
+            print_enum_value_definition(value)
+          end
+          print_string("}")
+        end
       end
 
       def print_enum_value_definition(enum_value)
-        out = "  #{enum_value.name}".dup
-        out << print_directives(enum_value.directives)
-        out << "\n"
+        print_string("  ")
+        print_string(enum_value.name)
+        print_directives(enum_value.directives)
+        print_string("\n")
       end
 
-      def print_input_object_type_definition(input_object_type)
-        out = print_description(input_object_type)
-        out << "input #{input_object_type.name}"
-        out << print_directives(input_object_type.directives)
+      def print_input_object_type_definition(input_object_type, extension: false)
+        extension ? print_string("extend ") : print_description_and_comment(input_object_type)
+        print_string("input ")
+        print_string(input_object_type.name)
+        print_directives(input_object_type.directives)
         if !input_object_type.fields.empty?
-          out << " {\n"
+          print_string(" {\n")
           input_object_type.fields.each.with_index do |field, i|
-            out << print_description(field, indent: '  ', first_in_block: i == 0)
-            out << "  #{print_input_value_definition(field)}\n"
+            print_description(field, indent: "  ", first_in_block: i == 0)
+            print_comment(field, indent: "  ", first_in_block: i == 0)
+            print_string("  ")
+            print_input_value_definition(field)
+            print_string("\n")
           end
-          out << "}"
+          print_string("}")
         end
-        out
       end
 
       def print_directive_definition(directive)
-        out = print_description(directive)
-        out << "directive @#{directive.name}"
+        print_description(directive)
+        print_string("directive @")
+        print_string(directive.name)
 
-        if directive.arguments.any?
-          out << print_arguments(directive.arguments)
+        if !directive.arguments.empty?
+          print_arguments(directive.arguments)
         end
 
         if directive.repeatable
-          out << " repeatable"
+          print_string(" repeatable")
         end
 
-        out << " on #{directive.locations.map(&:name).join(' | ')}"
+        print_string(" on ")
+        i = 0
+        directive.locations.each do |loc|
+          if i > 0
+            print_string(" | ")
+          end
+          print_string(loc.name)
+          i += 1
+        end
       end
 
       def print_description(node, indent: "", first_in_block: true)
-        return ''.dup unless node.description
+        return unless node.description
 
-        description = indent != '' && !first_in_block ? "\n".dup : "".dup
-        description << GraphQL::Language::BlockString.print(node.description, indent: indent)
+        print_string("\n") if indent != "" && !first_in_block
+        print_string(GraphQL::Language::BlockString.print(node.description, indent: indent))
+      end
+
+      def print_comment(node, indent: "", first_in_block: true)
+        return unless node.comment
+
+        print_string("\n") if indent != "" && !first_in_block
+        print_string(GraphQL::Language::Comment.print(node.comment, indent: indent))
+      end
+
+      def print_description_and_comment(node)
+        print_description(node)
+        print_comment(node)
       end
 
       def print_field_definitions(fields)
-        if fields.empty?
-          ""
-        else
-          out = " {\n".dup
-          fields.each.with_index do |field, i|
-            out << print_description(field, indent: '  ', first_in_block: i == 0)
-            out << "  #{print_field_definition(field)}\n"
-          end
-          out << "}"
+        return if fields.empty?
+
+        print_string(" {\n")
+        i = 0
+        fields.each do |field|
+          print_description(field, indent: "  ", first_in_block: i == 0)
+          print_comment(field, indent: "  ", first_in_block: i == 0)
+          print_string("  ")
+          print_field_definition(field)
+          print_string("\n")
+          i += 1
         end
+        print_string("}")
       end
 
       def print_directives(directives)
-        if directives.any?
-          directives.map { |d| " #{print_directive(d)}" }.join
-        else
-          ""
+        return if directives.empty?
+
+        directives.each do |d|
+          print_string(" ")
+          print_directive(d)
         end
       end
 
       def print_selections(selections, indent: "")
-        if selections.any?
-          out = " {\n".dup
-          selections.each do |selection|
-            out << print_node(selection, indent: indent + "  ") << "\n"
-          end
-          out << "#{indent}}"
-        else
-          ""
+        return if selections.empty?
+
+        print_string(" {\n")
+        selections.each do |selection|
+          print_node(selection, indent: indent + "  ")
+          print_string("\n")
         end
+        print_string(indent)
+        print_string("}")
       end
 
       def print_node(node, indent: "")
@@ -347,40 +512,62 @@ module GraphQL
           print_variable_identifier(node)
         when Nodes::SchemaDefinition
           print_schema_definition(node)
+        when Nodes::SchemaExtension
+          print_schema_definition(node, extension: true)
         when Nodes::ScalarTypeDefinition
           print_scalar_type_definition(node)
+        when Nodes::ScalarTypeExtension
+          print_scalar_type_definition(node, extension: true)
         when Nodes::ObjectTypeDefinition
           print_object_type_definition(node)
+        when Nodes::ObjectTypeExtension
+          print_object_type_definition(node, extension: true)
         when Nodes::InputValueDefinition
           print_input_value_definition(node)
         when Nodes::FieldDefinition
           print_field_definition(node)
         when Nodes::InterfaceTypeDefinition
           print_interface_type_definition(node)
+        when Nodes::InterfaceTypeExtension
+          print_interface_type_definition(node, extension: true)
         when Nodes::UnionTypeDefinition
           print_union_type_definition(node)
+        when Nodes::UnionTypeExtension
+          print_union_type_definition(node, extension: true)
         when Nodes::EnumTypeDefinition
           print_enum_type_definition(node)
+        when Nodes::EnumTypeExtension
+          print_enum_type_definition(node, extension: true)
         when Nodes::EnumValueDefinition
           print_enum_value_definition(node)
         when Nodes::InputObjectTypeDefinition
           print_input_object_type_definition(node)
+        when Nodes::InputObjectTypeExtension
+          print_input_object_type_definition(node, extension: true)
         when Nodes::DirectiveDefinition
           print_directive_definition(node)
         when FalseClass, Float, Integer, NilClass, String, TrueClass, Symbol
-          GraphQL::Language.serialize(node)
+          print_string(GraphQL::Language.serialize(node))
         when Array
-          "[#{node.map { |v| print_node(v) }.join(", ")}]".dup
+          print_string("[")
+          node.each_with_index do |v, i|
+            print_node(v)
+            print_string(", ") if i < node.length - 1
+          end
+          print_string("]")
         when Hash
-          "{#{node.map { |k, v| "#{k}: #{print_node(v)}" }.join(", ")}}".dup
+          print_string("{")
+          node.each_with_index do |(k, v), i|
+            print_string(k)
+            print_string(": ")
+            print_node(v)
+            print_string(", ") if i < node.length - 1
+          end
+          print_string("}")
         else
-          GraphQL::Language.serialize(node.to_s)
+          print_string(GraphQL::Language.serialize(node.to_s))
         end
       end
-
-      private
-
-      attr_reader :node
     end
   end
 end

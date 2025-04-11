@@ -4,6 +4,16 @@ module GraphQL
   class Schema
     class Member
       module HasDirectives
+        def self.extended(child_cls)
+          super
+          child_cls.module_exec { self.own_directives = nil }
+        end
+
+        def inherited(child_cls)
+          super
+          child_cls.own_directives = nil
+        end
+
         # Create an instance of `dir_class` for `self`, using `options`.
         #
         # It removes a previously-attached instance of `dir_class`, if there is one.
@@ -22,8 +32,6 @@ module GraphQL
           HasDirectives.remove_directive(@own_directives, dir_class)
           nil
         end
-
-        NO_DIRECTIVES = [].freeze
 
         def directives
           HasDirectives.get_directives(self, @own_directives, :directives)
@@ -45,25 +53,25 @@ module GraphQL
               inherited_directives = if schema_member.superclass.respond_to?(directives_method)
                 get_directives(schema_member.superclass, schema_member.superclass.public_send(directives_method), directives_method)
               else
-                NO_DIRECTIVES
+                GraphQL::EmptyObjects::EMPTY_ARRAY
               end
-              if inherited_directives.any? && directives
+              if !inherited_directives.empty? && directives
                 dirs = []
                 merge_directives(dirs, inherited_directives)
                 merge_directives(dirs, directives)
                 dirs
               elsif directives
                 directives
-              elsif inherited_directives.any?
+              elsif !inherited_directives.empty?
                 inherited_directives
               else
-                NO_DIRECTIVES
+                GraphQL::EmptyObjects::EMPTY_ARRAY
               end
             when Module
               dirs = nil
               schema_member.ancestors.reverse_each do |ancestor|
                 if ancestor.respond_to?(:own_directives) &&
-                    (anc_dirs = ancestor.own_directives).any?
+                    !(anc_dirs = ancestor.own_directives).empty?
                   dirs ||= []
                   merge_directives(dirs, anc_dirs)
                 end
@@ -72,9 +80,9 @@ module GraphQL
                 dirs ||= []
                 merge_directives(dirs, directives)
               end
-              dirs || NO_DIRECTIVES
+              dirs || GraphQL::EmptyObjects::EMPTY_ARRAY
             when HasDirectives
-              directives || NO_DIRECTIVES
+              directives || GraphQL::EmptyObjects::EMPTY_ARRAY
             else
               raise "Invariant: how could #{schema_member} not be a Class, Module, or instance of HasDirectives?"
             end
@@ -83,7 +91,7 @@ module GraphQL
           private
 
           # Modify `target` by adding items from `dirs` such that:
-          # - Any name conflict is overriden by the incoming member of `dirs`
+          # - Any name conflict is overridden by the incoming member of `dirs`
           # - Any other member of `dirs` is appended
           # @param target [Array<GraphQL::Schema::Directive>]
           # @param dirs [Array<GraphQL::Schema::Directive>]
@@ -101,12 +109,9 @@ module GraphQL
           end
         end
 
-
         protected
 
-        def own_directives
-          @own_directives
-        end
+        attr_accessor :own_directives
       end
     end
   end

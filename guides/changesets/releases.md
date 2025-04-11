@@ -9,7 +9,28 @@ desc: Associating changes to version numbers
 index: 3
 ---
 
-To be available to clients, Changesets added to the schema with `use GraphQL::Enterprise::Changeset::Release`:
+To be available to clients, Changesets added to the schema with `use GraphQL::Enterprise::Changeset::Release changeset_dir: "..."`:
+
+```ruby
+class MyAppSchema < GraphQL::Schema
+  # Add this before root types so that newly-added types are also added to the schema
+  use GraphQL::Enterprise::Changeset::Release, changeset_dir: "app/graphql/changesets"
+
+  query(...)
+  mutation(...)
+  subscription(...)
+end
+```
+
+This attaches each Changeset defined in `app/graphql/changesets/*.rb` to the schema. (It assumes Rails conventions, where an underscored file like `app/graphql/changesets/add_some_feature.rb` contains a class like `Changesets::AddSomeFeature`.)
+
+{% callout warning %}
+
+Add `GraphQL::Enterprise::Changeset::Release` _before_ hooking up your root `query(...)`, `mutation(...)`, and `subscription(...)` types. Otherwise, the schema may not find links to types in new schema versions.
+
+{% endcallout %}
+
+Alternatively, Changesets can be explicitly attached using `changesets: [...]`, for example:
 
 ```ruby
 class MyAppSchema < GraphQL::Schema
@@ -17,10 +38,11 @@ class MyAppSchema < GraphQL::Schema
     Changesets::DeprecateRecipeFlag,
     Changesets::RemoveRecipeFlag,
   ]
+  # ...
 end
 ```
 
-Only changesets on the list will be shown to clients. The `release ...` configuration in the changeset will be compared to `context[:changeset_version]` to determine if the changeset applies to the current request.
+Only changesets in the directory (or in the array) will be shown to clients. The `release ...` configuration in the changeset will be compared to `context[:changeset_version]` to determine if the changeset applies to the current request.
 
 ## Inspecting Releases
 

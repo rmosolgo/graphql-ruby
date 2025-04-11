@@ -124,6 +124,8 @@ describe GraphQL::Schema::Interface do
 
     module InterfaceC
       include GraphQL::Schema::Interface
+      definition_methods do
+      end
     end
 
     module InterfaceD
@@ -153,6 +155,25 @@ describe GraphQL::Schema::Interface do
 
     it "follows the normal Ruby ancestor chain when including other interfaces" do
       assert_equal('not 42', InterfaceE.some_method)
+    end
+  end
+
+  describe "comments" do
+    class SchemaWithInterface < GraphQL::Schema
+      module InterfaceWithComment
+        include GraphQL::Schema::Interface
+        comment "Interface comment"
+      end
+
+      class Query < GraphQL::Schema::Object
+        implements InterfaceWithComment
+      end
+
+      query(Query)
+    end
+
+    it "assigns comment to the interface" do
+      assert_equal("Interface comment", SchemaWithInterface::Query.interfaces[0].comment)
     end
   end
 
@@ -224,7 +245,7 @@ type Query implements InterfaceA & InterfaceB {
     end
   end
 
-  describe "transitive implemention of same interface twice" do
+  describe "transitive implementation of same interface twice" do
     class TransitiveInterfaceSchema < GraphQL::Schema
       module Node
         include GraphQL::Schema::Interface
@@ -480,8 +501,8 @@ interface Timestamped implements Node {
     let(:interface) { Dummy::Edible }
 
     it "has possible types" do
-      expected_defns = [Dummy::Cheese, Dummy::Milk, Dummy::Honey, Dummy::Aspartame]
-      assert_equal(expected_defns, Dummy::Schema.possible_types(interface))
+      expected_defns = [Dummy::Aspartame, Dummy::Cheese, Dummy::Honey, Dummy::Milk]
+      assert_equal(expected_defns, Dummy::Schema.possible_types(interface).sort_by(&:graphql_name))
     end
 
     describe "query evaluation" do
@@ -497,7 +518,7 @@ interface Timestamped implements Node {
       end
     end
 
-    describe "mergable query evaluation" do
+    describe "mergeable query evaluation" do
       let(:result) { Dummy::Schema.execute(query_string, variables: {"cheeseId" => 2})}
       let(:query_string) {%|
         query fav {
@@ -555,7 +576,7 @@ interface Timestamped implements Node {
             {"__typename"=>"Milk", "origin"=>"Antiquity"},
           ]
 
-          assert_equal expected_data, result["data"]["allEdible"]
+          assert_graphql_equal expected_data, result["data"]["allEdible"]
         end
       end
     end
@@ -601,8 +622,81 @@ interface Timestamped implements Node {
             {"__typename"=>"Milk", "fatContent"=>0.04}
           ]
         }
-        assert_equal expected_result, result["data"]
+        assert_graphql_equal expected_result, result["data"]
       end
+
+      describe "in definition_methods when implementing another interface" do
+        class InterfaceInheritanceSchema < GraphQL::Schema
+          module Node
+            include GraphQL::Schema::Interface
+            definition_methods do
+              def resolve_type(obj, ctx)
+                raise "This should never be called -- it's overridden"
+              end
+            end
+          end
+          module Pet
+            include GraphQL::Schema::Interface
+            implements Node
+
+            definition_methods do
+              def resolve_type(obj, ctx)
+                if obj[:name] == "Fifi"
+                  Dog
+                else
+                  Cat
+                end
+              end
+            end
+          end
+          class Cat < GraphQL::Schema::Object
+            implements Pet
+          end
+
+          class Dog < GraphQL::Schema::Object
+            implements Pet
+          end
+
+          class Query < GraphQL::Schema::Object
+            field :pet, Pet do
+              argument :name, String
+            end
+
+            def pet(name:)
+              { name: name }
+            end
+          end
+
+          query(Query)
+          orphan_types(Cat, Dog)
+        end
+
+        it "calls the local definition, not the inherited one" do
+          res = InterfaceInheritanceSchema.execute("{ pet(name: \"Fifi\") { __typename } }")
+          assert_equal "Dog", res["data"]["pet"]["__typename"]
+
+          res = InterfaceInheritanceSchema.execute("{ pet(name: \"Pepper\") { __typename } }")
+          assert_equal "Cat", res["data"]["pet"]["__typename"]
+        end
+      end
+    end
+  end
+
+  describe ".comment" do
+    it "isn't inherited" do
+      int1 = Module.new do
+        include GraphQL::Schema::Interface
+        graphql_name "Int1"
+        comment "TODO: fix this"
+      end
+
+      int2 = Module.new do
+        include int1
+        graphql_name "Int2"
+      end
+
+      assert_equal "TODO: fix this", int1.comment
+      assert_nil int2.comment
     end
   end
 end

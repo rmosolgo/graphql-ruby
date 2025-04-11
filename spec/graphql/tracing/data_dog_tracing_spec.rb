@@ -4,6 +4,14 @@ require "spec_helper"
 
 describe GraphQL::Tracing::DataDogTracing do
   module DataDogTest
+    class Thing < GraphQL::Schema::Object
+      field :str, String
+
+      def str
+        "blah"
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
@@ -12,11 +20,17 @@ describe GraphQL::Tracing::DataDogTracing do
       def int
         1
       end
+
+      field :thing, Thing
+
+      def thing
+        :thing
+      end
     end
 
     class TestSchema < GraphQL::Schema
       query(Query)
-      use(GraphQL::Tracing::DataDogTracing)
+      use(GraphQL::Tracing::DataDogTracing, legacy_tracing: true)
     end
 
     class CustomTracerTestSchema < GraphQL::Schema
@@ -59,9 +73,9 @@ describe GraphQL::Tracing::DataDogTracing do
   end
 
   it "sets custom tags tags" do
-    DataDogTest::CustomTracerTestSchema.execute("{ int }")
+    DataDogTest::CustomTracerTestSchema.execute("{ thing { str } }")
     expected_custom_tags = [
-      ["custom:lex", "query_string"],
+      (USING_C_PARSER ? ["custom:lex", "query_string"] : nil),
       ["custom:parse", "query_string"],
       ["custom:execute_multiplex", "multiplex"],
       ["custom:analyze_multiplex", "multiplex"],
@@ -69,8 +83,10 @@ describe GraphQL::Tracing::DataDogTracing do
       ["custom:analyze_query", "query"],
       ["custom:execute_query", "query"],
       ["custom:authorized", "context,type,object,path"],
+      ["custom:execute_field", "field,query,ast_node,arguments,object,owner,path"],
+      ["custom:authorized", "context,type,object,path"],
       ["custom:execute_query_lazy", "multiplex,query"],
-    ]
+    ].compact
 
     actual_custom_tags = Datadog::SPAN_TAGS.reject { |t| t[0] == "operation" || t[0] == "component" || t[0].is_a?(Symbol) }
     assert_equal expected_custom_tags, actual_custom_tags

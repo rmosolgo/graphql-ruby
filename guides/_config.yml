@@ -21,6 +21,7 @@ defaults:
       path: ""
     values:
       layout: "default"
+      fullwidth: true
 
 algolia:
   application_id: '8VO8708WUV'

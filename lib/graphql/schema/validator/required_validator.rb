@@ -35,9 +35,10 @@ module GraphQL
       #   end
       #
       class RequiredValidator < Validator
-        # @param one_of [Symbol, Array<Symbol>] An argument, or a list of arguments, that represents a valid set of inputs for this field
+        # @param one_of [Array<Symbol>] A list of arguments, exactly one of which is required for this field
+        # @param argument [Symbol] An argument that is required for this field
         # @param message [String]
-        def initialize(one_of: nil, argument: nil, message: "%{validated} has the wrong arguments", **default_options)
+        def initialize(one_of: nil, argument: nil, message: nil, **default_options)
           @one_of = if one_of
             one_of
           elsif argument
@@ -49,20 +50,37 @@ module GraphQL
           super(**default_options)
         end
 
-        def validate(_object, _context, value)
-          matched_conditions = 0
+        def validate(_object, context, value)
+          fully_matched_conditions = 0
+          partially_matched_conditions = 0
 
           if !value.nil?
             @one_of.each do |one_of_condition|
               case one_of_condition
               when Symbol
                 if value.key?(one_of_condition)
-                  matched_conditions += 1
+                  fully_matched_conditions += 1
                 end
               when Array
-                if one_of_condition.all? { |k| value.key?(k) }
-                  matched_conditions += 1
-                  break
+                any_match = false
+                full_match = true
+
+                one_of_condition.each do |k|
+                  if value.key?(k)
+                    any_match = true
+                  else
+                    full_match = false
+                  end
+                end
+
+                partial_match = !full_match && any_match
+
+                if full_match
+                  fully_matched_conditions += 1
+                end
+
+                if partial_match
+                  partially_matched_conditions += 1
                 end
               else
                 raise ArgumentError, "Unknown one_of condition: #{one_of_condition.inspect}"
@@ -70,11 +88,34 @@ module GraphQL
             end
           end
 
-          if matched_conditions == 1
+          if fully_matched_conditions == 1 && partially_matched_conditions == 0
             nil # OK
           else
-            @message
+            @message || build_message(context)
           end
+        end
+
+        def build_message(context)
+          argument_definitions = @validated.arguments(context).values
+          required_names = @one_of.map do |arg_keyword|
+            if arg_keyword.is_a?(Array)
+              names = arg_keyword.map { |arg| arg_keyword_to_grapqhl_name(argument_definitions, arg) }
+              "(" + names.join(" and ") + ")"
+            else
+              arg_keyword_to_grapqhl_name(argument_definitions, arg_keyword)
+            end
+          end
+
+          if required_names.size == 1
+            "%{validated} must include the following argument: #{required_names.first}."
+          else
+            "%{validated} must include exactly one of the following arguments: #{required_names.join(", ")}."
+          end
+        end
+
+        def arg_keyword_to_grapqhl_name(argument_definitions, arg_keyword)
+          argument_definition = argument_definitions.find { |defn| defn.keyword == arg_keyword }
+          argument_definition.graphql_name
         end
       end
     end

@@ -20,7 +20,7 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     schema = build_schema(String, {length: { minimum: 5 }, allow_null: true, allow_blank: false})
     result = schema.execute("{ validated(value: null) }")
-    assert_equal nil, result["data"]["validated"]
+    assert_nil result["data"]["validated"]
     refute result.key?("errors")
 
     result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: blank_string })
@@ -30,6 +30,7 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     # This string doesn't respond to blank:
     non_blank_string = ValidatorHelpers::NonBlankString.new("")
+    refute non_blank_string.respond_to?(:blank?), "NonBlankString doesn't have a blank? method"
     result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: non_blank_string })
     assert_nil result["data"].fetch("validated")
     assert_equal ["value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
@@ -111,10 +112,10 @@ describe GraphQL::Schema::Validator::LengthValidator do
     assert_nil result["data"].fetch("validated")
     assert_equal ["Instead, make value have length less than 5"], result["errors"].map { |e| e["message"] }
 
-    schema = build_schema(String, {length: { minimum: 50, message: "NO, BAD! %{validated} %{count}" }})
+    schema = build_schema(String, {length: { minimum: 50, message: "NO, BAD! %{validated} %{count} %{value}" }})
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["NO, BAD! value 50"], result["errors"].map { |e| e["message"] }
+    assert_equal ["NO, BAD! value 50 \"is-invalid\""], result["errors"].map { |e| e["message"] }
   end
 
   list_expectations = [

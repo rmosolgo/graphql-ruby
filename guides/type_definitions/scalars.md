@@ -17,6 +17,7 @@ Scalars are "leaf" values in GraphQL. There are several built-in scalars, and yo
 - `ID`, which a specialized `String` for representing unique object identifiers
 - `ISO8601DateTime`, an ISO 8601-encoded datetime
 - `ISO8601Date`, an ISO 8601-encoded date
+- `ISO8601Duration`, an ISO 8601-encoded duration. ⚠ This requires `ActiveSupport::Duration` to be loaded and will raise {{ "GraphQL::Error" | api_doc }} if it's `.coerce_*` methods are called when it is not defined.
 - `JSON`, ⚠ This returns arbitrary JSON (Ruby hashes, arrays, strings, integers, floats, booleans and nils). Take care: by using this type, you completely lose all GraphQL type safety. Consider building object types for your data instead.
 - `BigInt`, a numeric value which may exceed the size of a 32-bit integer
 
@@ -39,6 +40,8 @@ field :id, ID, null: false
 field :created_at, GraphQL::Types::ISO8601DateTime, null: false
 # ISO8601Date field
 field :birthday, GraphQL::Types::ISO8601Date, null: false
+# ISO8601Duration field
+field :age, GraphQL::Types::ISO8601Duration, null: false
 # JSON field ⚠
 field :parameters, GraphQL::Types::JSON, null: false
 # BigInt field
@@ -70,6 +73,7 @@ end
 
 # app/graphql/types/url.rb
 class Types::Url < Types::BaseScalar
+  comment "TODO comment of the scalar"
   description "A valid URL, transported as a string"
 
   def self.coerce_input(input_value, context)

@@ -46,6 +46,20 @@ module GraphQL
           elsif defined?(@description)
             @description
           else
+            @description = nil
+          end
+        end
+
+        # Call this method to provide a new comment; OR
+        # call it without an argument to get the comment
+        # @param new_comment [String]
+        # @return [String, nil]
+        def comment(new_comment = NOT_CONFIGURED)
+          if !NOT_CONFIGURED.equal?(new_comment)
+            @comment = new_comment
+          elsif defined?(@comment)
+            @comment
+          else
             nil
           end
         end
@@ -56,8 +70,13 @@ module GraphQL
           def inherited(child_class)
             child_class.introspection(introspection)
             child_class.description(description)
-            if defined?(@graphql_name) && (self.name.nil? || graphql_name != default_graphql_name)
+            child_class.comment(nil)
+            child_class.default_graphql_name = nil
+
+            if defined?(@graphql_name) && @graphql_name && (self.name.nil? || graphql_name != default_graphql_name)
               child_class.graphql_name(graphql_name)
+            else
+              child_class.graphql_name = nil
             end
             super
           end
@@ -98,7 +117,9 @@ module GraphQL
         def default_graphql_name
           @default_graphql_name ||= begin
             raise GraphQL::RequiredImplementationMissingError, 'Anonymous class should declare a `graphql_name`' if name.nil?
-            -name.split("::").last.sub(/Type\Z/, "")          end
+            g_name = -name.split("::").last
+            g_name.end_with?("Type") ? g_name.sub(/Type\Z/, "") : g_name
+          end
         end
 
         def visible?(context)
@@ -109,16 +130,13 @@ module GraphQL
           true
         end
 
+        def default_relay
+          false
+        end
+
         protected
 
-        attr_writer :default_graphql_name
-
-        private
-
-        def inherited(subclass)
-          super
-          subclass.default_graphql_name = nil
-        end
+        attr_writer :default_graphql_name, :graphql_name
       end
     end
   end

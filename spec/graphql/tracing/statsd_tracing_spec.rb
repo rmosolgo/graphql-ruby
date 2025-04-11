@@ -9,9 +9,7 @@ describe GraphQL::Tracing::StatsdTracing do
         yield
       end
 
-      def timings
-        @timings
-      end
+      attr_reader :timings
 
       def clear
         @timings = []
@@ -20,17 +18,25 @@ describe GraphQL::Tracing::StatsdTracing do
   end
 
   class StatsdTestSchema < GraphQL::Schema
+    class Thing < GraphQL::Schema::Object
+      field :str, String
+      def str; "blah"; end
+    end
+
     class Query < GraphQL::Schema::Object
       field :int, Integer, null: false
 
       def int
         1
       end
+
+      field :thing, Thing
+      def thing; :thing; end
     end
 
     query(Query)
 
-    use GraphQL::Tracing::StatsdTracing, statsd: MockStatsd
+    use GraphQL::Tracing::StatsdTracing, statsd: MockStatsd, legacy_tracing: true
   end
 
   before do
@@ -38,18 +44,20 @@ describe GraphQL::Tracing::StatsdTracing do
   end
 
   it "gathers timings" do
-    StatsdTestSchema.execute("query X { int }")
+    StatsdTestSchema.execute("query X { int thing { str } }")
     expected_timings = [
       "graphql.execute_multiplex",
       "graphql.analyze_multiplex",
-      "graphql.lex",
+      (USING_C_PARSER ? "graphql.lex" : nil),
       "graphql.parse",
       "graphql.validate",
       "graphql.analyze_query",
       "graphql.execute_query",
       "graphql.authorized.Query",
+      "graphql.Query.thing",
+      "graphql.authorized.Thing",
       "graphql.execute_query_lazy"
-    ]
+    ].compact
     assert_equal expected_timings, MockStatsd.timings
   end
 end

@@ -102,7 +102,7 @@ module GraphQL
 
       self.all_validators = {}
 
-      include Schema::FindInheritedValue::EmptyObjects
+      include GraphQL::EmptyObjects
 
       class ValidationFailedError < GraphQL::ExecutionError
         attr_reader :errors
@@ -133,7 +133,7 @@ module GraphQL
             if all_errors.frozen? # It's empty
               all_errors = []
             end
-            interpolation_vars = { validated: validated.graphql_name }
+            interpolation_vars = { validated: validated.graphql_name, value: value.inspect }
             if errors.is_a?(String)
               all_errors << (errors % interpolation_vars)
             else
@@ -143,7 +143,7 @@ module GraphQL
           end
         end
 
-        if all_errors.any?
+        if !all_errors.empty?
           raise ValidationFailedError.new(errors: all_errors)
         end
         nil
@@ -169,3 +169,5 @@ require "graphql/schema/validator/allow_null_validator"
 GraphQL::Schema::Validator.install(:allow_null, GraphQL::Schema::Validator::AllowNullValidator)
 require "graphql/schema/validator/allow_blank_validator"
 GraphQL::Schema::Validator.install(:allow_blank, GraphQL::Schema::Validator::AllowBlankValidator)
+require "graphql/schema/validator/all_validator"
+GraphQL::Schema::Validator.install(:all, GraphQL::Schema::Validator::AllValidator)

@@ -30,7 +30,8 @@ describe GraphQL::Tracing::PrometheusTracing do
       PrometheusTracingTest::Schema.use(
         GraphQL::Tracing::PrometheusTracing,
         client: client,
-        trace_scalars: true
+        trace_scalars: true,
+        legacy_tracing: true,
       )
 
       PrometheusTracingTest::Schema.execute "query X { int }"

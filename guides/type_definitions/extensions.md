@@ -175,4 +175,4 @@ Enum values may be customized in a similar way to Fields.
 - Create a new class extending `GraphQL::Schema::EnumValue`
 - Assign it to your base `Enum` class with `enum_value_class(MyEnumValueClass)`
 
-Then, in your custom argument class, you can use `#initialize(name, desc = nil, **kwargs)` to take input from the DSL.
+Then, in your custom enum class, you can use `#initialize(name, desc = nil, **kwargs)` to take input from the DSL.

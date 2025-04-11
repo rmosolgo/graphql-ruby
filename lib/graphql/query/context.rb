@@ -1,39 +1,10 @@
 # frozen_string_literal: true
+
 module GraphQL
   class Query
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
-      module SharedMethods
-        # Return this value to tell the runtime
-        # to exclude this field from the response altogether
-        def skip
-          GraphQL::Execution::SKIP
-        end
-
-        # Add error at query-level.
-        # @param error [GraphQL::ExecutionError] an execution error
-        # @return [void]
-        def add_error(error)
-          if !error.is_a?(ExecutionError)
-            raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
-          end
-          errors << error
-          nil
-        end
-
-        # @example Print the GraphQL backtrace during field resolution
-        #   puts ctx.backtrace
-        #
-        # @return [GraphQL::Backtrace] The backtrace for this point in query execution
-        def backtrace
-          GraphQL::Backtrace.new(self)
-        end
-
-        def execution_errors
-          @execution_errors ||= ExecutionErrors.new(self)
-        end
-      end
 
       class ExecutionErrors
         def initialize(ctx)
@@ -57,7 +28,6 @@ module GraphQL
         alias :push :add
       end
 
-      include SharedMethods
       extend Forwardable
 
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
@@ -75,11 +45,10 @@ module GraphQL
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
-      def initialize(query:, schema: query.schema, values:, object:)
+      def initialize(query:, schema: query.schema, values:)
         @query = query
         @schema = schema
         @provided_values = values || {}
-        @object = object
         # Namespaced storage, where user-provided values are in `nil` namespace:
         @storage = Hash.new { |h, k| h[k] = {} }
         @storage[nil] = @provided_values
@@ -88,90 +57,6 @@ module GraphQL
         @value = nil
         @context = self # for SharedMethods TODO delete sharedmethods
         @scoped_context = ScopedContext.new(self)
-      end
-
-      class ScopedContext
-        def initialize(query_context)
-          @query_context = query_context
-          @scoped_contexts = {}
-          @no_path = [].freeze
-        end
-
-        def merged_context
-          merged_ctx = {}
-          each_present_path_ctx do |path_ctx|
-            merged_ctx = path_ctx.merge(merged_ctx)
-          end
-          merged_ctx
-        end
-
-        def merge!(hash)
-          ctx = @scoped_contexts
-          current_path.each do |path_part|
-            ctx = ctx[path_part] ||= { parent: ctx }
-          end
-          this_scoped_ctx = ctx[:scoped_context] ||= {}
-          this_scoped_ctx.merge!(hash)
-        end
-
-        def current_path
-          thread_info = Thread.current[:__graphql_runtime_info]
-          (thread_info && thread_info[:current_path]) || @no_path
-        end
-
-        def key?(key)
-          each_present_path_ctx do |path_ctx|
-            if path_ctx.key?(key)
-              return true
-            end
-          end
-          false
-        end
-
-        def [](key)
-          each_present_path_ctx do |path_ctx|
-            if path_ctx.key?(key)
-              return path_ctx[key]
-            end
-          end
-          nil
-        end
-
-        def dig(key, *other_keys)
-          each_present_path_ctx do |path_ctx|
-            if path_ctx.key?(key)
-              found_value = path_ctx[key]
-              if other_keys.any?
-                return found_value.dig(*other_keys)
-              else
-                return found_value
-              end
-            end
-          end
-          nil
-        end
-
-        private
-
-        # Start at the current location,
-        # but look up the tree for previously-assigned scoped values
-        def each_present_path_ctx
-          ctx = @scoped_contexts
-          current_path.each do |path_part|
-            if ctx.key?(path_part)
-              ctx = ctx[path_part]
-            else
-              break
-            end
-          end
-
-          while ctx
-            if (scoped_ctx = ctx[:scoped_context])
-              yield(scoped_ctx)
-            end
-            ctx = ctx[:parent]
-          end
-        end
       end
 
       # @return [Hash] A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
@@ -196,7 +81,13 @@ module GraphQL
         @provided_values[key] = value
       end
 
-      def_delegators :@query, :trace, :interpreter?
+      def_delegators :@query, :trace
+
+      def types
+        @types ||= @query.types
+      end
+
+      attr_writer :types
 
       RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path])
       # @!method []=(key, value)
@@ -209,12 +100,60 @@ module GraphQL
         elsif @provided_values.key?(key)
           @provided_values[key]
         elsif RUNTIME_METADATA_KEYS.include?(key)
-          thread_info = Thread.current[:__graphql_runtime_info]
-          thread_info && thread_info[key]
+          if key == :current_path
+            current_path
+          else
+            (current_runtime_state = Fiber[:__graphql_runtime_info]) &&
+              (query_runtime_state = current_runtime_state[@query]) &&
+              (query_runtime_state.public_send(key))
+          end
         else
           # not found
           nil
         end
+      end
+
+      # Return this value to tell the runtime
+      # to exclude this field from the response altogether
+      def skip
+        GraphQL::Execution::SKIP
+      end
+
+      # Add error at query-level.
+      # @param error [GraphQL::ExecutionError] an execution error
+      # @return [void]
+      def add_error(error)
+        if !error.is_a?(ExecutionError)
+          raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+        end
+        errors << error
+        nil
+      end
+
+      # @example Print the GraphQL backtrace during field resolution
+      #   puts ctx.backtrace
+      #
+      # @return [GraphQL::Backtrace] The backtrace for this point in query execution
+      def backtrace
+        GraphQL::Backtrace.new(self)
+      end
+
+      def execution_errors
+        @execution_errors ||= ExecutionErrors.new(self)
+      end
+
+      def current_path
+        current_runtime_state = Fiber[:__graphql_runtime_info]
+        query_runtime_state = current_runtime_state && current_runtime_state[@query]
+
+        path = query_runtime_state &&
+          (result = query_runtime_state.current_result) &&
+          (result.path)
+        if path && (rn = query_runtime_state.current_result_name)
+          path = path.dup
+          path.push(rn)
+        end
+        path
       end
 
       def delete(key)
@@ -229,8 +168,9 @@ module GraphQL
 
       def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
         if RUNTIME_METADATA_KEYS.include?(key)
-          (thread_info = Thread.current[:__graphql_runtime_info]) &&
-            thread_info[key]
+          (runtime = Fiber[:__graphql_runtime_info]) &&
+            (query_runtime_state = runtime[@query]) &&
+            (query_runtime_state.public_send(key))
         elsif @scoped_context.key?(key)
           scoped_context[key]
         elsif @provided_values.key?(key)
@@ -246,8 +186,14 @@ module GraphQL
 
       def dig(key, *other_keys)
         if RUNTIME_METADATA_KEYS.include?(key)
-          (thread_info = Thread.current[:__graphql_runtime_info]).key?(key) &&
-            thread_info.dig(key, *other_keys)
+          (current_runtime_state = Fiber[:__graphql_runtime_info]) &&
+            (query_runtime_state = current_runtime_state[@query]) &&
+            (obj = query_runtime_state.public_send(key)) &&
+            if other_keys.empty?
+              obj
+            else
+              obj.dig(*other_keys)
+            end
         elsif @scoped_context.key?(key)
           @scoped_context.dig(key, *other_keys)
         else
@@ -293,6 +239,10 @@ module GraphQL
         @storage.key?(ns)
       end
 
+      def logger
+        @query && @query.logger
+      end
+
       def inspect
         "#<Query::Context ...>"
       end
@@ -305,6 +255,38 @@ module GraphQL
         scoped_merge!(key => value)
         nil
       end
+
+      # Use this when you need to do a scoped set _inside_ a lazy-loaded (or batch-loaded)
+      # block of code.
+      #
+      # @example using scoped context inside a promise
+      #   scoped_ctx = context.scoped
+      #   SomeBatchLoader.load(...).then do |thing|
+      #     # use a scoped_ctx which was created _before_ dataloading:
+      #     scoped_ctx.set!(:thing, thing)
+      #   end
+      # @return [Context::Scoped]
+      def scoped
+        Scoped.new(@scoped_context, current_path)
+      end
+
+      class Scoped
+        def initialize(scoped_context, path)
+          @path = path
+          @scoped_context = scoped_context
+        end
+
+        def merge!(hash)
+          @scoped_context.merge!(hash, at: @path)
+        end
+
+        def set!(key, value)
+          @scoped_context.merge!({ key => value }, at: @path)
+          nil
+        end
+      end
     end
   end
 end
+
+require "graphql/query/context/scoped_context"

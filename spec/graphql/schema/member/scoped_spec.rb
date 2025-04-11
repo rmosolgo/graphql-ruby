@@ -27,7 +27,26 @@ describe GraphQL::Schema::Member::Scoped do
         end
       end
 
+      def self.authorized?(obj, ctx)
+        if ctx[:allow_unscoped]
+          true
+        else
+          raise "This should never be called (#{ctx[:current_path]}, #{ctx[:current_field].path})"
+        end
+      end
+
+      reauthorize_scoped_objects(false)
+
       field :name, String, null: false
+    end
+
+    class ReauthorizeItem < Item
+      reauthorize_scoped_objects(true)
+
+      def self.authorized?(_obj, context)
+        context[:was_authorized] = true
+        true
+      end
     end
 
     class FrenchItem < Item
@@ -58,6 +77,8 @@ describe GraphQL::Schema::Member::Scoped do
           Item
         end
       end
+
+      reauthorize_scoped_objects(false)
     end
 
     class Query < BaseObject
@@ -83,6 +104,8 @@ describe GraphQL::Schema::Member::Scoped do
           OpenStruct.new(name: "Paperclip"),
         ]
       end
+
+      field :reauthorize_items, [ReauthorizeItem], resolver_method: :items
 
       field :things, [Thing], null: false
       def things
@@ -120,7 +143,7 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     it "is bypassed when scope: false" do
-      assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({}, field_name: "unscopedItems")
+      assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({ allow_unscoped: true }, field_name: "unscopedItems")
     end
 
     it "returns null when the value is nil" do
@@ -213,6 +236,14 @@ describe GraphQL::Schema::Member::Scoped do
       assert_equal ["Trombone"], names2
     end
 
+    it "doesn't shortcut authorization when `reauthorize_scoped_objects(true)`" do
+      query_str = "{ reauthorizeItems { name } }"
+      res = ScopeSchema.execute(query_str, context: { french: true })
+      assert_equal 1, res["data"]["reauthorizeItems"].length
+      assert_equal 1, res.context[:scope_calls]
+      assert res.context[:was_authorized]
+    end
+
     it "is called for abstract types" do
       query_str = "
       {
@@ -255,6 +286,99 @@ describe GraphQL::Schema::Member::Scoped do
 
     it "defaults to false for others" do
       assert_equal false, ScopeSchema::Item.fields["name"].scoped?
+    end
+  end
+
+  describe "ScopeExtension#after_resolve" do
+    it "works outside of GraphQL execution" do
+      ctx = GraphQL::Query.new(ScopeSchema, "{ __typename }").context
+      field = ScopeSchema::Query.fields["items"]
+      assert field.resolve(OpenStruct.new(object: { items: [] }), {}, ctx)
+    end
+  end
+
+
+  describe "skipping authorization on scoped lists" do
+    class SkipAuthSchema < GraphQL::Schema
+      class Book < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          ctx[:auth_log] << [:authorized?, obj[:title]]
+          true
+        end
+
+        def self.scope_items(list, ctx)
+          ctx[:auth_log] << [:scope_items, list.map { |b| b[:title]}]
+          list.dup # Skipping authorized objects requires a new object to be returned
+        end
+
+        field :title, String
+      end
+
+      class SkipAuthorizationBook < Book
+        reauthorize_scoped_objects(false)
+      end
+
+      class ReauthorizedBook < Book
+        reauthorize_scoped_objects(true)
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :book, Book
+
+        def book
+          { title: "Nonsense Omnibus"}
+        end
+
+        field :books, [Book]
+
+        def books
+          [{ title: "Jayber Crow" }, { title: "Hannah Coulter" }]
+        end
+
+        field :skip_authorization_books, [SkipAuthorizationBook], resolver_method: :books
+
+        field :reauthorized_books, [ReauthorizedBook], resolver_method: :books
+
+        field :skip_authorization_books_connection, SkipAuthorizationBook.connection_type, resolver_method: :books
+      end
+
+      query(Query)
+    end
+
+    it "runs both authorizations by default" do
+      log = []
+      SkipAuthSchema.execute("{ book { title } books { title } }", context: { auth_log: log })
+      expected_log = [
+        [:authorized?, "Nonsense Omnibus"],
+        [:scope_items, ["Jayber Crow", "Hannah Coulter"]],
+        [:authorized?, "Jayber Crow"],
+        [:authorized?, "Hannah Coulter"],
+      ]
+      assert_equal expected_log, log
+    end
+
+    it "skips self.authorized? when configured" do
+      log = []
+      SkipAuthSchema.execute("{ skipAuthorizationBooks { title } }", context: { auth_log: log })
+      assert_equal [[:scope_items, ["Jayber Crow", "Hannah Coulter"]]], log
+    end
+
+    it "can be re-enabled in subclasses" do
+      log = []
+      SkipAuthSchema.execute("{ reauthorizedBooks { title } }", context: { auth_log: log })
+      expected_log = [
+        [:scope_items, ["Jayber Crow", "Hannah Coulter"]],
+        [:authorized?, "Jayber Crow"],
+        [:authorized?, "Hannah Coulter"],
+      ]
+
+      assert_equal expected_log, log
+    end
+
+    it "skips auth in connections" do
+      log = []
+      SkipAuthSchema.execute("{ skipAuthorizationBooksConnection(first: 10) { nodes { title } } }", context: { auth_log: log })
+      assert_equal [[:scope_items, ["Jayber Crow", "Hannah Coulter"]]], log
     end
   end
 end

@@ -49,8 +49,8 @@ class GraphQLGeneratorsRelayGeneratorTest < Rails::Generators::TestCase
     end
 
     assert_file "app/graphql/types/query_type.rb" do |content|
-      assert_includes content, "include GraphQL::Types::Relay::HasNodeField"
-      assert_includes content, "include GraphQL::Types::Relay::HasNodesField"
+      assert_includes content, "field :node, Types::NodeType"
+      assert_includes content, "field :nodes, [Types::NodeType, null: true]"
     end
 
     assert_file "app/graphql/dummy_schema.rb" do |content|

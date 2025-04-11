@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe "Dynamic types, fields, arguments, and enum values" do
   class MultifieldSchema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     module AppliesToFutureSchema
       def initialize(*args, future_schema: nil, **kwargs, &block)
         @future_schema = future_schema
@@ -10,7 +11,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
 
       def visible?(context)
-        if context[:visible_calls]
+        if context[:visible_calls] && !context[:visibility_migration_warden_running]
           context[:visible_calls][self] << caller
         end
         super && (@future_schema.nil? || (@future_schema == !!context[:future_schema]))
@@ -33,7 +34,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         if RUBY_VERSION > "3"
           define_method(dynamic_members_method_name) do |*args, **kwargs, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:visibility_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end
@@ -42,7 +43,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         else
           define_method(dynamic_members_method_name) do |*args, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:visibility_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end
@@ -199,6 +200,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class Locale < BaseUnion
       possible_types Country, future_schema: true
+
+      if GraphQL::Schema.use_visibility_profile?
+        # Profile won't check possible_types, this must be flagged
+        self.future_schema = true
+      end
     end
 
     class Place < BaseObject
@@ -268,7 +274,16 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
     end
 
+    class ThingIdInput < BaseInputObject
+      argument :id, ID, future_schema: true, loads: Thing, as: :thing
+      argument :id, Int, future_schema: false, loads: Thing, as: :thing
+    end
+
     class Query < BaseObject
+      field :node, Node do
+        argument :id, ID
+      end
+
       field :f1, String, future_schema: true
       field :f1, Int, future_schema: false
 
@@ -281,12 +296,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
 
       field :thing, Thing do
-        argument :id, ID, future_schema: true
-        argument :id, Int, future_schema: false
+        argument :input, ThingIdInput
       end
 
-      def thing(id:)
-        { id: id, database_id: id, uuid: "thing-#{id}", legacy_price: "⚛︎#{id}00", price: { amount: id.to_i * 100, currency: "⚛︎" }}
+      def thing(input:)
+        input[:thing]
       end
 
       field :legacy_thing, LegacyThing, null: false do
@@ -321,6 +335,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
       def yell(scream:)
         scream
       end
+
+      # just to attach these to the schema:
+      field :example_locale, Locale
+      field :example_region, Region
+      field :example_country, Country
     end
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -356,7 +375,15 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     query(Query)
     mutation(Mutation)
-    orphan_types(Place, LegacyPlace, Locale, Region, Country)
+    orphan_types(Place, LegacyPlace, Country)
+
+    def self.object_from_id(id, ctx)
+      { id: id, database_id: id, uuid: "thing-#{id}", legacy_price: "⚛︎#{id}00", price: { amount: id.to_i * 100, currency: "⚛︎" }}
+    end
+
+    def self.resolve_type(type, obj, ctx)
+      Thing
+    end
   end
 
   def check_for_multiple_visible_calls(context)
@@ -439,7 +466,7 @@ ERR
       MultifieldSchema::Query.get_field("f1")
     end
     assert_equal "Query.f1", err.duplicated_name
-    
+
     expected_message = "Found two visible definitions for `Query.f1`: #<MultifieldSchema::BaseField Query.f1: String>, #<MultifieldSchema::BaseField Query.f1: Int>"
     assert_equal expected_message, err.message
 
@@ -454,26 +481,34 @@ ERR
     assert_equal "String", exec_future_query(introspection_query_str)["data"]["__type"]["fields"].find { |f| f["name"] == "f1" }["type"]["name"]
 
     # Schema dump
-    assert_includes legacy_schema_sdl, <<-GRAPHQL
+    legacy_query_type_str = legacy_schema_sdl[/type Query \{[^}]*\}/m]
+    expected_legacy_query_type_str = <<-GRAPHQL.chomp
 type Query {
   actor: Actor
   add(left: Int!, right: Int!): String!
+  exampleCountry: Country
   f1: Int
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
-  thing(id: Int!): Thing
+  node(id: ID!): Node
+  thing(input: ThingIdInput!): Thing
   yell(scream: Scream!): String!
 }
 GRAPHQL
+    assert_equal expected_legacy_query_type_str, legacy_query_type_str
 
     assert_includes future_schema_sdl, <<-GRAPHQL
 type Query {
   actor: Actor
   add(left: Float!, right: Float!): String!
+  exampleCountry: Country
+  exampleLocale: Locale
+  exampleRegion: Region
   f1: String
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
-  thing(id: ID!): Thing
+  node(id: ID!): Node
+  thing(input: ThingIdInput!): Thing
   yell(scream: Scream!): String!
 }
 GRAPHQL
@@ -495,7 +530,7 @@ interface Node {
 }
 GRAPHQL
 
-    query_str = "{ thing(id: 15) { databaseId id uuid } }"
+    query_str = "{ thing(input: { id: 15 }) { databaseId id uuid } }"
     assert_equal ["Field 'databaseId' doesn't exist on type 'Thing'", "Field 'uuid' doesn't exist on type 'Thing'"], exec_query(query_str)["errors"].map { |e| e["message"] }
     res = exec_future_query(query_str)
     assert_equal({ "thing" => { "databaseId" => 15, "id" => 15, "uuid" => "thing-15"} }, res["data"])
@@ -514,18 +549,18 @@ GRAPHQL
   end
 
   it "supports different versions of field arguments" do
-    res = exec_future_query("{ thing(id: \"15\") { id } }")
+    res = exec_future_query("{ thing(input: { id: \"15\" }) { id } }")
     assert_equal 15, res["data"]["thing"]["id"]
     # On legacy, `"15"` is parsed as an int, which makes it null:
-    res = exec_query("{ thing(id: \"15\") { id } }")
-    assert_equal ["Argument 'id' on Field 'thing' has an invalid value (\"15\"). Expected type 'Int!'."], res["errors"].map { |e| e["message"] }
+    res = exec_query("{ thing(input: { id: \"15\" }) { id } }")
+    assert_equal ["Argument 'id' on InputObject 'ThingIdInput' has an invalid value (\"15\"). Expected type 'Int!'."], res["errors"].map { |e| e["message"] }
 
-    introspection_query = "{ __type(name: \"Query\") { fields { name args { name type { name ofType { name } } } } } }"
+    introspection_query = "{ __type(name: \"ThingIdInput\") { inputFields { name type { name ofType { name } } } } }"
     introspection_res = exec_query(introspection_query)
-    assert_equal "Int", introspection_res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["args"].first["type"]["ofType"]["name"]
+    assert_equal "Int", introspection_res["data"]["__type"]["inputFields"].find { |f| f["name"] == "id" }["type"]["ofType"]["name"]
 
     introspection_res = exec_future_query(introspection_query)
-    assert_equal "ID", introspection_res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["args"].first["type"]["ofType"]["name"]
+    assert_equal "ID", introspection_res["data"]["__type"]["inputFields"].find { |f| f["name"] == "id" }["type"]["ofType"]["name"]
   end
 
   it "hides fields from hidden interfaces" do
@@ -561,18 +596,32 @@ GRAPHQL
     assert_includes MultifieldSchema::Country.interfaces({ future_schema: true }), MultifieldSchema::HasCapital
     assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: true }), MultifieldSchema::Country
     assert_includes MultifieldSchema::Country.interfaces, MultifieldSchema::HasCapital
-    assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+    if GraphQL::Schema.use_visibility_profile?
+      # filtered with `future_schema: nil`
+      refute_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+    else
+      assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+    end
   end
 
   it "hides hidden union memberships" do
-    # in this case, the union is always visible:
     assert MultifieldSchema::Locale.visible?({ future_schema: true })
-    assert MultifieldSchema::Locale.visible?({ future_schema: false })
+    if GraphQL::Schema.use_visibility_profile?
+      refute MultifieldSchema::Locale.visible?({ future_schema: false })
+    else
+      # Warden will check possible types -- but Profile doesn't
+      assert MultifieldSchema::Locale.visible?({ future_schema: false })
+    end
 
     # and the possible types relationship is sometimes hidden:
     refute_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: false }), MultifieldSchema::Country
     assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: true }), MultifieldSchema::Country
-    assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale), MultifieldSchema::Country
+    if GraphQL::Schema.use_visibility_profile?
+      # This type is hidden in this case
+      assert_equal [], MultifieldSchema.possible_types(MultifieldSchema::Locale)
+    else
+      assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale), MultifieldSchema::Country
+    end
   end
 
   it "hides hidden unions" do
@@ -583,7 +632,12 @@ GRAPHQL
     # and the possible types relationship is sometimes hidden:
     assert_equal [], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: false })
     assert_equal [MultifieldSchema::Country, MultifieldSchema::Place], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: true })
-    assert_equal [MultifieldSchema::Country, MultifieldSchema::Place, MultifieldSchema::LegacyPlace], MultifieldSchema.possible_types(MultifieldSchema::Region)
+    if GraphQL::Schema.use_visibility_profile?
+      # Filtered like `future_schema: false`
+      assert_equal [MultifieldSchema::Country, MultifieldSchema::LegacyPlace], MultifieldSchema.possible_types(MultifieldSchema::Region)
+    else
+      assert_equal [MultifieldSchema::Country, MultifieldSchema::Place, MultifieldSchema::LegacyPlace], MultifieldSchema.possible_types(MultifieldSchema::Region)
+    end
   end
 
   it "supports different versions of input object arguments" do
@@ -641,29 +695,34 @@ GRAPHQL
     assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: nil })
     assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: false })
     assert_equal MultifieldSchema::Money, MultifieldSchema.get_type("Money", { future_schema: true })
-    err = assert_raises GraphQL::Schema::DuplicateNamesError do
-      MultifieldSchema.get_type("Money")
+    if GraphQL::Schema.use_visibility_profile?
+      # Filtered like `future_schema: nil`
+      assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money")
+    else
+      err = assert_raises GraphQL::Schema::DuplicateNamesError do
+        assert_nil MultifieldSchema.get_type("Money")
+      end
+      assert_equal "Money", err.duplicated_name
+      expected_message = "Found two visible definitions for `Money`: MultifieldSchema::Money, MultifieldSchema::MoneyScalar"
+      assert_equal expected_message, err.message
     end
-    assert_equal "Money", err.duplicated_name
-    expected_message = "Found two visible definitions for `Money`: MultifieldSchema::Money, MultifieldSchema::MoneyScalar"
-    assert_equal expected_message, err.message
 
-    assert_equal "⚛︎100",exec_query("{ thing(id: 1) { price } }")["data"]["thing"]["price"]
+    assert_equal "⚛︎100",exec_query("{ thing( input: { id: 1 }) { price } }")["data"]["thing"]["price"]
     res = exec_query("{ __type(name: \"Money\") { kind name } }")
     assert_equal "SCALAR", res["data"]["__type"]["kind"]
     assert_equal "Money", res["data"]["__type"]["name"]
-    assert_equal({ "amount" => 200, "currency" => "⚛︎" }, exec_future_query("{ thing(id: 2) { price { amount currency } } }")["data"]["thing"]["price"])
+    assert_equal({ "amount" => 200, "currency" => "⚛︎" }, exec_future_query("{ thing(input: { id: 2}) { price { amount currency } } }")["data"]["thing"]["price"])
     res = exec_future_query("{ __type(name: \"Money\") { name kind } }")
     assert_equal "OBJECT", res["data"]["__type"]["kind"]
     assert_equal "Money", res["data"]["__type"]["name"]
   end
 
   it "works with subclasses" do
-    res = exec_query("{ legacyThing(id: 1) { price } thing(id: 3) { price } }")
+    res = exec_query("{ legacyThing(id: 1) { price } thing(input: { id: 3 }) { price } }")
     assert_equal "⚛︎100", res["data"]["legacyThing"]["price"]
     assert_equal "⚛︎300", res["data"]["thing"]["price"]
 
-    future_res = exec_future_query("{ legacyThing(id: 1) { price } thing(id: 3) { price { amount } } }")
+    future_res = exec_future_query("{ legacyThing(id: 1) { price } thing(input: { id: 3 }) { price { amount } } }")
     assert_equal "⚛︎100", future_res["data"]["legacyThing"]["price"]
     assert_equal 300, future_res["data"]["thing"]["price"]["amount"]
   end
@@ -771,6 +830,7 @@ GRAPHQL
 
   describe "A schema with every possible type having the same name" do
     class NameConflictSchema < GraphQL::Schema
+      use GraphQL::Schema::Warden if ADD_WARDEN
       module ConflictingThing
         def visible?(context)
           super && kind.name == context[:thing_kind]
@@ -815,7 +875,6 @@ GRAPHQL
         implements ThingInterface
         field :f, Int, null: false
       end
-
       class ThingUnion < GraphQL::Schema::Union
         graphql_name "Thing"
         possible_types OtherObject
@@ -869,10 +928,11 @@ GRAPHQL
             raise ArgumentError, "Unhandled type kind: #{type_kind.inspect}"
           end
         end
+
+        field :other_object, OtherObject
       end
 
       query(Query)
-      orphan_types(ThingScalar, ThingEnum, ThingInput, ThingObject, ThingUnion, ThingInterface)
     end
   end
 
@@ -929,9 +989,9 @@ GRAPHQL
     assert_equal 12, res["data"]["thing"]["f"]
 
     schema_dump, context = check_thing_type_is_kind("INTERFACE")
-    assert_equal 3, schema_dump.scan("Thing").size, "Interface definition, interface field, object field: #{schema_dump}"
     assert_includes schema_dump, "interface Thing {\n"
     assert_includes schema_dump, "type OtherObject implements Thing {\n"
+    assert_equal 3, schema_dump.scan("Thing").size, "Interface definition, interface field, object field: #{schema_dump}"
     res = NameConflictSchema.execute("{ thing { ... on Thing { __typename  } ... on OtherObject { f } } }", context: context)
     assert_equal "OtherObject", res["data"]["thing"]["__typename"]
     assert_equal 22, res["data"]["thing"]["f"]
@@ -1013,7 +1073,10 @@ GRAPHQL
         field(:f1, DuplicateNames::DuplicateNameObject1, null: false)
         field(:f2, DuplicateNames::DuplicateNameObject2, null: false)
       }
-      schema = Class.new(GraphQL::Schema) { query(query_type) }
+      schema = Class.new(GraphQL::Schema) {
+        query(query_type)
+        use GraphQL::Schema::Warden if ADD_WARDEN
+      }
       assert_equal "first definition", schema.types({ allowed_for: 1 })["DuplicateNameObject"].description
       assert_equal "second definition", schema.get_type("DuplicateNameObject", { allowed_for: 3 }).description
       assert_includes schema.to_definition(context: { allowed_for: 1 }), "first definition"
@@ -1057,7 +1120,10 @@ GRAPHQL
     it "raises when a given context would permit multiple enum values with the same name" do
       enum_type = DuplicateNames::DuplicateEnumValue
       query_type = Class.new(GraphQL::Schema::Object) { graphql_name("Query"); field(:f, enum_type, null: false) }
-      schema = Class.new(GraphQL::Schema) { query(query_type) }
+      schema = Class.new(GraphQL::Schema) {
+        query(query_type)
+        use GraphQL::Schema::Warden if ADD_WARDEN
+      }
 
       assert_equal "first definition", enum_type.values({ allowed_for: 1 })["ONE"].description
       assert_equal "second definition", enum_type.values({ allowed_for: 3 })["ONE"].description
@@ -1093,7 +1159,10 @@ GRAPHQL
     end
 
     it "raises when a given context would permit multiple argument definitions" do
-      schema = Class.new(GraphQL::Schema) { query(DuplicateNames::DuplicateArgumentObject) }
+      schema = Class.new(GraphQL::Schema) {
+        query(DuplicateNames::DuplicateArgumentObject)
+        use GraphQL::Schema::Warden if ADD_WARDEN
+      }
       field = DuplicateNames::DuplicateArgumentObject.get_field("multiArg")
 
       assert_equal "first definition", field.get_argument("a", { allowed_for: 1 }).description
@@ -1135,7 +1204,10 @@ GRAPHQL
     end
 
     it "raises when a given context would permit multiple field definitions" do
-      schema = Class.new(GraphQL::Schema) { query(DuplicateNames::DuplicateFieldObject) }
+      schema = Class.new(GraphQL::Schema) {
+        query(DuplicateNames::DuplicateFieldObject)
+        use GraphQL::Schema::Warden if ADD_WARDEN
+      }
       assert_equal "first definition", DuplicateNames::DuplicateFieldObject.get_field("f", { allowed_for: 1 }).description
       assert_equal "second definition", DuplicateNames::DuplicateFieldObject.fields({ allowed_for: 3 })["f"].description
       assert_includes schema.to_definition(context: { allowed_for: 1 }), "first definition"

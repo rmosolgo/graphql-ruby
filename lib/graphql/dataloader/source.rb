@@ -7,9 +7,9 @@ module GraphQL
       # @api private
       def setup(dataloader)
         # These keys have been requested but haven't been fetched yet
-        @pending_keys = []
+        @pending = {}
         # These keys have been passed to `fetch` but haven't been finished yet
-        @fetching_keys = []
+        @fetching = {}
         # { key => result }
         @results = {}
         @dataloader = dataloader
@@ -18,42 +18,66 @@ module GraphQL
       attr_reader :dataloader
 
       # @return [Dataloader::Request] a pending request for a value from `key`. Call `.load` on that object to wait for the result.
-      def request(key)
-        if !@results.key?(key)
-          @pending_keys << key
+      def request(value)
+        res_key = result_key_for(value)
+        if !@results.key?(res_key)
+          @pending[res_key] ||= value
         end
-        Dataloader::Request.new(self, key)
+        Dataloader::Request.new(self, value)
+      end
+
+      # Implement this method to return a stable identifier if different
+      # key objects should load the same data value.
+      #
+      # @param value [Object] A value passed to `.request` or `.load`, for which a value will be loaded
+      # @return [Object] The key for tracking this pending data
+      def result_key_for(value)
+        value
       end
 
       # @return [Dataloader::Request] a pending request for a values from `keys`. Call `.load` on that object to wait for the results.
-      def request_all(keys)
-        pending_keys = keys.select { |k| !@results.key?(k) }
-        @pending_keys.concat(pending_keys)
-        Dataloader::RequestAll.new(self, keys)
+      def request_all(values)
+        values.each do |v|
+          res_key = result_key_for(v)
+          if !@results.key?(res_key)
+            @pending[res_key] ||= v
+          end
+        end
+        Dataloader::RequestAll.new(self, values)
       end
 
-      # @param key [Object] A loading key which will be passed to {#fetch} if it isn't already in the internal cache.
+      # @param value [Object] A loading value which will be passed to {#fetch} if it isn't already in the internal cache.
       # @return [Object] The result from {#fetch} for `key`. If `key` hasn't been loaded yet, the Fiber will yield until it's loaded.
-      def load(key)
-        if @results.key?(key)
-          result_for(key)
+      def load(value)
+        result_key = result_key_for(value)
+        if @results.key?(result_key)
+          result_for(result_key)
         else
-          @pending_keys << key
-          sync
-          result_for(key)
+          @pending[result_key] ||= value
+          sync([result_key])
+          result_for(result_key)
         end
       end
 
-      # @param keys [Array<Object>] Loading keys which will be passed to `#fetch` (or read from the internal cache).
+      # @param values [Array<Object>] Loading keys which will be passed to `#fetch` (or read from the internal cache).
       # @return [Object] The result from {#fetch} for `keys`. If `keys` haven't been loaded yet, the Fiber will yield until they're loaded.
-      def load_all(keys)
-        if keys.any? { |k| !@results.key?(k) }
-          pending_keys = keys.select { |k| !@results.key?(k) }
-          @pending_keys.concat(pending_keys)
-          sync
+      def load_all(values)
+        result_keys = []
+        pending_keys = []
+        values.each { |v|
+          k = result_key_for(v)
+          result_keys << k
+          if !@results.key?(k)
+            @pending[k] ||= v
+            pending_keys << k
+          end
+        }
+
+        if !pending_keys.empty?
+          sync(pending_keys)
         end
 
-        keys.map { |k| result_for(k) }
+        result_keys.map { |k| result_for(k) }
       end
 
       # Subclasses must implement this method to return a value for each of `keys`
@@ -64,34 +88,37 @@ module GraphQL
         raise "Implement `#{self.class}#fetch(#{keys.inspect}) to return a record for each of the keys"
       end
 
+      MAX_ITERATIONS = 1000
       # Wait for a batch, if there's anything to batch.
       # Then run the batch and update the cache.
       # @return [void]
-      def sync
-        pending_keys = @pending_keys.dup
-        @dataloader.yield
+      def sync(pending_result_keys)
+        @dataloader.yield(self)
         iterations = 0
-        while pending_keys.any? { |k| !@results.key?(k) }
+        while pending_result_keys.any? { |key| !@results.key?(key) }
           iterations += 1
-          if iterations > 1000
-            raise "#{self.class}#sync tried 1000 times to load pending keys (#{pending_keys}), but they still weren't loaded. There is likely a circular dependency."
+          if iterations > MAX_ITERATIONS
+            raise "#{self.class}#sync tried #{MAX_ITERATIONS} times to load pending keys (#{pending_result_keys}), but they still weren't loaded. There is likely a circular dependency#{@dataloader.fiber_limit ? " or `fiber_limit: #{@dataloader.fiber_limit}` is set too low" : ""}."
           end
-          @dataloader.yield
+          @dataloader.yield(self)
         end
         nil
       end
 
       # @return [Boolean] True if this source has any pending requests for data.
       def pending?
-        !@pending_keys.empty?
+        !@pending.empty?
       end
 
       # Add these key-value pairs to this source's cache
       # (future loads will use these merged values).
-      # @param results [Hash<Object => Object>] key-value pairs to cache in this source
+      # @param new_results [Hash<Object => Object>] key-value pairs to cache in this source
       # @return [void]
-      def merge(results)
-        @results.merge!(results)
+      def merge(new_results)
+        new_results.each do |new_k, new_v|
+          key = result_key_for(new_k)
+          @results[key] = new_v
+        end
         nil
       end
 
@@ -99,24 +126,22 @@ module GraphQL
       # @api private
       # @return [void]
       def run_pending_keys
-        if !@fetching_keys.empty?
-          @pending_keys -= @fetching_keys
+        if !@fetching.empty?
+          @fetching.each_key { |k| @pending.delete(k) }
         end
-        return if @pending_keys.empty?
-        fetch_keys = @pending_keys.uniq
-        @fetching_keys.concat(fetch_keys)
-        @pending_keys = []
-        results = fetch(fetch_keys)
-        fetch_keys.each_with_index do |key, idx|
+        return if @pending.empty?
+        fetch_h = @pending
+        @pending = {}
+        @fetching.merge!(fetch_h)
+        results = fetch(fetch_h.values)
+        fetch_h.each_with_index do |(key, _value), idx|
           @results[key] = results[idx]
         end
         nil
       rescue StandardError => error
-        fetch_keys.each { |key| @results[key] = error }
+        fetch_h.each_key { |key| @results[key] = error }
       ensure
-        if fetch_keys
-          @fetching_keys -= fetch_keys
-        end
+        fetch_h && fetch_h.each_key { |k| @fetching.delete(k) }
       end
 
       # These arguments are given to `dataloader.with(source_class, ...)`. The object
@@ -137,7 +162,14 @@ module GraphQL
         [*batch_args, **batch_kwargs]
       end
 
-      attr_reader :pending_keys
+      # Clear any already-loaded objects for this source
+      # @return [void]
+      def clear_cache
+        @results.clear
+        nil
+      end
+
+      attr_reader :pending, :results
 
       private
 
@@ -154,8 +186,11 @@ This key should have been loaded already. This is a bug in GraphQL::Dataloader, 
 ERR
         end
         result = @results[key]
-
-        raise result if result.class <= StandardError
+        if result.is_a?(StandardError)
+          # Dup it because the rescuer may modify it.
+          # (This happens for GraphQL::ExecutionErrors, at least)
+          raise result.dup
+        end
 
         result
       end

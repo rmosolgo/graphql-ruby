@@ -35,10 +35,10 @@ module GraphQL
       def load_nodes
         @nodes ||= begin
           sliced_nodes = if before && after
-            end_idx = index_from_cursor(before)-1
+            end_idx = index_from_cursor(before) - 2
             end_idx < 0 ? [] : items[index_from_cursor(after)..end_idx] || []
           elsif before
-            end_idx = index_from_cursor(before)-2
+            end_idx = index_from_cursor(before) - 2
             end_idx < 0 ? [] : items[0..end_idx] || []
           elsif after
             items[index_from_cursor(after)..-1] || []
@@ -56,12 +56,12 @@ module GraphQL
             false
           end
 
-          @has_next_page = if first
-            # There are more items after these items
-            sliced_nodes.count > first
-          elsif before
+          @has_next_page = if before
             # The original array is longer than the `before` index
             index_from_cursor(before) < items.length + 1
+          elsif first
+            # There are more items after these items
+            sliced_nodes.count > first
           else
             false
           end

@@ -7,7 +7,7 @@ module GraphQL
       # In this case, the server hides types and fields _entirely_, unless the current context has certain `:flags` present.
       class Flagged < GraphQL::Schema::Directive
         def initialize(target, **options)
-          if target.is_a?(Module) && !target.ancestors.include?(VisibleByFlag)
+          if target.is_a?(Module)
             # This is type class of some kind, `include` will put this module
             # in between the type class itself and its super class, so `super` will work fine
             target.include(VisibleByFlag)
@@ -37,6 +37,8 @@ module GraphQL
 
         argument :by, [String], "Flags to check for this schema member"
 
+        repeatable(true)
+
         module VisibleByFlag
           def self.included(schema_class)
             schema_class.extend(self)
@@ -45,7 +47,7 @@ module GraphQL
           def visible?(context)
             if dir = self.directives.find { |d| d.is_a?(Flagged) }
               relevant_flags = (f = context[:flags]) && dir.arguments[:by] & f # rubocop:disable Development/ContextIsPassedCop -- definition-related
-              relevant_flags && relevant_flags.any? && super
+              relevant_flags && !relevant_flags.empty? && super
             else
               super
             end

@@ -40,7 +40,7 @@ module GraphQL
 
           platform_key = if trace_field
             context = data.fetch(:query).context
-            cached_platform_key(context, field, :field) { platform_field_key(data[:owner], field) }
+            cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
           else
             nil
           end
@@ -73,8 +73,22 @@ module GraphQL
       end
 
       def self.use(schema_defn, options = {})
-        tracer = self.new(**options)
-        schema_defn.tracer(tracer)
+        if options[:legacy_tracing]
+          tracer = self.new(**options)
+          schema_defn.tracer(tracer)
+        else
+          tracing_name = self.name.split("::").last
+          trace_name = tracing_name.sub("Tracing", "Trace")
+          if GraphQL::Tracing.const_defined?(trace_name, false)
+            trace_module = GraphQL::Tracing.const_get(trace_name)
+            warn("`use(#{self.name})` is deprecated, use the equivalent `trace_with(#{trace_module.name})` instead. More info: https://graphql-ruby.org/queries/tracing.html")
+            schema_defn.trace_with(trace_module, **options)
+          else
+            warn("`use(#{self.name})` and `Tracing::PlatformTracing` are deprecated. Use a `trace_with(...)` module instead. More info: https://graphql-ruby.org/queries/tracing.html. Please open an issue on the GraphQL-Ruby repo if you want to discuss further!")
+            tracer = self.new(**options)
+          schema_defn.tracer(tracer, silence_deprecation_warning: true)
+          end
+        end
       end
 
       private

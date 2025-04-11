@@ -9,7 +9,7 @@ module GraphQL
       # without ambiguity.
       #
       # Original Algorithm: https://github.com/graphql/graphql-js/blob/master/src/validation/rules/OverlappingFieldsCanBeMerged.js
-      NO_ARGS = {}.freeze
+      NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
       Field = Struct.new(:node, :definition, :owner_type, :parents)
       FragmentSpread = Struct.new(:name, :parents)
@@ -110,8 +110,8 @@ module GraphQL
 
         return if fragment1.nil? || fragment2.nil?
 
-        fragment_type1 = context.warden.get_type(fragment1.type.name)
-        fragment_type2 = context.warden.get_type(fragment2.type.name)
+        fragment_type1 = context.query.types.type(fragment1.type.name)
+        fragment_type2 = context.query.types.type(fragment2.type.name)
 
         return if fragment_type1.nil? || fragment_type2.nil?
 
@@ -163,7 +163,7 @@ module GraphQL
         fragment = context.fragments[fragment_name]
         return if fragment.nil?
 
-        fragment_type = context.warden.get_type(fragment.type.name)
+        fragment_type = @types.type(fragment.type.name)
         return if fragment_type.nil?
 
         fragment_fields, fragment_spreads = fields_and_fragments_from_selection(fragment, owner_type: fragment_type, parents: [*fragment_spread.parents, fragment_type])
@@ -205,6 +205,7 @@ module GraphQL
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
         return if @conflict_count >= context.max_errors
+        return if field1.definition.nil? || field2.definition.nil?
 
         node1 = field1.node
         node2 = field2.node
@@ -353,7 +354,7 @@ module GraphQL
         end
       end
 
-      NO_SELECTIONS = [{}.freeze, [].freeze].freeze
+      NO_SELECTIONS = [GraphQL::EmptyObjects::EMPTY_HASH, GraphQL::EmptyObjects::EMPTY_ARRAY].freeze
 
       def fields_and_fragments_from_selection(node, owner_type:, parents:)
         if node.selections.empty?
@@ -370,10 +371,10 @@ module GraphQL
         selections.each do |node|
           case node
           when GraphQL::Language::Nodes::Field
-            definition = context.query.get_field(owner_type, node.name)
+            definition = @types.field(owner_type, node.name)
             fields << Field.new(node, definition, owner_type, parents)
           when GraphQL::Language::Nodes::InlineFragment
-            fragment_type = node.type ? context.warden.get_type(node.type.name) : owner_type
+            fragment_type = node.type ? @types.type(node.type.name) : owner_type
             find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: fragment_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
           when GraphQL::Language::Nodes::FragmentSpread
             fragment_spreads << FragmentSpread.new(node.name, parents)
@@ -426,7 +427,7 @@ module GraphQL
       end
 
       # Given two list of parents, find out if they are mutually exclusive
-      # In this context, `parents` represends the "self scope" of the field,
+      # In this context, `parents` represents the "self scope" of the field,
       # what types may be found at this point in the query.
       def mutually_exclusive?(parents1, parents2)
         if parents1.empty? || parents2.empty?
@@ -441,8 +442,8 @@ module GraphQL
               false
             else
               # Check if these two scopes have _any_ types in common.
-              possible_right_types = context.query.possible_types(type1)
-              possible_left_types = context.query.possible_types(type2)
+              possible_right_types = context.types.possible_types(type1)
+              possible_left_types = context.types.possible_types(type2)
               (possible_right_types & possible_left_types).empty?
             end
           end

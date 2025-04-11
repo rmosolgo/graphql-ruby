@@ -3,7 +3,6 @@ require "spec_helper"
 
 describe GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent do
   include StaticValidationHelpers
-  include ErrorBubblingHelpers
 
   let(:query_string) {%|
     query getCheese {
@@ -67,20 +66,10 @@ describe GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent do
       }
     }
     it "finds undefined or missing-required arguments to fields and directives" do
-      without_error_bubbling(schema) do
-        assert_includes(errors, missing_source_error)
-        assert_includes(errors, missing_order_by_direction_error)
-        assert_includes(errors, missing_order_by_direction_index_one_error)
-        refute_includes(errors, missing_required_field_error)
-      end
-    end
-    it 'works with error bubbling enabled' do
-      with_error_bubbling(schema) do
-        assert_includes(errors, missing_required_field_error)
-        assert_includes(errors, missing_source_error)
-        assert_includes(errors, missing_order_by_direction_error)
-        assert_includes(errors, missing_order_by_direction_index_one_error)
-      end
+      assert_includes(errors, missing_source_error)
+      assert_includes(errors, missing_order_by_direction_error)
+      assert_includes(errors, missing_order_by_direction_index_one_error)
+      refute_includes(errors, missing_required_field_error)
     end
   end
 

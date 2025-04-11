@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 # behavior modules:
-require "graphql/types/relay/default_relay"
 require "graphql/types/relay/connection_behaviors"
 require "graphql/types/relay/edge_behaviors"
 require "graphql/types/relay/node_behaviors"

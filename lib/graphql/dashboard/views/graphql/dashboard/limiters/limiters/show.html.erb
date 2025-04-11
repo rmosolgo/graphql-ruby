@@ -1,0 +1,62 @@
+<% content_for(:title, @title) %>
+<% if @install_path %>
+  <div class="row mt-3">
+    <div class="col">
+      <h3><%= @title %></h3>
+      <p>It looks like this limiter isn't installed yet. <a href="<%= @install_path %>">Install it now</a>.</p>
+    </div>
+  </div>
+<% else %>
+  <div class="row mt-3 justify-content-between">
+    <div class="col-auto">
+      <h3><%= @title %></h3>
+    </div>
+    <div class="col-auto">
+      <div class="btn-group">
+        <%= link_to("This Hour", graphql_dashboard.limiters_limiter_path(params[:name], chart: "hour"), class: "btn btn-sm btn-outline-primary #{@chart_mode == "hour" ? "active" : "inactive"}", params: { chart: "hour" }) %>
+        <%= link_to("Today", graphql_dashboard.limiters_limiter_path(params[:name], chart: "day"), class: "btn btn-sm btn-outline-primary #{@chart_mode == "day" ? "active" : "inactive"}", params: { chart: "day" }) %>
+        <%= link_to("This Month", graphql_dashboard.limiters_limiter_path(params[:name], chart: "month"), class: "btn btn-sm btn-outline-primary #{@chart_mode == "month" ? "active" : "inactive"}", params: { chart: "month" }) %>
+      </div>
+    </div>
+    <div class="col-auto">
+      <%= form_tag graphql_dashboard.limiters_limiter_path(params[:name], chart: @chart_mode), method: "patch"  do %>
+        <%= submit_tag "#{@current_soft ? "Disable" : "Enable"} Soft Limiting", class: "btn btn-sm btn-outline-warning" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col ms-4">
+      <div id="limiter-histogram">
+        <table class="charts-css column multiple stacked show-labels hide-data show-primary-axis">
+          <thead>
+            <th>Date</th>
+            <th scope="col">Limited Requests</th>
+            <th scope="col">Unlimited Requests</th>
+          </thead>
+          <tbody>
+            <% @histogram.columns.each_with_index do |col, col_idx| %>
+              <tr>
+                <th scope="row" class="text-end"><%= col.label %></th>
+                <% col.values.each_with_index do |value, val_idx| %>
+                  <td id="data-<%= col_idx %>-<%= val_idx %>">
+                    <span class="data"><%= value.formatted_value %></span>
+                    <span class="tooltip"><%= value.label %>: <%= value.formatted_value %><br><%= col.label %></span>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <%= content_tag "style", nonce: @csp_nonce do %>
+    <% @histogram.columns.each_with_index do |col, col_idx| %>
+      <% col_max = @histogram.max_column_value.to_f %>
+      <% col.values.each_with_index do |val, val_idx| %>
+        #data-<%= col_idx %>-<%= val_idx %> { --size: <%= val.value / col_max %>}
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -6,7 +6,262 @@
 
 ### New Features
 
+# 1.29.5 (31 Mar 2025)
+
+- OperationStore: Improve Redis cleanup when deleting a single client
+- Stable connections: Fix NULL handling on Rails 7.2 + Postgresql
+
+# 1.29.4 (18 Nov 2024)
+
+- OperationStore: Add forward compatibility for removing old validation code #5164
+
+# 1.29.3 (15 Nov 2024)
+
+- OperationStore: Improve `sync` performance with `GraphQL::Schema::Visibility`
+
+# 1.29.2 (4 Sept 2024)
+
+- Subscriptions: show broadcast subscriber count in dashboard (Pusher requires "subscription count" to be turned on and `use ... show_broadcast_subscribers_count: true`)
+
+# 1.29.1 (29 Aug 2024)
+
+- OperationStore: Accept a `context:` in `#add`
+
+# 1.29.0 (28 Aug 2024)
+
+- Subscriptions: use a single Pusher or Ably channel to deliver broadcast payloads to subscribers
+- Dashboard: fix crash when a topic had no active subscriptions
+
+# 1.28.1 (22 Aug 2024)
+
+- Subscriptions: Track `last_triggered_at`; add more metadata to the dashboard.
+
+# 1.28.0 (20 Aug 2024)
+
+- OperationStore: require the `ActiveRecord` backend inside an `ActiveSupport.on_load(:active_record) { ... }` block to improve Rails compatibility
+
+# 1.27.7 (13 Aug 2024)
+
+- Subscriptions: Fix _another_ Lua error in big cleanup operations
+
+# 1.27.6 (13 Aug 2024)
+
+- Subscriptions: Fix Lua error when cleaning up huge numbers of inactive subscriptions
+
+# 1.27.5 (9 May 2024)
+
+- OperationStore: remove needless call to `.metadata` #4947
+
+# 1.27.4 (2 May 2024)
+
+- Pundit, CanCan, OperationStore: add Rails generators for getting started
+
+# 1.27.3 (1 May 2024)
+
+- OperationStore: Fix `.reindex` for many stored operations #4940
+
+# 1.27.2 (30 Apr 2024)
+
+- Dashboard: handle missing index references gracefully #4940
+
+# 1.27.1 (18 Apr 2024)
+
+- OperationStore: Don't call `query.query_string` if there's already a parsed document #4922
+
+# 1.27.0 (11 Apr 2024)
+
+- RelationConnection: support Arel's `NullsFirst` and `NullsLast` nodes #4910
+
+# 1.26.5 (1 Mar 2024)
+
+- OperationStore::AddOperationBatch: remove rescue for StatementInvalid inside transaction
+
+# 1.26.4 (27 Feb 2024)
+
+- RelationConnection: Don't quote table names that weren't quoted in original SQL, fixes #4508 (comment)
+
+# 1.26.3 (19 Feb 2024)
+
+- OperationStore: fix `sync` endpoint for Rack 3+ #4829
+- Improve error message handling on Rails 7.1
+
+# 1.26.2 (30 Jan 2024)
+
+- `@defer` / `@stream`: Write delimiters at the end of each patch so that clients respond to payloads more quickly. (Previously, delimiters were added at the start of each patch, so clients had to wait for the _next_ patch before they knew the current one was complete.)
+
+# 1.26.1 (23 Jan 2024)
+
+- Pundit integration: improve error message when a `Scope` class is missing
+
+# 1.26.0 (19 Jan 2024)
+
+### Breaking Changes
+
+- Pundit integration: when the integration encounters an Array, it tries to find a configured policy class. If it can't, it raises an error.
+
+  Previously, the integration silently permitted all items in the array; this default has been changed. See #4726 for more discussion of this change.
+
+  If you encounter this error:
+
+  - add `scope: false` to any fields that return arrays to get the previous behavior (no authorization applied to the array; each item authorized on its own)
+  - Or, apply [scoping](https://graphql-ruby.org/authorization/scoping.html) by manually configuring a `pundit_policy_class` in the field's return type, then adding a `class Scope ...` inside that policy class. See the Pundit docs for the scope class API: https://github.com/varvet/pundit#scopes.
+
+  If you want to continue passing _all_ arrays through without scoping (for example, if you know they've already been authorized another way, or if you're OK with them being authorized one-at-a-time later), you can implement this in your base `Scope` class, for example:
+
+  ```ruby
+  class BasePolicy
+    class Scope
+      def initialize(user, items)
+        @user = user
+        @items = items
+      end
+
+      def resolve
+        if items.is_a?(Array)
+          items
+        else
+          raise "Implement #{self.class}#resolve to filter these items: #{items.inspect}"
+        end
+      end
+    end
+
+    # Pass this scope class along to subclasses:
+    def self.inherited(child_class)
+      child_class.const_set(:Scope, Class.new(BasePolicy::Scope))
+      super
+    end
+  end
+  ```
+
+  Alternatively, you could implement `def self.scope_items(items, context)` to skip arrays, for example:
+
+  ```ruby
+  module SkipScopingOnArrays
+    def scope_items(items, context)
+      if items.is_a?(Array)
+        items # return these as-is
+      else
+        super
+      end
+    end
+  end
+
+  # Then, in type definitions which should skip scoping on arrays:
+  extend SkipScopingOnArrays
+  ```
+
+# 1.25.2 (29 Dec 2023)
+
+### New Features
+
+- Subscriptions: send `more: false` when the server calls `unsubscribe`
+
+# 1.25.1 (21 Dec 2023)
+
 ### Bug Fix
+
+- Ably subscriptions: update webhook handler for `presence.message` events
+
+# 1.25.0 (7 Dec 2023)
+
+### Bug Fix
+
+- OperationStore: `.dup` the given `context` to avoid leaking state between queries when indexing
+- Subscriptions: use the schema or query logger to output debug messages
+
+# 1.24.15 (17 Nov 2023)
+
+### Bug Fix
+
+- OperationStore: don't sort directives when normalizing, properly retain directives on Operation and Fragment definitions #4703
+
+# 1.24.14 (16 Nov 2023)
+
+### Bug Fix
+
+- OperationStore: also pass `context:` for ActiveRecord backend batches
+
+# 1.24.13 (13 Nov 2023)
+
+### New Features
+
+- OperationStore: accept `context:` for `AddOperationBatch.call` #4697
+
+# 1.24.12 (13 Nov 2023)
+
+### New Features
+
+- OperationStore: accept `context:` to `Validate.validate` #4697
+
+### Bug Fix
+
+- OperationStore: don't rescue application-raised `KeyError`s #4699
+
+# 1.24.11 (8 Nov 2023)
+
+### Bug Fix
+
+- OperationStore: fix compatibility with 1.12.x #4696
+
+# 1.24.10 (2 Nov 2023)
+
+### Bug Fix
+
+- Improve compatibility with GraphQL-Ruby 1.12.x
+
+# 1.24.9 (4 Oct 2023)
+
+### Bug Fix
+
+- OperationStore: Preserve variable default values of `false` when normalizing queries
+
+# 1.24.8 (29 Aug 2023)
+
+### Bug Fix
+
+- OperationStore: search for operation during `Query#initialize` to avoid races with other instrumentation. Add `use ... trace: true` to get the old behavior.
+
+# 1.24.7 (16 June 2023)
+
+### Bug Fix
+
+- Stable relation connections: quote table names and column names in `WHERE` clauses #4508
+
+# 1.24.6 (24 May 2023)
+
+### New Features
+
+- Defer: Add `incremental: true` for new proposed wire format, add example for working with GraphQL-Batch #4477
+
+# 1.24.5 (24 May 2023)
+
+### Bug Fix
+
+- Stable relation connection: Quote table names and column names in selects and orders #4485
+
+# 1.24.4 (18 April 2023)
+
+### Bug Fix
+
+- `@defer`: update `context[:current_path]` usage to fix `path:` on deferred errors
+
+# 1.24.3 (14 April 2023)
+
+### Bug Fix
+
+- `OperationStore`: fix when used with Changesets (or other ways of defining arguments with the same name) #4440
+
+# 1.24.2 (20 Mar 2023)
+
+### Bug Fix
+
+- Remove debug output, oops
+
+# 1.24.1 (20 Mar 2023)
+
+### Bug Fix
+
+- Fix `OperationStore` with new module-based execution traces (#4389)
 
 # 1.24.0 (10 Feb 2023)
 
@@ -593,7 +848,7 @@
 
 ### Bug Fix
 
-- Pundit integration: use overriden `pundit_policy_class` for scoping and mutation authorization
+- Pundit integration: use overridden `pundit_policy_class` for scoping and mutation authorization
 
 ## 1.9.11 (20 Feb 2019)
 

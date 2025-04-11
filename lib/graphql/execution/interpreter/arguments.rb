@@ -80,7 +80,7 @@ module GraphQL
           )
         end
 
-        NO_ARGS = {}.freeze
+        NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
         EMPTY = self.new(argument_values: nil, keyword_arguments: NO_ARGS).freeze
       end
     end

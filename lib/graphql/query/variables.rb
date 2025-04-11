@@ -26,7 +26,7 @@ module GraphQL
           # - Then, fall back to the default value from the query string
           # If it's still nil, raise an error if it's required.
           variable_type = schema.type_from_ast(ast_variable.type, context: ctx)
-          if variable_type.nil?
+          if variable_type.nil? || !variable_type.unwrap.kind.input?
             # Pass -- it will get handled by a validator
           else
             variable_name = ast_variable.name
@@ -80,12 +80,12 @@ module GraphQL
         else
           val
         end
-      end    
+      end
 
       def add_max_errors_reached_message
         message = "Too many errors processing variables, max validation error limit reached. Execution aborted"
         validation_result = GraphQL::Query::InputValidationResult.from_problem(message)
-        errors << GraphQL::Query::VariableValidationError.new(nil, nil, nil, validation_result, msg: message) 
+        errors << GraphQL::Query::VariableValidationError.new(nil, nil, nil, validation_result, msg: message)
       end
     end
   end

@@ -63,6 +63,18 @@ describe GraphQL::Language::BlockString do
           # Doesn't crash when the string is only a newline
           "\n",
           ""
+        ],
+        [
+          # Removes long blank lines
+          "  \n                                     \n
+          Hello,
+            World!
+
+          Yours,
+            GraphQL.
+
+          \n                                        \n",
+          "Hello,\n  World!\n\nYours,\n  GraphQL."
         ]
       ]
 

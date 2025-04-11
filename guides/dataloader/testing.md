@@ -43,7 +43,22 @@ You could also make specific assertions on the queries that are run (see the [`s
 
 ## Testing Dataloader Sources
 
-You can also test `Dataloader` behavior outside of GraphQL using {{ "GraphQL::Dataloader.with_dataloading" | api_doc }}. For example:
+You can also test `Dataloader` behavior outside of GraphQL using {{ "GraphQL::Dataloader.with_dataloading" | api_doc }}. For example, let's if you have a `Sources::ActiveRecord` source defined like so:
+
+```ruby
+
+module Sources
+  class User < GraphQL::Dataloader::Source
+    def fetch(ids)
+      records = User.where(id: ids)
+      # return a list with `nil` for any ID that wasn't found, so the shape matches
+      ids.map { |id| records.find { |r| r.id == id.to_i } }
+    end
+  end
+end
+```
+
+You can test it like so:
 
 ```ruby
 def test_it_fetches_objects_by_id
@@ -55,14 +70,14 @@ def test_it_fetches_objects_by_id
   ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
     GraphQL::Dataloader.with_dataloading do |dataloader|
       req1 = dataloader.with(Sources::ActiveRecord).request(user_1.id)
-      req2 = dataloader.with(Sources::ActiveRecord).request(user_3.id)
-      req3 = dataloader.with(Sources::ActiveRecord).request(user_2.id)
+      req2 = dataloader.with(Sources::ActiveRecord).request(user_2.id)
+      req3 = dataloader.with(Sources::ActiveRecord).request(user_3.id)
       req4 = dataloader.with(Sources::ActiveRecord).request(-1)
 
       # Validate source's matching up of records
       expect(req1.load).to eq(user_1)
-      expect(req2.load).to eq(user_3)
-      expect(req3.load).to eq(user_2)
+      expect(req2.load).to eq(user_2)
+      expect(req3.load).to eq(user_3)
       expect(req4.load).to be_nil
     end
   end

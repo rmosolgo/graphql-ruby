@@ -19,7 +19,15 @@ module GraphQL
       attr_reader :items
 
       # @return [GraphQL::Query::Context]
-      attr_accessor :context
+      attr_reader :context
+
+      def context=(new_ctx)
+        @context = new_ctx
+        if @was_authorized_by_scope_items.nil?
+          @was_authorized_by_scope_items = detect_was_authorized_by_scope_items
+        end
+        @context
+      end
 
       # @return [Object] the object this collection belongs to
       attr_accessor :parent
@@ -58,7 +66,7 @@ module GraphQL
       # @param arguments [Hash] The arguments to the field that returned the collection wrapped by this connection
       # @param max_page_size [Integer, nil] A configured value to cap the result size. Applied as `first` if neither first or last are given and no `default_page_size` is set.
       # @param default_page_size [Integer, nil] A configured value to determine the result size when neither first or last are given.
-      def initialize(items, parent: nil, field: nil, context: nil, first: nil, after: nil, max_page_size: :not_given, default_page_size: :not_given, last: nil, before: nil, edge_class: nil, arguments: nil)
+      def initialize(items, parent: nil, field: nil, context: nil, first: nil, after: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, last: nil, before: nil, edge_class: nil, arguments: nil)
         @items = items
         @parent = parent
         @context = context
@@ -71,18 +79,23 @@ module GraphQL
         @edge_class = edge_class || self.class::Edge
         # This is only true if the object was _initialized_ with an override
         # or if one is assigned later.
-        @has_max_page_size_override = max_page_size != :not_given
-        @max_page_size = if max_page_size == :not_given
+        @has_max_page_size_override = max_page_size != NOT_CONFIGURED
+        @max_page_size = if max_page_size == NOT_CONFIGURED
           nil
         else
           max_page_size
         end
-        @has_default_page_size_override = default_page_size != :not_given
-        @default_page_size = if default_page_size == :not_given
+        @has_default_page_size_override = default_page_size != NOT_CONFIGURED
+        @default_page_size = if default_page_size == NOT_CONFIGURED
           nil
         else
           default_page_size
         end
+        @was_authorized_by_scope_items = detect_was_authorized_by_scope_items
+      end
+
+      def was_authorized_by_scope_items?
+        @was_authorized_by_scope_items
       end
 
       def max_page_size=(new_value)
@@ -208,6 +221,16 @@ module GraphQL
 
       private
 
+      def detect_was_authorized_by_scope_items
+        if @context &&
+            (current_runtime_state = Fiber[:__graphql_runtime_info]) &&
+            (query_runtime_state = current_runtime_state[@context.query])
+          query_runtime_state.was_authorized_by_scope_items
+        else
+          nil
+        end
+      end
+
       # @param argument [nil, Integer] `first` or `last`, as provided by the client
       # @param max_page_size [nil, Integer]
       # @return [nil, Integer] `nil` if the input was `nil`, otherwise a value between `0` and `max_page_size`
@@ -246,6 +269,10 @@ module GraphQL
 
         def cursor
           @cursor ||= @connection.cursor_for(@node)
+        end
+
+        def was_authorized_by_scope_items?
+          @connection.was_authorized_by_scope_items?
         end
       end
     end

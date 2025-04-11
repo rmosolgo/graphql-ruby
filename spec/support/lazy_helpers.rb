@@ -124,46 +124,64 @@ module LazyHelpers
     end
   end
 
-  class SumAllInstrumentation
-    def initialize(counter:)
-      @counter = counter
+  module SumAllInstrumentation
+    def execute_query(query:)
+      add_check(query, "before #{query.selected_operation.name}")
+      super
     end
 
-    def before_query(q)
-      add_check(q, "before #{q.selected_operation.name}")
+    def execute_query_lazy(query:, multiplex:)
+      result = super
+      multiplex.queries.reverse_each do |q|
+        add_check(q, "after #{q.selected_operation.name}")
+      end
+      result
+    end
+
+    def execute_multiplex(multiplex:)
+      add_check(multiplex, "before multiplex 1")
       # TODO not threadsafe
       # This should use multiplex-level context
       SumAll.all.clear
+      result = super
+      add_check(multiplex, "after multiplex 1")
+      result
     end
 
-    def after_query(q)
-      add_check(q, "after #{q.selected_operation.name}")
-    end
+    private
 
-    def before_multiplex(multiplex)
-      add_check(multiplex, "before multiplex #@counter")
-    end
-
-    def after_multiplex(multiplex)
-      add_check(multiplex, "after multiplex #@counter")
-    end
-
-    def add_check(obj, text)
-      checks = obj.context[:instrumentation_checks]
+    def add_check(object, text)
+      checks = object.context[:instrumentation_checks]
       if checks
         checks << text
       end
     end
   end
 
+  module SumAllInstrumentation2
+    def execute_multiplex(multiplex:)
+      add_check(multiplex, "before multiplex 2")
+      result = super
+      add_check(multiplex, "after multiplex 2")
+      result
+    end
+
+    private
+
+    def add_check(object, text)
+      checks = object.context[:instrumentation_checks]
+      if checks
+        checks << text
+      end
+    end
+  end
   class LazySchema < GraphQL::Schema
     query(LazyQuery)
     mutation(LazyQuery)
     lazy_resolve(Wrapper, :item)
     lazy_resolve(SumAll, :value)
-    instrument(:query, SumAllInstrumentation.new(counter: nil))
-    instrument(:multiplex, SumAllInstrumentation.new(counter: 1))
-    instrument(:multiplex, SumAllInstrumentation.new(counter: 2))
+    trace_with(SumAllInstrumentation2)
+    trace_with(SumAllInstrumentation)
 
     def self.sync_lazy(lazy)
       if lazy.is_a?(SumAll) && lazy.own_value > 1000

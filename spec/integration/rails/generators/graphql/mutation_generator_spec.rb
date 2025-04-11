@@ -9,6 +9,8 @@ class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
   setup :prepare_destination
 
   UPDATE_NAME_MUTATION = <<-RUBY
+# frozen_string_literal: true
+
 module Mutations
   class UpdateName < BaseMutation
     # TODO: define return fields
@@ -26,6 +28,8 @@ end
 RUBY
 
   EXPECTED_MUTATION_TYPE = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class MutationType < Types::BaseObject
     field :update_name, mutation: Mutations::UpdateName
@@ -40,6 +44,8 @@ end
 RUBY
 
   NAMESPACED_UPDATE_NAME_MUTATION = <<-RUBY
+# frozen_string_literal: true
+
 module Mutations
   class Names::UpdateName < BaseMutation
     # TODO: define return fields
@@ -57,6 +63,8 @@ end
 RUBY
 
   NAMESPACED_EXPECTED_MUTATION_TYPE = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class MutationType < Types::BaseObject
     field :update_name, mutation: Mutations::Names::UpdateName

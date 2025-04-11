@@ -16,22 +16,8 @@ describe GraphQL::Language::Visitor do
 
     fragment cheeseFields on Cheese { flavor }
     ")}
-  let(:hooks_counts) { {fields_entered: 0, arguments_entered: 0, arguments_left: 0, argument_names: []} }
 
-  let(:hooks_visitor) do
-    v = GraphQL::Language::Visitor.new(document)
-    counts = hooks_counts
-    v[GraphQL::Language::Nodes::Field] << ->(node, parent) { counts[:fields_entered] += 1 }
-    # two ways to set up enter hooks:
-    v[GraphQL::Language::Nodes::Argument] <<       ->(node, parent) { counts[:argument_names] << node.name }
-    v[GraphQL::Language::Nodes::Argument].enter << ->(node, parent) { counts[:arguments_entered] += 1}
-    v[GraphQL::Language::Nodes::Argument].leave << ->(node, parent) { counts[:arguments_left] += 1 }
-
-    v[GraphQL::Language::Nodes::Document].leave << ->(node, parent) { counts[:finished] = true }
-    v
-  end
-
-  class VisitorSpecVisitor < GraphQL::Language::Visitor
+  module CountWhileVisiting
     attr_reader :counts
     def initialize(document)
       @counts = {fields_entered: 0, arguments_entered: 0, arguments_left: 0, argument_names: []}
@@ -57,88 +43,47 @@ describe GraphQL::Language::Visitor do
     end
   end
 
-  class SkippingVisitor < VisitorSpecVisitor
-    def on_document(_n, _p)
-      SKIP
-    end
+  class VisitorSpecVisitor < GraphQL::Language::Visitor
+    include CountWhileVisiting
   end
 
-  let(:class_based_visitor) { VisitorSpecVisitor.new(document) }
-  let(:class_based_counts) { class_based_visitor.counts }
-
-  it "has an array of hooks" do
-    assert_equal(2, hooks_visitor[GraphQL::Language::Nodes::Argument].enter.length)
+  class VisitorSpecStaticVisitor < GraphQL::Language::StaticVisitor
+    include CountWhileVisiting
   end
 
-  it "can visit a document with directive definitions" do
-    document = GraphQL.parse("
-      # Marks an element of a GraphQL schema as only available via a preview header
-      directive @preview(
-        # The identifier of the API preview that toggles this field.
-        toggledBy: String
-      ) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | INTERFACE | UNION | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+  let(:visitor) { VisitorSpecVisitor.new(document) }
+  let(:counts) { visitor.counts }
 
-      type Query {
-        hello: String
-      }
-    ")
-
-    directive = nil
-    directive_locations = []
-
-    v = GraphQL::Language::Visitor.new(document)
-    v[GraphQL::Language::Nodes::DirectiveDefinition] << ->(node, parent) { directive = node }
-    v[GraphQL::Language::Nodes::DirectiveLocation] << ->(node, parent) { directive_locations << node }
-    v.visit
-
-    assert_equal "preview", directive.name
-    assert_equal 10, directive_locations.length
-  end
-
-  [:hooks, :class_based].each do |visitor_type|
-    it "#{visitor_type} visitor calls hooks during a depth-first tree traversal" do
-      visitor = public_send("#{visitor_type}_visitor")
-      visitor.visit
-      counts = public_send("#{visitor_type}_counts")
-      assert_equal(6, counts[:fields_entered])
-      assert_equal(2, counts[:arguments_entered])
-      assert_equal(2, counts[:arguments_left])
-      assert_equal(["id", "first"], counts[:argument_names])
-      assert(counts[:finished])
-    end
-
-    describe "Visitor::SKIP" do
-      let(:class_based_visitor) { SkippingVisitor.new(document) }
-
-      it "#{visitor_type} visitor skips the rest of the node" do
-        visitor = public_send("#{visitor_type}_visitor")
-        if visitor_type == :hooks
-          visitor[GraphQL::Language::Nodes::Document] << ->(node, parent) { GraphQL::Language::Visitor::SKIP }
-        end
-        visitor.visit
-        counts = public_send("#{visitor_type}_counts")
-        assert_equal(0, counts[:fields_entered])
-      end
-    end
-  end
-
-  it "can visit InputObjectTypeDefinition directives" do
-    schema_sdl = <<-GRAPHQL
-    input Test @directive {
-      id: ID!
-    }
-    GRAPHQL
-
-    document = GraphQL.parse(schema_sdl)
-
-    visitor = GraphQL::Language::Visitor.new(document)
-
-    visited_directive = false
-    visitor[GraphQL::Language::Nodes::Directive] << ->(node, parent) { visited_directive = true }
-
+  it "visitor calls hooks during a depth-first tree traversal" do
     visitor.visit
+    assert_equal(6, counts[:fields_entered])
+    assert_equal(2, counts[:arguments_entered])
+    assert_equal(2, counts[:arguments_left])
+    assert_equal(["id", "first"], counts[:argument_names])
+    assert(counts[:finished])
 
-    assert visited_directive
+    static_visitor = VisitorSpecStaticVisitor.new(document)
+    static_visitor.visit
+    static_counts = static_visitor.counts
+
+    assert_equal(6, static_counts[:fields_entered])
+    assert_equal(2, static_counts[:arguments_entered])
+    assert_equal(2, static_counts[:arguments_left])
+    assert_equal(["id", "first"], static_counts[:argument_names])
+    assert(static_counts[:finished])
+  end
+
+  class SkippingVisitor < VisitorSpecVisitor
+    def on_document(_n, _p); end
+  end
+
+  describe "Visitor::SKIP" do
+    let(:visitor) { SkippingVisitor.new(document) }
+
+    it "visitor skips the rest of the node" do
+      visitor.visit
+      assert_equal(0, counts[:fields_entered])
+    end
   end
 
   describe "AST modification" do
@@ -251,6 +196,14 @@ describe GraphQL::Language::Visitor do
           super(node.merge(type: new_type), parent)
         elsif node.name == "firstName"
           super(node.merge(name: "lastName"), parent)
+        else
+          super
+        end
+      end
+
+      def on_directive_definition(node, parent)
+        if node.name == "deleteMe"
+          super(DELETE_NODE, parent)
         else
           super
         end
@@ -430,6 +383,10 @@ GRAPHQL
 
     it "works with SDL" do
       before_query = <<-GRAPHQL.chop
+directive @deleteMe on FIELD
+
+directive @keepMe on FIELD
+
 type Rename @doStuff {
   f: Int
   renameThis: String
@@ -438,6 +395,8 @@ type Rename @doStuff {
 GRAPHQL
 
       after_query = <<-GRAPHQL.chop
+directive @keepMe on FIELD
+
 type WasRenamed @doStuff(addedArgument2: 2) {
   f: Int
   wasRenamed: String

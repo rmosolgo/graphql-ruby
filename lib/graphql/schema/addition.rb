@@ -12,7 +12,7 @@ module GraphQL
         @possible_types = {}
         @types = {}
         @union_memberships = {}
-        @references = Hash.new { |h, k| h[k] = [] }
+        @references = Hash.new { |h, k| h[k] = Set.new }
         @arguments_with_default_values = []
         add_type_and_traverse(new_types)
       end
@@ -20,7 +20,7 @@ module GraphQL
       private
 
       def references_to(thing, from:)
-        @references[thing] << from
+        @references[thing].add(from)
       end
 
       def get_type(name)
@@ -40,14 +40,21 @@ module GraphQL
       end
 
       def add_directives_from(owner)
-        dirs = owner.directives.map(&:class)
-        @directives.merge(dirs)
-        add_type_and_traverse(dirs)
+        if !(dir_instances = owner.directives).empty?
+          dirs = dir_instances.map(&:class)
+          @directives.merge(dirs)
+          add_type_and_traverse(dirs)
+        end
       end
 
       def add_type_and_traverse(new_types)
         late_types = []
-        new_types.each { |t| add_type(t, owner: nil, late_types: late_types, path: [t.graphql_name]) }
+        path = []
+        new_types.each do |t|
+          path.push(t.graphql_name)
+          add_type(t, owner: nil, late_types: late_types, path: path)
+          path.pop
+        end
         missed_late_types = 0
         while (late_type_vals = late_types.shift)
           type_owner, lt = late_type_vals
@@ -88,7 +95,7 @@ module GraphQL
             # It's a union with possible_types
             # Replace the item by class name
             owner.assign_type_membership_object_type(type)
-            @possible_types[owner.graphql_name] = owner.possible_types
+            @possible_types[owner] = owner.possible_types
           elsif type.kind.interface? && (owner.kind.object? || owner.kind.interface?)
             new_interfaces = []
             owner.interfaces.each do |int_t|
@@ -103,7 +110,7 @@ module GraphQL
             end
             owner.implements(*new_interfaces)
             new_interfaces.each do |int|
-              pt = @possible_types[int.graphql_name] ||= []
+              pt = @possible_types[int] ||= []
               if !pt.include?(owner) && owner.is_a?(Class)
                 pt << owner
               end
@@ -119,6 +126,7 @@ module GraphQL
           @types[type.graphql_name] = type
         when GraphQL::Schema::Field, GraphQL::Schema::Argument
           orig_type = owner.type
+          unwrapped_t = type
           # Apply list/non-null wrapper as needed
           if orig_type.respond_to?(:of_type)
             transforms = []
@@ -135,6 +143,7 @@ module GraphQL
             transforms.reverse_each { |t| type = type.public_send(t) }
           end
           owner.type = type
+          references_to(unwrapped_t, from: owner)
         else
           raise "Unexpected update: #{owner.inspect} #{type.inspect}"
         end
@@ -157,8 +166,12 @@ module GraphQL
           @directives << type
           type.all_argument_definitions.each do |arg|
             arg_type = arg.type.unwrap
-            references_to(arg_type, from: arg)
-            add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg.graphql_name])
+            if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
+              references_to(arg_type, from: arg)
+            end
+            path.push(arg.graphql_name)
+            add_type(arg_type, owner: arg, late_types: late_types, path: path)
+            path.pop
             if arg.default_value?
               @arguments_with_default_values << arg
             end
@@ -176,58 +189,75 @@ module GraphQL
           add_directives_from(type)
           if type.kind.fields?
             type.all_field_definitions.each do |field|
+              field.ensure_loaded
               name = field.graphql_name
               field_type = field.type.unwrap
-              references_to(field_type, from: field)
-              field_path = path + [name]
-              add_type(field_type, owner: field, late_types: late_types, path: field_path)
+              if !field_type.is_a?(GraphQL::Schema::LateBoundType)
+                references_to(field_type, from: field)
+              end
+              path.push(name)
+              add_type(field_type, owner: field, late_types: late_types, path: path)
               add_directives_from(field)
               field.all_argument_definitions.each do |arg|
                 add_directives_from(arg)
                 arg_type = arg.type.unwrap
-                references_to(arg_type, from: arg)
-                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg.graphql_name])
+                if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
+                  references_to(arg_type, from: arg)
+                end
+                path.push(arg.graphql_name)
+                add_type(arg_type, owner: arg, late_types: late_types, path: path)
+                path.pop
                 if arg.default_value?
                   @arguments_with_default_values << arg
                 end
               end
+              path.pop
             end
           end
           if type.kind.input_object?
             type.all_argument_definitions.each do |arg|
               add_directives_from(arg)
               arg_type = arg.type.unwrap
-              references_to(arg_type, from: arg)
-              add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg.graphql_name])
+              if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
+                references_to(arg_type, from: arg)
+              end
+              path.push(arg.graphql_name)
+              add_type(arg_type, owner: arg, late_types: late_types, path: path)
+              path.pop
               if arg.default_value?
                 @arguments_with_default_values << arg
               end
             end
           end
           if type.kind.union?
-            @possible_types[type.graphql_name] = type.all_possible_types
+            @possible_types[type] = type.all_possible_types
+            path.push("possible_types")
             type.all_possible_types.each do |t|
-              add_type(t, owner: type, late_types: late_types, path: path + ["possible_types"])
+              add_type(t, owner: type, late_types: late_types, path: path)
             end
+            path.pop
           end
           if type.kind.interface?
+            path.push("orphan_types")
             type.orphan_types.each do |t|
-              add_type(t, owner: type, late_types: late_types, path: path + ["orphan_types"])
+              add_type(t, owner: type, late_types: late_types, path: path)
             end
+            path.pop
           end
           if type.kind.object?
-            possible_types_for_this_name = @possible_types[type.graphql_name] ||= []
+            possible_types_for_this_name = @possible_types[type] ||= []
             possible_types_for_this_name << type
           end
 
           if type.kind.object? || type.kind.interface?
+            path.push("implements")
             type.interface_type_memberships.each do |interface_type_membership|
               case interface_type_membership
               when Schema::TypeMembership
                 interface_type = interface_type_membership.abstract_type
                 # We can get these now; we'll have to get late-bound types later
                 if interface_type.is_a?(Module) && type.is_a?(Class)
-                  implementers = @possible_types[interface_type.graphql_name] ||= []
+                  implementers = @possible_types[interface_type] ||= []
                   implementers << type
                 end
               when String, Schema::LateBoundType
@@ -235,7 +265,14 @@ module GraphQL
               else
                 raise ArgumentError, "Invariant: unexpected type membership for #{type.graphql_name}: #{interface_type_membership.class} (#{interface_type_membership.inspect})"
               end
-              add_type(interface_type, owner: type, late_types: late_types, path: path + ["implements"])
+              add_type(interface_type, owner: type, late_types: late_types, path: path)
+            end
+            path.pop
+          end
+
+          if type.kind.enum?
+            type.all_enum_value_definitions.each do |value_definition|
+              add_directives_from(value_definition)
             end
           end
         end

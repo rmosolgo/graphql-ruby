@@ -38,6 +38,16 @@ context = {
 MySchema.execute(..., context: context)
 ```
 
+### Rails Generator
+
+If your schema files follow the same convention as `rails generate graphql:install`, then you can install the Pundit integration with a Rails generator:
+
+```bash
+$ rails generate graphql:pundit:install
+```
+
+This will insert all the necessary `include ...`s described below. Alternatively, check the docs below to mix in `PunditIntegration`'s modules.
+
 ## Authorizing Objects
 
 You can specify Pundit roles that must be satisfied in order for viewers to see objects of a certain type. To get started, include the `ObjectIntegration` in your base object class:
@@ -129,10 +139,6 @@ module BaseInterface
   include GraphQL::Pro::PunditIntegration::InterfaceIntegration
 end
 ```
-
-Pundit scopes [don't play well](https://github.com/rmosolgo/graphql-ruby/issues/2008) with `Array`s, so the integration _skips_ scopes on Arrays. You can also opt out on a field-by-field basis as described below.
-
-You can also customize how the scopes are looked up and applied, see below.
 
 #### Bypassing scopes
 
@@ -380,7 +386,7 @@ Resolvers are authorized just like [mutations](#authorizing-mutations), and requ
 class Resolvers::BaseResolver < GraphQL::Schema::Resolver
   include GraphQL::Pro::PunditIntegration::ResolverIntegration
   argument_class BaseArgument
-  # pundit_policy(nil) # to disable authorization by default
+  # pundit_role nil # to disable authorization by default
 end
 ```
 
@@ -411,11 +417,11 @@ Here's an example of how the custom hooks can be installed:
 ```ruby
 module CustomPolicyLookup
   # Lookup policies in the `SystemAdmin::` namespace for system_admin users
+  # @return [Class]
   def pundit_policy_class_for(object, context)
     current_user = context[:current_user]
     if current_user.system_admin?
-      policy_class = SystemAdmin.const_get("#{object.class.name}Policy")
-      policy_class.new(current_user, object)
+      SystemAdmin.const_get("#{object.class.name}Policy")
     else
       super
     end

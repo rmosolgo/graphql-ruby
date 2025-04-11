@@ -14,208 +14,147 @@ module GraphQL
       class << self
         # Used internally to signal that the query shouldn't be executed
         # @api private
-        NO_OPERATION = {}.freeze
+        NO_OPERATION = GraphQL::EmptyObjects::EMPTY_HASH
 
         # @param schema [GraphQL::Schema]
         # @param queries [Array<GraphQL::Query, Hash>]
         # @param context [Hash]
         # @param max_complexity [Integer, nil]
-        # @return [Array<Hash>] One result per query
+        # @return [Array<GraphQL::Query::Result>] One result per query
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
           queries = query_options.map do |opts|
-            case opts
+            query = case opts
             when Hash
-              GraphQL::Query.new(schema, nil, **opts)
+              schema.query_class.new(schema, nil, **opts)
             when GraphQL::Query
               opts
             else
               raise "Expected Hash or GraphQL::Query, not #{opts.class} (#{opts.inspect})"
             end
+            query
           end
+
+          return GraphQL::EmptyObjects::EMPTY_ARRAY if queries.empty?
 
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
-          multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
+          trace = multiplex.current_trace
+          Fiber[:__graphql_current_multiplex] = multiplex
+          trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
-            query_instrumenters = schema.instrumenters[:query]
-            multiplex_instrumenters = schema.instrumenters[:multiplex]
-
-            # First, run multiplex instrumentation, then query instrumentation for each query
-            call_hooks(multiplex_instrumenters, multiplex, :before_multiplex, :after_multiplex) do
-              each_query_call_hooks(query_instrumenters, queries) do
-                schema = multiplex.schema
-                multiplex_analyzers = schema.multiplex_analyzers
-                queries = multiplex.queries
-                if multiplex.max_complexity
-                  multiplex_analyzers += [GraphQL::Analysis::AST::MaxQueryComplexity]
-                end
-
-                schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
-                begin
-                  # Since this is basically the batching context,
-                  # share it for a whole multiplex
-                  multiplex.context[:interpreter_instance] ||= multiplex.schema.query_execution_strategy.new
-                  # Do as much eager evaluation of the query as possible
-                  results = []
-                  queries.each_with_index do |query, idx|
-                    multiplex.dataloader.append_job {
-                      operation = query.selected_operation
-                      result = if operation.nil? || !query.valid? || query.context.errors.any?
-                        NO_OPERATION
-                      else
-                        begin
-                          # Although queries in a multiplex _share_ an Interpreter instance,
-                          # they also have another item of state, which is private to that query
-                          # in particular, assign it here:
-                          runtime = Runtime.new(query: query)
-                          query.context.namespace(:interpreter_runtime)[:runtime] = runtime
-
-                          query.trace("execute_query", {query: query}) do
-                            runtime.run_eager
-                          end
-                        rescue GraphQL::ExecutionError => err
-                          query.context.errors << err
-                          NO_OPERATION
-                        end
-                      end
-                      results[idx] = result
-                    }
-                  end
-
-                  multiplex.dataloader.run
-
-                  # Then, work through lazy results in a breadth-first way
-                  multiplex.dataloader.append_job {
-                    tracer = multiplex
-                    query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
-                    queries = multiplex ? multiplex.queries : [query]
-                    final_values = queries.map do |query|
-                      runtime = query.context.namespace(:interpreter_runtime)[:runtime]
-                      # it might not be present if the query has an error
-                      runtime ? runtime.final_result : nil
-                    end
-                    final_values.compact!
-                    tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-                      Interpreter::Resolve.resolve_all(final_values, multiplex.dataloader)
-                    end
-                    queries.each do |query|
-                      runtime = query.context.namespace(:interpreter_runtime)[:runtime]
-                      if runtime
-                        runtime.delete_interpreter_context(:current_path)
-                        runtime.delete_interpreter_context(:current_field)
-                        runtime.delete_interpreter_context(:current_object)
-                        runtime.delete_interpreter_context(:current_arguments)
-                      end
-                    end
-                  }
-                  multiplex.dataloader.run
-
-                  # Then, find all errors and assign the result to the query object
-                  results.each_with_index do |data_result, idx|
-                    query = queries[idx]
-                    # Assign the result so that it can be accessed in instrumentation
-                    query.result_values = if data_result.equal?(NO_OPERATION)
-                      if !query.valid? || query.context.errors.any?
-                        # A bit weird, but `Query#static_errors` _includes_ `query.context.errors`
-                        { "errors" => query.static_errors.map(&:to_h) }
-                      else
-                        data_result
-                      end
-                    else
-                      result = {
-                        "data" => query.context.namespace(:interpreter_runtime)[:runtime].final_result
-                      }
-
-                      if query.context.errors.any?
-                        error_result = query.context.errors.map(&:to_h)
-                        result["errors"] = error_result
-                      end
-
-                      result
-                    end
-                    if query.context.namespace?(:__query_result_extensions__)
-                      query.result_values["extensions"] = query.context.namespace(:__query_result_extensions__)
-                    end
-                    # Get the Query::Result, not the Hash
-                    results[idx] = query.result
-                  end
-
-                  results
-                rescue Exception
-                  # TODO rescue at a higher level so it will catch errors in analysis, too
-                  # Assign values here so that the query's `@executed` becomes true
-                  queries.map { |q| q.result_values ||= {} }
-                  raise
-                ensure
-                  queries.map { |query|
-                    runtime = query.context.namespace(:interpreter_runtime)[:runtime]
-                    if runtime
-                      runtime.delete_interpreter_context(:current_path)
-                      runtime.delete_interpreter_context(:current_field)
-                      runtime.delete_interpreter_context(:current_object)
-                      runtime.delete_interpreter_context(:current_arguments)
-                    end
-                  }
-                end
-              end
-            end
-          end
-        end
-
-        private
-
-        # Call the before_ hooks of each query,
-        # Then yield if no errors.
-        # `call_hooks` takes care of appropriate cleanup.
-        def each_query_call_hooks(instrumenters, queries, i = 0)
-          if i >= queries.length
-            yield
-          else
-            query = queries[i]
-            call_hooks(instrumenters, query, :before_query, :after_query) {
-              each_query_call_hooks(instrumenters, queries, i + 1) {
-                yield
-              }
-            }
-          end
-        end
-
-        # Call each before hook, and if they all succeed, yield.
-        # If they don't all succeed, call after_ for each one that succeeded.
-        def call_hooks(instrumenters, object, before_hook_name, after_hook_name)
-          begin
-            successful = []
-            instrumenters.each do |instrumenter|
-              instrumenter.public_send(before_hook_name, object)
-              successful << instrumenter
+            lazies_at_depth = Hash.new { |h, k| h[k] = [] }
+            multiplex_analyzers = schema.multiplex_analyzers
+            if multiplex.max_complexity
+              multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
             end
 
-            # if any before hooks raise an exception, quit calling before hooks,
-            # but call the after hooks on anything that succeeded but also
-            # raise the exception that came from the before hook.
-          rescue GraphQL::ExecutionError => err
-            object.context.errors << err
-          rescue => e
-            raise call_after_hooks(successful, object, after_hook_name, e)
-          end
+            trace.begin_analyze_multiplex(multiplex, multiplex_analyzers)
+            schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
+            trace.end_analyze_multiplex(multiplex, multiplex_analyzers)
 
-          begin
-            yield # Call the user code
-          ensure
-            ex = call_after_hooks(successful, object, after_hook_name, nil)
-            raise ex if ex
-          end
-        end
-
-        def call_after_hooks(instrumenters, object, after_hook_name, ex)
-          instrumenters.reverse_each do |instrumenter|
             begin
-              instrumenter.public_send(after_hook_name, object)
-            rescue => e
-              ex = e
+              # Since this is basically the batching context,
+              # share it for a whole multiplex
+              multiplex.context[:interpreter_instance] ||= multiplex.schema.query_execution_strategy(deprecation_warning: false).new
+              # Do as much eager evaluation of the query as possible
+              results = []
+              queries.each_with_index do |query, idx|
+                if query.subscription? && !query.subscription_update?
+                  subs_namespace = query.context.namespace(:subscriptions)
+                  subs_namespace[:events] = []
+                  subs_namespace[:subscriptions] = {}
+                end
+                multiplex.dataloader.append_job {
+                  operation = query.selected_operation
+                  result = if operation.nil? || !query.valid? || !query.context.errors.empty?
+                    NO_OPERATION
+                  else
+                    begin
+                      # Although queries in a multiplex _share_ an Interpreter instance,
+                      # they also have another item of state, which is private to that query
+                      # in particular, assign it here:
+                      runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth)
+                      query.context.namespace(:interpreter_runtime)[:runtime] = runtime
+
+                      query.current_trace.execute_query(query: query) do
+                        runtime.run_eager
+                      end
+                    rescue GraphQL::ExecutionError => err
+                      query.context.errors << err
+                      NO_OPERATION
+                    end
+                  end
+                  results[idx] = result
+                }
+              end
+
+              multiplex.dataloader.run
+
+              # Then, work through lazy results in a breadth-first way
+              multiplex.dataloader.append_job {
+                query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
+                queries = multiplex ? multiplex.queries : [query]
+                final_values = queries.map do |query|
+                  runtime = query.context.namespace(:interpreter_runtime)[:runtime]
+                  # it might not be present if the query has an error
+                  runtime ? runtime.final_result : nil
+                end
+                final_values.compact!
+                multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
+                  Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
+                end
+              }
+              multiplex.dataloader.run
+
+              # Then, find all errors and assign the result to the query object
+              results.each_with_index do |data_result, idx|
+                query = queries[idx]
+                if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
+                  schema.subscriptions.write_subscription(query, events)
+                end
+                # Assign the result so that it can be accessed in instrumentation
+                query.result_values = if data_result.equal?(NO_OPERATION)
+                  if !query.valid? || !query.context.errors.empty?
+                    # A bit weird, but `Query#static_errors` _includes_ `query.context.errors`
+                    { "errors" => query.static_errors.map(&:to_h) }
+                  else
+                    data_result
+                  end
+                else
+                  result = {}
+
+                  if !query.context.errors.empty?
+                    error_result = query.context.errors.map(&:to_h)
+                    result["errors"] = error_result
+                  end
+
+                  result["data"] = query.context.namespace(:interpreter_runtime)[:runtime].final_result
+
+                  result
+                end
+                if query.context.namespace?(:__query_result_extensions__)
+                  query.result_values["extensions"] = query.context.namespace(:__query_result_extensions__)
+                end
+                # Get the Query::Result, not the Hash
+                results[idx] = query.result
+              end
+
+              results
+            rescue Exception
+              # TODO rescue at a higher level so it will catch errors in analysis, too
+              # Assign values here so that the query's `@executed` becomes true
+              queries.map { |q| q.result_values ||= {} }
+              raise
+            ensure
+              Fiber[:__graphql_current_multiplex] = nil
+              queries.map { |query|
+                runtime = query.context.namespace(:interpreter_runtime)[:runtime]
+                if runtime
+                  runtime.delete_all_interpreter_context
+                end
+              }
             end
           end
-          ex
         end
       end
 

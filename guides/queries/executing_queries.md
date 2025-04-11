@@ -127,20 +127,32 @@ Note that `context` is _not_ the hash that you passed it. It's an instance of {{
 
 `context` is shared by the whole query. Anything you add to `context` will be accessible by any other field in the query (although GraphQL-Ruby's order of execution can vary).
 
-However, "scoped context" is can be used to assign values into `context` that are only available in the current field and the _children_ of the current field. For example, in this query:
+However, "scoped context" can be used to assign values into `context` that are only available in the current field and the _children_ of the current field. For example, in this query:
 
 ```graphql
 {
   posts {
     comments {
-      author
-      isOriginalPoster
+      author {
+        isOriginalPoster
+      }
     }
   }
 }
 ```
 
 You could use "scoped context" to implement `isOriginalPoster`, based on the parent `comments` field.
+
+{% callout warning %}
+
+Using scoped context may result in a violation of [the GraphQL specification](https://spec.graphql.org/draft/#sel-EABDLDFAACHAo3V) and
+break normalized client stores, which assume that a given object always
+has the same values for its fields.
+
+See ["Referencing ancestors breaks normalized stores"](https://benjie.dev/graphql/ancestors#breaks-normalized-stores)
+for details about this pitfall and alternative approaches which avoid it.
+
+{% endcallout %}
 
 In `def comments`, add `:current_post` to scoped context using `context.scoped_set!`:
 
@@ -154,7 +166,7 @@ class Types::Post < Types::BaseObject
 end
 ```
 
-Then, inside `User`, you can check `context[:current_post]`:
+Then, inside `User` (assuming `author` resolves to `Types::User`), you can check `context[:current_post]`:
 
 ```ruby
 class Types::User < Types::BaseObject
@@ -169,6 +181,16 @@ end
 `context[:current_post]` will be present if an "upstream" field assigned it with `scoped_set!`.
 
 `context.scoped_merge!({ ... })` is also available for setting multiple keys at once.
+
+**Note**: With batched data loading (eg, GraphQL-Batch), scoped context might not work because of GraphQL-Ruby's control flow jumps from one field to the next. In that case, use `scoped_ctx = context.scoped` to grab a scoped context reference _before_ calling a loader, then used `scoped_ctx.set!` or `scoped_ctx.merge!` to modify scoped context inside the promise body. For example:
+
+```ruby
+# For use with GraphQL-Batch promises:
+scoped_ctx = context.scoped
+SomethingLoader.load(:something).then do |thing|
+  scoped_ctx.set!(:thing_name, thing.name)
+end
+```
 
 ## Root Value
 

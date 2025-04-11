@@ -14,7 +14,7 @@ index: 3
 - __Maturity:__ Frankly, GraphQL-Batch is about as old as GraphQL-Ruby, and it's been in production at Shopify, GitHub, and others for many years. GraphQL::Dataloader is new, and although Ruby has supported `Fiber`s since 1.9, they still aren't widely used.
 - __Scope:__ It's not currently possible to use `GraphQL::Dataloader` _outside_ GraphQL.
 
-The incentive in writing `GraphQL::Dataloader` was to leverage `Fiber`'s ability to _transparently_ pause and resume work, which removes the need for `Promise`s (and removes the resulting complexity in the code). Additionally, `GraphQL::Dataloader` shoulde _eventually_ support Ruby 3.0's `Fiber.scheduler` API, which runs I/O in the background by default.
+The incentive in writing `GraphQL::Dataloader` was to leverage `Fiber`'s ability to _transparently_ pause and resume work, which removes the need for `Promise`s (and removes the resulting complexity in the code). Additionally, `GraphQL::Dataloader` should _eventually_ support Ruby 3.0's `Fiber.scheduler` API, which runs I/O in the background by default.
 
 ## Comparison: Fetching a single object
 
@@ -26,7 +26,7 @@ In this example, a single object is batch-loaded to satisfy a GraphQL field.
   record_promise = Loaders::Record.load(1)
   ```
 
-  Then, under the hood, GraphQL-Ruby manages the promise (using its `lazy_resolve` feature, upstreamed from GraphQL-Batch many years ago). GraphQL-Ruby will call `.sync` on it when no futher execution is possible; `promise.rb` implements `Promise#sync` to execute the pending work.
+  Then, under the hood, GraphQL-Ruby manages the promise (using its `lazy_resolve` feature, upstreamed from GraphQL-Batch many years ago). GraphQL-Ruby will call `.sync` on it when no further execution is possible; `promise.rb` implements `Promise#sync` to execute the pending work.
 
 - With __GraphQL::Dataloader__, you get a source, then call `.load` on it, which may pause the current Fiber, but it returns the requested object.
 
@@ -50,7 +50,7 @@ In this example, one object is loaded, then another object is loaded _based on_ 
 
   That call returns a `Promise`, which is stored by GraphQL-Ruby, and finally `.sync`ed.
 
-- With __GraphQL-Dataloader__, `.load(...)` returns the requested object (after a potential `Fiber` pause), so other method calls are necessary:
+- With __GraphQL-Dataloader__, `.load(...)` returns the requested object (after a potential `Fiber` pause), so no other method calls are necessary:
 
   ```ruby
   record = dataloader.with(Sources::Record).load(1)
@@ -59,7 +59,7 @@ In this example, one object is loaded, then another object is loaded _based on_ 
 
 ## Comparison: Fetching objects concurrently (independent)
 
-Sometimes, you need multiple _independent_ records to perform a calcuation. Each record is loaded, then they're combined in some bit of work.
+Sometimes, you need multiple _independent_ records to perform a calculation. Each record is loaded, then they're combined in some bit of work.
 
 - With __GraphQL-Batch__, `Promise.all(...)` is used to to wait for several pending loads:
 

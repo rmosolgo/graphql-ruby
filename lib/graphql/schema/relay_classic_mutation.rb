@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require "graphql/types/string"
 
 module GraphQL
   class Schema
@@ -21,6 +20,10 @@ module GraphQL
     # @see {GraphQL::Schema::Mutation} for an example, it's basically the same.
     #
     class RelayClassicMutation < GraphQL::Schema::Mutation
+      include GraphQL::Schema::HasSingleInputArgument
+
+      argument :client_mutation_id, String, "A unique identifier for the client performing the mutation.", required: false
+
       # The payload should always include this field
       field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.")
       # Relay classic default:
@@ -31,148 +34,22 @@ module GraphQL
       def resolve_with_support(**inputs)
         input = inputs[:input].to_kwargs
 
-        new_extras = field ? field.extras : []
-        all_extras = self.class.extras + new_extras
-
-        # Transfer these from the top-level hash to the
-        # shortcutted `input:` object
-        all_extras.each do |ext|
-          # It's possible that the `extra` was not passed along by this point,
-          # don't re-add it if it wasn't given here.
-          if inputs.key?(ext)
-            input[ext] = inputs[ext]
-          end
-        end
-
         if input
           # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
           input_kwargs = input.to_h
           client_mutation_id = input_kwargs.delete(:client_mutation_id)
-        else
-          # Relay Classic Mutations with no `argument`s
-          # don't require `input:`
-          input_kwargs = {}
+          inputs[:input] = input_kwargs
         end
 
-        return_value = if input_kwargs.any?
-          super(**input_kwargs)
-        else
-          super()
-        end
+        return_value = super(**inputs)
 
-        context.schema.after_lazy(return_value) do |return_hash|
+        context.query.after_lazy(return_value) do |return_hash|
           # It might be an error
           if return_hash.is_a?(Hash)
             return_hash[:client_mutation_id] = client_mutation_id
           end
           return_hash
         end
-      end
-
-      class << self
-        def dummy
-          @dummy ||= begin
-            d = Class.new(GraphQL::Schema::Resolver)
-            d.argument_class(self.argument_class)
-            # TODO make this lazier?
-            d.argument(:input, input_type, description: "Parameters for #{self.graphql_name}")
-            d
-          end
-        end
-
-        def field_arguments(context = GraphQL::Query::NullContext)
-          dummy.arguments(context)
-        end
-
-        def get_field_argument(name, context = GraphQL::Query::NullContext)
-          dummy.get_argument(name, context)
-        end
-
-        def own_field_arguments
-          dummy.own_arguments
-        end
-
-        def all_field_argument_definitions
-          dummy.all_argument_definitions
-        end
-
-        # Also apply this argument to the input type:
-        def argument(*args, own_argument: false, **kwargs, &block)
-          it = input_type # make sure any inherited arguments are already added to it
-          arg = super(*args, **kwargs, &block)
-
-          # This definition might be overriding something inherited;
-          # if it is, remove the inherited definition so it's not confused at runtime as having multiple definitions
-          prev_args = it.own_arguments[arg.graphql_name]
-          case prev_args
-          when GraphQL::Schema::Argument
-            if prev_args.owner != self
-              it.own_arguments.delete(arg.graphql_name)
-            end
-          when Array
-            prev_args.reject! { |a| a.owner != self }
-            if prev_args.empty?
-              it.own_arguments.delete(arg.graphql_name)
-            end
-          end
-
-          it.add_argument(arg)
-          arg
-        end
-
-        # The base class for generated input object types
-        # @param new_class [Class] The base class to use for generating input object definitions
-        # @return [Class] The base class for this mutation's generated input object (default is {GraphQL::Schema::InputObject})
-        def input_object_class(new_class = nil)
-          if new_class
-            @input_object_class = new_class
-          end
-          @input_object_class || (superclass.respond_to?(:input_object_class) ? superclass.input_object_class : GraphQL::Schema::InputObject)
-        end
-
-        # @param new_input_type [Class, nil] If provided, it configures this mutation to accept `new_input_type` instead of generating an input type
-        # @return [Class] The generated {Schema::InputObject} class for this mutation's `input`
-        def input_type(new_input_type = nil)
-          if new_input_type
-            @input_type = new_input_type
-          end
-          @input_type ||= generate_input_type
-        end
-
-        private
-
-        # Generate the input type for the `input:` argument
-        # To customize how input objects are generated, override this method
-        # @return [Class] a subclass of {.input_object_class}
-        def generate_input_type
-          mutation_args = all_argument_definitions
-          mutation_class = self
-          Class.new(input_object_class) do
-            class << self
-              def default_graphql_name
-                "#{self.mutation.graphql_name}Input"
-              end
-
-              def description(new_desc = nil)
-                super || "Autogenerated input type of #{self.mutation.graphql_name}"
-              end
-            end
-            mutation(mutation_class)
-            # these might be inherited:
-            mutation_args.each do |arg|
-              add_argument(arg)
-            end
-            argument :client_mutation_id, String, "A unique identifier for the client performing the mutation.", required: false
-          end
-        end
-      end
-
-      private
-
-      def authorize_arguments(args, values)
-        # remove the `input` wrapper to match values
-        input_args = args["input"].type.unwrap.arguments(context)
-        super(input_args, values)
       end
     end
   end

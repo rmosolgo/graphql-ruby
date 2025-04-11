@@ -17,6 +17,7 @@ JavaScript support for GraphQL projects using [graphql-pro](https://graphql.pro)
 - [Apollo Link support](#use-with-apollo-link)
 - [Apollo Codegen Support](#use-with-apollo-codegen)
 - [Apollo Android support](#use-with-apollo-android)
+- [Apollo Persisted Queries Support](#use-with-apollo-persisted-queries)
 - [Plain JS support](#use-with-plain-javascript)
 - [Authorization](#authorization)
 
@@ -54,6 +55,7 @@ option | description
 `--add-typename` | Add `__typename` to all selection sets (for use with Apollo Client)
 `--verbose` | Output some debug information
 `--changeset-version` | Set a {% internal_link "Changeset Version", "/changesets/installation#controller-setup" %} when syncing these queries. (`context[:changeset_version]` will also be required at runtime, when running these stored operations.)
+`--dump-payload` | A file to write the HTTP Post payload into, or if no filename is passed, then the payload will be written to stdout.
 
 You can see these and a few others with `graphql-ruby-client sync --help`.
 
@@ -104,12 +106,15 @@ function fetchQuery(operation, variables, cacheConfig, uploadables) {
 
 ## Use With Relay Persisted Output
 
-Relay 2.0+ includes a `--persist-output` option for `relay-compiler` which works perfectly with GraphQL-Ruby. (Relay's own docs, for reference: https://relay.dev/docs/en/persisted-queries.)
+To use Relay's persisted output, add a `"file": ...` to your project's [`persistConfig` object](https://relay.dev/docs/guides/persisted-queries/). For example:
 
-When generating queries for Relay, include `--persist-output`:
-
-```
-$ relay-compiler ... --persist-output path/to/persisted-queries.json
+```json
+  "relay": {
+    ...
+    "persistConfig": {
+      "file": "./persisted-queries.json"
+    }
+  },
 ```
 
 Then, push Relay's generated queries to your OperationStore server with `--relay-persisted-output`:
@@ -141,7 +146,7 @@ function fetchQuery(operation, variables,) {
 }
 ```
 
-(Inspired by https://relay.dev/docs/en/persisted-queries#network-layer-changes.)
+(Inspired by https://relay.dev/docs/guides/persisted-queries/#network-layer-changes.)
 
 Now, your Relay app will only send operation IDs over the wire to the server.
 
@@ -259,6 +264,29 @@ end
 ```
 
 You may also have to __update your app__ to send an identifier, so that the server can determine the "client name" used with the operation store. (Apollo Android sends a query hash, but the operation store expects IDs in the form `#{client_name}/#{query_hash}`.)
+
+## Use with Apollo Persisted Queries
+
+Apollo client has a [Persisted Queries Link](https://www.apollographql.com/docs/react/api/link/persisted-queries/). You can use that link with GraphQL-Pro's {% internal_link "OperationStore", "/operation_store/overview" %}. First, create a manifest with [`generate-persisted-query-manifest`](https://www.apollographql.com/docs/react/api/link/persisted-queries/#1-generate-operation-manifests), then, pass the path to that file to `sync`:
+
+```sh
+$ graphql-ruby-client sync --apollo-persisted-query-manifest=path/to/manifest.json ...
+```
+
+Then, configure Apollo Client to [use your persisted query manifest](https://www.apollographql.com/docs/react/api/link/persisted-queries/#persisted-queries-implementation).
+
+Finally, update your controller to receive the operation ID and pass it as `context[:operation_id]`:
+
+```ruby
+client_name = "..." # TODO: send the client name as a query param or header
+persisted_query_hash = params[:extensions][:persistedQuery][:sha256Hash]
+context = {
+  # ...
+  operation_id: "#{client_name}/#{persisted_query_hash}"
+}
+```
+
+The `operation_id` will also need your client name. Using Apollo Client, you could send this as a [custom header](https://www.apollographql.com/docs/react/networking/basic-http-networking/#customizing-request-headers) or another way that works for your application (eg, session or user agent).
 
 ## Use with plain JavaScript
 

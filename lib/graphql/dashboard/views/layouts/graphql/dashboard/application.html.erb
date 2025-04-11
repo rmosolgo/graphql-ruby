@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" class="h-100" >
+  <head>
+    <link rel="icon" type="image/png" href="<%= graphql_dashboard.static_path("icon.png") %>" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL Dashboard <%= content_for?(:title) ? " · #{content_for(:title)}" : "" %> </title>
+    <%= stylesheet_link_tag graphql_dashboard.static_path("bootstrap-5.3.3.min.css") %>
+    <%= stylesheet_link_tag graphql_dashboard.static_path("charts.min.css") %>
+    <%= stylesheet_link_tag graphql_dashboard.static_path("dashboard.css") %>
+    <%= javascript_include_tag graphql_dashboard.static_path("bootstrap-5.3.3.min.js") %>
+    <%= javascript_include_tag graphql_dashboard.static_path("dashboard.js") %>
+    <%= csrf_meta_tags %>
+  </head>
+  <body class="h-100 d-flex flex-column">
+    <main class="flex-shrink-0">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col gx-0">
+            <nav class="navbar navbar-expand-lg bg-body-tertiary">
+              <div class="container-fluid">
+                <%= link_to graphql_dashboard.root_path, class: "navbar-brand" do %>
+                  <img id="header-icon" src="<%= graphql_dashboard.static_path("header-icon.png") %>" alt="GraphQL-Ruby" />
+                <% end %>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                      <%= link_to "Traces", graphql_dashboard.detailed_traces_traces_path, class: "nav-link #{params[:controller] == "graphql/dashboard/detailed_traces" ? "active" : ""}" %>
+                    </li>
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle <%= params[:controller].include?("operation_store") ? "active" : "" %>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Persisted Operations
+                      </a>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <%= link_to "Clients", graphql_dashboard.operation_store_clients_path, class: "dropdown-item" %>
+                        </li>
+                        <li>
+                          <%= link_to "Operations", graphql_dashboard.operation_store_operations_path, class: "dropdown-item" %>
+                        </li>
+                        <li>
+                          <%= link_to "Index", graphql_dashboard.operation_store_index_entries_path, class: "dropdown-item" %>
+                        </li>
+                      </ul>
+                    </li>
+                    <li class="nav-item">
+                      <%= link_to "Subscriptions", graphql_dashboard.subscriptions_topics_path, class: "nav-link #{params[:controller] == "graphql/dashboard/subscriptions" ? "active" : ""}" %>
+                    </li>
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle <%= params[:controller].include?("limiters") ? "active" : "" %>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Rate Limiters
+                      </a>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <%= link_to "Runtime", graphql_dashboard.limiters_limiter_path("runtime", chart: params[:chart]), class: "dropdown-item" %>
+                        </li>
+                        <li>
+                          <%= link_to "Active Operations", graphql_dashboard.limiters_limiter_path("active_operations", chart: params[:chart]), class: "dropdown-item" %>
+                        </li>
+                        <% if schema_class.respond_to?(:enterprise_mutation_limiter) && schema_class.enterprise_mutation_limiter %>
+                          <li>
+                            <%= link_to "Mutations", graphql_dashboard.limiters_limiter_path("mutations", chart: params[:chart]), class: "dropdown-item" %>
+                          </li>
+                        <% end %>
+                      </ul>
+                    </li>
+                  </ul>
+                  <span class="navbar-text pe-2">
+                    <%= link_to ".", "#", class: "nav-link", id: "themeToggle" %>
+                  </span>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+        <% flash.each do |flash_type, flash_message| %>
+          <div class="row mt-2">
+            <div class="col">
+              <div class="alert alert-<%= flash_type %> alert-dismissible fade show" role="alert">
+                <%= flash_message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <div class="container-fluid">
+        <%= yield %>
+      </div>
+    </main>
+    <footer class="mt-auto">
+      <div class="container-fluid">
+        <div class="sticky-bottom">
+          <div class="row bg-body-tertiary">
+            <div class="col gx-0 px-4">
+              <p class="fs-6 text-center pt-2 text-muted">
+                <em>GraphQL-Ruby v<%= GraphQL::VERSION %></em> · <code><%= schema_class %></code>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -19,6 +19,7 @@ module GraphQL
         GraphQL::Schema::Directive::FRAGMENT_DEFINITION => "fragment definitions",
         GraphQL::Schema::Directive::FRAGMENT_SPREAD =>     "fragment spreads",
         GraphQL::Schema::Directive::INLINE_FRAGMENT =>     "inline fragments",
+        GraphQL::Schema::Directive::VARIABLE_DEFINITION => "variable definitions",
       }
 
       SIMPLE_LOCATIONS = {
@@ -26,6 +27,7 @@ module GraphQL
         Nodes::InlineFragment =>      GraphQL::Schema::Directive::INLINE_FRAGMENT,
         Nodes::FragmentSpread =>      GraphQL::Schema::Directive::FRAGMENT_SPREAD,
         Nodes::FragmentDefinition =>  GraphQL::Schema::Directive::FRAGMENT_DEFINITION,
+        Nodes::VariableDefinition =>  GraphQL::Schema::Directive::VARIABLE_DEFINITION,
       }
 
       SIMPLE_LOCATION_NODES = SIMPLE_LOCATIONS.keys

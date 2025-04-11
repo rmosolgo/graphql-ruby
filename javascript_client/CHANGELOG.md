@@ -1,5 +1,74 @@
 # graphql-ruby-client
 
+# 1.14.6 (25 Mar 2025)
+
+- `ActionCableLink`: accept ActionCable subscription callbacks #5288
+
+# 1.14.5 (8 Nov 2024)
+
+- `sync`: Fix `--dump-payload` with `--outfile` #5152
+
+# 1.14.4 (8 Nov 2024)
+
+- ActionCable: prevent unsubscribe being called twice with Relay and Urql #5150
+
+# 1.14.3 (5 Nov 2024)
+
+- `createActionCableHandler`: Make sure `unsubscribe` is only called once #5109
+
+# 1.14.2 (4 Nov 2024)
+
+- `sync`: Add a `--dump-payload` option for printing out the HTTP Post data #5143
+
+# 1.14.1 (30 Sept 2024)
+
+- `AblyLink`: don't set up an Ably subscription when no Subscription header is present #5113
+
+# 1.14.0 (3 Jul 2024)
+
+- Subscriptions: with Relay and ActionCable, don't send an empty query string (`""`) when using persisted operations #5008
+
+# 1.13.3 (20 Mar 2024)
+
+- Subscriptions: Support `urql` + ActionCable #4886
+
+# 1.13.2 (28 Feb 2024)
+
+- Update `glob` to v10+ to eliminate dependency on `inflight` #4859
+
+# 1.13.1 (23 Feb 2024)
+
+- createAblyHandler: add typing for `onError` handler #4845
+
+# 1.13.0 (23 Jan 2024)
+
+- Sync: add support for `generate-persisted-query-manifest` files #4798
+- createActionCableHandler: remove needless `perform("send", ...)` call #4793
+
+# 1.12.1 (29 Dec 2023)
+
+- GraphiQL: support custom `channelName` and `url` in ActionCable fetcher #4756
+
+# 1.12.0 (7 Dec 2023)
+
+- Add GraphiQL support for subscriptions #4724
+
+# 1.11.10 (17 Nov 2023)
+
+- `createRelaySubscriptionHandler`: Support Relay persisted queries with ActionCable #4705
+
+# 1.11.9 (1 Sept 2023)
+
+- `createRelaySubscriptionHandler`: fix error handling in handler functions #4603
+
+# 1.11.8 (9 May 2023)
+
+- ActionCable: accept a custom `channelName` for `createActionCableHandler` and `addGraphQLSubscriptions` #4463
+
+# 1.11.7 (24 February 2023)
+
+- ActionCableLink: fix race condition #4359
+
 # 1.11.6 (14 February 2023)
 
 - Sync: fix `--changeset-version` #4328

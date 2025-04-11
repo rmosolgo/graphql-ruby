@@ -2,6 +2,10 @@
 require "spec_helper"
 require "fiber"
 
+if defined?(Console) && defined?(Async)
+  Console.logger.disable(Async::Task)
+end
+
 describe GraphQL::Dataloader do
   class BatchedCallsCounter
     def initialize
@@ -55,6 +59,12 @@ describe GraphQL::Dataloader do
         else
           Database.find_by(@column, keys)
         end
+      end
+    end
+
+    class ToString < GraphQL::Dataloader::Source
+      def fetch(keys)
+        keys.map(&:to_s)
       end
     end
 
@@ -116,8 +126,14 @@ describe GraphQL::Dataloader do
       end
 
       def fetch(recipes)
-        @counter && @counter.increment
+        @counter&.increment
         recipes.map { true }
+      end
+    end
+
+    class ErrorSource < GraphQL::Dataloader::Source
+      def fetch(ids)
+        raise GraphQL::Error, "Source error on: #{ids.inspect}"
       end
     end
 
@@ -215,6 +231,30 @@ describe GraphQL::Dataloader do
         recipe
       end
 
+      field :recipe_by_id_using_load, Recipe do
+        argument :id, ID, required: false
+      end
+
+      def recipe_by_id_using_load(id:)
+        dataloader.with(DataObject).load(id)
+      end
+
+      field :recipes_by_id_using_load_all, [Recipe] do
+        argument :ids, [ID, null: true]
+      end
+
+      def recipes_by_id_using_load_all(ids:)
+        dataloader.with(DataObject).load_all(ids)
+      end
+
+      field :recipes_by_id, [Recipe] do
+        argument :ids, [ID], loads: Recipe, as: :recipes
+      end
+
+      def recipes_by_id(recipes:)
+        recipes
+      end
+
       field :key_ingredient, Ingredient do
         argument :id, ID
       end
@@ -295,6 +335,33 @@ describe GraphQL::Dataloader do
         res = context.schema.execute("{ ingredient(id: #{id}) { name } }")
         res["data"]["ingredient"]["name"]
       end
+
+      field :test_error, String do
+        argument :source, Boolean, required: false, default_value: false
+      end
+
+      def test_error(source:)
+        if source
+          dataloader.with(ErrorSource).load(1)
+        else
+          raise GraphQL::Error, "Field error"
+        end
+      end
+
+      class LookaheadInput < GraphQL::Schema::InputObject
+        argument :id, ID
+        argument :batch_key, String
+      end
+
+      field :lookahead_ingredient, Ingredient, extras: [:lookahead] do
+        argument :input, LookaheadInput
+      end
+
+
+      def lookahead_ingredient(input:, lookahead:)
+        lookahead.arguments # forces a dataloader.run_isolated call
+        dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
+      end
     end
 
     query(Query)
@@ -303,9 +370,9 @@ describe GraphQL::Dataloader do
       argument :argument_1, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-
+      field :value, String
       def resolve(argument_1:)
-        argument_1
+        { value: argument_1 }
       end
     end
 
@@ -313,25 +380,52 @@ describe GraphQL::Dataloader do
       argument :argument_2, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-
+      field :value, String
       def resolve(argument_2:)
-        argument_2
+        { value: argument_2 }
+      end
+    end
+
+    class Mutation3 < GraphQL::Schema::Mutation
+      argument :label, String
+      type String
+
+      def resolve(label:)
+        log = context[:mutation_log] ||= []
+        log << "begin #{label}"
+        dataloader.with(DataObject).load(1)
+        log << "end #{label}"
+        label
+      end
+    end
+
+    class GetCache < GraphQL::Schema::Mutation
+      type String
+      def resolve
+        dataloader.with(ToString).load(1)
       end
     end
 
     class Mutation < GraphQL::Schema::Object
       field :mutation_1, mutation: Mutation1
       field :mutation_2, mutation: Mutation2
+      field :mutation_3, mutation: Mutation3
+      field :set_cache, String do
+        argument :input, String
+      end
+
+      def set_cache(input:)
+        dataloader.with(ToString).merge({ 1 => input })
+        input
+      end
+
+      field :get_cache, mutation: GetCache
     end
 
     mutation(Mutation)
 
     def self.object_from_id(id, ctx)
-      if ctx[:use_request]
-        ctx.dataloader.with(DataObject).request(id)
-      else
-        ctx.dataloader.with(DataObject).load(id)
-      end
+      ctx.dataloader.with(DataObject).load(id)
     end
 
     def self.resolve_type(type, obj, ctx)
@@ -350,7 +444,7 @@ describe GraphQL::Dataloader do
     end
   end
 
-  class UsageAnalyzer < GraphQL::Analysis::AST::Analyzer
+  class UsageAnalyzer < GraphQL::Analysis::Analyzer
     def initialize(query)
       @query = query
       @fields = Set.new
@@ -379,9 +473,115 @@ describe GraphQL::Dataloader do
     database_log.clear
   end
 
+  ALL_FIBERS = []
+
+
+  class PartsSchema < GraphQL::Schema
+    class FieldSource < GraphQL::Dataloader::Source
+      DATA = [
+        {"id" => 1, "name" => "a"},
+        {"id" => 2, "name" => "b"},
+        {"id" => 3, "name" => "c"},
+        {"id" => 4, "name" => "d"},
+      ]
+      def fetch(fields)
+        @previously_fetched ||= Set.new
+        fields.each do |f|
+          if !@previously_fetched.add?(f)
+            raise "Duplicate fetch for #{f.inspect}"
+          end
+        end
+        Array.new(fields.size, DATA)
+      end
+    end
+
+    class StringFilter < GraphQL::Schema::InputObject
+      argument :equal_to_any_of, [String]
+    end
+
+    class ComponentFilter < GraphQL::Schema::InputObject
+      argument :name, StringFilter
+    end
+
+    class FetchObjects < GraphQL::Schema::Resolver
+      argument :filter, ComponentFilter, required: false
+      def resolve(**_kwargs)
+        context.dataloader.with(FieldSource).load("#{field.path}/#{object&.fetch("id")}")
+      end
+    end
+
+    class Component < GraphQL::Schema::Object
+      field :name, String
+    end
+
+    class Part < GraphQL::Schema::Object
+      field :components, [Component], resolver: FetchObjects
+    end
+
+    class Manufacturer < GraphQL::Schema::Object
+      field :parts, [Part], resolver: FetchObjects
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :manufacturers, [Manufacturer], resolver: FetchObjects
+    end
+
+    query(Query)
+    use GraphQL::Dataloader
+  end
+
   module DataloaderAssertions
+    module FiberCounting
+      class << self
+        attr_accessor :starting_fiber_count, :last_spawn_fiber_count, :last_max_fiber_count
+
+        def current_fiber_count
+          count_active_fibers - starting_fiber_count
+        end
+
+        def count_active_fibers
+          GC.start
+          ObjectSpace.each_object(Fiber).count
+        end
+      end
+
+      def initialize(*args, **kwargs, &block)
+        super
+        FiberCounting.starting_fiber_count = FiberCounting.count_active_fibers
+        FiberCounting.last_max_fiber_count = 0
+        FiberCounting.last_spawn_fiber_count = 0
+      end
+
+      def spawn_fiber
+        result = super
+        update_fiber_counts
+        result
+      end
+
+      def spawn_source_task(parent_task, condition, trace)
+        result = super
+        if result
+          update_fiber_counts
+        end
+        result
+      end
+
+      private
+
+      def update_fiber_counts
+        FiberCounting.last_spawn_fiber_count += 1
+        current_count = FiberCounting.current_fiber_count
+        if current_count > FiberCounting.last_max_fiber_count
+          FiberCounting.last_max_fiber_count = current_count
+        end
+      end
+    end
+
     def self.included(child_class)
       child_class.class_eval do
+        let(:schema) { make_schema_from(FiberSchema) }
+        let(:parts_schema) { make_schema_from(PartsSchema) }
+
         it "Works with request(...)" do
           res = schema.execute <<-GRAPHQL
           {
@@ -399,8 +599,31 @@ describe GraphQL::Dataloader do
               ]
             }
           }
-          assert_equal expected_data, res
+          assert_graphql_equal expected_data, res
           assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
+        end
+
+        it "runs mutations sequentially" do
+          res = schema.execute <<-GRAPHQL
+            mutation {
+              first: mutation3(label: "first")
+              second: mutation3(label: "second")
+            }
+          GRAPHQL
+
+          assert_equal({ "first" => "first", "second" => "second" }, res["data"])
+          assert_equal ["begin first", "end first", "begin second", "end second"], res.context[:mutation_log]
+        end
+
+        it "clears the cache between mutations" do
+          res = schema.execute <<-GRAPHQL
+            mutation {
+              setCache(input: "Salad")
+              getCache
+            }
+          GRAPHQL
+
+          assert_equal({"setCache" => "Salad", "getCache" => "1"}, res["data"])
         end
 
         it "batch-loads" do
@@ -408,6 +631,7 @@ describe GraphQL::Dataloader do
           {
             i1: ingredient(id: 1) { id name }
             i2: ingredient(id: 2) { name }
+            __typename
             r1: recipe(id: 5) {
               # This loads Ingredients 3 and 4
               ingredients { name }
@@ -422,6 +646,7 @@ describe GraphQL::Dataloader do
           expected_data = {
             "i1" => { "id" => "1", "name" => "Wheat" },
             "i2" => { "name" => "Corn" },
+            "__typename" => "Query",
             "r1" => {
               "ingredients" => [
                 { "name" => "Wheat" },
@@ -434,7 +659,7 @@ describe GraphQL::Dataloader do
               "name" => "Cheese",
             },
           }
-          assert_equal(expected_data, res["data"])
+          assert_graphql_equal(expected_data, res["data"])
 
           expected_log = [
             [:mget, [
@@ -465,7 +690,7 @@ describe GraphQL::Dataloader do
             {"data"=>{"i2"=>{"name"=>"Corn"}, "r1"=>{"ingredients"=>[{"name"=>"Wheat"}, {"name"=>"Corn"}, {"name"=>"Butter"}, {"name"=>"Baking Soda"}]}}},
             {"data"=>{"i1"=>{"name"=>"Wheat"}, "ri1"=>{"name"=>"Corn"}}},
           ]
-          assert_equal expected_result, result
+          assert_graphql_equal expected_result, result
           expected_log = [
             [:mget, ["1", "2", "5"]],
             [:mget, ["3", "4"]],
@@ -482,7 +707,7 @@ describe GraphQL::Dataloader do
           GRAPHQL
 
           expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" } }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           assert_equal [[:mget, ["1", "2"]]], database_log
         end
 
@@ -500,7 +725,7 @@ describe GraphQL::Dataloader do
             "i2" => { "id" => "2" },
             "i3" => nil,
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           assert_equal [[:find_by, :name, ["Butter", "Corn", "Gummi Bears"]]], database_log
         end
 
@@ -514,8 +739,11 @@ describe GraphQL::Dataloader do
           GRAPHQL
           finish = Time.now.to_f
 
+          # For some reason Async adds some overhead to this manual parallelism.
+          # But who cares, you wouldn't use Thread#join in that case
+          delta = schema.dataloader_class == GraphQL::Dataloader ? 0.1 : 0.5
           # Each load slept for 0.5 second, so sequentially, this would have been 2s sequentially
-          assert_in_delta 1, finish - start, 0.1, "Load threads are executed in parallel"
+          assert_in_delta 1, finish - start, delta, "Load threads are executed in parallel"
           expected_log = [
             # These were separated because of different recipe IDs:
             [:mget, ["5"]],
@@ -545,7 +773,7 @@ describe GraphQL::Dataloader do
               "name" => "Wheat",
             }
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works when the parent field didn't yield" do
@@ -575,7 +803,7 @@ describe GraphQL::Dataloader do
               ]},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -600,18 +828,12 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+        assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
-          assert_equal expected_log, database_log
-
-          # Run the same test, but using `.request` from object_from_id
-          database_log.clear
-          res2 = schema.execute(query_str, context: { use_request: true })
-          assert_equal expected_data, res2["data"]
           assert_equal expected_log, database_log
         end
 
@@ -632,7 +854,7 @@ describe GraphQL::Dataloader do
               "name" => "Wheat",
             }
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works with analyzing arguments with `loads:`, even with .request" do
@@ -644,20 +866,16 @@ describe GraphQL::Dataloader do
           }
           GRAPHQL
           query = GraphQL::Query.new(schema, query_str)
-          results = GraphQL::Analysis::AST.analyze_query(query, [UsageAnalyzer])
+          results = GraphQL::Analysis.analyze_query(query, [UsageAnalyzer])
           expected_results = [
             ["commonIngredientsWithLoad", [:recipe_1, :recipe_2]],
             ["name", []],
           ]
-          assert_equal expected_results, results.first.to_a
-
-          query2 = GraphQL::Query.new(schema, query_str, context: { use_request: true })
-          result2 = nil
-          query2.context.dataloader.run_isolated do
-            result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
+          normalized_results = results.first.to_a
+          normalized_results.each do |key, values|
+            values.sort!
           end
-
-          assert_equal expected_results, result2.first.to_a
+          assert_equal expected_results, results.first.to_a
         end
 
         it "Works with input objects, load and request" do
@@ -675,19 +893,12 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
-          assert_equal expected_log, database_log
-
-
-          # Run the same test, but using `.request` from object_from_id
-          database_log.clear
-          res2 = schema.execute(query_str, context: { use_request: true })
-          assert_equal expected_data, res2["data"]
           assert_equal expected_log, database_log
         end
 
@@ -701,6 +912,35 @@ describe GraphQL::Dataloader do
           context = { batched_calls_counter: BatchedCallsCounter.new }
           schema.execute(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
+
+          query_str = "{ recipesById(ids: [5, 6]) { name } }"
+          context = { batched_calls_counter: BatchedCallsCounter.new }
+          schema.execute(query_str, context: context)
+          assert_equal 1, context[:batched_calls_counter].count
+        end
+
+        it "works when passing nil into source" do
+          query_str = <<-GRAPHQL
+          query($id: ID) {
+            recipe: recipeByIdUsingLoad(id: $id) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str, variables: { id: nil })
+          expected_data = { "recipe" => nil }
+          assert_graphql_equal expected_data, res["data"]
+
+          query_str = <<-GRAPHQL
+          query($ids: [ID]!) {
+            recipes: recipesByIdUsingLoadAll(ids: $ids) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str, variables: { ids: [nil] })
+          expected_data = { "recipes" => nil }
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works with input objects using variables, load and request" do
@@ -718,19 +958,12 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
-          assert_equal expected_log, database_log
-
-
-          # Run the same test, but using `.request` from object_from_id
-          database_log.clear
-          res2 = schema.execute(query_str, context: { use_request: true }, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
-          assert_equal expected_data, res2["data"]
           assert_equal expected_log, database_log
         end
 
@@ -780,7 +1013,7 @@ describe GraphQL::Dataloader do
             "i3" => { "nameByScopedContext" => "Scoped:Butter" },
           }
           result = schema.execute(query_str)
-          assert_equal expected_data, result["data"]
+          assert_graphql_equal expected_data, result["data"]
         end
 
         it "works when the schema calls itself" do
@@ -799,7 +1032,7 @@ describe GraphQL::Dataloader do
 
           res = schema.execute(query_str)
           expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" }, "i3" => { "name" => "Butter" } }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           expected_log = [
             # Each batch key is given to the source class:
             [:batch_key_for, "abc"],
@@ -826,18 +1059,189 @@ describe GraphQL::Dataloader do
           assert_equal [], database_log
           assert_equal "Kamut", res["data"]["ingredient"]["name"]
         end
+
+        it "raises errors from fields" do
+          err = assert_raises GraphQL::Error do
+            schema.execute("{ testError }")
+          end
+
+          assert_equal "Field error", err.message
+        end
+
+        it "raises errors from sources" do
+          err = assert_raises GraphQL::Error do
+            schema.execute("{ testError(source: true) }")
+          end
+
+          assert_equal "Source error on: [1]", err.message
+        end
+
+        it "works with very very large queries" do
+          query_str = "{".dup
+          fields = 1100
+          fields.times do |i|
+            query_str << "\n  field#{i}: lookaheadIngredient(input: { id: 1, batchKey: \"key-#{i}\"}) { name }"
+          end
+          query_str << "\n}"
+          GC.start
+          GC.disable
+          old_fibers = []
+          ObjectSpace.each_object(Fiber) do |f|
+            old_fibers << f
+          end
+          res = schema.execute(query_str)
+          assert_equal fields, res["data"].keys.size
+          all_fibers = []
+          ObjectSpace.each_object(Fiber) do |f|
+            all_fibers << f
+          end
+          new_fibers = all_fibers - old_fibers
+          if new_fibers.any?(&:alive?)
+            message = "Alive fibers:\n\n".dup
+            new_fibers.select(&:alive?).each do |f|
+              message << "  - #{f.inspect}\n"
+              f.backtrace.each do |line|
+                message << "      #{line}\n"
+              end
+            end
+            puts message
+          end
+          assert_equal [false], new_fibers.map(&:alive?).uniq
+        ensure
+          GC.enable
+        end
+
+        it "doesn't perform duplicate source fetches" do
+          query = <<~QUERY
+            query {
+              manufacturers {
+                parts {
+                  components(filter: {name: {equalToAnyOf: ["c1", "c2", "c3"]}}) {
+                    name
+                  }
+                }
+              }
+            }
+          QUERY
+          response = parts_schema.execute(query).to_h
+          assert_equal [4, 4, 4, 4], response["data"]["manufacturers"].map { |parts_obj| parts_obj["parts"].size }
+        end
+
+        describe "fiber_limit" do
+          def assert_last_max_fiber_count(expected_last_max_fiber_count, message = nil)
+            if FiberCounting.last_max_fiber_count == (expected_last_max_fiber_count + 1)
+              # TODO why does this happen sometimes?
+              warn "AsyncDataloader had +1 last_max_fiber_count"
+              assert_equal (expected_last_max_fiber_count + 1), FiberCounting.last_max_fiber_count, message
+            else
+              assert_equal expected_last_max_fiber_count, FiberCounting.last_max_fiber_count, message
+            end
+          end
+
+          it "respects a configured fiber_limit" do
+            query_str = <<-GRAPHQL
+            {
+              recipes {
+                ingredients {
+                  name
+                }
+              }
+              nestedIngredient(id: 2) {
+                name
+              }
+              keyIngredient(id: 4) {
+                name
+              }
+              commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+                name
+              }
+            }
+            GRAPHQL
+
+            fiber_counting_dataloader_class = Class.new(schema.dataloader_class)
+            fiber_counting_dataloader_class.include(FiberCounting)
+
+            res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
+            assert_nil res.context.dataloader.fiber_limit
+            assert_equal 12, FiberCounting.last_spawn_fiber_count
+            assert_last_max_fiber_count(9, "No limit works as expected")
+
+            res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
+            assert_equal 4, res.context.dataloader.fiber_limit
+            assert_equal 14, FiberCounting.last_spawn_fiber_count
+            assert_last_max_fiber_count(4, "Limit of 4 works as expected")
+
+            res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
+            assert_equal 6, res.context.dataloader.fiber_limit
+            assert_equal 10, FiberCounting.last_spawn_fiber_count
+            assert_last_max_fiber_count(6, "Limit of 6 works as expected")
+          end
+
+          it "accepts a default fiber_limit config" do
+            schema = Class.new(FiberSchema) do
+              use GraphQL::Dataloader, fiber_limit: 4
+            end
+            query_str = <<-GRAPHQL
+            {
+              recipes {
+                ingredients {
+                  name
+                }
+              }
+              nestedIngredient(id: 2) {
+                name
+              }
+              keyIngredient(id: 4) {
+                name
+              }
+              commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+                name
+              }
+            }
+            GRAPHQL
+            res = schema.execute(query_str)
+            assert_equal 4, res.context.dataloader.fiber_limit
+            assert_nil res["errors"]
+          end
+
+          it "requires at least three fibers" do
+            dl = GraphQL::Dataloader.new(fiber_limit: 2)
+            err = assert_raises ArgumentError do
+              dl.run
+            end
+            assert_equal "Dataloader fiber limit is too low (2), it must be at least 4", err.message
+          end
+        end
       end
     end
   end
 
-  let(:schema) { FiberSchema }
+  def make_schema_from(schema)
+    schema
+  end
+
   include DataloaderAssertions
+
+  if RUBY_VERSION >= "3.1.1"
+    require "async"
+    describe "AsyncDataloader" do
+      def make_schema_from(schema)
+        Class.new(schema) {
+          use GraphQL::Dataloader::AsyncDataloader
+        }
+      end
+
+      include DataloaderAssertions
+    end
+  end
 
   if Fiber.respond_to?(:scheduler)
     describe "nonblocking: true" do
-      let(:schema) { Class.new(FiberSchema) do
-        use GraphQL::Dataloader, nonblocking: true
-      end }
+      def make_schema_from(schema)
+        Class.new(schema) do
+          use GraphQL::Dataloader, nonblocking: true
+        end
+      end
 
       before do
         Fiber.set_scheduler(::DummyScheduler.new)
@@ -853,9 +1257,11 @@ describe GraphQL::Dataloader do
     if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
       describe "nonblocking: true with libev" do
         require "libev_scheduler"
-        let(:schema) { Class.new(FiberSchema) do
-          use GraphQL::Dataloader, nonblocking: true
-        end }
+        def make_schema_from(schema)
+          Class.new(schema) do
+            use GraphQL::Dataloader, nonblocking: true
+          end
+        end
 
         before do
           Fiber.set_scheduler(Libev::Scheduler.new)
@@ -885,15 +1291,10 @@ describe GraphQL::Dataloader do
       class QueryType < GraphQL::Schema::Object
         field :foo, Example::FooType do
           argument :foo_id, GraphQL::Types::ID, required: false, loads: Example::FooType
-          argument :use_load, GraphQL::Types::Boolean, required: false, default_value: false
         end
 
-        def foo(use_load: false, foo: nil)
-          if use_load
-            dataloader.with(Example::FooSource).load("load")
-          else
-            dataloader.with(Example::FooSource).request("request")
-          end
+        def foo(foo: nil)
+          dataloader.with(Example::FooSource).load("load")
         end
       end
 
@@ -902,7 +1303,11 @@ describe GraphQL::Dataloader do
         use GraphQL::Dataloader
 
         def self.object_from_id(id, ctx)
-          ctx.dataloader.with(Example::FooSource).request(id)
+          ctx.dataloader.with(Example::FooSource).load(id)
+        end
+
+        def self.resolve_type(type, obj, ctx)
+          type
         end
       end
     end
@@ -910,11 +1315,7 @@ describe GraphQL::Dataloader do
     it "loads properly" do
       result = Example::Schema.execute(<<-GRAPHQL)
       {
-        foo(useLoad: false, fooId: "Other") {
-          __typename
-          id
-        }
-        fooWithLoad: foo(useLoad: true, fooId: "Other") {
+        fooWithLoad: foo(fooId: "Other") {
           __typename
           id
         }
@@ -923,12 +1324,11 @@ describe GraphQL::Dataloader do
       # This should not have a Lazy in it
       expected_result = {
         "data" => {
-          "foo" => { "id" => "request", "__typename" => "Foo" },
           "fooWithLoad" => { "id" => "load", "__typename" => "Foo" },
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 
@@ -985,16 +1385,16 @@ describe GraphQL::Dataloader do
       "Nope (FiberErrorSchema::Query.requestAll, nil, {})",
     ]
 
-    assert_equal(nil, res["data"])
+    assert_nil(res["data"])
     assert_equal(expected_errors, context[:errors].sort)
   end
 
   it "has proper context[:current_field]" do
     res = FiberSchema.execute("mutation { mutation1(argument1: \"abc\") { __typename } mutation2(argument2: \"def\") { __typename } }")
-    assert_equal({"mutation1"=>nil, "mutation2"=>nil}, res["data"])
+    assert_equal({"mutation1"=>{ "__typename" => "Mutation1Payload" }, "mutation2"=>{ "__typename" => "Mutation2Payload"} }, res["data"])
     expected_errors = [
-      "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
       "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
+      "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
     ]
     assert_equal expected_errors, res.context[:errors]
   end
@@ -1147,7 +1547,62 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
+    end
+  end
+
+  describe "thread-local variables with custom dataloader" do
+    module CustomThreadVariable
+      class Type < GraphQL::Schema::Object
+        field :key, String, null: false
+        field :value, String, null: false
+      end
+
+      class CustomDataloader < GraphQL::Dataloader
+        def get_fiber_variables
+          { test_thread_var: "bazbarfoo" }
+        end
+      end
+
+      class Source < GraphQL::Dataloader::Source
+        def fetch(keys)
+          keys.map { |key| OpenStruct.new(key: key, value: Thread.current[key.to_sym]) }
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :thread_var, CustomThreadVariable::Type do
+          argument :key, GraphQL::Types::String
+        end
+
+        def thread_var(key:)
+          dataloader.with(CustomThreadVariable::Source).load(key)
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query CustomThreadVariable::QueryType
+        use CustomDataloader
+      end
+    end
+
+    it "sets the parent thread locals in the execution fiber" do
+      result = CustomThreadVariable::Schema.execute(<<-GRAPHQL)
+      {
+        threadVar(key: "test_thread_var") {
+          key
+          value
+        }
+      }
+      GRAPHQL
+
+      expected_result = {
+        "data" => {
+          "threadVar" => { "key" => "test_thread_var", "value" => "bazbarfoo" }
+        }
+      }
+
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 

@@ -9,7 +9,7 @@ class GraphQLGeneratorsMutationDeleteGeneratorTest < BaseGeneratorTest
 
   setup :prepare_destination
 
-  # Use this to account for `.destory` vs `.destroy!` in https://github.com/rails/rails/pull/43501
+  # Use this to account for `.destroy` vs `.destroy!` in https://github.com/rails/rails/pull/43501
   example_orm_instance = Rails::Generators::ActiveModel.new "names_name"
 
   NAMESPACED_DELETE_NAME_MUTATION = <<-RUBY
@@ -55,6 +55,8 @@ end
 RUBY
 
   EXPECTED_DELETE_MUTATION_TYPE = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class MutationType < Types::BaseObject
     field :name_delete, mutation: Mutations::Names::NameDelete

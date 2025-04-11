@@ -12,7 +12,7 @@ function createLegacyRelaySubscriptionHandler(options: ActionCableHandlerOptions
   } else if ((options as AblyHandlerOptions).ably) {
     handler = createAblyHandler(options as AblyHandlerOptions)
   } else {
-    throw new Error("Missing options for subscribtion handler")
+    throw new Error("Missing options for subscription handler")
   }
   return handler
 }
@@ -45,8 +45,9 @@ function createRelaySubscriptionHandler(options: ActionCableHandlerOptions | Pus
       }) => {
         const client = handler(
           {
-            text: request.text || "",
+            text: request.text,
             name: request.name,
+            id: request.id,
           },
           variables,
           {},
@@ -60,7 +61,7 @@ function createRelaySubscriptionHandler(options: ActionCableHandlerOptions | Pus
               }
               observer.next(res);
             },
-            onComplete: observer.complete,
+            onCompleted: observer.complete,
           }
         );
 

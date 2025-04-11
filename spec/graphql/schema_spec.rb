@@ -23,6 +23,9 @@ describe GraphQL::Schema do
       field :some_field, String
     end
 
+    class ExtraType < GraphQL::Schema::Object
+    end
+
     class CustomSubscriptions < GraphQL::Subscriptions::ActionCableSubscriptions
     end
 
@@ -35,19 +38,17 @@ describe GraphQL::Schema do
         max_depth 2
         default_max_page_size 3
         default_page_size 2
-        error_bubbling false
         disable_introspection_entry_points
         orphan_types Jazz::Ensemble
         introspection Module.new
         cursor_encoder Object.new
-        query_execution_strategy Object.new
-        mutation_execution_strategy Object.new
-        subscription_execution_strategy Object.new
         context_class Class.new
         directives [DummyFeature1]
-        tracer GraphQL::Tracing::DataDogTracing
+        extra_types ExtraType
         query_analyzer Object.new
         multiplex_analyzer Object.new
+        validate_timeout 100
+        max_query_string_tokens 500
         rescue_from(StandardError) { }
         use GraphQL::Backtrace
         use GraphQL::Subscriptions::ActionCableSubscriptions, action_cable: nil, action_cable_coder: JSON
@@ -61,29 +62,38 @@ describe GraphQL::Schema do
       assert_equal base_schema.subscription, schema.subscription
       assert_equal base_schema.introspection, schema.introspection
       assert_equal base_schema.cursor_encoder, schema.cursor_encoder
-      assert_equal base_schema.query_execution_strategy, schema.query_execution_strategy
-      assert_equal base_schema.mutation_execution_strategy, schema.mutation_execution_strategy
-      assert_equal base_schema.subscription_execution_strategy, schema.subscription_execution_strategy
       assert_equal base_schema.validate_timeout, schema.validate_timeout
       assert_equal base_schema.max_complexity, schema.max_complexity
       assert_equal base_schema.max_depth, schema.max_depth
       assert_equal base_schema.default_max_page_size, schema.default_max_page_size
       assert_equal base_schema.default_page_size, schema.default_page_size
-      assert_equal base_schema.error_bubbling, schema.error_bubbling
       assert_equal base_schema.orphan_types, schema.orphan_types
       assert_equal base_schema.context_class, schema.context_class
       assert_equal base_schema.directives, schema.directives
-      assert_equal base_schema.tracers, schema.tracers
+      assert_equal base_schema.max_query_string_tokens, schema.max_query_string_tokens
       assert_equal base_schema.query_analyzers, schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
-      assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions], schema.plugins.map(&:first)
+      expected_plugins = [
+        (GraphQL::Schema.use_visibility_profile? ? GraphQL::Schema::Visibility : nil),
+        GraphQL::Backtrace,
+        GraphQL::Subscriptions::ActionCableSubscriptions
+      ].compact
+      assert_equal expected_plugins, schema.plugins.map(&:first)
+      assert_equal [ExtraType], base_schema.extra_types
+      assert_equal [ExtraType], schema.extra_types
       assert_instance_of GraphQL::Subscriptions::ActionCableSubscriptions, schema.subscriptions
+      assert_equal GraphQL::Query, schema.query_class
     end
 
     it "can override configuration from its superclass" do
+      custom_query_class = Class.new(GraphQL::Query)
+      extra_type_2 = Class.new(GraphQL::Schema::Enum)
       schema = Class.new(base_schema) do
         use CustomSubscriptions, action_cable: nil, action_cable_coder: JSON
+        query_class(custom_query_class)
+        extra_types [extra_type_2]
+        max_query_string_tokens nil
       end
 
       query = Class.new(GraphQL::Schema::Object) do
@@ -105,15 +115,6 @@ describe GraphQL::Schema do
       schema.introspection(introspection)
       cursor_encoder = Object.new
       schema.cursor_encoder(cursor_encoder)
-      query_execution_strategy = Object.new
-      schema.query_execution_strategy(query_execution_strategy)
-      mutation_execution_strategy = Object.new
-      schema.mutation_execution_strategy(mutation_execution_strategy)
-      subscription_execution_strategy = Object.new
-      schema.subscription_execution_strategy(subscription_execution_strategy)
-      assert_equal query_execution_strategy, schema.query_execution_strategy
-      assert_equal mutation_execution_strategy, schema.mutation_execution_strategy
-      assert_equal subscription_execution_strategy, schema.subscription_execution_strategy
 
       context_class = Class.new
       schema.context_class(context_class)
@@ -122,7 +123,6 @@ describe GraphQL::Schema do
       schema.max_depth(20)
       schema.default_max_page_size(30)
       schema.default_page_size(15)
-      schema.error_bubbling(true)
       schema.orphan_types(Jazz::InstrumentType)
       schema.directives([DummyFeature2])
       query_analyzer = Object.new
@@ -130,13 +130,13 @@ describe GraphQL::Schema do
       multiplex_analyzer = Object.new
       schema.multiplex_analyzer(multiplex_analyzer)
       schema.rescue_from(GraphQL::ExecutionError)
-      schema.tracer(GraphQL::Tracing::NewRelicTracing)
 
       assert_equal query, schema.query
       assert_equal mutation, schema.mutation
       assert_equal subscription, schema.subscription
       assert_equal introspection, schema.introspection
       assert_equal cursor_encoder, schema.cursor_encoder
+      assert_nil schema.max_query_string_tokens
 
       assert_equal context_class, schema.context_class
       assert_equal 10, schema.validate_timeout
@@ -144,15 +144,49 @@ describe GraphQL::Schema do
       assert_equal 20, schema.max_depth
       assert_equal 30, schema.default_max_page_size
       assert_equal 15, schema.default_page_size
-      assert schema.error_bubbling
       assert_equal [Jazz::Ensemble, Jazz::InstrumentType], schema.orphan_types
       assert_equal schema.directives, GraphQL::Schema.default_directives.merge(DummyFeature1.graphql_name => DummyFeature1, DummyFeature2.graphql_name => DummyFeature2)
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
-      assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions], schema.plugins.map(&:first)
-      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
-      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
+      expected_plugins = [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions]
+      if GraphQL::Schema.use_visibility_profile?
+        expected_plugins.unshift(GraphQL::Schema::Visibility)
+      end
+      assert_equal expected_plugins, schema.plugins.map(&:first)
+      assert_equal custom_query_class, schema.query_class
+      assert_equal [ExtraType, extra_type_2], schema.extra_types
       assert_instance_of CustomSubscriptions, schema.subscriptions
+    end
+  end
+
+  class ExampleOptionEnum < GraphQL::Schema::Enum
+  end
+  it "rejects non-object types to orphan_types" do
+    object_type = Class.new(GraphQL::Schema::Object)
+    err = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema) do
+        orphan_types(ExampleOptionEnum, object_type)
+      end
+    end
+
+    expected_msg = "Only object type classes should be added as `orphan_types(...)`.
+
+- Remove these no-op types from `orphan_types`: ExampleOptionEnum (ENUM)
+- See https://graphql-ruby.org/type_definitions/interfaces.html#orphan-types
+
+To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
+"
+    assert_equal expected_msg, err.message
+  end
+
+  describe ".references_to" do
+    it "doesn't include any duplicates" do
+      [Dummy::Schema, Jazz::Schema].each do |schema_class|
+        schema_class.references_to.each do |referent, references|
+          ref_paths = references.map { |r| "#{r.class}/#{r.path}"}.sort
+          assert_equal ref_paths.uniq, ref_paths, "#{schema_class}.references_to has unique entries for `#{referent}`"
+        end
+      end
     end
   end
 
@@ -160,7 +194,6 @@ describe GraphQL::Schema do
     METHODS_TO_CACHE = {
       types: 1,
       union_memberships: 1,
-      references_to: 1,
       possible_types: 5, # The number of types with fields accessed in the query
     }
 
@@ -172,7 +205,7 @@ describe GraphQL::Schema do
         end
 
         METHODS_TO_CACHE.each do |method_name, allowed_calls|
-          define_singleton_method(method_name) do |*args, &block|
+          define_singleton_method(method_name) do |*args, **kwargs, &block|
             if @calls
               call_count = @calls[method_name] += 1
               @callers[method_name] << caller
@@ -182,7 +215,7 @@ describe GraphQL::Schema do
             if call_count > allowed_calls
               raise "Called #{method_name} more than #{allowed_calls} times, previous caller: \n#{@callers[method_name].first.join("\n")}"
             end
-            super(*args, &block)
+            super(*args, **kwargs, &block)
           end
         end
       end
@@ -222,27 +255,17 @@ describe GraphQL::Schema do
     end
   end
 
-  describe "`use` works with plugins that attach instrumentation, tracers, query analyzers" do
-    class NoOpTracer
-      def trace(_key, data)
-        if (query = data[:query])
-          query.context[:no_op_tracer_ran] = true
-        end
-        yield
+  describe "`use` works with plugins that attach instrumentation, trace modules, query analyzers" do
+    module NoOpTrace
+      def execute_query(query:)
+        query.context[:no_op_trace_ran_before_query] = true
+        super
+      ensure
+        query.context[:no_op_trace_ran_after_query] = true
       end
     end
 
-    class NoOpInstrumentation
-      def before_query(query)
-        query.context[:no_op_instrumentation_ran_before_query] = true
-      end
-
-      def after_query(query)
-        query.context[:no_op_instrumentation_ran_after_query] = true
-      end
-    end
-
-    class NoOpAnalyzer < GraphQL::Analysis::AST::Analyzer
+    class NoOpAnalyzer < GraphQL::Analysis::Analyzer
       def initialize(query_or_multiplex)
         query_or_multiplex.context[:no_op_analyzer_ran_initialize] = true
         super
@@ -259,8 +282,7 @@ describe GraphQL::Schema do
 
     module PluginWithInstrumentationTracingAndAnalyzer
       def self.use(schema_defn)
-        schema_defn.instrument :query, NoOpInstrumentation.new
-        schema_defn.tracer NoOpTracer.new
+        schema_defn.trace_with(NoOpTrace)
         schema_defn.query_analyzer NoOpAnalyzer
       end
     end
@@ -285,9 +307,8 @@ describe GraphQL::Schema do
         res = query.result
         assert res.key?("data")
 
-        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
-        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
-        assert_equal true, query.context[:no_op_tracer_ran]
+        assert_equal true, query.context[:no_op_trace_ran_before_query]
+        assert_equal true, query.context[:no_op_trace_ran_after_query]
         assert_equal true, query.context[:no_op_analyzer_ran_initialize]
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]
@@ -312,13 +333,61 @@ describe GraphQL::Schema do
         res = query.result
         assert res.key?("data")
 
-        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
-        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
-        assert_equal true, query.context[:no_op_tracer_ran]
+        assert_equal true, query.context[:no_op_trace_ran_before_query]
+        assert_equal true, query.context[:no_op_trace_ran_after_query]
         assert_equal true, query.context[:no_op_analyzer_ran_initialize]
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]
       end
+    end
+  end
+
+  describe ".new_trace" do
+    module NewTrace1
+      def initialize(**opts)
+        @trace_opts = opts
+      end
+
+      attr_reader :trace_opts
+    end
+
+    module NewTrace2
+    end
+
+    it "returns an instance of the configured trace_class with trace_options" do
+      parent_schema = Class.new(GraphQL::Schema) do
+        trace_with NewTrace1, a: 1
+      end
+
+      child_schema = Class.new(parent_schema) do
+        trace_with NewTrace2, b: 2
+      end
+
+      parent_trace = parent_schema.new_trace
+      assert_equal({a: 1}, parent_trace.trace_opts)
+      assert_kind_of NewTrace1, parent_trace
+      refute_kind_of NewTrace2, parent_trace
+      assert_kind_of GraphQL::Tracing::Trace, parent_trace
+
+      child_trace = child_schema.new_trace
+      assert_equal({a: 1, b: 2}, child_trace.trace_opts)
+      assert_kind_of NewTrace1, child_trace
+      assert_kind_of NewTrace2, child_trace
+      assert_kind_of GraphQL::Tracing::Trace, child_trace
+    end
+
+    it "returns an instance of the parent configured trace_class with trace_options" do
+      parent_schema = Class.new(GraphQL::Schema) do
+        trace_with NewTrace1, a: 1
+      end
+
+      child_schema = Class.new(parent_schema) do
+      end
+
+      child_trace = child_schema.new_trace
+      assert_equal({a: 1}, child_trace.trace_opts)
+      assert_kind_of NewTrace1, child_trace
+      assert_kind_of GraphQL::Tracing::Trace, child_trace
     end
   end
 
@@ -401,6 +470,158 @@ describe GraphQL::Schema do
       assert full_res["data"]["__schema"]["types"].find { |t| t["kind"] == "SCALAR" }.key?("specifiedByURL")
       assert full_res["data"]["__schema"]["types"].find { |t| t["kind"] == "INPUT_OBJECT" }.key?("isOneOf")
       refute_includes full_res.to_s, "oldSource"
+    end
+  end
+
+  it "starts with no references_to" do
+    assert_equal({}, GraphQL::Schema.references_to)
+  end
+
+  describe "DidYouMean support" do
+    class DidYouMeanSchema < GraphQL::Schema
+      class ExampleEnum < GraphQL::Schema::Enum
+        value "VALUE_ONE", "The first value"
+        value "VALUE_TWO", "The second value"
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :first_field, String
+        field :second_field, String
+        field :second_fiel, String
+        field :scond_field, String
+        field :third_field, ExampleEnum
+      end
+
+      query(Query)
+    end
+
+    it "returns helpful messages" do
+      res = DidYouMeanSchema.execute("{ first_field }")
+      assert_equal ["Field 'first_field' doesn't exist on type 'Query' (Did you mean `firstField`?)"], res["errors"].map { |err| err["message"] }
+
+      res = DidYouMeanSchema.execute("{ seconField }")
+      assert_equal ["Field 'seconField' doesn't exist on type 'Query' (Did you mean `secondFiel`, `secondField` or `scondField`?)"], res["errors"].map { |err| err["message"] }
+    end
+
+    it "can disable those messages" do
+      no_dym_schema = Class.new(DidYouMeanSchema) do
+        did_you_mean(nil)
+      end
+      res = no_dym_schema.execute("{ first_field }")
+      assert_equal ["Field 'first_field' doesn't exist on type 'Query'"], res["errors"].map { |err| err["message"] }
+
+      res = no_dym_schema.execute("{ seconField }")
+      assert_equal ["Field 'seconField' doesn't exist on type 'Query'"], res["errors"].map { |err| err["message"] }
+    end
+
+    it "returns helpful message when non existing field is queried on a non-fields type" do
+      res = DidYouMeanSchema.execute("{ thirdField { foo } }")
+      assert_equal ["Selections can't be made on enums (field 'thirdField' returns ExampleEnum but has selections [\"foo\"])"], res["errors"].map { |err| err["message"] }
+
+      res = DidYouMeanSchema.execute("{ secondField { foo } }")
+      assert_equal ["Selections can't be made on scalars (field 'secondField' returns String but has selections [\"foo\"])"], res["errors"].map { |err| err["message"] }
+    end
+  end
+
+  it "defers root type blocks until those types are used" do
+    calls = []
+    schema = Class.new(GraphQL::Schema) do
+      use(GraphQL::Schema::Visibility)
+      query { calls << :query; Class.new(GraphQL::Schema::Object) { graphql_name("Query") } }
+      mutation { calls << :mutation; Class.new(GraphQL::Schema::Object) { graphql_name("Mutation") } }
+      subscription { calls << :subscription; Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") } }
+      # Test this because it tries to modify `subscription` -- currently hardcoded in Schema.add_subscription_extension_if_necessary
+      use GraphQL::Subscriptions
+    end
+
+    assert_equal [], calls
+    assert_equal "Query", schema.query.graphql_name
+    assert_equal [:query], calls
+    assert_equal "Mutation", schema.mutation.graphql_name
+    assert_equal [:query, :mutation], calls
+    assert_equal "Subscription", schema.subscription.graphql_name
+    assert_equal [:query, :mutation, :subscription], calls
+    assert schema.instance_variable_get(:@subscription_extension_added)
+  end
+
+  it "adds the subscription extension if subscription(...) is called second" do
+    schema = Class.new(GraphQL::Schema) do
+      use GraphQL::Subscriptions
+      subscription(Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") })
+    end
+    assert schema.subscription
+    assert schema.instance_variable_get(:@subscription_extension_added)
+
+    schema2 = Class.new(GraphQL::Schema) do
+      use(GraphQL::Schema::Visibility)
+      use GraphQL::Subscriptions
+      subscription(Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") })
+    end
+    assert schema2.subscription
+    assert schema2.instance_variable_get(:@subscription_extension_added)
+  end
+
+  describe "backtrace error handling" do
+    class CustomError < RuntimeError; end
+    class Query < GraphQL::Schema::Object
+      field :test, Integer, null: false
+
+      def test
+        raise CustomError
+      end
+    end
+
+    it "raises a TracedError when backtrace is enabled" do
+      schema = Class.new(GraphQL::Schema) do
+        query(Query)
+        use GraphQL::Backtrace
+      end
+      query_str = '{ test }'
+
+      assert_raises(GraphQL::Backtrace::TracedError) do
+        schema.execute(query_str)
+      end
+    end
+
+    it "rescues them when using rescue_from with backtrace" do
+      schema = Class.new(GraphQL::Schema) do
+        query(Query)
+        use GraphQL::Backtrace
+
+        rescue_from(CustomError) do
+          raise GraphQL::ExecutionError.new('Handled CustomError')
+        end
+      end
+      query_str = '{ test }'
+      expected_errors = [
+        {
+          'message' => 'Handled CustomError',
+          'locations' => [{'line' => 1, 'column' => 3}],
+          'path' => ['test']
+        }
+      ]
+
+      assert_equal expected_errors, schema.execute(query_str).to_h['errors']
+    end
+  end
+  describe ".validate_timeout" do
+    it "provides a default timeout when not explicitly set" do
+      schema = Class.new(GraphQL::Schema)
+      assert_equal 3, schema.validate_timeout
+    end
+
+    it "allows overriding the default timeout" do
+      schema = Class.new(GraphQL::Schema) do
+        validate_timeout 15
+      end
+      assert_equal 15, schema.validate_timeout
+    end
+
+    it "allows disabling the timeout" do
+      schema = Class.new(GraphQL::Schema) do
+        validate_timeout nil
+      end
+      assert_nil schema.validate_timeout
     end
   end
 end

@@ -120,6 +120,6 @@ it "loads user token into the viewer" do
     headers: { "Authorization" => "Bearer #{user.auth_token}" }
 
   json_response = JSON.parse(@response.body)
-  assert_equal user.username, json_response["data"]["viewer"], "Authenticated requests load the viewer"
+  assert_equal user.username, json_response["data"]["viewer"]["username"], "Authenticated requests load the viewer"
 end
 ```

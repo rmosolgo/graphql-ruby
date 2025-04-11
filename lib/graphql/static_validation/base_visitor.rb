@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class BaseVisitor < GraphQL::Language::Visitor
+    class BaseVisitor < GraphQL::Language::StaticVisitor
       def initialize(document, context)
         @path = []
         @object_types = []
@@ -10,6 +10,7 @@ module GraphQL
         @argument_definitions = []
         @directive_definitions = []
         @context = context
+        @types = context.query.types
         @schema = context.schema
         super(document)
       end
@@ -77,7 +78,7 @@ module GraphQL
 
         def on_field(node, parent)
           parent_type = @object_types.last
-          field_definition = @schema.get_field(parent_type, node.name, @context.query.context)
+          field_definition = @types.field(parent_type, node.name)
           @field_definitions.push(field_definition)
           if !field_definition.nil?
             next_object_type = field_definition.type.unwrap
@@ -103,14 +104,14 @@ module GraphQL
           argument_defn = if (arg = @argument_definitions.last)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
-              @context.warden.get_argument(arg_type, node.name)
+              @types.argument(arg_type, node.name)
             else
               nil
             end
           elsif (directive_defn = @directive_definitions.last)
-            @context.warden.get_argument(directive_defn, node.name)
+            @types.argument(directive_defn, node.name)
           elsif (field_defn = @field_definitions.last)
-            @context.warden.get_argument(field_defn, node.name)
+            @types.argument(field_defn, node.name)
           else
             nil
           end
@@ -170,7 +171,7 @@ module GraphQL
 
         def on_fragment_with_type(node)
           object_type = if node.type
-            @context.warden.get_type(node.type.name)
+            @types.type(node.type.name)
           else
             @object_types.last
           end

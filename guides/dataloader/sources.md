@@ -132,9 +132,7 @@ def fetch(keys)
 end
 ```
 
-For a more robust asynchronous task primitive, check out [`Concurrent::Future`](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Future.html).
-
-Ruby 3.0 added built-in support for yielding Fibers that make I/O calls -- hopefully a future GraphQL-Ruby version will work with that!
+See the {% internal_link "parallelism guide", "/dataloader/parallelism" %} for details about this approach.
 
 ## Filling the Dataloader Cache
 
@@ -148,3 +146,31 @@ dataloader.with(Sources::ActiveRecordObject, Comment).merge(comments_by_id)
 ```
 
 After that, any calls to `.load(id)` will use those already-loaded records if they're available.
+
+## De-duplicating equivalent objects
+
+Sometimes, _different_ objects in the application should load the same object from `fetch`. You can customize this behavior by implementing `def result_key_for(key)` in your application. For example, to map records from your ORM to their database ID:
+
+```ruby
+# Load the `created_by` person for a record from our database
+class CreatedBySource < GraphQL::Dataloader::Source
+  def result_key_for(key)
+    key.id # Use the record's ID to deduplicate different `.load` calls
+  end
+
+  # Fetch a `person` for each of `records`, based on their created_by_id
+  def fetch(records)
+    PersonService.find_each(records.map(&:created_by_id))
+  end
+end
+```
+
+In this case, `records` will include the _first_ object for each unique `record.id` -- subsequent records with the same `.id` will be assumed to be duplicates. Under the hood, the `Source` will cache the result based on the record's `id`.
+
+Alternatively, you could use this to make the `Source` retain each incoming object, even when they would _otherwise_ be treated as duplicates. (This would come in handy when you need `def fetch` to mutate each object). For example, to treat _every_ incoming object as distinct:
+
+```ruby
+def result_key_for(record)
+  record.object_id # even if the records are equivalent, handle each distinct Ruby object separately
+end
+```

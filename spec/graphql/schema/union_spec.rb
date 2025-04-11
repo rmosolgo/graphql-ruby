@@ -42,7 +42,7 @@ describe GraphQL::Schema::Union do
 
       res = Jazz::Schema.execute(query_str)
       expected_data = { "name" => "Bela Fleck and the Flecktones" }
-      assert_equal expected_data, res["data"]["nowPlaying"]
+      assert_graphql_equal expected_data, res["data"]["nowPlaying"]
     end
 
     it "does not allow querying filtered types" do
@@ -67,7 +67,7 @@ describe GraphQL::Schema::Union do
       assert_equal "Fragment on Ensemble can't be spread inside PerformingAct", res.to_h["errors"].first["message"]
     end
 
-    describe "two-value type resolution" do
+    describe "type resolution" do
       Box = Struct.new(:value)
 
       class Schema < GraphQL::Schema
@@ -79,12 +79,32 @@ describe GraphQL::Schema::Union do
           field :b, String, method: :itself
         end
 
-        class MyUnion < GraphQL::Schema::Union
-          possible_types A, B
+        class C < GraphQL::Schema::Object
+          field :c, Boolean, method: :itself
+        end
+
+        class UnboxedUnion < GraphQL::Schema::Union
+          possible_types A, C
 
           def self.resolve_type(object, ctx)
-            if object.value == "return-nil"
+            case object
+            when FalseClass
+              C
+            else
+              A
+            end
+          end
+        end
+
+        class BoxedUnion < GraphQL::Schema::Union
+          possible_types A, B, C
+
+          def self.resolve_type(object, ctx)
+            case object.value
+            when "return-nil"
               [B, nil]
+            when FalseClass
+              [C, object.value]
             else
               [A, object.value]
             end
@@ -92,47 +112,106 @@ describe GraphQL::Schema::Union do
         end
 
         class Query < GraphQL::Schema::Object
-          field :my_union, MyUnion
+          field :boxed_union, BoxedUnion
 
-          def my_union
+          def boxed_union
             Box.new(context[:value])
+          end
+
+          field :unboxed_union, UnboxedUnion
+
+          def unboxed_union
+            context[:value]
           end
         end
 
         query(Query)
       end
 
-      it "can cast the object after resolving the type" do
+      describe "two-value resolution" do
+        it "can cast the object after resolving the type" do
 
-        query_str = <<-GRAPHQL
-        {
-          myUnion {
-            ... on A { a }
+          query_str = <<-GRAPHQL
+          {
+            boxedUnion {
+              ... on A { a }
+            }
           }
-        }
-        GRAPHQL
+          GRAPHQL
 
-        res = Schema.execute(query_str, context: { value: "unwrapped" })
+          res = Schema.execute(query_str, context: { value: "unwrapped" })
 
-        assert_equal({
-          'data' => { 'myUnion' => { 'a' => 'unwrapped' } }
-        }, res.to_h)
+          assert_equal({
+            'data' => { 'boxedUnion' => { 'a' => 'unwrapped' } }
+          }, res.to_h)
+        end
+
+        it "uses `false` when returned from resolve_type" do
+          query_str = <<-GRAPHQL
+          {
+            boxedUnion {
+              ... on C { c }
+            }
+          }
+          GRAPHQL
+
+          res = Schema.execute(query_str, context: { value: false })
+
+          assert_equal({
+            'data' => { 'boxedUnion' => { 'c' => false } }
+          }, res.to_h)
+        end
+
+        it "uses `nil` when returned from resolve_type" do
+          query_str = <<-GRAPHQL
+          {
+            boxedUnion {
+              ... on B { b }
+            }
+          }
+          GRAPHQL
+
+          res = Schema.execute(query_str, context: { value: "return-nil" })
+
+          assert_equal({
+            'data' => { 'boxedUnion' => { 'b' => nil } }
+          }, res.to_h)
+        end
       end
 
-      it "uses `nil` when returned from resolve_type" do
-        query_str = <<-GRAPHQL
-        {
-          myUnion {
-            ... on B { b }
+      describe "single-value resolution" do
+        it "can cast the object after resolving the type" do
+
+          query_str = <<-GRAPHQL
+          {
+            unboxedUnion {
+              ... on A { a }
+            }
           }
-        }
-        GRAPHQL
+          GRAPHQL
 
-        res = Schema.execute(query_str, context: { value: "return-nil" })
+          res = Schema.execute(query_str, context: { value: "string" })
 
-        assert_equal({
-          'data' => { 'myUnion' => { 'b' => nil } }
-        }, res.to_h)
+          assert_equal({
+            'data' => { 'unboxedUnion' => { 'a' => 'string' } }
+          }, res.to_h)
+        end
+
+        it "works with literal false values" do
+          query_str = <<-GRAPHQL
+          {
+            unboxedUnion {
+              ... on C { c }
+            }
+          }
+          GRAPHQL
+
+          res = Schema.execute(query_str, context: { value: false })
+
+          assert_equal({
+            'data' => { 'unboxedUnion' => { 'c' => false } }
+          }, res.to_h)
+        end
       end
     end
   end
@@ -203,11 +282,13 @@ describe GraphQL::Schema::Union do
       possible_types object_type, GraphQL::Schema::LateBoundType.new("SomeInterface")
     end
 
+    object_type.field(:u, union_type)
+    object_type.field(:i, interface_type)
+
     err2 = assert_raises ArgumentError do
       Class.new(GraphQL::Schema) do
         query(object_type)
-        orphan_types(union_type, interface_type)
-      end
+      end.to_definition
     end
 
     assert_match expected_message, err2.message
@@ -251,7 +332,7 @@ describe GraphQL::Schema::Union do
             { "type" => "Cow", "name" => "Gilly" }
           ]
         }
-        assert_equal expected_result, result["data"]
+        assert_graphql_equal expected_result, result["data"]
       end
     end
 
@@ -278,7 +359,7 @@ describe GraphQL::Schema::Union do
           {"dairyName"=>"Cheese"},
           {"dairyName"=>"Milk", "bevName"=>"Milk", "flavors"=>["Natural", "Chocolate", "Strawberry"]},
         ]
-        assert_equal expected_result, result["data"]["allDairy"]
+        assert_graphql_equal expected_result, result["data"]["allDairy"]
       end
     end
 
@@ -323,6 +404,60 @@ describe GraphQL::Schema::Union do
           end
         end
       end
+    end
+  end
+
+  describe "use with loads:" do
+    class UnionLoadsSchema < GraphQL::Schema
+      class Image < GraphQL::Schema::Object
+        field :title, String
+      end
+
+      class Video < GraphQL::Schema::Object
+        field :title, String
+      end
+
+      class Post < GraphQL::Schema::Object
+        field :title, String
+      end
+
+      class MediaItem < GraphQL::Schema::Union
+        possible_types Image, Video
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :media_item_type, String do
+          argument :id, ID, loads: MediaItem, as: :media_item
+        end
+
+        def media_item_type(media_item:)
+          media_item[:type]
+        end
+      end
+
+      query(Query)
+
+      def self.object_from_id(id, ctx)
+        type, title = id.split("/")
+        { type: type, title: title }
+      end
+
+      def self.resolve_type(abs_type, obj, ctx)
+        UnionLoadsSchema.const_get(obj[:type])
+      end
+    end
+
+    it "restricts to members of the union" do
+      query_str = "query($mediaId: ID!) { mediaItemType(id: $mediaId) }"
+      res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Image/Family Photo" })
+      assert_equal "Image", res["data"]["mediaItemType"]
+
+      res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Video/Christmas Pageant" })
+      assert_equal "Video", res["data"]["mediaItemType"]
+
+      res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Post/Year in Review" })
+      assert_nil res["data"]["mediaItemType"]
+      assert_equal ["No object found for `id: \"Post/Year in Review\"`"], res["errors"].map { |e| e["message"] }
     end
   end
 end

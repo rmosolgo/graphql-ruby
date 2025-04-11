@@ -16,6 +16,22 @@ Before running a mutation, you probably want to do a few things:
 
 This guide describes how to accomplish that workflow with GraphQL-Ruby.
 
+## Checking conditions before instantiating the mutation
+
+```ruby
+class UpdateUserMutation < BaseMutation
+  # ...
+
+  def resolve(update_user_input:, user:)
+    # ...
+  end
+
+  def self.authorized?(obj, ctx)
+    super && ctx[:viewer].present?
+  end
+end
+```
+
 ## Checking the user permissions
 
 Before loading any data from the database, you might want to see if the user has a certain permission level. For example, maybe only `.admin?` users can run `Mutation.promoteEmployee`.
@@ -109,7 +125,7 @@ You can add this check by implementing a `#authorized?` method, for example:
 
 ```ruby
 def authorized?(employee:)
-  context[:current_user].manager_of?(employee)
+  super && context[:current_user].manager_of?(employee)
 end
 ```
 
@@ -121,7 +137,7 @@ To add errors as data (as described in {% internal_link "Mutation errors", "/mut
 
 ```ruby
 def authorized?(employee:)
-  if context[:current_user].manager_of?(employee)
+  super && if context[:current_user].manager_of?(employee)
     true
   else
     return false, { errors: ["Can't promote an employee you don't manage"] }
@@ -133,8 +149,11 @@ Alternatively, you can add top-level errors by raising `GraphQL::ExecutionError`
 
 ```ruby
 def authorized?(employee:)
-  return true if context[:current_user].manager_of?(employee)
-  raise GraphQL::ExecutionError, "You can only promote your _own_ employees"
+  super && if context[:current_user].manager_of?(employee)
+    true
+  else
+    raise GraphQL::ExecutionError, "You can only promote your _own_ employees"
+  end
 end
 ```
 

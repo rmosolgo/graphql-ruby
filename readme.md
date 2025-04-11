@@ -7,7 +7,7 @@ A Ruby implementation of [GraphQL](https://graphql.org/).
 
 - [Website](https://graphql-ruby.org/)
 - [API Documentation](https://www.rubydoc.info/github/rmosolgo/graphql-ruby)
-- [Newsletter](https://tinyletter.com/graphql-ruby)
+- [Newsletter](https://buttondown.email/graphql-ruby)
 
 ## Installation
 
@@ -34,7 +34,17 @@ Or, see ["Getting Started"](https://graphql-ruby.org/getting_started.html).
 
 ## Upgrade
 
-I also sell [GraphQL::Pro](https://graphql.pro) which provides several features on top of the GraphQL runtime, including [Pundit authorization](https://graphql-ruby.org/authorization/pundit_integration), [CanCan authorization](https://graphql-ruby.org/authorization/can_can_integration), [Pusher-based subscriptions](https://graphql-ruby.org/subscriptions/pusher_implementation) and [persisted queries](https://graphql-ruby.org/operation_store/overview). Besides that, Pro customers get email support and an opportunity to support graphql-ruby's development!
+I also sell [GraphQL::Pro](https://graphql.pro) which provides several features on top of the GraphQL runtime, including:
+
+- [Persisted queries](https://graphql-ruby.org/operation_store/overview)
+- [API versioning](https://graphql-ruby.org/changesets/overview)
+- [Streaming payloads](https://graphql-ruby.org/defer/overview)
+- [Server-side caching](https://graphql-ruby.org/object_cache/overview)
+- [Rate limiters](https://graphql-ruby.org/limiters/overview)
+- Subscriptions backends for [Pusher](https://graphql-ruby.org/subscriptions/pusher_implementation) and [Ably](https://graphql-ruby.org/subscriptions/ably_implementation)
+- Authorization plugins for [Pundit](https://graphql-ruby.org/authorization/pundit_integration) and  [CanCan](https://graphql-ruby.org/authorization/can_can_integration)
+
+Besides that, Pro customers get email support and an opportunity to support graphql-ruby's development!
 
 ## Goals
 
@@ -44,6 +54,6 @@ I also sell [GraphQL::Pro](https://graphql.pro) which provides several features 
 
 ## Getting Involved
 
-- __Say hi & ask questions__ in the #graphql-ruby channel on [Discord](https://discord.com/invite/xud7bH9) or [on Twitter](https://twitter.com/rmosolgo)!
+- __Say hi & ask questions__ in the #graphql-ruby channel on [Discord](https://discord.com/invite/xud7bH9).
 - __Report bugs__ by posting a description, full stack trace, and all relevant code in a  [GitHub issue](https://github.com/rmosolgo/graphql-ruby/issues).
 - __Start hacking__ with the [Development guide](https://graphql-ruby.org/development).

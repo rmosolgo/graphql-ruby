@@ -7,6 +7,7 @@ end
 module Datadog
   SPAN_RESOURCE_NAMES = []
   SPAN_TAGS = []
+  TRACE_KEYS = []
 
   def self.tracer
     DummyTracer.new
@@ -15,23 +16,12 @@ module Datadog
   def self.clear_all
     SPAN_RESOURCE_NAMES.clear
     SPAN_TAGS.clear
-  end
-
-
-  module Contrib
-    module Analytics
-      def self.set_sample_rate(rate)
-        rate
-      end
-
-      def self.enabled?(_bool)
-        nil
-      end
-    end
+    TRACE_KEYS.clear
   end
 
   class DummyTracer
     def trace(platform_key, *args)
+      TRACE_KEYS << platform_key
       yield DummySpan.new
     end
   end
@@ -41,21 +31,21 @@ module Datadog
       SPAN_RESOURCE_NAMES << resource_name
     end
 
-    def span_type=(*args)end
     def set_tag(key, value)
       SPAN_TAGS << [key, value]
+    end
+
+    def finish
     end
   end
 
   module Tracing
     def self.trace(platform_key, *args)
-      yield DummySpan.new
-    end
-
-    module Metadata
-      module Ext
-        TAG_COMPONENT = 'component'
-        TAG_OPERATION = 'operation'
+      TRACE_KEYS << platform_key
+      if block_given?
+        yield DummySpan.new
+      else
+        DummySpan.new
       end
     end
   end

@@ -317,6 +317,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       schema_graphql = <<~GRAPHQL
         type Query {
           songs(sort: SongSort! = {name: asc}): [Song!]!
+          topSong(input: TopSongInput!): Song
         }
 
         type Song {
@@ -331,6 +332,10 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
           asc
           desc
         }
+
+        input TopSongInput {
+          thisYear: Boolean! = true
+        }
       GRAPHQL
 
       schema = GraphQL::Schema.from_definition(
@@ -341,6 +346,9 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
               sort = args[:sort]
               names = ["asc", nil].include?(sort[:name]) ? ["A", "B"] : ["B", "A"]
               names.map { |name| Struct.new(:name).new(name) }
+            },
+            "topSong" => ->(obj, args, ctx) {
+              args[:input][:this_year] ? OpenStruct.new(name: "Hey Ya!") : OpenStruct.new(name: "Here Comes the Sun")
             }
           }
         }
@@ -348,15 +356,24 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
 
       result = schema.execute("query($sort: SongSort) { songs(sort: $sort) { name } }", variables: {})
       expected_result = {"data" => {"songs" => [{"name" => "A"},{"name" => "B"}]}}
-      assert_equal expected_result, result
+      assert_graphql_equal expected_result, result
 
       result = schema.execute("query($sort: SongSort) { songs(sort: $sort) { name } }", variables: { sort: { name: "desc" } })
       expected_result = {"data" => {"songs" => [{"name" => "B"},{"name" => "A"}]}}
-      assert_equal expected_result, result
+      assert_graphql_equal expected_result, result
 
       result = schema.execute("query($sort: SongSort) { songs(sort: $sort) { name } }", variables: { sort: nil })
-      expected_result = {"data"=>nil, "errors"=>[{"message"=>"`null` is not a valid input for `SongSort!`, please provide a value for this argument.", "locations"=>[{"line"=>1, "column"=>26}], "path"=>["songs"]}]}
-      assert_equal expected_result, result
+      expected_result = {"errors"=>[{"message"=>"`null` is not a valid input for `SongSort!`, please provide a value for this argument.", "locations"=>[{"line"=>1, "column"=>26}], "path"=>["songs"]}], "data" => nil}
+      assert_graphql_equal expected_result, result
+
+      result = schema.execute("{ topSong(input: {}) { name } }")
+      assert_equal "Hey Ya!", result["data"]["topSong"]["name"]
+
+      result = schema.execute("{ topSong(input: { thisYear: false }) { name } }")
+      assert_equal "Here Comes the Sun", result["data"]["topSong"]["name"]
+
+      result = schema.execute("{ topSong(input: { thisYear: null }) { name } }")
+      assert_equal ["Argument 'thisYear' on InputObject 'TopSongInput' has an invalid value (null). Expected type 'Boolean!'."], result["errors"].map { |err| err["message"] }
     end
   end
 end

@@ -40,7 +40,7 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
   end
 
   describe "on interfaces" do
-    let(:query_string) { "query getStuff { favoriteEdible { amountThatILikeIt } }"}
+    let(:query_string) { "query getStuff { favoriteEdible { amountThatILikeIt orgin } }"}
 
     it "finds invalid fields" do
       expected_errors = [
@@ -49,6 +49,12 @@ describe GraphQL::StaticValidation::FieldsAreDefinedOnType do
           "locations"=>[{"line"=>1, "column"=>35}],
           "path"=>["query getStuff", "favoriteEdible", "amountThatILikeIt"],
           "extensions"=>{"code"=>"undefinedField", "typeName"=>"Edible", "fieldName"=>"amountThatILikeIt"}
+        },
+        {
+          "message"=>"Field 'orgin' doesn't exist on type 'Edible' (Did you mean `origin`?)",
+          "locations"=>[{"line"=>1, "column"=>53}],
+          "path"=>["query getStuff", "favoriteEdible", "orgin"],
+          "extensions"=>{"code"=>"undefinedField", "typeName"=>"Edible", "fieldName"=>"orgin"}
         }
       ]
       assert_equal(expected_errors, errors)

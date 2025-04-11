@@ -64,12 +64,12 @@ class PusherSubscriber {
       var pusherChannel = pusher.subscribe(subscriptionChannel)
       // When you get an update form Pusher, send it to Apollo
       pusherChannel.bind("update", function(payload: any) {
-        if (!payload.more) {
-          registry.unsubscribe(id)
-        }
         var result = payload.compressed_result ? decompress(payload.compressed_result) : payload.result
         if (result) {
           handler(result.errors, result.data)
+        }
+        if (!payload.more) {
+          registry.unsubscribe(id)
         }
       })
     })

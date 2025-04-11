@@ -243,6 +243,23 @@ module ConnectionAssertions
           refute get_page_info(res3, "hasPreviousPage")
         end
 
+        it "returns empty lists for `after: 1` and `before: 2`" do
+          res = exec_query(query_str, first: 2)
+          assert_names(["Avocado", "Beet"], res)
+          after_cursor = get_page_info(res, "startCursor")
+          before_cursor = get_page_info(res, "endCursor")
+
+          res = exec_query(query_str, after: after_cursor, before: before_cursor)
+          assert_equal true, get_page_info(res, "hasNextPage")
+          assert_equal true, get_page_info(res, "hasPreviousPage")
+          assert_names [], res
+
+          res = exec_query(query_str, after: after_cursor, before: before_cursor, first: 3)
+          assert_equal true, get_page_info(res, "hasNextPage")
+          assert_equal true, get_page_info(res, "hasPreviousPage")
+          assert_names [], res
+        end
+
         it "handles out-of-bounds cursors" do
           # It treats negative cursors like zero
           bogus_negative_cursor = NonceEnabledEncoder.encode("-10")

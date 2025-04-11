@@ -28,7 +28,7 @@ describe GraphQL::Schema::Scalar do
     it "handles infinity values" do
       query_str = <<-GRAPHQL
       {
-        find(id: 9999e9999) {
+        find(id: 9999.0e9999) {
           __typename
         }
       }
@@ -147,7 +147,7 @@ describe GraphQL::Schema::Scalar do
 
 
   describe "validate_input with good input" do
-    let(:result) { GraphQL::Types::Int.validate_input(150, GraphQL::Query::NullContext) }
+    let(:result) { GraphQL::Types::Int.validate_input(150, GraphQL::Query::NullContext.instance) }
 
     it "returns a valid result" do
       assert(result.valid?)
@@ -155,7 +155,7 @@ describe GraphQL::Schema::Scalar do
   end
 
   describe "validate_input with bad input" do
-    let(:result) { GraphQL::Types::Int.validate_input("bad num", GraphQL::Query::NullContext) }
+    let(:result) { GraphQL::Types::Int.validate_input("bad num", GraphQL::Query::NullContext.instance) }
 
     it "returns an invalid result for bad input" do
       assert(!result.valid?)
@@ -194,7 +194,7 @@ describe GraphQL::Schema::Scalar do
     end
 
     it "coerces nil into nil" do
-      assert_equal(nil, custom_scalar.coerce_isolated_input(nil))
+      assert_nil(custom_scalar.coerce_isolated_input(nil))
     end
 
     it "coerces input into objects" do
@@ -206,12 +206,41 @@ describe GraphQL::Schema::Scalar do
     end
 
     describe "custom scalar errors" do
-      let(:result) { custom_scalar.validate_input("xyz", GraphQL::Query::NullContext) }
+      let(:result) { custom_scalar.validate_input("xyz", GraphQL::Query::NullContext.instance) }
 
       it "returns an invalid result" do
         assert !result.valid?
         assert_equal 'Could not coerce value "xyz" to BigInt', result.problems[0]["explanation"]
       end
     end
+  end
+
+  it "handles coercing null" do
+    class CoerceNullSchema < GraphQL::Schema
+      class CustomScalar < GraphQL::Schema::Scalar
+        class << self
+          def coerce_input(input_value, _context)
+            raise GraphQL::CoercionError, "Invalid value: #{input_value.inspect}"
+          end
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :hello, String do
+          argument :input, CustomScalar, required: false
+        end
+
+        def hello(input: nil)
+          "hello world"
+        end
+      end
+
+      query(QueryType)
+    end
+    result = CoerceNullSchema.execute('{ hello(input: 5) }')
+    assert_equal(["Invalid value: 5"], result["errors"].map { |err| err["message"] })
+
+    null_input_result = CoerceNullSchema.execute('{ hello(input: null) }')
+    assert_equal(["Invalid value: nil"], null_input_result["errors"].map { |err| err["message"] })
   end
 end

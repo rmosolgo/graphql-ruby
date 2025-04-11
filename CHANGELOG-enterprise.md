@@ -8,6 +8,72 @@
 
 ### Bug Fix
 
+# 1.5.6 (13 Dec 2024)
+
+- ObjectCache: Add `CacheableRelation` helper for top-level ActiveRecord relations
+
+# 1.5.5 (10 Dec 2024)
+
+- Changesets: Add missing `ensure_loaded` call for class-based changesets
+
+# 1.5.4 (31 Oct 2024)
+
+- ObjectCache: Add `reauthorize_cached_objects: false`
+
+# 1.5.3 (1 Oct 2024)
+
+- Limiters: Add expiration to rate limit data (to reduce Redis footprint)
+
+# 1.5.2 (6 Sept 2024)
+
+- Limiters: Add `connection_pool:` support
+
+# 1.5.1 (30 Aug 2024)
+
+- ObjectCache: Add `connection_pool:` support
+
+# 1.5.0 (26 Jul 2024)
+
+- ObjectCache: Add Dalli backend for Memcached
+
+# 1.4.2 (11 Jun 2024)
+
+- ObjectCache: Add `Schema.fingerprint` hook and `context[:refresh_object_cache]`
+
+# 1.4.1 (30 May 2024)
+
+- ObjectCache: properly handle when object fingerprints are evicted but the cached result wasn't
+
+# 1.4.0 (11 Apr 2024)
+
+- ObjectCache: add support for `redis_cluster: ...` backend
+
+# 1.3.4 (18 Mar 2024)
+
+- ObjectCache: use new `trace_with` API for instrumentation
+
+# 1.3.3 (30 Jan 2024)
+
+- ObjectCache: fix compatibility with `run_graphql_field` test helper #4816
+
+# 1.3.2 (15 Jan 2024)
+
+### Bug Fix
+
+- Limiters: Migrate to new `trace_with` instrumentation API, requires GraphQL-Ruby 2.0.18+
+
+# 1.3.1 (12 June 2023)
+
+### Bug Fix
+
+- Add missing `require "graphql"` #4511
+
+# 1.3.0 (29 May 2023)
+
+### New Features
+
+- Changesets: Add `added_in: ...` and `removed_in: ...` for inline definition changes
+
 # 1.2.0 (10 February 2023)
 
 ### New Features

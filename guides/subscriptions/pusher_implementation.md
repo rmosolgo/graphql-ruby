@@ -116,6 +116,19 @@ For better performance reading and writing to Redis, you can pass a `connection_
     connection_pool: ConnectionPool.new(size: 5, timeout: 5) { Redis.new },
 ```
 
+### Broadcasts
+
+If you set up {% internal_link "Broadcasts", "/subscriptions/broadcast" %}, then you can update many clients over a single Pusher channel.
+
+Broadcast channels have stable, predictable IDs. To prevent unauthorized clients from "listening in," use an [authorized Pusher channel](#authorization) for transport. In your authorization code, you can check for a broadcast using `.broadcast_subscription_id?`:
+
+```ruby
+# In your Pusher authorization endpoint:
+channel_name = params[:channel_name]
+MySchema.subscriptions.broadcast_subscription_id?(channel_name)
+# => true | false
+```
+
 ## Execution configuration
 
 During execution, GraphQL will assign a `subscription_id` to the `context` hash. The client will use that ID to listen for updates, so you must return the `subscription_id` in the response headers.
@@ -296,4 +309,9 @@ To receive Pusher's webhooks in development, Pusher [suggests using ngrok](https
 
 ## Client configuration
 
-Install the [Pusher JS client](https://github.com/pusher/pusher-js) then see docs for {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %} or {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}.
+Install the [Pusher JS client](https://github.com/pusher/pusher-js) then see docs for:
+
+- {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}
+- {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}
+- {% internal_link "GraphiQL", "/javascript_client/graphiql_subscriptions" %}
+- {% internal_link "urql", "/javascript_client/urql_subscriptions" %}

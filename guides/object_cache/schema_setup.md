@@ -21,7 +21,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-See the {% internal_link "Redis guide", "/object_cache/redis" %} for details about configuring cache storage.
+See the {% internal_link "Redis guide", "/object_cache/redis" %} or {% internal_link "Memcached guide", "/object_cache/memcached" %} for details about configuring cache storage.
 
 Additionally, it accepts some options for customizing how introspection is cached, see {% internal_link "Caching Introspection", "/object_cache/caching#caching-introspection" %}
 
@@ -84,3 +84,24 @@ The returned strings are used as cache keys in the database -- whenever they cha
 - `def self.resolve_type(abstract_type, object, context)` which returns a GraphQL object type definition to use for `object`
 
 After your schema is setup, you can {% internal_link "configure caching on your types and fields", "/object_cache/caching", %}.
+
+## Schema Fingerprint
+
+ `ObjectCache` will also call `.fingerprint` on your Schema class. You can implement this method to return a new string if you make breaking changes to your schema, for example:
+
+ ```ruby
+class MySchema < GraphQL::Schema
+  def self.fingerprint
+    "v2" # increment this if there are breaking changes to the schema
+  end
+end
+```
+
+By returning a new `MySchema.fingerprint`, _all_ previously-cached results will be expired.
+
+## Disabling Reauthorization
+
+By default, `ObjectCache` checks `.authorized?` on each object before returning a cached result. However, if all authorization-related considerations are present in the object's cache fingerprint, then you can disable this check in two ways:
+
+- __per-query__, by passing `context: { reauthorize_cached_objects: false }`
+- __globally__, by configuring `use GraphQL::Enterprise::ObjectCache, ... reauthorize_cached_objects: false`

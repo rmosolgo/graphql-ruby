@@ -19,9 +19,9 @@ module GraphQL
 
         def specified_by_url(new_url = nil)
           if new_url
-            @specified_by_url = new_url
-          elsif defined?(@specified_by_url)
-            @specified_by_url
+            directive(GraphQL::Schema::Directive::SpecifiedBy, url: new_url)
+          elsif (directive = directives.find { |dir| dir.graphql_name == "specifiedBy" })
+            directive.arguments[:url] # rubocop:disable Development/ContextIsPassedCop
           elsif superclass.respond_to?(:specified_by_url)
             superclass.specified_by_url
           else

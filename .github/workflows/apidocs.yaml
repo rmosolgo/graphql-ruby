@@ -21,17 +21,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.GITHUB_REF }}
       - name: Checkout GitHub pages branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: gh-pages
           ref: gh-pages
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.0'
+          ruby-version: '3.2'
           bundler-cache: true
       - name: Build API docs
         run: |

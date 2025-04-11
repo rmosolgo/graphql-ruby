@@ -72,12 +72,12 @@ def resolve(id:, attributes:)
     }
   else
     # Convert Rails model errors into GraphQL-ready error hashes
-    user_errors = post.errors.map do |attribute, message|
+    user_errors = post.errors.map do |error|
       # This is the GraphQL argument which corresponds to the validation error:
-      path = ["attributes", attribute.to_s.camelize(:lower)]
+      path = ["attributes", error.attribute.to_s.camelize(:lower)]
       {
         path: path,
-        message: message,
+        message: error.message,
       }
     end
     {

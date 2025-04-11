@@ -7,7 +7,7 @@ desc: Getting started with the Fiber-based Dataloader
 index: 0
 ---
 
-GraphQL-Ruby 1.12+ includes {{ "GraphQL::Dataloader" | api_doc }}, a module for managing efficient database access in a way that's transparent to application code, backed by Ruby's `Fiber` concurrency primitive. It also {% internal_link "supports Ruby 3's non-blocking fibers", "/dataloader/nonblocking" %}.
+ {{ "GraphQL::Dataloader" | api_doc }} provides efficient, batched access to external services, backed by Ruby's `Fiber` concurrency primitive. It has a per-query result cache and {% internal_link "AsyncDataloader", "/dataloader/async_dataloader" %} supports truly parallel execution out-of-the-box.
 
 `GraphQL::Dataloader` is inspired by [`@bessey`'s proof-of-concept](https://github.com/bessey/graphql-fiber-test/tree/no-gem-changes) and [shopify/graphql-batch](https://github.com/shopify/graphql-batch).
 
@@ -34,7 +34,7 @@ At a high level, `GraphQL::Dataloader`'s usage of `Fiber` looks like this:
 
 Whenever `GraphQL::Dataloader` creates a new `Fiber`, it copies each pair from `Thread.current[...]` and reassigns them inside the new `Fiber`.
 
-See {% internal_link "Non-Blocking", "/dataloader/nonblocking" %} for information about using Ruby 3's non-blocking Fibers.
+`AsyncDataloader`, built on top of the [`async` gem](https://github.com/socketry/async), supports parallel I/O operations (like network and database communication) via Ruby's non-blocking `Fiber.schedule` API. {% internal_link "Learn more →", "/dataloader/async_dataloader" %}.
 
 ## Getting Started
 
@@ -131,3 +131,10 @@ end
 ## Data Sources
 
 To implement batch-loading data sources, see the {% internal_link "Sources guide", "/dataloader/sources" %}.
+
+## Parallelism
+
+You can run I/O operations in parallel with GraphQL::Dataloader. There are two approaches:
+
+- `AsyncDataloader` uses the `async` gem to automatically background I/O from `Dataloader::Source#fetch` calls. {% internal_link "Read More", "/dataloader/async_dataloader" %}
+- You can manually call `dataloader.yield` after starting work in the background. {% internal_link "Read More", "/dataloader/parallelism" %}

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import parseArgs from "minimist"
-import sync from "./sync/index"
+import sync, { SyncOptions } from "./sync/index"
 var argv = parseArgs(process.argv.slice(2))
 
 if (argv.help || argv.h) {
@@ -24,6 +24,8 @@ optional arguments:
                                               (Outfile generation is skipped by default.)
   --apollo-android-operation-output=<path>  Path to a .json file from Apollo-Android's "generateOperationOutput" feature.
                                               (Outfile generation is skipped by default.)
+  --apollo-persisted-query-manifest=<path>  Path to a .json file from Apollo's "generate-persisted-query-manifest" tool.
+                                              (Outfile generation is skipped by default.)
   --mode=<mode>                             Treat files like a certain kind of project:
                                               relay: treat files like relay-compiler output
                                               project: treat files like a cohesive project (fragments are shared, names must be unique)
@@ -36,6 +38,7 @@ optional arguments:
                                               (may be repeated)
   --changeset-version=<version>             Populates \`context[:changeset_version]\` for this sync (for the GraphQL-Enterprise "Changesets" feature)
   --add-typename                            Automatically adds the "__typename" field to your queries
+  --dump-payload=<filename>                 Print the HTTP Post data to this file, or to stdout if no filename is given
   --quiet                                   Suppress status logging
   --verbose                                 Print debug output
   --help                                    Print this message
@@ -58,11 +61,12 @@ optional arguments:
         })
       }
     }
-    var result = sync({
+    let syncOptions: SyncOptions = {
       path: argv.path,
       relayPersistedOutput: argv["relay-persisted-output"],
       apolloCodegenJsonOutput: argv["apollo-codegen-json-output"],
       apolloAndroidOperationOutput: argv["apollo-android-operation-output"],
+      apolloPersistedQueryManifest: argv["apollo-persisted-query-manifest"],
       url: argv.url,
       client: argv.client,
       outfile: argv.outfile,
@@ -74,7 +78,13 @@ optional arguments:
       quiet: argv.hasOwnProperty("quiet"),
       verbose: argv.hasOwnProperty("verbose"),
       changesetVersion: argv["changeset-version"],
-    })
+    }
+
+    if ("dump-payload" in argv) {
+      syncOptions.dumpPayload = argv["dump-payload"]
+    }
+
+    var result = sync(syncOptions)
 
     result.then(function() {
       process.exit(0)

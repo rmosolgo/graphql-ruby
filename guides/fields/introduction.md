@@ -19,12 +19,27 @@ field :name, String, "The unique name of this list", null: false
 
 The different elements of field definition are addressed below:
 
+- [Names](#field-names) identify the field in GraphQL
 - [Return types](#field-return-type) say what kind of data this field returns
-- [Documentation](#field-documentation) includes description and deprecation notes
+- [Documentation](#field-documentation) includes description, comments and deprecation notes
 - [Resolution behavior](#field-resolution) hooks up Ruby code to the GraphQL field
 - [Arguments](#field-arguments) allow fields to take input when they're queried
 - [Extra field metadata](#extra-field-metadata) for low-level access to the GraphQL-Ruby runtime
 - [Add default values for field parameters](#field-parameter-default-values)
+
+## Field Names
+
+A field's name is provided as the first argument or as the `name:` option:
+
+```ruby
+field :team_captain, ...
+# or:
+field ..., name: :team_captain
+```
+
+Under the hood, GraphQL-Ruby **camelizes** field names, so `field :team_captain, ...` would be `{ teamCaptain }` in GraphQL. You can disable this behavior by adding `camelize: false` to your field definition or to the [default field options](#field-parameter-default-values).
+
+The field's name is also used as the basis of [field resolution](#field-resolution).
 
 ## Field Return Type
 
@@ -52,7 +67,7 @@ field :scores, [Integer, null: true] # `[Int]`, may return a list or `nil`, the 
 
 ## Field Documentation
 
-Fields may be documented with a __description__ and may be __deprecated__.
+Fields may be documented with a __description__, __comment__ and may be __deprecated__.
 
 __Descriptions__ can be added with the `field(...)` method as a positional argument, a keyword argument, or inside the block:
 
@@ -68,6 +83,26 @@ field :name, String, null: false,
 field :name, String, null: false do
   description "The name of this thing"
 end
+```
+
+__Comments__ can be added with the `field(...)` method as a keyword argument, or inside the block:
+```ruby
+# `comment:` keyword
+field :name, String, null: false, comment: "Rename to full name"
+
+# inside the block
+field :name, String, null: false do
+  comment "Rename to full name"
+end
+```
+
+Generates field name with comment above "Rename to full name" above.
+
+```graphql
+type Foo {
+    # Rename to full name
+    name: String!
+}
 ```
 
 __Deprecated__ fields can be marked by adding a `deprecation_reason:` keyword argument:
@@ -198,7 +233,7 @@ A few `extras` are available:
 - `owner` (the type that this field belongs to)
 - `lookahead` (see {% internal_link "Lookahead", "/queries/lookahead" %})
 - `execution_errors`, whose `#add(err_or_msg)` method should be used for adding errors
-- `argument_details` (Intepreter only), an instance of {{ "GraphQL::Execution::Interpreter::Arguments" | api_doc }} with argument metadata
+- `argument_details` (Interpreter only), an instance of {{ "GraphQL::Execution::Interpreter::Arguments" | api_doc }} with argument metadata
 - `parent` (the previous `object` in the query)
 - Custom extras, see below
 

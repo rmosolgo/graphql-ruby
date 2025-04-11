@@ -17,7 +17,7 @@ describe GraphQL::Schema::InputObject do
   describe "type info" do
     it "has it" do
       assert_equal "EnsembleInput", input_object.graphql_name
-      assert_equal nil, input_object.description
+      assert_nil input_object.description
       assert_equal 1, input_object.arguments.size
     end
 
@@ -115,14 +115,19 @@ describe GraphQL::Schema::InputObject do
       class InputObj < GraphQL::Schema::InputObject
         argument :a, Integer
         argument :b, Integer, as: :b2
-        argument :c, Integer, prepare: :prep
+        argument :c, Integer, prepare: :prep, validates: { exclusion: { in: [5, 10] } }
         argument :d, Integer, prepare: :prep, as: :d2
         argument :e, Integer, prepare: ->(val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
         argument :instrument_id, ID, loads: Jazz::InstrumentType
         argument :danger, Integer, required: false, prepare: ->(val, ctx) { raise GraphQL::ExecutionError.new('boom!') }
+        argument :nested, self, required: false, validates: { allow_null: true }, prepare: :echo
 
         def prep(val)
           val * context[:multiply_by]
+        end
+
+        def echo(val)
+          val
         end
       end
 
@@ -238,7 +243,6 @@ describe GraphQL::Schema::InputObject do
           type
         end
 
-        orphan_types [Jazz::InstrumentType]
         max_complexity 100
       end
     end
@@ -259,6 +263,13 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
       expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }.inspect, "Drum Kit"]
       assert_equal expected_obj, res["data"]["inputs"]
+
+      query_str2 = <<-GRAPHQL
+      { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5, instrumentId: "Instrument/Drum Kit", nested: { a: 2, b: 4, c: 6, d: 8, e: 10, instrumentId: "Instrument/Drum Kit" } }) }
+      GRAPHQL
+      res2 = InputObjectPrepareTest::Schema.execute(query_str2, context: { multiply_by: 3 })
+      expected_hash_values =  { a: 2, b2: 4, c: 6, d2: 8, e2: 60 }.inspect.sub("{", "").sub("}", "")
+      assert_includes res2["data"]["inputs"][0], expected_hash_values
     end
 
     it "calls load_ methods for arguments when they're present" do
@@ -353,6 +364,17 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+      class OnlyOnePrepareInputObject < GraphQL::Schema::InputObject
+        argument :i, Int
+
+        attr_reader :prepared_count
+        def prepare
+          @prepared_count ||= 0
+          @prepared_count += 1
+          super
+        end
+      end
+
       class SmallIntegerArgument < GraphQL::Schema::Argument
         def authorized?(obj, val, ctx)
           if val > 100
@@ -378,6 +400,18 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+      class Thing < GraphQL::Schema::Object
+        field :name, String
+      end
+
+      class PrepareAndLoadInput < GraphQL::Schema::InputObject
+        argument :value, String
+        argument :thing_id, ID, loads: Thing
+        def prepare
+          { value: "Prepared: #{value}", thing: thing }
+        end
+      end
+
       class Query < GraphQL::Schema::Object
         field :inputs, String do
           argument :input, RangeInput
@@ -388,11 +422,59 @@ describe GraphQL::Schema::InputObject do
         end
 
         field :hash_input, resolver: HashInputResolver
+
+        field :prepare_once, Int do
+          argument :input, OnlyOnePrepareInputObject
+        end
+
+        def prepare_once(input:)
+          input.prepared_count
+        end
+
+        field :prepare_list, [Int] do
+          argument :input, [OnlyOnePrepareInputObject]
+        end
+
+        def prepare_list(input:)
+          input.map(&:prepared_count)
+        end
+
+        field :prepare_and_load, String do
+          argument :input, PrepareAndLoadInput
+        end
+
+        def prepare_and_load(input:)
+          "#{input[:value]}/#{input[:thing][:name]}"
+        end
+
+        field :prepare_list_of_lists, [[Int]] do
+          argument :input, [[OnlyOnePrepareInputObject]]
+        end
+
+        def prepare_list_of_lists(input:)
+          input.map { |i| i.map(&:prepared_count) }
+        end
+
+        field :example_thing, Thing
       end
 
       class Schema < GraphQL::Schema
         query(Query)
+
+        def self.resolve_type(_abs_t, _obj, _ctx)
+          Thing
+        end
+
+        def self.object_from_id(id, _ctx)
+          { name: "Thing #{id}"}
+        end
       end
+    end
+
+    it "calls prepare and loads" do
+      query_str = "{ prepareAndLoad(input: { value: \"Hello\", thingId: \"123\"}) }"
+      res = InputObjectPrepareObjectTest::Schema.execute(query_str)
+      assert_equal "Prepared: Hello/Thing 123", res["data"]["prepareAndLoad"]
     end
 
     it "calls prepare on the input object (literal)" do
@@ -402,6 +484,19 @@ describe GraphQL::Schema::InputObject do
 
       res = InputObjectPrepareObjectTest::Schema.execute(query_str)
       assert_equal "5..10", res["data"]["inputs"]
+    end
+
+    it "only prepares once" do
+      res = InputObjectPrepareObjectTest::Schema.execute("{ prepareOnce( input: { i: 1 } ) }")
+      assert_equal 1, res["data"]["prepareOnce"]
+    end
+
+    it "calls prepare on lists of input objects" do
+      res = InputObjectPrepareObjectTest::Schema.execute("{ prepareList( input:[{ i: 1 }, { i: 1}]) }")
+      assert_equal [1, 1], res["data"]["prepareList"]
+
+      res = InputObjectPrepareObjectTest::Schema.execute("{ prepareListOfLists( input:[[{ i: 1 }, { i: 1}], [{i: 2}, {i: 2}]]) }")
+      assert_equal [[1, 1], [1, 1]], res["data"]["prepareListOfLists"]
     end
 
     it "calls prepare on the input object (variable)" do
@@ -426,7 +521,8 @@ describe GraphQL::Schema::InputObject do
     it "authorizes Hashes returned from prepare:" do
       query_str = "{ hashInput(input: { k1: 5, k2: 12 }) }"
       res = InputObjectPrepareObjectTest::Schema.execute(query_str)
-      assert_equal "Hash, {:k1=>5, :k2=>12}", res["data"]["hashInput"]
+      expected_str = { k1: 5, k2: 12 }.inspect
+      assert_equal "Hash, #{expected_str}", res["data"]["hashInput"]
 
       query_str = "{ hashInput(input: { k1: 500, k2: 12 }) }"
       res = InputObjectPrepareObjectTest::Schema.execute(query_str)
@@ -602,14 +698,16 @@ describe GraphQL::Schema::InputObject do
 
     it "handles camelized booleans" do
       res = Jazz::Schema.execute("query($input: CamelizedBooleanInput!){ inputObjectCamelization(input: $input) }", variables: { input: { camelizedBoolean: false } })
-      assert_equal "{:camelized_boolean=>false}", res["data"]["inputObjectCamelization"]
+      expected_res = { camelized_boolean: false }.inspect
+      assert_equal expected_res, res["data"]["inputObjectCamelization"]
     end
   end
 
   describe "when used with default_value" do
     it "comes as an instance" do
       res = Jazz::Schema.execute("{ defaultValueTest }")
-      assert_equal "Jazz::InspectableInput -> {:string_value=>\"S\"}", res["data"]["defaultValueTest"]
+      expected_res = { string_value: "S" }.inspect
+      assert_equal "Jazz::InspectableInput -> #{expected_res}", res["data"]["defaultValueTest"]
     end
 
     it "works with empty objects" do
@@ -679,7 +777,7 @@ describe GraphQL::Schema::InputObject do
     input_object = InputObjectDigTest::TestInput2.new(
       nil,
       ruby_kwargs: arg_values,
-      context: nil,
+      context: GraphQL::Query::NullContext.instance,
       defaults_used: Set.new
     )
     it "returns the value at that key" do
@@ -695,6 +793,63 @@ describe GraphQL::Schema::InputObject do
     it "returns nil for missing keys" do
       assert_nil input_object.dig("z")
       assert_nil input_object.dig(7)
+    end
+  end
+
+  describe "pattern matching" do
+    module InputObjectPatternTest
+      class TestInput1 < GraphQL::Schema::InputObject
+        graphql_name "TestInput1"
+        argument :d, Int
+        argument :e, Int
+      end
+
+      class TestInput2 < GraphQL::Schema::InputObject
+        graphql_name "TestInput2"
+        argument :a, Int
+        argument :b, Int
+        argument :c, TestInput1, as: :inputObject
+      end
+    end
+    arg_values = {
+      a: 1,
+      b: 2,
+      inputObject: InputObjectPatternTest::TestInput1.new(nil, ruby_kwargs: { d: 3, e: 4 }, context: nil, defaults_used: Set.new)
+    }
+
+    input_object = InputObjectPatternTest::TestInput2.new(
+      nil,
+      ruby_kwargs: arg_values,
+      context: GraphQL::Query::NullContext.instance,
+      defaults_used: Set.new
+    )
+    it "matches the value at that key" do
+      assert case input_object
+      in { a: 1 }
+        true
+      else
+        false
+      end
+
+      assert input_object.dig(:inputObject).is_a?(GraphQL::Schema::InputObject)
+    end
+
+    it "matches nested input objects" do
+      assert case input_object
+      in { inputObject: { d: 3 } }
+        true
+      else
+        false
+      end
+    end
+
+    it "does not match missing keys" do
+      assert case input_object
+      in { z: }
+        false
+      else
+        true
+      end
     end
   end
 
@@ -807,7 +962,7 @@ describe GraphQL::Schema::InputObject do
     let(:input_object) { Dummy::DairyProductInput }
 
     def validate_isolated_input(t, input)
-      t.validate_input(input, GraphQL::Query::NullContext)
+      t.validate_input(input, GraphQL::Query::NullContext.instance)
     end
 
     describe "input validation" do
@@ -832,7 +987,7 @@ describe GraphQL::Schema::InputObject do
       describe "validate_input with null" do
         let(:schema) { GraphQL::Schema.from_definition(%|
           type Query {
-            a: Int
+            a(input: ExampleInputObject): Int
           }
 
           input ExampleInputObject {
@@ -1012,7 +1167,8 @@ describe GraphQL::Schema::InputObject do
     describe "coercion of null inputs" do
       let(:schema) { GraphQL::Schema.from_definition(%|
         type Query {
-          a: Int
+          a(input: ExampleInputObject): Int
+          b(input: SecondLevelInputObject): Int
         }
 
         input ExampleInputObject {
@@ -1168,6 +1324,7 @@ describe GraphQL::Schema::InputObject do
     it "prints in the SDL" do
       sdl = OneOfSchema.to_definition
       assert_includes sdl, "input OneOfInput @oneOf {\n"
+      assert_includes sdl, "directive @oneOf on INPUT_OBJECT"
     end
 
     it "shows in the introspection query" do
@@ -1277,6 +1434,115 @@ describe GraphQL::Schema::InputObject do
 
       schema_sdl = schema.to_definition
       assert_includes schema_sdl, "input OneOfInput @oneOf {\n"
+    end
+  end
+
+  describe "when values aren't given" do
+    class MissingValuesSchema < GraphQL::Schema
+      class ValuesInput < GraphQL::Schema::InputObject
+        argument :a, Int
+        argument :b, Int, required: false
+        argument :c, Int, required: false, default_value: nil
+      end
+
+      class ValuesMutation < GraphQL::Schema::Mutation
+        argument :values, ValuesInput
+        field :result, String
+        def resolve(values:)
+          {
+            result: "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?(:b)}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
+          }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :values, mutation: ValuesMutation
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :result, String do
+          argument :values, ValuesInput
+        end
+
+        def result(values:)
+          "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?(:b)}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
+        end
+      end
+
+      query(Query)
+      mutation(Mutation)
+    end
+
+    it "doesn't add keys for arguments that aren't present and uses default values for ones that are" do
+      result = MissingValuesSchema.execute("{ result(values: { a: 1 }) }")
+      assert_equal "[a: 1, true], [b: nil, false], [c: nil, true]", result["data"]["result"]
+
+      result = MissingValuesSchema.execute("mutation { values(values: { a: 1 }) { result } }")
+      assert_equal "[a: 1, true], [b: nil, false], [c: nil, true]", result["data"]["values"]["result"]
+    end
+  end
+
+  describe "when argument is named objectId" do
+    it "doesn't emit a warning" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::InputObject) do
+          argument :object_id, GraphQL::Types::ID, required: false
+        end
+      end
+    end
+  end
+
+  describe "when no arguments are defined" do
+    describe "when defined with no fields" do
+      class NoArgumentsSchema < GraphQL::Schema
+        class NoArgumentsInput < GraphQL::Schema::InputObject
+        end
+
+        class NoArgumentsCompatInput < GraphQL::Schema::InputObject
+          has_no_arguments(true)
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :no_arguments, String, fallback_value: "NO_ARGS" do
+            argument :input, NoArgumentsInput
+          end
+
+          field :no_arguments_compat, String, fallback_value: "OK" do
+            argument :input, NoArgumentsCompatInput
+          end
+        end
+
+        query(Query)
+      end
+
+      it "raises an error at runtime and printing" do
+        refute NoArgumentsSchema::NoArgumentsInput.has_no_arguments?
+
+        expected_message = "Input Object types must have arguments, but NoArgumentsInput doesn't have any. Define an argument for this type, remove it from your schema, or add `has_no_arguments(true)` to its definition.
+
+This will raise an error in a future GraphQL-Ruby version.
+"
+        res = assert_warns(expected_message) do
+          NoArgumentsSchema.execute("{ noArguments(input: {}) }")
+        end
+        assert_equal "NO_ARGS", res["data"]["noArguments"]
+
+        assert_warns(expected_message) do
+          NoArgumentsSchema.to_definition
+        end
+
+        assert_warns(expected_message) do
+          NoArgumentsSchema.to_json
+        end
+      end
+
+      it "doesn't raise an error if has_no_arguments(true)" do
+        assert NoArgumentsSchema::NoArgumentsCompatInput.has_no_arguments?
+        res = assert_warns("") do
+          NoArgumentsSchema.execute("{ noArgumentsCompat(input: {}) }")
+        end
+        assert_equal "OK", res["data"]["noArgumentsCompat"]
+      end
     end
   end
 end

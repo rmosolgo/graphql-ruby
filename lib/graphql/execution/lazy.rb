@@ -12,16 +12,14 @@ module GraphQL
     # - It has no error-catching functionality
     # @api private
     class Lazy
-      attr_reader :path, :field
+      attr_reader :field
 
       # Create a {Lazy} which will get its inner value by calling the block
-      # @param path [Array<String, Integer>]
       # @param field [GraphQL::Schema::Field]
       # @param get_value_func [Proc] a block to get the inner value (later)
-      def initialize(path: nil, field: nil, &get_value_func)
+      def initialize(field: nil, &get_value_func)
         @get_value_func = get_value_func
         @resolved = false
-        @path = path
         @field = field
       end
 

@@ -99,24 +99,13 @@ So, if there are other, better options, why does `Resolver` exist? Here are a fe
 
 ## Using `resolver`
 
-To add resolvers to your project, make a base class:
-
-```ruby
-# app/graphql/resolvers/base.rb
-module Resolvers
-  class Base < GraphQL::Schema::Resolver
-    # if you have a custom argument class, you can attach it:
-    argument_class Arguments::Base
-  end
-end
-```
-
-Then, extend it as needed:
+Use the base resolver class:
 
 ```ruby
 module Resolvers
-  class RecommendedItems < Resolvers::Base
+  class RecommendedItems < BaseResolver
     type [Types::Item], null: false
+    description "Items this user might like"
 
     argument :order_by, Types::ItemOrder, required: false
     argument :category, Types::ItemCategory, required: false
@@ -140,9 +129,7 @@ And attach it to your field:
 
 ```ruby
 class Types::User < Types::BaseObject
-  field :recommended_items,
-    resolver: Resolvers::RecommendedItems,
-    description: "Items this user might like"
+  field :recommended_items, resolver: Resolvers::RecommendedItems
 end
 ```
 
@@ -173,7 +160,7 @@ end
 # app/graphql/resolvers/tasks_resolver.rb
 
 module Resolvers
-  class TasksResolver < GraphQL::Schema::Resolver
+  class TasksResolver < BaseResolver
     type [Types::TaskType], null: false
 
     def resolve
@@ -189,7 +176,7 @@ A simple solution is to express the type as a string in the resolver:
 
 ```ruby
 module Resolvers
-  class TasksResolver < GraphQL::Schema::Resolver
+  class TasksResolver < BaseResolver
     type "[Types::TaskType]", null: false
 
     def resolve

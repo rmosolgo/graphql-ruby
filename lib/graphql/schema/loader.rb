@@ -32,7 +32,8 @@ module GraphQL
         end
 
         Class.new(GraphQL::Schema) do
-          orphan_types(types.values)
+          add_type_and_traverse(types.values, root: false)
+          orphan_types(types.values.select { |t| t.kind.object? })
           directives(directives)
           description(schema["description"])
 
@@ -176,7 +177,6 @@ module GraphQL
             while (of_type = unwrapped_field_hash["ofType"])
               unwrapped_field_hash = of_type
             end
-            type_name = unwrapped_field_hash["name"]
 
             type_defn.field(
               field_hash["name"],
@@ -186,9 +186,8 @@ module GraphQL
               null: true,
               camelize: false,
               connection_extension: nil,
-              connection: type_name.end_with?("Connection"),
             ) do
-              if field_hash["args"].any?
+              if !field_hash["args"].empty?
                 loader.build_arguments(self, field_hash["args"], type_resolver)
               end
             end

@@ -109,7 +109,14 @@ module GraphQL
               to_type_name(something.name)
             end
           when String
-            something.gsub(/\]\[\!/, "").split("::").last
+            if something.include?("]") ||
+                something.include?("[") ||
+                something.include?("!") ||
+                something.include?("::")
+              something.gsub(/\]\[\!/, "").split("::").last
+            else
+              something
+            end
           when GraphQL::Schema::NonNull, GraphQL::Schema::List
             to_type_name(something.unwrap)
           else
@@ -122,7 +129,8 @@ module GraphQL
           return string unless string.include?("_")
           camelized = string.split('_').each(&:capitalize!).join
           camelized[0] = camelized[0].downcase
-          if (match_data = string.match(/\A(_+)/))
+          if string.start_with?("_")
+            match_data = string.match(/\A(_+)/)
             camelized = "#{match_data[0]}#{camelized}"
           end
           camelized

@@ -1041,4 +1041,45 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       assert_equal [expected_error], res.map(&:to_h)
     end
   end
+
+  describe "duplicate aliases on a interface with inline fragment spread" do
+    class DuplicateAliasesSchema < GraphQL::Schema
+      module Node
+        include GraphQL::Schema::Interface
+        field :id, ID
+
+        def self.resolve_type(obj, ctx)
+          Repository
+        end
+      end
+
+      class Repository < GraphQL::Schema::Object
+        implements Node
+        field :name, String
+        field :id, ID
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :node, Node, fallback_value: { name: "graphql-ruby", id: "abcdef" }
+      end
+
+      query(Query)
+      orphan_types(Repository)
+    end
+
+    it "returns an error" do
+      query_str = 'query {
+        node {
+          ... on Repository {
+            info: name
+            info: id
+          }
+        }
+      }
+      '
+
+      res = DuplicateAliasesSchema.execute(query_str)
+      assert_equal ["Field 'info' has a field conflict: name or id?"], res["errors"].map { |e| e["message"] }
+    end
+  end
 end

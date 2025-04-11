@@ -5,16 +5,6 @@ require "generators/graphql/input_generator"
 class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::InputGenerator
 
-  ActiveRecord::Schema.define do
-    create_table :input_test_users do |t|
-      t.datetime :created_at
-      t.date :birthday
-      t.integer :points
-      t.decimal :rating
-      t.references :friend, foreign_key: { to_table: :input_test_users}
-    end
-  end
-
   # rubocop:disable Style/ClassAndModuleChildren
   class ::InputTestUser < ActiveRecord::Base
   end
@@ -48,7 +38,7 @@ RUBY
     end
   end
 
-  test "it generates classifed file" do
+  test "it generates classified file" do
     run_generator(["page"])
     assert_file "app/graphql/types/page_input_type.rb", <<-RUBY
 # frozen_string_literal: true
@@ -60,7 +50,7 @@ end
 RUBY
   end
 
-  test "it generates namespaced classifed file" do
+  test "it generates namespaced classified file" do
     run_generator(["page", "--namespaced-types"])
     assert_file "app/graphql/types/inputs/page_input_type.rb", <<-RUBY
 # frozen_string_literal: true

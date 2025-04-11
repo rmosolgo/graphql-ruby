@@ -47,10 +47,10 @@ module GraphQL
         end
 
         # Remove leading & trailing blank lines
-        while lines.size > 0 && lines[0].empty?
+        while lines.size > 0 && contains_only_whitespace?(lines.first)
           lines.shift
         end
-        while lines.size > 0 && lines[-1].empty?
+        while lines.size > 0 && contains_only_whitespace?(lines.last)
           lines.pop
         end
 
@@ -59,40 +59,56 @@ module GraphQL
       end
 
       def self.print(str, indent: '')
-        lines = str.split("\n")
+        line_length = 120 - indent.length
+        block_str = "".dup
+        triple_quotes = "\"\"\"\n"
+        block_str << indent
+        block_str << triple_quotes
 
-        block_str = "#{indent}\"\"\"\n".dup
-
-        lines.each do |line|
-          if line == ''
-            block_str << "\n"
-          else
-            sublines = break_line(line, 120 - indent.length)
-            sublines.each do |subline|
-              block_str << "#{indent}#{subline}\n"
+        if str.include?("\n")
+          str.split("\n") do |line|
+            if line == ''
+              block_str << "\n"
+            else
+              break_line(line, line_length) do |subline|
+                block_str << indent
+                block_str << subline
+                block_str << "\n"
+              end
             end
+          end
+        else
+          break_line(str, line_length) do |subline|
+            block_str << indent
+            block_str << subline
+            block_str << "\n"
           end
         end
 
-        block_str << "#{indent}\"\"\"\n".dup
+        block_str << indent
+        block_str << triple_quotes
       end
 
       private
 
       def self.break_line(line, length)
-        return [line] if line.length < length + 5
+        return yield(line) if line.length < length + 5
 
         parts = line.split(Regexp.new("((?: |^).{15,#{length - 40}}(?= |$))"))
-        return [line] if parts.length < 4
+        return yield(line) if parts.length < 4
 
-        sublines = [parts.slice!(0, 3).join]
+        yield(parts.slice!(0, 3).join)
 
         parts.each_with_index do |part, i|
           next if i % 2 == 1
-          sublines << "#{part[1..-1]}#{parts[i + 1]}"
+          yield "#{part[1..-1]}#{parts[i + 1]}"
         end
 
-        sublines
+        nil
+      end
+
+      def self.contains_only_whitespace?(line)
+        line.match?(/^\s*$/)
       end
     end
   end

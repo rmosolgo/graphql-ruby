@@ -15,14 +15,30 @@ GRAPHQL
 
 RakeTaskSchema = GraphQL::Schema.from_definition(rake_task_schema_defn)
 
+class FilteredRakeTaskSchema < RakeTaskSchema
+  def self.visible?(member, ctx)
+    (
+      member.is_a?(Class) &&
+        member < GraphQL::Schema::Scalar &&
+        # Warden doesn't include these for some reason:
+        !(member.graphql_name.start_with?("Boolean", "String"))
+    ) || (
+      ctx[:filtered] && ["Query", "allowed"].include?(member.graphql_name)
+    ) || (
+      member.respond_to?(:introspection?) && member.introspection?
+    ) || (
+      member.respond_to?(:owner) && member.owner.introspection?
+    )
+  end
+end
+
 # Default task
 GraphQL::RakeTask.new(schema_name: "RakeTaskSchema")
 # Configured task
 GraphQL::RakeTask.new(idl_outfile: "tmp/configured_schema.graphql") do |t|
   t.namespace = "graphql_custom"
-  t.load_context = ->(task) { {filtered: true} }
-  t.only = ->(member, ctx) { (member.is_a?(Class) && member < GraphQL::Schema::Scalar) || (ctx[:filtered] && ["Query", "allowed"].include?(member.graphql_name)) }
-  t.load_schema = ->(task) { RakeTaskSchema }
+  t.load_context = ->(task) { {filtered: true } }
+  t.load_schema = ->(task) { FilteredRakeTaskSchema }
 end
 
 GraphQL::RakeTask.new(namespace: "custom_json", schema_name: "RakeTaskSchema", json_outfile: "tmp/custom_json.json", include_is_one_of: true, include_is_repeatable: true, include_specified_by_url: true)

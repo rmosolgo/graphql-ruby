@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Types::Int do
   describe "coerce_input" do
     it "accepts ints within the bounds" do
-      assert_equal -(2**31), GraphQL::Types::Int.coerce_isolated_input(-(2**31))
+      assert_equal(-(2**31), GraphQL::Types::Int.coerce_isolated_input(-(2**31)))
       assert_equal 1, GraphQL::Types::Int.coerce_isolated_input(1)
       assert_equal (2**31)-1, GraphQL::Types::Int.coerce_isolated_input((2**31)-1)
     end
@@ -23,7 +23,7 @@ describe GraphQL::Types::Int do
       it "accepts result values in bounds" do
         assert_equal 0, GraphQL::Types::Int.coerce_result(0, context)
         assert_equal (2**31) - 1, GraphQL::Types::Int.coerce_result((2**31) - 1, context)
-        assert_equal -(2**31), GraphQL::Types::Int.coerce_result(-(2**31), context)
+        assert_equal(-(2**31), GraphQL::Types::Int.coerce_result(-(2**31), context))
       end
 
       it "replaces values, if configured to do so" do

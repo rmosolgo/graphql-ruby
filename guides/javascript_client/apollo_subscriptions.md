@@ -34,11 +34,7 @@ For example:
 
 ```js
 // Load Apollo stuff
-import { ApolloLink } from 'apollo-link';
-import { ApolloClient } from 'apollo-client';
-import { HttpLink } from 'apollo-link-http';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-
+import { ApolloClient, HttpLink, ApolloLink, InMemoryCache } from "@apollo/client";
 // Load PusherLink from graphql-ruby-client
 import PusherLink from 'graphql-ruby-client/subscriptions/PusherLink';
 
@@ -98,10 +94,7 @@ For example:
 
 ```js
 // Load Apollo stuff
-import { ApolloLink } from 'apollo-link';
-import { ApolloClient } from 'apollo-client';
-import { HttpLink } from 'apollo-link-http';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { ApolloClient, HttpLink, ApolloLink, InMemoryCache } from '@apollo/client';
 // Load Ably subscriptions link
 import AblyLink from 'graphql-ruby-client/subscriptions/AblyLink'
 // Load Ably and create a client
@@ -145,10 +138,7 @@ To use it, construct a split link that routes:
 For example:
 
 ```js
-import { ApolloLink } from 'apollo-link';
-import { ApolloClient } from 'apollo-client';
-import { HttpLink } from 'apollo-link-http';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { ApolloClient, HttpLink, ApolloLink, InMemoryCache } from '@apollo/client';
 import { createConsumer } from '@rails/actioncable';
 import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink';
 

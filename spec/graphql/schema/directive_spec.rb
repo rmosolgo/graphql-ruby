@@ -162,6 +162,11 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       def dataloaded_thing(ast_node:)
         dataloader.with(ThingSource).load(ast_node.alias || ast_node.name)
       end
+
+      field :lazy_things, [Thing], extras: [:ast_node]
+      def lazy_things(ast_node:)
+        -> { [thing(ast_node: ast_node), thing(ast_node: ast_node)]}
+      end
     end
 
     Thing.implements(HasThings)
@@ -231,7 +236,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         },
         "t5"=>{"n5"=>"t5", "t5d"=>{"t5dl"=>{"t5dln"=>"t5dl"}}},
       }
-      assert_equal expected_data, res["data"]
+      assert_graphql_equal expected_data, res["data"]
 
       expected_counts = {
         ["t1", "t1n"] => [1],
@@ -261,7 +266,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       GRAPHQL
       res = RuntimeDirectiveTest::Schema.execute(query_str)
       expected_data = { "t1" => { "name" => "t1"}, "t2" => { "name" => "t2" }, "t3" => { "name" => "t3" } }
-      assert_equal expected_data, res["data"]
+      assert_graphql_equal expected_data, res["data"]
 
       expected_counts = {
         [] => [2],
@@ -269,6 +274,18 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
        }
       assert_equal expected_counts, res.context[:count_fields]
       assert_equal 5, res.context[:name_resolved_count]
+    end
+
+    it "works with backtrace: true and lazy lists" do
+      query_str = "
+      {
+        lazyThings @countFields {
+          name
+        }
+      }
+      "
+      res = RuntimeDirectiveTest::Schema.execute(query_str, context: { backtrace: true })
+      assert_equal 2, res["data"]["lazyThings"].size
     end
   end
 
@@ -365,7 +382,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       type Query @tag(name: "t1") @tag(name: "t2") {
         something(
           arg: Boolean @tag(name: "t3") @tag(name: "t4")
-        ): Int @tag(name: "t5") @tag(name: "t6")
+        ): Stuff @tag(name: "t5") @tag(name: "t6")
       }
 
       enum Stuff {

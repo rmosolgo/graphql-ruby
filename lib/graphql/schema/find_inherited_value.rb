@@ -2,17 +2,12 @@
 module GraphQL
   class Schema
     module FindInheritedValue
-      module EmptyObjects
-        EMPTY_HASH = {}.freeze
-        EMPTY_ARRAY = [].freeze
-      end
-
       def self.extended(child_cls)
-        child_cls.singleton_class.include(EmptyObjects)
+        child_cls.singleton_class.include(GraphQL::EmptyObjects)
       end
 
       def self.included(child_cls)
-        child_cls.include(EmptyObjects)
+        child_cls.include(GraphQL::EmptyObjects)
       end
 
       private

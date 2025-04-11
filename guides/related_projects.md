@@ -15,10 +15,10 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - `graphql-ruby` + Sinatra demo ([src](https://github.com/robinjmurphy/ruby-graphql-server-example) / [heroku](https://ruby-graphql-server-example.herokuapp.com/))
 - [`graphql-batch`](https://github.com/shopify/graphql-batch), a batched query execution strategy
 - [`graphql-cache`](https://github.com/stackshareio/graphql-cache), a resolver-level caching solution
-- [`graphql-libgraphqlparser`](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby), bindings to [libgraphqlparser](https://github.com/graphql/libgraphqlparser), a C-level parser.
 - [`graphql-devise`](https://github.com/graphql-devise/graphql_devise), a gql interface to handle authentication with Devise
 - [`graphql-docs`](https://github.com/gjtorikian/graphql-docs), a tool to automatically generate static HTML documentation from your GraphQL implementation
 - [`graphql-metrics`](https://github.com/Shopify/graphql-metrics), a plugin to extract fine-grain metrics of GraphQL queries received by your server
+- [`graphql-stitching`](https://github.com/gmac/graphql-stitching-ruby), tools to combine multiple local and remote schemas into a single graph that queries as one
 - [`graphql-groups`](https://github.com/hschne/graphql-groups), a DSL to define group- and aggregation queries with graphql-ruby
 - Rails Helpers:
   - [`graphql-activerecord`](https://github.com/goco-inc/graphql-activerecord)
@@ -27,6 +27,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
   - [`graphql-rails_logger`](https://github.com/jetruby/graphql-rails_logger), a logger which allows you to inspect GraphQL queries in a more readable format.
   - [`apollo_upload_server-ruby`](https://github.com/jetruby/apollo_upload_server-ruby), a middleware which allows you to upload files with GraphQL and multipart/form-data using [`apollo-upload-client`](https://github.com/jaydenseric/apollo-upload-client) library on front-end.
   - [`graphql-sources`](https://github.com/ksylvest/graphql-sources) a collection of common GraphQL [sources](https://graphql-ruby.org/dataloader/sources.html) to simplify using `ActiveRecord`, `ActiveStorage`, `Rails.cache`, and more.
+  - [`graphql-filters`](https://github.com/moku-io/graphql-filters), a DSL to define fully typed filters for list fields.
 - [`search_object_graphql`](https://github.com/rstankov/SearchObjectGraphQL), a DSL for defining search resolvers for GraphQL.
 - [`action_policy-graphql`](https://github.com/palkan/action_policy-graphql), an integration for using [`action_policy`](https://github.com/palkan/action_policy) as an authorization framework for GraphQL applications.
 - [`graphql_rails`](https://github.com/samesystem/graphql_rails), Rails way GraphQL build tool
@@ -34,7 +35,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - [`graphql-ruby-fragment_cache`](https://github.com/DmitryTsepelev/graphql-ruby-fragment_cache), a tool for caching response fragments.
 - [`graphql-ruby-persisted_queries`](https://github.com/DmitryTsepelev/graphql-ruby-persisted_queries), the implementation of [Apollo persisted queries](https://github.com/apollographql/apollo-link-persisted-queries).
 - [`rubocop-graphql`](https://github.com/DmitryTsepelev/rubocop-graphql), [rubocop](https://github.com/rubocop-hq/rubocop) extension for enforcing best practices.
-- [`apollo-federation-ruby`](https://github.com/Gusto/apollo-federation-ruby), a Ruby implementation of Apollo Federation.
+- [`apollo-federation-ruby`](https://github.com/Gusto/apollo-federation-ruby), a Ruby implementation of the Apollo Federation [subgraph spec](https://www.apollographql.com/docs/federation/subgraph-spec/).
 
 ## Blog Posts
 

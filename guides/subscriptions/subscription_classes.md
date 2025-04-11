@@ -213,7 +213,7 @@ You can implement `#authorized?` to check that the user has permission to subscr
 
 ```ruby
 def authorized?(room:)
-  context[:viewer].can_read_messages?(room)
+  super && context[:viewer].can_read_messages?(room)
 end
 ```
 
@@ -334,9 +334,20 @@ end
 - The subscription is unregistered from the backend (this is backend-specific)
 - The client is told to unsubscribe (this is transport-specific)
 
-`#unsubscribe` does _not_ halt the current update.
-
 Arguments with `loads:` configurations will call `unsubscribe` if they are `required: true` (which is the default) and their ID doesn't return a value. (It's assumed that the subscribed object was deleted.)
+
+You can provide a final update value with `unsubscribe` by passing a value to the method:
+
+```ruby
+def update(room:)
+  if room.archived?
+    # Don't let anyone subscribe to messages on an archived room
+    unsubscribe({message: "This room has been archived"})
+  else
+    super
+  end
+end
+```
 
 ## Extras
 

@@ -3,8 +3,13 @@ require "spec_helper"
 
 describe GraphQL::Schema::Directive::Flagged do
   class FlaggedSchema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     module Animal
       include GraphQL::Schema::Interface
+      if GraphQL::Schema.use_visibility_profile?
+        # It won't check possible types, so it needs this directly
+        directive GraphQL::Schema::Directive::Flagged, by: ["northPole", "southPole"]
+      end
     end
 
     class PolarBear < GraphQL::Schema::Object
@@ -36,6 +41,8 @@ describe GraphQL::Schema::Directive::Flagged do
       field :santas_workshop, Boolean, null: false,
         directives: { GraphQL::Schema::Directive::Flagged => { by: ["northPole"] } }
       def santas_workshop; true; end
+
+      field :something_not_flagged, String
     end
 
     query(Query)

@@ -1,7 +1,11 @@
 name: Publish Website
 on:
+  # For some reason, `on: release: ...` didn't work with `nektos/act`
   push:
-    branches: [master]
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  workflow_dispatch:
 
 permissions: {}
 jobs:
@@ -12,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout GitHub pages branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: gh-pages
           ref: gh-pages
@@ -29,8 +33,8 @@ jobs:
           bundle exec rake site:fetch_latest site:build_doc site:update_search_index site:clean_html site:build_html
       - name: Commit changes as last committer
         run: |
-          git config --global user.name "%(git log --format="%aN" -n 1)"
-          git config --global user.email "%(git log --format="%aE" -n 1)"
+          git config --global user.name "$(git log --format="%aN" -n 1)"
+          git config --global user.email "$(git log --format="%aE" -n 1)"
           bundle exec rake site:commit_changes
       - name: Deploy to GitHub pages via gh-pages branch
         uses: s0/git-publish-subdir-action@master

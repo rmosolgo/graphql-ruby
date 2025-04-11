@@ -3,7 +3,7 @@ require 'rubocop'
 
 module Cop
   module Development
-    class ContextIsPassedCop < RuboCop::Cop::Cop
+    class ContextIsPassedCop < RuboCop::Cop::Base
       MSG = <<-MSG
 This method also accepts `context` as an argument. Pass it so that the returned value will reflect the current query, or use another method that isn't context-dependent.
 MSG

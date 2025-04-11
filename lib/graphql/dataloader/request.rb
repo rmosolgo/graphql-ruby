@@ -14,6 +14,11 @@ module GraphQL
       def load
         @source.load(@key)
       end
+
+      def load_with_deprecation_warning
+        warn("Returning `.request(...)` from GraphQL::Dataloader is deprecated, use `.load(...)` instead. (See usage of #{@source} with #{@key.inspect}).")
+        load
+      end
     end
   end
 end

@@ -45,7 +45,7 @@ class DummyScheduler
   def run
     # $stderr.puts [__method__, Fiber.current].inspect
 
-    while @readable.any? or @writable.any? or @waiting.any? or @blocking.positive?
+    while !@readable.empty? or !@writable.empty? or !@waiting.empty? or @blocking.positive?
       # Can only handle file descriptors up to 1024...
       readable, writable = IO.select(@readable.keys + [@urgent.first], @writable.keys, [], next_timeout)
 
@@ -72,7 +72,7 @@ class DummyScheduler
         fiber.resume(events)
       end
 
-      if @waiting.any?
+      if !@waiting.empty?
         time = current_time
         waiting, @waiting = @waiting, {}
 
@@ -87,7 +87,7 @@ class DummyScheduler
         end
       end
 
-      if @ready.any?
+      if !@ready.empty?
         ready = nil
 
         @lock.synchronize do

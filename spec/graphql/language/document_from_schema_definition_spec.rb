@@ -112,6 +112,47 @@ type Query {
       end
     end
 
+    describe "when it has an enum_value with an adjacent custom directive" do
+      let(:schema_idl) { <<-GRAPHQL
+directive @customEnumValueDirective(fakeArgument: String!) on ENUM_VALUE
+
+enum FakeEnum {
+  VALUE1
+  VALUE2 @customEnumValueDirective(fakeArgument: "Value1 is better...")
+}
+
+type Query {
+  fakeQueryField: FakeEnum!
+}
+      GRAPHQL
+      }
+
+      class EnumValueDirectiveSchema < GraphQL::Schema
+        class CustomEnumValueDirective < GraphQL::Schema::Directive
+          locations GraphQL::Schema::Directive::ENUM_VALUE
+
+          argument :fake_argument, String
+        end
+
+        class FakeEnum < GraphQL::Schema::Enum
+          value "VALUE1"
+          value "VALUE2" do
+            directive CustomEnumValueDirective, fake_argument: "Value1 is better..."
+          end
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :fake_query_field, FakeEnum, null: false
+        end
+
+        query(Query)
+      end
+
+      it "dumps the custom directive definition to the IDL" do
+        assert_equal schema_idl, EnumValueDirectiveSchema.to_definition
+      end
+    end
+
     describe "when printing and schema respects root name conventions" do
       let(:schema_idl) { <<-GRAPHQL
         type Query {
@@ -281,7 +322,7 @@ type Query {
       end
     end
 
-    describe "with an except filter" do
+    describe "with a visibility check" do
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
@@ -323,11 +364,23 @@ type Query {
       GRAPHQL
       }
 
+      let(:schema) {
+        Class.new(GraphQL::Schema.from_definition(schema_idl)) do
+          def self.visible?(m, ctx)
+            m.graphql_name != "Type"
+          end
+        end
+      }
+
       let(:document) {
-        subject.new(
-          schema,
-          except: ->(m, _ctx) { m.respond_to?(:graphql_name) && m.graphql_name == "Type" }
-        ).document
+        doc_schema = Class.new(schema) do
+          use GraphQL::Schema::Visibility
+          def self.visible?(m, _ctx)
+            m.respond_to?(:graphql_name) && m.graphql_name != "Type"
+          end
+        end
+
+        subject.new(doc_schema).document
       }
 
       it "returns the IDL minus the filtered members" do
@@ -374,11 +427,22 @@ type Query {
       GRAPHQL
       }
 
+      let(:schema) {
+        Class.new(GraphQL::Schema.from_definition(schema_idl)) do
+          def self.visible?(m, ctx)
+            !(m.respond_to?(:kind) && m.kind.scalar? && m.name == "CustomScalar")
+          end
+        end
+      }
+
       let(:document) {
-        subject.new(
-          schema,
-          only: ->(m, _ctx) { !(m.respond_to?(:kind) && m.kind.scalar? && m.name == "CustomScalar") }
-        ).document
+        doc_schema = Class.new(schema) do
+          def self.visible?(m, _ctx)
+            !(m.respond_to?(:kind) && m.kind.scalar? && m.name == "CustomScalar")
+          end
+        end
+
+        subject.new(doc_schema).document
       }
 
       it "returns the IDL minus the filtered members" do
@@ -836,10 +900,22 @@ type Query {
       end
 
       directive CustomThing
+
+      class Query < GraphQL::Schema::Object
+        field :f, Int, directives: { CustomThing => { stuff: "ok" } }
+      end
+      query(Query)
     end
 
     it "prints them out" do
-      assert_equal "directive @customThing(stuff: String!) on FIELD_DEFINITION\n", CustomSDLDirectiveSchema.to_definition
+      expected_str = <<~GRAPHQL
+        directive @customThing(stuff: String!) on FIELD_DEFINITION
+
+        type Query {
+          f: Int @customThing(stuff: "ok")
+        }
+      GRAPHQL
+      assert_equal expected_str, CustomSDLDirectiveSchema.to_definition
     end
   end
 end

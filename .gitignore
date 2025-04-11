@@ -7,9 +7,14 @@ Gemfile.lock
 gemfiles/*.lock
 # Test database
 *.db
+*.db-shm
+*.db-wal
+*.sqlite3
+.byebug_history
 .bundle/
 vendor/
 .idea/
+coverage/
 
 _site
 .sass-cache
@@ -17,10 +22,10 @@ _site
 .jekyll-cache
 gh-pages/
 tmp/*
-__*.db
 node_modules/
 yarn.lock
 OperationStoreClient.js
+DumpPayloadExample.json
 spec/integration/tmp
 .vscode/
 *.swp
@@ -33,3 +38,8 @@ javascript_client/subscriptions
 javascript_client/sync
 javascript_client/cli*
 javascript_client/index*
+# Don't commit compiled extension files:
+*.bundle
+*.so
+# Ragel generates Ruby type hints which is great, but I'm not ready to support them
+*.ri

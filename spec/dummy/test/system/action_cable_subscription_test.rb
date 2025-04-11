@@ -2,6 +2,9 @@
 require "application_system_test_case"
 
 class ActionCableSubscriptionsTest < ApplicationSystemTestCase
+  setup do
+    ActionCable.server.config.logger = Logger.new(STDOUT)
+  end
   # This test covers a lot of ground!
   test "it handles subscriptions" do
     # Load the page and let the subscriptions happen
@@ -144,6 +147,27 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
       click_on("Trigger with fingerprint 1")
       refute_selector "#fingerprint-updates-1-update-2-value-2"
 
+      # The client has only 2 connections (from the initial 2)
+      assert_text "Remaining ActionCable subscriptions: 2"
+    end
+  end
+
+  test "it unsubscribes with a message" do
+    GraphqlChannel::CounterIncremented.reset_call_count
+    visit "/"
+    using_wait_time 10 do
+      sleep 1
+      # Establish the connection
+      click_on("Subscribe with fingerprint 1")
+      debug_assert_selector "#fingerprint-updates-1-connected-1"
+      # Trigger once
+      click_on("Trigger with fingerprint 1")
+      debug_assert_selector "#fingerprint-updates-1-update-1-value-1"
+
+      # Server unsubscribe
+      click_on("Unsubscribe with message with fingerprint 1")
+      # Magic value from unsubscribe hook:
+      debug_assert_selector "#fingerprint-updates-1-update-1-value-9999"
       # The client has only 2 connections (from the initial 2)
       assert_text "Remaining ActionCable subscriptions: 2"
     end

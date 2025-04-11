@@ -128,6 +128,12 @@ For better performance reading and writing to Redis, you can pass a `connection_
     ably: Ably::Rest.new(key: ABLY_API_KEY)
 ```
 
+### Broadcasts
+
+If you set up {% internal_link "Broadcasts", "/subscriptions/broadcast" %}, then you can update many clients over a single Ably channel.
+
+Broadcast channels have stable, predictable IDs. To prevent unauthorized clients from "listening in," use [token authorization](#authorization) for transport. Broadcasts channels use the namespace `gqlbdcst:`, so you can provide capabilities to receive them using `"gqlbdcst:*" => [ ... ]` in your authorization code. (If you're using [encryption](#encryption), the prefix will be `ablyencr-gqlbdcst:` instead.)
+
 ## Execution configuration
 
 During execution, GraphQL will assign a `subscription_id` to the `context` hash. The client will use that ID to listen for updates, so you must return the `subscription_id` in the response headers.
@@ -313,4 +319,8 @@ To receive webhooks in development, you can [use ngrok](https://www.ably.io/tuto
 
 ## Client configuration
 
-Install the [Ably JS client](https://github.com/ably/ably-js) then see docs for {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}.
+Install the [Ably JS client](https://github.com/ably/ably-js) then see docs for:
+
+- {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}
+- {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}.
+- {% internal_link "GraphiQL", "/javascript_client/graphiql_subscriptions" %}

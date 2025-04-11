@@ -26,7 +26,7 @@ module GraphQL
           # rename some inputs to avoid conflicts inside the block
           maybe_lazy = value
           value = nil
-          context.schema.after_lazy(maybe_lazy) do |resolved_value|
+          context.query.after_lazy(maybe_lazy) do |resolved_value|
             value = resolved_value
             if value.is_a? GraphQL::ExecutionError
               # This isn't even going to work because context doesn't have ast_node anymore
@@ -50,27 +50,13 @@ module GraphQL
               if field.has_default_page_size? && !value.has_default_page_size_override?
                 value.default_page_size = field.default_page_size
               end
-              if context.schema.new_connections? && (custom_t = context.schema.connections.edge_class_for_field(@field))
+              if (custom_t = context.schema.connections.edge_class_for_field(@field))
                 value.edge_class = custom_t
               end
               value
-            elsif context.schema.new_connections?
+            else
               context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
               context.schema.connections.wrap(field, object.object, value, original_arguments, context)
-            else
-              if object.is_a?(GraphQL::Schema::Object)
-                object = object.object
-              end
-              connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(value)
-              connection_class.new(
-                value,
-                original_arguments,
-                field: field,
-                max_page_size: field.max_page_size,
-                default_page_size: field.default_page_size,
-                parent: object,
-                context: context,
-              )
             end
           end
         end

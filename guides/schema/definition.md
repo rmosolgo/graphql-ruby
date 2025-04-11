@@ -17,7 +17,7 @@ Your GraphQL schema is a class that extends {{ "GraphQL::Schema" | api_doc }}, f
 class MyAppSchema < GraphQL::Schema
   max_complexity 400
   query Types::Query
-  use GraphQL::Batch
+  use GraphQL::Dataloader
 
   # Define hooks as class methods:
   def self.resolve_type(type, obj, ctx)
@@ -34,160 +34,98 @@ class MyAppSchema < GraphQL::Schema
 end
 ```
 
-There are lots of schema configuration options:
-
-- [root objects, introspection and orphan types](#root-objects-introspection-and-orphan-types)
-- [object identification hooks](#object-identification-hooks)
-- [execution configuration](#execution-configuration)
-- [context class](#context-class)
-- [default limits](#default-limits)
-- [plugins](#plugins)
+There are lots of schema configuration methods.
 
 For defining GraphQL types, see the guides for those types: {% internal_link "object types", "/type_definitions/objects" %}, {% internal_link "interface types", "/type_definitions/interfaces" %}, {% internal_link "union types", "/type_definitions/unions" %},  {% internal_link "input object types", "/type_definitions/input_objects" %}, {% internal_link "enum types", "/type_definitions/enums" %}, and {% internal_link "scalar types", "/type_definitions/scalars" %}.
 
-## Root Objects, Introspection and Orphan Types
+## Types in the Schema
 
-A GraphQL schema is a web of interconnected types, and it has a few starting points for discovering the elements of that web:
+- {{ "Schema.query" | api_doc }}, {{ "Schema.mutation" | api_doc }}, and {{ "Schema.subscription" | api_doc}} declare the [entry-point types](https://graphql.org/learn/schema/#the-query-and-mutation-types) of the schema.
+- {{ "Schema.orphan_types" | api_doc }} declares object types which implement {% internal_link "Interfaces", "/type_definitions/interfaces" %} but aren't used as field return types in the schema. For more about this specific scenario, see {% internal_link "Orphan Types", "/type_definitions/interfaces#orphan-types" %}
 
-__Root types__ (`query`, `mutation`, and `subscription`) are the [entry points for queries to the system](https://graphql.org/learn/schema/#the-query-and-mutation-types). Each one is an object type which can be connected to the schema by a method with the same name:
+### Lazy-loading types
 
-```ruby
-class MySchema < GraphQL::Schema
-  # Required:
-  query Types::Query
-  # Optional:
-  mutation Types::Mutation
-  subscription Types::Subscription
-end
-```
+In development, GraphQL-Ruby can defer loading your type definitions until they're needed. This requires some configuration to opt in:
 
-__Introspection__ is a built-in part of the schema. Every schema has a default introspection system, but you can {% internal_link "customize it","/schema/introspection" %} and hook it up with `introspection`:
+- Add `use GraphQL::Schema::Visibility` to your schema. ({{ "GraphQL::Schema::Visibility" | api_doc }} supports lazy loading and will be the default in a future GraphQL-Ruby version. See {% internal_link "Migration Notes", "/authorization/visibility#migration-notes" %} if you have an existing visibility implementation.)
+- Move your entry-point type definitions into a block, for example:
 
-```ruby
-class MySchema < GraphQL::Schema
-  introspection CustomIntrospection
-end
-```
+  ```diff
+  - query Types::Query
+  + query { Types::Query }
+  ```
 
-__Orphan Types__ are types which should be in the schema, but can't be discovered by traversing the types and fields from `query`, `mutation` or `subscription`. This has one very specific use case, see {% internal_link "Orphan Types", "/type_definitions/interfaces#orphan-types" %}.
+- Optionally, move field types into blocks, too:
 
-```ruby
-class MySchema < GraphQL::Schema
-  orphan_types [Types::Comment, ...]
-end
-```
+  ```diff
+  - field :posts, [Types::Post] # Loads `types/post.rb` immediately
+  + field :posts do
+  +   type([Types::Post]) # Loads `types/post.rb` when this field is used in a query
+  + end
+  ```
 
-## Object Identification Hooks
+To enforce these patterns, you can enable two Rubocop rules that ship with GraphQL-Ruby:
 
-A GraphQL schema needs a handful of hooks for finding and disambiguating objects while queries are executed.
+- `GraphQL/RootTypesInBlock` will make sure that `query`, `mutation`, and `subscription` are all defined in a block.
+- `GraphQL/FieldTypeInBlock` will make sure that non-built-in field return types are defined in blocks.
 
-__`resolve_type`__ is used when a specific object's corresponding GraphQL type must be determined. This happens for fields that return {% internal_link "interface", "/type_definitions/interfaces" %} or {% internal_link "union", "/type_definitions/unions" %} types. The class method `def self.resolve_type` is used:
+## Object Identification
 
-```ruby
-class MySchema < GraphQL::Schema
-  def self.resolve_type(abstract_type, object, context)
-    # Disambiguate `object`, from among `abstract_type`'s members
-    # (`abstract_type` is an interface or union type.)
-  end
-end
-```
+Some GraphQL features use unique IDs to load objects:
 
-__`object_from_id`__ is used by the `node(id: ID!): Node` field and `loads:` configuration. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
-__`id_from_object`__ is used to implement `Node.id`. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
+- the `node(id:)` field looks up objects by ID (See {% internal_link "Object Identification", "/schema/object_identification" %} for more about Relay-style object identification.)
+- any arguments with `loads:` configurations look up objects by ID
+- the {% internal_link "ObjectCache", "/object_cache/overview" %} uses IDs in its caching scheme
 
-See the {% internal_link "Object Identification guide", "/schema/object_identification" %} for more information about these methods.
+To use these features, you must provide some methods for generating UUIDs and fetching objects with them:
 
-## Execution Configuration
+{{ "Schema.object_from_id" | api_doc }} is called by GraphQL-Ruby to load objects directly from the database. It's usually used by the `node(id: ID!): Node` field (see {{ "GraphQL::Types::Relay::Node" | api_doc }}), Argument {% internal_link "loads:", "/mutations/mutation_classes#auto-loading-arguments" %}, or the {% internal_link "ObjectCache", "/object_cache/overview" %}. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
 
-__`instrument`__ attaches instrumenters to the schema, see {% internal_link "Instrumentation", "/queries/instrumentation" %} for more information.
+{{ "Schema.id_from_object" | api_doc }} is used to implement `Node.id`. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
 
-```ruby
-class MySchema < GraphQL::Schema
-  instrument :query, ResolveTimerInstrumentation
-end
-```
+Additionally, {{ "Schema.resolve_type" | api_doc }} is called by GraphQL-Ruby to get the runtime Object type for fields that return return {% internal_link "interface", "/type_definitions/interfaces" %} or {% internal_link "union", "/type_definitions/unions" %} types.
 
-__`tracer`__ is another way to hook into execution, see {% internal_link "Tracing", "/queries/tracing" %} for more.
+## Error Handling
 
-```ruby
-class MySchema < GraphQL::Schema
-  tracer MetricTracer
-end
-```
-
-__`query_analyzer`__ and __`multiplex_analyzer`__ accept processors for ahead-of-time query analysis, see {% internal_link "Analysis", "/queries/ast_analysis" %} for more.
-
-```ruby
-class MySchema < GraphQL::Schema
-  query_analyzer MyQueryAnalyzer
-end
-```
-
-__`lazy_resolve`__ registers classes with {% internal_link "lazy execution", "/schema/lazy_execution" %}:
-
-```ruby
-class MySchema < GraphQL::Schema
-  lazy_resolve Promise, :sync
-end
-```
-
-__`type_error`__ handles type errors at runtime, read more in the {% internal_link "Type errors guide", "/errors/type_errors" %}.
-
-```ruby
-class MySchema < GraphQL::Schema
-  def self.type_error(type_err, context)
-    # Handle `type_err` in some way
-  end
-end
-```
-
-__`rescue_from`__ accepts error handlers for application errors, for example:
-
-```ruby
-class MySchema < GraphQL::Schema
-  rescue_from(ActiveRecord::RecordNotFound) { "Not found" }
-end
-```
-
-## Context Class
-
-Usually, `context` is an instance of {{ "GraphQL::Query::Context" | api_doc }}, but you can create a custom subclass and attach it with `.context_class`, for example:
-
-```ruby
-class CustomContext < GraphQL::Query::Context
-  # Shorthand to get the current user
-  def viewer
-    self[:viewer]
-  end
-end
-
-class MySchema < GraphQL::Schema
-  context_class CustomContext
-end
-```
-
-Then, during execution, `context` will be an instance of `CustomContext`.
+- {{ "Schema.type_error" | api_doc }} handles type errors at runtime, read more in the {% internal_link "Type errors guide", "/errors/type_errors" %}.
+- {{ "Schema.rescue_from" | api_doc }} defines error handlers for application errors. See the {% internal_link "error handling guide", "/errors/error_handling" %} for more.
+- {{ "Schema.parse_error" | api_doc }} and {{ "Schema.query_stack_error" | api_doc }} provide hooks for reporting errors to your bug tracker.
 
 ## Default Limits
 
-`max_depth` and `max_complexity` apply some limits to incoming queries. See {% internal_link "Complexity and Depth", "/queries/complexity_and_depth" %} for more.
+- {{ "Schema.max_depth" | api_doc }} and {{ "Schema.max_complexity" | api_doc }} apply some limits to incoming queries. See {% internal_link "Complexity and Depth", "/queries/complexity_and_depth" %} for more.
+- {{ "Schema.default_max_page_size" | api_doc }} applies limits to {% internal_link "connection fields", "/pagination/overview" %}.
+- {{ "Schema.validate_timeout" | api_doc }}, {{ "Schema.validate_max_errors" | api_doc }} and {{ "Schema.max_query_string_tokens" | api_doc }} all apply limits to query execution. See {% internal_link "Timeout", "/queries/timeout" %} for more.
 
-`default_max_page_size` applies limits to `Connection` fields.
+## Introspection
 
-```ruby
-class MySchema < GraphQL::Schema
-  max_depth 10
-  max_complexity 300
-  default_max_page_size 20
-end
-```
+- {{ "Schema.extra_types" | api_doc }} declares types which should be printed in the SDL and returned in introspection queries, but aren't otherwise used in the schema.
+- {{ "Schema.introspection" | api_doc }} can attach a {% internal_link "custom introspection system", "/schema/introspection" %} to the schema.
+
+## Authorization
+
+- {{ "Schema.unauthorized_object" | api_doc }} and {{ "Schema.unauthorized_field" | api_doc }} are called when {% internal_link "authorization hooks", "/authorization/authorization" %} return `false` during query execution.
+
+## Execution Configuration
+
+- {{ "Schema.trace_with" | api_doc }} attaches tracer modules. See {% internal_link "Tracing", "/queries/tracing" %} for more.
+- {{ "Schema.query_analyzer" | api_doc }} and {{ "Schema.multiplex_analyzer" }} accept processors for ahead-of-time query analysis, see {% internal_link "Analysis", "/queries/ast_analysis" %} for more.
+- {{ "Schema.default_logger" | api_doc }} configures a logger for runtime. See {% internal_link "Logging", "/queries/logging" %}.
+- {{ "Schema.context_class" | api_doc }} and {{ "Schema.query_class" | api_doc }} attach custom subclasses to your schema to use during execution.
+- {{ "Schema.lazy_resolve" | api_doc }} registers classes with {% internal_link "lazy execution", "/schema/lazy_execution" %}.
 
 ## Plugins
 
-A plugin is an object that responds to `#use`. Plugins are used to attach new behavior to a schema without a lot of API overhead. For example, the gem's {% internal_link "monitoring tools", "/queries/tracing#monitoring" %} are plugins:
+- {{ "Schema.use" | api_doc }} adds plugins to your schema. For example, {{ "GraphQL::Dataloader" | api_doc }} and {{ "GraphQL::Schema::Visibility" | api_doc }} are installed this way.
 
-```ruby
-class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::NewRelicTracing)
-end
-```
+## Production Considerations
+
+- __Parser caching__: if your application parses GraphQL _files_ (queries or schema definition), it may benefit from enabling {{ "GraphQL::Parser::Cache" | api_doc }}.
+- __Eager loading the library__: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be eager loaded instead, using `GraphQL.eager_load!`.
+
+  - Rails: enabled automatically. (ActiveSupport calls `.eager_load!`.)
+  - Sinatra: add `configure(:production) { GraphQL.eager_load! }` to your application file.
+  - Hanami: add `environment(:production) { GraphQL.eager_load! }` to your application file.
+  - Other frameworks: call `GraphQL.eager_load!` when your application is booting in production mode.
+
+  See {{"GraphQL::Autoload#eager_load!" | api_doc }} for more details.

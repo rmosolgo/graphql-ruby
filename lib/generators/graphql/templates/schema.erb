@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 <% module_namespacing_when_supported do -%>
 class <%= schema_name %> < GraphQL::Schema
   query(Types::QueryType)
@@ -23,6 +25,9 @@ class <%= schema_name %> < GraphQL::Schema
     # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
+
+  # Limit the size of incoming queries:
+  max_query_string_tokens(5000)
 
   # Stop validating when it encounters this many errors:
   validate_max_errors(100)

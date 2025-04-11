@@ -36,12 +36,6 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         "path"=>["query getCheese"],
         "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"badInput", "typeName"=>"DairyProductInput"}
       },
-      {
-        "message"=>"Non-null variable $nonNull can't have a default value",
-        "locations"=>[{"line"=>8, "column"=>7}],
-        "path"=>["query getCheese"],
-        "extensions"=>{"code"=>"defaultValueInvalidOnNonNullVariable", "variableName"=>"nonNull"}
-      }
     ]
     assert_equal(expected, errors)
   end
@@ -55,7 +49,7 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
 
     assert_equal false, res.key?("data")
     assert_equal 1, res["errors"].length
-    assert_equal "IDX isn't a defined input type (on $msg)", res["errors"][0]["message"]
+    assert_equal "IDX isn't a defined input type (on $msg) (Did you mean `ID`?)", res["errors"][0]["message"]
   end
 
   describe "null default values" do
@@ -115,16 +109,16 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
       it "finds errors" do
         expected = [
           {
-            "message"=>"Non-null variable $a can't have a default value",
+            "message"=>"Default value for $a doesn't match type Int!",
             "locations"=>[{"line"=>3, "column"=>11}],
             "path"=>["query getCheese"],
-            "extensions"=>{"code"=>"defaultValueInvalidOnNonNullVariable", "variableName"=>"a"}
+            "extensions"=> {"code"=>"defaultValueInvalidType", "variableName"=>"a", "typeName"=>"Int!"}
           },
           {
-            "message"=>"Non-null variable $b can't have a default value",
+            "message"=>"Default value for $b doesn't match type String!",
             "locations"=>[{"line"=>4, "column"=>11}],
             "path"=>["query getCheese"],
-            "extensions"=>{"code"=>"defaultValueInvalidOnNonNullVariable", "variableName"=>"b"}
+            "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"b", "typeName"=>"String!"}
           },
           {
             "message"=>"Default value for $c doesn't match type ComplexInput",
@@ -133,7 +127,6 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
             "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"c", "typeName"=>"ComplexInput"}
           }
         ]
-
         assert_equal expected, errors
       end
     end

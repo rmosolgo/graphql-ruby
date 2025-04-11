@@ -52,6 +52,8 @@ end
 RUBY
 
   EXPECTED_MUTATION_TYPE = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class MutationType < Types::BaseObject
     field :name_create, mutation: Mutations::Names::NameCreate

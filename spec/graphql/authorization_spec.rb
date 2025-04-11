@@ -31,11 +31,6 @@ describe "GraphQL::Authorization" do
     end
 
     class BaseField < GraphQL::Schema::Field
-      def initialize(*args, edge_class: nil, **kwargs, &block)
-        @edge_class = edge_class
-        super(*args, **kwargs, &block)
-      end
-
       argument_class BaseArgument
       def visible?(context)
         super && (context[:hide] ? @name != "hidden" : true)
@@ -68,6 +63,10 @@ describe "GraphQL::Authorization" do
       def visible?(context)
         super && (context[:hide] ? @role != :hidden : true)
       end
+
+      def authorized?(context)
+        super && (context[:authorized] ? true : @role != :unauthorized)
+      end
     end
 
     class BaseEnum < GraphQL::Schema::Enum
@@ -77,18 +76,25 @@ describe "GraphQL::Authorization" do
     module HiddenInterface
       include BaseInterface
 
-      def self.visible?(ctx)
-        super && !ctx[:hide]
-      end
+      definition_methods do
+        def visible?(ctx)
+          super && !ctx[:hide]
+        end
 
-      def self.resolve_type(obj, ctx)
-        HiddenObject
+        def resolve_type(obj, ctx)
+          HiddenObject
+        end
       end
     end
 
     module HiddenDefaultInterface
-      include BaseInterface
-      # visible? will call the super method
+      if GraphQL::Schema.use_visibility_profile?
+        include HiddenInterface
+      else
+        # Warden will detect no possible types
+        include BaseInterface
+      end
+
       def self.resolve_type(obj, ctx)
         HiddenObject
       end
@@ -344,7 +350,7 @@ describe "GraphQL::Authorization" do
       query(Query)
       mutation(Mutation)
       directive(Nothing)
-
+      use GraphQL::Schema::Warden if ADD_WARDEN
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
@@ -358,13 +364,11 @@ describe "GraphQL::Authorization" do
           raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object.inspect}"
         end
       end
-
-      # use GraphQL::Backtrace
     end
 
     class SchemaWithFieldHook < GraphQL::Schema
       query(Query)
-
+      use GraphQL::Schema::Warden if ADD_WARDEN
       lazy_resolve(Box, :value)
 
       def self.unauthorized_field(err)
@@ -398,7 +402,7 @@ describe "GraphQL::Authorization" do
 
       error_queries.each do |name, q|
         hidden_res = auth_execute(q, context: { hide: true})
-        assert_equal ["Field '#{name}' doesn't exist on type 'Query'"], hidden_res["errors"].map { |e| e["message"] }
+        assert_equal ["Field '#{name}' doesn't exist on type 'Query'#{name == "hiddenDefaultInterface" ?  "" : " (Did you mean `hiddenConnection`?)"}"], hidden_res["errors"].map { |e| e["message"] }
 
         visible_res = auth_execute(q)
         # Both fields exist; the interface resolves to the object type, though
@@ -458,7 +462,7 @@ describe "GraphQL::Authorization" do
       assert_equal "RelayObjectEdge", visible_res["data"]["hiddenEdge"]["__typename"]
     end
 
-    it "treats hidden enum values as non-existant, even in lists" do
+    it "treats hidden enum values as non-existent, even in lists" do
       hidden_res_1 = auth_execute <<-GRAPHQL, context: { hide: true }
       {
         landscapeFeature(enum: TAR_PIT)
@@ -475,7 +479,7 @@ describe "GraphQL::Authorization" do
 
       assert_equal ["Argument 'enums' on Field 'landscapeFeatures' has an invalid value ([STREAM, TAR_PIT]). Expected type '[LandscapeFeature!]'."], hidden_res_2["errors"].map { |e| e["message"] }
 
-      success_res = auth_execute <<-GRAPHQL, context: { hide: false }
+      success_res = auth_execute <<-GRAPHQL, context: { hide: false, authorized: true }
       {
         landscapeFeature(enum: TAR_PIT)
         landscapeFeatures(enums: [STREAM, TAR_PIT])
@@ -503,6 +507,28 @@ describe "GraphQL::Authorization" do
         }
         GRAPHQL
       end
+    end
+
+    it "rejects incoming unauthorized enum values" do
+      res = auth_execute <<-GRAPHQL, context: { }
+        {
+          landscapeFeature(enum: STREAM)
+        }
+      GRAPHQL
+
+      assert_equal ["Unauthorized LandscapeFeature: \"STREAM\""], res["errors"].map { |e| e["message"] }
+    end
+
+    it "rejects outgoing unauthorized enum values" do
+      err = assert_raises(AuthTest::LandscapeFeature::UnresolvedValueError) do
+        auth_execute <<-GRAPHQL, context: { }
+          {
+            landscapeFeature(string: "STREAM")
+          }
+        GRAPHQL
+      end
+
+      assert_equal "`Query.landscapeFeature` returned `\"STREAM\"` at `landscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`).", err.message
     end
 
     it "works in introspection" do
@@ -533,12 +559,33 @@ describe "GraphQL::Authorization" do
     end
 
     it "works when printing the SDL" do
-      full_sdl = AuthTest::Schema.to_definition
-      restricted_sdl = AuthTest::Schema.to_definition(context: { hide: true, hidden_mutation: true, hidden_relay: true })
-      assert_includes full_sdl, 'Hidden'
-      assert_includes full_sdl, 'hidden'
-      refute_includes restricted_sdl, 'Hidden'
-      refute_includes restricted_sdl, 'hidden'
+      full_sdl_lines = AuthTest::Schema.to_definition.split("\n")
+      restricted_sdl_lines = AuthTest::Schema.to_definition(context: { hide: true, hidden_mutation: true, hidden_relay: true }).split("\n")
+      expected_hidden_lines = [
+        "Autogenerated return type of DoHiddenStuff2.",
+        "type DoHiddenStuff2Payload {",
+        "Autogenerated input type of DoHiddenStuff",
+        "input DoHiddenStuffInput {",
+        "Autogenerated return type of DoHiddenStuff.",
+        "type DoHiddenStuffPayload {",
+        "interface HiddenDefaultInterface",
+        "interface HiddenInterface",
+        "type HiddenObject implements HiddenDefaultInterface & HiddenInterface {",
+        "  doHiddenStuff(",
+        "    Parameters for DoHiddenStuff",
+        "    input: DoHiddenStuffInput!",
+        "  ): DoHiddenStuffPayload",
+        "  doHiddenStuff2: DoHiddenStuff2Payload",
+        "  hidden: Int!",
+        "  hiddenConnection(",
+        "  hiddenDefaultInterface: HiddenDefaultInterface!",
+        "  hiddenEdge: RelayObjectEdge",
+        "  hiddenInterface: HiddenInterface!",
+        "  hiddenObject: HiddenObject!",
+        "  int2(hidden: Int, int: Int, unauthorized: Int): Int"
+      ]
+      assert_equal expected_hidden_lines, full_sdl_lines.select { |l| l.include?("Hidden") || l.include?("hidden") }
+      assert_equal [], restricted_sdl_lines.select { |l| l.include?("Hidden") || l.include?("hidden") }
     end
 
     it "works with directives" do
@@ -901,12 +948,23 @@ describe "GraphQL::Authorization" do
 
   describe "overriding authorized_new" do
     class AuthorizedNewOverrideSchema < GraphQL::Schema
-      class LogTracer
+      module LogTrace
         def trace(key, data)
-          if (c = data[:context]) || ((q = data[:query]) && (c = q.context))
+          if ((q = data[:query]) && (c = q.context))
             c[:log] << key
           end
           yield
+        end
+        ["parse", "lex", "validate",
+        "analyze_query", "analyze_multiplex",
+        "execute_query", "execute_multiplex",
+        "execute_field", "execute_field_lazy",
+        "authorized", "authorized_lazy",
+        "resolve_type", "resolve_type_lazy",
+        "execute_query_lazy"].each do |method_name|
+          define_method(method_name) do |**data, &block|
+            trace(method_name, data, &block)
+          end
         end
       end
 
@@ -928,7 +986,7 @@ describe "GraphQL::Authorization" do
 
       query(Query)
       introspection(CustomIntrospection)
-      tracer(LogTracer.new)
+      trace_with(LogTrace)
     end
 
     it "avoids calls to Object.authorized?" do

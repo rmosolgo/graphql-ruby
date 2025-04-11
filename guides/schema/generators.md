@@ -33,7 +33,7 @@ This will:
 - Add a `Mutation` type definition with a base mutation class
 - Add a route and controller for executing queries
 - Install [`graphiql-rails`](https://github.com/rmosolgo/graphiql-rails)
-
+- Enable [`ActiveRecord::QueryLogs`](https://api.rubyonrails.org/classes/ActiveRecord/QueryLogs.html) and add GraphQL-related metadata (using {{ "GraphQL::Current" | api_doc }})
 After installing you can see your new schema by:
 
 - `bundle install`
@@ -42,11 +42,15 @@ After installing you can see your new schema by:
 
 ### Options
 
+- `--directory=DIRECTORY` will directory where generated files should be saved (default is `app/graphql`)
+- `--schema=MySchemaName` will be used for naming the schema (default is `#{app_name}Schema`)
+- `--skip-graphiql` will exclude `graphiql-rails` from the setup
+- `--skip-mutation-root-type` will not create of the mutation root type
+- `--skip-query-logs` will skip the QueryLogs setup
 - `--relay` will add [Relay](https://facebook.github.io/relay/)-specific code to your schema
 - `--batch` will add [GraphQL::Batch](https://github.com/Shopify/graphql-batch) to your gemfile and include the setup in your schema
 - `--playground` will include `graphql_playground-rails` in the setup (mounted at `/playground`)
-- `--skip-graphiql` will exclude `graphiql-rails` from the setup
-- `--schema=MySchemaName` will be used for naming the schema (default is `#{app_name}Schema`)
+- `--api` will create smaller stack for API only apps
 
 ## Scaffolding Types
 

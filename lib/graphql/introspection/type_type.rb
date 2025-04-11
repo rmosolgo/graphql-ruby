@@ -52,7 +52,7 @@ module GraphQL
         if !@object.kind.enum?
           nil
         else
-          enum_values = @context.warden.enum_values(@object)
+          enum_values = @context.types.enum_values(@object)
 
           if !include_deprecated
             enum_values = enum_values.select {|f| !f.deprecation_reason }
@@ -64,7 +64,7 @@ module GraphQL
 
       def interfaces
         if @object.kind.object? || @object.kind.interface?
-          @context.warden.interfaces(@object).sort_by(&:graphql_name)
+          @context.types.interfaces(@object).sort_by(&:graphql_name)
         else
           nil
         end
@@ -72,7 +72,7 @@ module GraphQL
 
       def input_fields(include_deprecated:)
         if @object.kind.input_object?
-          args = @context.warden.arguments(@object)
+          args = @context.types.arguments(@object)
           args = args.reject(&:deprecation_reason) unless include_deprecated
           args
         else
@@ -82,7 +82,7 @@ module GraphQL
 
       def possible_types
         if @object.kind.abstract?
-          @context.warden.possible_types(@object).sort_by(&:graphql_name)
+          @context.types.possible_types(@object).sort_by(&:graphql_name)
         else
           nil
         end
@@ -92,7 +92,7 @@ module GraphQL
         if !@object.kind.fields?
           nil
         else
-          fields = @context.warden.fields(@object)
+          fields = @context.types.fields(@object)
           if !include_deprecated
             fields = fields.select {|f| !f.deprecation_reason }
           end

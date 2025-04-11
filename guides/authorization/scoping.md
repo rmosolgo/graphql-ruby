@@ -8,7 +8,7 @@ index: 4
 ---
 
 
-_Scoping_ is a complementary consideration to authorization. Rather than checking "can this user see this thing?", scoping takes a list of items filters it to the subset which is appropriate for the current viewer and context. The resulting subset is authorized as normal, and, assuming that it was properly scoped, each item should pass authorization checks.
+_Scoping_ is a complementary consideration to authorization. Rather than checking "can this user see this thing?", scoping takes a list of items filters it to the subset which is appropriate for the current viewer and context.
 
 For similar features, see [Pundit scopes](https://github.com/varvet/pundit#scopes) and [Cancan's `.accessible_by`](https://github.com/cancancommunity/cancancan/wiki/Fetching-Records).
 
@@ -43,3 +43,26 @@ end
 ```
 
 The method should return a new list with only the appropriate items for the current `context`.
+
+## Bypassing object-level authorization
+
+If you know that any items returned from `.scope_items` should be visible to the current client, you can skip the normal `.authorized?(obj, ctx)` checks by configuring `reauthorize_scoped_objects(false)` in your type definition. For example:
+
+```ruby
+class Types::Product < Types::BaseObject
+  # Check that singly-loaded objects are visible to the current viewer
+  def self.authorized?(object, context)
+    super && object.visible_to?(context[:viewer])
+  end
+
+  # Filter any list to only include objects that are visible to the current viewer
+  def self.scope_items(items, context)
+    items = super(items, context)
+    items.visible_for(context[:viewer])
+  end
+
+  # If an object of this type was returned from `.scope_items`,
+  # don't call `.authorized?` with it.
+  reauthorize_scoped_objects(false)
+end
+```

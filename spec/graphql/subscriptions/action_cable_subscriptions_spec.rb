@@ -304,23 +304,18 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
         field :point_scored, subscription: PointScored
       end
 
-      class TenantTracer
-        def self.trace(event, data)
-          case event
-          when "execute_multiplex"
-            tenant = data[:multiplex].queries.first.context[:tenant]
-            Data.switch(tenant) do
-              yield
-            end
-          else
-            yield
+      module TenantTrace
+        def execute_multiplex(multiplex:)
+          tenant = multiplex.queries.first.context[:tenant]
+          Data.switch(tenant) do
+            super
           end
         end
       end
 
       query(Player)
       subscription(Subscription)
-      tracer(TenantTracer)
+      trace_with(TenantTrace)
 
       module Serialize
         def self.load(message, ctx)
