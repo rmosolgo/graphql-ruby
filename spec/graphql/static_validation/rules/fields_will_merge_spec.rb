@@ -1042,6 +1042,50 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "conflicting list / non-list fields" do
+    it "requires matching list/non-list structure" do
+      schema = GraphQL::Schema.from_definition <<~GRAPHQL
+        type Query {
+          u: U
+        }
+
+        union U = A | B
+
+        type A {
+          f: [Int]
+        }
+
+        type B {
+          f: Int
+        }
+      GRAPHQL
+
+      query_str = <<~GRAPHQL
+        {
+          u {
+            ... on A { f }
+            ... on B { f }
+          }
+        }
+      GRAPHQL
+
+      res = schema.validate(query_str)
+      assert_equal ["Field 'f' has a return_type conflict: `[Int]` or `Int`?"], res.map(&:message)
+
+      query_str = <<~GRAPHQL
+        {
+          u {
+            ... on B { f }
+            ... on A { f }
+          }
+        }
+      GRAPHQL
+
+      res = schema.validate(query_str)
+      assert_equal ["Field 'f' has a return_type conflict: `Int` or `[Int]`?"], res.map(&:message)
+    end
+  end
+
   describe "duplicate aliases on a interface with inline fragment spread" do
     class DuplicateAliasesSchema < GraphQL::Schema
       module Node

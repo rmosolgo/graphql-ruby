@@ -260,6 +260,7 @@ module GraphQL
             true
           end
         elsif type2.list?
+          true
         elsif type1.non_null?
           if type2.non_null?
             return_types_conflict?(type1.of_type, type2.of_type)
