@@ -11,9 +11,34 @@ module GraphQL
         @complexities_on_type_by_query = {}
       end
 
-      # Overide this method to use the complexity result
+      # Override this method to use the complexity result
       def result
-        max_possible_complexity
+        case subject.schema.complexity_cost_calculation_mode_for(subject.context)
+        when :future
+          max_possible_complexity
+        when :legacy
+          max_possible_complexity(mode: :legacy)
+        when :compare
+          future_complexity = max_possible_complexity
+          legacy_complexity = max_possible_complexity(mode: legacy)
+          if future_complexity != legacy_complexity
+            subject.schema.legacy_complexity_cost_calculation_mismatch(subject, future_complexity, legacy_complexity)
+          else
+            future_complexity
+          end
+        when nil
+          subject.logger.warn <<~GRAPHQL
+            GraphQL-Ruby's complexity cost system is getting some "breaking fixes" in a future version. See the migration notes at https://graphql-ruby.org/api-docs/#{GraphQL::VERSION}/Schema.html#complexity_cost_cacluation_mode-class_method
+
+            To opt into the future behavior, configure your schema with:
+
+              complexity_cost_calculation_mode(:future) # or `:legacy`, `:compare`
+
+          GRAPHQL
+          max_possible_complexity
+        else
+          raise ArgumentError, "Expected `:future`, `:legacy`, `:compare`, or `nil` from `#{query.schema}.complexity_cost_calculation_mode_for` but got: #{query.schema.complexity_cost_calculation_mode.inspect}"
+        end
       end
 
       # ScopedTypeComplexity models a tree of GraphQL types mapped to inner selections, ie:
@@ -81,16 +106,17 @@ module GraphQL
       private
 
       # @return [Integer]
-      def max_possible_complexity
+      def max_possible_complexity(mode: :future)
         @complexities_on_type_by_query.reduce(0) do |total, (query, scopes_stack)|
-          total + merged_max_complexity_for_scopes(query, [scopes_stack.first])
+          total + merged_max_complexity_for_scopes(query, [scopes_stack.first], mode)
         end
       end
 
       # @param query [GraphQL::Query] Used for `query.possible_types`
       # @param scopes [Array<ScopedTypeComplexity>] Array of scoped type complexities
+      # @param mode [:future, :legacy]
       # @return [Integer]
-      def merged_max_complexity_for_scopes(query, scopes)
+      def merged_max_complexity_for_scopes(query, scopes, mode)
         # Aggregate a set of all possible scope types encountered (scope keys).
         # Use a hash, but ignore the values; it's just a fast way to work with the keys.
         possible_scope_types = scopes.each_with_object({}) do |scope, memo|
@@ -119,7 +145,14 @@ module GraphQL
           end
 
           # Find the maximum complexity for the scope type among possible lexical branches.
-          complexity = merged_max_complexity(query, all_inner_selections)
+          complexity = case mode
+          when :legacy
+            legacy_merged_max_complexity(query, all_inner_selections)
+          when :future
+            merged_max_complexity(query, all_inner_selections)
+          else
+            raise ArgumentError, "Expected :legacy or :future, not: #{mode.inspect}"
+          end
           complexity > max ? complexity : max
         end
       end
@@ -158,7 +191,7 @@ module GraphQL
           # composites merge their maximums, while leaf scopes are always zero.
           # FieldsWillMerge validation assures all scopes are uniformly composite or leaf.
           maximum_children_cost = if child_scopes.any?(&:composite?)
-            merged_max_complexity_for_scopes(query, child_scopes)
+            merged_max_complexity_for_scopes(query, child_scopes, :future)
           else
             0
           end
@@ -182,6 +215,47 @@ module GraphQL
           )
 
           total + maximum_cost
+        end
+      end
+
+      def legacy_merged_max_complexity(query, inner_selections)
+        # Aggregate a set of all unique field selection keys across all scopes.
+        # Use a hash, but ignore the values; it's just a fast way to work with the keys.
+        unique_field_keys = inner_selections.each_with_object({}) do |inner_selection, memo|
+          memo.merge!(inner_selection)
+        end
+
+        # Add up the total cost for each unique field name's coalesced selections
+        unique_field_keys.each_key.reduce(0) do |total, field_key|
+          composite_scopes = nil
+          field_cost = 0
+
+          # Collect composite selection scopes for further aggregation,
+          # leaf selections report their costs directly.
+          inner_selections.each do |inner_selection|
+            child_scope = inner_selection[field_key]
+            next unless child_scope
+
+            # Empty child scopes are leaf nodes with zero child complexity.
+            if child_scope.empty?
+              field_cost = child_scope.own_complexity(0)
+              field_complexity(child_scope, max_complexity: field_cost, child_complexity: nil)
+            else
+              composite_scopes ||= []
+              composite_scopes << child_scope
+            end
+          end
+
+          if composite_scopes
+            child_complexity = merged_max_complexity_for_scopes(query, composite_scopes, :legacy)
+
+            # This is the last composite scope visited; assume it's representative (for backwards compatibility).
+            # Note: it would be more correct to score each composite scope and use the maximum possibility.
+            field_cost = composite_scopes.last.own_complexity(child_complexity)
+            field_complexity(composite_scopes.last, max_complexity: field_cost, child_complexity: child_complexity)
+          end
+
+          total + field_cost
         end
       end
     end
