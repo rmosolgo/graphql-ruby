@@ -36,6 +36,11 @@ module GraphQL
         @tracers = schema.tracers + (context[:tracers] || [])
         @max_complexity = max_complexity
         @current_trace = context[:trace] ||= schema.new_trace(multiplex: self)
+        @logger = nil
+      end
+
+      def logger
+        @logger ||= @schema.logger_for(context)
       end
     end
   end
