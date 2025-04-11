@@ -1700,6 +1700,41 @@ module GraphQL
         raise "Implement `def self.legacy_invalid_empty_selections_on_union(query)` to handle this scenario"
       end
 
+      # Set this value to configure legacy, non-spec behavior where selections of non-matching scalar types
+      # are allowed as valid.
+      #
+      # When set to `true`, GraphQL-Ruby will call {.legacy_invalid_return_type_conflicts} when the scenario is encountered.
+      #
+      # @param new_value [Boolean] `true` permits the legacy behavior, `false` rejects it.
+      # @return [true, false, nil]
+      def allow_legacy_invalid_return_type_conflicts(new_value = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_value)
+          @allow_legacy_invalid_return_type_conflicts
+        else
+          @allow_legacy_invalid_return_type_conflicts = new_value
+        end
+      end
+
+      # This method is called when the query contains fields which don't contain matching scalar types.
+      # This was previously allowed by GraphQL-Ruby but it's a violation of the GraphQL spec.
+      #
+      # You should implement this method to log the violation so that you observe usage of these fields.
+      # Fixing this scenario might mean adding new fields, and telling clients to use those fields.
+      # (Changing the field return type would be a breaking change, but if it works for your client use cases,
+      # that might work, too.)
+      #
+      # @param query [GraphQL::Query]
+      # @param type1 [Module] A GraphQL type definition
+      # @param type2 [Module] A GraphQL type definition
+      # @param node1 [GraphQL::Language::Nodes::Field] This node is recognized as conflicting. You might call `.line` and `.col` for custom error reporting.
+      # @param node2 [GraphQL::Language::Nodes::Field] The other node recognized as conflicting.
+      # @return [:return_validation_error] Let GraphQL-Ruby return the (new) normal validation error for this query
+      # @return [String] A validation error to return for this query
+      # @return [nil] Don't send the client an error, continue the legacy behavior (allow this query to execute)
+      def legacy_invalid_return_type_conflicts(query, type1, type2, node1, node2)
+        raise "Implement #{self}.legacy_invalid_return_type_conflicts to handle this invalid selection"
+      end
+
       private
 
       def add_trace_options_for(mode, new_options)
