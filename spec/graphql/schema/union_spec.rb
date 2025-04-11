@@ -42,7 +42,7 @@ describe GraphQL::Schema::Union do
 
       res = Jazz::Schema.execute(query_str)
       expected_data = { "name" => "Bela Fleck and the Flecktones" }
-      assert_equal expected_data, res["data"]["nowPlaying"]
+      assert_graphql_equal expected_data, res["data"]["nowPlaying"]
     end
 
     it "does not allow querying filtered types" do
@@ -282,11 +282,13 @@ describe GraphQL::Schema::Union do
       possible_types object_type, GraphQL::Schema::LateBoundType.new("SomeInterface")
     end
 
+    object_type.field(:u, union_type)
+    object_type.field(:i, interface_type)
+
     err2 = assert_raises ArgumentError do
       Class.new(GraphQL::Schema) do
         query(object_type)
-        orphan_types(union_type, interface_type)
-      end
+      end.to_definition
     end
 
     assert_match expected_message, err2.message
@@ -330,7 +332,7 @@ describe GraphQL::Schema::Union do
             { "type" => "Cow", "name" => "Gilly" }
           ]
         }
-        assert_equal expected_result, result["data"]
+        assert_graphql_equal expected_result, result["data"]
       end
     end
 
@@ -357,7 +359,7 @@ describe GraphQL::Schema::Union do
           {"dairyName"=>"Cheese"},
           {"dairyName"=>"Milk", "bevName"=>"Milk", "flavors"=>["Natural", "Chocolate", "Strawberry"]},
         ]
-        assert_equal expected_result, result["data"]["allDairy"]
+        assert_graphql_equal expected_result, result["data"]["allDairy"]
       end
     end
 
@@ -402,6 +404,60 @@ describe GraphQL::Schema::Union do
           end
         end
       end
+    end
+  end
+
+  describe "use with loads:" do
+    class UnionLoadsSchema < GraphQL::Schema
+      class Image < GraphQL::Schema::Object
+        field :title, String
+      end
+
+      class Video < GraphQL::Schema::Object
+        field :title, String
+      end
+
+      class Post < GraphQL::Schema::Object
+        field :title, String
+      end
+
+      class MediaItem < GraphQL::Schema::Union
+        possible_types Image, Video
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :media_item_type, String do
+          argument :id, ID, loads: MediaItem, as: :media_item
+        end
+
+        def media_item_type(media_item:)
+          media_item[:type]
+        end
+      end
+
+      query(Query)
+
+      def self.object_from_id(id, ctx)
+        type, title = id.split("/")
+        { type: type, title: title }
+      end
+
+      def self.resolve_type(abs_type, obj, ctx)
+        UnionLoadsSchema.const_get(obj[:type])
+      end
+    end
+
+    it "restricts to members of the union" do
+      query_str = "query($mediaId: ID!) { mediaItemType(id: $mediaId) }"
+      res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Image/Family Photo" })
+      assert_equal "Image", res["data"]["mediaItemType"]
+
+      res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Video/Christmas Pageant" })
+      assert_equal "Video", res["data"]["mediaItemType"]
+
+      res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Post/Year in Review" })
+      assert_nil res["data"]["mediaItemType"]
+      assert_equal ["No object found for `id: \"Post/Year in Review\"`"], res["errors"].map { |e| e["message"] }
     end
   end
 end

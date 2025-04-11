@@ -4,7 +4,7 @@ require 'rubocop'
 module Cop
   module Development
     # Make sure no tests are focused, from https://github.com/rubocop-hq/rubocop/issues/3773#issuecomment-420662102
-    class NoFocusCop < RuboCop::Cop::Cop
+    class NoFocusCop < RuboCop::Cop::Base
       MSG = 'Remove `focus` from tests.'
 
       def_node_matcher :focused?, <<-MATCHER

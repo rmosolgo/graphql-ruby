@@ -13,7 +13,24 @@ GraphQL-Pro's `OperationStore` can use ActiveRecord to store persisted queries. 
 
 ## Database Setup
 
-To use ActiveRecord, `GraphQL::Pro::OperationStore` requires some database tables. You can add these with a migration:
+To use ActiveRecord, `GraphQL::Pro::OperationStore` requires some database tables.
+
+### Rails Generator
+
+With Rails, you can generate the required migration then run it:
+
+```bash
+$ rails generate graphql:operation_store:create
+$ rails db:migrate
+```
+
+(You'll have to run that migration on any staging or production servers, too.)
+
+Now, `OperationStore` has what it needs to save queries using ActiveRecord!
+
+### Manual Setup
+
+You can also create the required migration by manually by generating an empty migration:
 
 ```bash
 $ rails generate migration SetupOperationStore
@@ -93,3 +110,10 @@ use GraphQL::Pro::OperationStore, update_last_used_at_every: 1 # seconds
 ```
 
 To update that column inline each time an operation is accessed, pass `0`.
+
+**Note:** It is recommended to set this to `0` in test environments, to avoid delayed updates in another thread that can cause intermittent test hangs and failures. For example:
+
+```ruby
+# Update immediately in Test, wait 5 seconds in other environments:
+use GraphQL::Pro::OperationStore, update_last_used_at_every: Rails.env.test? ? 0 : 5
+```

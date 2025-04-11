@@ -16,6 +16,7 @@ describe GraphQL::Schema do
 
   describe "#union_memberships" do
     it "returns a list of unions that include the type" do
+      skip("Not implemented for Visibility::Profile") if GraphQL::Schema.use_visibility_profile?
       assert_equal [schema.types["Animal"], schema.types["AnimalAsCow"]], schema.union_memberships(schema.types["Cow"])
     end
   end
@@ -42,12 +43,14 @@ describe GraphQL::Schema do
 
   describe "#references_to" do
     it "returns a list of Field and Arguments of that type" do
+      skip "Not implemented when using Visibility::Profile" if GraphQL::Schema.use_visibility_profile?
       cow_field = schema.get_field("Query", "cow")
-      assert_equal [cow_field], schema.references_to("Cow")
+      cow_t = schema.get_type("Cow")
+      assert_equal [cow_field], schema.references_to(cow_t)
     end
 
     it "returns an empty list when type is not referenced by any field or argument" do
-      assert_equal [], schema.references_to("Goat")
+      assert_equal [], schema.references_to(Jazz::InstrumentType)
     end
   end
 
@@ -348,7 +351,7 @@ type Query {
   end
 
   describe "#as_json / #to_json" do
-    it "returns the instrospection result" do
+    it "returns the introspection result" do
       result = schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
       assert_equal result, schema.as_json
       assert_equal result, JSON.parse(schema.to_json)

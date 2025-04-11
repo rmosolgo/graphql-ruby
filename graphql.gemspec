@@ -25,22 +25,32 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
 
+  s.add_runtime_dependency "base64"
+  s.add_runtime_dependency "fiber-storage"
+  s.add_runtime_dependency "logger"
+
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
+  s.add_development_dependency "google-protobuf"
+  s.add_development_dependency "graphql-batch"
   s.add_development_dependency "memory_profiler"
-  # Remove this limit when minitest-reports is compatible
-  # https://github.com/kern/minitest-reporters/pull/220
-  s.add_development_dependency "minitest", "~> 5.9.0"
-  s.add_development_dependency "minitest-focus", "~> 1.1"
-  s.add_development_dependency "minitest-reporters", "~>1.0"
+
+  s.add_development_dependency "minitest"
+  s.add_development_dependency "minitest-focus"
+  s.add_development_dependency "minitest-reporters"
   s.add_development_dependency "rake"
   s.add_development_dependency 'rake-compiler'
-  s.add_development_dependency "rubocop", "1.12" # for Ruby 2.4 enforcement
+  s.add_development_dependency "rubocop"
+  s.add_development_dependency "simplecov"
+  s.add_development_dependency "simplecov-lcov"
+  s.add_development_dependency "undercover"
   # website stuff
   s.add_development_dependency "jekyll"
+  s.add_development_dependency "jekyll-sass-converter", "~>2.2"
   s.add_development_dependency "yard"
   s.add_development_dependency "jekyll-algolia"
   s.add_development_dependency "jekyll-redirect-from"
   s.add_development_dependency "m", "~> 1.5.0"
+  s.add_development_dependency "mutex_m"
   s.add_development_dependency "webrick"
 end

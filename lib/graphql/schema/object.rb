@@ -7,6 +7,15 @@ module GraphQL
     class Object < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasFields
       extend GraphQL::Schema::Member::HasInterfaces
+      include Member::HasDataloader
+
+      # Raised when an Object doesn't have any field defined and hasn't explicitly opted out of this requirement
+      class FieldsAreRequiredError < GraphQL::Error
+        def initialize(object_type)
+          message = "Object types must have fields, but #{object_type.graphql_name} doesn't have any. Define a field for this type, remove it from your schema, or add `has_no_fields(true)` to its definition."
+          super(message)
+        end
+      end
 
       # @return [Object] the application object this type is wrapping
       attr_reader :object
@@ -57,20 +66,28 @@ module GraphQL
         # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
         # @raise [GraphQL::UnauthorizedError] if the user-provided hook returns `false`
         def authorized_new(object, context)
-          maybe_lazy_auth_val = context.query.current_trace.authorized(query: context.query, type: self, object: object) do
-            begin
-              authorized?(object, context)
-            rescue GraphQL::UnauthorizedError => err
-              context.schema.unauthorized_object(err)
-            rescue StandardError => err
-              context.query.handle_or_reraise(err)
+          context.query.current_trace.begin_authorized(self, object, context)
+          begin
+            maybe_lazy_auth_val = context.query.current_trace.authorized(query: context.query, type: self, object: object) do
+              begin
+                authorized?(object, context)
+              rescue GraphQL::UnauthorizedError => err
+                context.schema.unauthorized_object(err)
+              rescue StandardError => err
+                context.query.handle_or_reraise(err)
+              end
             end
+          ensure
+            context.query.current_trace.end_authorized(self, object, context, maybe_lazy_auth_val)
           end
 
           auth_val = if context.schema.lazy?(maybe_lazy_auth_val)
             GraphQL::Execution::Lazy.new do
+              context.query.current_trace.begin_authorized(self, object, context)
               context.query.current_trace.authorized_lazy(query: context.query, type: self, object: object) do
-                context.schema.sync_lazy(maybe_lazy_auth_val)
+                res = context.schema.sync_lazy(maybe_lazy_auth_val)
+                context.query.current_trace.end_authorized(self, object, context, res)
+                res
               end
             end
           else

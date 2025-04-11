@@ -728,6 +728,39 @@ fragment Todo_user on User {
 ]
 `;
 
+exports[`sync operations Sync output Can dump payload and outfile at the same time 1`] = `
+"{
+  "operations": [
+    {
+      "name": "GetStuff",
+      "body": "fragment Frag1 on Query {\\n  moreStuff\\n}\\n\\nquery GetStuff {\\n  ...Frag1\\n}",
+      "alias": "4568c28d403794e011363caf815ec827"
+    },
+    {
+      "name": "GetStuff2",
+      "body": "fragment Frag1 on Query {\\n  moreStuff\\n}\\n\\nfragment Frag2 on Query {\\n  ...Frag3\\n}\\n\\nfragment Frag3 on Query {\\n  evenMoreStuff\\n}\\n\\nquery GetStuff2 {\\n  stuff\\n  ...Frag1\\n  ...Frag2\\n}",
+      "alias": "faf462be033e16dd2a56130d56a9192f"
+    },
+    {
+      "name": "GetStuff3",
+      "body": "fragment Frag2 on Query {\\n  ...Frag3\\n}\\n\\nfragment Frag3 on Query {\\n  evenMoreStuff\\n}\\n\\nfragment Frag4 on Query {\\n  evenMoreStuff {\\n    stuffInside\\n  }\\n}\\n\\nquery GetStuff3 {\\n  stuff {\\n    withStuffInside\\n  }\\n  ...Frag2\\n  ...Frag4\\n}",
+      "alias": "aab385a1685772ad520fc70d468030fa"
+    },
+    {
+      "name": "GetStuffIsolated",
+      "body": "query GetStuffIsolated {\\n  ...FragIsolated\\n  things {\\n    existHere\\n  }\\n}\\n\\nfragment FragIsolated on Query {\\n  evenMoreStuff {\\n    stuffInside\\n  }\\n}",
+      "alias": "b2cb0b317d071f9f38905fba21d73258"
+    },
+    {
+      "name": "GetStuffIsolated2",
+      "body": "query GetStuffIsolated2 {\\n  things {\\n    existHere\\n  }\\n}",
+      "alias": "6cdae165fd6dc5dc5900e5a2bba90cc2"
+    }
+  ]
+}
+"
+`;
+
 exports[`sync operations custom file processing options Adds .graphql to the glob if needed 1`] = `
 [
   {
@@ -975,7 +1008,7 @@ exports[`sync operations verbose Adds debug output 1`] = `
     "[Sync] 1 files:",
   ],
   [
-    "[Sync]   - ./src/__tests__/documents/doc1.graphql",
+    "[Sync]   - src/__tests__/documents/doc1.graphql",
   ],
   [
     "Syncing 1 operations to [1mbogus[0m...",

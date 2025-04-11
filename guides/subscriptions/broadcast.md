@@ -8,7 +8,7 @@ desc: Delivering the same GraphQL result to multiple subscribers
 index: 3
 ---
 
-GraphQL-Ruby 1.11+ introduced a new algorithm for tracking subscriptions and delivering updates, _broadcasts_.
+GraphQL subscription updates may _broadcast_ data to multiple subscribers.
 
 A broadcast is a subscription update which is executed _once_, then delivered to _any number_ of subscribers. This reduces the time your server spends running GraphQL queries, since it doesn't have to re-run the query for every subscriber.
 
@@ -82,3 +82,37 @@ GraphQL-Ruby determines which subscribers can receive a broadcast by inspecting:
 So, take care to {% internal_link "set subscription_scope", "subscriptions/subscription_classes#scope" %} whenever a subscription should be implicitly scoped!
 
 (See {{ "GraphQL::Subscriptions::Event#fingerprint" | api_doc }} for the implementation of broadcast fingerprints.)
+
+## Checking for Broadcastable
+
+For testing purposes, you can confirm that a GraphQL query string is broadcastable by using {{ "Subscriptions#broadcastable?" | api_doc }}:
+
+```ruby
+subscription_string = "subscription { ... }"
+MySchema.subscriptions.broadcastable?(subscription_string)
+# => true or false
+```
+
+Use this in your application's tests to make sure that broadcastable fields aren't accidentally made non-broadcastable.
+
+## Connections and Edges
+
+You can configure your generated `Connection` and `Edge` types to be broadcastable by setting `default_broadcastable(true)` in their definition:
+
+```ruby
+# app/types/base_connection.rb
+class Types::BaseConnection < Types::BaseObject
+  include GraphQL::Types::Relay::ConnectionBehaviors
+  default_broadcastable(true)
+end
+
+# app/types/base_edge.rb
+class Types::BaseEdge < Types::BaseObject
+  include GraphQL::Types::Relay::EdgeBehaviors
+  default_broadcastable(true)
+end
+```
+
+(In your `BaseObject`, you should also have `connection_type_class(Types::BaseConnection)` and `edge_type_class(Types::BaseEdge)`.)
+
+`PageInfo` is broadcastable by default.

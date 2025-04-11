@@ -322,7 +322,7 @@ type Query {
       end
     end
 
-    describe "with a visiblity check" do
+    describe "with a visibility check" do
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
@@ -374,6 +374,7 @@ type Query {
 
       let(:document) {
         doc_schema = Class.new(schema) do
+          use GraphQL::Schema::Visibility
           def self.visible?(m, _ctx)
             m.respond_to?(:graphql_name) && m.graphql_name != "Type"
           end
@@ -899,10 +900,22 @@ type Query {
       end
 
       directive CustomThing
+
+      class Query < GraphQL::Schema::Object
+        field :f, Int, directives: { CustomThing => { stuff: "ok" } }
+      end
+      query(Query)
     end
 
     it "prints them out" do
-      assert_equal "directive @customThing(stuff: String!) on FIELD_DEFINITION\n", CustomSDLDirectiveSchema.to_definition
+      expected_str = <<~GRAPHQL
+        directive @customThing(stuff: String!) on FIELD_DEFINITION
+
+        type Query {
+          f: Int @customThing(stuff: "ok")
+        }
+      GRAPHQL
+      assert_equal expected_str, CustomSDLDirectiveSchema.to_definition
     end
   end
 end

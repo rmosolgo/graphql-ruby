@@ -1,38 +1,39 @@
 # frozen_string_literal: true
-require "graphql/tracing/trace"
-require "graphql/tracing/legacy_trace"
-require "graphql/tracing/legacy_hooks_trace"
 
-# Legacy tracing:
-require "graphql/tracing/active_support_notifications_tracing"
-require "graphql/tracing/platform_tracing"
-require "graphql/tracing/appoptics_tracing"
-require "graphql/tracing/appsignal_tracing"
-require "graphql/tracing/data_dog_tracing"
-require "graphql/tracing/new_relic_tracing"
-require "graphql/tracing/scout_tracing"
-require "graphql/tracing/statsd_tracing"
-require "graphql/tracing/prometheus_tracing"
-
-# New Tracing:
-require "graphql/tracing/active_support_notifications_trace"
-require "graphql/tracing/platform_trace"
-require "graphql/tracing/appoptics_trace"
-require "graphql/tracing/appsignal_trace"
-require "graphql/tracing/data_dog_trace"
-require "graphql/tracing/new_relic_trace"
-require "graphql/tracing/notifications_trace"
-require "graphql/tracing/sentry_trace"
-require "graphql/tracing/scout_trace"
-require "graphql/tracing/statsd_trace"
-require "graphql/tracing/prometheus_trace"
-if defined?(PrometheusExporter::Server)
-  require "graphql/tracing/prometheus_trace/graphql_collector"
-end
 
 module GraphQL
   module Tracing
-    NullTrace = Trace.new
+    autoload :Trace, "graphql/tracing/trace"
+    autoload :CallLegacyTracers, "graphql/tracing/call_legacy_tracers"
+    autoload :LegacyTrace, "graphql/tracing/legacy_trace"
+    autoload :LegacyHooksTrace, "graphql/tracing/legacy_hooks_trace"
+    autoload :NullTrace, "graphql/tracing/null_trace"
+
+    autoload :ActiveSupportNotificationsTracing, "graphql/tracing/active_support_notifications_tracing"
+    autoload :PlatformTracing, "graphql/tracing/platform_tracing"
+    autoload :AppOpticsTracing, "graphql/tracing/appoptics_tracing"
+    autoload :AppsignalTracing, "graphql/tracing/appsignal_tracing"
+    autoload :DataDogTracing, "graphql/tracing/data_dog_tracing"
+    autoload :NewRelicTracing, "graphql/tracing/new_relic_tracing"
+    autoload :NotificationsTracing, "graphql/tracing/notifications_tracing"
+    autoload :ScoutTracing, "graphql/tracing/scout_tracing"
+    autoload :StatsdTracing, "graphql/tracing/statsd_tracing"
+    autoload :PrometheusTracing, "graphql/tracing/prometheus_tracing"
+
+    autoload :ActiveSupportNotificationsTrace, "graphql/tracing/active_support_notifications_trace"
+    autoload :PlatformTrace, "graphql/tracing/platform_trace"
+    autoload :AppOpticsTrace, "graphql/tracing/appoptics_trace"
+    autoload :AppsignalTrace, "graphql/tracing/appsignal_trace"
+    autoload :DataDogTrace, "graphql/tracing/data_dog_trace"
+    autoload :MonitorTrace, "graphql/tracing/monitor_trace"
+    autoload :NewRelicTrace, "graphql/tracing/new_relic_trace"
+    autoload :NotificationsTrace, "graphql/tracing/notifications_trace"
+    autoload :SentryTrace, "graphql/tracing/sentry_trace"
+    autoload :ScoutTrace, "graphql/tracing/scout_trace"
+    autoload :StatsdTrace, "graphql/tracing/statsd_trace"
+    autoload :PrometheusTrace, "graphql/tracing/prometheus_trace"
+    autoload :PerfettoTrace, "graphql/tracing/perfetto_trace"
+    autoload :DetailedTrace, "graphql/tracing/detailed_trace"
 
     # Objects may include traceable to gain a `.trace(...)` method.
     # The object must have a `@tracers` ivar of type `Array<<#trace(k, d, &b)>>`.

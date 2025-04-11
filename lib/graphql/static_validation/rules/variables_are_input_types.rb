@@ -4,11 +4,20 @@ module GraphQL
     module VariablesAreInputTypes
       def on_variable_definition(node, parent)
         type_name = get_type_name(node.type)
-        type = context.warden.get_type(type_name)
+        type = context.query.types.type(type_name)
 
         if type.nil?
+          @all_possible_input_type_names ||= begin
+            names = []
+            context.types.all_types.each { |(t)|
+              if t.kind.input?
+                names << t.graphql_name
+              end
+            }
+            names
+          end
           add_error(GraphQL::StaticValidation::VariablesAreInputTypesError.new(
-            "#{type_name} isn't a defined input type (on $#{node.name})",
+            "#{type_name} isn't a defined input type (on $#{node.name})#{context.did_you_mean_suggestion(type_name, @all_possible_input_type_names)}",
             nodes: node,
             name: node.name,
             type: type_name

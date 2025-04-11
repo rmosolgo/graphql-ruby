@@ -10,6 +10,57 @@ describe GraphQL::Schema::Enum do
     end
   end
 
+  describe "value methods" do
+    class EnumWithValueMethods < GraphQL::Schema::Enum
+      value_methods(true)
+      value :SOMETHING
+      value :SOMETHING_ELSE, value_method: false
+      value :SOMETHING_CUSTOM, value_method: :custom
+    end
+    it "defines methods to fetch graphql names when configured" do
+      assert_equal "SOMETHING", EnumWithValueMethods.something
+      assert_equal "SOMETHING", EnumWithValueMethods.something
+    end
+
+    it "inherits a value_methods config" do
+      new_enum = Class.new(EnumWithValueMethods)
+      new_enum.value(:NEW_VALUE)
+      assert_equal "NEW_VALUE", new_enum.new_value
+    end
+
+    describe "when value_method is configured" do
+      it "use custom method" do
+        assert_equal enum.respond_to?(:percussion), false
+        assert_equal enum.precussion_custom_value_method, "PERCUSSION"
+      end
+    end
+
+    describe "when value_method conflicts with existing method" do
+      class ConflictEnum < GraphQL::Schema::Enum
+        value_methods(true)
+      end
+      it "does not define method and emits warning" do
+        expected_message = "Failed to define value method for :value, because ConflictEnum already responds to that method. Use `value_method:` to override the method name or `value_method: false` to disable Enum value method generation.\n"
+        assert_warns(expected_message) do
+          already_defined_method = ConflictEnum.method(:value)
+          ConflictEnum.value "VALUE", "Makes conflict"
+          assert_equal ConflictEnum.method(:value), already_defined_method
+        end
+      end
+    end
+
+    describe "when value_method = false" do
+      it "does not define method" do
+        assert_equal EnumWithValueMethods.respond_to?(:something_else), false
+      end
+    end
+    it "doesn't define value methods by default" do
+      enum = Class.new(GraphQL::Schema::Enum) { graphql_name("SomeEnum") }
+      enum.value("SOME_VALUE")
+      refute enum.respond_to?(:some_value)
+    end
+  end
+
   describe "type info" do
     it "tells about the definition" do
       assert_equal "Family", enum.graphql_name
@@ -171,11 +222,11 @@ describe GraphQL::Schema::Enum do
     it "coerces names to underlying values" do
       assert_equal("YAK", enum.coerce_isolated_input("YAK"))
       assert_equal(1, enum.coerce_isolated_input("COW"))
-      assert_equal(nil, enum.coerce_isolated_input("NONE"))
+      assert_nil(enum.coerce_isolated_input("NONE"))
     end
 
     it "coerces invalid names to nil" do
-      assert_equal(nil, enum.coerce_isolated_input("YAKKITY"))
+      assert_nil(enum.coerce_isolated_input("YAKKITY"))
     end
 
     it "coerces result values to value's value" do
@@ -198,6 +249,21 @@ describe GraphQL::Schema::Enum do
       }
       expected_isolated_message = "`:nonsense` was returned for `DairyAnimal`, but this isn't a valid value for `DairyAnimal`. Update the field or resolver to return one of `DairyAnimal`'s values instead."
       assert_equal expected_isolated_message, err2.message
+      assert_equal "Dummy::DairyAnimal::UnresolvedValueError", err2.class.name
+
+      anon_enum = Class.new(GraphQL::Schema::Enum) do
+        graphql_name "AnonEnum"
+        value :one
+        value :two
+      end
+
+      err3 = assert_raises(GraphQL::Schema::Enum::UnresolvedValueError) {
+        anon_enum.coerce_isolated_result(:nonsense)
+      }
+
+      expected_anonymous_message = "`:nonsense` was returned for `AnonEnum`, but this isn't a valid value for `AnonEnum`. Update the field or resolver to return one of `AnonEnum`'s values instead."
+      assert_equal expected_anonymous_message, err3.message
+      assert_equal "GraphQL::Schema::Enum::UnresolvedValueError", err3.class.name
     end
 
     describe "resolving with a warden" do
@@ -206,7 +272,7 @@ describe GraphQL::Schema::Enum do
         assert_equal("YAK", enum.coerce_isolated_result("YAK"))
         # NOT OK
         assert_raises(GraphQL::Schema::Enum::UnresolvedValueError) {
-          enum.coerce_result("YAK", OpenStruct.new(warden: NothingWarden))
+          enum.coerce_result("YAK", OpenStruct.new(types: NothingWarden))
         }
       end
     end
@@ -287,6 +353,42 @@ describe GraphQL::Schema::Enum do
           "Expected \"bad enum\" to be one of: NONE, COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
         )
       end
+    end
+  end
+
+  describe "when values are defined on-the-fly inside #enum_values" do
+    class DynamicEnumValuesSchema < GraphQL::Schema
+      class TransportationMode < GraphQL::Schema::Enum
+        def self.enum_values(context = {})
+          [
+            GraphQL::Schema::EnumValue.new("BICYCLE", owner: self),
+            GraphQL::Schema::EnumValue.new("CAR", owner: self),
+            GraphQL::Schema::EnumValue.new("BUS", owner: self),
+            GraphQL::Schema::EnumValue.new("SCOOTER", owner: self),
+          ]
+        end
+      end
+      class Query < GraphQL::Schema::Object
+        field :mode, TransportationMode, fallback_value: "SCOOTER"
+      end
+      query(Query)
+    end
+
+    it "uses them" do
+      expected_sdl = <<~GRAPHQL
+      type Query {
+        mode: TransportationMode
+      }
+
+      enum TransportationMode {
+        BICYCLE
+        BUS
+        CAR
+        SCOOTER
+      }
+      GRAPHQL
+
+      assert_equal expected_sdl, DynamicEnumValuesSchema.to_definition
     end
   end
 end

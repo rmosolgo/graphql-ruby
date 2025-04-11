@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/tracing/platform_trace"
+
 module GraphQL
   module Tracing
 
@@ -20,13 +22,17 @@ module GraphQL
       # These GraphQL events will show up as 'graphql.execute' spans
       EXEC_KEYS = ['execute_multiplex', 'execute_query', 'execute_query_lazy'].freeze
 
+
       # During auto-instrumentation this version of AppOpticsTracing is compared
       # with the version provided in the appoptics_apm gem, so that the newer
       # version of the class can be used
 
+
       def self.version
         Gem::Version.new('1.0.0')
       end
+
+      # rubocop:disable Development/NoEvalCop This eval takes static inputs at load-time
 
       [
         'lex',
@@ -55,6 +61,8 @@ module GraphQL
         RUBY
       end
 
+      # rubocop:enable Development/NoEvalCop
+
       def execute_field(query:, field:, ast_node:, arguments:, object:)
         return_type = field.type.unwrap
         trace_field = if return_type.kind.scalar? || return_type.kind.enum?
@@ -81,7 +89,7 @@ module GraphQL
         end
       end
 
-      def execute_field_lazy(query:, field:, ast_node:, arguments:, object:)
+      def execute_field_lazy(query:, field:, ast_node:, arguments:, object:)  # rubocop:disable Development/TraceCallsSuperCop
         execute_field(query: query, field: field, ast_node: ast_node, arguments: arguments, object: object)
       end
 

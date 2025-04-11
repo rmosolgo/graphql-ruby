@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/tracing/platform_tracing"
+
 module GraphQL
   module Tracing
     # This implementation forwards events to a notification handler (i.e.

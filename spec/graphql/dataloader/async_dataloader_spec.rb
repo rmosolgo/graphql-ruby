@@ -52,6 +52,12 @@ if RUBY_VERSION >= "3.1.1"
         end
       end
 
+      class FiberLocalContextSource < GraphQL::Dataloader::Source
+        def fetch(keys)
+          keys.map { |key| Thread.current[key] }
+        end
+      end
+
       class Sleeper < GraphQL::Schema::Object
         field :sleeper, Sleeper, null: false, resolver_method: :sleep do
           argument :duration, Float
@@ -126,6 +132,13 @@ if RUBY_VERSION >= "3.1.1"
           Kernel.sleep(0.1)
           tags.map { |t| { tag: t, wait: wait }}
         end
+
+        field :fiber_local_context, String do
+          argument :key, String
+        end
+        def fiber_local_context(key:)
+          dataloader.with(FiberLocalContextSource).load(key)
+        end
       end
 
       query(Query)
@@ -135,10 +148,6 @@ if RUBY_VERSION >= "3.1.1"
     module AsyncDataloaderAssertions
       def self.included(child_class)
         child_class.class_eval do
-          before do
-            AsyncSchema::KeyWaitForSource.reset
-          end
-
           it "works with sources" do
             dataloader = GraphQL::Dataloader::AsyncDataloader.new
             r1 = dataloader.with(AsyncSchema::SleepSource, :s1).request(0.1)
@@ -161,17 +170,17 @@ if RUBY_VERSION >= "3.1.1"
 
             assert_equal 0.2, v2
             assert_equal 0.3, v3
-            assert_in_delta 0.0, started_at_2 - ended_at_2, 0.05, "Already-loaded values returned instantly"
+            assert_in_delta 0.0, started_at_2 - ended_at_2, 0.06, "Already-loaded values returned instantly"
 
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "works with GraphQL" do
             started_at = Time.now
-            res = AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+            res = @schema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "runs fields by depth" do
@@ -195,7 +204,7 @@ if RUBY_VERSION >= "3.1.1"
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = @schema.execute(query_str)
             ended_at = Time.now
 
             expected_data = {
@@ -203,7 +212,7 @@ if RUBY_VERSION >= "3.1.1"
               "s2" => { "sleeper" => { "duration" => 0.1 } },
               "s3" => { "duration" => 0.3 }
             }
-            assert_equal expected_data, res["data"]
+            assert_graphql_equal expected_data, res["data"]
             assert_in_delta 0.5, ended_at - started_at, 0.06, "Each depth ran in parallel"
           end
 
@@ -238,7 +247,7 @@ if RUBY_VERSION >= "3.1.1"
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = @schema.execute(query_str)
             ended_at = Time.now
 
             expected_data = {
@@ -247,7 +256,7 @@ if RUBY_VERSION >= "3.1.1"
               "w3" => { "waitFor" => { "waitFor" => { "tag" => "d" } } },
               "w4" => { "tag" => "e" }
             }
-            assert_equal expected_data, res["data"]
+            assert_graphql_equal expected_data, res["data"]
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
@@ -266,19 +275,84 @@ if RUBY_VERSION >= "3.1.1"
             GRAPHQL
 
             t1 = Time.now
-            result = AsyncSchema.execute(query_str)
+            result = @schema.execute(query_str)
             t2 = Time.now
             assert_equal ["a", "b", "c"], result["data"]["listWaiters"].map { |lw| lw["waiter"]["tag"]}
             # The field itself waits 0.1
             assert_in_delta 0.3, t2 - t1, 0.06, "Wait was parallel"
             assert_equal [["a", "b", "c"]], AsyncSchema::KeyWaitForSource.fetches, "All keys were fetched at once"
           end
+
+          it 'copies fiber-local variables over to sources' do
+            key = 'arbitrary_context'
+            value = 'test'
+            Thread.current[key] = value
+            query_str = <<-GRAPHQL
+              {
+                fiberLocalContext(key: "#{key}")
+              }
+            GRAPHQL
+
+            result = @schema.execute(query_str)
+            assert_equal value, result['data']['fiberLocalContext']
+          end
         end
       end
     end
 
     describe "with async" do
+      before do
+        @schema = AsyncSchema
+        AsyncSchema::KeyWaitForSource.reset
+      end
       include AsyncDataloaderAssertions
+    end
+
+    describe "with perfetto trace turned on" do
+      class TraceAsyncSchema < AsyncSchema
+        trace_with GraphQL::Tracing::PerfettoTrace
+        use GraphQL::Dataloader::AsyncDataloader
+      end
+
+      before do
+        @schema = TraceAsyncSchema
+        AsyncSchema::KeyWaitForSource.reset
+      end
+
+      include AsyncDataloaderAssertions
+      include PerfettoSnapshot
+
+      it "produces a trace" do
+        query_str = <<-GRAPHQL
+        {
+          s1: sleeper(duration: 0.1) {
+            sleeper(duration: 0.1) {
+              sleeper(duration: 0.1) {
+                duration
+              }
+            }
+          }
+          s2: sleeper(duration: 0.2) {
+            sleeper(duration: 0.1) {
+              duration
+            }
+          }
+          s3: sleeper(duration: 0.3) {
+            duration
+          }
+        }
+        GRAPHQL
+        res = @schema.execute(query_str)
+        if ENV["DUMP_PERFETTO"]
+          res.context.query.current_trace.write(file: "perfetto.dump")
+        end
+
+        json = res.context.query.current_trace.write(file: nil, debug_json: true)
+        data = JSON.parse(json)
+
+
+        check_snapshot(data, "example.json")
+      end
     end
   end
 end

@@ -1,74 +1,67 @@
 # frozen_string_literal: true
 
+require "graphql/tracing/monitor_trace"
+
 module GraphQL
   module Tracing
+    # A tracer for reporting GraphQL-Ruby time to New Relic
+    #
+    # @example Installing the tracer
+    #   class MySchema < GraphQL::Schema
+    #     trace_with GraphQL::Tracing::NewRelicTrace
+    #
+    #     # Optional, use the operation name to set the new relic transaction name:
+    #     # trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true
+    #   end
+    #
+    # @example Installing without trace events for `authorized?` or `resolve_type` calls
+    #   trace_with GraphQL::Tracing::NewRelicTrace, trace_authorized: false, trace_resolve_type: false
+    NewRelicTrace = MonitorTrace.create_module("newrelic")
     module NewRelicTrace
-      include PlatformTrace
+      class NewrelicMonitor < MonitorTrace::Monitor
+        PARSE_NAME = "GraphQL/parse"
+        LEX_NAME = "GraphQL/lex"
+        VALIDATE_NAME = "GraphQL/validate"
+        EXECUTE_NAME = "GraphQL/execute"
+        ANALYZE_NAME = "GraphQL/analyze"
 
-      # @param set_transaction_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
-      #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
-      #   It can also be specified per-query with `context[:set_new_relic_transaction_name]`.
-      def initialize(set_transaction_name: false, **_rest)
-        @set_transaction_name = set_transaction_name
-        super
-      end
-
-      def execute_query(query:)
-        set_this_txn_name =  query.context[:set_new_relic_transaction_name]
-        if set_this_txn_name == true || (set_this_txn_name.nil? && @set_transaction_name)
-          NewRelic::Agent.set_transaction_name(transaction_name(query))
-        end
-        NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped("GraphQL/execute") do
-          super
-        end
-      end
-
-      {
-        "lex" => "GraphQL/lex",
-        "parse" => "GraphQL/parse",
-        "validate" => "GraphQL/validate",
-        "analyze_query" => "GraphQL/analyze",
-        "analyze_multiplex" => "GraphQL/analyze",
-        "execute_multiplex" => "GraphQL/execute",
-        "execute_query_lazy" => "GraphQL/execute",
-      }.each do |trace_method, platform_key|
-        module_eval <<-RUBY, __FILE__, __LINE__
-          def #{trace_method}(**_keys)
-            NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped("#{platform_key}") do
-              super
+        def instrument(keyword, payload, &block)
+          if keyword == :execute
+            query = payload.queries.first
+            set_this_txn_name = query.context[:set_new_relic_transaction_name]
+            if set_this_txn_name || (set_this_txn_name.nil? && @set_transaction_name)
+              NewRelic::Agent.set_transaction_name(transaction_name(query))
             end
           end
-        RUBY
-      end
-
-      def platform_execute_field(platform_key)
-        NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
-          yield
+          ::NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(name_for(keyword, payload), &block)
         end
-      end
 
-      def platform_authorized(platform_key)
-        NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
-          yield
+        def platform_source_class_key(source_class)
+          "GraphQL/Source/#{source_class.name}"
         end
-      end
 
-      def platform_resolve_type(platform_key)
-        NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
-          yield
+        def platform_field_key(field)
+          "GraphQL/#{field.owner.graphql_name}/#{field.graphql_name}"
         end
-      end
 
-      def platform_field_key(field)
-        "GraphQL/#{field.owner.graphql_name}/#{field.graphql_name}"
-      end
+        def platform_authorized_key(type)
+          "GraphQL/Authorized/#{type.graphql_name}"
+        end
 
-      def platform_authorized_key(type)
-        "GraphQL/Authorize/#{type.graphql_name}"
-      end
+        def platform_resolve_type_key(type)
+          "GraphQL/ResolveType/#{type.graphql_name}"
+        end
 
-      def platform_resolve_type_key(type)
-        "GraphQL/ResolveType/#{type.graphql_name}"
+        class Event < MonitorTrace::Monitor::Event
+          def start
+            name = @monitor.name_for(keyword, object)
+            @nr_ev = NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: name, category: :web)
+          end
+
+          def finish
+            @nr_ev.finish
+          end
+        end
       end
     end
   end

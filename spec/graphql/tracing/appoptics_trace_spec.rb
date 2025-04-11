@@ -57,8 +57,6 @@ describe GraphQL::Tracing::AppOpticsTrace do
   end
 
   before do
-    load 'spec/support/appoptics.rb'
-
     $appoptics_tracing_spans = []
     $appoptics_tracing_kvs = []
     $appoptics_tracing_name = nil
@@ -101,6 +99,7 @@ describe GraphQL::Tracing::AppOpticsTrace do
 
   # case: appoptics_apm didn't get required
   it 'should not barf, when AppOpticsAPM is undefined' do
+    prev_apm = AppOpticsAPM
     Object.send(:remove_const, :AppOpticsAPM)
     query = 'query Query { int }'
 
@@ -110,6 +109,7 @@ describe GraphQL::Tracing::AppOpticsTrace do
       msg = e.message.split("\n").first
       flunk "failed: It raised '#{msg}' when AppOpticsAPM is undefined."
     end
+    Object.send(:const_set, :AppOpticsAPM, prev_apm)
   end
 
   # case: appoptics may have encountered a compile or service key problem

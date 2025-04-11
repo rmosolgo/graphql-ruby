@@ -28,7 +28,8 @@
     var receivedCallback = options.received
     // Unique-ish
     var uuid = Math.round(Date.now() + Math.random() * 100000).toString(16)
-    return {
+    var subscription = {
+      _subscribed: false,
       subscription: App.cable.subscriptions.create({
           channel: "GraphqlChannel",
           id: uuid,
@@ -41,7 +42,8 @@
             console.log("Connected", query, variables)
           },
           received: function(payload) {
-            console.log("received", query, variables, payload)
+            subscription._subscribed = true
+            App.logToBody("ActionCable received: " + JSON.stringify(payload))
             if (payload.result) {
               receivedCallback(payload)
             }
@@ -53,12 +55,27 @@
         }
       ),
       trigger: function(options) {
-        this.subscription.perform("make_trigger", options)
+        if (!subscription._subscribed) {
+          options.retries ||= 0
+          options.retries++
+          if (options.retries > 5) {
+            throw new Error("Retried 5 times, failed to trigger: " + JSON.stringify(options))
+          } else {
+            App.logToBody("Retrying trigger " + options.retries + " : " + JSON.stringify(options))
+            setTimeout(function() {
+              subscription.trigger(options)
+            }, 500)
+          }
+        } else {
+          App.logToBody("Triggering " + JSON.stringify(options))
+          this.subscription.perform("make_trigger", options)
+        }
       },
       unsubscribe: function() {
         this.subscription.unsubscribe()
       },
     }
+    return subscription
   }
 
   // Add `text` to the HTML body, for debugging
@@ -67,5 +84,6 @@
     var logEntry = document.createElement("p")
     logEntry.innerText = text
     bodyLog.appendChild(logEntry)
+    bodyLog.append("\n")
   }
 }).call(this);

@@ -26,6 +26,10 @@ module ValidatorHelpers
       argument :b, arg_type, required: false
       argument :c, arg_type, required: false
       validates(validates_config)
+
+      def prepare
+        self
+      end
     end
 
     validated_resolver = Class.new(GraphQL::Schema::Resolver) do
@@ -37,6 +41,15 @@ module ValidatorHelpers
       type(arg_type, null: true)
       def resolve(a: 0, b: 0, c: 0)
         a + b + c
+      end
+    end
+
+    validated_arg_resolver = Class.new(GraphQL::Schema::Resolver) do
+      graphql_name "ValidatedArgResolver"
+      argument :input, arg_type, required: false, validates: validates_config
+      type(String, null: false)
+      def resolve(input: :NO_INPUT)
+        input.to_s.upcase
       end
     end
 
@@ -69,7 +82,7 @@ module ValidatorHelpers
       end
 
       field :validated_resolver, resolver: validated_resolver
-
+      field :validated_arg_resolver, resolver: validated_arg_resolver
       field :list, [self], null: false
 
       def list

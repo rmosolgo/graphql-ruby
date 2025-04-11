@@ -1,0 +1,40 @@
+<%= content_for(:title, "Subscriptions - #{params[:name]}") %>
+<div class="row mt-3">
+  <div class="col">
+    <h3>Topic: <code><%= params[:name] %></code></h3>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <p>Last triggered: <%= @topic_last_triggered_at || "none" %></p>
+    <p><%= pluralize(@subscriptions_count, "Subscription") %></p>
+  <div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Subscription ID</th>
+          <th>Created At</th>
+          <th>Subscribed?</th>
+          <th>Broadcast?</th>
+          <% if @show_broadcast_subscribers_count %><th>Subscribers</th><% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% @subscriptions.each do |subscription| %>
+          <tr>
+            <td><%= link_to(subscription[:id], graphql_dashboard.subscriptions_subscription_path(subscription[:id])) %></td>
+            <td><%= subscription[:created_at] %></td>
+            <td><code><%= subscription[:still_subscribed] ? "YES" : "NO" %></code></td>
+            <td><code><%= subscription[:is_broadcast] ? "YES" : "NO" %></code></td>
+            <% if @show_broadcast_subscribers_count %><td><%= subscription[:subscribers_count] %></td><% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

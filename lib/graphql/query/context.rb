@@ -1,41 +1,10 @@
 # frozen_string_literal: true
-require "graphql/query/context/scoped_context"
 
 module GraphQL
   class Query
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
-      module SharedMethods
-        # Return this value to tell the runtime
-        # to exclude this field from the response altogether
-        def skip
-          GraphQL::Execution::SKIP
-        end
-
-        # Add error at query-level.
-        # @param error [GraphQL::ExecutionError] an execution error
-        # @return [void]
-        def add_error(error)
-          if !error.is_a?(ExecutionError)
-            raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
-          end
-          errors << error
-          nil
-        end
-
-        # @example Print the GraphQL backtrace during field resolution
-        #   puts ctx.backtrace
-        #
-        # @return [GraphQL::Backtrace] The backtrace for this point in query execution
-        def backtrace
-          GraphQL::Backtrace.new(self)
-        end
-
-        def execution_errors
-          @execution_errors ||= ExecutionErrors.new(self)
-        end
-      end
 
       class ExecutionErrors
         def initialize(ctx)
@@ -59,7 +28,6 @@ module GraphQL
         alias :push :add
       end
 
-      include SharedMethods
       extend Forwardable
 
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
@@ -77,11 +45,10 @@ module GraphQL
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
-      def initialize(query:, schema: query.schema, values:, object:)
+      def initialize(query:, schema: query.schema, values:)
         @query = query
         @schema = schema
         @provided_values = values || {}
-        @object = object
         # Namespaced storage, where user-provided values are in `nil` namespace:
         @storage = Hash.new { |h, k| h[k] = {} }
         @storage[nil] = @provided_values
@@ -114,7 +81,13 @@ module GraphQL
         @provided_values[key] = value
       end
 
-      def_delegators :@query, :trace, :interpreter?
+      def_delegators :@query, :trace
+
+      def types
+        @types ||= @query.types
+      end
+
+      attr_writer :types
 
       RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path])
       # @!method []=(key, value)
@@ -130,7 +103,7 @@ module GraphQL
           if key == :current_path
             current_path
           else
-            (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
+            (current_runtime_state = Fiber[:__graphql_runtime_info]) &&
               (query_runtime_state = current_runtime_state[@query]) &&
               (query_runtime_state.public_send(key))
           end
@@ -140,8 +113,37 @@ module GraphQL
         end
       end
 
+      # Return this value to tell the runtime
+      # to exclude this field from the response altogether
+      def skip
+        GraphQL::Execution::SKIP
+      end
+
+      # Add error at query-level.
+      # @param error [GraphQL::ExecutionError] an execution error
+      # @return [void]
+      def add_error(error)
+        if !error.is_a?(ExecutionError)
+          raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+        end
+        errors << error
+        nil
+      end
+
+      # @example Print the GraphQL backtrace during field resolution
+      #   puts ctx.backtrace
+      #
+      # @return [GraphQL::Backtrace] The backtrace for this point in query execution
+      def backtrace
+        GraphQL::Backtrace.new(self)
+      end
+
+      def execution_errors
+        @execution_errors ||= ExecutionErrors.new(self)
+      end
+
       def current_path
-        current_runtime_state = Thread.current[:__graphql_runtime_info]
+        current_runtime_state = Fiber[:__graphql_runtime_info]
         query_runtime_state = current_runtime_state && current_runtime_state[@query]
 
         path = query_runtime_state &&
@@ -166,7 +168,7 @@ module GraphQL
 
       def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
         if RUNTIME_METADATA_KEYS.include?(key)
-          (runtime = Thread.current[:__graphql_runtime_info]) &&
+          (runtime = Fiber[:__graphql_runtime_info]) &&
             (query_runtime_state = runtime[@query]) &&
             (query_runtime_state.public_send(key))
         elsif @scoped_context.key?(key)
@@ -184,7 +186,7 @@ module GraphQL
 
       def dig(key, *other_keys)
         if RUNTIME_METADATA_KEYS.include?(key)
-          (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
+          (current_runtime_state = Fiber[:__graphql_runtime_info]) &&
             (query_runtime_state = current_runtime_state[@query]) &&
             (obj = query_runtime_state.public_send(key)) &&
             if other_keys.empty?
@@ -286,3 +288,5 @@ module GraphQL
     end
   end
 end
+
+require "graphql/query/context/scoped_context"

@@ -1,6 +1,6 @@
 {
   "name": "graphql-ruby-client",
-  "version": "1.13.0",
+  "version": "1.14.6",
   "description": "JavaScript client for graphql-ruby",
   "main": "index.js",
   "types": "index.d.ts",
@@ -21,7 +21,7 @@
     "@types/react": "^17.0.0",
     "@types/relay-runtime": "^14.0.0",
     "@types/zen-observable": "^0.8.2",
-    "ably": "1.2.6",
+    "ably": "1.2.50",
     "graphql": ">=15.0.0",
     "jest": "^29.0.0",
     "nock": "^11.0.0",
@@ -38,7 +38,7 @@
     "prepublishOnly": "tsc"
   },
   "dependencies": {
-    "glob": "^7.1.4",
+    "glob": "^10.0.0",
     "minimist": "^1.2.0"
   },
   "peerDependencies": {

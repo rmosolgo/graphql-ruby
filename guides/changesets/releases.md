@@ -13,11 +13,22 @@ To be available to clients, Changesets added to the schema with `use GraphQL::En
 
 ```ruby
 class MyAppSchema < GraphQL::Schema
+  # Add this before root types so that newly-added types are also added to the schema
   use GraphQL::Enterprise::Changeset::Release, changeset_dir: "app/graphql/changesets"
+
+  query(...)
+  mutation(...)
+  subscription(...)
 end
 ```
 
 This attaches each Changeset defined in `app/graphql/changesets/*.rb` to the schema. (It assumes Rails conventions, where an underscored file like `app/graphql/changesets/add_some_feature.rb` contains a class like `Changesets::AddSomeFeature`.)
+
+{% callout warning %}
+
+Add `GraphQL::Enterprise::Changeset::Release` _before_ hooking up your root `query(...)`, `mutation(...)`, and `subscription(...)` types. Otherwise, the schema may not find links to types in new schema versions.
+
+{% endcallout %}
 
 Alternatively, Changesets can be explicitly attached using `changesets: [...]`, for example:
 
@@ -27,6 +38,7 @@ class MyAppSchema < GraphQL::Schema
     Changesets::DeprecateRecipeFlag,
     Changesets::RemoveRecipeFlag,
   ]
+  # ...
 end
 ```
 

@@ -5,15 +5,6 @@ require "generators/graphql/object_generator"
 class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::ObjectGenerator
 
-  ActiveRecord::Schema.define do
-    create_table :test_users do |t|
-      t.datetime :created_at
-      t.date :birthday
-      t.integer :points, null: false
-      t.decimal :rating, null: false
-    end
-  end
-
   # rubocop:disable Style/ClassAndModuleChildren
   class ::TestUser < ActiveRecord::Base
   end
@@ -75,7 +66,7 @@ RUBY
     end
   end
 
-  test "it generates namespaced classifed file" do
+  test "it generates namespaced classified file" do
     run_generator(["books/page"])
     assert_file "app/graphql/types/books/page_type.rb", <<-RUBY
 # frozen_string_literal: true

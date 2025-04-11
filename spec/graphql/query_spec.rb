@@ -898,7 +898,7 @@ describe GraphQL::Query do
 
       schema.execute(query, variables: { 'id' => nil })
       assert(expected_args.first.key?(:id))
-      assert_equal(nil, expected_args.first[:id])
+      assert_nil(expected_args.first[:id])
     end
 
     it 'sets argument to [nil] when [null] is passed' do
@@ -1091,7 +1091,7 @@ describe GraphQL::Query do
   describe "using GraphQL.default_parser" do
     module DummyParser
       DOC = GraphQL::Language::Parser.parse("{ __typename }")
-      def self.parse(query_str, trace: nil, filename: nil)
+      def self.parse(query_str, trace: nil, filename: nil, max_tokens: nil)
         DOC
       end
     end

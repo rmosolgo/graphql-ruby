@@ -33,26 +33,19 @@ module GraphQL
 
       private
 
-      def field_conflicts
-        @field_conflicts ||= Hash.new do |errors, field|
-          errors[field] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: :field, field_name: field)
-        end
-      end
-
-      def arg_conflicts
-        @arg_conflicts ||= Hash.new do |errors, field|
-          errors[field] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: :argument, field_name: field)
+      def conflicts
+        @conflicts ||= Hash.new do |h, error_type|
+          h[error_type] = Hash.new do |h2, field_name|
+            h2[field_name] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: error_type, field_name: field_name)
+          end
         end
       end
 
       def setting_errors
-        @field_conflicts = nil
-        @arg_conflicts = nil
-
+        @conflicts = nil
         yield
         # don't initialize these if they weren't initialized in the block:
-        @field_conflicts && @field_conflicts.each_value { |error| add_error(error) }
-        @arg_conflicts && @arg_conflicts.each_value { |error| add_error(error) }
+        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
       end
 
       def conflicts_within_selection_set(node, parent_type)
@@ -117,8 +110,8 @@ module GraphQL
 
         return if fragment1.nil? || fragment2.nil?
 
-        fragment_type1 = context.warden.get_type(fragment1.type.name)
-        fragment_type2 = context.warden.get_type(fragment2.type.name)
+        fragment_type1 = context.query.types.type(fragment1.type.name)
+        fragment_type2 = context.query.types.type(fragment2.type.name)
 
         return if fragment_type1.nil? || fragment_type2.nil?
 
@@ -170,7 +163,7 @@ module GraphQL
         fragment = context.fragments[fragment_name]
         return if fragment.nil?
 
-        fragment_type = context.warden.get_type(fragment.type.name)
+        fragment_type = @types.type(fragment.type.name)
         return if fragment_type.nil?
 
         fragment_fields, fragment_spreads = fields_and_fragments_from_selection(fragment, owner_type: fragment_type, parents: [*fragment_spread.parents, fragment_type])
@@ -212,6 +205,7 @@ module GraphQL
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
         return if @conflict_count >= context.max_errors
+        return if field1.definition.nil? || field2.definition.nil?
 
         node1 = field1.node
         node2 = field2.node
@@ -221,7 +215,7 @@ module GraphQL
 
         if !are_mutually_exclusive
           if node1.name != node2.name
-            conflict = field_conflicts[response_key]
+            conflict = conflicts[:field][response_key]
 
             conflict.add_conflict(node1, node1.name)
             conflict.add_conflict(node2, node2.name)
@@ -230,11 +224,54 @@ module GraphQL
           end
 
           if !same_arguments?(node1, node2)
-            conflict = arg_conflicts[response_key]
+            conflict = conflicts[:argument][response_key]
 
             conflict.add_conflict(node1, GraphQL::Language.serialize(serialize_field_args(node1)))
             conflict.add_conflict(node2, GraphQL::Language.serialize(serialize_field_args(node2)))
 
+            @conflict_count += 1
+          end
+        end
+
+        if !conflicts[:field].key?(response_key) &&
+            (t1 = field1.definition&.type) &&
+            (t2 = field2.definition&.type) &&
+            return_types_conflict?(t1, t2)
+
+          return_error = nil
+          message_override = nil
+          case @schema.allow_legacy_invalid_return_type_conflicts
+          when false
+            return_error = true
+          when true
+            legacy_handling = @schema.legacy_invalid_return_type_conflicts(@context.query, t1, t2, node1, node2)
+            case legacy_handling
+            when nil
+              return_error = false
+            when :return_validation_error
+              return_error = true
+            when String
+              return_error = true
+              message_override = legacy_handling
+            else
+              raise GraphQL::Error, "#{@schema}.legacy_invalid_scalar_conflicts returned unexpected value: #{legacy_handling.inspect}. Expected `nil`, String, or `:return_validation_error`."
+            end
+          else
+            return_error = false
+            @context.query.logger.warn <<~WARN
+              GraphQL-Ruby encountered mismatched types in this query: `#{t1.to_type_signature}` (at #{node1.line}:#{node1.col}) vs. `#{t2.to_type_signature}` (at #{node2.line}:#{node2.col}).
+              This will return an error in future GraphQL-Ruby versions, as per the GraphQL specification
+              Learn about migrating here: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_return_type_conflicts-class_method
+            WARN
+          end
+
+          if return_error
+            conflict = conflicts[:return_type][response_key]
+            if message_override
+              conflict.message = message_override
+            end
+            conflict.add_conflict(node1, "`#{t1.to_type_signature}`")
+            conflict.add_conflict(node2, "`#{t2.to_type_signature}`")
             @conflict_count += 1
           end
         end
@@ -244,6 +281,32 @@ module GraphQL
           field2,
           mutually_exclusive: are_mutually_exclusive,
         )
+      end
+
+      def return_types_conflict?(type1, type2)
+        if type1.list?
+          if type2.list?
+            return_types_conflict?(type1.of_type, type2.of_type)
+          else
+            true
+          end
+        elsif type2.list?
+          true
+        elsif type1.non_null?
+          if type2.non_null?
+            return_types_conflict?(type1.of_type, type2.of_type)
+          else
+            true
+          end
+        elsif type2.non_null?
+          true
+        elsif type1.kind.leaf? && type2.kind.leaf?
+          type1 != type2
+        else
+          # One or more of these are composite types,
+          # their selections will be validated later on.
+          false
+        end
       end
 
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
@@ -340,11 +403,11 @@ module GraphQL
         selections.each do |node|
           case node
           when GraphQL::Language::Nodes::Field
-            definition = context.warden.get_field(owner_type, node.name)
+            definition = @types.field(owner_type, node.name)
             fields << Field.new(node, definition, owner_type, parents)
           when GraphQL::Language::Nodes::InlineFragment
-            fragment_type = node.type ? context.warden.get_type(node.type.name) : owner_type
-            find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: owner_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
+            fragment_type = node.type ? @types.type(node.type.name) : owner_type
+            find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: fragment_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
           when GraphQL::Language::Nodes::FragmentSpread
             fragment_spreads << FragmentSpread.new(node.name, parents)
           end
@@ -396,7 +459,7 @@ module GraphQL
       end
 
       # Given two list of parents, find out if they are mutually exclusive
-      # In this context, `parents` represends the "self scope" of the field,
+      # In this context, `parents` represents the "self scope" of the field,
       # what types may be found at this point in the query.
       def mutually_exclusive?(parents1, parents2)
         if parents1.empty? || parents2.empty?
@@ -411,8 +474,8 @@ module GraphQL
               false
             else
               # Check if these two scopes have _any_ types in common.
-              possible_right_types = context.query.possible_types(type1)
-              possible_left_types = context.query.possible_types(type2)
+              possible_right_types = context.types.possible_types(type1)
+              possible_left_types = context.types.possible_types(type2)
               (possible_right_types & possible_left_types).empty?
             end
           end

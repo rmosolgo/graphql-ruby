@@ -240,7 +240,8 @@ module Jazz
     value "STRING", "Makes a sound by vibrating strings", value: :str, custom_setting: 1
     value :WOODWIND, "Makes a sound by vibrating air in a pipe"
     value :BRASS, "Makes a sound by amplifying the sound of buzzing lips"
-    value "PERCUSSION", "Makes a sound by hitting something that vibrates"
+    value "PERCUSSION", "Makes a sound by hitting something that vibrates",
+      value_method: :precussion_custom_value_method
     value "DIDGERIDOO", "Makes a sound by amplifying the sound of buzzing lips", deprecation_reason: "Merged into BRASS"
     value "KEYS" do
       description "Neither here nor there, really"
@@ -912,8 +913,10 @@ module Jazz
     end
 
     BlogPost = Class.new(GraphQL::Schema::Object)
+    BlogPost.has_no_fields(true)
     extra_types BlogPost
     use GraphQL::Dataloader
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema
@@ -922,18 +925,21 @@ module Jazz
     disable_introspection_entry_points
 
     use GraphQL::Dataloader
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 
   class SchemaWithoutSchemaIntrospection < GraphQL::Schema
     query(Query)
 
     disable_schema_introspection_entry_point
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 
   class SchemaWithoutTypeIntrospection < GraphQL::Schema
     query(Query)
 
     disable_type_introspection_entry_point
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 
   class SchemaWithoutSchemaOrTypeIntrospection < GraphQL::Schema
@@ -941,5 +947,6 @@ module Jazz
 
     disable_schema_introspection_entry_point
     disable_type_introspection_entry_point
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 end

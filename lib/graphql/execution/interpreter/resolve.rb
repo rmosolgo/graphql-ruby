@@ -12,13 +12,17 @@ module GraphQL
         end
 
         def self.resolve_each_depth(lazies_at_depth, dataloader)
-          depths = lazies_at_depth.keys
-          depths.sort!
-          next_depth = depths.first
-          if next_depth
-            lazies = lazies_at_depth[next_depth]
-            lazies_at_depth.delete(next_depth)
-            if lazies.any?
+          smallest_depth = nil
+          lazies_at_depth.each_key do |depth_key|
+            smallest_depth ||= depth_key
+            if depth_key < smallest_depth
+              smallest_depth = depth_key
+            end
+          end
+
+          if smallest_depth
+            lazies = lazies_at_depth.delete(smallest_depth)
+            if !lazies.empty?
               dataloader.append_job {
                 lazies.each(&:value) # resolve these Lazy instances
               }
@@ -51,7 +55,7 @@ module GraphQL
           # these approaches.
           dataloader.run
           next_results = []
-          while results.any?
+          while !results.empty?
             result_value = results.shift
             if result_value.is_a?(Runtime::GraphQLResultHash) || result_value.is_a?(Hash)
               results.concat(result_value.values)
@@ -77,7 +81,7 @@ module GraphQL
             end
           end
 
-          if next_results.any?
+          if !next_results.empty?
             # Any pending data loader jobs may populate the
             # resutl arrays or result hashes accumulated in
             # `next_results``. Run those **to completion**

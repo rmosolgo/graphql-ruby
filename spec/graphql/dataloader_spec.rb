@@ -126,7 +126,7 @@ describe GraphQL::Dataloader do
       end
 
       def fetch(recipes)
-        @counter && @counter.increment
+        @counter&.increment
         recipes.map { true }
       end
     end
@@ -229,6 +229,30 @@ describe GraphQL::Dataloader do
 
       def recipe(recipe:)
         recipe
+      end
+
+      field :recipe_by_id_using_load, Recipe do
+        argument :id, ID, required: false
+      end
+
+      def recipe_by_id_using_load(id:)
+        dataloader.with(DataObject).load(id)
+      end
+
+      field :recipes_by_id_using_load_all, [Recipe] do
+        argument :ids, [ID, null: true]
+      end
+
+      def recipes_by_id_using_load_all(ids:)
+        dataloader.with(DataObject).load_all(ids)
+      end
+
+      field :recipes_by_id, [Recipe] do
+        argument :ids, [ID], loads: Recipe, as: :recipes
+      end
+
+      def recipes_by_id(recipes:)
+        recipes
       end
 
       field :key_ingredient, Ingredient do
@@ -335,7 +359,7 @@ describe GraphQL::Dataloader do
 
 
       def lookahead_ingredient(input:, lookahead:)
-        lookahead.arguments # forces a datalaoder.run_isolated call
+        lookahead.arguments # forces a dataloader.run_isolated call
         dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
       end
     end
@@ -346,9 +370,9 @@ describe GraphQL::Dataloader do
       argument :argument_1, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-
+      field :value, String
       def resolve(argument_1:)
-        argument_1
+        { value: argument_1 }
       end
     end
 
@@ -356,9 +380,9 @@ describe GraphQL::Dataloader do
       argument :argument_2, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-
+      field :value, String
       def resolve(argument_2:)
-        argument_2
+        { value: argument_2 }
       end
     end
 
@@ -420,7 +444,7 @@ describe GraphQL::Dataloader do
     end
   end
 
-  class UsageAnalyzer < GraphQL::Analysis::AST::Analyzer
+  class UsageAnalyzer < GraphQL::Analysis::Analyzer
     def initialize(query)
       @query = query
       @fields = Set.new
@@ -507,6 +531,52 @@ describe GraphQL::Dataloader do
   end
 
   module DataloaderAssertions
+    module FiberCounting
+      class << self
+        attr_accessor :starting_fiber_count, :last_spawn_fiber_count, :last_max_fiber_count
+
+        def current_fiber_count
+          count_active_fibers - starting_fiber_count
+        end
+
+        def count_active_fibers
+          GC.start
+          ObjectSpace.each_object(Fiber).count
+        end
+      end
+
+      def initialize(*args, **kwargs, &block)
+        super
+        FiberCounting.starting_fiber_count = FiberCounting.count_active_fibers
+        FiberCounting.last_max_fiber_count = 0
+        FiberCounting.last_spawn_fiber_count = 0
+      end
+
+      def spawn_fiber
+        result = super
+        update_fiber_counts
+        result
+      end
+
+      def spawn_source_task(parent_task, condition, trace)
+        result = super
+        if result
+          update_fiber_counts
+        end
+        result
+      end
+
+      private
+
+      def update_fiber_counts
+        FiberCounting.last_spawn_fiber_count += 1
+        current_count = FiberCounting.current_fiber_count
+        if current_count > FiberCounting.last_max_fiber_count
+          FiberCounting.last_max_fiber_count = current_count
+        end
+      end
+    end
+
     def self.included(child_class)
       child_class.class_eval do
         let(:schema) { make_schema_from(FiberSchema) }
@@ -529,7 +599,7 @@ describe GraphQL::Dataloader do
               ]
             }
           }
-          assert_equal expected_data, res
+          assert_graphql_equal expected_data, res
           assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
         end
 
@@ -561,6 +631,7 @@ describe GraphQL::Dataloader do
           {
             i1: ingredient(id: 1) { id name }
             i2: ingredient(id: 2) { name }
+            __typename
             r1: recipe(id: 5) {
               # This loads Ingredients 3 and 4
               ingredients { name }
@@ -575,6 +646,7 @@ describe GraphQL::Dataloader do
           expected_data = {
             "i1" => { "id" => "1", "name" => "Wheat" },
             "i2" => { "name" => "Corn" },
+            "__typename" => "Query",
             "r1" => {
               "ingredients" => [
                 { "name" => "Wheat" },
@@ -587,7 +659,7 @@ describe GraphQL::Dataloader do
               "name" => "Cheese",
             },
           }
-          assert_equal(expected_data, res["data"])
+          assert_graphql_equal(expected_data, res["data"])
 
           expected_log = [
             [:mget, [
@@ -618,7 +690,7 @@ describe GraphQL::Dataloader do
             {"data"=>{"i2"=>{"name"=>"Corn"}, "r1"=>{"ingredients"=>[{"name"=>"Wheat"}, {"name"=>"Corn"}, {"name"=>"Butter"}, {"name"=>"Baking Soda"}]}}},
             {"data"=>{"i1"=>{"name"=>"Wheat"}, "ri1"=>{"name"=>"Corn"}}},
           ]
-          assert_equal expected_result, result
+          assert_graphql_equal expected_result, result
           expected_log = [
             [:mget, ["1", "2", "5"]],
             [:mget, ["3", "4"]],
@@ -635,7 +707,7 @@ describe GraphQL::Dataloader do
           GRAPHQL
 
           expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" } }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           assert_equal [[:mget, ["1", "2"]]], database_log
         end
 
@@ -653,7 +725,7 @@ describe GraphQL::Dataloader do
             "i2" => { "id" => "2" },
             "i3" => nil,
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           assert_equal [[:find_by, :name, ["Butter", "Corn", "Gummi Bears"]]], database_log
         end
 
@@ -701,7 +773,7 @@ describe GraphQL::Dataloader do
               "name" => "Wheat",
             }
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works when the parent field didn't yield" do
@@ -731,7 +803,7 @@ describe GraphQL::Dataloader do
               ]},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -756,7 +828,7 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+        assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -782,7 +854,7 @@ describe GraphQL::Dataloader do
               "name" => "Wheat",
             }
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works with analyzing arguments with `loads:`, even with .request" do
@@ -794,7 +866,7 @@ describe GraphQL::Dataloader do
           }
           GRAPHQL
           query = GraphQL::Query.new(schema, query_str)
-          results = GraphQL::Analysis::AST.analyze_query(query, [UsageAnalyzer])
+          results = GraphQL::Analysis.analyze_query(query, [UsageAnalyzer])
           expected_results = [
             ["commonIngredientsWithLoad", [:recipe_1, :recipe_2]],
             ["name", []],
@@ -821,7 +893,7 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -840,6 +912,35 @@ describe GraphQL::Dataloader do
           context = { batched_calls_counter: BatchedCallsCounter.new }
           schema.execute(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
+
+          query_str = "{ recipesById(ids: [5, 6]) { name } }"
+          context = { batched_calls_counter: BatchedCallsCounter.new }
+          schema.execute(query_str, context: context)
+          assert_equal 1, context[:batched_calls_counter].count
+        end
+
+        it "works when passing nil into source" do
+          query_str = <<-GRAPHQL
+          query($id: ID) {
+            recipe: recipeByIdUsingLoad(id: $id) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str, variables: { id: nil })
+          expected_data = { "recipe" => nil }
+          assert_graphql_equal expected_data, res["data"]
+
+          query_str = <<-GRAPHQL
+          query($ids: [ID]!) {
+            recipes: recipesByIdUsingLoadAll(ids: $ids) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str, variables: { ids: [nil] })
+          expected_data = { "recipes" => nil }
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works with input objects using variables, load and request" do
@@ -857,7 +958,7 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -912,7 +1013,7 @@ describe GraphQL::Dataloader do
             "i3" => { "nameByScopedContext" => "Scoped:Butter" },
           }
           result = schema.execute(query_str)
-          assert_equal expected_data, result["data"]
+          assert_graphql_equal expected_data, result["data"]
         end
 
         it "works when the schema calls itself" do
@@ -931,7 +1032,7 @@ describe GraphQL::Dataloader do
 
           res = schema.execute(query_str)
           expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" }, "i3" => { "name" => "Butter" } }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           expected_log = [
             # Each batch key is given to the source class:
             [:batch_key_for, "abc"],
@@ -984,21 +1085,28 @@ describe GraphQL::Dataloader do
           query_str << "\n}"
           GC.start
           GC.disable
+          old_fibers = []
+          ObjectSpace.each_object(Fiber) do |f|
+            old_fibers << f
+          end
           res = schema.execute(query_str)
           assert_equal fields, res["data"].keys.size
           all_fibers = []
           ObjectSpace.each_object(Fiber) do |f|
             all_fibers << f
           end
-          all_fibers.delete(Fiber.current)
-          if all_fibers.any?(&:alive?)
-              puts <<~ERR
-            Alive fibers:
-
-              - #{all_fibers.select(&:alive?).join("\n  - ")}
-            ERR
+          new_fibers = all_fibers - old_fibers
+          if new_fibers.any?(&:alive?)
+            message = "Alive fibers:\n\n".dup
+            new_fibers.select(&:alive?).each do |f|
+              message << "  - #{f.inspect}\n"
+              f.backtrace.each do |line|
+                message << "      #{line}\n"
+              end
+            end
+            puts message
           end
-          assert_equal [false], all_fibers.map(&:alive?).uniq
+          assert_equal [false], new_fibers.map(&:alive?).uniq
         ensure
           GC.enable
         end
@@ -1017,6 +1125,92 @@ describe GraphQL::Dataloader do
           QUERY
           response = parts_schema.execute(query).to_h
           assert_equal [4, 4, 4, 4], response["data"]["manufacturers"].map { |parts_obj| parts_obj["parts"].size }
+        end
+
+        describe "fiber_limit" do
+          def assert_last_max_fiber_count(expected_last_max_fiber_count, message = nil)
+            if FiberCounting.last_max_fiber_count == (expected_last_max_fiber_count + 1)
+              # TODO why does this happen sometimes?
+              warn "AsyncDataloader had +1 last_max_fiber_count"
+              assert_equal (expected_last_max_fiber_count + 1), FiberCounting.last_max_fiber_count, message
+            else
+              assert_equal expected_last_max_fiber_count, FiberCounting.last_max_fiber_count, message
+            end
+          end
+
+          it "respects a configured fiber_limit" do
+            query_str = <<-GRAPHQL
+            {
+              recipes {
+                ingredients {
+                  name
+                }
+              }
+              nestedIngredient(id: 2) {
+                name
+              }
+              keyIngredient(id: 4) {
+                name
+              }
+              commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+                name
+              }
+            }
+            GRAPHQL
+
+            fiber_counting_dataloader_class = Class.new(schema.dataloader_class)
+            fiber_counting_dataloader_class.include(FiberCounting)
+
+            res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
+            assert_nil res.context.dataloader.fiber_limit
+            assert_equal 12, FiberCounting.last_spawn_fiber_count
+            assert_last_max_fiber_count(9, "No limit works as expected")
+
+            res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
+            assert_equal 4, res.context.dataloader.fiber_limit
+            assert_equal 14, FiberCounting.last_spawn_fiber_count
+            assert_last_max_fiber_count(4, "Limit of 4 works as expected")
+
+            res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
+            assert_equal 6, res.context.dataloader.fiber_limit
+            assert_equal 10, FiberCounting.last_spawn_fiber_count
+            assert_last_max_fiber_count(6, "Limit of 6 works as expected")
+          end
+
+          it "accepts a default fiber_limit config" do
+            schema = Class.new(FiberSchema) do
+              use GraphQL::Dataloader, fiber_limit: 4
+            end
+            query_str = <<-GRAPHQL
+            {
+              recipes {
+                ingredients {
+                  name
+                }
+              }
+              nestedIngredient(id: 2) {
+                name
+              }
+              keyIngredient(id: 4) {
+                name
+              }
+              commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+                name
+              }
+            }
+            GRAPHQL
+            res = schema.execute(query_str)
+            assert_equal 4, res.context.dataloader.fiber_limit
+            assert_nil res["errors"]
+          end
+
+          it "requires at least three fibers" do
+            dl = GraphQL::Dataloader.new(fiber_limit: 2)
+            err = assert_raises ArgumentError do
+              dl.run
+            end
+            assert_equal "Dataloader fiber limit is too low (2), it must be at least 4", err.message
+          end
         end
       end
     end
@@ -1134,7 +1328,7 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 
@@ -1191,13 +1385,13 @@ describe GraphQL::Dataloader do
       "Nope (FiberErrorSchema::Query.requestAll, nil, {})",
     ]
 
-    assert_equal(nil, res["data"])
+    assert_nil(res["data"])
     assert_equal(expected_errors, context[:errors].sort)
   end
 
   it "has proper context[:current_field]" do
     res = FiberSchema.execute("mutation { mutation1(argument1: \"abc\") { __typename } mutation2(argument2: \"def\") { __typename } }")
-    assert_equal({"mutation1"=>nil, "mutation2"=>nil}, res["data"])
+    assert_equal({"mutation1"=>{ "__typename" => "Mutation1Payload" }, "mutation2"=>{ "__typename" => "Mutation2Payload"} }, res["data"])
     expected_errors = [
       "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
       "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
@@ -1353,7 +1547,7 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 
@@ -1408,7 +1602,7 @@ describe GraphQL::Dataloader do
         }
       }
 
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 

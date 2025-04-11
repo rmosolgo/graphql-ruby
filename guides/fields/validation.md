@@ -4,13 +4,13 @@ doc_stub: false
 search: true
 section: Fields
 title: Validation
-desc: Rails-like validations for arguments and fields
+desc: Rails-like validations for arguments
 index: 3
 ---
 
-Fields (and their arguments, and input object arguments) can be validated at runtime using built-in or custom validators.
+Arguments can be validated at runtime using built-in or custom validators.
 
-Validations are configured in `field(...)` or `argument(...)` calls:
+Validations are configured in `argument(...)` calls on fields or input objects:
 
 ```ruby
 argument :home_phone, String,
@@ -18,7 +18,7 @@ argument :home_phone, String,
   validates: { format: { with: /\d{3}-\d{3}-\d{4}/ } }
 ```
 
-or:
+or, `validates required: { ... }` inside a `field ... do ... end` block:
 
 ```ruby
 field :comments, [Comment],
@@ -44,6 +44,7 @@ See each validator's API docs for details:
 - `required: { one_of: [...] }` {{ "Schema::Validator::RequiredValidator" | api_doc }}
 - `allow_blank: true|false` {{  "Schema::Validator::AllowBlankValidator" | api_doc }}
 - `allow_null: true|false` {{  "Schema::Validator::AllowNullValidator" | api_doc }}
+- `all: { ... }` {{  "Schema::Validator::AllValidator" | api_doc }}
 
 Some of the validators accept customizable messages for certain validation failures; see the API docs for examples.
 

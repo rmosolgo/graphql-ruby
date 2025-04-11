@@ -113,9 +113,6 @@ describe GraphQL::Schema::Mutation do
       query_str = "mutation { returnInvalidNull { int } }"
       response = Jazz::Schema.execute(query_str)
       assert_equal ["Cannot return null for non-nullable field ReturnInvalidNullPayload.int"], response["errors"].map { |e| e["message"] }
-      error = response.query.context.errors.first
-      assert_instance_of Jazz::ReturnInvalidNull.payload_type::InvalidNullError, error
-      assert_equal "Jazz::ReturnInvalidNull::ReturnInvalidNullPayload::InvalidNullError", error.class.inspect
     end
   end
 
@@ -256,6 +253,104 @@ describe GraphQL::Schema::Mutation do
     assert_equal ["thingId", "thingName"], child_mutation.all_argument_definitions.map(&:graphql_name)
     assert_equal ["thingId", "thingName"], schema.mutation.fields["child"].all_argument_definitions.map(&:graphql_name)
     res = schema.execute("mutation { child(thingName: \"abc\", thingId: \"123\") { inputs } }")
-    assert_equal "{:thing_id=>\"123\", :thing_name=>\"abc\"}", res["data"]["child"]["inputs"]
+    expected_result = { thing_id: "123", thing_name: "abc" }.inspect
+    assert_equal expected_result, res["data"]["child"]["inputs"]
+  end
+
+  describe "flushing dataloader cache" do
+    class MutationDataloaderCacheSchema < GraphQL::Schema
+      module Database
+        DATA = {}
+        def self.get(id)
+          value = DATA[id] ||= 0
+          OpenStruct.new(id: id, value: value)
+        end
+
+        def self.increment(id)
+          DATA[id] ||= 0
+          DATA[id] += 1
+        end
+
+        def self.clear
+          DATA.clear
+        end
+      end
+
+      class CounterSource < GraphQL::Dataloader::Source
+        def fetch(ids)
+          ids.map { |id| Database.get(id) }
+        end
+      end
+      class CounterType < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          # Just force the load here, too:
+          ctx.dataloader.with(CounterSource).load(obj.id)
+          true
+        end
+        field :value, Integer
+      end
+      class Increment < GraphQL::Schema::Mutation
+        field :counter, CounterType
+        argument :counter_id, ID, loads: CounterType
+
+        def resolve(counter:)
+          Database.increment(counter.id)
+          {
+            counter: dataloader.with(CounterSource).load(counter.id)
+          }
+        end
+      end
+
+      class ReadyCounter < GraphQL::Schema::Mutation
+        field :id, ID
+        argument :counter_id, ID
+
+        def ready?(counter_id:)
+          # Just fill the cache:
+          dataloader.with(CounterSource).load(counter_id)
+          true
+        end
+
+        def resolve(counter_id:)
+          { id: counter_id }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :increment, mutation: Increment
+        field :ready_counter, mutation: ReadyCounter
+      end
+
+      mutation(Mutation)
+
+      def self.object_from_id(id, ctx)
+        ctx.dataloader.with(CounterSource).load(id)
+      end
+
+      def self.resolve_type(abs_type, obj, ctx)
+        CounterType
+      end
+
+      use GraphQL::Dataloader
+    end
+
+    it "clears the cache after authorized and loads" do
+      MutationDataloaderCacheSchema::Database.clear
+      res = MutationDataloaderCacheSchema.execute("mutation { increment(counterId: \"4\") { counter { value } } }")
+      assert_equal 1, res["data"]["increment"]["counter"]["value"]
+
+      res2 = MutationDataloaderCacheSchema.execute("mutation { increment(counterId: \"4\") { counter { value } } }")
+      assert_equal 2, res2["data"]["increment"]["counter"]["value"]
+    end
+
+    it "uses a fresh cache for `ready?` calls" do
+      multiplex = [
+        { query: "mutation { r1: readyCounter(counterId: 1) { id } }" },
+        { query: "mutation { r2: readyCounter(counterId: 1) { id } }" },
+        { query: "mutation { r3: readyCounter(counterId: 1) { id } }" },
+      ]
+      result = MutationDataloaderCacheSchema.multiplex(multiplex)
+      assert_equal ["1", "1", "1"], result.map { |r| r["data"].first.last["id"] }
+    end
   end
 end

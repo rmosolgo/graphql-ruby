@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Robert Mosolgo"]
   s.email       = ["rdmosolgo@gmail.com"]
   s.license     = "MIT"
-  s.required_ruby_version = ">= 2.4.0"
+  s.required_ruby_version = ">= 3.0.0"
   s.metadata    = {
     "homepage_uri" => "https://graphql-ruby.org",
     "changelog_uri" => "https://github.com/rmosolgo/graphql-ruby/blob/master/graphql-c_parser/CHANGELOG.md",
@@ -23,5 +23,5 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib,ext}/**/*.{rb,h,c}"]
   s.extensions << "ext/graphql_c_parser_ext/extconf.rb"
-  s.add_dependency "graphql"
+  s.add_dependency "graphql", ">= 2.2.10"
 end

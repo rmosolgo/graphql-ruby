@@ -76,7 +76,7 @@ module GraphQL
 
         private
 
-        # If one of thse values is accessed, initialize all the instance variables to retain
+        # If one of these values is accessed, initialize all the instance variables to retain
         # a consistent object shape.
         def initialize_relay_metadata
           if !defined?(@connection_type)

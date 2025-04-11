@@ -4,12 +4,11 @@ module GraphQL
   class Schema
     class Member
       module TypeSystemHelpers
-        def initialize(*args, &block)
+        def initialize(...)
           super
           @to_non_null_type ||= nil
           @to_list_type ||= nil
         end
-        ruby2_keywords :initialize if respond_to?(:ruby2_keywords, true)
 
         # @return [Schema::NonNull] Make a non-null-type representation of this type
         def to_non_null_type
@@ -43,7 +42,7 @@ module GraphQL
         private
 
         def inherited(subclass)
-          subclass.class_eval do
+          subclass.class_exec do
             @to_non_null_type ||= nil
             @to_list_type ||= nil
           end

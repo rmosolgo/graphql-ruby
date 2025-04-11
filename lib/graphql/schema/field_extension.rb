@@ -104,7 +104,7 @@ module GraphQL
             end
           end
         end
-        if (extras = self.class.extras).any?
+        if !(extras = self.class.extras).empty?
           @added_extras = extras - field.extras
           field.extras(@added_extras)
         else

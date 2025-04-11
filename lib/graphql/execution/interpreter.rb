@@ -20,10 +20,10 @@ module GraphQL
         # @param queries [Array<GraphQL::Query, Hash>]
         # @param context [Hash]
         # @param max_complexity [Integer, nil]
-        # @return [Array<Hash>] One result per query
+        # @return [Array<GraphQL::Query::Result>] One result per query
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
           queries = query_options.map do |opts|
-            case opts
+            query = case opts
             when Hash
               schema.query_class.new(schema, nil, **opts)
             when GraphQL::Query
@@ -31,32 +31,42 @@ module GraphQL
             else
               raise "Expected Hash or GraphQL::Query, not #{opts.class} (#{opts.inspect})"
             end
+            query
           end
 
+          return GraphQL::EmptyObjects::EMPTY_ARRAY if queries.empty?
+
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
-          multiplex.current_trace.execute_multiplex(multiplex: multiplex) do
+          trace = multiplex.current_trace
+          Fiber[:__graphql_current_multiplex] = multiplex
+          trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
             lazies_at_depth = Hash.new { |h, k| h[k] = [] }
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
-              multiplex_analyzers += [GraphQL::Analysis::AST::MaxQueryComplexity]
+              multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
             end
 
+            trace.begin_analyze_multiplex(multiplex, multiplex_analyzers)
             schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
+            trace.end_analyze_multiplex(multiplex, multiplex_analyzers)
+
             begin
               # Since this is basically the batching context,
               # share it for a whole multiplex
-              multiplex.context[:interpreter_instance] ||= multiplex.schema.query_execution_strategy.new
+              multiplex.context[:interpreter_instance] ||= multiplex.schema.query_execution_strategy(deprecation_warning: false).new
               # Do as much eager evaluation of the query as possible
               results = []
               queries.each_with_index do |query, idx|
                 if query.subscription? && !query.subscription_update?
-                  query.context.namespace(:subscriptions)[:events] = []
+                  subs_namespace = query.context.namespace(:subscriptions)
+                  subs_namespace[:events] = []
+                  subs_namespace[:subscriptions] = {}
                 end
                 multiplex.dataloader.append_job {
                   operation = query.selected_operation
-                  result = if operation.nil? || !query.valid? || query.context.errors.any?
+                  result = if operation.nil? || !query.valid? || !query.context.errors.empty?
                     NO_OPERATION
                   else
                     begin
@@ -99,12 +109,12 @@ module GraphQL
               # Then, find all errors and assign the result to the query object
               results.each_with_index do |data_result, idx|
                 query = queries[idx]
-                if (events = query.context.namespace(:subscriptions)[:events]) && events.any?
+                if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
                   schema.subscriptions.write_subscription(query, events)
                 end
                 # Assign the result so that it can be accessed in instrumentation
                 query.result_values = if data_result.equal?(NO_OPERATION)
-                  if !query.valid? || query.context.errors.any?
+                  if !query.valid? || !query.context.errors.empty?
                     # A bit weird, but `Query#static_errors` _includes_ `query.context.errors`
                     { "errors" => query.static_errors.map(&:to_h) }
                   else
@@ -113,7 +123,7 @@ module GraphQL
                 else
                   result = {}
 
-                  if query.context.errors.any?
+                  if !query.context.errors.empty?
                     error_result = query.context.errors.map(&:to_h)
                     result["errors"] = error_result
                   end
@@ -136,6 +146,7 @@ module GraphQL
               queries.map { |q| q.result_values ||= {} }
               raise
             ensure
+              Fiber[:__graphql_current_multiplex] = nil
               queries.map { |query|
                 runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                 if runtime

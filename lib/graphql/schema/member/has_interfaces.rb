@@ -24,7 +24,7 @@ module GraphQL
                 implements(next_interface)
               end
             elsif int.is_a?(String) || int.is_a?(GraphQL::Schema::LateBoundType)
-              if options.any?
+              if !options.empty?
                 raise ArgumentError, "`implements(...)` doesn't support options with late-loaded types yet. Remove #{options} and open an issue to request this feature."
               end
               new_memberships << int
@@ -73,13 +73,13 @@ module GraphQL
             def interfaces(context = GraphQL::Query::NullContext.instance)
               visible_interfaces = super
               inherited_interfaces = superclass.interfaces(context)
-              if visible_interfaces.any?
-                if inherited_interfaces.any?
+              if !visible_interfaces.empty?
+                if !inherited_interfaces.empty?
                   visible_interfaces.concat(inherited_interfaces)
                   visible_interfaces.uniq!
                 end
                 visible_interfaces
-              elsif inherited_interfaces.any?
+              elsif !inherited_interfaces.empty?
                 inherited_interfaces
               else
                 EmptyObjects::EMPTY_ARRAY
@@ -133,7 +133,7 @@ module GraphQL
 
         def inherited(subclass)
           super
-          subclass.class_eval do
+          subclass.class_exec do
             @own_interface_type_memberships ||= nil
           end
         end

@@ -73,6 +73,7 @@ end
 
 # app/graphql/types/url.rb
 class Types::Url < Types::BaseScalar
+  comment "TODO comment of the scalar"
   description "A valid URL, transported as a string"
 
   def self.coerce_input(input_value, context)

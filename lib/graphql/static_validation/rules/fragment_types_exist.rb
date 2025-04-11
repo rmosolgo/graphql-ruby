@@ -21,10 +21,20 @@ module GraphQL
           true
         else
           type_name = fragment_node.type.name
-          type = context.warden.get_type(type_name)
+          type = @types.type(type_name)
           if type.nil?
+            @all_possible_fragment_type_names ||= begin
+              names = []
+              context.types.all_types.each do |type|
+                if type.kind.fields?
+                  names << type.graphql_name
+                end
+              end
+              names
+            end
+
             add_error(GraphQL::StaticValidation::FragmentTypesExistError.new(
-              "No such type #{type_name}, so it can't be a fragment condition",
+              "No such type #{type_name}, so it can't be a fragment condition#{context.did_you_mean_suggestion(type_name, @all_possible_fragment_type_names)}",
               nodes: fragment_node,
               type: type_name
             ))

@@ -30,10 +30,11 @@ module GraphQL
       # @return [Class] The enum type that owns this value
       attr_reader :owner
 
-      def initialize(graphql_name, desc = nil, owner:, ast_node: nil, directives: nil, description: nil, value: NOT_CONFIGURED, deprecation_reason: nil, &block)
+      def initialize(graphql_name, desc = nil, owner:, ast_node: nil, directives: nil, description: nil, comment: nil, value: NOT_CONFIGURED, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s
         GraphQL::NameValidator.validate!(@graphql_name)
         @description = desc || description
+        @comment = comment
         @value = value == NOT_CONFIGURED ? @graphql_name : value
         if deprecation_reason
           self.deprecation_reason = deprecation_reason
@@ -47,7 +48,7 @@ module GraphQL
         end
 
         if block_given?
-          instance_eval(&block)
+          instance_exec(self, &block)
         end
       end
 
@@ -58,6 +59,13 @@ module GraphQL
         @description
       end
 
+      def comment(new_comment = nil)
+        if new_comment
+          @comment = new_comment
+        end
+        @comment
+      end
+
       def value(new_val = nil)
         unless new_val.nil?
           @value = new_val
@@ -66,7 +74,7 @@ module GraphQL
       end
 
       def inspect
-        "#<#{self.class} #{path} @value=#{@value.inspect}#{description ? " @description=#{description.inspect}" : ""}>"
+        "#<#{self.class} #{path} @value=#{@value.inspect}#{description ? " @description=#{description.inspect}" : ""}#{deprecation_reason ? " @deprecation_reason=#{deprecation_reason.inspect}" : ""}>"
       end
 
       def visible?(_ctx); true; end

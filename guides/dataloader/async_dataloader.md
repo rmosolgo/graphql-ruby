@@ -38,6 +38,42 @@ class Application < Rails::Application
   config.active_support.isolation_level = :fiber
 end
 ```
+### ActiveRecord Connections
+
+You can use Dataloader's {% internal_link "Fiber lifecycle hooks", "/dataloader/dataloader#fiber-lifecycle-hooks" %} to improve ActiveRecord connection handling:
+
+- In Rails < 7.2, connections are not reused when a Fiber exits; instead, they're only reused when a request or background job finishes. You can add manual `release_connection` calls to improve this.
+- With `isolation_level = :fiber`, new Fibers don't inherit `connected_to ...` settings from their parent fibers.
+
+Altogether, it can be improved like this:
+
+```ruby
+def get_fiber_variables
+  vars = super
+  # Collect the current connection config to pass on:
+  vars[:connected_to] = {
+    role: ActiveRecord::Base.current_role,
+    shard: ActiveRecord::Base.current_shard,
+    prevent_writes: ActiveRecord::Base.current_preventing_writes
+  }
+  vars
+end
+
+def set_fiber_variables(vars)
+  connection_config = vars.delete(:connected_to)
+  # Reset connection config from the parent fiber:
+  ActiveRecord::Base.connecting_to(**connection_config)
+  super(vars)
+end
+
+def cleanup_fiber
+  super
+  # Release the current connection
+  ActiveRecord::Base.connection_pool.release_connection
+end
+```
+
+Modify the example according to your database configuration and abstract class hierarchy.
 
 ## Other Options
 

@@ -9,7 +9,7 @@ module GraphQL
 
         # Return the source of `send_node`, but without the keyword argument represented by `pair_node`
         def source_without_keyword_argument(send_node, pair_node)
-          # work back to the preceeding comma
+          # work back to the preceding comma
           first_pos = pair_node.location.expression.begin_pos
           end_pos = pair_node.location.expression.end_pos
           node_source = send_node.source_range.source

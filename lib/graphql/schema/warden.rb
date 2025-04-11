@@ -19,6 +19,17 @@ module GraphQL
         PassThruWarden
       end
 
+      def self.types_from_context(context)
+        context.types || PassThruWarden
+      rescue NoMethodError
+        # this might be a hash which won't respond to #warden
+        PassThruWarden
+      end
+
+      def self.use(schema)
+        # no-op
+      end
+
       # @param visibility_method [Symbol] a Warden method to call for this entry
       # @param entry [Object, Array<Object>] One or more definitions for a given name in a GraphQL Schema
       # @param context [GraphQL::Query::Context]
@@ -61,23 +72,33 @@ module GraphQL
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
           def arguments(owner, ctx); owner.arguments(ctx); end
           def loadable?(type, ctx); type.visible?(ctx); end
+          def loadable_possible_types(type, ctx); type.possible_types(ctx); end
+          def visibility_profile
+            @visibility_profile ||= Warden::VisibilityProfile.new(self)
+          end
         end
       end
 
       class NullWarden
         def initialize(_filter = nil, context:, schema:)
           @schema = schema
+          @visibility_profile = Warden::VisibilityProfile.new(self)
         end
+
+        # No-op, but for compatibility:
+        attr_writer :skip_warning
+
+        attr_reader :visibility_profile
 
         def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
         def visible_argument?(arg_defn, _ctx = nil); true; end
         def visible_type?(type_defn, _ctx = nil); true; end
-        def visible_enum_value?(enum_value, _ctx = nil); true; end
+        def visible_enum_value?(enum_value, _ctx = nil); enum_value.visible?(Query::NullContext.instance); end
         def visible_type_membership?(type_membership, _ctx = nil); true; end
         def interface_type_memberships(obj_type, _ctx = nil); obj_type.interface_type_memberships; end
-        def get_type(type_name); @schema.get_type(type_name); end # rubocop:disable Development/ContextIsPassedCop
+        def get_type(type_name); @schema.get_type(type_name, Query::NullContext.instance, false); end # rubocop:disable Development/ContextIsPassedCop
         def arguments(argument_owner, ctx = nil); argument_owner.all_argument_definitions; end
-        def enum_values(enum_defn); enum_defn.enum_values; end # rubocop:disable Development/ContextIsPassedCop
+        def enum_values(enum_defn); enum_defn.enum_values(Query::NullContext.instance); end # rubocop:disable Development/ContextIsPassedCop
         def get_argument(parent_type, argument_name); parent_type.get_argument(argument_name); end # rubocop:disable Development/ContextIsPassedCop
         def types; @schema.types; end # rubocop:disable Development/ContextIsPassedCop
         def root_type_for_operation(op_name); @schema.root_type_for_operation(op_name); end
@@ -86,9 +107,92 @@ module GraphQL
         def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
         def reachable_type?(type_name); true; end
         def loadable?(type, _ctx); true; end
+        def loadable_possible_types(union_type, _ctx); union_type.possible_types; end
         def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
-        def possible_types(type_defn); @schema.possible_types(type_defn); end
+        def possible_types(type_defn); @schema.possible_types(type_defn, Query::NullContext.instance, false); end
         def interfaces(obj_type); obj_type.interfaces; end
+      end
+
+      def visibility_profile
+        @visibility_profile ||= VisibilityProfile.new(self)
+      end
+
+      class VisibilityProfile
+        def initialize(warden)
+          @warden = warden
+        end
+
+        def directives
+          @warden.directives
+        end
+
+        def directive_exists?(dir_name)
+          @warden.directives.any? { |d| d.graphql_name == dir_name }
+        end
+
+        def type(name)
+          @warden.get_type(name)
+        end
+
+        def field(owner, field_name)
+          @warden.get_field(owner, field_name)
+        end
+
+        def argument(owner, arg_name)
+          @warden.get_argument(owner, arg_name)
+        end
+
+        def query_root
+          @warden.root_type_for_operation("query")
+        end
+
+        def mutation_root
+          @warden.root_type_for_operation("mutation")
+        end
+
+        def subscription_root
+          @warden.root_type_for_operation("subscription")
+        end
+
+        def arguments(owner)
+          @warden.arguments(owner)
+        end
+
+        def fields(owner)
+          @warden.fields(owner)
+        end
+
+        def possible_types(type)
+          @warden.possible_types(type)
+        end
+
+        def enum_values(enum_type)
+          @warden.enum_values(enum_type)
+        end
+
+        def all_types
+          @warden.reachable_types
+        end
+
+        def interfaces(obj_type)
+          @warden.interfaces(obj_type)
+        end
+
+        def loadable?(t, ctx) # TODO remove ctx here?
+          @warden.loadable?(t, ctx)
+        end
+
+        def loadable_possible_types(t, ctx)
+          @warden.loadable_possible_types(t, ctx)
+        end
+
+        def reachable_type?(type_name)
+          !!@warden.reachable_type?(type_name)
+        end
+
+        def visible_enum_value?(enum_value, ctx = nil)
+          @warden.visible_enum_value?(enum_value, ctx)
+        end
       end
 
       # @param context [GraphQL::Query::Context]
@@ -100,16 +204,18 @@ module GraphQL
         @mutation = @schema.mutation
         @subscription = @schema.subscription
         @context = context
-        @visibility_cache = read_through { |m| schema.visible?(m, context) }
-        @visibility_cache.compare_by_identity
+        @visibility_cache = read_through { |m| check_visible(schema, m) }
         # Initialize all ivars to improve object shape consistency:
         @types = @visible_types = @reachable_types = @visible_parent_fields =
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
-          @reachable_type_set =
+          @reachable_type_set = @visibility_profile = @loadable_possible_types =
             nil
+        @skip_warning = schema.plugins.any? { |(plugin, _opts)| plugin == GraphQL::Schema::Warden }
       end
+
+      attr_writer :skip_warning
 
       # @return [Hash<String, GraphQL::BaseType>] Visible types in the schema
       def types
@@ -129,10 +235,17 @@ module GraphQL
         !reachable_type_set.include?(type) && visible_type?(type)
       end
 
+      def loadable_possible_types(union_type, _ctx)
+        @loadable_possible_types ||= read_through do |t|
+          t.possible_types # unfiltered
+        end
+        @loadable_possible_types[union_type]
+      end
+
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
-          type_defn = @schema.get_type(name, @context)
+          type_defn = @schema.get_type(name, @context, false)
           if type_defn && visible_and_reachable_type?(type_defn)
             type_defn
           else
@@ -179,7 +292,7 @@ module GraphQL
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
         @visible_possible_types ||= read_through { |type_defn|
-          pt = @schema.possible_types(type_defn, @context)
+          pt = @schema.possible_types(type_defn, @context, false)
           pt.select { |t| visible_and_reachable_type?(t) }
         }
         @visible_possible_types[type_defn]
@@ -197,7 +310,7 @@ module GraphQL
       def arguments(argument_owner, ctx = nil)
         @visible_arguments ||= read_through { |o|
           args = o.arguments(@context)
-          if args.any?
+          if !args.empty?
             args = args.values
             args.select! { |a| visible_argument?(a, @context) }
             args
@@ -229,7 +342,7 @@ module GraphQL
       def interfaces(obj_type)
         @visible_interfaces ||= read_through { |t|
           ints = t.interfaces(@context)
-          if ints.any?
+          if !ints.empty?
             ints.select! { |i| visible_type?(i) }
           end
           ints
@@ -289,13 +402,13 @@ module GraphQL
           next true if root_type?(type_defn) || type_defn.introspection?
 
           if type_defn.kind.union?
-            possible_types(type_defn).any? && (referenced?(type_defn) || orphan_type?(type_defn))
+            !possible_types(type_defn).empty? && (referenced?(type_defn) || orphan_type?(type_defn))
           elsif type_defn.kind.interface?
-            if possible_types(type_defn).any?
+            if !possible_types(type_defn).empty?
               true
             else
               if @context.respond_to?(:logger) && (logger = @context.logger)
-                logger.debug { "Interface `#{type_defn.graphql_name}` hidden because it has no visible implementors" }
+                logger.debug { "Interface `#{type_defn.graphql_name}` hidden because it has no visible implementers" }
               end
               false
             end
@@ -363,8 +476,7 @@ module GraphQL
       end
 
       def referenced?(type_defn)
-        graphql_name = type_defn.unwrap.graphql_name
-        members = @schema.references_to(graphql_name)
+        members = @schema.references_to(type_defn)
         members.any? { |m| visible?(m) }
       end
 
@@ -377,10 +489,60 @@ module GraphQL
       end
 
       def read_through
-        h = Hash.new { |h, k| h[k] = yield(k) }
-        h.compare_by_identity
-        h
+        Hash.new { |h, k| h[k] = yield(k) }.compare_by_identity
       end
+
+      def check_visible(schema, member)
+        if schema.visible?(member, @context)
+          true
+        elsif @skip_warning
+          false
+        else
+          member_s = member.respond_to?(:path) ? member.path : member.inspect
+          member_type = case member
+          when Module
+            if member.respond_to?(:kind)
+              member.kind.name.downcase
+            else
+              ""
+            end
+          when GraphQL::Schema::Field
+            "field"
+          when GraphQL::Schema::EnumValue
+            "enum value"
+          when GraphQL::Schema::Argument
+            "argument"
+          else
+            ""
+          end
+
+          schema_s = schema.name ? "#{schema.name}'s" : ""
+          schema_name = schema.name ? "#{schema.name}" : "your schema"
+          warn(ADD_WARDEN_WARNING % { schema_s: schema_s, schema_name: schema_name, member: member_s, member_type: member_type })
+          @skip_warning = true # only warn once per query
+          # If there's no schema name, add the backtrace for additional context:
+          if schema_s == ""
+            puts caller.map { |l| "    #{l}"}
+          end
+          false
+        end
+      end
+
+      ADD_WARDEN_WARNING = <<~WARNING
+DEPRECATION: %{schema_s} "%{member}" %{member_type} returned `false` for `.visible?` but `GraphQL::Schema::Visibility` isn't configured yet.
+
+  Address this warning by adding:
+
+      use GraphQL::Schema::Visibility
+
+  to the definition for %{schema_name}. (Future GraphQL-Ruby versions won't check `.visible?` methods by default.)
+
+  Alternatively, for legacy behavior, add:
+
+      use GraphQL::Schema::Warden # legacy visibility behavior
+
+  For more information see: https://graphql-ruby.org/authorization/visibility.html
+      WARNING
 
       def reachable_type_set
         return @reachable_type_set if @reachable_type_set

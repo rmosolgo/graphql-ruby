@@ -7,6 +7,7 @@ module GraphQL
       # - `complexities_on_type` holds complexity scores for each type
       def initialize(query)
         super
+        @skip_introspection_fields = !query.schema.max_complexity_count_introspection_fields
         @complexities_on_type_by_query = {}
       end
 
@@ -54,6 +55,7 @@ module GraphQL
         # we'll visit them when we hit the spreads instead
         return if visitor.visiting_fragment_definition?
         return if visitor.skipping?
+        return if @skip_introspection_fields && visitor.field_definition.introspection?
         parent_type = visitor.parent_type_definition
         field_key = node.alias || node.name
 
@@ -71,6 +73,7 @@ module GraphQL
         # we'll visit them when we hit the spreads instead
         return if visitor.visiting_fragment_definition?
         return if visitor.skipping?
+        return if @skip_introspection_fields && visitor.field_definition.introspection?
         scopes_stack = @complexities_on_type_by_query[visitor.query]
         scopes_stack.pop
       end
@@ -99,7 +102,7 @@ module GraphQL
         possible_scope_types.keys.each do |possible_scope_type|
           next unless possible_scope_type.kind.abstract?
 
-          query.possible_types(possible_scope_type).each do |impl_type|
+          query.types.possible_types(possible_scope_type).each do |impl_type|
             possible_scope_types[impl_type] ||= true
           end
           possible_scope_types.delete(possible_scope_type)
@@ -123,9 +126,8 @@ module GraphQL
 
       def types_intersect?(query, a, b)
         return true if a == b
-
-        a_types = query.possible_types(a)
-        query.possible_types(b).any? { |t| a_types.include?(t) }
+        a_types = query.types.possible_types(a)
+        query.types.possible_types(b).any? { |t| a_types.include?(t) }
       end
 
       # A hook which is called whenever a field's max complexity is calculated.

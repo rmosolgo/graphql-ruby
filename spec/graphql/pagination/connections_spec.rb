@@ -117,7 +117,9 @@ describe GraphQL::Pagination::Connections do
       ConnectionErrorTestSchema.execute("{ things2 { name } }")
     end
 
-    expected_message = if RUBY_VERSION >= "3.3"
+    expected_message = if RUBY_VERSION >= "3.4"
+      "undefined method 'no_such_method' for an instance of ConnectionErrorTestSchema::BadThing"
+    elsif RUBY_VERSION >= "3.3"
       "undefined method `no_such_method' for an instance of ConnectionErrorTestSchema::BadThing"
     else
       "undefined method `no_such_method' for <BadThing!>"
@@ -141,7 +143,7 @@ describe GraphQL::Pagination::Connections do
     end
 
     schema = Class.new(GraphQL::Schema) do
-      # This value should be overriden by `max_page_size: nil` in the field definition above
+      # This value should be overridden by `max_page_size: nil` in the field definition above
       default_max_page_size 2
       query(query_type)
     end

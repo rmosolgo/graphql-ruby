@@ -6,15 +6,94 @@
 
 ### New Features
 
-# 1.26.2 (30 Jan 2023)
+# 1.29.5 (31 Mar 2025)
+
+- OperationStore: Improve Redis cleanup when deleting a single client
+- Stable connections: Fix NULL handling on Rails 7.2 + Postgresql
+
+# 1.29.4 (18 Nov 2024)
+
+- OperationStore: Add forward compatibility for removing old validation code #5164
+
+# 1.29.3 (15 Nov 2024)
+
+- OperationStore: Improve `sync` performance with `GraphQL::Schema::Visibility`
+
+# 1.29.2 (4 Sept 2024)
+
+- Subscriptions: show broadcast subscriber count in dashboard (Pusher requires "subscription count" to be turned on and `use ... show_broadcast_subscribers_count: true`)
+
+# 1.29.1 (29 Aug 2024)
+
+- OperationStore: Accept a `context:` in `#add`
+
+# 1.29.0 (28 Aug 2024)
+
+- Subscriptions: use a single Pusher or Ably channel to deliver broadcast payloads to subscribers
+- Dashboard: fix crash when a topic had no active subscriptions
+
+# 1.28.1 (22 Aug 2024)
+
+- Subscriptions: Track `last_triggered_at`; add more metadata to the dashboard.
+
+# 1.28.0 (20 Aug 2024)
+
+- OperationStore: require the `ActiveRecord` backend inside an `ActiveSupport.on_load(:active_record) { ... }` block to improve Rails compatibility
+
+# 1.27.7 (13 Aug 2024)
+
+- Subscriptions: Fix _another_ Lua error in big cleanup operations
+
+# 1.27.6 (13 Aug 2024)
+
+- Subscriptions: Fix Lua error when cleaning up huge numbers of inactive subscriptions
+
+# 1.27.5 (9 May 2024)
+
+- OperationStore: remove needless call to `.metadata` #4947
+
+# 1.27.4 (2 May 2024)
+
+- Pundit, CanCan, OperationStore: add Rails generators for getting started
+
+# 1.27.3 (1 May 2024)
+
+- OperationStore: Fix `.reindex` for many stored operations #4940
+
+# 1.27.2 (30 Apr 2024)
+
+- Dashboard: handle missing index references gracefully #4940
+
+# 1.27.1 (18 Apr 2024)
+
+- OperationStore: Don't call `query.query_string` if there's already a parsed document #4922
+
+# 1.27.0 (11 Apr 2024)
+
+- RelationConnection: support Arel's `NullsFirst` and `NullsLast` nodes #4910
+
+# 1.26.5 (1 Mar 2024)
+
+- OperationStore::AddOperationBatch: remove rescue for StatementInvalid inside transaction
+
+# 1.26.4 (27 Feb 2024)
+
+- RelationConnection: Don't quote table names that weren't quoted in original SQL, fixes #4508 (comment)
+
+# 1.26.3 (19 Feb 2024)
+
+- OperationStore: fix `sync` endpoint for Rack 3+ #4829
+- Improve error message handling on Rails 7.1
+
+# 1.26.2 (30 Jan 2024)
 
 - `@defer` / `@stream`: Write delimiters at the end of each patch so that clients respond to payloads more quickly. (Previously, delimiters were added at the start of each patch, so clients had to wait for the _next_ patch before they knew the current one was complete.)
 
-# 1.26.1 (23 Jan 2023)
+# 1.26.1 (23 Jan 2024)
 
 - Pundit integration: improve error message when a `Scope` class is missing
 
-# 1.26.0 (19 Jan 2023)
+# 1.26.0 (19 Jan 2024)
 
 ### Breaking Changes
 
@@ -769,7 +848,7 @@
 
 ### Bug Fix
 
-- Pundit integration: use overriden `pundit_policy_class` for scoping and mutation authorization
+- Pundit integration: use overridden `pundit_policy_class` for scoping and mutation authorization
 
 ## 1.9.11 (20 Feb 2019)
 

@@ -113,7 +113,7 @@ module GraphQL
       end
 
       def print_field(field, indent: "")
-        @current_field = query.get_field(@current_type, field.name)
+        @current_field = query.types.field(@current_type, field.name)
         old_type = @current_type
         @current_type = @current_field.type.unwrap
         super

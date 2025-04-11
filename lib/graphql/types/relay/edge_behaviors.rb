@@ -8,12 +8,13 @@ module GraphQL
           child_class.description("An edge in a connection.")
           child_class.field(:cursor, String, null: false, description: "A cursor for use in pagination.")
           child_class.extend(ClassMethods)
-          child_class.class_eval { self.node_type = nil }
+          child_class.class_exec { self.node_type = nil }
           child_class.node_nullable(true)
+          child_class.default_broadcastable(nil)
         end
 
         def node
-          current_runtime_state = Thread.current[:__graphql_runtime_info]
+          current_runtime_state = Fiber[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[context.query]
           query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
           @object.node
@@ -24,10 +25,19 @@ module GraphQL
             super
             child_class.node_type = nil
             child_class.node_nullable = nil
+            child_class.default_broadcastable(default_broadcastable?)
           end
 
           def default_relay?
             true
+          end
+
+          def default_broadcastable?
+            @default_broadcastable
+          end
+
+          def default_broadcastable(new_value)
+            @default_broadcastable = new_value
           end
 
           # Get or set the Object type that this edge wraps.

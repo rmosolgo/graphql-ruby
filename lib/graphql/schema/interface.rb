@@ -13,6 +13,7 @@ module GraphQL
         include GraphQL::Schema::Member::Scoped
         include GraphQL::Schema::Member::HasAstNode
         include GraphQL::Schema::Member::HasUnresolvedTypeError
+        include GraphQL::Schema::Member::HasDataloader
         include GraphQL::Schema::Member::HasDirectives
         include GraphQL::Schema::Member::HasInterfaces
 
@@ -29,7 +30,7 @@ module GraphQL
             const_set(:DefinitionMethods, defn_methods_module)
             extend(self::DefinitionMethods)
           end
-          self::DefinitionMethods.module_eval(&block)
+          self::DefinitionMethods.module_exec(&block)
         end
 
         # @see {Schema::Warden} hides interfaces without visible implementations
@@ -63,13 +64,18 @@ module GraphQL
 
             child_class.introspection(introspection)
             child_class.description(description)
+            child_class.comment(nil)
             # If interfaces are mixed into each other, only define this class once
             if !child_class.const_defined?(:UnresolvedTypeError, false)
               add_unresolved_type_error(child_class)
             end
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`
-            backtrace_line = caller(0, 10).find { |line| line.include?("schema/member/has_interfaces.rb") && line.include?("in `implements'")}
+            backtrace_line = caller_locations(0, 10).find do |location|
+              location.base_label == "implements" &&
+                location.path.end_with?("schema/member/has_interfaces.rb")
+            end
+
             if !backtrace_line
               raise "Attach interfaces using `implements(#{self})`, not `include(#{self})`"
             end
@@ -78,13 +84,29 @@ module GraphQL
           super
         end
 
+        # Register other Interface or Object types as implementers of this Interface.
+        #
+        # When those Interfaces or Objects aren't used as the return values of fields,
+        # they may have to be registered using this method so that GraphQL-Ruby can find them.
+        # @param types [Class, Module]
+        # @return [Array<Module, Class>] Implementers of this interface, if they're registered
         def orphan_types(*types)
-          if types.any?
-            @orphan_types = types
+          if !types.empty?
+            @orphan_types ||= []
+            @orphan_types.concat(types)
           else
-            all_orphan_types = @orphan_types || []
-            all_orphan_types += super if defined?(super)
-            all_orphan_types.uniq
+            if defined?(@orphan_types)
+              all_orphan_types = @orphan_types.dup
+              if defined?(super)
+                all_orphan_types += super
+                all_orphan_types.uniq!
+              end
+              all_orphan_types
+            elsif defined?(super)
+              super
+            else
+              EmptyObjects::EMPTY_ARRAY
+            end
           end
         end
 

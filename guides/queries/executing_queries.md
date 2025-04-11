@@ -127,7 +127,7 @@ Note that `context` is _not_ the hash that you passed it. It's an instance of {{
 
 `context` is shared by the whole query. Anything you add to `context` will be accessible by any other field in the query (although GraphQL-Ruby's order of execution can vary).
 
-However, "scoped context" is can be used to assign values into `context` that are only available in the current field and the _children_ of the current field. For example, in this query:
+However, "scoped context" can be used to assign values into `context` that are only available in the current field and the _children_ of the current field. For example, in this query:
 
 ```graphql
 {

@@ -44,10 +44,7 @@ namespace :graphql do
         puts "\n"
 
         results = queries.map { |query| schema.validate(query) }
-        errors = results
-                   .select { |result| result[:errors].present? }
-                   .map { |result| result[:errors] }
-                   .flatten
+        errors = results.flatten
 
         if errors.empty?
           puts '✅  All queries are valid'

@@ -79,6 +79,18 @@ module GraphQL
           end
         end
 
+        # @param new_has_no_fields [Boolean] Call with `true` to make this Object type ignore the requirement to have any defined fields.
+        # @return [void]
+        def has_no_fields(new_has_no_fields)
+          @has_no_fields = new_has_no_fields
+          nil
+        end
+
+        # @return [Boolean] `true` if `has_no_fields(true)` was configued
+        def has_no_fields?
+          @has_no_fields
+        end
+
         # @return [Hash<String => GraphQL::Schema::Field, Array<GraphQL::Schema::Field>>] Fields defined on this class _specifically_, not parent classes
         def own_fields
           @own_fields ||= {}
@@ -99,11 +111,12 @@ module GraphQL
         module InterfaceMethods
           def get_field(field_name, context = GraphQL::Query::NullContext.instance)
             warden = Warden.from_context(context)
+            skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Profile)
             for ancestor in ancestors
               if ancestor.respond_to?(:own_fields) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
-                  (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
-                return f
+                  (skip_visible || (f_entry = Warden.visible_entry?(:visible_field?, f_entry, context, warden)))
+                return f_entry
               end
             end
             nil
@@ -120,7 +133,7 @@ module GraphQL
                   # Choose the most local definition that passes `.visible?` --
                   # stop checking for fields by name once one has been found.
                   if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
-                    visible_fields[field_name] = f
+                    visible_fields[field_name] = f.ensure_loaded
                   end
                 end
               end
@@ -134,13 +147,14 @@ module GraphQL
             # Objects need to check that the interface implementation is visible, too
             warden = Warden.from_context(context)
             ancs = ancestors
+            skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Profile)
             i = 0
             while (ancestor = ancs[i])
               if ancestor.respond_to?(:own_fields) &&
                   visible_interface_implementation?(ancestor, context, warden) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
-                  (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
-                return f
+                  (skip_visible || (f_entry = Warden.visible_entry?(:visible_field?, f_entry, context, warden)))
+                return (skip_visible ? f_entry : f_entry.ensure_loaded)
               end
               i += 1
             end
@@ -153,16 +167,21 @@ module GraphQL
             warden = Warden.from_context(context)
             # Local overrides take precedence over inherited fields
             visible_fields = {}
+            had_any_fields_at_all = false
             for ancestor in ancestors
               if ancestor.respond_to?(:own_fields) && visible_interface_implementation?(ancestor, context, warden)
                 ancestor.own_fields.each do |field_name, fields_entry|
+                  had_any_fields_at_all = true
                   # Choose the most local definition that passes `.visible?` --
                   # stop checking for fields by name once one has been found.
                   if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
-                    visible_fields[field_name] = f
+                    visible_fields[field_name] = f.ensure_loaded
                   end
                 end
               end
+            end
+            if !had_any_fields_at_all && !has_no_fields?
+              warn(GraphQL::Schema::Object::FieldsAreRequiredError.new(self).message + "\n\nThis will raise an error in a future GraphQL-Ruby version.")
             end
             visible_fields
           end
@@ -183,9 +202,10 @@ module GraphQL
 
         def inherited(subclass)
           super
-          subclass.class_eval do
+          subclass.class_exec do
             @own_fields ||= nil
             @field_class ||= nil
+            @has_no_fields ||= false
           end
         end
 

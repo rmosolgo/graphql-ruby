@@ -54,6 +54,7 @@ Then, extend that one for each union in your schema:
 
 ```ruby
 class Types::CommentSubject < Types::BaseUnion
+  comment "TODO comment on the union"
   description "Objects which may be commented on"
   possible_types Types::Post, Types::Image
 

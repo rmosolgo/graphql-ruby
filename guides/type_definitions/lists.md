@@ -106,11 +106,11 @@ In this example, `scores` may not return `null`. It must _always_ return a list.
 
 Here are values the field may return:
 
-Valid | Invalid
-------|------
-`[]`  | `null`
-`[1, 2, ...]`| `[null]`
-| | `[1, null, 2, ...]`
+| Valid | Invalid |
+| ------ | ------ |
+| `[]` | `null` |
+| `[1, 2, ...]` | `[null]` |
+| | `[1, null, 2, ...]` |
 
 ### Non-null lists with nullable items
 

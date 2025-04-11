@@ -21,7 +21,7 @@ module GraphQL
         end
         node_values = node_values.select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
 
-        if node_values.any?
+        if !node_values.empty?
           argument_owner = case parent
           when GraphQL::Language::Nodes::Field
             context.field_definition
@@ -65,7 +65,7 @@ module GraphQL
           end
         end
 
-        arg_defn = context.warden.get_argument(argument_owner, arg_node.name)
+        arg_defn = @types.argument(argument_owner, arg_node.name)
         arg_defn_type = arg_defn.type
 
         # If the argument is non-null, but it was given a default value,

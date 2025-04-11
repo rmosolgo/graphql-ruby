@@ -9,7 +9,7 @@ module Graphql
       class MutationRootGenerator < Rails::Generators::Base
         include Core
 
-        desc "Create mutation base type, mutation root tipe, and adds the latter to the schema"
+        desc "Create mutation base type, mutation root type, and adds the latter to the schema"
         source_root File.expand_path('../templates', __FILE__)
 
         class_option :schema,

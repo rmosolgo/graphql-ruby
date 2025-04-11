@@ -200,6 +200,14 @@ describe GraphQL::Language::Visitor do
           super
         end
       end
+
+      def on_directive_definition(node, parent)
+        if node.name == "deleteMe"
+          super(DELETE_NODE, parent)
+        else
+          super
+        end
+      end
     end
 
     def get_result(query_str)
@@ -375,6 +383,10 @@ GRAPHQL
 
     it "works with SDL" do
       before_query = <<-GRAPHQL.chop
+directive @deleteMe on FIELD
+
+directive @keepMe on FIELD
+
 type Rename @doStuff {
   f: Int
   renameThis: String
@@ -383,6 +395,8 @@ type Rename @doStuff {
 GRAPHQL
 
       after_query = <<-GRAPHQL.chop
+directive @keepMe on FIELD
+
 type WasRenamed @doStuff(addedArgument2: 2) {
   f: Int
   wasRenamed: String

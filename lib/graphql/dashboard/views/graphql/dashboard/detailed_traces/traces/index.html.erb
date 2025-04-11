@@ -1,0 +1,45 @@
+<% content_for(:title, "Profiles") %>
+<div class="row justify-content-between mt-3">
+  <div class="col-auto">
+    <h3>Detailed Profiles</h3>
+  </div>
+  <div class="col-auto">
+    <%= button_tag "Delete All Traces", class: "btn btn-sm btn-outline-danger", data: { perfetto_delete_all: graphql_dashboard.delete_all_detailed_traces_traces_path } %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Operation</th>
+          <th>Duration (ms) </th>
+          <th>Timestamp</th>
+          <th>Open in Perfetto UI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if @traces.empty? %>
+          <tr>
+            <td colspan="4" class="text-center">
+              <em>No traces saved yet. Read about saving traces <%= link_to "in the docs", "https://graphql-ruby.org/queries/tracing#detailed-profiles" %>.</em>
+            </td>
+          </tr>
+        <% end %>
+        <% @traces.each do |trace| %>
+          <tr>
+            <td><%= trace.operation_name %></td>
+            <td><%= trace.duration_ms.round(2) %></td>
+            <td><%= Time.at(trace.begin_ms / 1000.0).strftime("%Y-%m-%d %H:%M:%S.%L") %></td>
+            <td><%= link_to "View ↗", "#", data: { perfetto_open: trace.operation_name, perfetto_path: graphql_dashboard.detailed_traces_trace_path(trace.id) } %></td>
+            <td><%= link_to "Delete", "#", data: { perfetto_delete: graphql_dashboard.detailed_traces_trace_path(trace.id) }, class: "text-danger" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <% if @last && @traces.size >= @last %>
+      <%= link_to("Previous >", graphql_dashboard.detailed_traces_traces_path(last: @last, before: @traces.last.begin_ms), class: "btn btn-outline-primary") %>
+    <% end %>
+  </div>
+</div>

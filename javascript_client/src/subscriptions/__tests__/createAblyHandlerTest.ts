@@ -1,4 +1,4 @@
-import { createAblyHandler } from "../createAblyHandler"
+import { OnErrorData, createAblyHandler } from "../createAblyHandler"
 import { Realtime, Types } from "ably"
 
 const dummyOperation = { text: "", name: "" }
@@ -307,7 +307,7 @@ describe("createAblyHandler", () => {
         const variables = {}
         const cacheConfig = {}
         const onError = (error: any) => {
-          expect(error.message).toMatch(/Invalid key in request/)
+          expect(error.message).toEqual("unable to handle request; no application id found in request")
           resolve()
         }
         const onNext = () => console.log("onNext")
@@ -383,7 +383,7 @@ describe("createAblyHandler", () => {
       const operation = {}
       const variables = {}
       const cacheConfig = {}
-      const onError = (error: Error) => {
+      const onError = (error: OnErrorData) => {
         caughtError = error
       }
       const onNext = () => {}
@@ -408,7 +408,7 @@ describe("createAblyHandler", () => {
       }
       await Promise.all(disposals)
 
-      // 201st subscription - should work now that previous 200 subscriptions have been diposed
+      // 201st subscription - should work now that previous 200 subscriptions have been disposed
       const { dispose } = ablyHandler(
         operation,
         variables,
@@ -441,7 +441,7 @@ describe("createAblyHandler", () => {
         const operation = {}
         const variables = {}
         const cacheConfig = {}
-        const onError = (error: Error) => {
+        const onError = (error: OnErrorData) => {
           caughtError = error
         }
         const messages: any[] = []

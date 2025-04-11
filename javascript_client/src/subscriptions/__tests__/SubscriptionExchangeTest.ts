@@ -3,12 +3,13 @@ import Pusher from "pusher-js"
 import Urql from "urql"
 import {parse} from "graphql"
 import { nextTick } from "process"
+import { Consumer } from "@rails/actioncable"
 
 type MockChannel = {
   bind: (action: string, handler: Function) => void,
 }
 
-describe("SubscriptionExchange", () => {
+describe("SubscriptionExchange with Pusher", () => {
   var channelName = "1234"
   var log: any[]
   var pusher: any
@@ -97,5 +98,70 @@ describe("SubscriptionExchange", () => {
       })
     })
 
+  })
+})
+
+describe("SubscriptionExchange with ActionCable", () => {
+  it("calls through to handlers", () => {
+    var handlers: any
+    var log: [string, any][]= []
+
+    var dummyActionCableConsumer = {
+      subscriptions: {
+        create: (channelName: string, newHandlers: any) => {
+          log.push(["create", channelName])
+          handlers = newHandlers
+          return {
+            perform: (evt: string, data: any) => {
+              log.push([evt, data])
+            },
+            unsubscribe: () => {
+              log.push(["unsubscribed", null])
+            }
+          }
+        }
+      }
+    }
+
+    var options = {
+      consumer: (dummyActionCableConsumer as unknown) as Consumer,
+      channelName: "CustomChannel"
+    }
+
+    var exchange = SubscriptionExchange.create(options);
+    var parsedQuery = parse("{ foo { bar } }")
+    var operation = {
+      query: parsedQuery,
+      variables: {},
+      context: {
+        url: "/graphql",
+        requestPolicy: "network-only",
+      },
+      kind: "subscription",
+    } as Urql.Operation
+
+    var subscriber = exchange(operation)
+    const next = (data: any) => { log.push(["next", data]) }
+    const error = (err: any) => { log.push(["error", err]) }
+    const complete = (data: any) => { log.push(["complete", data]) }
+    const subscription = subscriber.subscribe({ next, error, complete })
+
+
+    return new Promise((resolve, _reject) => {
+      nextTick(() => {
+        handlers.connected() // trigger the GraphQL send
+        handlers.received({ result: { data: { a: "1" } }, more: false })
+        subscription.unsubscribe()
+        const expectedLog = [
+          ["create", "CustomChannel"],
+          ["execute", { query: parsedQuery, variables: {} }],
+          ["next", { data: { a: "1" } }],
+          ["complete", undefined],
+          ["unsubscribed", null],
+        ]
+        expect(log).toEqual(expectedLog)
+        resolve(true)
+      })
+    })
   })
 })

@@ -8,27 +8,11 @@ desc: Working with unique global IDs
 index: 8
 ---
 
-Some GraphQL features use unique IDs to load objects:
+GraphQL-Ruby ships with some helpers to implement [Relay-style object identification](https://relay.dev/graphql/objectidentification.htm).
 
-- the `node(id:)` field looks up objects by ID
-- any arguments with `loads:` configurations look up objects by ID
+## Schema methods
 
-To use these features, you must provide a function for generating UUIDs and fetching objects with them. In your schema, define `self.id_from_object` and `self.object_from_id`:
-
-```ruby
-class MySchema < GraphQL::Schema
-  def self.id_from_object(object, type_definition, query_ctx)
-    # Generate a unique string ID for `object` here
-    # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
-    object.to_gid_param
-  end
-
-  def self.object_from_id(global_id, query_ctx)
-    # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
-    GlobalID.find(global_id)
-  end
-end
-```
+See {% internal_link "the Schema definition guide", "/schema/definition#object-identification" %} for required top-level hooks.
 
 ## Node interface
 

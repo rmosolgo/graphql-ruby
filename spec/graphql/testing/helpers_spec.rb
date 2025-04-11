@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Testing::Helpers do
   class AssertionsSchema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     class BillSource < GraphQL::Dataloader::Source
       def fetch(students)
         students.map { |s| { amount: 1_000_001 } }
@@ -28,15 +29,19 @@ describe GraphQL::Testing::Helpers do
     end
 
     class Student < GraphQL::Schema::Object
-      field :name, String do
+      def self.authorized?(object, context)
+        context.errors.empty?
+      end
+
+      field :name, String, extras: [:ast_node] do
         argument :full_name, Boolean, required: false
         argument :prefix, String, required: false, default_value: "Mc", prepare: ->(val, ctx) { -> { val.capitalize } }
       end
 
-      def name(full_name: nil, prefix: nil)
+      def name(full_name: nil, prefix: nil, ast_node:)
         name = object[:name]
         if full_name
-          "#{name} #{prefix}#{name}"
+          "#{name} #{ast_node.alias ? "\"#{ast_node.alias}\" " : ""}#{prefix}#{name}"
         else
           name
         end
@@ -61,17 +66,46 @@ describe GraphQL::Testing::Helpers do
         end
       end
 
-      field :upcased_name, String, extensions: [Upcase], resolver_method: :name
+      field :upcased_name, String, extensions: [Upcase], hash_key: :name
 
       field :ssn, String do
         def authorized?(obj, args, ctx)
           ctx[:current_user]&.admin?
         end
       end
+
+      field :current_field, String
+
+      def current_field
+        context[:current_field].path
+      end
     end
 
+    class AuthorizedObject < GraphQL::Schema::Object
+      def self.authorized?(object, context)
+        context.dataloader.with(BillSource).load(object)[:amount] > 5
+      end
+
+      field :id, ID
+    end
     class Query < GraphQL::Schema::Object
       field :students, [Student]
+
+      field :student, Student do
+        argument :student_id, ID, loads: Student
+      end
+
+      def student(student:)
+        student
+      end
+
+      field :lookahead_selections, String, extras: [:lookahead]
+
+      def lookahead_selections(lookahead:)
+        lookahead.selections.to_s
+      end
+
+      field :authorized_object, AuthorizedObject
     end
 
     query(Query)
@@ -85,6 +119,18 @@ describe GraphQL::Testing::Helpers do
     def self.unauthorized_field(err)
       raise err
     end
+
+    def self.object_from_id(id, ctx)
+      if id == "s1"
+        -> do { name: "Student1", type: Student } end
+      else
+        raise ArgumentError, "No data for id: #{id.inspect}"
+      end
+    end
+
+    def self.resolve_type(abs_t, obj, ctx)
+      obj.fetch(:type)
+    end
   end
 
   include GraphQL::Testing::Helpers
@@ -96,13 +142,24 @@ describe GraphQL::Testing::Helpers do
       it "resolves fields" do
         assert_equal "Blah", run_graphql_field(AssertionsSchema, "Student.name", { name: "Blah" })
         assert_equal "Blah McBlah", run_graphql_field(AssertionsSchema, "Student.name", { name: "Blah" }, arguments: { "fullName" => true })
+        assert_equal "Blah McBlah", run_graphql_field(AssertionsSchema, "Student.name", { name: "Blah" }, arguments: { full_name: true })
         assert_equal({ amount: 1_000_001 }, run_graphql_field(AssertionsSchema, "Student.latestBill", :student, context: admin_context))
+      end
+
+      it "loads arguments with lazy_resolve" do
+        student = run_graphql_field(AssertionsSchema, "Query.student", nil, arguments: { "studentId" => "s1" })
+        expected_student = { name: "Student1", type: AssertionsSchema::Student }
+        assert_equal(expected_student, student)
+
+        student2 = run_graphql_field(AssertionsSchema, "Query.student", nil, arguments: { student: "s1" })
+        assert_equal(expected_student, student2)
       end
 
       it "works with resolution context" do
         with_resolution_context(AssertionsSchema, object: { name: "Foo" }, type: "Student", context: { admin_for: ["Foo"] }) do |rc|
           rc.run_graphql_field("name")
           rc.run_graphql_field("isAdminFor")
+          assert_equal "Student.currentField", rc.run_graphql_field("currentField")
         end
       end
 
@@ -129,6 +186,16 @@ describe GraphQL::Testing::Helpers do
         assert_equal "BILL", run_graphql_field(AssertionsSchema, "Student.upcasedName", { name: "Bill" })
       end
 
+      it "works with extras: [:ast_node]" do
+        assert_equal "Billy \"theKid\" McBilly", run_graphql_field(AssertionsSchema, "Student.name", { name: "Billy" }, arguments: { full_name: true }, ast_node: GraphQL::Language::Nodes::Field.new(name: "name", field_alias: "theKid"))
+      end
+
+      it "works with extras: [:lookahead]" do
+        assert_equal "[]", run_graphql_field(AssertionsSchema, "Query.lookaheadSelections", :something)
+        dummy_lookahead = OpenStruct.new(selections: ["one", "two"])
+        assert_equal "[\"one\", \"two\"]", run_graphql_field(AssertionsSchema, "Query.lookaheadSelections", :something, lookahead: dummy_lookahead)
+      end
+
       it "prepares arguments" do
         assert_equal "Blah De Blah", run_graphql_field(AssertionsSchema, "Student.name", { name: "Blah" }, arguments: { full_name: true, prefix: "de " })
       end
@@ -139,6 +206,10 @@ describe GraphQL::Testing::Helpers do
           run_graphql_field(AssertionsSchema, "Student.ssn", {})
         end
         assert_equal "An instance of Hash failed AssertionsSchema::Student's authorization check on field ssn", err.message
+      end
+
+      it "works when .authorized? calls dataloader" do
+        assert_equal "100", run_graphql_field(AssertionsSchema, "AuthorizedObject.id", { id: "100" })
       end
 
       it "raises when the type doesn't exist" do

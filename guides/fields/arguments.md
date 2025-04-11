@@ -92,8 +92,6 @@ field :search_posts, [PostType], null: false do
 end
 ```
 
-Note argument deprecation is a stage 2 GraphQL [proposal](https://github.com/graphql/graphql-spec/pull/525) so not all clients will leverage this information.
-
 ## Aliasing
 
 Use `as: :alternate_name` to use a different key from within your resolvers while

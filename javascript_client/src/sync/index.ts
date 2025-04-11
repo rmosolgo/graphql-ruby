@@ -1,12 +1,12 @@
 import sendPayload from "./sendPayload"
-
+import dumpPayload from "./dumpPayload"
 import { generateClientCode, gatherOperations, ClientOperation } from "./generateClient"
 import Logger from "./logger"
 import fs from "fs"
 import { removeClientFieldsFromString } from "./removeClientFields"
 import preparePersistedQueryList from "./preparePersistedQueryList"
 
-interface SyncOptions {
+export interface SyncOptions {
   path?: string,
   relayPersistedOutput?: string,
   apolloAndroidOperationOutput?: string,
@@ -15,6 +15,7 @@ interface SyncOptions {
   secret?: string
   url?: string,
   mode?: string,
+  dumpPayload?: string | true,
   outfile?: string,
   outfileType?: string,
   client: string,
@@ -46,6 +47,7 @@ interface SyncOptions {
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
  * @param {Boolean} options.verbose - If true, log debug output
  * @param {Object<String, String>} options.headers - If present, extra headers to add to the HTTP request
+ * @param {String|true} options.dumpPayload - If a filename is given, write the HTTP Post data to that file. If present without a filename, print it to stdout.
  * @param {String} options.changesetVersion - If present, sent to populate `context[:changeset_version]` on the server
  * @return {Promise} Rejects with an Error or String if something goes wrong. Resolves with the operation payload if successful.
 */
@@ -53,7 +55,9 @@ function sync(options: SyncOptions) {
   var logger = new Logger(!!options.quiet)
   var verbose = !!options.verbose
   var url = options.url
-  if (!url) {
+  var dumpingPayload = "dumpPayload" in options
+  var dumpingToStdout = options.dumpPayload == true
+  if (!url && !dumpingPayload) {
     logger.log("No URL; Generating artifacts without syncing them")
   }
   var clientName = options.client
@@ -61,13 +65,13 @@ function sync(options: SyncOptions) {
     throw new Error("Client name must be provided for sync")
   }
   var encryptionKey = options.secret
-  if (encryptionKey) {
+  if (encryptionKey && options.dumpPayload != null) {
     logger.log("Authenticating with HMAC")
   }
 
   var graphqlGlob = options.path
   var hashFunc = options.hash
-  var sendFunc = options.send || sendPayload
+  var sendFunc = options.send || (dumpingPayload ? dumpPayload : sendPayload)
   var gatherMode = options.mode
   var clientType = options.outfileType
   if (options.relayPersistedOutput) {
@@ -144,11 +148,7 @@ function sync(options: SyncOptions) {
       logger.log("No operations found in " + options.path + ", not syncing anything")
       resolve(null)
       return
-    } else if(!url) {
-      // This is a local-only run to generate an artifact
-      resolve(payload)
-      return
-    } else {
+    } else if (url) {
       logger.log("Syncing " + payload.operations.length + " operations to " + logger.bright(url) + "...")
       var sendOpts = {
         url: url,
@@ -171,7 +171,7 @@ function sync(options: SyncOptions) {
             })
 
             var failed = responseData.failed.length
-            // These might get overriden for status output
+            // These might get overridden for status output
             var notModified = responseData.not_modified.length
             var added = responseData.added.length
             if (failed) {
@@ -220,6 +220,14 @@ function sync(options: SyncOptions) {
         reject(err)
         return
       })
+    } else if (dumpingPayload) {
+      sendFunc(payload, { dumpPayload: options.dumpPayload })
+      resolve(payload)
+      return
+    } else {
+      // This is a local-only run to generate an artifact
+      resolve(payload)
+      return
     }
   })
 
@@ -227,19 +235,25 @@ function sync(options: SyncOptions) {
     // The payload is yielded when sync was successful, but typescript had
     // trouble using it from ^^ here. So instead, just use its presence as a signal to continue.
 
-    // Don't generate a new file when we're using relay-comipler's --persist-output
+    // Don't generate a new file when we're using relay-compiler's --persist-output
     if (_payload && outfile) {
       var generatedCode = generateClientCode(clientName, payload.operations, clientType)
       var finishedPayload = {
         operations: payload.operations,
         generatedCode,
       }
-      logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
+      if (!dumpingToStdout) {
+        logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
+      }
       fs.writeFileSync(outfile, generatedCode, "utf8")
-      logger.log(logger.green("✓ Done!"))
+      if (!dumpingToStdout) {
+        logger.log(logger.green("✓ Done!"))
+      }
       return finishedPayload
     } else {
-      logger.log(logger.green("✓ Done!"))
+      if (!dumpingToStdout) {
+        logger.log(logger.green("✓ Done!"))
+      }
       return payload
     }
   })

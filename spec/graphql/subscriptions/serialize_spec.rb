@@ -98,6 +98,27 @@ describe GraphQL::Subscriptions::Serialize do
     end
   end
 
+  if testing_rails?
+    describe "ActiveRecord::Relations" do
+      before do
+        Food.destroy_all
+        Food.create!(name: "Peanut Butter")
+        Food.create!(name: "Jelly")
+      end
+
+      after do
+        Food.destroy_all
+      end
+
+      it "turns them into Arrays and can reload them with GlobalID" do
+        assert_equal 2, Food.count
+        serialized = serialize_dump(Food.all)
+        reloaded = serialize_load(serialized)
+        assert_equal reloaded, Food.all.to_a
+      end
+    end
+  end
+
   it "can deserialize openstructs" do
     os = OpenStruct.new(a: 1.2, b: :c, d: Time.new, e: OpenStruct.new(f: [1, 2, 3]))
     serialized = serialize_dump(os)

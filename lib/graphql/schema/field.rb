@@ -41,6 +41,32 @@ module GraphQL
         end
       end
 
+      # @return [String, nil]
+      def deprecation_reason
+        super || @resolver_class&.deprecation_reason
+      end
+
+      def directives
+        if @resolver_class && !(r_dirs = @resolver_class.directives).empty?
+          if !(own_dirs = super).empty?
+            new_dirs = own_dirs.dup
+            r_dirs.each do |r_dir|
+              if r_dir.class.repeatable? ||
+                ( (r_dir_name = r_dir.graphql_name) &&
+                  (!new_dirs.any? { |d| d.graphql_name == r_dir_name })
+                )
+                new_dirs << r_dir
+              end
+            end
+            new_dirs
+          else
+            r_dirs
+          end
+        else
+          super
+        end
+      end
+
       # @return [Class] The thing this field was defined on (type, mutation, resolver)
       attr_accessor :owner
 
@@ -69,7 +95,7 @@ module GraphQL
       end
 
       def inspect
-        "#<#{self.class} #{path}#{all_argument_definitions.any? ? "(...)" : ""}: #{type.to_type_signature}>"
+        "#<#{self.class} #{path}#{!all_argument_definitions.empty? ? "(...)" : ""}: #{type.to_type_signature}>"
       end
 
       alias :mutation :resolver
@@ -94,7 +120,7 @@ module GraphQL
       # @param subscription [Class] A {GraphQL::Schema::Subscription} class to use for field configuration
       # @return [GraphQL::Schema:Field] an instance of `self`
       # @see {.initialize} for other options
-      def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
+      def self.from_options(name = nil, type = nil, desc = nil, comment: nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
         if (resolver_class = resolver || mutation || subscription)
           # Add a reference to that parent class
           kwargs[:resolver_class] = resolver_class
@@ -102,6 +128,10 @@ module GraphQL
 
         if name
           kwargs[:name] = name
+        end
+
+        if comment
+          kwargs[:comment] = comment
         end
 
         if !type.nil?
@@ -134,11 +164,16 @@ module GraphQL
             Member::BuildType.to_type_name(@return_type_expr)
           elsif @resolver_class && @resolver_class.type
             Member::BuildType.to_type_name(@resolver_class.type)
-          else
+          elsif type
             # As a last ditch, try to force loading the return type:
             type.unwrap.name
           end
-          @connection = return_type_name.end_with?("Connection") && return_type_name != "Connection"
+          if return_type_name
+            @connection = return_type_name.end_with?("Connection") && return_type_name != "Connection"
+          else
+            # TODO set this when type is set by method
+            false # not loaded yet?
+          end
         else
           @connection
         end
@@ -195,6 +230,7 @@ module GraphQL
       # @param owner [Class] The type that this field belongs to
       # @param null [Boolean] (defaults to `true`) `true` if this field may return `null`, `false` if it is never `null`
       # @param description [String] Field description
+      # @param comment [String] Field comment
       # @param deprecation_reason [String] If present, the field is marked "deprecated" with this message
       # @param method [Symbol] The method to call on the underlying object to resolve this field (defaults to `name`)
       # @param hash_key [String, Symbol] The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
@@ -219,13 +255,13 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @param fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
         if !(resolver_class)
-          if type.nil?
-            raise ArgumentError, "missing second `type` argument or keyword `type:`"
+          if type.nil? && !block_given?
+            raise ArgumentError, "missing second `type` argument, keyword `type:`, or a block containing `type(...)`"
           end
         end
         @original_name = name
@@ -233,8 +269,9 @@ module GraphQL
 
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
-
+        NameValidator.validate!(@name)
         @description = description
+        @comment = comment
         @type = @owner_type = @own_validators = @own_directives = @own_arguments = @arguments_statically_coercible = nil # these will be prepared later if necessary
 
         self.deprecation_reason = deprecation_reason
@@ -290,6 +327,7 @@ module GraphQL
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
         @fallback_value = fallback_value
+        @definition_block = definition_block
 
         arguments.each do |name, arg|
           case arg
@@ -309,28 +347,17 @@ module GraphQL
 
         @extensions = EMPTY_ARRAY
         @call_after_define = false
-        # This should run before connection extension,
-        # but should it run after the definition block?
-        if scoped?
-          self.extension(ScopeExtension)
-        end
-
-        # The problem with putting this after the definition_block
-        # is that it would override arguments
-        if connection? && connection_extension
-          self.extension(connection_extension)
-        end
-
+        set_pagination_extensions(connection_extension: connection_extension)
         # Do this last so we have as much context as possible when initializing them:
-        if extensions.any?
+        if !extensions.empty?
           self.extensions(extensions)
         end
 
-        if resolver_class && resolver_class.extensions.any?
+        if resolver_class && !resolver_class.extensions.empty?
           self.extensions(resolver_class.extensions)
         end
 
-        if directives.any?
+        if !directives.empty?
           directives.each do |(dir_class, options)|
             self.directive(dir_class, **options)
           end
@@ -340,16 +367,29 @@ module GraphQL
           self.validates(validates)
         end
 
-        if block_given?
-          if definition_block.arity == 1
-            yield self
-          else
-            instance_eval(&definition_block)
-          end
+        if @definition_block.nil?
+          self.extensions.each(&:after_define_apply)
+          @call_after_define = true
         end
+      end
 
-        self.extensions.each(&:after_define_apply)
-        @call_after_define = true
+      # Calls the definition block, if one was given.
+      # This is deferred so that references to the return type
+      # can be lazily evaluated, reducing Rails boot time.
+      # @return [self]
+      # @api private
+      def ensure_loaded
+        if @definition_block
+          if @definition_block.arity == 1
+            @definition_block.call(self)
+          else
+            instance_exec(self, &@definition_block)
+          end
+          self.extensions.each(&:after_define_apply)
+          @call_after_define = true
+          @definition_block = nil
+        end
+        self
       end
 
       attr_accessor :dynamic_introspection
@@ -381,6 +421,20 @@ module GraphQL
         end
       end
 
+      # @param text [String]
+      # @return [String, nil]
+      def comment(text = nil)
+        if text
+          @comment = text
+        elsif !NOT_CONFIGURED.equal?(@comment)
+          @comment
+        elsif @resolver_class
+          @resolver_class.comment
+        else
+          nil
+        end
+      end
+
       # Read extension instances from this field,
       # or add new classes/options to be initialized on this field.
       # Extensions are executed in the order they are added.
@@ -401,7 +455,7 @@ module GraphQL
           new_extensions.each do |extension_config|
             if extension_config.is_a?(Hash)
               extension_class, options = *extension_config.to_a[0]
-              self.extension(extension_class, options)
+              self.extension(extension_class, **options)
             else
               self.extension(extension_config)
             end
@@ -421,7 +475,7 @@ module GraphQL
       # @param extension_class [Class] subclass of {Schema::FieldExtension}
       # @param options [Hash] if provided, given as `options:` when initializing `extension`.
       # @return [void]
-      def extension(extension_class, options = nil)
+      def extension(extension_class, **options)
         extension_inst = extension_class.new(field: self, options: options)
         if @extensions.frozen?
           @extensions = @extensions.dup
@@ -442,7 +496,7 @@ module GraphQL
         if new_extras.nil?
           # Read the value
           field_extras = @extras
-          if @resolver_class && @resolver_class.extras.any?
+          if @resolver_class && !@resolver_class.extras.empty?
             field_extras + @resolver_class.extras
           else
             field_extras
@@ -471,6 +525,8 @@ module GraphQL
             if arguments[:last] && (max_possible_page_size.nil? || arguments[:last] > max_possible_page_size)
               max_possible_page_size = arguments[:last]
             end
+          elsif arguments.is_a?(GraphQL::ExecutionError) || arguments.is_a?(GraphQL::UnauthorizedError)
+            raise arguments
           end
 
           if max_possible_page_size.nil?
@@ -483,41 +539,24 @@ module GraphQL
             metadata_complexity = 0
             lookahead = GraphQL::Execution::Lookahead.new(query: query, field: self, ast_nodes: nodes, owner_type: owner)
 
-            if (page_info_lookahead = lookahead.selection(:page_info)).selected?
-              metadata_complexity += 1 # pageInfo
-              metadata_complexity += page_info_lookahead.selections.size # subfields
+            lookahead.selections.each do |next_lookahead|
+              # this includes `pageInfo`, `nodes` and `edges` and any custom fields
+              # TODO this doesn't support procs yet -- unlikely to need it.
+              metadata_complexity += next_lookahead.field.complexity
+              if next_lookahead.name != :nodes && next_lookahead.name != :edges
+                # subfields, eg, for pageInfo -- assumes no subselections
+                metadata_complexity += next_lookahead.selections.size
+              end
             end
-
-            if lookahead.selects?(:total) || lookahead.selects?(:total_count) || lookahead.selects?(:count)
-              metadata_complexity += 1
-            end
-
-            nodes_edges_complexity = 0
-            nodes_edges_complexity += 1 if lookahead.selects?(:edges)
-            nodes_edges_complexity += 1 if lookahead.selects?(:nodes)
 
             # Possible bug: selections on `edges` and `nodes` are _both_ multiplied here. Should they be?
-            items_complexity = child_complexity - metadata_complexity - nodes_edges_complexity
-            # Add 1 for _this_ field
-            1 + (max_possible_page_size * items_complexity) + metadata_complexity + nodes_edges_complexity
+            items_complexity = child_complexity - metadata_complexity
+            subfields_complexity = (max_possible_page_size * items_complexity) + metadata_complexity
+            # Apply this field's own complexity
+            apply_own_complexity_to(subfields_complexity, query, nodes)
           end
         else
-          defined_complexity = complexity
-          case defined_complexity
-          when Proc
-            arguments = query.arguments_for(nodes.first, self)
-            if arguments.is_a?(GraphQL::ExecutionError)
-              return child_complexity
-            elsif arguments.respond_to?(:keyword_arguments)
-              arguments = arguments.keyword_arguments
-            end
-
-            defined_complexity.call(query.context, arguments, child_complexity)
-          when Numeric
-            defined_complexity + child_complexity
-          else
-            raise("Invalid complexity: #{defined_complexity.inspect} on #{path} (#{inspect})")
-          end
+          apply_own_complexity_to(child_complexity, query, nodes)
         end
       end
 
@@ -580,16 +619,29 @@ module GraphQL
       class MissingReturnTypeError < GraphQL::Error; end
       attr_writer :type
 
-      def type
-        if @resolver_class
-          return_type = @return_type_expr || @resolver_class.type_expr
-          if return_type.nil?
-            raise MissingReturnTypeError, "Can't determine the return type for #{self.path} (it has `resolver: #{@resolver_class}`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue)"
+      # Get or set the return type of this field.
+      #
+      # It may return nil if no type was configured or if the given definition block wasn't called yet.
+      # @param new_type [Module, GraphQL::Schema::NonNull, GraphQL::Schema::List] A GraphQL return type
+      # @return [Module, GraphQL::Schema::NonNull, GraphQL::Schema::List, nil] the configured type for this field
+      def type(new_type = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_type)
+          if @resolver_class
+            return_type = @return_type_expr || @resolver_class.type_expr
+            if return_type.nil?
+              raise MissingReturnTypeError, "Can't determine the return type for #{self.path} (it has `resolver: #{@resolver_class}`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue)"
+            end
+            nullable = @return_type_null.nil? ? @resolver_class.null : @return_type_null
+            Member::BuildType.parse_type(return_type, null: nullable)
+          elsif !@return_type_expr.nil?
+            @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
           end
-          nullable = @return_type_null.nil? ? @resolver_class.null : @return_type_null
-          Member::BuildType.parse_type(return_type, null: nullable)
         else
-          @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+          @return_type_expr = new_type
+          # If `type` is set in the definition block, then the `connection_extension: ...` given as a keyword won't be used, hmm...
+          # Also, arguments added by `connection_extension` will clobber anything previously defined,
+          # so `type(...)` should go first.
+          set_pagination_extensions(connection_extension: self.class.connection_extension)
         end
       rescue GraphQL::Schema::InvalidDocumentError, MissingReturnTypeError => err
         # Let this propagate up
@@ -621,7 +673,7 @@ module GraphQL
               using_arg_values = false
             end
 
-            args = context.warden.arguments(self)
+            args = context.types.arguments(self)
             args.each do |arg|
               arg_key = arg.keyword
               if arg_values.key?(arg_key)
@@ -694,7 +746,7 @@ module GraphQL
                 method_to_call = resolver_method
                 method_receiver = obj
                 # Call the method with kwargs, if there are any
-                if ruby_kwargs.any?
+                if !ruby_kwargs.empty?
                   obj.public_send(resolver_method, **ruby_kwargs)
                 else
                   obj.public_send(resolver_method)
@@ -714,7 +766,7 @@ module GraphQL
               elsif inner_object.respond_to?(@method_sym)
                 method_to_call = @method_sym
                 method_receiver = obj.object
-                if ruby_kwargs.any?
+                if !ruby_kwargs.empty?
                   inner_object.public_send(@method_sym, **ruby_kwargs)
                 else
                   inner_object.public_send(@method_sym)
@@ -801,7 +853,7 @@ module GraphQL
           unsatisfied_ruby_kwargs.clear
         end
 
-        if unsatisfied_ruby_kwargs.any? || unsatisfied_method_params.any?
+        if !unsatisfied_ruby_kwargs.empty? || !unsatisfied_method_params.empty?
           raise FieldImplementationFailed.new, <<-ERR
 Failed to call `#{method_name.inspect}` on #{receiver.inspect} because the Ruby method params were incompatible with the GraphQL arguments:
 
@@ -880,6 +932,38 @@ ERR
           end
         else
           yield(obj, args)
+        end
+      end
+
+      def apply_own_complexity_to(child_complexity, query, nodes)
+        case (own_complexity = complexity)
+        when Numeric
+          own_complexity + child_complexity
+        when Proc
+          arguments = query.arguments_for(nodes.first, self)
+          if arguments.is_a?(GraphQL::ExecutionError)
+            return child_complexity
+          elsif arguments.respond_to?(:keyword_arguments)
+            arguments = arguments.keyword_arguments
+          end
+
+          own_complexity.call(query.context, arguments, child_complexity)
+        else
+          raise ArgumentError, "Invalid complexity for #{self.path}: #{own_complexity.inspect}"
+        end
+      end
+
+      def set_pagination_extensions(connection_extension:)
+        # This should run before connection extension,
+        # but should it run after the definition block?
+        if scoped?
+          self.extension(ScopeExtension, call_after_define: false)
+        end
+
+        # The problem with putting this after the definition_block
+        # is that it would override arguments
+        if connection? && connection_extension
+          self.extension(connection_extension, call_after_define: false)
         end
       end
     end

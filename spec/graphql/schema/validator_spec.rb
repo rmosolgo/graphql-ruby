@@ -103,7 +103,7 @@ describe GraphQL::Schema::Validator do
     # Two fields with different errors
     res5 = schema.execute("{ v1: validated(value: \"0\") v2: validated(value: \"123456\") v3: validated(value: \"abcdefg\") }")
     expected_data = {"v1"=>nil, "v2"=>"123456", "v3"=>nil}
-    assert_equal expected_data, res5["data"]
+    assert_graphql_equal expected_data, res5["data"]
     errs = [
       {
         "message" => "value is too short (minimum is 5)",
@@ -128,7 +128,7 @@ describe GraphQL::Schema::Validator do
         { "validated" => 6 },
       ]
     }
-    assert_equal expected_data, res["data"]
+    assert_graphql_equal expected_data, res["data"]
 
     res = schema.execute("{ list { validated(value: 3) } }")
     expected_response = {
@@ -195,7 +195,7 @@ describe GraphQL::Schema::Validator do
 
       res = ValidationInheritanceSchema.execute("{ intInput(input: { int: 1, otherInt: 2 }) }")
       assert_nil res["data"]["intInput"]
-      assert_equal ["IntInput has the wrong arguments"], res["errors"].map { |e| e["message"] }
+      assert_equal ["IntInput must include exactly one of the following arguments: int, otherInt."], res["errors"].map { |e| e["message"] }
     end
 
     it "works with resolvers" do
@@ -204,7 +204,7 @@ describe GraphQL::Schema::Validator do
 
       res = ValidationInheritanceSchema.execute("{ int(int: 1, otherInt: 2) }")
       assert_nil res["data"]["int"]
-      assert_equal ["int has the wrong arguments"], res["errors"].map { |e| e["message"] }
+      assert_equal ["int must include exactly one of the following arguments: int, otherInt."], res["errors"].map { |e| e["message"] }
     end
   end
 end

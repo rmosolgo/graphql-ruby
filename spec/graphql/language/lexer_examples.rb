@@ -21,14 +21,6 @@ module TokenMethods
       self[2]
     end
 
-    def prev_token
-      self[4]
-    end
-
-    def previous_token
-      self[4]
-    end
-
     def inspect
       "(#{name} #{value.inspect} [#{line}:#{col}])"
     end
@@ -64,10 +56,6 @@ module LexerExamples
           assert_equal Encoding::UTF_8, tokens[2].value.encoding
         end
 
-        it "keeps track of previous_token" do
-          assert_equal tokens[0], tokens[1].prev_token
-        end
-
         it "handles integers with a leading zero" do
           tokens = subject.tokenize("{ a(id: 04) }")
           assert_equal :INT, tokens[5].name
@@ -88,7 +76,7 @@ module LexerExamples
           let(:query_string) { %|{ a(b: """\nc\n \\""" d\n""" """""e""""")}|}
 
           it "tokenizes them" do
-            assert_equal "c\n \"\"\" d", tokens[5].value
+            assert_equal "c\n \\\"\"\" d", tokens[5].value
             assert_equal "\"\"e\"\"", tokens[6].value
           end
 
@@ -119,7 +107,7 @@ text: """b\\\\""", otherText: "a"
 GRAPHQL
 
             tokens = subject.tokenize(query_str)
-            assert_equal ['text', ':', 'b\\', 'otherText', ':', 'a',], tokens.map(&:value)
+            assert_equal ['text', ':', 'b\\\\', 'otherText', ':', 'a',], tokens.map(&:value)
           end
         end
 
@@ -165,11 +153,6 @@ GRAPHQL
           assert_bad_unicode(text2, 'Bad unicode escape in "\\xED\\xB0\\x80\\xED\\xBC\\xAC"')
         end
 
-        it "clears the previous_token between runs" do
-          tok_2 = subject.tokenize(query_string)
-          assert_nil tok_2[0].prev_token
-        end
-
         it "counts string position properly" do
           tokens = subject.tokenize('{ a(b: "c")}')
           str_token = tokens[5]
@@ -192,7 +175,7 @@ string with \\"""
           tokens = subject.tokenize doc
           token = tokens.first
           assert_equal :STRING, token.name
-          assert_equal 'string with """', token.value
+          assert_equal 'string with \"""', token.value
         end
 
         it "counts block string line properly" do
@@ -242,6 +225,32 @@ string with \\"""
           assert_equal 15, string_tok_3.line
           assert_equal 21, type_keyword_tok_3.line
           assert_equal 21, c_name_tok.line
+        end
+
+        it "halts after max_tokens" do
+          query_type = Class.new(GraphQL::Schema::Object) do
+            graphql_name "Query"
+            field :x, Integer
+          end
+          parent_schema = Class.new(GraphQL::Schema) do
+            query(query_type)
+          end
+
+          child_schema = Class.new(parent_schema) do
+            max_query_string_tokens(5000)
+          end
+
+          assert_nil parent_schema.max_query_string_tokens
+          assert_equal 5000, child_schema.max_query_string_tokens
+
+          query_str = 3_000.times.map { |n| "query Q#{n} { __typename }" }.join("\n")
+          assert_equal 15_000, subject.tokenize(query_str).size
+          assert GraphQL.parse(query_str)
+          result = child_schema.execute(query_str)
+          assert_equal ["This query is too large to execute."], result["errors"].map { |e| e["message"] }
+
+          result2 = parent_schema.execute(query_str)
+          assert_equal ["An operation name is required"], result2["errors"].map { |e| e["message"] }
         end
       end
     end

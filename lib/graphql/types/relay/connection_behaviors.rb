@@ -13,11 +13,12 @@ module GraphQL
           child_class.node_nullable(true)
           child_class.edges_nullable(true)
           child_class.edge_nullable(true)
-          child_class.module_eval {
+          child_class.module_exec {
             self.edge_type = nil
             self.node_type = nil
             self.edge_class = nil
           }
+          child_class.default_broadcastable(nil)
           add_page_info_field(child_class)
         end
 
@@ -31,10 +32,19 @@ module GraphQL
             child_class.edge_type = nil
             child_class.node_type = nil
             child_class.edge_class = nil
+            child_class.default_broadcastable(default_broadcastable?)
           end
 
           def default_relay?
             true
+          end
+
+          def default_broadcastable?
+            @default_broadcastable
+          end
+
+          def default_broadcastable(new_value)
+            @default_broadcastable = new_value
           end
 
           # @return [Class]
@@ -186,7 +196,7 @@ module GraphQL
         def edges
           # Assume that whatever authorization needed to happen
           # already happened at the connection level.
-          current_runtime_state = Thread.current[:__graphql_runtime_info]
+          current_runtime_state = Fiber[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[context.query]
           query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
           @object.edges
@@ -195,7 +205,7 @@ module GraphQL
         def nodes
           # Assume that whatever authorization needed to happen
           # already happened at the connection level.
-          current_runtime_state = Thread.current[:__graphql_runtime_info]
+          current_runtime_state = Fiber[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[context.query]
           query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
           @object.nodes

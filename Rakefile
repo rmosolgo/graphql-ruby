@@ -11,24 +11,22 @@ Rake::TestTask.new do |t|
   t.libs << "spec" << "lib" << "graphql-c_parser/lib"
 
   exclude_integrations = []
-  ['Mongoid', 'Rails'].each do |integration|
+  ['mongoid', 'rails'].each do |integration|
     begin
-      Object.const_get(integration)
-    rescue NameError
-      exclude_integrations << integration.downcase
+      require integration
+    rescue LoadError
+      exclude_integrations << integration
     end
   end
 
-  t.test_files = Dir['spec/**/*_spec.rb'].reject do |f|
-    next unless f.start_with?("spec/integration/")
-    excluded = exclude_integrations.any? do |integration|
-      f.start_with?("spec/integration/#{integration}/")
-    end
-    puts "+ #{f}" unless excluded
-    excluded
+  t.test_files = FileList.new("spec/**/*_spec.rb") do |fl|
+    fl.exclude(*exclude_integrations.map { |int| "spec/integration/#{int}/**/*" })
   end
 
-  t.warning = false
+  # After 2.7, there were not warnings for uninitialized ivars anymore
+  if RUBY_VERSION < "3"
+    t.warning = false
+  end
 end
 
 require 'rubocop/rake_task'
@@ -122,6 +120,12 @@ namespace :bench do
   task :profile_to_definition do
     prepare_benchmark
     GraphQLBenchmark.profile_to_definition
+  end
+
+  desc "Load schema from SDL"
+  task :profile_from_definition do
+    prepare_benchmark
+    GraphQLBenchmark.profile_from_definition
   end
 
   desc "Compare GraphQL-Batch and GraphQL-Dataloader"

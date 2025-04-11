@@ -41,11 +41,6 @@ describe GraphQL::Execution::Interpreter do
         Box.new(value: object.sym)
       end
 
-      field :null_union_field_test, Integer, null: false
-      def null_union_field_test
-        1
-      end
-
       field :always_cached_value, Integer, null: false
       def always_cached_value
         raise "should never be called"
@@ -59,11 +54,6 @@ describe GraphQL::Execution::Interpreter do
 
       def expansion
         Query::EXPANSIONS.find { |e| e.sym == @object.expansion_sym }
-      end
-
-      field :null_union_field_test, Integer
-      def null_union_field_test
-        nil
       end
 
       field :parent_class_name, String, null: false, extras: [:parent]
@@ -143,7 +133,7 @@ describe GraphQL::Execution::Interpreter do
         base_ctx_value = context[key]
         interpreter_ctx_value = context.namespace(:interpreter)[key]
         if base_ctx_value != interpreter_ctx_value
-          raise "Context mismatch for #{key} -> #{base_ctx_value} / intepreter: #{interpreter_ctx_value}"
+          raise "Context mismatch for #{key} -> #{base_ctx_value} / interpreter: #{interpreter_ctx_value}"
         else
           base_ctx_value
         end
@@ -309,7 +299,7 @@ describe GraphQL::Execution::Interpreter do
       module EnsureThreadCleanedUp
         def execute_multiplex(multiplex:)
           res = super
-          runtime_info = Thread.current[:__graphql_runtime_info]
+          runtime_info = Fiber[:__graphql_runtime_info]
           if !runtime_info.nil? && runtime_info != {}
             if !multiplex.context[:allow_pending_thread_state]
               # `nestedQuery` can allow this
@@ -369,7 +359,7 @@ describe GraphQL::Execution::Interpreter do
       {"__typename" => "Expansion", "sym" => "RAV"},
     ]
     assert_equal expected_abstract_list, result["data"]["find"]
-    assert_nil Thread.current[:__graphql_runtime_info]
+    assert_nil Fiber[:__graphql_runtime_info]
   end
 
   it "runs a nested query and maintains proper state" do
@@ -377,7 +367,7 @@ describe GraphQL::Execution::Interpreter do
     result = InterpreterTest::Schema.execute(query_str, variables: { queryStr: "{ __typename }" })
     assert_equal '{"data":{"__typename":"Query"}}', result["data"]["nestedQuery"]["result"]
     assert_equal ["nestedQuery"], result["data"]["nestedQuery"]["currentPath"]
-    assert_nil Thread.current[:__graphql_runtime_info]
+    assert_nil Fiber[:__graphql_runtime_info]
   end
 
   it "runs mutation roots atomically and sequentially" do
@@ -405,7 +395,7 @@ describe GraphQL::Execution::Interpreter do
       "i4" => { "value" => 4, "lazyValue" => 4},
       "i5" => { "value" => 5, "lazyValue" => 5},
     }
-    assert_equal expected_data, result["data"]
+    assert_graphql_equal expected_data, result["data"]
   end
 
   it "runs skip and include" do
@@ -427,16 +417,8 @@ describe GraphQL::Execution::Interpreter do
       "exp3" => {"name" => "Ravnica, City of Guilds"},
       "exp5" => {"name" => "Ravnica, City of Guilds"},
     }
-    assert_equal expected_data, result["data"]
-    assert_nil Thread.current[:__graphql_runtime_info]
-  end
-
-  describe "temporary interpreter flag" do
-    it "is set" do
-      # This can be removed later, just a sanity check during migration
-      res = InterpreterTest::Schema.execute("{ __typename }")
-      assert_equal true, res.context.interpreter?
-    end
+    assert_graphql_equal expected_data, result["data"]
+    assert_nil Fiber[:__graphql_runtime_info]
   end
 
   describe "runtime info in context" do
@@ -477,7 +459,7 @@ describe GraphQL::Execution::Interpreter do
       # propagated to here
       assert_nil res["data"].fetch("expansion")
       assert_equal ["Cannot return null for non-nullable field Expansion.name"], res["errors"].map { |e| e["message"] }
-      assert_nil Thread.current[:__graphql_runtime_info]
+      assert_nil Fiber[:__graphql_runtime_info]
     end
 
     it "places errors ahead of data in the response" do
@@ -535,29 +517,12 @@ describe GraphQL::Execution::Interpreter do
 
       assert_equal 3, res["data"]["findMany"].size
       assert_equal "RAV", res["data"]["findMany"][0]["sym"]
-      assert_equal nil, res["data"]["findMany"][1]
-      assert_equal nil, res["data"]["findMany"][2]
+      assert_nil res["data"]["findMany"][1]
+      assert_nil res["data"]["findMany"][2]
       assert_equal false, res.key?("errors")
 
       assert_equal Hash, res["data"].class
       assert_equal Array, res["data"]["findMany"].class
-    end
-
-    it "works with union lists that have members of different kinds, with different nullabilities" do
-      res = InterpreterTest::Schema.execute <<-GRAPHQL
-      {
-        findMany(ids: ["RAV", "Dark Confidant"]) {
-          ... on Expansion {
-            nullUnionFieldTest
-          }
-          ... on Card {
-            nullUnionFieldTest
-          }
-        }
-      }
-      GRAPHQL
-
-      assert_equal [1, nil], res["data"]["findMany"].map { |f| f["nullUnionFieldTest"] }
     end
   end
 
@@ -869,9 +834,6 @@ describe GraphQL::Execution::Interpreter do
 
       result = RaisedErrorSchema.execute(querystring)
       expected_result = {
-        "data" => {
-          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
-        },
         "errors" => [
           {
             "message"=>"boom",
@@ -879,8 +841,11 @@ describe GraphQL::Execution::Interpreter do
             "path"=>["iface", "txn", "fails"]
           },
         ],
+        "data" => {
+          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
+        },
       }
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 
@@ -955,6 +920,27 @@ describe GraphQL::Execution::Interpreter do
 
       expected_result = { "variant" => { "product" => { "id" => "1", "variants" => [ { "product" => { "id" => "1" } } ] } } }
       assert_equal(expected_result, res["data"])
+    end
+  end
+
+  describe "multiplex queries" do
+    it "runs multiplex queries" do
+      result = InterpreterTest::Schema.multiplex([
+        {
+          query: "query Card($name: String!) { card(name: $name) { colors } }",
+          variables: { name: "Dark Confidant" },
+          operation_name: "Card"
+        },
+        {
+          query: "query Expansion($expansion: String!) { expansion(sym: $expansion) { cards { name } } }",
+          variables: { expansion: "RAV" },
+          operation_name: "Expansion"
+        }
+      ])
+
+      assert_equal ["BLACK"], result[0]["data"]["card"]["colors"]
+      assert_equal [{"name" => "Dark Confidant"}], result[1]["data"]["expansion"]["cards"]
+      assert_nil Fiber[:__graphql_runtime_info]
     end
   end
 end

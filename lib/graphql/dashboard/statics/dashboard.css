@@ -1,0 +1,30 @@
+#header-icon {
+  max-height: 2em;
+}
+
+.graphql-highlight {
+  font-family:'Courier New', Courier, monospace;
+  width: 100%;
+  white-space: pre-wrap;
+}
+
+#limiter-histogram .column {
+  max-height: 300px;
+}
+
+#limiter-histogram .column td {
+  --color-1: var(--bs-gray);
+  --color-2: var(--bs-red);
+  opacity: 0.6;
+}
+
+#limiter-histogram .column td:hover {
+  opacity: 1;
+}
+
+#limiter-histogram .column tbody tr th[scope=row] {
+  width: 150px;
+  transform: rotate(-75deg) translateY(55px) translateX(-50px);
+  left: auto;
+  --labels-align-inline: end;
+}

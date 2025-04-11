@@ -28,10 +28,22 @@ describe GraphQL::Tracing::DataDogTrace do
 
       field :thing, Thing
       def thing; :thing; end
+
+      field :str, String
+      def str
+        dataloader.with(EchoSource).load("hello")
+      end
+    end
+
+    class EchoSource < GraphQL::Dataloader::Source
+      def fetch(strs)
+        strs
+      end
     end
 
     class TestSchema < GraphQL::Schema
       query(Query)
+      use GraphQL::Dataloader
       trace_with(GraphQL::Tracing::DataDogTrace)
       lazy_resolve(Box, :value)
     end
@@ -39,8 +51,8 @@ describe GraphQL::Tracing::DataDogTrace do
     class CustomTracerTestSchema < GraphQL::Schema
       module CustomDataDogTracing
         include GraphQL::Tracing::DataDogTrace
-        def prepare_span(trace_key, data, span)
-          span.set_tag("custom:#{trace_key}", data.keys.sort.join(","))
+        def prepare_span(trace_key, object, span)
+          span.set_tag("custom:#{trace_key}", object.class.name)
         end
       end
       query(Query)
@@ -74,23 +86,33 @@ describe GraphQL::Tracing::DataDogTrace do
   it "sets component and operation tags" do
     DataDogTraceTest::TestSchema.execute("{ int }")
     assert_includes Datadog::SPAN_TAGS, ['component', 'graphql']
-    assert_includes Datadog::SPAN_TAGS, ['operation', 'execute_multiplex']
+    assert_includes Datadog::SPAN_TAGS, ['operation', 'execute']
   end
 
-  it "sets custom tags tags" do
+  it "works with dataloader" do
+    DataDogTraceTest::TestSchema.execute("{ str }")
+    expected_keys = [
+      "execute.graphql",
+      (USING_C_PARSER ? "lex.graphql" : nil),
+      "parse.graphql",
+      "analyze.graphql",
+      "validate.graphql",
+      "Query.authorized.graphql",
+      "DataDogTraceTest_EchoSource.fetch.graphql"
+    ].compact
+    assert_equal expected_keys, Datadog::TRACE_KEYS
+  end
+
+  it "sets custom tags" do
     DataDogTraceTest::CustomTracerTestSchema.execute("{ thing { str } }")
     expected_custom_tags = [
-      (USING_C_PARSER ? ["custom:lex", "query_string"] : nil),
-      ["custom:parse", "query_string"],
-      ["custom:execute_multiplex", "multiplex"],
-      ["custom:analyze_multiplex", "multiplex"],
-      ["custom:validate", "query,validate"],
-      ["custom:analyze_query", "query"],
-      ["custom:execute_query", "query"],
-      ["custom:authorized", "object,query,type"],
-      ["custom:execute_field", "arguments,ast_node,field,object,query"],
-      ["custom:authorized", "object,query,type"],
-      ["custom:execute_query_lazy", "multiplex,query"],
+      (USING_C_PARSER ? ["custom:lex", "String"] : nil),
+      ["custom:parse", "String"],
+      ["selected_operation_name", nil],
+      ["selected_operation_type", "query"],
+      ["query_string", "{ thing { str } }"],
+      ["custom:execute", "GraphQL::Execution::Multiplex"],
+      ["custom:validate", "GraphQL::Query"],
     ].compact
 
     actual_custom_tags = Datadog::SPAN_TAGS.reject { |t| t[0] == "operation" || t[0] == "component" || t[0].is_a?(Symbol) }

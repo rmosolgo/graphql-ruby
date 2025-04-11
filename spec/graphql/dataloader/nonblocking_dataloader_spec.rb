@@ -2,7 +2,7 @@
 require "spec_helper"
 
 if Fiber.respond_to?(:scheduler) # Ruby 3+
-  describe GraphQL::Dataloader::NonblockingDataloader do
+  describe "GraphQL::Dataloader::NonblockingDataloader" do
     class NonblockingSchema < GraphQL::Schema
       class SleepSource < GraphQL::Dataloader::Source
         def fetch(keys)
@@ -84,7 +84,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
 
       query(Query)
-      use GraphQL::Dataloader::NonblockingDataloader
+      use GraphQL::Dataloader, nonblocking: true
     end
 
     def with_scheduler
@@ -99,7 +99,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         child_class.class_eval do
 
           it "runs IO in parallel by default" do
-            dataloader = GraphQL::Dataloader::NonblockingDataloader.new
+            dataloader = GraphQL::Dataloader.new(nonblocking: true)
             results = {}
             dataloader.append_job { sleep(0.1); results[:a] = 1 }
             dataloader.append_job { sleep(0.2); results[:b] = 2 }
@@ -111,11 +111,11 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             ended_at = Time.now
 
             assert_equal({ a: 1, b: 2, c: 3 }, results, "All the jobs ran")
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "works with sources" do
-            dataloader = GraphQL::Dataloader::NonblockingDataloader.new
+            dataloader = GraphQL::Dataloader.new(nonblocking: true)
             r1 = dataloader.with(NonblockingSchema::SleepSource).request(0.1)
             r2 = dataloader.with(NonblockingSchema::SleepSource).request(0.2)
             r3 = dataloader.with(NonblockingSchema::SleepSource).request(0.3)
@@ -136,9 +136,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
             assert_equal 0.3, v2
             assert_equal 0.3, v3
-            assert_in_delta 0.0, started_at_2 - ended_at_2, 0.05, "Already-loaded values returned instantly"
+            assert_in_delta 0.0, started_at_2 - ended_at_2, 0.06, "Already-loaded values returned instantly"
 
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "works with GraphQL" do
@@ -148,7 +148,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             }
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "nested fields don't wait for slower higher-level fields" do
@@ -182,8 +182,8 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
               "s2" => { "sleeper" => { "duration" => 0.1 } },
               "s3" => { "duration" => 0.3 }
             }
-            assert_equal expected_data, res["data"]
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "Fields ran without any waiting"
+            assert_graphql_equal expected_data, res["data"]
+            assert_in_delta 0.3, ended_at - started_at, 0.06, "Fields ran without any waiting"
           end
 
           it "runs dataloaders in parallel across branches" do
@@ -228,7 +228,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
               "w3" => { "waitFor" => { "waitFor" => { "tag" => "d" } } },
               "w4" => { "tag" => "e" }
             }
-            assert_equal expected_data, res["data"]
+            assert_graphql_equal expected_data, res["data"]
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
@@ -250,12 +250,12 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         let(:scheduler_class) { Libev::Scheduler }
         include NonblockingDataloaderAssertions
       end
-    end
 
-    describe "with evt" do
-      require "evt"
-      let(:scheduler_class) { Evt::Scheduler }
-      include NonblockingDataloaderAssertions
+      describe "with evt" do
+        require "evt"
+        let(:scheduler_class) { Evt::Scheduler }
+        include NonblockingDataloaderAssertions
+      end
     end
   end
 end

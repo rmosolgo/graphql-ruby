@@ -9,9 +9,7 @@ describe GraphQL::Tracing::StatsdTracing do
         yield
       end
 
-      def timings
-        @timings
-      end
+      attr_reader :timings
 
       def clear
         @timings = []
@@ -38,7 +36,7 @@ describe GraphQL::Tracing::StatsdTracing do
 
     query(Query)
 
-    use GraphQL::Tracing::StatsdTracing, statsd: MockStatsd
+    use GraphQL::Tracing::StatsdTracing, statsd: MockStatsd, legacy_tracing: true
   end
 
   before do

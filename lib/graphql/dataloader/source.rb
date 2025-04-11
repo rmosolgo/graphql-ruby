@@ -73,7 +73,7 @@ module GraphQL
           end
         }
 
-        if pending_keys.any?
+        if !pending_keys.empty?
           sync(pending_keys)
         end
 
@@ -93,14 +93,14 @@ module GraphQL
       # Then run the batch and update the cache.
       # @return [void]
       def sync(pending_result_keys)
-        @dataloader.yield
+        @dataloader.yield(self)
         iterations = 0
         while pending_result_keys.any? { |key| !@results.key?(key) }
           iterations += 1
           if iterations > MAX_ITERATIONS
-            raise "#{self.class}#sync tried #{MAX_ITERATIONS} times to load pending keys (#{pending_result_keys}), but they still weren't loaded. There is likely a circular dependency."
+            raise "#{self.class}#sync tried #{MAX_ITERATIONS} times to load pending keys (#{pending_result_keys}), but they still weren't loaded. There is likely a circular dependency#{@dataloader.fiber_limit ? " or `fiber_limit: #{@dataloader.fiber_limit}` is set too low" : ""}."
           end
-          @dataloader.yield
+          @dataloader.yield(self)
         end
         nil
       end
@@ -186,8 +186,11 @@ This key should have been loaded already. This is a bug in GraphQL::Dataloader, 
 ERR
         end
         result = @results[key]
-
-        raise result if result.class <= StandardError
+        if result.is_a?(StandardError)
+          # Dup it because the rescuer may modify it.
+          # (This happens for GraphQL::ExecutionErrors, at least)
+          raise result.dup
+        end
 
         result
       end

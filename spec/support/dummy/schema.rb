@@ -33,6 +33,9 @@ module Dummy
   class BaseScalar < GraphQL::Schema::Scalar
   end
 
+  class BaseDirective < GraphQL::Schema::Directive
+  end
+
   module LocalProduct
     include BaseInterface
     description "Something that comes from somewhere"
@@ -265,6 +268,18 @@ module Dummy
     argument :old_source, String, required: false, deprecation_reason: "No longer supported"
   end
 
+  class PreparedDateInput < BaseInputObject
+    description "Input with prepared value"
+    argument :date, String, description: "date as a string", required: false
+    argument :deprecated_date, String, description: "date as a string", required: false, deprecation_reason: "Use date"
+
+    def prepare
+      return nil unless date || deprecated_date
+
+      Date.parse(date || deprecated_date)
+    end
+  end
+
   class DeepNonNull < BaseObject
     field :non_null_int, Integer, null: false do
       argument :returning, Integer, required: false
@@ -299,6 +314,7 @@ module Dummy
 
     def self.build(type:, data:, id_type: "Int")
       Class.new(self) do
+        graphql_name("Fetch#{type.graphql_name}")
         self.data = data
         type(type, null: true)
         description("Find a #{type.name} by id")
@@ -320,6 +336,7 @@ module Dummy
 
     def self.build(type:, data:)
       Class.new(self) do
+        graphql_name("Get#{type.graphql_name}")
         description("Find the only #{type.name}")
         type(type, null: true)
         self.data = data
@@ -396,7 +413,10 @@ module Dummy
       result
     end
 
-    field :all_edible, [Edible, null: true]
+    field :all_edible do
+      type [Edible, null: true]
+    end
+
     def all_edible
       CHEESES.values + MILKS.values
     end
@@ -460,13 +480,18 @@ module Dummy
       )
     end
 
-    field :deep_non_null, DeepNonNull, null: false
+    field :deep_non_null, null: false do
+      type(DeepNonNull)
+    end
+
     def deep_non_null; :deep_non_null; end
 
     field :huge_integer, Integer
     def huge_integer
       GraphQL::Types::Int::MAX + 1
     end
+
+    field :example_beverage, Beverage # just to add this type to the schema
   end
 
   class AdminDairyAppQuery < BaseObject
@@ -490,6 +515,7 @@ module Dummy
     field :push_value, [Integer], null: false, description: "Push a value onto a global array :D" do
       argument :value, Integer, as: :val
       argument :deprecated_test_input, DairyProductInput, required: false
+      argument :prepared_test_input, PreparedDateInput, required: false
     end
     def push_value(val:)
       GLOBAL_VALUES << val
@@ -507,18 +533,23 @@ module Dummy
     end
   end
 
+  class DirectiveForVariableDefinition < BaseDirective
+    locations(VARIABLE_DEFINITION)
+  end
+
   class Subscription < BaseObject
     field :test, String
     def test; "Test"; end
   end
 
   class Schema < GraphQL::Schema
-    query DairyAppQuery
-    mutation DairyAppMutation
-    subscription Subscription
+    query { DairyAppQuery }
+    mutation { DairyAppMutation }
+    subscription { Subscription }
     max_depth 5
-    orphan_types Honey, Beverage
+    orphan_types Honey
     trace_with GraphQL::Tracing::CallLegacyTracers
+    directives(DirectiveForVariableDefinition)
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 

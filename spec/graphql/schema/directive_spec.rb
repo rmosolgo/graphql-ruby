@@ -236,7 +236,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         },
         "t5"=>{"n5"=>"t5", "t5d"=>{"t5dl"=>{"t5dln"=>"t5dl"}}},
       }
-      assert_equal expected_data, res["data"]
+      assert_graphql_equal expected_data, res["data"]
 
       expected_counts = {
         ["t1", "t1n"] => [1],
@@ -266,7 +266,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       GRAPHQL
       res = RuntimeDirectiveTest::Schema.execute(query_str)
       expected_data = { "t1" => { "name" => "t1"}, "t2" => { "name" => "t2" }, "t3" => { "name" => "t3" } }
-      assert_equal expected_data, res["data"]
+      assert_graphql_equal expected_data, res["data"]
 
       expected_counts = {
         [] => [2],
@@ -382,7 +382,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       type Query @tag(name: "t1") @tag(name: "t2") {
         something(
           arg: Boolean @tag(name: "t3") @tag(name: "t4")
-        ): Int @tag(name: "t5") @tag(name: "t6")
+        ): Stuff @tag(name: "t5") @tag(name: "t6")
       }
 
       enum Stuff {

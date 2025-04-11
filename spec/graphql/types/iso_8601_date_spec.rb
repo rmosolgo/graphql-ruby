@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
-require "graphql/types/iso_8601_date"
+
 describe GraphQL::Types::ISO8601Date do
   module DateTest
     class DateObject < GraphQL::Schema::Object
@@ -189,14 +189,14 @@ describe GraphQL::Types::ISO8601Date do
         "parseDateOptional" => nil
       }
       assert_equal(expected_res, res["data"])
-      assert_equal(nil, res["errors"])
+      assert_nil(res["errors"])
 
       res = DateTest::Schema.execute(query_str, context: { raise_type_error: true })
       expected_res = {
         "parseDateOptional" => nil
       }
       assert_equal(expected_res, res["data"])
-      assert_equal(nil, res["errors"])
+      assert_nil(res["errors"])
     end
   end
 
@@ -310,7 +310,7 @@ describe GraphQL::Types::ISO8601Date do
       GRAPHQL
 
       expected_res = { "name" => "ISO8601Date", "kind" => "SCALAR"}
-      assert_equal expected_res, introspection_res["data"]["__type"]
+      assert_graphql_equal expected_res, introspection_res["data"]["__type"]
     end
   end
 end

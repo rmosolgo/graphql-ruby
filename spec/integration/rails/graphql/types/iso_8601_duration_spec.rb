@@ -12,7 +12,7 @@ describe GraphQL::Types::ISO8601Duration do
 
   let(:context) { GraphQL::Query.new(DurationTest::Schema, "{ __typename }").context }
 
-  # 3 years, 6 months, 4 days, 12 hours, 30 minutes, and 5.12345 seconds 
+  # 3 years, 6 months, 4 days, 12 hours, 30 minutes, and 5.12345 seconds
   let (:duration_str) { "P3Y6M4DT12H30M5.12345S" }
   let (:duration) { ActiveSupport::Duration.parse(duration_str) }
 
@@ -67,7 +67,7 @@ describe GraphQL::Types::ISO8601Duration do
 
     describe "coercing nil" do
       it "returns nil" do
-        assert_equal nil, GraphQL::Types::ISO8601Duration.coerce_input(nil, context)
+        assert_nil GraphQL::Types::ISO8601Duration.coerce_input(nil, context)
       end
     end
 
@@ -98,7 +98,7 @@ describe GraphQL::Types::ISO8601Duration do
     it "coerce_result and coerce_input raise GraphQL::Error" do
       old_active_support = defined?(ActiveSupport) ? ActiveSupport : nil
       Object.send(:remove_const, :ActiveSupport) if defined?(ActiveSupport)
-      
+
       assert_raises GraphQL::Error do
         GraphQL::Types::ISO8601Duration.coerce_result("", context)
       end

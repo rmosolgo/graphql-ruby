@@ -20,7 +20,7 @@ module GraphQL
 
       def initialize(name:, arguments:, field: nil, context: nil, scope: nil)
         @name = name
-        @arguments = arguments
+        @arguments = self.class.arguments_without_field_extras(arguments: arguments, field: field)
         @context = context
         field ||= context.field
         scope_key = field.subscription_scope
@@ -39,6 +39,7 @@ module GraphQL
       # @return [String] an identifier for this unit of subscription
       def self.serialize(_name, arguments, field, scope:, context: GraphQL::Query::NullContext.instance)
         subscription = field.resolver || GraphQL::Schema::Subscription
+        arguments = arguments_without_field_extras(field: field, arguments: arguments)
         normalized_args = stringify_args(field, arguments.to_h, context)
         subscription.topic_for(arguments: normalized_args, field: field, scope: scope)
       end
@@ -60,6 +61,16 @@ module GraphQL
       end
 
       class << self
+        def arguments_without_field_extras(arguments:, field:)
+          if !field.extras.empty?
+            arguments = arguments.dup
+            field.extras.each do |extra_key|
+              arguments.delete(extra_key)
+            end
+          end
+          arguments
+        end
+
         private
 
         # This method does not support cyclic references in the Hash,
@@ -137,7 +148,7 @@ module GraphQL
         end
 
         def get_arg_definition(arg_owner, arg_name, context)
-          arg_owner.get_argument(arg_name, context) || arg_owner.arguments(context).each_value.find { |v| v.keyword.to_s == arg_name }
+          context.types.argument(arg_owner, arg_name) || context.types.arguments(arg_owner).find { |v| v.keyword.to_s == arg_name }
         end
       end
     end

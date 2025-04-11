@@ -3,7 +3,7 @@ module GraphQL
   module Language
 
     class Lexer
-      def initialize(graphql_str, filename: nil)
+      def initialize(graphql_str, filename: nil, max_tokens: nil)
         if !(graphql_str.encoding == Encoding::UTF_8 || graphql_str.ascii_only?)
           graphql_str = graphql_str.dup.force_encoding(Encoding::UTF_8)
         end
@@ -11,17 +11,27 @@ module GraphQL
         @filename = filename
         @scanner = StringScanner.new(graphql_str)
         @pos = nil
+        @max_tokens = max_tokens || Float::INFINITY
+        @tokens_count = 0
+        @finished = false
       end
 
-      def eos?
-        @scanner.eos?
+      def finished?
+        @finished
       end
 
-      attr_reader :pos
+      attr_reader :pos, :tokens_count
 
       def advance
         @scanner.skip(IGNORE_REGEXP)
-        return false if @scanner.eos?
+        if @scanner.eos?
+          @finished = true
+          return false
+        end
+        @tokens_count += 1
+        if @tokens_count > @max_tokens
+          raise_parse_error("This query is too large to execute.")
+        end
         @pos = @scanner.pos
         next_byte = @string.getbyte(@pos)
         next_byte_is_for = FIRST_BYTES[next_byte]
@@ -51,9 +61,26 @@ module GraphQL
           @scanner.skip(IDENTIFIER_REGEXP)
           :IDENTIFIER
         when ByteFor::NUMBER
-          @scanner.skip(NUMERIC_REGEXP)
-          # Check for a matched decimal:
-          @scanner[1] ? :FLOAT : :INT
+          if len = @scanner.skip(NUMERIC_REGEXP)
+
+            if GraphQL.reject_numbers_followed_by_names
+              new_pos = @scanner.pos
+              peek_byte = @string.getbyte(new_pos)
+              next_first_byte = FIRST_BYTES[peek_byte]
+              if next_first_byte == ByteFor::NAME || next_first_byte == ByteFor::IDENTIFIER
+                number_part = token_value
+                name_part = @scanner.scan(IDENTIFIER_REGEXP)
+                raise_parse_error("Name after number is not allowed (in `#{number_part}#{name_part}`)")
+              end
+            end
+            # Check for a matched decimal:
+            @scanner[1] ? :FLOAT : :INT
+          else
+            # Attempt to find the part after the `-`
+            value = @scanner.scan(/-\s?[a-z0-9]*/i)
+            invalid_byte_for_number_error_message = "Expected type 'number', but it was malformed#{value.nil? ? "" : ": #{value.inspect}"}."
+            raise_parse_error(invalid_byte_for_number_error_message)
+          end
         when ByteFor::ELLIPSIS
           if @string.getbyte(@pos + 1) != 46 || @string.getbyte(@pos + 2) != 46
             raise_parse_error("Expected `...`, actual: #{@string[@pos..@pos + 2].inspect}")
@@ -89,6 +116,8 @@ module GraphQL
           "..."
         elsif token_name == :STRING
           string_value
+        elsif @scanner.matched_size.nil?
+          @scanner.peek(1)
         else
           token_value
         end
@@ -107,29 +136,27 @@ module GraphQL
       }
       UTF_8 = /\\u(?:([\dAa-f]{4})|\{([\da-f]{4,})\})(?:\\u([\dAa-f]{4}))?/i
       VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
+      ESCAPED = /(?:#{ESCAPES}|#{UTF_8})/o
 
       def string_value
         str = token_value
         is_block = str.start_with?('"""')
         if is_block
           str.gsub!(/\A"""|"""\z/, '')
+          return Language::BlockString.trim_whitespace(str)
         else
           str.gsub!(/\A"|"\z/, '')
-        end
 
-        if is_block
-          str = Language::BlockString.trim_whitespace(str)
-        end
-
-        if !str.valid_encoding? || !str.match?(VALID_STRING)
-          raise_parse_error("Bad unicode escape in #{str.inspect}")
-        else
-          Lexer.replace_escaped_characters_in_place(str)
-
-          if !str.valid_encoding?
+          if !str.valid_encoding? || !str.match?(VALID_STRING)
             raise_parse_error("Bad unicode escape in #{str.inspect}")
           else
-            str
+            Lexer.replace_escaped_characters_in_place(str)
+
+            if !str.valid_encoding?
+              raise_parse_error("Bad unicode escape in #{str.inspect}")
+            else
+              str
+            end
           end
         end
       end
@@ -156,6 +183,7 @@ module GraphQL
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
       FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
       FLOAT_EXP_REGEXP =     /[eE][+-]?[0-9]+/
+      # TODO: FLOAT_EXP_REGEXP should not be allowed to follow INT_REGEXP, integers are not allowed to have exponent parts.
       NUMERIC_REGEXP =  /#{INT_REGEXP}(#{FLOAT_DECIMAL_REGEXP}#{FLOAT_EXP_REGEXP}|#{FLOAT_DECIMAL_REGEXP}|#{FLOAT_EXP_REGEXP})?/
 
       KEYWORDS = [
@@ -250,11 +278,10 @@ module GraphQL
       FOUR_DIGIT_UNICODE = /#{UNICODE_DIGIT}{4}/
       N_DIGIT_UNICODE = %r{#{Punctuation::LCURLY}#{UNICODE_DIGIT}{4,}#{Punctuation::RCURLY}}x
       UNICODE_ESCAPE = %r{\\u(?:#{FOUR_DIGIT_UNICODE}|#{N_DIGIT_UNICODE})}
-      # # https://graphql.github.io/graphql-spec/June2018/#sec-String-Value
       STRING_ESCAPE = %r{[\\][\\/bfnrt]}
       BLOCK_QUOTE =   '"""'
       ESCAPED_QUOTE = /\\"/;
-      STRING_CHAR = /#{ESCAPED_QUOTE}|[^"\\]|#{UNICODE_ESCAPE}|#{STRING_ESCAPE}/
+      STRING_CHAR = /#{ESCAPED_QUOTE}|[^"\\\n\r]|#{UNICODE_ESCAPE}|#{STRING_ESCAPE}/
       QUOTED_STRING_REGEXP = %r{#{QUOTE} (?:#{STRING_CHAR})* #{QUOTE}}x
       BLOCK_STRING_REGEXP = %r{
         #{BLOCK_QUOTE}
@@ -299,24 +326,25 @@ module GraphQL
       # Replace any escaped unicode or whitespace with the _actual_ characters
       # To avoid allocating more strings, this modifies the string passed into it
       def self.replace_escaped_characters_in_place(raw_string)
-        raw_string.gsub!(ESCAPES, ESCAPES_REPLACE)
-        raw_string.gsub!(UTF_8) do |_matched_str|
-          codepoint_1 = ($1 || $2).to_i(16)
-          codepoint_2 = $3
-
-          if codepoint_2
-            codepoint_2 = codepoint_2.to_i(16)
-            if (codepoint_1 >= 0xD800 && codepoint_1 <= 0xDBFF) && # leading surrogate
-                (codepoint_2 >= 0xDC00 && codepoint_2 <= 0xDFFF) # trailing surrogate
-              # A surrogate pair
-              combined = ((codepoint_1 - 0xD800) * 0x400) + (codepoint_2 - 0xDC00) + 0x10000
-              [combined].pack('U'.freeze)
+        raw_string.gsub!(ESCAPED) do |matched_str|
+          if (point_str_1 = $1 || $2)
+            codepoint_1 = point_str_1.to_i(16)
+            if (codepoint_2 = $3)
+              codepoint_2 = codepoint_2.to_i(16)
+              if (codepoint_1 >= 0xD800 && codepoint_1 <= 0xDBFF) && # leading surrogate
+                  (codepoint_2 >= 0xDC00 && codepoint_2 <= 0xDFFF) # trailing surrogate
+                # A surrogate pair
+                combined = ((codepoint_1 - 0xD800) * 0x400) + (codepoint_2 - 0xDC00) + 0x10000
+                [combined].pack('U'.freeze)
+              else
+                # Two separate code points
+                [codepoint_1].pack('U'.freeze) + [codepoint_2].pack('U'.freeze)
+              end
             else
-              # Two separate code points
-              [codepoint_1].pack('U'.freeze) + [codepoint_2].pack('U'.freeze)
+              [codepoint_1].pack('U'.freeze)
             end
           else
-            [codepoint_1].pack('U'.freeze)
+            ESCAPES_REPLACE[matched_str]
           end
         end
         nil
@@ -327,17 +355,14 @@ module GraphQL
       def self.tokenize(string)
         lexer = GraphQL::Language::Lexer.new(string)
         tokens = []
-        prev_token = nil
         while (token_name = lexer.advance)
           new_token = [
             token_name,
             lexer.line_number,
             lexer.column_number,
             lexer.debug_token_value(token_name),
-            prev_token,
           ]
           tokens << new_token
-          prev_token = new_token
         end
         tokens
       end

@@ -1,5 +1,45 @@
 # graphql-ruby-client
 
+# 1.14.6 (25 Mar 2025)
+
+- `ActionCableLink`: accept ActionCable subscription callbacks #5288
+
+# 1.14.5 (8 Nov 2024)
+
+- `sync`: Fix `--dump-payload` with `--outfile` #5152
+
+# 1.14.4 (8 Nov 2024)
+
+- ActionCable: prevent unsubscribe being called twice with Relay and Urql #5150
+
+# 1.14.3 (5 Nov 2024)
+
+- `createActionCableHandler`: Make sure `unsubscribe` is only called once #5109
+
+# 1.14.2 (4 Nov 2024)
+
+- `sync`: Add a `--dump-payload` option for printing out the HTTP Post data #5143
+
+# 1.14.1 (30 Sept 2024)
+
+- `AblyLink`: don't set up an Ably subscription when no Subscription header is present #5113
+
+# 1.14.0 (3 Jul 2024)
+
+- Subscriptions: with Relay and ActionCable, don't send an empty query string (`""`) when using persisted operations #5008
+
+# 1.13.3 (20 Mar 2024)
+
+- Subscriptions: Support `urql` + ActionCable #4886
+
+# 1.13.2 (28 Feb 2024)
+
+- Update `glob` to v10+ to eliminate dependency on `inflight` #4859
+
+# 1.13.1 (23 Feb 2024)
+
+- createAblyHandler: add typing for `onError` handler #4845
+
 # 1.13.0 (23 Jan 2024)
 
 - Sync: add support for `generate-persisted-query-manifest` files #4798

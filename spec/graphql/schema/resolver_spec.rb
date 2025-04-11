@@ -54,6 +54,8 @@ describe GraphQL::Schema::Resolver do
     class Resolver4 < BaseResolver
       type Integer, null: false
 
+      description "Adds object.value to ast_node.name.size"
+
       extras [:ast_node]
       def resolve(ast_node:)
         object.value + ast_node.name.size
@@ -106,7 +108,7 @@ describe GraphQL::Schema::Resolver do
 
     class PrepResolver1 < BaseResolver
       argument :int, Integer
-      undef_method :load_int
+
       def load_int(i)
         i * 10
       end
@@ -543,7 +545,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "works on instances" do
-      r = ResolverTest::Resolver1.new(object: nil, context: nil, field: nil)
+      r = ResolverTest::Resolver1.new(object: nil, context: GraphQL::Query::NullContext.instance, field: nil)
       assert_equal "Resolver1", r.path
     end
   end
@@ -721,6 +723,27 @@ describe GraphQL::Schema::Resolver do
       res = exec_query " { resolver7 resolver8 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 2, res["data"]["resolver7"]
       assert_equal 2, res["data"]["resolver8"]
+    end
+  end
+
+  describe "graphql_name" do
+    class NameParentResolver < GraphQL::Schema::Resolver
+      graphql_name "NameOverride"
+    end
+
+    class NameChildResolver < NameParentResolver
+    end
+    it "isn't inherited" do
+      assert_equal "NameOverride", NameParentResolver.graphql_name
+      assert_equal "NameChildResolver", NameChildResolver.graphql_name
+    end
+  end
+
+  describe "description" do
+    it "is inherited" do
+      expected_desc = "Adds object.value to ast_node.name.size"
+      assert_equal expected_desc, ResolverTest::Resolver4.description
+      assert_equal expected_desc, ResolverTest::Resolver5.description
     end
   end
 
@@ -935,21 +958,21 @@ describe GraphQL::Schema::Resolver do
       it "preserves `nil` when nullable argument is provided `null`" do
         res = exec_query("mutation { mutationWithNullableLoadsArgument(labelId: null) { inputs } }")
 
-        assert_equal nil, res["errors"]
+        assert_nil res["errors"]
         assert_equal '{"label":null}', res["data"]["mutationWithNullableLoadsArgument"]["inputs"]
       end
 
       it "preserves `nil` when nullable list argument is provided `null`" do
         res = exec_query("mutation { mutationWithNullableLoadsArgument(labelIds: null) { inputs } }")
 
-        assert_equal nil, res["errors"]
+        assert_nil res["errors"]
         assert_equal '{"labels":null}', res["data"]["mutationWithNullableLoadsArgument"]["inputs"]
       end
 
       it "omits omitted nullable argument" do
         res = exec_query("mutation { mutationWithNullableLoadsArgument { inputs } }")
 
-        assert_equal nil, res["errors"]
+        assert_nil res["errors"]
         assert_equal "{}", res["data"]["mutationWithNullableLoadsArgument"]["inputs"]
       end
 
@@ -969,7 +992,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     describe "extensions" do
-      it "returns extension whe no arguments passed" do
+      it "returns extension when no arguments passed" do
         assert 1, ResolverTest::ResolverWithExtension.extensions.count
       end
 
@@ -1122,5 +1145,101 @@ describe GraphQL::Schema::Resolver do
       assert_nil field.description
       assert_equal "Does things!", resolver.description
     end
+  end
+
+
+  describe "when authorized? returns false for an argument" do
+    class UnauthorizedArgResolverSchema < GraphQL::Schema
+      class Echo < GraphQL::Schema::Resolver
+        argument :input, String do
+          def authorized?(obj, input, ctx)
+            if input == "unauthorized"
+              false
+            else
+              true
+            end
+          end
+        end
+
+        type String, null: true
+
+        def resolve(input:)
+          input
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :echo, resolver: Echo
+      end
+
+      query(Query)
+
+      def self.unauthorized_field(*)
+        raise GraphQL::ExecutionError, "Unauthorized Field"
+      end
+    end
+
+    it "calls unauthorized_field" do
+      assert_equal "ok", UnauthorizedArgResolverSchema.execute("{ echo(input: \"ok\") }")["data"]["echo"]
+      unauthorized_res = UnauthorizedArgResolverSchema.execute("{ echo(input: \"unauthorized\") }")
+      assert_equal ["Unauthorized Field"], unauthorized_res["errors"].map { |err|  err["message"] }
+    end
+  end
+
+  describe "with directives" do
+    class ResolverDirectivesSchema < GraphQL::Schema
+
+      class GetThing < GraphQL::Schema::Resolver
+        directive GraphQL::Schema::Directive::Flagged, by: "getThing"
+        argument :id, ID
+        type String, null: false
+      end
+
+      class GetThingWithoutDirective < GraphQL::Schema::Resolver
+        argument :id, ID
+        type String, null: false
+      end
+
+      class GetThingDeprecated < GraphQL::Schema::Resolver
+        type String, null: false
+        deprecation_reason("Use something else instead")
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :get_thing, resolver: GetThing
+        field :get_thing_flagged, resolver: GetThing, directives: { GraphQL::Schema::Directive::Flagged => { by: "getThingFlagged" } }
+        field :get_thing_field, resolver: GetThingWithoutDirective, directives: { GraphQL::Schema::Directive::Flagged => { by: "getField" } }
+        field :get_thing_deprecated, resolver: GetThingDeprecated
+        field :get_thing_double_deprecated, resolver: GetThingDeprecated, deprecation_reason: "Overridden reason"
+      end
+
+      query(Query)
+    end
+  end
+
+  it "caries them into the field definition" do
+    expected_str = <<~GRAPHQL
+    """
+    Hides this part of the schema unless the named flag is present in context[:flags]
+    """
+    directive @flagged(
+      """
+      Flags to check for this schema member
+      """
+      by: [String!]!
+    ) repeatable on ARGUMENT_DEFINITION | ENUM | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
+
+    type Query {
+      getThing(id: ID!): String! @flagged(by: ["getThing"])
+      getThingDeprecated: String! @deprecated(reason: "Use something else instead")
+      getThingDoubleDeprecated: String! @deprecated(reason: "Overridden reason")
+      getThingField(id: ID!): String! @flagged(by: ["getField"])
+      getThingFlagged(id: ID!): String! @flagged(by: ["getThingFlagged"]) @flagged(by: ["getThing"])
+    }
+    GRAPHQL
+
+    assert_equal expected_str, ResolverDirectivesSchema.to_definition(context: { flags: ["getField", "getThing", "getThingFlagged"] })
+    assert_equal "Use something else instead", ResolverDirectivesSchema.get_field("Query", "getThingDeprecated").deprecation_reason
+    assert_equal "Overridden reason", ResolverDirectivesSchema.get_field("Query", "getThingDoubleDeprecated").deprecation_reason
   end
 end

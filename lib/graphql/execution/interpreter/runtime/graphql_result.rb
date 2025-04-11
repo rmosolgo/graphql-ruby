@@ -5,8 +5,13 @@ module GraphQL
     class Interpreter
       class Runtime
         module GraphQLResult
-          def initialize(result_name, parent_result, is_non_null_in_parent)
+          def initialize(result_name, result_type, application_value, parent_result, is_non_null_in_parent, selections, is_eager, ast_node, graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
+            @ast_node = ast_node
+            @graphql_arguments = graphql_arguments
+            @graphql_field = graphql_field
             @graphql_parent = parent_result
+            @graphql_application_value = application_value
+            @graphql_result_type = result_type
             if parent_result && parent_result.graphql_dead
               @graphql_dead = true
             end
@@ -14,6 +19,8 @@ module GraphQL
             @graphql_is_non_null_in_parent = is_non_null_in_parent
             # Jump through some hoops to avoid creating this duplicate storage if at all possible.
             @graphql_metadata = nil
+            @graphql_selections = selections
+            @graphql_is_eager = is_eager
           end
 
           def path
@@ -26,17 +33,21 @@ module GraphQL
           end
 
           attr_accessor :graphql_dead
-          attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent
+          attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent,
+            :graphql_application_value, :graphql_result_type, :graphql_selections, :graphql_is_eager, :ast_node, :graphql_arguments, :graphql_field
 
           # @return [Hash] Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
           attr_accessor :graphql_result_data
         end
 
         class GraphQLResultHash
-          def initialize(_result_name, _parent_result, _is_non_null_in_parent)
+          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             super
             @graphql_result_data = {}
+            @ordered_result_keys = nil
           end
+
+          attr_accessor :ordered_result_keys
 
           include GraphQLResult
 
@@ -55,7 +66,13 @@ module GraphQL
               t.set_leaf(key, value)
             end
 
+            before_size = @graphql_result_data.size
             @graphql_result_data[key] = value
+            after_size = @graphql_result_data.size
+            if after_size > before_size && @ordered_result_keys[before_size] != key
+              fix_result_order
+            end
+
             # keep this up-to-date if it's been initialized
             @graphql_metadata && @graphql_metadata[key] = value
 
@@ -66,7 +83,13 @@ module GraphQL
             if (t = @graphql_merged_into)
               t.set_child_result(key, value)
             end
+            before_size = @graphql_result_data.size
             @graphql_result_data[key] = value.graphql_result_data
+            after_size = @graphql_result_data.size
+            if after_size > before_size && @ordered_result_keys[before_size] != key
+              fix_result_order
+            end
+
             # If we encounter some part of this response that requires metadata tracking,
             # then create the metadata hash if necessary. It will be kept up-to-date after this.
             (@graphql_metadata ||= @graphql_result_data.dup)[key] = value
@@ -116,12 +139,20 @@ module GraphQL
             end
             @graphql_merged_into = into_result
           end
+
+          def fix_result_order
+            @ordered_result_keys.each do |k|
+              if @graphql_result_data.key?(k)
+                @graphql_result_data[k] = @graphql_result_data.delete(k)
+              end
+            end
+          end
         end
 
         class GraphQLResultArray
           include GraphQLResult
 
-          def initialize(_result_name, _parent_result, _is_non_null_in_parent)
+          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             super
             @graphql_result_data = []
           end
@@ -162,6 +193,10 @@ module GraphQL
 
           def values
             (@graphql_metadata || @graphql_result_data)
+          end
+
+          def [](idx)
+            (@graphql_metadata || @graphql_result_data)[idx]
           end
         end
       end

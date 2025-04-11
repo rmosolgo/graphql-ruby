@@ -166,8 +166,11 @@ module MaskHelpers
     field :test, String
   end
 
+  class CheremeDirective < GraphQL::Schema::Directive
+    locations(GraphQL::Schema::Directive::OBJECT)
+  end
+
   class CheremeWithInterface < BaseObject
-    # Commenting this would make the test pass
     implements PublicInterfaceType
 
     field :name, String, null: false
@@ -176,6 +179,8 @@ module MaskHelpers
   class Chereme < BaseObject
     description "A basic unit of signed communication"
     implements LanguageMemberType
+    directive CheremeDirective
+
     field :name, String, null: false
 
     field :chereme_with_interface, CheremeWithInterface
@@ -224,8 +229,13 @@ module MaskHelpers
 
     field :manners, [MannerType], null: false
 
-    # Commenting this would make the test pass
-    field :test, PublicType, null: false
+    field :public_type, PublicType, null: false
+
+    # Warden would exclude this when it was only referenced as a possible_type of LanguageMemberType.
+    # But Profile always included it. This makes them behave the same
+    field :example_character, Character do
+      metadata :hidden_abstract_type, true
+    end
   end
 
   class MutationType < BaseObject
@@ -241,6 +251,7 @@ module MaskHelpers
   end
 
   class Schema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     query QueryType
     mutation MutationType
     subscription MutationType
@@ -280,7 +291,7 @@ module MaskHelpers
     if (except = kwargs.delete(:except))
       filters[:except] = except
     end
-    if filters.any?
+    if !filters.empty?
       context = kwargs[:context] ||= {}
       context[:filters] = filters
     end
@@ -395,6 +406,23 @@ describe GraphQL::Schema::Warden do
       assert_nil res["data"]["CheremeWithInterface"]
     end
 
+    it "hides directives if no other fields are using it" do
+      query_string = %|
+        {
+          __schema { directives { name } }
+        }
+      |
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      expected_directives = ["deprecated", "include", "oneOf", "skip", "specifiedBy"]
+      if !GraphQL::Schema.use_visibility_profile?
+        # Not supported by Warden
+        expected_directives.unshift("cheremeDirective")
+      end
+
+      assert_equal(expected_directives, res["data"]["__schema"]["directives"].map { |d| d["name"] })
+    end
+
     it "causes validation errors" do
       query_string = %|{ phoneme(symbol: "ϕ") { name } }|
       res = MaskHelpers.query_with_mask(query_string, mask)
@@ -404,7 +432,7 @@ describe GraphQL::Schema::Warden do
       query_string = %|{ language(name: "Uyghur") { name } }|
       res = MaskHelpers.query_with_mask(query_string, mask)
       err_msg = res["errors"][0]["message"]
-      assert_equal "Field 'language' doesn't exist on type 'Query'", err_msg
+      assert_equal "Field 'language' doesn't exist on type 'Query' (Did you mean `languages`?)", err_msg
     end
 
     it "doesn't show in introspection" do
@@ -466,7 +494,10 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.run_query(query_string, context: { except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
+      res = MaskHelpers.run_query(query_string, context: {
+        skip_visibility_migration_error: true,
+        except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type)
+      } })
       # It's not visible by name
       assert_nil res["data"]["Phoneme"]
 
@@ -480,6 +511,7 @@ describe GraphQL::Schema::Warden do
       # It's not visible as a union or interface member
       assert_equal false, possible_type_names(res["data"]["EmicUnit"]).include?("Phoneme")
       assert_equal false, possible_type_names(res["data"]["LanguageMember"]).include?("Phoneme")
+      assert_equal ["Character", "Chereme", "Grapheme"], possible_type_names(res["data"]["LanguageMember"]).sort
     end
 
     it "hides interfaces if all possible types are hidden" do
@@ -499,6 +531,7 @@ describe GraphQL::Schema::Warden do
       |
 
       schema = GraphQL::Schema.from_definition(sdl)
+      schema.use(GraphQL::Schema::Warden)
       schema.define_singleton_method(:visible?) do |member, ctx|
         super(member, ctx) && (ctx[:hiding] ? member.graphql_name != "Repository" : true)
       end
@@ -517,6 +550,7 @@ describe GraphQL::Schema::Warden do
 
     it "hides unions if all possible types are hidden or its references are hidden" do
       class PossibleTypesSchema < GraphQL::Schema
+        use GraphQL::Schema::Warden if ADD_WARDEN
         class A < GraphQL::Schema::Object
           field :id, ID, null: false
         end
@@ -526,6 +560,15 @@ describe GraphQL::Schema::Warden do
 
         class BagOfThings < GraphQL::Schema::Union
           possible_types A, B, C
+
+          if GraphQL::Schema.use_visibility_profile?
+            def self.visible?(ctx)
+              (
+                possible_types.any? { |pt| ctx.schema.visible?(pt, ctx) } ||
+                ctx.schema.extra_types.include?(self)
+              ) && super
+            end
+          end
         end
 
         class Query < GraphQL::Schema::Object
@@ -566,8 +609,8 @@ describe GraphQL::Schema::Warden do
       assert_nil res["data"]["BagOfThings"]
       assert_equal [], res["data"]["Query"]["fields"]
 
-      # Unreferenced but still visible because orphan type
-      schema.orphan_types([schema.find("BagOfThings")])
+      # Unreferenced but still visible because extra type
+      schema.extra_types([schema.find("BagOfThings")])
       res = schema.execute(query_string, context: { except: ->(m, _) { m.graphql_name == "bag" } })
       assert res["data"]["BagOfThings"]
     end
@@ -597,6 +640,7 @@ describe GraphQL::Schema::Warden do
       "
 
       schema = GraphQL::Schema.from_definition(sdl)
+      schema.use(GraphQL::Schema::Warden) if ADD_WARDEN
       schema.define_singleton_method(:visible?) do |member, context|
         res = super(member, context)
         if res && context[:except]
@@ -617,10 +661,17 @@ describe GraphQL::Schema::Warden do
       assert res["data"]["Node"]
       assert_equal ["a", "node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
-      # When the possible types are all hidden, hide the interface and fields pointing to it
-      res = schema.execute(query_string, context: { except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
-      assert_nil res["data"]["Node"]
-      assert_equal [], res["data"]["Query"]["fields"]
+      res = schema.execute(query_string, context: { skip_visibility_migration_error: true, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
+
+      if GraphQL::Schema.use_visibility_profile?
+        # Node is still visible even though it has no possible types
+        assert res["data"]["Node"]
+        assert_equal [{ "name" => "node" }], res["data"]["Query"]["fields"]
+      else
+        # When the possible types are all hidden, hide the interface and fields pointing to it
+        assert_nil res["data"]["Node"]
+        assert_equal [], res["data"]["Query"]["fields"]
+      end
 
       # Even when it's not the return value of a field,
       # still show the interface since it allows code reuse
@@ -707,15 +758,15 @@ describe GraphQL::Schema::Warden do
     }
 
     it "hides types if no other fields or arguments are using it" do
-       query_string = %|
-         {
-           CheremeInput: __type(name: "CheremeInput") { fields { name } }
-         }
-       |
+      query_string = %|
+        {
+          CheremeInput: __type(name: "CheremeInput") { fields { name } }
+        }
+      |
 
-       res = MaskHelpers.query_with_mask(query_string, mask)
-       assert_nil res["data"]["CheremeInput"]
-     end
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_nil res["data"]["CheremeInput"]
+    end
 
     it "isn't present in introspection" do
       query_string = %|
@@ -748,7 +799,7 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-  describe "hidding input type arguments" do
+  describe "hiding input type arguments" do
     let(:mask) {
       ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_input_field) }
     }
@@ -797,7 +848,7 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-  describe "hidding input types" do
+  describe "hiding input types" do
     let(:mask) {
       ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_input_object_type) }
     }
@@ -1009,8 +1060,58 @@ describe GraphQL::Schema::Warden do
     end
 
     it "uses PassThruWarden when a warden on the context nor query" do
-      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: GraphQL::Schema.new), values: {}, object: nil)
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: GraphQL::Schema.new), values: {})
       assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context(context)
+    end
+  end
+
+  it "doesn't hide subclasses of invisible objects" do
+    identifiable = Module.new do
+      include GraphQL::Schema::Interface
+      graphql_name "Identifiable"
+      field :id, "ID", null: false
+    end
+
+    hidden_account = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Account"
+      implements identifiable
+      def self.visible?(_ctx); false; end
+    end
+
+    visible_account = Class.new(hidden_account) do
+      graphql_name "NewAccount"
+      has_no_fields(true)
+      def self.visible?(_ctx); true; end
+    end
+
+    query_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Query"
+      field :account, visible_account
+
+      def account
+        { id: "1" }
+      end
+    end
+
+    schema = Class.new(GraphQL::Schema) do
+      query(query_type)
+      use GraphQL::Schema::Warden if ADD_WARDEN
+    end
+
+    query_str = <<-GRAPHQL
+      query {
+        account {
+          id
+        }
+      }
+    GRAPHQL
+
+    result = schema.execute(query_str, context: { skip_visibility_migration_error: true })
+
+    if GraphQL::Schema.use_visibility_profile?
+      assert_equal "1", result["data"]["account"]["id"]
+    else
+      assert_equal ["Field 'id' doesn't exist on type 'NewAccount'"], result["errors"].map { |e| e["message"] }
     end
   end
 end

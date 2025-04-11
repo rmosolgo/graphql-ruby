@@ -1,20 +1,26 @@
 # frozen_string_literal: true
-require_relative 'spec_helper'
 require 'ostruct'
+require "support/active_record_setup"
 
 module StarWars
   names = [
     'X-Wing',
     'Y-Wing',
     'A-Wing',
-    'Millenium Falcon',
+    'Millennium Falcon',
     'Home One',
     'TIE Fighter',
     'TIE Interceptor',
     'Executor',
   ]
 
-  class Base < ActiveRecord::Base
+  class StarWarsModel < ActiveRecord::Base
+    self.abstract_class = true
+    connects_to database: { writing: :starwars, reading: :starwars_replica }
+  end
+
+  StarWarsModel.establish_connection(:starwars)
+  class Base < StarWarsModel
   end
 
   Base.create!(name: "Yavin", planet: "Yavin 4", faction_id: 1)

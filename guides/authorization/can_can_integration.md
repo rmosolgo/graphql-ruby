@@ -39,6 +39,16 @@ context = {
 MySchema.execute(..., context: context)
 ```
 
+### Rails Generator
+
+If your schema files follow the same convention as `rails generate graphql:install`, then you can install the CanCan integration with a Rails generator:
+
+```bash
+$ rails generate graphql:cancan:install
+```
+
+This will insert all the necessary `include ...`s described below. Alternatively, check the docs below to mix in `CanCanIntegration`'s modules.
+
 ## Authorizing Objects
 
 For each object type, you can assign a required action for Ruby objects of that type. To get started, include the `ObjectIntegration` in your base object class:

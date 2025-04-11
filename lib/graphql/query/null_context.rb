@@ -18,17 +18,15 @@ module GraphQL
       extend Forwardable
 
       attr_reader :schema, :query, :warden, :dataloader
-      def_delegators GraphQL::EmptyObjects::EMPTY_HASH, :[], :fetch, :dig, :key?
+      def_delegators GraphQL::EmptyObjects::EMPTY_HASH, :[], :fetch, :dig, :key?, :to_h
 
       def initialize
         @query = NullQuery.new
         @dataloader = GraphQL::Dataloader::NullDataloader.new
         @schema = NullSchema
         @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
-      end
-
-      def interpreter?
-        true
+        @types = @warden.visibility_profile
+        freeze
       end
     end
   end

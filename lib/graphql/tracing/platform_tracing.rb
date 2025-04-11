@@ -86,7 +86,7 @@ module GraphQL
           else
             warn("`use(#{self.name})` and `Tracing::PlatformTracing` are deprecated. Use a `trace_with(...)` module instead. More info: https://graphql-ruby.org/queries/tracing.html. Please open an issue on the GraphQL-Ruby repo if you want to discuss further!")
             tracer = self.new(**options)
-            schema_defn.tracer(tracer)
+          schema_defn.tracer(tracer, silence_deprecation_warning: true)
           end
         end
       end

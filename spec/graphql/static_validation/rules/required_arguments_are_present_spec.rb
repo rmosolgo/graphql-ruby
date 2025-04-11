@@ -87,6 +87,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
     end
 
     class HiddenArgSchema < GraphQL::Schema
+      use GraphQL::Schema::Warden if ADD_WARDEN
       query(Query)
     end
 

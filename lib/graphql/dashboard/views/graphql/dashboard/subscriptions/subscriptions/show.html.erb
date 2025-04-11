@@ -1,0 +1,41 @@
+<% content_for(:title, "Subscription #{params[:id]}") %>
+<div class="row mt-3">
+  <div class="col">
+    <h3>Subscription: <code><%= params[:id] %></code></h3>
+  </div>
+</div>
+
+<% if @query_data.nil? %>
+  <div class="row">
+    <div class="col">
+      <p class="muted"><i>This subscription was not found or is no longer active.</i></p>
+    </div>
+  </div>
+<% else %>
+    <div class="row">
+      <div class="col">
+        <p>Created at <%= @query_data[:created_at] %>, last triggered at <%= @query_data[:last_triggered_at] || "--" %></p>
+
+        <p>Subscribed? <code><%= @still_subscribed ? "YES" : "NO" %></code></p>
+        <p>Broadcast? <code><%= @is_broadcast ? "YES" : "NO" %></code> <% if @is_broadcast %>
+          <small class="muted"><% if @subscribers_count.nil? %>
+            This subscription may have multiple subscribers.
+          <% else %>
+            (<%= pluralize(@subscribers_count, "subscriber") %>)
+          <% end %></small>
+        <% end %></p>
+
+        <p>Context:</p>
+        <pre><%= @query_data[:context].inspect %></pre>
+
+        <p>Variables:</p>
+        <pre><%= @query_data[:variables].inspect %></pre>
+
+        <p>Operation Name:</p>
+        <pre><%= @query_data[:operation_name].inspect %></pre>
+
+        <p>Query String:</p>
+        <%= textarea_tag "_source", @query_data[:query_string], class: "graphql-highlight form-control", disabled: true, rows: @query_data[:query_string].count("\n") + 1 %>
+      </div>
+    </div>
+<% end %>

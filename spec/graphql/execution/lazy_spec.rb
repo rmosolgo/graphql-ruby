@@ -74,7 +74,7 @@ describe GraphQL::Execution::Lazy do
         ],
       }
 
-      assert_equal expected_data, res["data"]
+      assert_graphql_equal expected_data, res["data"]
     end
 
     [
@@ -136,7 +136,7 @@ describe GraphQL::Execution::Lazy do
         }
       }|
 
-      assert_equal(nil, res["data"])
+      assert_nil(res["data"])
       assert_equal 1, res["errors"].length
     end
 
@@ -176,7 +176,7 @@ describe GraphQL::Execution::Lazy do
         "b" => nil,
         "c" => { "value" => 3 },
       }
-      assert_equal expected_data, res["data"]
+      assert_graphql_equal expected_data, res["data"]
 
       expected_errors = [{
         "message"=>"13 is unlucky",

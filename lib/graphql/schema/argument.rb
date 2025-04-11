@@ -50,11 +50,13 @@ module GraphQL
       # @param deprecation_reason [String]
       # @param validates [Hash, nil] Options for building validators, if any should be applied
       # @param replace_null_with_default [Boolean] if `true`, incoming values of `null` will be replaced with the configured `default_value`
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NOT_CONFIGURED, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, comment: nil, ast_node: nil, default_value: NOT_CONFIGURED, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
+        NameValidator.validate!(@name)
         @type_expr = type_expr || type
         @description = desc || description
+        @comment = comment
         @null = required != true
         @default_value = default_value
         if replace_null_with_default
@@ -88,11 +90,8 @@ module GraphQL
         end
 
         if definition_block
-          if definition_block.arity == 1
-            instance_exec(self, &definition_block)
-          else
-            instance_eval(&definition_block)
-          end
+          # `self` will still be self, it will also be the first argument to the block:
+          instance_exec(self, &definition_block)
         end
       end
 
@@ -126,6 +125,17 @@ module GraphQL
           @description = text
         else
           @description
+        end
+      end
+
+      attr_writer :comment
+
+      # @return [String] Comment for this argument
+      def comment(text = nil)
+        if text
+          @comment = text
+        else
+          @comment
         end
       end
 
@@ -206,8 +216,8 @@ module GraphQL
       # Used by the runtime.
       # @api private
       def prepare_value(obj, value, context: nil)
-        if value.is_a?(GraphQL::Schema::InputObject)
-          value = value.prepare
+        if type.unwrap.kind.input_object?
+          value = recursively_prepare_input_object(value, type, context)
         end
 
         Schema::Validator.validate!(validators, obj, context, value)
@@ -290,6 +300,7 @@ module GraphQL
             # TODO code smell to access such a deeply-nested constant in a distant module
             argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
               value: resolved_loaded_value,
+              original_value: resolved_coerced_value,
               definition: self,
               default_used: default_used,
             )
@@ -311,10 +322,15 @@ module GraphQL
           context.query.after_lazy(custom_loaded_value) do |custom_value|
             if loads
               if type.list?
-                loaded_values = custom_value.each_with_index.map { |custom_val, idx|
-                  id = coerced_value[idx]
-                  load_method_owner.authorize_application_object(self, id, context, custom_val)
-                }
+                loaded_values = []
+                context.dataloader.run_isolated do
+                  custom_value.each_with_index.map { |custom_val, idx|
+                    id = coerced_value[idx]
+                    context.dataloader.append_job do
+                      loaded_values[idx] = load_method_owner.authorize_application_object(self, id, context, custom_val)
+                    end
+                  }
+                end
                 context.schema.after_any_lazies(loaded_values, &:itself)
               else
                 load_method_owner.authorize_application_object(self, coerced_value, context, custom_loaded_value)
@@ -325,7 +341,16 @@ module GraphQL
           end
         elsif loads
           if type.list?
-            loaded_values = coerced_value.map { |val| load_method_owner.load_and_authorize_application_object(self, val, context) }
+            loaded_values = []
+            # We want to run these list items all together,
+            # but we also need to wait for the result so we can return it :S
+            context.dataloader.run_isolated do
+              coerced_value.each_with_index { |val, idx|
+                context.dataloader.append_job do
+                  loaded_values[idx] = load_method_owner.load_and_authorize_application_object(self, val, context)
+                end
+              }
+            end
             context.schema.after_any_lazies(loaded_values, &:itself)
           else
             load_method_owner.load_and_authorize_application_object(self, coerced_value, context)
@@ -337,6 +362,7 @@ module GraphQL
 
       # @api private
       def validate_default_value
+        return unless default_value?
         coerced_default_value = begin
           # This is weird, but we should accept single-item default values for list-type arguments.
           # If we used `coerce_isolated_input` below, it would do this for us, but it's not really
@@ -371,6 +397,22 @@ module GraphQL
       end
 
       private
+
+      def recursively_prepare_input_object(value, type, context)
+        if type.non_null?
+          type = type.of_type
+        end
+
+        if type.list? && !value.nil?
+          inner_type = type.of_type
+          value.map { |v| recursively_prepare_input_object(v, inner_type, context) }
+        elsif value.is_a?(GraphQL::Schema::InputObject)
+          value.validate_for(context)
+          value.prepare
+        else
+          value
+        end
+      end
 
       def validate_input_type(input_type)
         if input_type.is_a?(String) || input_type.is_a?(GraphQL::Schema::LateBoundType)
