@@ -45,7 +45,7 @@ module GraphQL
         @conflicts = nil
         yield
         # don't initialize these if they weren't initialized in the block:
-        @conflicts && @conflicts.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
+        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
       end
 
       def conflicts_within_selection_set(node, parent_type)
@@ -238,11 +238,42 @@ module GraphQL
             (t2 = field2.definition&.type) &&
             return_types_conflict?(t1, t2)
 
-          conflict = conflicts[:return_type][response_key]
-          conflict.add_conflict(node1, "`#{t1.to_type_signature}`")
-          conflict.add_conflict(node2, "`#{t2.to_type_signature}`")
+          return_error = nil
+          message_override = nil
+          case @schema.allow_legacy_invalid_return_type_conflicts
+          when false
+            return_error = true
+          when true
+            legacy_handling = @schema.legacy_invalid_return_type_conflicts(@context.query, t1, t2, node1, node2)
+            case legacy_handling
+            when nil
+              return_error = false
+            when :return_validation_error
+              return_error = true
+            when String
+              return_error = true
+              message_override = legacy_handling
+            else
+              raise GraphQL::Error, "#{@schema}.legacy_invalid_scalar_conflicts returned unexpected value: #{legacy_handling.inspect}. Expected `nil`, String, or `:return_validation_error`."
+            end
+          else
+            return_error = false
+            @context.query.logger.warn <<~WARN
+              GraphQL-Ruby encountered mismatched types in this query: `#{t1.to_type_signature}` (at #{node1.line}:#{node1.col}) vs. `#{t2.to_type_signature}` (at #{node2.line}:#{node2.col}).
+              This will return an error in future GraphQL-Ruby versions, as per the GraphQL specification
+              Learn about migrating here: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_return_type_conflicts-class_method
+            WARN
+          end
 
-          @conflict_count += 1
+          if return_error
+            conflict = conflicts[:return_type][response_key]
+            if message_override
+              conflict.message = message_override
+            end
+            conflict.add_conflict(node1, "`#{t1.to_type_signature}`")
+            conflict.add_conflict(node2, "`#{t2.to_type_signature}`")
+            @conflict_count += 1
+          end
         end
 
         find_conflicts_between_sub_selection_sets(

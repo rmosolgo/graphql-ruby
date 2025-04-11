@@ -1000,8 +1000,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
   end
 
   describe "Conflicting leaf typed fields" do
-    it "adds an error" do
-      schema = GraphQL::Schema.from_definition(<<-GRAPHQL)
+    let(:schema) { GraphQL::Schema.from_definition(<<-GRAPHQL)
       interface Thing {
         name: String
       }
@@ -1018,20 +1017,54 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         thing: Thing
       }
       GRAPHQL
+    }
 
-      query_str = <<-GRAPHQL
-      {
-        thing {
-          ... on Dog { spots }
-          ... on Jaguar { spots }
+    let(:query_str) { <<-GRAPHQL
+        {
+          thing {
+            ... on Dog { spots }
+            ... on Jaguar { spots }
+          }
         }
-      }
       GRAPHQL
+    }
 
-      res = schema.validate(query_str)
+    it "warns by default" do
+      res = nil
+      stdout, _stderr = capture_io do
+        res = schema.validate(query_str)
+      end
+      assert_equal [], res
+      expected_warning = [
+        "GraphQL-Ruby encountered mismatched types in this query: `Boolean` (at 3:26) vs. `Int` (at 4:29).",
+        "This will return an error in future GraphQL-Ruby versions, as per the GraphQL specification",
+        "Learn about migrating here: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_return_type_conflicts-class_method"
+    ].join("\n")
+      assert_includes stdout, expected_warning
+    end
+
+    it "calls the handler when legacy is enabled" do
+      legacy_schema = Class.new(schema) do
+        allow_legacy_invalid_return_type_conflicts(true)
+        def self.legacy_invalid_return_type_conflicts(query, t1, t2, node1, node2)
+
+          raise "#{query.class} / #{t1.to_type_signature} / #{t2.to_type_signature} / #{node1.position} / #{node2.position}"
+        end
+      end
+
+      err = assert_raises do
+        legacy_schema.validate(query_str)
+      end
+
+      assert_equal "GraphQL::Query / Boolean / Int / [3, 26] / [4, 29]", err.message
+    end
+
+    it "adds an error when legacy is disabled" do
+      future_schema = Class.new(schema) { allow_legacy_invalid_return_type_conflicts(false) }
+      res = future_schema.validate(query_str)
       expected_error = {
         "message"=>"Field 'spots' has a return_type conflict: `Boolean` or `Int`?",
-        "locations"=>[{"line"=>3, "column"=>24}, {"line"=>4, "column"=>27}],
+        "locations"=>[{"line"=>3, "column"=>26}, {"line"=>4, "column"=>29}],
         "path"=>[],
         "extensions"=>
           {"code"=>"fieldConflict",
@@ -1059,6 +1092,8 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
           f: Int
         }
       GRAPHQL
+
+      schema.allow_legacy_invalid_return_type_conflicts(false)
 
       query_str = <<~GRAPHQL
         {

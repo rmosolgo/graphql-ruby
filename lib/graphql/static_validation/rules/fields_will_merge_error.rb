@@ -14,8 +14,10 @@ module GraphQL
       end
 
       def message
-        "Field '#{field_name}' has #{kind == :argument ? 'an' : 'a'} #{kind} conflict: #{conflicts}?"
+        @message || "Field '#{field_name}' has #{kind == :argument ? 'an' : 'a'} #{kind} conflict: #{conflicts}?"
       end
+
+      attr_writer :message
 
       def path
         []

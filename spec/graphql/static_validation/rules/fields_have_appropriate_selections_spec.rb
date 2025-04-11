@@ -136,7 +136,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
 
     describe "When the schema has no setting" do
       it "allows it with a warning to query.logger" do
-        expected_warning = "Unions require selections but searchDairy (DairyProduct) doesn't have any. This will fail with a validation error on a future GraphQL-Ruby version. More info: https://graphql-ruby.org/api-doc/2.5.2/GraphQL/Schema.html#allow_legacy_invalid_empty_selections_on_union-class_method"
+        expected_warning = "Unions require selections but searchDairy (DairyProduct) doesn't have any. This will fail with a validation error on a future GraphQL-Ruby version. More info: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_empty_selections_on_union-class_method"
         stdout, _stderr = capture_io do
           assert_equal [], errors
         end
