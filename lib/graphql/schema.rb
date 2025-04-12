@@ -1818,6 +1818,8 @@ module GraphQL
       #     Stats.increment(:complexity_mismatch, tags: { client: client_id, ops: operation_names })
       #     legacy_cost
       #   end
+      # @see Query::Context#add_error Adding an error to the response to notify the client
+      # @see Query::Context#response_extensions Adding key-value pairs to the response `"extensions" => { ... }`
       # @param multiplex [GraphQL::Execution::Multiplex]
       # @param future_complexity_cost [Integer]
       # @param legacy_complexity_cost [Integer]

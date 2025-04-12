@@ -20,7 +20,7 @@ module GraphQL
           max_possible_complexity(mode: :legacy)
         when :compare
           future_complexity = max_possible_complexity
-          legacy_complexity = max_possible_complexity(mode: legacy)
+          legacy_complexity = max_possible_complexity(mode: :legacy)
           if future_complexity != legacy_complexity
             subject.schema.legacy_complexity_cost_calculation_mismatch(subject, future_complexity, legacy_complexity)
           else
@@ -30,7 +30,7 @@ module GraphQL
           subject.logger.warn <<~GRAPHQL
             GraphQL-Ruby's complexity cost system is getting some "breaking fixes" in a future version. See the migration notes at https://graphql-ruby.org/api-docs/#{GraphQL::VERSION}/Schema.html#complexity_cost_cacluation_mode-class_method
 
-            To opt into the future behavior, configure your schema with:
+            To opt into the future behavior, configure your schema (#{subject.schema.name ? subject.schema.name : subject.schema.ancestors}) with:
 
               complexity_cost_calculation_mode(:future) # or `:legacy`, `:compare`
 

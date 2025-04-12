@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Analysis::QueryComplexity do
-  let(:schema) { Dummy::Schema }
+  let(:schema) { Class.new(Dummy::Schema) { complexity_cost_calculation_mode(:future) } }
   let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [GraphQL::Analysis::QueryComplexity]) }
   let(:reduce_multiplex_result) {
     GraphQL::Analysis.analyze_multiplex(multiplex, [GraphQL::Analysis::QueryComplexity])
@@ -249,7 +249,8 @@ describe GraphQL::Analysis::QueryComplexity do
   end
 
   describe "relay types" do
-    let(:query) { GraphQL::Query.new(StarWars::Schema, query_string) }
+    let(:schema) { Class.new(StarWars::Schema) { complexity_cost_calculation_mode(:future) } }
+    let(:query) { GraphQL::Query.new(schema, query_string) }
     let(:query_string) {%|
     {
       rebels {
@@ -368,7 +369,8 @@ describe GraphQL::Analysis::QueryComplexity do
     end
 
     describe "Schema-level default_page_size" do
-      let(:query) { GraphQL::Query.new(StarWars::SchemaWithDefaultPageSize, query_string) }
+      let(:schema) { Class.new(StarWars::SchemaWithDefaultPageSize) { complexity_cost_calculation_mode(:future) } }
+      let(:query) { GraphQL::Query.new(schema, query_string) }
       let(:query_string) {%|
       {
         rebels {
@@ -464,6 +466,7 @@ describe GraphQL::Analysis::QueryComplexity do
 
       query(Query)
       orphan_types(DoubleComplexity)
+      complexity_cost_calculation_mode(:future)
 
       module CustomIntrospection
         class DynamicFields < GraphQL::Introspection::DynamicFields
@@ -618,6 +621,7 @@ describe GraphQL::Analysis::QueryComplexity do
 
       query(Query)
       orphan_types(DoubleComplexity)
+      complexity_cost_calculation_mode(:future)
     end
 
     let(:query) { GraphQL::Query.new(complexity_schema, query_string) }
@@ -753,16 +757,22 @@ describe GraphQL::Analysis::QueryComplexity do
       end
 
       class Query < GraphQL::Schema::Object
-        field :entity, Entity
+        field :entity, Entity, fallback_value: nil
       end
 
       def self.resolve_type
         Farm
       end
 
-      def self.cost(query_string)
+      def self.cost(query_string_or_query)
+        query = if query_string_or_query.is_a?(String)
+          GraphQL::Query.new(self, query_string_or_query)
+        else
+          query_string_or_query
+        end
+
         GraphQL::Analysis::AST.analyze_query(
-          GraphQL::Query.new(self, query_string),
+          query,
           [GraphQL::Analysis::AST::QueryComplexity],
         ).first
       end
@@ -770,61 +780,187 @@ describe GraphQL::Analysis::QueryComplexity do
       query(Query)
     end
 
-    it "uses maximum of merged composite fields, regardless of selection order" do
-      a = MaxOfPossibleScopes.cost(%|
-        {
-          entity {
-            ...on Producer { cheese { kind } }
-            ...on Farm { cheese { kind } }
+    describe "in :future mode" do
+      let(:schema) { Class.new(MaxOfPossibleScopes) { complexity_cost_calculation_mode(:future) }}
+      it "uses maximum of merged composite fields, regardless of selection order" do
+        a = schema.cost(%|
+          {
+            entity {
+              ...on Producer { cheese { kind } }
+              ...on Farm { cheese { kind } }
+            }
           }
-        }
-      |)
+        |)
 
-      b = MaxOfPossibleScopes.cost(%|
-        {
-          entity {
-            ...on Farm { cheese { kind } }
-            ...on Producer { cheese { kind } }
+        b = schema.cost(%|
+          {
+            entity {
+              ...on Farm { cheese { kind } }
+              ...on Producer { cheese { kind } }
+            }
           }
-        }
-      |)
+        |)
 
-      assert_equal 0, a - b
+        assert_equal 0, a - b
+      end
+
+      it "uses maximum of merged leaf fields, regardless of selection order" do
+        a = schema.cost(%|
+          {
+            entity {
+              ...on Producer { name }
+              ...on Farm { name }
+            }
+          }
+        |)
+
+        b = schema.cost(%|
+          {
+            entity {
+              ...on Farm { name }
+              ...on Producer { name }
+            }
+          }
+        |)
+
+        assert_equal 0, a - b
+      end
     end
 
-    it "uses maximum of merged leaf fields, regardless of selection order" do
-      a = MaxOfPossibleScopes.cost(%|
-        {
-          entity {
-            ...on Producer { name }
-            ...on Farm { name }
+    describe "in :legacy mode" do
+      let(:schema) { Class.new(MaxOfPossibleScopes) { complexity_cost_calculation_mode(:legacy) }}
+      it "uses the last of merged composite fields" do
+        a = schema.cost(%|
+          {
+            entity {
+              ...on Producer { cheese { kind } }
+              ...on Farm { cheese { kind } }
+            }
           }
-        }
-      |)
+        |)
 
-      b = MaxOfPossibleScopes.cost(%|
-        {
-          entity {
-            ...on Farm { name }
-            ...on Producer { name }
+        b = schema.cost(%|
+          {
+            entity {
+              ...on Farm { cheese { kind } }
+              ...on Producer { cheese { kind } }
+            }
           }
-        }
-      |)
+        |)
 
-      assert_equal 0, a - b
+        assert_equal 5, a - b
+      end
+
+      it "uses the last-occurring leaf field" do
+        a = schema.cost(%|
+          {
+            entity {
+              ...on Producer { name }
+              ...on Farm { name }
+            }
+          }
+        |)
+
+        b = schema.cost(%|
+          {
+            entity {
+              ...on Farm { name }
+              ...on Producer { name }
+            }
+          }
+        |)
+
+        assert_equal 5, a - b
+      end
     end
 
-    it "invalid mismatched scope types will still compute without error" do
-      cost = MaxOfPossibleScopes.cost(%|
-        {
-          entity {
-            ...on Farm { cheese { kind } }
-            ...on Producer { cheese: name }
-          }
-        }
-      |)
+    describe "In dynamic mode with :compare" do
+      let(:schema) {
+        Class.new(MaxOfPossibleScopes) do
+          def self.complexity_cost_calculation_mode_for(context)
+            :compare
+          end
 
-      assert_equal 12, cost
+          def self.legacy_complexity_cost_calculation_mismatch(query, future_cpx, legacy_cpx)
+            query.context.response_extensions["complexity_warning"] = {
+              "current" => legacy_cpx,
+              "future" => future_cpx
+            }
+            1003
+          end
+        end
+      }
+      it "calls the handler and uses the returned value" do
+        query = GraphQL::Query.new(schema, %|
+          {
+            entity {
+              ...on Producer { cheese { kind } }
+              ...on Farm { cheese { kind } }
+            }
+          }
+        |)
+        a = schema.cost(query)
+        assert_equal 12, a
+        refute query.result.to_h.key?("extensions")
+
+        queryb = GraphQL::Query.new(schema, %|
+          {
+            entity {
+              ...on Farm { cheese { kind } }
+              ...on Producer { cheese { kind } }
+            }
+          }
+        |)
+        b = schema.cost(queryb)
+        assert_equal 1003, b
+        assert_equal({"complexity_warning" => {"current" => 7, "future" => 12}}, queryb.result.to_h["extensions"])
+      end
+
+      it "calls the custom handler when leaf fields don't match" do
+        a = schema.cost(%|
+          {
+            entity {
+              ...on Producer { name }
+              ...on Farm { name }
+            }
+          }
+        |)
+        assert_equal 11, a
+
+        b = schema.cost(%|
+          {
+            entity {
+              ...on Farm { name }
+              ...on Producer { name }
+            }
+          }
+        |)
+        assert_equal 1003, b
+      end
+    end
+
+    describe "without a mode setting" do
+      it "warns, and invalid mismatched scope types will still compute without error" do
+        cost = nil
+
+        stdout, _stderr = capture_io do
+          cost = MaxOfPossibleScopes.cost(%|
+            {
+              entity {
+                ...on Farm { cheese { kind } }
+                ...on Producer { cheese: name }
+              }
+            }
+          |)
+        end
+
+        assert_equal 12, cost
+        assert_includes stdout, "GraphQL-Ruby's complexity cost system is getting some \"breaking fixes\" in a future version. See the migration notes at https://graphql-ruby.org/api-docs/#{GraphQL::VERSION}/Schema.html#complexity_cost_cacluation_mode-class_method
+
+To opt into the future behavior, configure your schema (MaxOfPossibleScopes) with:
+
+  complexity_cost_calculation_mode(:future) # or `:legacy`, `:compare`"
+      end
     end
   end
 end
