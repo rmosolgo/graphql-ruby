@@ -308,7 +308,7 @@ describe "GraphQL::Execution::Errors" do
       it "outputs the appropriate error message when using non-interpreter schema" do
         res = ErrorsTestSchemaWithoutInterpreter.execute("{ nonNullableArray }")
         expected_error = {
-          "message" => "Cannot return null for non-nullable field Query.nonNullableArray",
+          "message" => "Cannot return null for non-nullable element of type 'String!' for Query.nonNullableArray",
           "path" => ["nonNullableArray", 0],
           "locations" => [{ "line" => 1, "column" => 3 }]
         }
@@ -318,7 +318,7 @@ describe "GraphQL::Execution::Errors" do
       it "outputs the appropriate error message when using interpreter schema" do
         res = ErrorsTestSchema.execute("{ nonNullableArray }")
         expected_error = {
-          "message" => "Cannot return null for non-nullable field Query.nonNullableArray",
+          "message" => "Cannot return null for non-nullable element of type 'String!' for Query.nonNullableArray",
           "path" => ["nonNullableArray", 0],
           "locations" => [{ "line" => 1, "column" => 3 }]
         }

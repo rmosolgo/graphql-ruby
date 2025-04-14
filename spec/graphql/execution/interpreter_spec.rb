@@ -41,11 +41,6 @@ describe GraphQL::Execution::Interpreter do
         Box.new(value: object.sym)
       end
 
-      field :null_union_field_test, Integer, null: false
-      def null_union_field_test
-        1
-      end
-
       field :always_cached_value, Integer, null: false
       def always_cached_value
         raise "should never be called"
@@ -59,11 +54,6 @@ describe GraphQL::Execution::Interpreter do
 
       def expansion
         Query::EXPANSIONS.find { |e| e.sym == @object.expansion_sym }
-      end
-
-      field :null_union_field_test, Integer
-      def null_union_field_test
-        nil
       end
 
       field :parent_class_name, String, null: false, extras: [:parent]
@@ -406,7 +396,7 @@ describe GraphQL::Execution::Interpreter do
       "i4" => { "value" => 4, "lazyValue" => 4},
       "i5" => { "value" => 5, "lazyValue" => 5},
     }
-    assert_equal expected_data, result["data"]
+    assert_graphql_equal expected_data, result["data"]
   end
 
   it "runs skip and include" do
@@ -428,7 +418,7 @@ describe GraphQL::Execution::Interpreter do
       "exp3" => {"name" => "Ravnica, City of Guilds"},
       "exp5" => {"name" => "Ravnica, City of Guilds"},
     }
-    assert_equal expected_data, result["data"]
+    assert_graphql_equal expected_data, result["data"]
     assert_nil Fiber[:__graphql_runtime_info]
   end
 
@@ -512,7 +502,7 @@ describe GraphQL::Execution::Interpreter do
         }
       }
       GRAPHQL
-      assert_equal ["Cannot return null for non-nullable field Query.find"], res["errors"].map { |e| e["message"] }
+      assert_equal ["Cannot return null for non-nullable element of type 'Entity!' for Query.find"], res["errors"].map { |e| e["message"] }
     end
 
     it "works with lists of unions" do
@@ -534,23 +524,6 @@ describe GraphQL::Execution::Interpreter do
 
       assert_equal Hash, res["data"].class
       assert_equal Array, res["data"]["findMany"].class
-    end
-
-    it "works with union lists that have members of different kinds, with different nullabilities" do
-      res = InterpreterTest::Schema.execute <<-GRAPHQL
-      {
-        findMany(ids: ["RAV", "Dark Confidant"]) {
-          ... on Expansion {
-            nullUnionFieldTest
-          }
-          ... on Card {
-            nullUnionFieldTest
-          }
-        }
-      }
-      GRAPHQL
-
-      assert_equal [1, nil], res["data"]["findMany"].map { |f| f["nullUnionFieldTest"] }
     end
   end
 
@@ -863,9 +836,6 @@ describe GraphQL::Execution::Interpreter do
 
       result = RaisedErrorSchema.execute(querystring)
       expected_result = {
-        "data" => {
-          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
-        },
         "errors" => [
           {
             "message"=>"boom",
@@ -873,8 +843,11 @@ describe GraphQL::Execution::Interpreter do
             "path"=>["iface", "txn", "fails"]
           },
         ],
+        "data" => {
+          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
+        },
       }
-      assert_equal expected_result, result.to_h
+      assert_graphql_equal expected_result, result.to_h
     end
   end
 

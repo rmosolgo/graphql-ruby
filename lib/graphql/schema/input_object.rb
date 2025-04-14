@@ -38,7 +38,7 @@ module GraphQL
             # Weirdly, procs are applied during coercion, but not methods.
             # Probably because these methods require a `self`.
             if arg_defn.prepare.is_a?(Symbol) || context.nil?
-              prepared_value = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
+              prepared_value = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key], context: context)
               overwrite_argument(ruby_kwargs_key, prepared_value)
             end
           end

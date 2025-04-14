@@ -226,6 +226,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     subscription { Subscription }
     use InMemoryBackend::Subscriptions, extra: 123
     max_complexity(InMemoryBackend::MAX_COMPLEXITY)
+    complexity_cost_calculation_mode(:future)
     use GraphQL::Schema::Warden if ADD_WARDEN
   end
 end
@@ -286,6 +287,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   }
   Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }})
   Schema.max_complexity(MAX_COMPLEXITY)
+  Schema.complexity_cost_calculation_mode(:future)
   # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end

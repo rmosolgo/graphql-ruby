@@ -10,6 +10,39 @@
 
 ### Bug fixes
 
+# 2.5.3
+
+### Deprecations
+
+- Validation: two non-spec behaviors are deprecated:
+  - When a query includes two scalar fields of different types which may occur in the same place in the response, the query was previously allowed. The spec says it should be rejected. This version emits a warning in this case. See `Schema.allow_legacy_invalid_return_type_conflicts` for migration support. #4351
+  - When a query selects a field which returns a Union, but doesn't make any subselections on the Union, the spec says the query should be rejected as invalid but previous GraphQL-Ruby allowed it. It now emits a warning. See `Schema.allow_legacy_invalid_empty_selections_on_union` for migration support #5322
+- Complexity: several bugs about merging complexity cost across branches of a query have been fixed but require opting in. They may produce higher complexity scores. See `Schema.complexity_cost_calculation_mode` for migration support. #4843
+
+### New features
+
+- `AlwaysVisible`: improve speed (using `Schema::Visibility`) #5326
+- Return more descriptive errors when non-nullable list elements are `null` #5301
+- Visibility: improve performance on large schemas #5325
+
+# 2.5.2
+
+### New features
+
+- Resolver: accept `deprecation_reason` #5320
+
+### Bug fixes
+
+- Visibility: hide argument types whose uses are all hidden (to match Warden) #5291
+- InputObject: fix validation for nested input object with `prepare:` method configs #5321
+
+# 2.5.1
+
+### Bug fixes
+
+- Datadog trace: fix Dataloader source tracing method #5318
+- Sentry trace: handle `nil` current span #5313
+
 # 2.5.0
 
 ### Breaking changes

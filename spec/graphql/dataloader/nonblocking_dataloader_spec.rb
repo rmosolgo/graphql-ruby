@@ -182,7 +182,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
               "s2" => { "sleeper" => { "duration" => 0.1 } },
               "s3" => { "duration" => 0.3 }
             }
-            assert_equal expected_data, res["data"]
+            assert_graphql_equal expected_data, res["data"]
             assert_in_delta 0.3, ended_at - started_at, 0.06, "Fields ran without any waiting"
           end
 
@@ -228,7 +228,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
               "w3" => { "waitFor" => { "waitFor" => { "tag" => "d" } } },
               "w4" => { "tag" => "e" }
             }
-            assert_equal expected_data, res["data"]
+            assert_graphql_equal expected_data, res["data"]
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.

@@ -6,10 +6,20 @@ on:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   workflow_dispatch:
+    inputs:
+      publish_website:
+        description: "Publish guides to website?"
+        type: boolean
+        required: true
+      publish_version:
+        description: "If present, pull this GraphQL-Ruby version to rebuild API docs"
+        required: false
+        type: string
 
 permissions: {}
 jobs:
-  build:
+  website:
+    if: ${{ inputs.publish_website }}
     permissions:
       contents: write # for git push (s0/git-publish-subdir-action)
     name: Publish Website
@@ -36,6 +46,44 @@ jobs:
           git config --global user.name "$(git log --format="%aN" -n 1)"
           git config --global user.email "$(git log --format="%aE" -n 1)"
           bundle exec rake site:commit_changes
+      - name: Deploy to GitHub pages via gh-pages branch
+        uses: s0/git-publish-subdir-action@master
+        env:
+          REPO: self
+          BRANCH: gh-pages
+          FOLDER: gh-pages
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  api_docs:
+    needs: website
+    if: ${{ inputs.publish_version || github.ref_name }}
+    permissions:
+      contents: write # for git push (s0/git-publish-subdir-action)
+    name: Publish API Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.GITHUB_REF }}
+      - name: Checkout GitHub pages branch
+        uses: actions/checkout@v4
+        with:
+          path: gh-pages
+          ref: gh-pages
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+      - name: Build API docs
+        run: |
+          bundle exec rake site:fetch_latest apidocs:gen_version["${{ inputs.publish_version || env.GITHUB_REF }}"]
+      - name: Commit changes as last committer
+        run: |
+          git config --global user.name rmosolgo
+          git config --global user.email rdmosolgo@github.com
+          git status
+          bundle exec rake site:commit_changes
+          git status
       - name: Deploy to GitHub pages via gh-pages branch
         uses: s0/git-publish-subdir-action@master
         env:

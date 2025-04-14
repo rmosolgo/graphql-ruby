@@ -60,7 +60,7 @@ module GraphQL
   # Any undiscoverable types may be provided with the `types` configuration.
   #
   # Schemas can restrict large incoming queries with `max_depth` and `max_complexity` configurations.
-  # (These configurations can be overridden by specific calls to {Schema#execute})
+  # (These configurations can be overridden by specific calls to {Schema.execute})
   #
   # @example defining a schema
   #   class MySchema < GraphQL::Schema
@@ -249,7 +249,7 @@ module GraphQL
 
 
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
-      # @see {#as_json}
+      # @see #as_json Return a Hash representation of the schema
       # @return [String]
       def to_json(**args)
         JSON.pretty_generate(as_json(**args))
@@ -257,8 +257,6 @@ module GraphQL
 
       # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.
       # @param context [Hash]
-      # @param only [<#call(member, ctx)>]
-      # @param except [<#call(member, ctx)>]
       # @param include_deprecated_args [Boolean] If true, deprecated arguments will be included in the JSON response
       # @param include_schema_description [Boolean] If true, the schema's description will be queried and included in the response
       # @param include_is_repeatable [Boolean] If true, `isRepeatable: true|false` will be included with the schema's directives
@@ -1066,6 +1064,18 @@ module GraphQL
         end
       end
 
+      # @param context [GraphQL::Query::Context, nil]
+      # @return [Logger] A logger to use for this context configuration, falling back to {.default_logger}
+      def logger_for(context)
+        if context && context[:logger] == false
+          Logger.new(IO::NULL)
+        elsif context && (l = context[:logger])
+          l
+        else
+          default_logger
+        end
+      end
+
       # @param new_context_class [Class<GraphQL::Query::Context>] A subclass to use when executing queries
       def context_class(new_context_class = nil)
         if new_context_class
@@ -1165,7 +1175,7 @@ module GraphQL
       # GraphQL-Ruby calls this method during execution when it needs the application to determine the type to use for an object.
       #
       # Usually, this object was returned from a field whose return type is an {GraphQL::Schema::Interface} or a {GraphQL::Schema::Union}.
-      # But this method is called in other cases, too -- for example, when {GraphQL::Schema::Argument.loads} cases an object to be directly loaded from the database.
+      # But this method is called in other cases, too -- for example, when {GraphQL::Schema::Argument#loads} cases an object to be directly loaded from the database.
       #
       # @example Returning a GraphQL type based on the object's class name
       #   class MySchema < GraphQL::Schema
@@ -1220,7 +1230,7 @@ module GraphQL
 
       # Return a stable ID string for `object` so that it can be refetched later, using {.object_from_id}.
       #
-      # {GlobalID}(https://github.com/rails/globalid) and {SQIDs}(https://sqids.org/ruby) can both be used to create IDs.
+      # [GlobalID](https://github.com/rails/globalid) and [SQIDs](https://sqids.org/ruby) can both be used to create IDs.
       #
       # @example Using Rails's GlobalID to generate IDs
       #   def self.id_from_object(application_object, graphql_type, context)
@@ -1297,13 +1307,13 @@ module GraphQL
       # @return [void]
       # @raise [GraphQL::ExecutionError] to return this error to the client
       # @raise [GraphQL::Error] to crash the query and raise a developer-facing error
-      def type_error(type_error, ctx)
+      def type_error(type_error, context)
         case type_error
         when GraphQL::InvalidNullError
           execution_error = GraphQL::ExecutionError.new(type_error.message, ast_node: type_error.ast_node)
-          execution_error.path = ctx[:current_path]
+          execution_error.path = context[:current_path]
 
-          ctx.errors << execution_error
+          context.errors << execution_error
         when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
           raise type_error
         when GraphQL::IntegerDecodingError
@@ -1311,7 +1321,7 @@ module GraphQL
         end
       end
 
-      # A function to call when {#execute} receives an invalid query string
+      # A function to call when {.execute} receives an invalid query string
       #
       # The default is to add the error to `context.errors`
       # @param parse_err [GraphQL::ParseError] The error encountered during parsing
@@ -1570,7 +1580,8 @@ module GraphQL
       # @see {Query#initialize} for query keyword arguments
       # @see {Execution::Multiplex#run_all} for multiplex keyword arguments
       # @param queries [Array<Hash>] Keyword arguments for each query
-      # @param context [Hash] Multiplex-level context
+      # @option kwargs [Hash] :context ({}) Multiplex-level context
+      # @option kwargs [nil, Integer] :max_complexity (nil)
       # @return [Array<GraphQL::Query::Result>] One result for each query in the input
       def multiplex(queries, **kwargs)
         GraphQL::Execution::Interpreter.run_all(self, queries, **kwargs)
@@ -1645,7 +1656,7 @@ module GraphQL
         end
       end
 
-      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered with {#lazy_resolve}.
+      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered with {.lazy_resolve}.
       def lazy_method_name(obj)
         lazy_methods.get(obj)
       end
@@ -1685,6 +1696,158 @@ module GraphQL
         else
           @did_you_mean = new_dym
         end
+      end
+
+
+      # This setting controls how GraphQL-Ruby handles empty selections on Union types.
+      #
+      # To opt into future, spec-compliant behavior where these selections are rejected, set this to `false`.
+      #
+      # If you need to support previous, non-spec behavior which allowed selecting union fields
+      # but *not* selecting any fields on that union, set this to `true` to continue allowing that behavior.
+      #
+      # If this is `true`, then {.legacy_invalid_empty_selections_on_union} will be called with {Query} objects
+      # with that kind of selections. You must implement that method
+      # @param new_value [Boolean]
+      # @return [true, false, nil]
+      def allow_legacy_invalid_empty_selections_on_union(new_value = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_value)
+          @allow_legacy_invalid_empty_selections_on_union
+        else
+          @allow_legacy_invalid_empty_selections_on_union = new_value
+        end
+      end
+
+      # This method is called during validation when a previously-allowed, but non-spec
+      # query is encountered where a union field has no child selections on it.
+      #
+      # You should implement this method to log the violation so that you can contact clients
+      # and notify them about changing their queries. Then return a suitable value to
+      # tell GraphQL-Ruby how to continue.
+      # @param query [GraphQL::Query]
+      # @return [:return_validation_error] Let GraphQL-Ruby return the (new) normal validation error for this query
+      # @return [String] A validation error to return for this query
+      # @return [nil] Don't send the client an error, continue the legacy behavior (allow this query to execute)
+      def legacy_invalid_empty_selections_on_union(query)
+        raise "Implement `def self.legacy_invalid_empty_selections_on_union(query)` to handle this scenario"
+      end
+
+      # This setting controls how GraphQL-Ruby handles overlapping selections on scalar types when the types
+      # don't match.
+      #
+      # When set to `false`, GraphQL-Ruby will reject those queries with a validation error (as per the GraphQL spec).
+      #
+      # When set to `true`, GraphQL-Ruby will call {.legacy_invalid_return_type_conflicts} when the scenario is encountered.
+      #
+      # @param new_value [Boolean] `true` permits the legacy behavior, `false` rejects it.
+      # @return [true, false, nil]
+      def allow_legacy_invalid_return_type_conflicts(new_value = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_value)
+          @allow_legacy_invalid_return_type_conflicts
+        else
+          @allow_legacy_invalid_return_type_conflicts = new_value
+        end
+      end
+
+      # This method is called when the query contains fields which don't contain matching scalar types.
+      # This was previously allowed by GraphQL-Ruby but it's a violation of the GraphQL spec.
+      #
+      # You should implement this method to log the violation so that you observe usage of these fields.
+      # Fixing this scenario might mean adding new fields, and telling clients to use those fields.
+      # (Changing the field return type would be a breaking change, but if it works for your client use cases,
+      # that might work, too.)
+      #
+      # @param query [GraphQL::Query]
+      # @param type1 [Module] A GraphQL type definition
+      # @param type2 [Module] A GraphQL type definition
+      # @param node1 [GraphQL::Language::Nodes::Field] This node is recognized as conflicting. You might call `.line` and `.col` for custom error reporting.
+      # @param node2 [GraphQL::Language::Nodes::Field] The other node recognized as conflicting.
+      # @return [:return_validation_error] Let GraphQL-Ruby return the (new) normal validation error for this query
+      # @return [String] A validation error to return for this query
+      # @return [nil] Don't send the client an error, continue the legacy behavior (allow this query to execute)
+      def legacy_invalid_return_type_conflicts(query, type1, type2, node1, node2)
+        raise "Implement #{self}.legacy_invalid_return_type_conflicts to handle this invalid selection"
+      end
+
+      # The legacy complexity implementation included several bugs:
+      #
+      # - In some cases, it used the lexically _last_ field to determine a cost, instead of calculating the maximum among selections
+      # - In some cases, it called field complexity hooks repeatedly (when it should have only called them once)
+      #
+      # The future implementation may produce higher total complexity scores, so it's not active by default yet. You can opt into
+      # the future default behavior by configuring `:future` here. Or, you can choose a mode for each query with {.complexity_cost_calculation_mode_for}.
+      #
+      # The legacy mode is currently maintained alongside the future one, but it will be removed in a future GraphQL-Ruby version.
+      #
+      # If you choose `:compare`, you must also implement {.legacy_complexity_cost_calculation_mismatch} to handle the input somehow.
+      #
+      # @example Opting into the future calculation mode
+      #   complexity_cost_calculation_mode(:future)
+      #
+      # @example Choosing the legacy mode (which will work until that mode is removed...)
+      #   complexity_cost_calculation_mode(:legacy)
+      #
+      # @example Run both modes for every query, call {.legacy_complexity_cost_calculation_mismatch} when they don't match:
+      #   complexity_cost_calculation_mode(:compare)
+      def complexity_cost_calculation_mode(new_mode = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_mode)
+          @complexity_cost_calculation_mode
+        else
+          @complexity_cost_calculation_mode = new_mode
+        end
+      end
+
+      # Implement this method to produce a per-query complexity cost calculation mode. (Technically, it's per-multiplex.)
+      #
+      # This is a way to check the compatibility of queries coming to your API without adding overhead of running `:compare`
+      # for every query. You could sample traffic, turn it off/on with feature flags, or anything else.
+      #
+      # @example Sampling traffic
+      #   def self.complexity_cost_calculation_mode_for(_context)
+      #     if rand < 0.1 # 10% of the time
+      #       :compare
+      #     else
+      #       :legacy
+      #     end
+      #   end
+      #
+      # @example Using a feature flag to manage future mode
+      #   def complexity_cost_calculation_mode_for(context)
+      #     current_user = context[:current_user]
+      #     if Flipper.enabled?(:future_complexity_cost, current_user)
+      #       :future
+      #     elsif rand < 0.5 # 50%
+      #       :compare
+      #     else
+      #       :legacy
+      #     end
+      #   end
+      #
+      # @param multiplex_context [Hash] The context for the currently-running {Execution::Multiplex} (which contains one or more queries)
+      # @return [:future] Use the new calculation algorithm -- may be higher than `:legacy`
+      # @return [:legacy] Use the legacy calculation algorithm, warts and all
+      # @return [:compare] Run both algorithms and call {.legacy_complexity_cost_calculation_mismatch} if they don't match
+      def complexity_cost_calculation_mode_for(multiplex_context)
+        complexity_cost_calculation_mode
+      end
+
+      # Implement this method in your schema to handle mismatches when `:compare` is used.
+      #
+      # @example Logging the mismatch
+      #   def self.legacy_cost_calculation_mismatch(multiplex, future_cost, legacy_cost)
+      #     client_id = multiplex.context[:api_client].id
+      #     operation_names = multiplex.queries.map { |q| q.selected_operation_name || "anonymous" }.join(", ")
+      #     Stats.increment(:complexity_mismatch, tags: { client: client_id, ops: operation_names })
+      #     legacy_cost
+      #   end
+      # @see Query::Context#add_error Adding an error to the response to notify the client
+      # @see Query::Context#response_extensions Adding key-value pairs to the response `"extensions" => { ... }`
+      # @param multiplex [GraphQL::Execution::Multiplex]
+      # @param future_complexity_cost [Integer]
+      # @param legacy_complexity_cost [Integer]
+      # @return [Integer] the cost to use for this query (probably one of `future_complexity_cost` or `legacy_complexity_cost`)
+      def legacy_complexity_cost_calculation_mismatch(multiplex, future_complexity_cost, legacy_complexity_cost)
+        raise "Implement #{self}.legacy_complexity_cost(multiplex, future_complexity_cost, legacy_complexity_cost) to handle this mismatch (#{future_complexity_cost} vs. #{legacy_complexity_cost}) and return a value to use"
       end
 
       private
