@@ -19,6 +19,7 @@ on:
 permissions: {}
 jobs:
   website:
+    if: ${{ inputs.publish_website }}
     permissions:
       contents: write # for git push (s0/git-publish-subdir-action)
     name: Publish Website
@@ -54,7 +55,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   api_docs:
     needs: website
-    if: ${{ inputs.publish_version || github.action_ref }}
+    if: ${{ inputs.publish_version || github.ref_name }}
     permissions:
       contents: write # for git push (s0/git-publish-subdir-action)
     name: Publish API Docs
