@@ -176,7 +176,11 @@ describe GraphQL::Query::Context do
       end
     end
 
+    class BaseField < GraphQL::Schema::Field
+      include GraphQL::Execution::Lazy::FieldIntegration
+    end
     class ContextQuery < GraphQL::Schema::Object
+      field_class(BaseField)
       field :get_scoped_context, String do
         argument :key, String
         argument :lazy, Boolean, required: false, default_value: false

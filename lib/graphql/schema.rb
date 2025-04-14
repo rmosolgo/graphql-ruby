@@ -1154,33 +1154,20 @@ module GraphQL
             super
           end
 
-          if legacy_sync_lazy
-            after_lazy(maybe_lazy_resolve_type_result) do |resolve_type_result|
-              process_resolve_type_result(type, obj, ctx, resolve_type_result)
+          after_lazy(maybe_lazy_resolve_type_result) do |resolve_type_result|
+            if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
+              resolved_type = resolve_type_result[0]
+              resolved_value = resolve_type_result[1]
+            else
+              resolved_type = resolve_type_result
+              resolved_value = obj
             end
-          elsif lazy?(maybe_lazy_resolve_type_result, legacy: true)
-            res = ctx.dataloader.with(Dataloader::LazySource, :resolve_type, ctx).load(maybe_lazy_resolve_type_result)
-            process_resolve_type_result(type, obj, ctx, res)
-          else
-            process_resolve_type_result(type, obj, ctx, maybe_lazy_resolve_type_result)
-          end
-        end
 
-        private
-
-        def process_resolve_type_result(type, obj, ctx, resolve_type_result)
-          if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
-            resolved_type = resolve_type_result[0]
-            resolved_value = resolve_type_result[1]
-          else
-            resolved_type = resolve_type_result
-            resolved_value = obj
-          end
-
-          if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
-            [resolved_type, resolved_value]
-          else
-            raise ".resolve_type should return a type definition, but got #{resolved_type.inspect} (#{resolved_type.class}) from `resolve_type(#{type}, #{obj}, #{ctx})`"
+            if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
+              [resolved_type, resolved_value]
+            else
+              raise ".resolve_type should return a type definition, but got #{resolved_type.inspect} (#{resolved_type.class}) from `resolve_type(#{type}, #{obj}, #{ctx})`"
+            end
           end
         end
       end
@@ -1648,6 +1635,8 @@ module GraphQL
       def legacy_sync_lazy(new_value = NOT_CONFIGURED)
         if !NOT_CONFIGURED.equal?(new_value)
           @legacy_sync_lazy = new_value
+        elsif defined?(@legacy_sync_lazy)
+          @legacy_sync_lazy
         elsif superclass.respond_to?(:legacy_sync_lazy)
           superclass.legacy_sync_lazy
         else

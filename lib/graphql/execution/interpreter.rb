@@ -22,6 +22,7 @@ module GraphQL
         # @param max_complexity [Integer, nil]
         # @return [Array<GraphQL::Query::Result>] One result per query
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
+          lazies_at_depth = Hash.new { |h, k| h[k] = [] }
           queries = query_options.map do |opts|
             query = case opts
             when Hash
@@ -40,10 +41,9 @@ module GraphQL
           trace = multiplex.current_trace
           Fiber[:__graphql_current_multiplex] = multiplex
           trace.execute_multiplex(multiplex: multiplex) do
-            schema = multiplex.schema
             queries = multiplex.queries
-            lazies_at_depth = Hash.new { |h, k| h[k] = [] }
-            queries.each { |q| q.init_runtime(lazies_at_depth: lazies_at_depth) }
+            queries.each { |query| query.init_runtime(lazies_at_depth: lazies_at_depth) }
+            schema = multiplex.schema
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]

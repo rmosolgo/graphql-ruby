@@ -916,6 +916,7 @@ module Jazz
     BlogPost.has_no_fields(true)
     extra_types BlogPost
     use GraphQL::Dataloader
+    legacy_sync_lazy(true) # for literal use of `Execution::Lazy` above
     use GraphQL::Schema::Warden if ADD_WARDEN
   end
 

@@ -54,7 +54,10 @@ module GraphQL
     # @param analyzers [Array<GraphQL::Analysis::Analyzer>]
     # @return [Array<Any>] Results from those analyzers
     def analyze_query(query, analyzers, multiplex_analyzers: [])
-      query.init_runtime(lazies_at_depth: nil)
+      # If called outside of execution:
+      if query.context.runtime.nil?
+        query.init_runtime(lazies_at_depth: nil)
+      end
       query.current_trace.analyze_query(query: query) do
         query_analyzers = analyzers
           .map { |analyzer| analyzer.new(query) }
