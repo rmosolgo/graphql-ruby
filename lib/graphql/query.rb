@@ -50,7 +50,7 @@ module GraphQL
     # @return [GraphQL::StaticValidation::Validator] if present, the query will validate with these rules.
     attr_reader :static_validator
 
-    # @param new_validate [GraphQL::StaticValidation::Validator] if present, the query will validate with these rules. This can't be reasssigned after validation.
+    # @param new_validator [GraphQL::StaticValidation::Validator] if present, the query will validate with these rules. This can't be reasssigned after validation.
     def static_validator=(new_validator)
       if defined?(@validation_pipeline) && @validation_pipeline && @validation_pipeline.has_validated?
         raise ArgumentError, "Can't reassign Query#static_validator= after validation has run, remove this assignment."
@@ -282,7 +282,7 @@ module GraphQL
     # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
     # @param definition [GraphQL::Schema::Field]
     # @param parent_object [GraphQL::Schema::Object]
-    # @return Hash{Symbol => Object}
+    # @return [Hash{Symbol => Object}]
     def arguments_for(ast_node, definition, parent_object: nil)
       arguments_cache.fetch(ast_node, definition, parent_object)
     end

@@ -60,7 +60,7 @@ module GraphQL
   # Any undiscoverable types may be provided with the `types` configuration.
   #
   # Schemas can restrict large incoming queries with `max_depth` and `max_complexity` configurations.
-  # (These configurations can be overridden by specific calls to {Schema#execute})
+  # (These configurations can be overridden by specific calls to {Schema.execute})
   #
   # @example defining a schema
   #   class MySchema < GraphQL::Schema
@@ -249,7 +249,7 @@ module GraphQL
 
 
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
-      # @see {#as_json}
+      # @see #as_json Return a Hash representation of the schema
       # @return [String]
       def to_json(**args)
         JSON.pretty_generate(as_json(**args))
@@ -257,8 +257,6 @@ module GraphQL
 
       # Return the Hash response of {Introspection::INTROSPECTION_QUERY}.
       # @param context [Hash]
-      # @param only [<#call(member, ctx)>]
-      # @param except [<#call(member, ctx)>]
       # @param include_deprecated_args [Boolean] If true, deprecated arguments will be included in the JSON response
       # @param include_schema_description [Boolean] If true, the schema's description will be queried and included in the response
       # @param include_is_repeatable [Boolean] If true, `isRepeatable: true|false` will be included with the schema's directives
@@ -1177,7 +1175,7 @@ module GraphQL
       # GraphQL-Ruby calls this method during execution when it needs the application to determine the type to use for an object.
       #
       # Usually, this object was returned from a field whose return type is an {GraphQL::Schema::Interface} or a {GraphQL::Schema::Union}.
-      # But this method is called in other cases, too -- for example, when {GraphQL::Schema::Argument.loads} cases an object to be directly loaded from the database.
+      # But this method is called in other cases, too -- for example, when {GraphQL::Schema::Argument#loads} cases an object to be directly loaded from the database.
       #
       # @example Returning a GraphQL type based on the object's class name
       #   class MySchema < GraphQL::Schema
@@ -1232,7 +1230,7 @@ module GraphQL
 
       # Return a stable ID string for `object` so that it can be refetched later, using {.object_from_id}.
       #
-      # {GlobalID}(https://github.com/rails/globalid) and {SQIDs}(https://sqids.org/ruby) can both be used to create IDs.
+      # [GlobalID](https://github.com/rails/globalid) and [SQIDs](https://sqids.org/ruby) can both be used to create IDs.
       #
       # @example Using Rails's GlobalID to generate IDs
       #   def self.id_from_object(application_object, graphql_type, context)
@@ -1309,13 +1307,13 @@ module GraphQL
       # @return [void]
       # @raise [GraphQL::ExecutionError] to return this error to the client
       # @raise [GraphQL::Error] to crash the query and raise a developer-facing error
-      def type_error(type_error, ctx)
+      def type_error(type_error, context)
         case type_error
         when GraphQL::InvalidNullError
           execution_error = GraphQL::ExecutionError.new(type_error.message, ast_node: type_error.ast_node)
-          execution_error.path = ctx[:current_path]
+          execution_error.path = context[:current_path]
 
-          ctx.errors << execution_error
+          context.errors << execution_error
         when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
           raise type_error
         when GraphQL::IntegerDecodingError
@@ -1323,7 +1321,7 @@ module GraphQL
         end
       end
 
-      # A function to call when {#execute} receives an invalid query string
+      # A function to call when {.execute} receives an invalid query string
       #
       # The default is to add the error to `context.errors`
       # @param parse_err [GraphQL::ParseError] The error encountered during parsing
@@ -1579,7 +1577,8 @@ module GraphQL
       # @see {Query#initialize} for query keyword arguments
       # @see {Execution::Multiplex#run_all} for multiplex keyword arguments
       # @param queries [Array<Hash>] Keyword arguments for each query
-      # @param context [Hash] Multiplex-level context
+      # @option kwargs [Hash] :context ({}) Multiplex-level context
+      # @option kwargs [nil, Integer] :max_complexity (nil)
       # @return [Array<GraphQL::Query::Result>] One result for each query in the input
       def multiplex(queries, **kwargs)
         GraphQL::Execution::Interpreter.run_all(self, queries, **kwargs)
@@ -1644,7 +1643,7 @@ module GraphQL
         end
       end
 
-      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered with {#lazy_resolve}.
+      # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered with {.lazy_resolve}.
       def lazy_method_name(obj)
         lazy_methods.get(obj)
       end
@@ -1683,6 +1682,10 @@ module GraphQL
       end
 
 
+      # This setting controls how GraphQL-Ruby handles empty selections on Union types.
+      #
+      # To opt into future, spec-compliant behavior where these selections are rejected, set this to `false`.
+      #
       # If you need to support previous, non-spec behavior which allowed selecting union fields
       # but *not* selecting any fields on that union, set this to `true` to continue allowing that behavior.
       #
@@ -1712,8 +1715,10 @@ module GraphQL
         raise "Implement `def self.legacy_invalid_empty_selections_on_union(query)` to handle this scenario"
       end
 
-      # Set this value to configure legacy, non-spec behavior where selections of non-matching scalar types
-      # are allowed as valid.
+      # This setting controls how GraphQL-Ruby handles overlapping selections on scalar types when the types
+      # don't match.
+      #
+      # When set to `false`, GraphQL-Ruby will reject those queries with a validation error (as per the GraphQL spec).
       #
       # When set to `true`, GraphQL-Ruby will call {.legacy_invalid_return_type_conflicts} when the scenario is encountered.
       #
@@ -1801,7 +1806,7 @@ module GraphQL
       #     end
       #   end
       #
-      # @param context [Hash] The context for the currently-running {Execution::Multiplex} (which contains one or more queries)
+      # @param multiplex_context [Hash] The context for the currently-running {Execution::Multiplex} (which contains one or more queries)
       # @return [:future] Use the new calculation algorithm -- may be higher than `:legacy`
       # @return [:legacy] Use the legacy calculation algorithm, warts and all
       # @return [:compare] Run both algorithms and call {.legacy_complexity_cost_calculation_mismatch} if they don't match

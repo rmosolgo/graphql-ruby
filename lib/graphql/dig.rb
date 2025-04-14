@@ -5,7 +5,8 @@ module GraphQL
     # so we can use some of the magic in Schema::InputObject and Interpreter::Arguments
     # to handle stringified/symbolized keys.
     #
-    # @param args [Array<[String, Symbol>] Retrieves the value object corresponding to the each key objects repeatedly
+    # @param own_key [String, Symbol] A key to retrieve
+    # @param rest_keys [Array<[String, Symbol>] Retrieves the value object corresponding to the each key objects repeatedly
     # @return [Object]
     def dig(own_key, *rest_keys)
       val = self[own_key]
