@@ -501,7 +501,7 @@ describe GraphQL::Execution::Interpreter do
         }
       }
       GRAPHQL
-      assert_equal ["Cannot return null for non-nullable field Query.find"], res["errors"].map { |e| e["message"] }
+      assert_equal ["Cannot return null for non-nullable element of type 'Entity!' for Query.find"], res["errors"].map { |e| e["message"] }
     end
 
     it "works with lists of unions" do
