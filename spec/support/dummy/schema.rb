@@ -568,7 +568,7 @@ module Dummy
       end
     end
 
-    dataloader_lazy_setup(self)
+    dataloader_lazy_setup(self, lazy_compat_mode: false)
     lazy_resolve(Proc, :call)
   end
 

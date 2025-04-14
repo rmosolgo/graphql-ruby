@@ -345,6 +345,9 @@ module GraphQL
 
           def load_and_authorize_application_object(argument, id, context)
             loaded_application_object = load_application_object(argument, id, context)
+            if context.runtime.lazy?(loaded_application_object, legacy: true)
+              loaded_application_object = context.dataloader.with(Dataloader::LazySource, :loads, context).load(loaded_application_object)
+            end
             authorize_application_object(argument, id, context, loaded_application_object)
           end
 

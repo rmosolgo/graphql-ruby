@@ -351,7 +351,7 @@ describe "GraphQL::Authorization" do
       mutation(Mutation)
       directive(Nothing)
       use GraphQL::Schema::Warden if ADD_WARDEN
-      legacy_sync_lazy(true)
+      dataloader_lazy_setup(self)
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
@@ -370,7 +370,7 @@ describe "GraphQL::Authorization" do
     class SchemaWithFieldHook < GraphQL::Schema
       query(Query)
       use GraphQL::Schema::Warden if ADD_WARDEN
-      legacy_sync_lazy(true)
+      dataloader_lazy_setup(self)
       lazy_resolve(Box, :value)
 
       def self.unauthorized_field(err)

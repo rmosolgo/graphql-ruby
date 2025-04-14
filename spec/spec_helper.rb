@@ -32,9 +32,9 @@ else
   USING_C_PARSER = false
 end
 
-def dataloader_lazy_setup(schema)
+def dataloader_lazy_setup(schema, lazy_compat_mode: true)
   if ENV["GRAPHQL_FUTURE"]
-    schema.use(GraphQL::Dataloader, lazy_compat_mode: true)
+    schema.use(GraphQL::Dataloader, lazy_compat_mode: lazy_compat_mode)
   else
     legacy_sync_lazy(true)
   end

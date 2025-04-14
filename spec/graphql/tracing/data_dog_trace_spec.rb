@@ -45,7 +45,7 @@ describe GraphQL::Tracing::DataDogTrace do
       query(Query)
       use GraphQL::Dataloader
       trace_with(GraphQL::Tracing::DataDogTrace)
-      legacy_sync_lazy(true)
+      dataloader_lazy_setup(self)
       lazy_resolve(Box, :value)
     end
 
@@ -58,7 +58,7 @@ describe GraphQL::Tracing::DataDogTrace do
       end
       query(Query)
       trace_with(CustomDataDogTracing)
-      legacy_sync_lazy(true)
+      dataloader_lazy_setup(self)
       lazy_resolve(Box, :value)
     end
   end

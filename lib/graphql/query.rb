@@ -419,6 +419,11 @@ module GraphQL
 
     attr_reader :logger
 
+    def init_runtime(lazies_at_depth:)
+      runtime = Execution::Interpreter::Runtime.new(query: self, lazies_at_depth: lazies_at_depth)
+      context.namespace(:interpreter_runtime)[:runtime] = runtime
+    end
+
     private
 
     def find_operation(operations, operation_name)

@@ -652,7 +652,7 @@ describe GraphQL::Execution::Interpreter do
       query Query
       subscription Subscription
       use InMemoryBackend::Subscriptions, extra: nil
-      legacy_sync_lazy(true)
+      dataloader_lazy_setup(self)
       lazy_resolve Proc, :call
     end
 

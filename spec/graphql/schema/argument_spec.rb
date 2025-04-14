@@ -87,7 +87,8 @@ describe GraphQL::Schema::Argument do
 
     class Schema < GraphQL::Schema
       query(Query)
-      legacy_sync_lazy(true)
+      dataloader_lazy_setup(self)
+
       lazy_resolve(Proc, :call)
 
       def self.object_from_id(id, ctx)
@@ -746,6 +747,7 @@ describe GraphQL::Schema::Argument do
         end
 
         query(query_type)
+        use GraphQL::Dataloader
         lazy_resolve(Proc, :call)
       end
     end

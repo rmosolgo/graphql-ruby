@@ -420,7 +420,7 @@ module StarWars
     def self.id_from_object(object, type, ctx)
       GraphQL::Schema::UniqueWithinType.encode(type.graphql_name, object.id)
     end
-    legacy_sync_lazy(true)
+    dataloader_lazy_setup(self)
     lazy_resolve(LazyWrapper, :value)
     lazy_resolve(LazyLoader, :value)
   end

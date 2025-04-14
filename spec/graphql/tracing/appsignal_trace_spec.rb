@@ -69,7 +69,7 @@ describe GraphQL::Tracing::AppsignalTrace do
     class TestSchema < GraphQL::Schema
       query(Query)
       trace_with(GraphQL::Tracing::AppsignalTrace)
-      legacy_sync_lazy(true)
+      dataloader_lazy_setup(self)
       lazy_resolve(IntBox, :value)
     end
   end
@@ -101,7 +101,7 @@ describe GraphQL::Tracing::AppsignalTrace do
       query(AppsignalTraceTest::Query)
       trace_with(GraphQL::Tracing::DataDogTrace)
       trace_with(GraphQL::Tracing::AppsignalTrace)
-      legacy_sync_lazy(true)
+      dataloader_lazy_setup(self)
       lazy_resolve(IntBox, :value)
     end
 
@@ -110,7 +110,7 @@ describe GraphQL::Tracing::AppsignalTrace do
       # Include these modules in different order than above:
       trace_with(GraphQL::Tracing::AppsignalTrace)
       trace_with(GraphQL::Tracing::DataDogTrace)
-      legacy_sync_lazy(true)
+      dataloader_lazy_setup(self)
       lazy_resolve(IntBox, :value)
     end
 

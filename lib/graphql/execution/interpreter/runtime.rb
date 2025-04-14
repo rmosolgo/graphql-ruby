@@ -38,7 +38,7 @@ module GraphQL
         def initialize(query:, lazies_at_depth:)
           @query = query
           @current_trace = query.current_trace
-          @dataloader = query.multiplex.dataloader
+          @dataloader = query.context.dataloader
           @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
@@ -877,7 +877,6 @@ module GraphQL
             query.resolve_type(type, value)
           end
           @current_trace.end_resolve_type(type, value, context, resolved_type)
-
           if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
               @current_trace.begin_resolve_type(type, value, context)

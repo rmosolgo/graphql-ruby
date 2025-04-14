@@ -171,7 +171,7 @@ describe "GraphQL::Execution::Errors" do
     end
 
     query(Query)
-    legacy_sync_lazy(true)
+    dataloader_lazy_setup(self)
     lazy_resolve(Proc, :call)
 
     def self.object_from_id(id, ctx)
