@@ -1066,6 +1066,18 @@ module GraphQL
         end
       end
 
+      # @param context [GraphQL::Query::Context, nil]
+      # @return [Logger] A logger to use for this context configuration, falling back to {.default_logger}
+      def logger_for(context)
+        if context && context[:logger] == false
+          Logger.new(IO::NULL)
+        elsif context && (l = context[:logger])
+          l
+        else
+          default_logger
+        end
+      end
+
       # @param new_context_class [Class<GraphQL::Query::Context>] A subclass to use when executing queries
       def context_class(new_context_class = nil)
         if new_context_class
@@ -1733,6 +1745,87 @@ module GraphQL
       # @return [nil] Don't send the client an error, continue the legacy behavior (allow this query to execute)
       def legacy_invalid_return_type_conflicts(query, type1, type2, node1, node2)
         raise "Implement #{self}.legacy_invalid_return_type_conflicts to handle this invalid selection"
+      end
+
+      # The legacy complexity implementation included several bugs:
+      #
+      # - In some cases, it used the lexically _last_ field to determine a cost, instead of calculating the maximum among selections
+      # - In some cases, it called field complexity hooks repeatedly (when it should have only called them once)
+      #
+      # The future implementation may produce higher total complexity scores, so it's not active by default yet. You can opt into
+      # the future default behavior by configuring `:future` here. Or, you can choose a mode for each query with {.complexity_cost_calculation_mode_for}.
+      #
+      # The legacy mode is currently maintained alongside the future one, but it will be removed in a future GraphQL-Ruby version.
+      #
+      # If you choose `:compare`, you must also implement {.legacy_complexity_cost_calculation_mismatch} to handle the input somehow.
+      #
+      # @example Opting into the future calculation mode
+      #   complexity_cost_calculation_mode(:future)
+      #
+      # @example Choosing the legacy mode (which will work until that mode is removed...)
+      #   complexity_cost_calculation_mode(:legacy)
+      #
+      # @example Run both modes for every query, call {.legacy_complexity_cost_calculation_mismatch} when they don't match:
+      #   complexity_cost_calculation_mode(:compare)
+      def complexity_cost_calculation_mode(new_mode = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_mode)
+          @complexity_cost_calculation_mode
+        else
+          @complexity_cost_calculation_mode = new_mode
+        end
+      end
+
+      # Implement this method to produce a per-query complexity cost calculation mode. (Technically, it's per-multiplex.)
+      #
+      # This is a way to check the compatibility of queries coming to your API without adding overhead of running `:compare`
+      # for every query. You could sample traffic, turn it off/on with feature flags, or anything else.
+      #
+      # @example Sampling traffic
+      #   def self.complexity_cost_calculation_mode_for(_context)
+      #     if rand < 0.1 # 10% of the time
+      #       :compare
+      #     else
+      #       :legacy
+      #     end
+      #   end
+      #
+      # @example Using a feature flag to manage future mode
+      #   def complexity_cost_calculation_mode_for(context)
+      #     current_user = context[:current_user]
+      #     if Flipper.enabled?(:future_complexity_cost, current_user)
+      #       :future
+      #     elsif rand < 0.5 # 50%
+      #       :compare
+      #     else
+      #       :legacy
+      #     end
+      #   end
+      #
+      # @param context [Hash] The context for the currently-running {Execution::Multiplex} (which contains one or more queries)
+      # @return [:future] Use the new calculation algorithm -- may be higher than `:legacy`
+      # @return [:legacy] Use the legacy calculation algorithm, warts and all
+      # @return [:compare] Run both algorithms and call {.legacy_complexity_cost_calculation_mismatch} if they don't match
+      def complexity_cost_calculation_mode_for(multiplex_context)
+        complexity_cost_calculation_mode
+      end
+
+      # Implement this method in your schema to handle mismatches when `:compare` is used.
+      #
+      # @example Logging the mismatch
+      #   def self.legacy_cost_calculation_mismatch(multiplex, future_cost, legacy_cost)
+      #     client_id = multiplex.context[:api_client].id
+      #     operation_names = multiplex.queries.map { |q| q.selected_operation_name || "anonymous" }.join(", ")
+      #     Stats.increment(:complexity_mismatch, tags: { client: client_id, ops: operation_names })
+      #     legacy_cost
+      #   end
+      # @see Query::Context#add_error Adding an error to the response to notify the client
+      # @see Query::Context#response_extensions Adding key-value pairs to the response `"extensions" => { ... }`
+      # @param multiplex [GraphQL::Execution::Multiplex]
+      # @param future_complexity_cost [Integer]
+      # @param legacy_complexity_cost [Integer]
+      # @return [Integer] the cost to use for this query (probably one of `future_complexity_cost` or `legacy_complexity_cost`)
+      def legacy_complexity_cost_calculation_mismatch(multiplex, future_complexity_cost, legacy_complexity_cost)
+        raise "Implement #{self}.legacy_complexity_cost(multiplex, future_complexity_cost, legacy_complexity_cost) to handle this mismatch (#{future_complexity_cost} vs. #{legacy_complexity_cost}) and return a value to use"
       end
 
       private

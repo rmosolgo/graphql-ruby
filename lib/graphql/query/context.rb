@@ -59,6 +59,7 @@ module GraphQL
         @scoped_context = ScopedContext.new(self)
       end
 
+      # Modify this hash to return extensions to client.
       # @return [Hash] A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
       def response_extensions
         namespace(:__query_result_extensions__)
