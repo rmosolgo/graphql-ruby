@@ -27,10 +27,10 @@ module GraphQL
   #
   class Dataloader
     class << self
-      attr_accessor :default_nonblocking, :default_fiber_limit
+      attr_accessor :default_nonblocking, :default_fiber_limit, :default_lazy_compat_mode
     end
 
-    def self.use(schema, nonblocking: nil, fiber_limit: nil)
+    def self.use(schema, nonblocking: nil, fiber_limit: nil, lazy_compat_mode: false)
       dataloader_class = if nonblocking
         warn("`nonblocking: true` is deprecated from `GraphQL::Dataloader`, please use `GraphQL::Dataloader::AsyncDataloader` instead. Docs: https://graphql-ruby.org/dataloader/async_dataloader.")
         Class.new(self) { self.default_nonblocking = true }
@@ -41,6 +41,13 @@ module GraphQL
       if fiber_limit
         dataloader_class = Class.new(dataloader_class)
         dataloader_class.default_fiber_limit = fiber_limit
+      end
+
+      if lazy_compat_mode
+        if dataloader_class == self
+          dataloader_class = Class.new(dataloader_class)
+        end
+        dataloader_class.default_lazy_compat_mode = lazy_compat_mode
       end
 
       schema.dataloader_class = dataloader_class
@@ -58,13 +65,15 @@ module GraphQL
       result
     end
 
-    def initialize(nonblocking: self.class.default_nonblocking, fiber_limit: self.class.default_fiber_limit)
+    def initialize(nonblocking: self.class.default_nonblocking, fiber_limit: self.class.default_fiber_limit, lazy_compat_mode: self.class.default_lazy_compat_mode)
       @source_cache = Hash.new { |h, k| h[k] = {} }
       @pending_jobs = []
       if !nonblocking.nil?
         @nonblocking = nonblocking
       end
       @fiber_limit = fiber_limit
+      @running_jobs = false
+      @lazy_compat_mode = lazy_compat_mode
     end
 
     # @return [Integer, nil]
@@ -144,9 +153,17 @@ module GraphQL
 
     # @api private Nothing to see here
     def append_job(&job)
-      # Given a block, queue it up to be worked through when `#run` is called.
-      # (If the dataloader is already running, than a Fiber will pick this up later.)
-      @pending_jobs.push(job)
+      # This is to match GraphQL-Batch-type execution.
+      # In that approach, a field's children would be resolved right after the parent.
+      # But the default dataloader approach is to run siblings, then "cousin" fields -- each depth in a wave.
+      # This option restores the flow of lazy_resolve.
+      if @lazy_compat_mode && @running_jobs
+        job.call
+      else
+        # Given a block, queue it up to be worked through when `#run` is called.
+        # (If the dataloader is already running, than a Fiber will pick this up later.)
+        @pending_jobs.push(job)
+      end
       nil
     end
 
@@ -163,6 +180,7 @@ module GraphQL
     def run_isolated
       prev_queue = @pending_jobs
       prev_pending_keys = {}
+      prev_running_jobs = @running_jobs
       @source_cache.each do |source_class, batched_sources|
         batched_sources.each do |batch_args, batched_source_instance|
           if batched_source_instance.pending?
@@ -173,6 +191,7 @@ module GraphQL
       end
 
       @pending_jobs = []
+      @running_jobs = false
       res = nil
       # Make sure the block is inside a Fiber, so it can `Fiber.yield`
       append_job {
@@ -182,6 +201,7 @@ module GraphQL
       res
     ensure
       @pending_jobs = prev_queue
+      @running_jobs = prev_running_jobs
       prev_pending_keys.each do |source_instance, pending|
         pending.each do |key, value|
           if !source_instance.results.key?(key)
@@ -204,6 +224,7 @@ module GraphQL
         while first_pass || !job_fibers.empty?
           first_pass = false
 
+          @running_jobs = true
           while (f = (job_fibers.shift || (((next_job_fibers.size + job_fibers.size) < jobs_fiber_limit) && spawn_job_fiber(trace))))
             if f.alive?
               finished = run_fiber(f)
@@ -212,6 +233,7 @@ module GraphQL
               end
             end
           end
+          @running_jobs = false
           join_queues(job_fibers, next_job_fibers)
 
           defer_sources = nil
@@ -255,6 +277,8 @@ module GraphQL
 
     rescue UncaughtThrowError => e
       throw e.tag, e.value
+    ensure
+      @running_jobs = false
     end
 
     def run_fiber(f)

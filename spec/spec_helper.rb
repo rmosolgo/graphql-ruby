@@ -32,7 +32,15 @@ else
   USING_C_PARSER = false
 end
 
-if ENV["GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES"]
+def dataloader_lazy_setup(schema)
+  if ENV["GRAPHQL_FUTURE"]
+    schema.use(GraphQL::Dataloader, lazy_compat_mode: true)
+  else
+    legacy_sync_lazy(true)
+  end
+end
+
+if ENV["GRAPHQL_FUTURE"]
   puts "Opting into GraphQL.reject_numbers_followed_by_names"
   GraphQL.reject_numbers_followed_by_names = true
   puts "Opting into GraphQL::Schema::Visibility::Profile"
