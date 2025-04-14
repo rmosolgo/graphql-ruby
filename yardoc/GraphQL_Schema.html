@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.2/GraphQL/Schema" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.3/GraphQL/Schema" />
   </head>
   <body>
     <p>Class: GraphQL::Schema &lt; Object
@@ -18,7 +18,7 @@ types, using those as starting points. Any undiscoverable types may
 be provided with the <code class="language-plaintext highlighter-rouge">types</code> configuration. 
 Schemas can restrict large incoming queries with <code class="language-plaintext highlighter-rouge">max_depth</code> and
 <code class="language-plaintext highlighter-rouge">max_complexity</code> configurations. (These configurations can be
-overridden by specific calls to Schema#execute) 
+overridden by specific calls to Schema.execute) 
 Examples:
     <h1 id="defining-a-schema">defining a schema</h1>
     <p>class MySchema &lt; GraphQL::Schema
@@ -33,11 +33,14 @@ GraphQL::Schema::Member::HasAstNode,
 GraphQL::Schema::FindInheritedValue, GraphQL::Autoload
 Class methods:
 add_subscription_extension_if_necessary, add_trace_options_for,
-add_type_and_traverse, after_any_lazies, after_lazy, as_json,
-build_trace_mode, context_class, count_introspection_fields,
-cursor_encoder, default_analysis_engine, default_directives,
-default_execution_strategy, default_logger, default_max_page_size,
-default_page_size, default_trace_mode,
+add_type_and_traverse, after_any_lazies, after_lazy,
+allow_legacy_invalid_empty_selections_on_union,
+allow_legacy_invalid_return_type_conflicts, as_json,
+build_trace_mode, complexity_cost_calculation_mode,
+complexity_cost_calculation_mode_for, context_class,
+count_introspection_fields, cursor_encoder, default_analysis_engine,
+default_directives, default_execution_strategy, default_logger,
+default_max_page_size, default_page_size, default_trace_mode,
 deprecated_graphql_definition, description, detailed_trace?,
 did_you_mean, directive, directives,
 disable_introspection_entry_points,
@@ -50,7 +53,10 @@ extra_types, find, from_definition, from_introspection, get_field,
 get_fields, get_references_to, get_type, handle_or_reraise,
 has_defined_type?, id_from_object, inherited, instrument,
 instrumenters, introspection, introspection_system, lazy?,
-lazy_method_name, lazy_methods, lazy_resolve, load_type,
+lazy_method_name, lazy_methods, lazy_resolve,
+legacy_complexity_cost_calculation_mismatch,
+legacy_invalid_empty_selections_on_union,
+legacy_invalid_return_type_conflicts, load_type, logger_for,
 max_complexity_count_introspection_fields, max_query_string_tokens,
 multiplex, multiplex_analyzer, multiplex_analyzers, mutation,
 mutation_execution_strategy, new_trace, non_introspection_types,

@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.2/">API</a>
+            <a href="/api-doc/2.5.3/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -157,9 +157,9 @@
 <h1 class="guide-header">Logging</h1>
 <div class="guide-table-of-contents"></div>
 <div class="guide-container">
-  <p>At runtime, GraphQL-Ruby will output debug information using <a href="/api-doc/2.5.2/GraphQL/Query#logger-class_method" target="_blank" title="API docs for GraphQL::Query.logger"><code>GraphQL::Query.logger</code></a>. By default, this uses <code class="language-plaintext highlighter-rouge">Rails.logger</code>. To see output, make sure <code class="language-plaintext highlighter-rouge">config.log_level = :debug</code> is set. (This information isn’t meant for production logs.)</p>
+  <p>At runtime, GraphQL-Ruby will output debug information using <a href="/api-doc/2.5.3/GraphQL/Query#logger-class_method" target="_blank" title="API docs for GraphQL::Query.logger"><code>GraphQL::Query.logger</code></a>. By default, this uses <code class="language-plaintext highlighter-rouge">Rails.logger</code>. To see output, make sure <code class="language-plaintext highlighter-rouge">config.log_level = :debug</code> is set. (This information isn’t meant for production logs.)</p>
 
-<p>You can configure a custom logger with <a href="/api-doc/2.5.2/GraphQL/Schema#default_logger-class_method" target="_blank" title="API docs for GraphQL::Schema.default_logger"><code>GraphQL::Schema.default_logger</code></a>, for example:</p>
+<p>You can configure a custom logger with <a href="/api-doc/2.5.3/GraphQL/Schema#default_logger-class_method" target="_blank" title="API docs for GraphQL::Schema.default_logger"><code>GraphQL::Schema.default_logger</code></a>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># This logger will be used by queries during execution:</span>
