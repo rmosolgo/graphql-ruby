@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Dataloader::ActiveRecordAssociationSource
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Dataloader::ActiveRecordAssociationSource";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (A)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Dataloader.html" title="GraphQL::Dataloader (class)">Dataloader</a></span></span>
+     &raquo; 
+    <span class="title">ActiveRecordAssociationSource</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Dataloader::ActiveRecordAssociationSource
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="Source.html" title="GraphQL::Dataloader::Source (class)">Source</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Source.html" title="GraphQL::Dataloader::Source (class)">Source</a></span></li>
+          
+            <li class="next">GraphQL::Dataloader::ActiveRecordAssociationSource</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/dataloader/active_record_association_source.rb</dd>
+  </dl>
+  
+</div>
+
+
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="RECORD_SOURCE_CLASS-constant" class="">RECORD_SOURCE_CLASS =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'><span class='object_link'><a href="ActiveRecordSource.html" title="GraphQL::Dataloader::ActiveRecordSource (class)">ActiveRecordSource</a></span></span></pre></dd>
+      
+    </dl>
+  
+
+
+
+  
+  
+  <h3 class="inherited">Constants inherited
+     from <span class='object_link'><a href="Source.html" title="GraphQL::Dataloader::Source (class)">Source</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Source.html#MAX_ITERATIONS-constant" title="GraphQL::Dataloader::Source::MAX_ITERATIONS (constant)">Source::MAX_ITERATIONS</a></span></p>
+
+
+
+
+  <h2>Instance Attribute Summary</h2>
+  
+  <h3 class="inherited">Attributes inherited from <span class='object_link'><a href="Source.html" title="GraphQL::Dataloader::Source (class)">Source</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Source.html#dataloader-instance_method" title="GraphQL::Dataloader::Source#dataloader (method)">#dataloader</a></span>, <span class='object_link'><a href="Source.html#pending-instance_method" title="GraphQL::Dataloader::Source#pending (method)">#pending</a></span>, <span class='object_link'><a href="Source.html#results-instance_method" title="GraphQL::Dataloader::Source#results (method)">#results</a></span></p>
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fetch-instance_method" title="#fetch (instance method)">#<strong>fetch</strong>(records)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(association, scope = nil)  &#x21d2; ActiveRecordAssociationSource </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of ActiveRecordAssociationSource.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#load-instance_method" title="#load (instance method)">#<strong>load</strong>(record)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="Source.html" title="GraphQL::Dataloader::Source (class)">Source</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Source.html#batch_key_for-class_method" title="GraphQL::Dataloader::Source.batch_key_for (method)">batch_key_for</a></span>, <span class='object_link'><a href="Source.html#clear_cache-instance_method" title="GraphQL::Dataloader::Source#clear_cache (method)">#clear_cache</a></span>, <span class='object_link'><a href="Source.html#load_all-instance_method" title="GraphQL::Dataloader::Source#load_all (method)">#load_all</a></span>, <span class='object_link'><a href="Source.html#merge-instance_method" title="GraphQL::Dataloader::Source#merge (method)">#merge</a></span>, <span class='object_link'><a href="Source.html#pending%3F-instance_method" title="GraphQL::Dataloader::Source#pending? (method)">#pending?</a></span>, <span class='object_link'><a href="Source.html#request-instance_method" title="GraphQL::Dataloader::Source#request (method)">#request</a></span>, <span class='object_link'><a href="Source.html#request_all-instance_method" title="GraphQL::Dataloader::Source#request_all (method)">#request_all</a></span>, <span class='object_link'><a href="Source.html#result_key_for-instance_method" title="GraphQL::Dataloader::Source#result_key_for (method)">#result_key_for</a></span>, <span class='object_link'><a href="Source.html#run_pending_keys-instance_method" title="GraphQL::Dataloader::Source#run_pending_keys (method)">#run_pending_keys</a></span>, <span class='object_link'><a href="Source.html#setup-instance_method" title="GraphQL::Dataloader::Source#setup (method)">#setup</a></span>, <span class='object_link'><a href="Source.html#sync-instance_method" title="GraphQL::Dataloader::Source#sync (method)">#sync</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(association, scope = nil)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Dataloader::ActiveRecordAssociationSource (class)">ActiveRecordAssociationSource</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of ActiveRecordAssociationSource.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+10
+11
+12
+13</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/active_record_association_source.rb', line 10</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_association'>association</span><span class='comma'>,</span> <span class='id identifier rubyid_scope'>scope</span> <span class='op'>=</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@association</span> <span class='op'>=</span> <span class='id identifier rubyid_association'>association</span>
+  <span class='ivar'>@scope</span> <span class='op'>=</span> <span class='id identifier rubyid_scope'>scope</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="fetch-instance_method">
+  
+    #<strong>fetch</strong>(records)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/active_record_association_source.rb', line 23</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_records'>records</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_record_classes'>record_classes</span> <span class='op'>=</span> <span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+  <span class='id identifier rubyid_associated_classes'>associated_classes</span> <span class='op'>=</span> <span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+  <span class='id identifier rubyid_records'>records</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_record'>record</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_record_classes'>record_classes</span><span class='period'>.</span><span class='id identifier rubyid_add?'>add?</span><span class='lparen'>(</span><span class='id identifier rubyid_record'>record</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_reflection'>reflection</span> <span class='op'>=</span> <span class='id identifier rubyid_record'>record</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_reflect_on_association'>reflect_on_association</span><span class='lparen'>(</span><span class='ivar'>@association</span><span class='rparen'>)</span>
+      <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_reflection'>reflection</span><span class='period'>.</span><span class='id identifier rubyid_polymorphic?'>polymorphic?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_reflection'>reflection</span><span class='period'>.</span><span class='id identifier rubyid_klass'>klass</span>
+        <span class='id identifier rubyid_associated_classes'>associated_classes</span><span class='period'>.</span><span class='id identifier rubyid_add'>add</span><span class='lparen'>(</span><span class='id identifier rubyid_reflection'>reflection</span><span class='period'>.</span><span class='id identifier rubyid_klass'>klass</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_available_records'>available_records</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_associated_classes'>associated_classes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_assoc_class'>assoc_class</span><span class='op'>|</span>
+    <span class='id identifier rubyid_already_loaded_records'>already_loaded_records</span> <span class='op'>=</span> <span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_with'>with</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#RECORD_SOURCE_CLASS-constant" title="GraphQL::Dataloader::ActiveRecordAssociationSource::RECORD_SOURCE_CLASS (constant)">RECORD_SOURCE_CLASS</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_assoc_class'>assoc_class</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span>
+    <span class='id identifier rubyid_available_records'>available_records</span><span class='period'>.</span><span class='id identifier rubyid_concat'>concat</span><span class='lparen'>(</span><span class='id identifier rubyid_already_loaded_records'>already_loaded_records</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='op'>::</span><span class='const'>ActiveRecord</span><span class='op'>::</span><span class='const'>Associations</span><span class='op'>::</span><span class='const'>Preloader</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>records:</span> <span class='id identifier rubyid_records'>records</span><span class='comma'>,</span> <span class='label'>associations:</span> <span class='ivar'>@association</span><span class='comma'>,</span> <span class='label'>available_records:</span> <span class='id identifier rubyid_available_records'>available_records</span><span class='comma'>,</span> <span class='label'>scope:</span> <span class='ivar'>@scope</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_call'>call</span>
+
+  <span class='id identifier rubyid_loaded_associated_records'>loaded_associated_records</span> <span class='op'>=</span> <span class='id identifier rubyid_records'>records</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_r'>r</span><span class='op'>|</span> <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_public_send'>public_send</span><span class='lparen'>(</span><span class='ivar'>@association</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_records_by_model'>records_by_model</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_loaded_associated_records'>loaded_associated_records</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_record'>record</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_record'>record</span>
+      <span class='id identifier rubyid_updates'>updates</span> <span class='op'>=</span> <span class='id identifier rubyid_records_by_model'>records_by_model</span><span class='lbracket'>[</span><span class='id identifier rubyid_record'>record</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+      <span class='id identifier rubyid_updates'>updates</span><span class='lbracket'>[</span><span class='id identifier rubyid_record'>record</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_record'>record</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@scope</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='comment'># Don&#39;t cache records loaded via scope because they might have reduced `SELECT`s
+</span>    <span class='comment'># Could check .select_values here?
+</span>    <span class='id identifier rubyid_records_by_model'>records_by_model</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_model_class'>model_class</span><span class='comma'>,</span> <span class='id identifier rubyid_updates'>updates</span><span class='op'>|</span>
+      <span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_with'>with</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#RECORD_SOURCE_CLASS-constant" title="GraphQL::Dataloader::ActiveRecordAssociationSource::RECORD_SOURCE_CLASS (constant)">RECORD_SOURCE_CLASS</a></span></span><span class='comma'>,</span> <span class='id identifier rubyid_model_class'>model_class</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='id identifier rubyid_updates'>updates</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_loaded_associated_records'>loaded_associated_records</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="load-instance_method">
+  
+    #<strong>load</strong>(record)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+15
+16
+17
+18
+19
+20
+21</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/active_record_association_source.rb', line 15</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_load'>load</span><span class='lparen'>(</span><span class='id identifier rubyid_record'>record</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_assoc'>assoc</span> <span class='op'>=</span> <span class='id identifier rubyid_record'>record</span><span class='period'>.</span><span class='id identifier rubyid_association'>association</span><span class='lparen'>(</span><span class='ivar'>@association</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_loaded?'>loaded?</span>
+    <span class='id identifier rubyid_assoc'>assoc</span><span class='period'>.</span><span class='id identifier rubyid_target'>target</span>
+  <span class='kw'>else</span>
+    <span class='kw'>super</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon Apr 14 16:11:05 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.8).
+</div>
+
+    </div>
+  </body>
+</html>

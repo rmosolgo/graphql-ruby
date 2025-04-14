@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Tracing::MonitorTrace
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Tracing::MonitorTrace";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (M)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span>
+     &raquo; 
+    <span class="title">MonitorTrace</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Tracing::MonitorTrace
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/tracing/monitor_trace.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>This module is the basis for Ruby-level integration with third-party monitoring platforms.
+Platform-specific traces include this module and implement an adapter.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="ActiveSupportNotificationsTrace.html" title="GraphQL::Tracing::ActiveSupportNotificationsTrace (module)">Integration via ActiveSupport::Notifications, an alternative approach.</a></span></li>
+    
+  </ul>
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="MonitorTrace/Monitor.html" title="GraphQL::Tracing::MonitorTrace::Monitor (class)">Monitor</a></span>
+    
+  
+</p>
+
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="MODULE_TEMPLATE-constant" class="">MODULE_TEMPLATE =
+          
+        </dt>
+        <dd><pre class="code"><span class='heredoc_beg'>&lt;&lt;~RUBY</span>
+<span class='tstring_content'>  # @param set_transaction_name [Boolean] If `true`, use the GraphQL operation name as the request name on the monitoring platform
+</span><span class='tstring_content'>  # @param trace_scalars [Boolean] If `true`, leaf fields will be traced too (Scalars _and_ Enums)
+</span><span class='tstring_content'>  # @param trace_authorized [Boolean] If `false`, skip tracing `authorized?` calls
+</span><span class='tstring_content'>  # @param trace_resolve_type [Boolean] If `false`, skip tracing `resolve_type?` calls
+</span><span class='tstring_content'>  def initialize(...)
+</span><span class='tstring_content'>    setup_%{monitor}_monitor(...)
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def setup_%{monitor}_monitor(trace_scalars: false, trace_authorized: true, trace_resolve_type: true, set_transaction_name: false, **kwargs)
+</span><span class='tstring_content'>    @trace_scalars = trace_scalars
+</span><span class='tstring_content'>    @trace_authorized = trace_authorized
+</span><span class='tstring_content'>    @trace_resolve_type = trace_resolve_type
+</span><span class='tstring_content'>    @set_transaction_name = set_transaction_name
+</span><span class='tstring_content'>    @%{monitor} = %{monitor_class}.new(trace: self, set_transaction_name: @set_transaction_name, **kwargs)
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def parse(query_string:)
+</span><span class='tstring_content'>    @%{monitor}.instrument(:parse, query_string) do
+</span><span class='tstring_content'>      super
+</span><span class='tstring_content'>    end
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def lex(query_string:)
+</span><span class='tstring_content'>    @%{monitor}.instrument(:lex, query_string) do
+</span><span class='tstring_content'>      super
+</span><span class='tstring_content'>    end
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def validate(query:, validate:)
+</span><span class='tstring_content'>    @%{monitor}.instrument(:validate, query) do
+</span><span class='tstring_content'>      super
+</span><span class='tstring_content'>    end
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def begin_analyze_multiplex(multiplex, analyzers)
+</span><span class='tstring_content'>    begin_%{monitor}_event(:analyze, nil)
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def end_analyze_multiplex(multiplex, analyzers)
+</span><span class='tstring_content'>    finish_%{monitor}_event
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def execute_multiplex(multiplex:)
+</span><span class='tstring_content'>    @%{monitor}.instrument(:execute, multiplex) do
+</span><span class='tstring_content'>      super
+</span><span class='tstring_content'>    end
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def begin_execute_field(field, object, arguments, query)
+</span><span class='tstring_content'>    return_type = field.type.unwrap
+</span><span class='tstring_content'>    trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+</span><span class='tstring_content'>      (field.trace.nil? &amp;&amp; @trace_scalars) || field.trace
+</span><span class='tstring_content'>    else
+</span><span class='tstring_content'>      true
+</span><span class='tstring_content'>    end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>    if trace_field
+</span><span class='tstring_content'>      begin_%{monitor}_event(:execute_field, field)
+</span><span class='tstring_content'>    end
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def end_execute_field(field, object, arguments, query, result)
+</span><span class='tstring_content'>    finish_%{monitor}_event
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def dataloader_fiber_yield(source)
+</span><span class='tstring_content'>    Fiber[PREVIOUS_EV_KEY] = finish_%{monitor}_event
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def dataloader_fiber_resume(source)
+</span><span class='tstring_content'>    prev_ev = Fiber[PREVIOUS_EV_KEY]
+</span><span class='tstring_content'>    if prev_ev
+</span><span class='tstring_content'>      begin_%{monitor}_event(prev_ev.keyword, prev_ev.object)
+</span><span class='tstring_content'>    end
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def begin_authorized(type, object, context)
+</span><span class='tstring_content'>    @trace_authorized &amp;&amp; begin_%{monitor}_event(:authorized, type)
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def end_authorized(type, object, context, result)
+</span><span class='tstring_content'>    finish_%{monitor}_event
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def begin_resolve_type(type, value, context)
+</span><span class='tstring_content'>    @trace_resolve_type &amp;&amp; begin_%{monitor}_event(:resolve_type, type)
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def end_resolve_type(type, value, context, resolved_type)
+</span><span class='tstring_content'>    finish_%{monitor}_event
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def begin_dataloader_source(source)
+</span><span class='tstring_content'>    begin_%{monitor}_event(:dataloader_source, source)
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def end_dataloader_source(source)
+</span><span class='tstring_content'>    finish_%{monitor}_event
+</span><span class='tstring_content'>    super
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  CURRENT_EV_KEY = :__graphql_%{monitor}_trace_event
+</span><span class='tstring_content'>  PREVIOUS_EV_KEY = :__graphql_%{monitor}_trace_previous_event
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  private
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def begin_%{monitor}_event(keyword, object)
+</span><span class='tstring_content'>    Fiber[CURRENT_EV_KEY] = @%{monitor}.start_event(keyword, object)
+</span><span class='tstring_content'>  end
+</span><span class='tstring_content'>
+</span><span class='tstring_content'>  def finish_%{monitor}_event
+</span><span class='tstring_content'>    if ev = Fiber[CURRENT_EV_KEY]
+</span><span class='tstring_content'>      ev.finish
+</span><span class='tstring_content'>      # Use `false` to prevent grabbing an event from a parent fiber
+</span><span class='tstring_content'>      Fiber[CURRENT_EV_KEY] = false
+</span><span class='tstring_content'>      ev
+</span><span class='tstring_content'>    end
+</span><span class='tstring_content'>  end
+</span><span class='heredoc_end'>RUBY</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#create_module-class_method" title="create_module (class method)">.<strong>create_module</strong>(monitor_name)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="create_module-class_method">
+  
+    .<strong>create_module</strong>(monitor_name)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/monitor_trace.rb', line 135</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_create_module'>create_module</span><span class='lparen'>(</span><span class='id identifier rubyid_monitor_name'>monitor_name</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_monitor_name'>monitor_name</span><span class='period'>.</span><span class='id identifier rubyid_match?'>match?</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>[a-z]+</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>monitor name must be [a-z]+, not: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_monitor_name'>monitor_name</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_trace_module'>trace_module</span> <span class='op'>=</span> <span class='const'>Module</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='id identifier rubyid_code'>code</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="#MODULE_TEMPLATE-constant" title="GraphQL::Tracing::MonitorTrace::MODULE_TEMPLATE (constant)">MODULE_TEMPLATE</a></span></span> <span class='op'>%</span> <span class='lbrace'>{</span>
+    <span class='label'>monitor:</span> <span class='id identifier rubyid_monitor_name'>monitor_name</span><span class='comma'>,</span>
+    <span class='label'>monitor_class:</span> <span class='id identifier rubyid_monitor_name'>monitor_name</span><span class='period'>.</span><span class='id identifier rubyid_capitalize'>capitalize</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Monitor</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_trace_module'>trace_module</span><span class='period'>.</span><span class='id identifier rubyid_module_eval'>module_eval</span><span class='lparen'>(</span><span class='id identifier rubyid_code'>code</span><span class='comma'>,</span> <span class='kw'>__FILE__</span><span class='comma'>,</span> <span class='kw'>__LINE__</span> <span class='op'>+</span> <span class='int'>5</span><span class='rparen'>)</span> <span class='comment'># rubocop:disable Development/NoEvalCop This is build-time with a validated string
+</span>  <span class='id identifier rubyid_trace_module'>trace_module</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon Apr 14 16:10:53 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.8).
+</div>
+
+    </div>
+  </body>
+</html>
