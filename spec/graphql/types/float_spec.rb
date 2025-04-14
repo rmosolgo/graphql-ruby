@@ -11,9 +11,40 @@ describe GraphQL::Types::Float do
     end
 
     it "rejects other types" do
-      assert_nil GraphQL::Types::Float.coerce_isolated_input("55")
-      assert_nil GraphQL::Types::Float.coerce_isolated_input(true)
-      assert_nil GraphQL::Types::Float.coerce_isolated_input(enum)
+      assert_raises(GraphQL::CoercionError) do
+        GraphQL::Types::Float.coerce_isolated_input("55")
+      end
+
+      assert_raises(GraphQL::CoercionError) do
+        GraphQL::Types::Float.coerce_isolated_input(true)
+      end
+
+      assert_raises(GraphQL::CoercionError) do
+        GraphQL::Types::Float.coerce_isolated_input(enum)
+      end
+    end
+  end
+
+  describe "coerce_result" do
+    it "coercess ints and floats" do
+      err_ctx = GraphQL::Query.new(Dummy::Schema, "{ __typename }").context
+
+      assert_equal 1.0, GraphQL::Types::Float.coerce_result(1, err_ctx)
+      assert_equal 1.0, GraphQL::Types::Float.coerce_result("1", err_ctx)
+      assert_equal 1.0, GraphQL::Types::Float.coerce_result("1.0", err_ctx)
+      assert_equal 6.1, GraphQL::Types::Float.coerce_result(6.1, err_ctx)
+    end
+
+    it "rejects other types" do
+      err_ctx = GraphQL::Query.new(Dummy::Schema, "{ __typename }").context
+
+      assert_raises(GraphQL::CoercionError) do
+        GraphQL::Types::Float.coerce_result("foo", err_ctx)
+      end
+
+      assert_raises(GraphQL::CoercionError) do
+        GraphQL::Types::Float.coerce_result(1.0 / 0, err_ctx)
+      end
     end
   end
 end

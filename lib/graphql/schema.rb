@@ -1316,10 +1316,8 @@ module GraphQL
           execution_error.path = ctx[:current_path]
 
           ctx.errors << execution_error
-        when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
+        when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError
           raise type_error
-        when GraphQL::IntegerDecodingError
-          nil
         end
       end
 
