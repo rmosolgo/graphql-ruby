@@ -68,6 +68,8 @@ if testing_rails?
     create_table :albums, force: true do |t|
       t.string :name
       t.integer :band_id
+      t.string :band_name
+      t.integer :band_genre
     end
 
     create_table :books do |t|
@@ -111,6 +113,15 @@ if testing_rails?
 
   class Album < ActiveRecord::Base
     belongs_to :band
+    enum :band_genre, [:rock, :country, :jazz]
+    belongs_to :composite_band, foreign_key: [:band_name, :band_genre]
+
+    before_save :populate_band_fields
+
+    def populate_band_fields
+      self.band_name = self.band.name
+      self.band_genre = self.band.genre
+    end
   end
   class Band < ActiveRecord::Base
     has_many :albums
@@ -121,6 +132,11 @@ if testing_rails?
   class AlternativeBand < Band
     self.table_name = :bands
     self.primary_key = :name
+  end
+
+  class CompositeBand < Band
+    self.table_name = :bands
+    self.primary_key = [:name, :genre]
   end
 
   v = Band.create!(id: 1, name: "Vulfpeck", genre: :rock)
