@@ -64,19 +64,21 @@ describe GraphQL::Dataloader::ActiveRecordSource do
         assert_includes log, 'SELECT "bands".* FROM "bands" WHERE "bands"."name" = ?  [["name", "Vulfpeck"]]'
       end
 
-      it_dataloads "uses composite primary keys" do |d|
-        log = with_active_record_log(colorize: false) do
-          r1 = d.with(GraphQL::Dataloader::ActiveRecordSource, CompositeBand).load(["Chon", :rock])
-          assert_equal "Chon", r1.name
-          assert_equal ["Chon", "rock"], r1.id
-          if Rails::VERSION::STRING > "8"
-            assert_equal 3, r1["id"]
-          else
-            assert_equal 3, r1._read_attribute("id")
+      if Rails::VERSION::STRING > "7.1" # not supported in <7.1
+        it_dataloads "uses composite primary keys" do |d|
+          log = with_active_record_log(colorize: false) do
+            r1 = d.with(GraphQL::Dataloader::ActiveRecordSource, CompositeBand).load(["Chon", :rock])
+            assert_equal "Chon", r1.name
+            assert_equal ["Chon", "rock"], r1.id
+            if Rails::VERSION::STRING > "8"
+              assert_equal 3, r1["id"]
+            else
+              assert_equal 3, r1._read_attribute("id")
+            end
           end
-        end
 
-        assert_includes log, 'SELECT "bands".* FROM "bands" WHERE "bands"."name" = ? AND "bands"."genre" = ?  [["name", "Chon"], ["genre", 0]]'
+          assert_includes log, 'SELECT "bands".* FROM "bands" WHERE "bands"."name" = ? AND "bands"."genre" = ?  [["name", "Chon"], ["genre", 0]]'
+        end
       end
 
       it_dataloads "uses specified find_by columns" do |d|

@@ -114,7 +114,11 @@ if testing_rails?
   class Album < ActiveRecord::Base
     belongs_to :band
     enum :band_genre, [:rock, :country, :jazz]
-    belongs_to :composite_band, foreign_key: [:band_name, :band_genre]
+    if Rails::VERSION::STRING > "8"
+      belongs_to :composite_band, foreign_key: [:band_name, :band_genre]
+    elsif Rails::VERSION::STRING > "7.1"
+      belongs_to :composite_band, query_constraints: [:band_name, :band_genre]
+    end
 
     before_save :populate_band_fields
 

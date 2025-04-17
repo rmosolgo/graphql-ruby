@@ -106,23 +106,25 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
       assert_equal ::Band.find(1), vulfpeck
     end
 
-    it_dataloads "loads with composite primary keys and warms the cache" do |d|
-      my_first_car = ::Album.find(2)
-      homey = ::Album.find(4)
-      log = with_active_record_log(colorize: false) do
-        vulfpeck, chon = d.with(GraphQL::Dataloader::ActiveRecordAssociationSource, :composite_band).load_all([my_first_car, homey])
-        assert_equal "Vulfpeck", vulfpeck.name
-        assert_equal "Chon", chon.name
+    if Rails::VERSION::STRING > "7.1" # not supported in <7.1
+      it_dataloads "loads with composite primary keys and warms the cache" do |d|
+        my_first_car = ::Album.find(2)
+        homey = ::Album.find(4)
+        log = with_active_record_log(colorize: false) do
+          vulfpeck, chon = d.with(GraphQL::Dataloader::ActiveRecordAssociationSource, :composite_band).load_all([my_first_car, homey])
+          assert_equal "Vulfpeck", vulfpeck.name
+          assert_equal "Chon", chon.name
+        end
+
+        assert_includes log, '[["name", "Vulfpeck"], ["name", "Chon"], ["genre", 0]]'
+
+
+        log = with_active_record_log(colorize: false) do
+          d.with(GraphQL::Dataloader::ActiveRecordSource, CompositeBand).load_all([["Vulfpeck", "rock"], ["Chon", :rock]])
+        end
+
+        assert_equal "", log
       end
-
-      assert_includes log, '[["name", "Vulfpeck"], ["name", "Chon"], ["genre", 0]]'
-
-
-      log = with_active_record_log(colorize: false) do
-        d.with(GraphQL::Dataloader::ActiveRecordSource, CompositeBand).load_all([["Vulfpeck", "rock"], ["Chon", :rock]])
-      end
-
-      assert_equal "", log
     end
   end
 end
