@@ -16,6 +16,10 @@ module GraphQL
       end
 
       def result_key_for(requested_key)
+        normalize_fetch_key(requested_key)
+      end
+
+      def normalize_fetch_key(requested_key)
         if @find_by_many
           requested_key.each_with_index.map do |k, idx|
             @type_for_column[idx].cast(k)
