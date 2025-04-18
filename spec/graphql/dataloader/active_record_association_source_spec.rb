@@ -115,6 +115,7 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
       end
 
       assert_equal [[6], [4, 5]], albums_by_band.map { |al| al.map(&:id) }
+      assert_includes log, 'SELECT "albums".* FROM "albums" WHERE "albums"."band_id" IN (?, ?)  [["band_id", 4], ["band_id", 3]]'
 
       albums = nil
       log = with_active_record_log(colorize: false) do
