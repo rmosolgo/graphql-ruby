@@ -39,9 +39,6 @@ module GraphQL
       # @return [GraphQL::Schema]
       attr_reader :schema
 
-      # @return [Array<String, Integer>] The current position in the result
-      attr_reader :path
-
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
@@ -53,9 +50,6 @@ module GraphQL
         @storage = Hash.new { |h, k| h[k] = {} }
         @storage[nil] = @provided_values
         @errors = []
-        @path = []
-        @value = nil
-        @context = self # for SharedMethods TODO delete sharedmethods
         @scoped_context = ScopedContext.new(self)
       end
 
@@ -245,7 +239,7 @@ module GraphQL
       end
 
       def inspect
-        "#<Query::Context ...>"
+        "#<#{self.class} ...>"
       end
 
       def scoped_merge!(hash)
