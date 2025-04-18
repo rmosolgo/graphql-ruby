@@ -70,6 +70,7 @@ if testing_rails?
       t.integer :band_id
       t.string :band_name
       t.integer :band_genre
+      t.timestamps
     end
 
     create_table :books do |t|

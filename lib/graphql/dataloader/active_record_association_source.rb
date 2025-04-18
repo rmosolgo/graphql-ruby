@@ -12,6 +12,14 @@ module GraphQL
         @scope = scope
       end
 
+      def self.batch_key_for(association, scope = nil)
+        if scope
+          [association, scope.to_sql]
+        else
+          [association]
+        end
+      end
+
       def load(record)
         if (assoc = record.association(@association)).loaded?
           assoc.target
