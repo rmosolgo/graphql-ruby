@@ -106,6 +106,25 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
       assert_equal ::Band.find(1), vulfpeck
     end
 
+    it_dataloads "works with collection associations" do |d|
+      wilco = ::Band.find(4)
+      chon = ::Band.find(3)
+      albums_by_band = nil
+      log = with_active_record_log(colorize: false) do
+        albums_by_band = d.with(GraphQL::Dataloader::ActiveRecordAssociationSource, :albums).load_all([wilco, chon])
+      end
+
+      assert_equal [[6], [4, 5]], albums_by_band.map { |al| al.map(&:id) }
+
+      albums = nil
+      log = with_active_record_log(colorize: false) do
+        albums = d.with(GraphQL::Dataloader::ActiveRecordSource, Album).load_all([3,4,5,6])
+      end
+
+      assert_equal [3,4,5,6], albums.map(&:id)
+      assert_includes log, 'WHERE "albums"."id" = ?  [["id", 3]]'
+    end
+
     if Rails::VERSION::STRING > "7.1" # not supported in <7.1
       it_dataloads "loads with composite primary keys and warms the cache" do |d|
         my_first_car = ::Album.find(2)
