@@ -2115,13 +2115,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "resolved_type"
+            "stringValue": "id"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": null
+            "stringValue": "resolved_type"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2184,7 +2184,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "resolved_type"
+            "stringValue": "id"
           },
           {
             "nameIid": "10101010101010",
@@ -2506,7 +2506,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "resolved_type"
+            "stringValue": "id"
           },
           {
             "nameIid": "10101010101010",
@@ -3061,6 +3061,11 @@
           },
           {
             "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "@find_by_many"
+          },
+          {
+            "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "@model_class",
             "stringValue": "connection"
@@ -3111,6 +3116,10 @@
           {
             "iid": "10101010101010",
             "name": "@find_by"
+          },
+          {
+            "iid": "10101010101010",
+            "name": "@find_by_many"
           },
           {
             "iid": "10101010101010",
@@ -3755,6 +3764,11 @@
           },
           {
             "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "@find_by_many"
+          },
+          {
+            "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "@model_class",
             "stringValue": "connection"
@@ -4117,7 +4131,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": "resolved_type"
+            "stringValue": "id"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4447,7 +4461,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "resolved_type"
+            "stringValue": "id"
           },
           {
             "nameIid": "10101010101010",
@@ -4856,7 +4870,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "resolved_type"
+            "stringValue": "id"
           },
           {
             "nameIid": "10101010101010",
@@ -5985,6 +5999,11 @@
             "stringValueIid": "10101010101010",
             "name": "@find_by",
             "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "@find_by_many"
           },
           {
             "nameIid": "10101010101010",
@@ -8140,6 +8159,11 @@
           },
           {
             "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "@find_by_many"
+          },
+          {
+            "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "@model_class",
             "stringValue": "connection"
@@ -9725,13 +9749,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "resolved_type"
+            "stringValue": "id"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": null
+            "stringValue": "resolved_type"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -11982,6 +12006,11 @@
             "stringValueIid": "10101010101010",
             "name": "@find_by",
             "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "@find_by_many"
           },
           {
             "nameIid": "10101010101010",
