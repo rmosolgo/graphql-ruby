@@ -130,6 +130,7 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
       wilco = ::Band.find(4)
       chon = ::Band.find(3)
       albums_by_band = nil
+      one_month_ago = nil
       log = with_active_record_log(colorize: false) do
         one_month_ago = 1.month.ago.end_of_day
         albums_by_band_1 = d.with(GraphQL::Dataloader::ActiveRecordAssociationSource, :albums, Album.where("created_at >= ?", one_month_ago)).request(wilco)
@@ -138,7 +139,13 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
       end
 
       assert_equal [[6], [4, 5]], albums_by_band.map { |al| al.map(&:id) }
-      assert_includes log, 'SELECT "albums".* FROM "albums" WHERE (created_at >= ?) AND "albums"."band_id" IN (?, ?)'
+      expected_log = if Rails::VERSION::STRING > "8"
+        'SELECT "albums".* FROM "albums" WHERE (created_at >= ?) AND "albums"."band_id" IN (?, ?)'
+      else
+        'SELECT "albums".* FROM "albums" WHERE (created_at >= ' + one_month_ago.utc.strftime("'%Y-%m-%d %H:%M:%S.%6N'") + ') AND "albums"."band_id" IN (?, ?)'
+      end
+
+      assert_includes log, expected_log
 
       albums = nil
       log = with_active_record_log(colorize: false) do
