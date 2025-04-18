@@ -93,13 +93,6 @@ module GraphQL
               # Then, work through lazy results in a breadth-first way
               multiplex.dataloader.append_job {
                 query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
-                queries = multiplex ? multiplex.queries : [query]
-                final_values = queries.map do |query|
-                  runtime = query.context.namespace(:interpreter_runtime)[:runtime]
-                  # it might not be present if the query has an error
-                  runtime ? runtime.final_result : nil
-                end
-                final_values.compact!
                 multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
                   Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
                 end
