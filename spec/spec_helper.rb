@@ -177,7 +177,6 @@ module TestTracing
 
     def trace(key, data)
       data[:key] = key
-      data[:path] ||= data.key?(:context) ? data[:context].path : nil
       result = yield
       data[:result] = result
       traces << data
