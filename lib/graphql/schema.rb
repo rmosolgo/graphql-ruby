@@ -1332,6 +1332,9 @@ module GraphQL
       end
 
       def lazy_resolve(lazy_class, value_method)
+        if !legacy_sync_lazy && self.dataloader_class == GraphQL::Dataloader::NullDataloader
+          warn "`#{self}.lazy_resolve` requires `self.legacy_sync_lazy` or `use GraphQL::Dataloader` to be configured first\n  #{caller(1, 1).first}"
+        end
         lazy_methods.set(lazy_class, value_method)
       end
 
@@ -1629,6 +1632,18 @@ module GraphQL
         end
       end
 
+      def legacy_sync_lazy(new_value = NOT_CONFIGURED)
+        if !NOT_CONFIGURED.equal?(new_value)
+          @legacy_sync_lazy = new_value
+        elsif defined?(@legacy_sync_lazy)
+          @legacy_sync_lazy
+        elsif superclass.respond_to?(:legacy_sync_lazy)
+          superclass.legacy_sync_lazy
+        else
+          false
+        end
+      end
+
       # Override this method to handle lazy objects in a custom way.
       # @param value [Object] an instance of a class registered with {.lazy_resolve}
       # @return [Object] A GraphQL-ready (non-lazy) object
@@ -1649,8 +1664,12 @@ module GraphQL
       end
 
       # @return [Boolean] True if this object should be lazily resolved
-      def lazy?(obj)
-        !!lazy_method_name(obj)
+      def lazy?(obj, legacy: false)
+        if legacy == true || legacy_sync_lazy
+          !!lazy_method_name(obj)
+        else
+          false
+        end
       end
 
       # Return a lazy if any of `maybe_lazies` are lazy,
