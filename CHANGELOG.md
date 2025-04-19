@@ -10,6 +10,14 @@
 
 ### Bug fixes
 
+# 2.5.4
+
+### Bug fixes
+
+- `ActiveRecordSource`: Support composite primary keys #5330
+- `ActiveRecordAssociationSource`: Support has_many associations #5331
+- Remove broken `Context#path` method (use `#current_path` instead) #5332
+
 # 2.5.3
 
 ### Deprecations
