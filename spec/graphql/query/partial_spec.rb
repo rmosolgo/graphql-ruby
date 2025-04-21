@@ -43,7 +43,13 @@ describe GraphQL::Query::Partial do
       value :DAIRY
     end
 
+    module Entity
+      include GraphQL::Schema::Interface
+      field :name, String
+    end
+
     class Farm < GraphQL::Schema::Object
+      implements Entity
       field :name, String
       field :products, [FarmProduct]
       field :error, Int
@@ -59,6 +65,15 @@ describe GraphQL::Query::Partial do
       end
     end
 
+    class Market < GraphQL::Schema::Object
+      implements Entity
+      field :is_year_round, Boolean
+    end
+
+    class Thing < GraphQL::Schema::Union
+      possible_types(Farm, Market)
+    end
+
     class Query < GraphQL::Schema::Object
       field :farms, [Farm], fallback_value: Database::FARMS.values
 
@@ -71,6 +86,15 @@ describe GraphQL::Query::Partial do
       end
 
       field :query, Query, fallback_value: true
+
+      field :thing, Thing
+
+      def thing
+        Database.get("1")
+      end
+
+      field :entity, Entity
+      def entity; Database.get("1"); end
     end
 
     query(Query)
@@ -80,7 +104,7 @@ describe GraphQL::Query::Partial do
     end
 
     def self.resolve_type(abs_type, object, ctx)
-      Farm
+      object[:is_market] ? Market : Farm
     end
 
     use GraphQL::Dataloader
@@ -236,7 +260,7 @@ describe GraphQL::Query::Partial do
     assert_equal({"name" => "Dawnbreak", "__typename" => "Farm", "n2" => "Dawnbreak"}, results.first["data"])
   end
 
-  it "runs partials on scalars" do
+  it "runs partials on scalars and enums" do
     str = "{ farm { name products } }"
     results = run_partials(str, [
       { path: ["farm", "name"], object: { name: "Polyface" } },
@@ -246,5 +270,40 @@ describe GraphQL::Query::Partial do
 
     assert results[0].partial.leaf?
     assert results[1].partial.leaf?
+  end
+
+
+  it "runs on union selections" do
+    str = "{
+      thing {
+        ...on Farm { name }
+        ...on Market { name isYearRound }
+      }
+    }"
+
+    results = run_partials(str, [
+      { path: ["thing"], object: { name: "Whisper Hill" } },
+      { path: ["thing"], object: { is_market: true, name: "Crozet Farmers Market", is_year_round: false } },
+    ])
+
+    assert_equal({ "name" => "Whisper Hill" }, results[0]["data"])
+    assert_equal({ "name" => "Crozet Farmers Market", "isYearRound" => false }, results[1]["data"])
+  end
+
+  it "runs on interface selections" do
+    str = "{
+      entity {
+        name
+        __typename
+      }
+    }"
+
+    results = run_partials(str, [
+      { path: ["entity"], object: { name: "Whisper Hill" } },
+      { path: ["entity"], object: { is_market: true, name: "Crozet Farmers Market" } },
+    ])
+
+    assert_equal({ "name" => "Whisper Hill", "__typename" => "Farm" }, results[0]["data"])
+    assert_equal({ "name" => "Crozet Farmers Market", "__typename" => "Market" }, results[1]["data"])
   end
 end

@@ -177,8 +177,27 @@ module GraphQL
             @dataloader.append_job do
               evaluate_selection(result_name, partial.ast_nodes, @response)
             end
+          when "UNION", "INTERFACE"
+            resolved_type, _resolved_obj = resolve_type(root_type, object) # TODO lazy, errors
+            object_proxy = resolved_type.wrap(object, context)
+            object_proxy = schema.sync_lazy(object_proxy)
+            @response = GraphQLResultHash.new(nil, resolved_type, object_proxy, nil, false, selections, false, partial.ast_nodes.first, nil, nil)
+            each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
+              @response.ordered_result_keys ||= ordered_result_keys
+              if is_selection_array == true
+                raise "This isn't supported yet"
+              end
+
+              @dataloader.append_job {
+                evaluate_selections(
+                  selections,
+                  @response,
+                  nil,
+                  runtime_state,
+                )
+              }
+            end
           else
-            # TODO union, interface
             raise "Invariant: unsupported type kind for partial execution: #{root_type.kind.inspect} (#{root_type})"
           end
           nil
