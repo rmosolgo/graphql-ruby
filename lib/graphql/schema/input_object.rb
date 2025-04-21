@@ -179,16 +179,6 @@ module GraphQL
 
           result = nil
 
-          # Check for missing non-null arguments
-          ctx.types.arguments(self).each do |argument|
-            if !input.key?(argument.graphql_name) && argument.type.non_null? && !argument.default_value?
-              result ||= Query::InputValidationResult.new
-              argument_result = argument.type.validate_input(value, ctx)
-              if !argument_result.valid?
-                result.merge_result!(argument_name, argument_result)
-              end
-            end
-          end
 
           input.each do |argument_name, value|
             argument = types.argument(self, argument_name)
@@ -202,6 +192,17 @@ module GraphQL
               if !argument_result.valid?
                 result ||= Query::InputValidationResult.new
                 result.merge_result!(argument_name, argument_result)
+              end
+            end
+          end
+
+          # Check for missing non-null arguments
+          ctx.types.arguments(self).each do |argument|
+            if !input.key?(argument.graphql_name) && argument.type.non_null? && !argument.default_value?
+              result ||= Query::InputValidationResult.new
+              argument_result = argument.type.validate_input(nil, ctx)
+              if !argument_result.valid?
+                result.merge_result!(argument.graphql_name, argument_result)
               end
             end
           end
