@@ -48,6 +48,21 @@ module GraphQL
             @results[@idx] = result
           end
         end
+
+        class LazyResolveJob
+          def initialize(multiplex, lazies_at_depth)
+            @multiplex = multiplex
+            @lazies_at_depth = lazies_at_depth
+          end
+
+          def call
+            query = @multiplex.queries.length == 1 ? @multiplex.queries[0] : nil
+            @multiplex.current_trace.execute_query_lazy(multiplex: @multiplex, query: query) do
+              Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @multiplex.dataloader)
+            end
+          end
+        end
+
         # @param schema [GraphQL::Schema]
         # @param queries [Array<GraphQL::Query, Hash>]
         # @param context [Hash]
@@ -101,14 +116,11 @@ module GraphQL
 
               multiplex.dataloader.run
 
-              # Then, work through lazy results in a breadth-first way
-              multiplex.dataloader.append_job {
-                query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
-                multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
-                  Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
-                end
-              }
-              multiplex.dataloader.run
+              if !lazies_at_depth.empty?
+                # Then, work through lazy results in a breadth-first way
+                multiplex.dataloader.append_job(LazyResolveJob.new(multiplex, lazies_at_depth))
+                multiplex.dataloader.run
+              end
 
               # Then, find all errors and assign the result to the query object
               results.each_with_index do |data_result, idx|

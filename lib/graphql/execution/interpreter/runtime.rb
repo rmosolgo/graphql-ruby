@@ -94,18 +94,29 @@ module GraphQL
                   final_response = nil
                 end
 
-                @dataloader.append_job {
-                  evaluate_selections(
-                    selections,
-                    selection_response,
-                    final_response,
-                    nil,
-                  )
-                }
+                @dataloader.append_job(EvaluateSelectionsJob.new(self, selections, selection_response, final_response))
               end
             end
           end
           nil
+        end
+
+        class EvaluateSelectionsJob
+          def initialize(runtime, selections, selection_response, final_response)
+            @runtime = runtime
+            @selections = selections
+            @selection_response = selection_response
+            @final_response = final_response
+          end
+
+          def call
+            @runtime.evaluate_selections(
+              @selections,
+              @selection_response,
+              @final_response,
+              nil,
+            )
+          end
         end
 
         def each_gathered_selections(response_hash)
@@ -215,35 +226,37 @@ module GraphQL
               # Field resolution may pause the fiber,
               # so it wouldn't get to the `Resolve` call that happens below.
               # So instead trigger a run from this outer context.
+              job = EvaluateSelectionJob.new(self, result_name, field_ast_nodes_or_ast_node, selections_result, target_result, enqueued_jobs, finished_jobs += 1)
               if selections_result.graphql_is_eager
                 @dataloader.clear_cache
                 @dataloader.run_isolated {
-                  evaluate_selection(
-                    result_name, field_ast_nodes_or_ast_node, selections_result
-                  )
-                  finished_jobs += 1
-                  if finished_jobs == enqueued_jobs
-                    if target_result
-                      selections_result.merge_into(target_result)
-                    end
-                  end
+                  job.call
                   @dataloader.clear_cache
                 }
               else
-                @dataloader.append_job {
-                  evaluate_selection(
-                    result_name, field_ast_nodes_or_ast_node, selections_result
-                  )
-                  finished_jobs += 1
-                  if finished_jobs == enqueued_jobs
-                    if target_result
-                      selections_result.merge_into(target_result)
-                    end
-                  end
-                }
+                @dataloader.append_job(job)
               end
             end
             selections_result
+          end
+        end
+
+        class EvaluateSelectionJob
+          def initialize(runtime, result_name, field_ast_nodes_or_ast_node, selections_result, target_result, total_jobs, job_number)
+            @runtime = runtime
+            @result_name = result_name
+            @field_ast_nodes_or_ast_node = field_ast_nodes_or_ast_node
+            @selections_result = selections_result
+            @target_result = target_result
+            @total_jobs = total_jobs
+            @job_number = job_number
+          end
+
+          def call
+            @runtime.evaluate_selection(@result_name, @field_ast_nodes_or_ast_node, @selections_result)
+            if @total_jobs == @job_number && @target_result
+              @selections_result.merge_into(@target_result)
+            end
           end
         end
 
@@ -668,12 +681,11 @@ module GraphQL
                   idx ||= 0
                   this_idx = idx
                   idx += 1
+                  job = ListItemJob.new(self, inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
                   if use_dataloader_job
-                    @dataloader.append_job do
-                      resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
-                    end
+                    @dataloader.append_job(job)
                   else
-                    resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
+                    job.call
                   end
                 end
 
@@ -708,6 +720,41 @@ module GraphQL
             continue_value(list_value, field, error_is_non_null, ast_node, result_name, selection_result)
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
+          end
+        end
+
+        class ListItemJob
+          def initialize(runtime, inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
+            @runtime = runtime
+            @inner_value = inner_value
+            @inner_type = inner_type
+            @inner_type_non_null = inner_type_non_null
+            @ast_node = ast_node
+            @field = field
+            @owner_object = owner_object
+            @arguments = arguments
+            @this_idx = this_idx
+            @response_list = response_list
+            @owner_type = owner_type
+            @was_scoped = was_scoped
+            @runtime_state = runtime_state
+          end
+
+          def call
+            @runtime.resolve_list_item(
+              @inner_value,
+              @inner_type,
+              @inner_type_non_null,
+              @ast_node,
+              @field,
+              @owner_object,
+              @arguments,
+              @this_idx,
+              @response_list,
+              @owner_type,
+              @was_scoped,
+              @runtime_state
+            )
           end
         end
 

@@ -239,6 +239,7 @@ module GraphQL
           total_args_count = arg_defns.size
 
           finished_args = nil
+          finished_args_block = block_given? ? block : ->(f_args) { finished_args = f_args }
           prepare_finished_args = -> {
             if total_args_count == 0
               finished_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
@@ -248,31 +249,11 @@ module GraphQL
             else
               argument_values = {}
               resolved_args_count = 0
-              raised_error = false
+              arg_jobs = []
               arg_defns.each do |arg_defn|
-                context.dataloader.append_job do
-                  begin
-                    arg_defn.coerce_into_values(parent_object, values, context, argument_values)
-                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                    raised_error = true
-                    finished_args = err
-                    if block_given?
-                      block.call(finished_args)
-                    end
-                  end
-
-                  resolved_args_count += 1
-                  if resolved_args_count == total_args_count && !raised_error
-                    finished_args = context.schema.after_any_lazies(argument_values.values) {
-                      GraphQL::Execution::Interpreter::Arguments.new(
-                        argument_values: argument_values,
-                      )
-                    }
-                    if block_given?
-                      block.call(finished_args)
-                    end
-                  end
-                end
+                job = CoerceArgumentJob.new(arg_defn, parent_object, values, context, argument_values, total_args_count, resolved_args_count += 1, finished_args_block)
+                arg_jobs << job
+                context.dataloader.append_job(job)
               end
             end
           }
@@ -284,6 +265,35 @@ module GraphQL
             # This API returns eagerly, gotta run it now
             context.dataloader.run_isolated(&prepare_finished_args)
             finished_args
+          end
+        end
+
+
+        class CoerceArgumentJob
+          def initialize(arg_defn, parent_object, values, context, argument_values, total_args_count, resolved_args_count, finished_args_block)
+            @arg_defn = arg_defn
+            @parent_object = parent_object
+            @values = values
+            @context = context
+            @argument_values = argument_values
+            @total_args_count = total_args_count
+            @resolved_args_count = resolved_args_count
+            @finished_args_block = finished_args_block
+          end
+
+          def call
+            @arg_defn.coerce_into_values(@parent_object, @values, @context, @argument_values)
+            if @resolved_args_count == @total_args_count && !@argument_values[:__raised_error]
+              finished_args = @context.schema.after_any_lazies(@argument_values.values) {
+                GraphQL::Execution::Interpreter::Arguments.new(
+                  argument_values: @argument_values,
+                )
+              }
+              @finished_args_block&.call(finished_args)
+            end
+          rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+            @argument_values[:__raised_error] = true
+            @finished_args_block&.call(err)
           end
         end
 
