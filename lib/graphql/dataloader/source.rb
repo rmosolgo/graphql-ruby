@@ -21,7 +21,7 @@ module GraphQL
       def request(value)
         res_key = result_key_for(value)
         if !@results.key?(res_key)
-          @pending[res_key] ||= value
+          @pending[res_key] ||= normalize_fetch_key(value)
         end
         Dataloader::Request.new(self, value)
       end
@@ -35,12 +35,24 @@ module GraphQL
         value
       end
 
+      # Implement this method if varying values given to {load} (etc) should be consolidated
+      # or normalized before being handed off to your {fetch} implementation.
+      #
+      # This is different than {result_key_for} because _that_ method handles unification inside Dataloader's cache,
+      # but this method changes the value passed into {fetch}.
+      #
+      # @param value [Object] The value passed to {load}, {load_all}, {request}, or {request_all}
+      # @return [Object] The value given to {fetch}
+      def normalize_fetch_key(value)
+        value
+      end
+
       # @return [Dataloader::Request] a pending request for a values from `keys`. Call `.load` on that object to wait for the results.
       def request_all(values)
         values.each do |v|
           res_key = result_key_for(v)
           if !@results.key?(res_key)
-            @pending[res_key] ||= v
+            @pending[res_key] ||= normalize_fetch_key(v)
           end
         end
         Dataloader::RequestAll.new(self, values)
@@ -53,7 +65,7 @@ module GraphQL
         if @results.key?(result_key)
           result_for(result_key)
         else
-          @pending[result_key] ||= value
+          @pending[result_key] ||= normalize_fetch_key(value)
           sync([result_key])
           result_for(result_key)
         end
@@ -68,7 +80,7 @@ module GraphQL
           k = result_key_for(v)
           result_keys << k
           if !@results.key?(k)
-            @pending[k] ||= v
+            @pending[k] ||= normalize_fetch_key(v)
             pending_keys << k
           end
         }

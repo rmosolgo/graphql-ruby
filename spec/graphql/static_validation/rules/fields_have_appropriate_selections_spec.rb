@@ -87,4 +87,73 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       assert_includes(errors.map { |e| e["message"] }, expected_err)
     end
   end
+
+  describe "selections on unions" do
+    let(:query_string) { "{ searchDairy }"}
+    describe "When the schema has custom handling to return the message" do
+      let(:schema) { Class.new(Dummy::Schema) {
+          allow_legacy_invalid_empty_selections_on_union(true)
+          def self.legacy_invalid_empty_selections_on_union(query)
+            :return_validation_error
+          end
+        }
+      }
+
+      it "returns the default message" do
+        expected_err = "Field must have selections (field 'searchDairy' returns DairyProduct but has no selections. Did you mean 'searchDairy { ... }'?)"
+        assert_includes(errors.map { |e| e["message"] }, expected_err)
+      end
+    end
+
+    describe "When the schema has custom handling to return a custom message" do
+      let(:schema) { Class.new(Dummy::Schema) {
+          allow_legacy_invalid_empty_selections_on_union(true)
+          def self.legacy_invalid_empty_selections_on_union(query)
+            "Boo, hiss!"
+          end
+        }
+      }
+
+      it "returns the custom message" do
+        expected_err = "Boo, hiss!"
+        assert_includes(errors.map { |e| e["message"] }, expected_err)
+      end
+    end
+
+    describe "When the schema has custom handling to allow the query" do
+      let(:schema) { Class.new(Dummy::Schema) {
+          allow_legacy_invalid_empty_selections_on_union(true)
+          def self.legacy_invalid_empty_selections_on_union(query)
+            nil
+          end
+        }
+      }
+
+      it "returns no errors" do
+        assert_equal [], errors
+      end
+    end
+
+    describe "When the schema has no setting" do
+      it "allows it with a warning to query.logger" do
+        expected_warning = "Unions require selections but searchDairy (DairyProduct) doesn't have any. This will fail with a validation error on a future GraphQL-Ruby version. More info: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_empty_selections_on_union-class_method"
+        stdout, _stderr = capture_io do
+          assert_equal [], errors
+        end
+        assert_includes stdout, expected_warning
+      end
+    end
+
+    describe "When the schema has legacy mode disabled" do
+      let(:schema) { Class.new(Dummy::Schema) {
+          allow_legacy_invalid_empty_selections_on_union(false)
+        }
+      }
+
+      it "requires some" do
+        expected_err = "Field must have selections (field 'searchDairy' returns DairyProduct but has no selections. Did you mean 'searchDairy { ... }'?)"
+        assert_includes(errors.map { |e| e["message"] }, expected_err)
+      end
+    end
+  end
 end

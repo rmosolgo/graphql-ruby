@@ -1200,10 +1200,17 @@ describe GraphQL::Schema::Resolver do
         type String, null: false
       end
 
+      class GetThingDeprecated < GraphQL::Schema::Resolver
+        type String, null: false
+        deprecation_reason("Use something else instead")
+      end
+
       class Query < GraphQL::Schema::Object
         field :get_thing, resolver: GetThing
         field :get_thing_flagged, resolver: GetThing, directives: { GraphQL::Schema::Directive::Flagged => { by: "getThingFlagged" } }
         field :get_thing_field, resolver: GetThingWithoutDirective, directives: { GraphQL::Schema::Directive::Flagged => { by: "getField" } }
+        field :get_thing_deprecated, resolver: GetThingDeprecated
+        field :get_thing_double_deprecated, resolver: GetThingDeprecated, deprecation_reason: "Overridden reason"
       end
 
       query(Query)
@@ -1220,15 +1227,19 @@ describe GraphQL::Schema::Resolver do
       Flags to check for this schema member
       """
       by: [String!]!
-    ) on ARGUMENT_DEFINITION | ENUM | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
+    ) repeatable on ARGUMENT_DEFINITION | ENUM | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
 
     type Query {
       getThing(id: ID!): String! @flagged(by: ["getThing"])
+      getThingDeprecated: String! @deprecated(reason: "Use something else instead")
+      getThingDoubleDeprecated: String! @deprecated(reason: "Overridden reason")
       getThingField(id: ID!): String! @flagged(by: ["getField"])
       getThingFlagged(id: ID!): String! @flagged(by: ["getThingFlagged"]) @flagged(by: ["getThing"])
     }
     GRAPHQL
 
     assert_equal expected_str, ResolverDirectivesSchema.to_definition(context: { flags: ["getField", "getThing", "getThingFlagged"] })
+    assert_equal "Use something else instead", ResolverDirectivesSchema.get_field("Query", "getThingDeprecated").deprecation_reason
+    assert_equal "Overridden reason", ResolverDirectivesSchema.get_field("Query", "getThingDoubleDeprecated").deprecation_reason
   end
 end

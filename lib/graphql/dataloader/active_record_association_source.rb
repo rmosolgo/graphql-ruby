@@ -12,6 +12,14 @@ module GraphQL
         @scope = scope
       end
 
+      def self.batch_key_for(association, scope = nil)
+        if scope
+          [association, scope.to_sql]
+        else
+          [association]
+        end
+      end
+
       def load(record)
         if (assoc = record.association(@association)).loaded?
           assoc.target
@@ -41,17 +49,17 @@ module GraphQL
         ::ActiveRecord::Associations::Preloader.new(records: records, associations: @association, available_records: available_records, scope: @scope).call
 
         loaded_associated_records = records.map { |r| r.public_send(@association) }
-        records_by_model = {}
-        loaded_associated_records.each do |record|
-          if record
-            updates = records_by_model[record.class] ||= {}
-            updates[record.id] = record
-          end
-        end
 
         if @scope.nil?
           # Don't cache records loaded via scope because they might have reduced `SELECT`s
           # Could check .select_values here?
+          records_by_model = {}
+          loaded_associated_records.flatten.each do |record|
+            if record
+              updates = records_by_model[record.class] ||= {}
+              updates[record.id] = record
+            end
+          end
           records_by_model.each do |model_class, updates|
             dataloader.with(RECORD_SOURCE_CLASS, model_class).merge(updates)
           end

@@ -327,7 +327,7 @@ describe GraphQL::Backtrace do
       {"data" => { "__typename" => "Query" }},
     ]
 
-    assert_equal expected_res, res
+    assert_graphql_equal expected_res, res
   end
 
   it "includes other trace modules when backtrace is active" do

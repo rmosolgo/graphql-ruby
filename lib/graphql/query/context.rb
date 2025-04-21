@@ -39,9 +39,6 @@ module GraphQL
       # @return [GraphQL::Schema]
       attr_reader :schema
 
-      # @return [Array<String, Integer>] The current position in the result
-      attr_reader :path
-
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
@@ -56,6 +53,7 @@ module GraphQL
         @scoped_context = ScopedContext.new(self)
       end
 
+      # Modify this hash to return extensions to client.
       # @return [Hash] A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
       def response_extensions
         namespace(:__query_result_extensions__)
@@ -241,7 +239,7 @@ module GraphQL
       end
 
       def inspect
-        "#<Query::Context ...>"
+        "#<#{self.class} ...>"
       end
 
       def scoped_merge!(hash)

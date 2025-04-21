@@ -28,6 +28,7 @@ module GraphQL
       extend Schema::Member::HasPath
       extend Schema::Member::HasDirectives
       include Schema::Member::HasDataloader
+      extend Schema::Member::HasDeprecationReason
 
       # @param object [Object] The application object that this field is being resolved on
       # @param context [GraphQL::Query::Context]

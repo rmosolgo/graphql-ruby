@@ -148,23 +148,22 @@ module GraphQL
 
       attr_reader :cached_profiles
 
-      def profile_for(context, visibility_profile = context[:visibility_profile])
+      def profile_for(context)
         if !@profiles.empty?
-          if visibility_profile.nil?
-            if @dynamic
-              if context.is_a?(Query::NullContext)
-                top_level_profile
-              else
-                @schema.visibility_profile_class.new(context: context, schema: @schema)
-              end
-            elsif !@profiles.empty?
-              raise ArgumentError, "#{@schema} expects a visibility profile, but `visibility_profile:` wasn't passed. Provide a `visibility_profile:` value or add `dynamic: true` to your visibility configuration."
-            end
-          elsif !@profiles.include?(visibility_profile)
-            raise ArgumentError, "`#{visibility_profile.inspect}` isn't allowed for `visibility_profile:` (must be one of #{@profiles.keys.map(&:inspect).join(", ")}). Or, add `#{visibility_profile.inspect}` to the list of profiles in the schema definition."
-          else
+          visibility_profile = context[:visibility_profile]
+          if @profiles.include?(visibility_profile)
             profile_ctx = @profiles[visibility_profile]
             @cached_profiles[visibility_profile] ||= @schema.visibility_profile_class.new(name: visibility_profile, context: profile_ctx, schema: @schema)
+          elsif @dynamic
+            if context.is_a?(Query::NullContext)
+              top_level_profile
+            else
+              @schema.visibility_profile_class.new(context: context, schema: @schema)
+            end
+          elsif !context.key?(:visibility_profile)
+            raise ArgumentError, "#{@schema} expects a visibility profile, but `visibility_profile:` wasn't passed. Provide a `visibility_profile:` value or add `dynamic: true` to your visibility configuration."
+          else
+            raise ArgumentError, "`#{visibility_profile.inspect}` isn't allowed for `visibility_profile:` (must be one of #{@profiles.keys.map(&:inspect).join(", ")}). Or, add `#{visibility_profile.inspect}` to the list of profiles in the schema definition."
           end
         elsif context.is_a?(Query::NullContext)
           top_level_profile

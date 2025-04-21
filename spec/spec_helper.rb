@@ -177,7 +177,6 @@ module TestTracing
 
     def trace(key, data)
       data[:key] = key
-      data[:path] ||= data.key?(:context) ? data[:context].path : nil
       result = yield
       data[:result] = result
       traces << data
@@ -206,6 +205,22 @@ module Minitest
         GraphQL::Dataloader.with_dataloading do |d|
           self.instance_exec(d, &block)
         end
+      end
+    end
+  end
+
+  module Assertions
+    def assert_graphql_equal(data1, data2, message = "GraphQL Result was equal")
+      case data1
+      when Hash
+        assert_equal(data1, data2, message)
+        assert_equal(data1.keys, data2.keys, "Order of keys matched (#{message})")
+      when Array
+        data1.each_with_index do |item1, idx|
+          assert_graphql_equal(item1, data2[idx], message + "[Item #{idx + 1}] ")
+        end
+      else
+        raise ArgumentError, "assert_graphql_equal doesn't support #{data1.class} yet"
       end
     end
   end

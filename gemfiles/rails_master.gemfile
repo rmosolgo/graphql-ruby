@@ -25,7 +25,7 @@ gem 'selenium-webdriver'
 
 gemspec path: "../"
 
-if Bundler.settings["GEMS__GRAPHQL__PRO"]
+if (cred = Bundler.settings["GEMS__GRAPHQL__PRO"]) && !cred.empty?
   gem "graphql-pro", source: "https://gems.graphql.pro"
   gem "graphql-enterprise", source: "https://gems.graphql.pro"
 end

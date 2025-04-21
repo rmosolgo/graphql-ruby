@@ -115,14 +115,19 @@ describe GraphQL::Schema::InputObject do
       class InputObj < GraphQL::Schema::InputObject
         argument :a, Integer
         argument :b, Integer, as: :b2
-        argument :c, Integer, prepare: :prep
+        argument :c, Integer, prepare: :prep, validates: { exclusion: { in: [5, 10] } }
         argument :d, Integer, prepare: :prep, as: :d2
         argument :e, Integer, prepare: ->(val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
         argument :instrument_id, ID, loads: Jazz::InstrumentType
         argument :danger, Integer, required: false, prepare: ->(val, ctx) { raise GraphQL::ExecutionError.new('boom!') }
+        argument :nested, self, required: false, validates: { allow_null: true }, prepare: :echo
 
         def prep(val)
           val * context[:multiply_by]
+        end
+
+        def echo(val)
+          val
         end
       end
 
@@ -258,6 +263,13 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
       expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }.inspect, "Drum Kit"]
       assert_equal expected_obj, res["data"]["inputs"]
+
+      query_str2 = <<-GRAPHQL
+      { inputs(input: { a: 1, b: 2, c: 3, d: 4, e: 5, instrumentId: "Instrument/Drum Kit", nested: { a: 2, b: 4, c: 6, d: 8, e: 10, instrumentId: "Instrument/Drum Kit" } }) }
+      GRAPHQL
+      res2 = InputObjectPrepareTest::Schema.execute(query_str2, context: { multiply_by: 3 })
+      expected_hash_values =  { a: 2, b2: 4, c: 6, d2: 8, e2: 60 }.inspect.sub("{", "").sub("}", "")
+      assert_includes res2["data"]["inputs"][0], expected_hash_values
     end
 
     it "calls load_ methods for arguments when they're present" do

@@ -22,7 +22,7 @@ module GraphQL
   #   ]
   #
   module Current
-    # @return [String, nil] Comma-joined operation names for the currently-running {Multiplex}. `nil` if all operations are anonymous.
+    # @return [String, nil] Comma-joined operation names for the currently-running {Execution::Multiplex}. `nil` if all operations are anonymous.
     def self.operation_name
       if (m = Fiber[:__graphql_current_multiplex])
         m.context[:__graphql_current_operation_name] ||= begin

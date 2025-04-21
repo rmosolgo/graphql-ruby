@@ -3,6 +3,8 @@
 module GraphQL
   class Schema
     class Member
+      # @api public
+      # Shared methods for working with {Dataloader} inside GraphQL runtime objects.
       module HasDataloader
         # @return [GraphQL::Dataloader] The dataloader for the currently-running query
         def dataloader
@@ -37,7 +39,7 @@ module GraphQL
           source.load(find_by_value)
         end
 
-        # Look up an associated record using a Rails association.
+        # Look up an associated record using a Rails association (via {Dataloader::ActiveRecordAssociationSource})
         # @param association_name [Symbol] A `belongs_to` or `has_one` association. (If a `has_many` association is named here, it will be selected without pagination.)
         # @param record [ActiveRecord::Base] The object that the association belongs to.
         # @param scope [ActiveRecord::Relation] A scope to look up the associated record in
@@ -45,7 +47,7 @@ module GraphQL
         # @example Looking up a belongs_to on the current object
         #    dataload_association(:parent) # Equivalent to `object.parent`, but dataloaded
         # @example Looking up an associated record on some other object
-        #    dataload_association(:post, comment) # Equivalent to `comment.post`, but dataloaded
+        #    dataload_association(comment, :post) # Equivalent to `comment.post`, but dataloaded
         def dataload_association(record = object, association_name, scope: nil)
           source = if scope
             dataloader.with(Dataloader::ActiveRecordAssociationSource, association_name, scope)
