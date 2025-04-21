@@ -121,7 +121,8 @@ module GraphQL
             object_proxy = root_type.wrap(object, context)
             object_proxy = schema.sync_lazy(object_proxy)
             @response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, false, partial.ast_nodes.first, nil, nil)
-            each_gathered_selections(@response) do |selections, is_selection_array|
+            each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
+              @response.ordered_result_keys ||= ordered_result_keys
               if is_selection_array == true
                 raise "This isn't supported yet"
               end
@@ -144,6 +145,7 @@ module GraphQL
               field_node = partial.ast_nodes.first
               result_name = field_node.alias || field_node.name
               @response = GraphQLResultHash.new(nil, partial.parent_type, parent_object_proxy, nil, false, nil, false, field_node, nil, nil)
+              @response.ordered_result_keys = [result_name]
               evaluate_selection(result_name, partial.ast_nodes, @response)
             else
               @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false, field_node, nil, nil)
@@ -171,6 +173,7 @@ module GraphQL
             field_node = partial.ast_nodes.first
             result_name = field_node.alias || field_node.name
             @response = GraphQLResultHash.new(nil, parent_object_type, parent_object_proxy, nil, false, selections, false, field_node, nil, nil)
+            @response.ordered_result_keys = [result_name]
             @dataloader.append_job do
               evaluate_selection(result_name, partial.ast_nodes, @response)
             end
