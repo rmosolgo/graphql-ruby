@@ -176,30 +176,32 @@ module GraphQL
             return GraphQL::Query::InputValidationResult.from_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
           end
 
-          # Inject missing required arguments
-          missing_required_inputs = ctx.types.arguments(self).reduce({}) do |m, (argument)|
-            if !input.key?(argument.graphql_name) && argument.type.non_null? && !argument.default_value? && types.argument(self, argument.graphql_name)
-              m[argument.graphql_name] = nil
-            end
-
-            m
-          end
 
           result = nil
-          [input, missing_required_inputs].each do |args_to_validate|
-            args_to_validate.each do |argument_name, value|
-              argument = types.argument(self, argument_name)
-              # Items in the input that are unexpected
-              if argument.nil?
+
+          # Check for missing non-null arguments
+          ctx.types.arguments(self).each do |argument|
+            if !input.key?(argument.graphql_name) && argument.type.non_null? && !argument.default_value?
+              result ||= Query::InputValidationResult.new
+              argument_result = argument.type.validate_input(value, ctx)
+              if !argument_result.valid?
+                result.merge_result!(argument_name, argument_result)
+              end
+            end
+          end
+
+          input.each do |argument_name, value|
+            argument = types.argument(self, argument_name)
+            # Items in the input that are unexpected
+            if argument.nil?
+              result ||= Query::InputValidationResult.new
+              result.add_problem("Field is not defined on #{self.graphql_name}", [argument_name])
+            else
+              # Items in the input that are expected, but have invalid values
+              argument_result = argument.type.validate_input(value, ctx)
+              if !argument_result.valid?
                 result ||= Query::InputValidationResult.new
-                result.add_problem("Field is not defined on #{self.graphql_name}", [argument_name])
-              else
-                # Items in the input that are expected, but have invalid values
-                argument_result = argument.type.validate_input(value, ctx)
-                result ||= Query::InputValidationResult.new
-                if !argument_result.valid?
-                  result.merge_result!(argument_name, argument_result)
-                end
+                result.merge_result!(argument_name, argument_result)
               end
             end
           end
