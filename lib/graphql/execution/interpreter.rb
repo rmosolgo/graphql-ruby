@@ -16,6 +16,38 @@ module GraphQL
         # @api private
         NO_OPERATION = GraphQL::EmptyObjects::EMPTY_HASH
 
+        class QueryJob
+          def initialize(query, results, idx, lazies_at_depth)
+            @query = query
+            @results = results
+            @idx = idx
+            @lazies_at_depth = lazies_at_depth
+          end
+
+          def call
+            query = @query
+            operation = query.selected_operation
+            result = if operation.nil? || !query.valid? || !query.context.errors.empty?
+              NO_OPERATION
+            else
+              begin
+                # Although queries in a multiplex _share_ an Interpreter instance,
+                # they also have another item of state, which is private to that query
+                # in particular, assign it here:
+                runtime = Runtime.new(query: query, lazies_at_depth: @lazies_at_depth)
+                query.context.namespace(:interpreter_runtime)[:runtime] = runtime
+
+                query.current_trace.execute_query(query: query) do
+                  runtime.run_eager
+                end
+              rescue GraphQL::ExecutionError => err
+                query.context.errors << err
+                NO_OPERATION
+              end
+            end
+            @results[@idx] = result
+          end
+        end
         # @param schema [GraphQL::Schema]
         # @param queries [Array<GraphQL::Query, Hash>]
         # @param context [Hash]
@@ -64,28 +96,7 @@ module GraphQL
                   subs_namespace[:events] = []
                   subs_namespace[:subscriptions] = {}
                 end
-                multiplex.dataloader.append_job {
-                  operation = query.selected_operation
-                  result = if operation.nil? || !query.valid? || !query.context.errors.empty?
-                    NO_OPERATION
-                  else
-                    begin
-                      # Although queries in a multiplex _share_ an Interpreter instance,
-                      # they also have another item of state, which is private to that query
-                      # in particular, assign it here:
-                      runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth)
-                      query.context.namespace(:interpreter_runtime)[:runtime] = runtime
-
-                      query.current_trace.execute_query(query: query) do
-                        runtime.run_eager
-                      end
-                    rescue GraphQL::ExecutionError => err
-                      query.context.errors << err
-                      NO_OPERATION
-                    end
-                  end
-                  results[idx] = result
-                }
+                multiplex.dataloader.append_job(QueryJob.new(query, results, idx, lazies_at_depth))
               end
 
               multiplex.dataloader.run

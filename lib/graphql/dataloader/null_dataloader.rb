@@ -15,8 +15,12 @@ module GraphQL
         raise GraphQL::Error, "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
       end
 
-      def append_job
-        yield
+      def append_job(callable = nil)
+        if callable
+          callable.call
+        else
+          yield
+        end
         nil
       end
     end

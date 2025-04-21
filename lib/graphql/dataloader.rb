@@ -140,10 +140,9 @@ module GraphQL
     end
 
     # @api private Nothing to see here
-    def append_job(&job)
-      # Given a block, queue it up to be worked through when `#run` is called.
-      # (If the dataloader is already running, than a Fiber will pick this up later.)
-      @pending_jobs.push(job)
+    def append_job(callable = nil, &job_block)
+      callable ||= job_block
+      @pending_jobs.push(callable)
       nil
     end
 
