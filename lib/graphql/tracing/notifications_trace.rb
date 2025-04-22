@@ -137,7 +137,9 @@ module GraphQL
 
       def dataloader_fiber_resume(source)
         prev_ev = Fiber[PREVIOUS_EV_KEY]
-        begin_notifications_event(prev_ev.name, prev_ev.payload)
+        if prev_ev
+          begin_notifications_event(prev_ev.name, prev_ev.payload)
+        end
         super
       end
 

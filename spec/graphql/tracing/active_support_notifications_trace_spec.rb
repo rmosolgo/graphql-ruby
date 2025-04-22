@@ -23,10 +23,12 @@ if testing_rails?
       end
 
       class Query < GraphQL::Schema::Object
-        field :nameable, Nameable
+        field :nameable, Nameable do
+          argument :id, ID, loads: Thing, as: :thing
+        end
 
-        def nameable
-          dataload(ThingSource, 1)
+        def nameable(thing:)
+          thing
         end
       end
 
@@ -34,6 +36,14 @@ if testing_rails?
       trace_with GraphQL::Tracing::ActiveSupportNotificationsTrace
       use GraphQL::Dataloader
       orphan_types(Thing)
+
+      def self.object_from_id(id, ctx)
+        ctx.dataloader.with(ThingSource).load(id)
+      end
+
+      def self.resolve_type(_abs, _obj, _ctx)
+        Thing
+      end
     end
 
     it "emits tracing info" do
@@ -42,7 +52,7 @@ if testing_rails?
         events << [name, payload]
       }
       ActiveSupport::Notifications.subscribed(callback) do
-        AsnSchema.execute("{ nameable { name } }")
+        AsnSchema.execute("{ nameable(id: 1) { name } }")
       end
 
       expected_names = [
@@ -51,7 +61,6 @@ if testing_rails?
         "validate.graphql",
         "analyze.graphql",
         "authorized.graphql",
-        "execute_field.graphql",
         "dataloader_source.graphql",
         "execute_field.graphql",
         "resolve_type.graphql",
