@@ -17,7 +17,7 @@ describe GraphQL do
 
       gemfile(true, quiet: true) do
         source('https://rubygems.org')
-        gem 'graphql'
+        gem 'graphql', path: './'
         gem 'fiber-storage'
       end
 
