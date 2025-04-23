@@ -28,7 +28,7 @@ module GraphQL
           end
         when nil
           subject.logger.warn <<~GRAPHQL
-            GraphQL-Ruby's complexity cost system is getting some "breaking fixes" in a future version. See the migration notes at https://graphql-ruby.org/api-docs/#{GraphQL::VERSION}/Schema.html#complexity_cost_cacluation_mode-class_method
+            GraphQL-Ruby's complexity cost system is getting some "breaking fixes" in a future version. See the migration notes at https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#complexity_cost_calculation_mode_for-class_method
 
             To opt into the future behavior, configure your schema (#{subject.schema.name ? subject.schema.name : subject.schema.ancestors}) with:
 
