@@ -955,7 +955,8 @@ describe GraphQL::Analysis::QueryComplexity do
         end
 
         assert_equal 12, cost
-        assert_includes stdout, "GraphQL-Ruby's complexity cost system is getting some \"breaking fixes\" in a future version. See the migration notes at https://graphql-ruby.org/api-docs/#{GraphQL::VERSION}/Schema.html#complexity_cost_cacluation_mode-class_method
+
+        assert_includes stdout, "GraphQL-Ruby's complexity cost system is getting some \"breaking fixes\" in a future version. See the migration notes at https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#complexity_cost_calculation_mode_for-class_method
 
 To opt into the future behavior, configure your schema (MaxOfPossibleScopes) with:
 
