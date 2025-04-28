@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "yaml"
 
 module RubocopTestHelpers
   def run_rubocop_on(fixture_path, autocorrect: false)
