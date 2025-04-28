@@ -7,7 +7,6 @@ gem 'bootsnap' # required by the Rails apps generated in tests
 gem 'stackprof', platform: :ruby
 gem 'pry'
 gem 'pry-stack_explorer', platform: :ruby
-gem 'pry-byebug'
 
 if RUBY_VERSION >= "3.0"
   gem "libev_scheduler"

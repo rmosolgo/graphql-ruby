@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "minitest"
   s.add_development_dependency "minitest-focus"
   s.add_development_dependency "minitest-reporters"
+  s.add_development_dependency "ostruct"
   s.add_development_dependency "rake"
   s.add_development_dependency 'rake-compiler'
   s.add_development_dependency "rubocop"
