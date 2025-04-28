@@ -44,7 +44,7 @@ end
 
 require "rake"
 require "graphql/rake_task"
-require "benchmark"
+require "benchmark/ips"
 require "pry"
 require "minitest/autorun"
 require "minitest/focus"
