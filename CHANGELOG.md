@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 2.5.5
+
+### Bug fixes
+
+- Visibility: fix when `::Rails` doesn't have `.env` #5339
+- Compatibility: restore default (legacy) behavior when no setting is configured #5343
+- `ActiveSupport::Notifications`: fix fiber resume without previous event #5335
+- Simplify non-null input object argument handling #5333
+- Fix compatibility with `ruby-head` #5342
+
 # 2.5.4
 
 ### Bug fixes
