@@ -4,6 +4,8 @@ module GraphQL
     # This class is _like_ a {GraphQL::Query}, except
     # @see Query#run_partials
     class Partial
+      include Query::Runnable
+
       def initialize(path:, object:, query:, context: nil)
         @path = path
         @object = object
@@ -94,34 +96,6 @@ module GraphQL
 
       def types
         @query.types
-      end
-
-      # TODO dry with query
-      def after_lazy(value, &block)
-        if !defined?(@runtime_instance)
-          @runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
-        end
-
-        if @runtime_instance
-          @runtime_instance.minimal_after_lazy(value, &block)
-        else
-          @schema.after_lazy(value, &block)
-        end
-      end
-
-      # TODO dry with query
-      def arguments_for(ast_node, definition, parent_object: nil)
-        arguments_cache.fetch(ast_node, definition, parent_object)
-      end
-
-      # TODO dry with query
-      def arguments_cache
-        @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
-      end
-
-      # TODO dry
-      def handle_or_reraise(err)
-        @query.schema.handle_or_reraise(context, err)
       end
 
       def resolve_type(...)

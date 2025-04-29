@@ -17,6 +17,40 @@ module GraphQL
     autoload :VariableValidationError, "graphql/query/variable_validation_error"
     autoload :ValidationPipeline, "graphql/query/validation_pipeline"
 
+    # Code shared with {Partial}
+    module Runnable
+      def after_lazy(value, &block)
+        if !defined?(@runtime_instance)
+          @runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
+        end
+
+        if @runtime_instance
+          @runtime_instance.minimal_after_lazy(value, &block)
+        else
+          @schema.after_lazy(value, &block)
+        end
+      end
+
+      # Node-level cache for calculating arguments. Used during execution and query analysis.
+      # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
+      # @param definition [GraphQL::Schema::Field]
+      # @param parent_object [GraphQL::Schema::Object]
+      # @return [Hash{Symbol => Object}]
+      def arguments_for(ast_node, definition, parent_object: nil)
+        arguments_cache.fetch(ast_node, definition, parent_object)
+      end
+
+      def arguments_cache
+        @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
+      end
+
+      # @api private
+      def handle_or_reraise(err)
+        @query.schema.handle_or_reraise(context, err)
+      end
+    end
+
+    include Runnable
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(name)
         msg = if name.nil?
@@ -291,19 +325,6 @@ module GraphQL
       end
     end
 
-    # Node-level cache for calculating arguments. Used during execution and query analysis.
-    # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
-    # @param definition [GraphQL::Schema::Field]
-    # @param parent_object [GraphQL::Schema::Object]
-    # @return [Hash{Symbol => Object}]
-    def arguments_for(ast_node, definition, parent_object: nil)
-      arguments_cache.fetch(ast_node, definition, parent_object)
-    end
-
-    def arguments_cache
-      @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
-    end
-
     # A version of the given query string, with:
     # - Variables inlined to the query
     # - Strings replaced with `<REDACTED>`
@@ -411,23 +432,6 @@ module GraphQL
 
     def subscription?
       with_prepared_ast { @subscription }
-    end
-
-    # @api private
-    def handle_or_reraise(err)
-      schema.handle_or_reraise(context, err)
-    end
-
-    def after_lazy(value, &block)
-      if !defined?(@runtime_instance)
-        @runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
-      end
-
-      if @runtime_instance
-        @runtime_instance.minimal_after_lazy(value, &block)
-      else
-        @schema.after_lazy(value, &block)
-      end
     end
 
     attr_reader :logger
