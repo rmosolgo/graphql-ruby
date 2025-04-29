@@ -1,8 +1,13 @@
 # frozen_string_literal: true
 module GraphQL
   class Query
-    # This class is _like_ a {GraphQL::Query}, except
-    # @see Query#run_partials
+    # This class is _like_ a {GraphQL::Query}, except it can run on an arbitrary path within a query string.
+    #
+    # It depends on a "parent" {Query}.
+    #
+    # During execution, it calls query-related tracing hooks but passes itself as `query:`.
+    #
+    # @see Query#run_partials Run via {Query#run_partials}
     class Partial
       include Query::Runnable
 

@@ -159,8 +159,9 @@ module GraphQL
             dataloader.append_job {
               runtime = Runtime.new(query: partial, lazies_at_depth: lazies_at_depth)
               partial.context.namespace(:interpreter_runtime)[:runtime] = runtime
-              # TODO tracing?
-              runtime.run_partial_eager
+              partial.current_trace.execute_query(query: partial) do
+                runtime.run_partial_eager
+              end
             }
           end
 
@@ -171,8 +172,10 @@ module GraphQL
               runtime = partial.context.namespace(:interpreter_runtime)[:runtime]
               runtime.final_result
             end
-            # TODO tracing?
-            Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
+            partial = partials.length == 1 ? partials.first : nil
+            multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: partial) do
+              Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
+            end
           }
 
           dataloader.run
