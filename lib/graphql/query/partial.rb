@@ -4,11 +4,15 @@ module GraphQL
     # This class is _like_ a {GraphQL::Query}, except
     # @see Query#run_partials
     class Partial
-      def initialize(path:, object:, query:)
+      def initialize(path:, object:, query:, context: nil)
         @path = path
         @object = object
         @query = query
-        @context = GraphQL::Query::Context.new(query: self, schema: @query.schema, values: @query.context.to_h)
+        context_vals = @query.context.to_h
+        if context
+          context_vals = context_vals.merge(context)
+        end
+        @context = GraphQL::Query::Context.new(query: self, schema: @query.schema, values: context_vals)
         @multiplex = nil
         @result_values = nil
         @result = nil

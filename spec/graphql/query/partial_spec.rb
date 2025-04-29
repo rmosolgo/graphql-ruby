@@ -95,6 +95,14 @@ describe GraphQL::Query::Partial do
 
       field :entity, Entity
       def entity; Database.get("1"); end
+
+      field :read_context, String do
+        argument :key, String
+      end
+
+      def read_context(key:)
+        -> { context[key].to_s }
+      end
     end
 
     query(Query)
@@ -108,14 +116,15 @@ describe GraphQL::Query::Partial do
     end
 
     use GraphQL::Dataloader
+    lazy_resolve Proc, :call
   end
 
   before do
     PartialSchema::Database.clear
   end
 
-  def run_partials(string, partial_configs)
-    query = GraphQL::Query.new(PartialSchema, string)
+  def run_partials(string, partial_configs, **query_kwargs)
+    query = GraphQL::Query.new(PartialSchema, string, **query_kwargs)
     query.run_partials(partial_configs)
   end
 
@@ -305,5 +314,17 @@ describe GraphQL::Query::Partial do
 
     assert_equal({ "name" => "Whisper Hill", "__typename" => "Farm" }, results[0]["data"])
     assert_equal({ "name" => "Crozet Farmers Market", "__typename" => "Market" }, results[1]["data"])
+  end
+
+  it "accepts custom context" do
+    str = "{ readContext(key: \"custom\") }"
+    results = run_partials(str, [
+      { path: [], object: nil, context: { "custom" => "one" } },
+      { path: [], object: nil, context: { "custom" => "two" } },
+      { path: [], object: nil },
+    ], context: { "custom" => "three"} )
+    assert_equal "one", results[0]["data"]["readContext"]
+    assert_equal "two", results[1]["data"]["readContext"]
+    assert_equal "three", results[2]["data"]["readContext"]
   end
 end
