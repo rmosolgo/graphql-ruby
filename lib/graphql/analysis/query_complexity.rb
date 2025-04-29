@@ -35,7 +35,7 @@ module GraphQL
               complexity_cost_calculation_mode(:future) # or `:legacy`, `:compare`
 
           GRAPHQL
-          max_possible_complexity
+          max_possible_complexity(mode: :legacy)
         else
           raise ArgumentError, "Expected `:future`, `:legacy`, `:compare`, or `nil` from `#{query.schema}.complexity_cost_calculation_mode_for` but got: #{query.schema.complexity_cost_calculation_mode.inspect}"
         end

@@ -962,6 +962,30 @@ To opt into the future behavior, configure your schema (MaxOfPossibleScopes) wit
 
   complexity_cost_calculation_mode(:future) # or `:legacy`, `:compare`"
       end
+
+      it "uses legacy mode" do
+        cost = nil
+        assert_nil MaxOfPossibleScopes.complexity_cost_calculation_mode
+        stdout, _stderr = capture_io do
+          cost = MaxOfPossibleScopes.cost(%|
+            {
+              entity {
+                ...on Farm { name }
+                ...on Producer { name }
+              }
+            }
+          |)
+        end
+        puts stdout
+
+        assert_equal 6, cost
+
+        assert_includes stdout, "GraphQL-Ruby's complexity cost system is getting some \"breaking fixes\" in a future version. See the migration notes at https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#complexity_cost_calculation_mode_for-class_method
+
+To opt into the future behavior, configure your schema (MaxOfPossibleScopes) with:
+
+  complexity_cost_calculation_mode(:future) # or `:legacy`, `:compare`"
+      end
     end
   end
 end
