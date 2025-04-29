@@ -15,6 +15,7 @@ module GraphQL
         @path = path
         @object = object
         @query = query
+        @schema = query.schema
         context_vals = @query.context.to_h
         if context
           context_vals = context_vals.merge(context)
@@ -72,7 +73,7 @@ module GraphQL
         @leaf
       end
 
-      attr_reader :context, :query, :ast_nodes, :root_type, :object, :field_definition, :path, :parent_type
+      attr_reader :context, :query, :ast_nodes, :root_type, :object, :field_definition, :path, :parent_type, :schema
 
       attr_accessor :multiplex, :result_values
 
@@ -93,10 +94,6 @@ module GraphQL
 
       def current_trace
         @query.current_trace
-      end
-
-      def schema
-        @query.schema
       end
 
       def types

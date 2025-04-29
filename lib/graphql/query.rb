@@ -46,7 +46,7 @@ module GraphQL
 
       # @api private
       def handle_or_reraise(err)
-        @query.schema.handle_or_reraise(context, err)
+        @schema.handle_or_reraise(context, err)
       end
     end
 
