@@ -1189,7 +1189,7 @@ module GraphQL
       # @param context [GraphQL::Query::Context] The query context for the currently-executing query
       # @return [Class<GraphQL::Schema::Object] The Object type definition to use for `obj`
       def resolve_type(abstract_type, application_object, context)
-        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.resolve_type(abstract_type, application_object, context) must be implemented to use Union types, Interface types, or `loads:` (tried to resolve: #{abstract_type.name})"
+        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.resolve_type(abstract_type, application_object, context) must be implemented to use Union types, Interface types, `loads:`, or `run_partials` (tried to resolve: #{abstract_type.name})"
       end
       # rubocop:enable Lint/DuplicateMethods
 

@@ -7,10 +7,17 @@ module GraphQL
     #
     # During execution, it calls query-related tracing hooks but passes itself as `query:`.
     #
+    # The {Partial} will use your {Schema.resolve_type} hook to find the right GraphQL type to use for
+    # `object` in some cases.
+    #
     # @see Query#run_partials Run via {Query#run_partials}
     class Partial
       include Query::Runnable
 
+      # @param path [Array<String, Integer>] A path in `query.query_string` to start executing from
+      # @param object [Object] A starting object for execution
+      # @param query [GraphQL::Query] A full query instance that this partial is based on. Caches are shared.
+      # @param context [Hash] Extra context values to merge into `query.context`, if provided
       def initialize(path:, object:, query:, context: nil)
         @path = path
         @object = object
@@ -29,6 +36,15 @@ module GraphQL
         parent_type = nil
         field_defn = nil
         @path.each do |name_in_doc|
+          if name_in_doc.is_a?(Integer)
+            if type.list?
+              type = type.unwrap
+              next
+            else
+              raise ArgumentError, "Received path with index `#{name_in_doc}`, but type wasn't a list. Type: #{type.to_type_signature}, path: #{@path}"
+            end
+          end
+
           next_selections = []
           selections.each do |selection|
             selections_to_check = []

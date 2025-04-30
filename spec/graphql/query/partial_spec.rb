@@ -136,12 +136,14 @@ describe GraphQL::Query::Partial do
     }"
     results = run_partials(str, [
       { path: ["farm1"], object: PartialSchema::Database::FARMS["1"] },
-      { path: ["farm2"], object: OpenStruct.new(name: "Injected Farm") }
+      { path: ["farm2"], object: OpenStruct.new(name: "Injected Farm") },
+      { path: ["farms", 0], object: { name: "Kestrel Hollow", products: ["MEAT", "EGGS"]} },
     ])
 
     assert_equal [
       { "data" => { "name" => "Bellair Farm" } },
       { "data" => { "name" => "Injected Farm" } },
+      {"data" => {"name" => "Kestrel Hollow", "products" => ["MEAT", "EGGS"]} },
     ], results
   end
 
