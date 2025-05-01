@@ -149,65 +149,6 @@ module GraphQL
             end
           end
         end
-
-        def run_partials(schema, partials, context:)
-          multiplex = Execution::Multiplex.new(schema: schema, queries: partials, context: context, max_complexity: nil)
-          dataloader = multiplex.dataloader
-          lazies_at_depth = Hash.new { |h, k| h[k] = [] }
-
-          partials.each do |partial|
-            dataloader.append_job {
-              runtime = Runtime.new(query: partial, lazies_at_depth: lazies_at_depth)
-              partial.context.namespace(:interpreter_runtime)[:runtime] = runtime
-              partial.current_trace.execute_query(query: partial) do
-                runtime.run_eager
-              end
-            }
-          end
-
-          dataloader.run
-
-          dataloader.append_job {
-            partials.each do |partial|
-              runtime = partial.context.namespace(:interpreter_runtime)[:runtime]
-              runtime.final_result
-            end
-            partial = partials.length == 1 ? partials.first : nil
-            multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: partial) do
-              Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
-            end
-          }
-
-          dataloader.run
-
-          partials.map do |partial|
-            # Assign the result so that it can be accessed in instrumentation
-            data_result = partial.context.namespace(:interpreter_runtime)[:runtime].final_result
-            partial.result_values = if data_result.equal?(NO_OPERATION)
-              if !partial.context.errors.empty?
-                { "errors" => partial.context.errors.map(&:to_h) }
-              else
-                data_result
-              end
-            else
-              result = {}
-
-              if !partial.context.errors.empty?
-                error_result = partial.context.errors.map(&:to_h)
-                result["errors"] = error_result
-              end
-
-              result["data"] = data_result
-
-              result
-            end
-            if partial.context.namespace?(:__query_result_extensions__)
-              partial.result_values["extensions"] = partial.context.namespace(:__query_result_extensions__)
-            end
-            # Partial::Result
-            partial.result
-          end
-        end
       end
 
       class ListResultFailedError < GraphQL::Error

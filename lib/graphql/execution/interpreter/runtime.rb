@@ -76,7 +76,7 @@ module GraphQL
           when GraphQL::Query::Partial
             ast_node = query.ast_nodes.first
             selections = query.ast_nodes.map(&:selections).inject(&:+)
-            object = partial.object
+            object = query.object
             is_eager = false
           else
             raise ArgumentError, "Unexpected Runnable, can't execute: #{query.class} (#{query.inspect})"

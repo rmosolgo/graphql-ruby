@@ -247,18 +247,19 @@ describe GraphQL::Query::Partial do
   it "merges selections when path steps are duplicated" do
     str = <<-GRAPHQL
       {
-        f1: farm { neighboringFarm { name } }
-        f1: farm { neighboringFarm { name2: name } }
+        farm(id: 5) { neighboringFarm { name } }
+        farm(id: 5) { neighboringFarm { name2: name } }
       }
     GRAPHQL
-    results = run_partials(str, [{ path: ["f1", "neighboringFarm"], object: OpenStruct.new(name: "Dawnbreak") }])
+    results = run_partials(str, [{ path: ["farm", "neighboringFarm"], object: OpenStruct.new(name: "Dawnbreak") }])
+
     assert_equal({"name" => "Dawnbreak", "name2" => "Dawnbreak" }, results.first["data"])
   end
 
   it "works when there are inline fragments in the path" do
     str = <<-GRAPHQL
       {
-        farm {
+        farm(id: "BLAH") {
           ... on Farm {
             neighboringFarm {
               name
@@ -283,7 +284,7 @@ describe GraphQL::Query::Partial do
   end
 
   it "runs partials on scalars and enums" do
-    str = "{ farm { name products } }"
+    str = "{ farm(id: \"BLAH\") { name products } }"
     results = run_partials(str, [
       { path: ["farm", "name"], object: { name: "Polyface" } },
       { path: ["farm", "products"], object: { products: ["MEAT"] } },

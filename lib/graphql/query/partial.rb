@@ -127,6 +127,30 @@ module GraphQL
       def fragments
         @query.fragments
       end
+
+      def valid?
+        @query.valid?
+      end
+
+      def analyzers
+        EmptyObjects::EMPTY_ARRAY
+      end
+
+      def analysis_errors=(_ignored)
+        # pass
+      end
+
+      def subscription?
+        @query.subscription?
+      end
+
+      def selected_operation
+        ast_nodes.first
+      end
+
+      def static_errors
+        @query.static_errors
+      end
     end
   end
 end
