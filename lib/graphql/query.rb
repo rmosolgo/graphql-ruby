@@ -233,12 +233,10 @@ module GraphQL
     # @return [GraphQL::Execution::Lookahead]
     def lookahead
       @lookahead ||= begin
-        ast_node = selected_operation
-        if ast_node.nil?
+        if selected_operation.nil?
           GraphQL::Execution::Lookahead::NULL_LOOKAHEAD
         else
-          root_type = root_type_for_operation(ast_node.operation_type)
-          GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
+          GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [selected_operation])
         end
       end
     end
@@ -393,6 +391,10 @@ module GraphQL
       else
         raise ArgumentError, "unexpected root type name: #{op_type.inspect}; expected nil, 'query', 'mutation', or 'subscription'"
       end
+    end
+
+    def root_type
+      root_type_for_operation(selected_operation.operation_type)
     end
 
     def types

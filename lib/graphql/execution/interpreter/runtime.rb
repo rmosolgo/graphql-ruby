@@ -64,89 +64,67 @@ module GraphQL
           "#<#{self.class.name} response=#{@response.inspect}>"
         end
 
-        # This _begins_ the execution. Some deferred work
-        # might be stored up in lazies.
         # @return [void]
         def run_eager
-          root_operation = query.selected_operation
-          root_op_type = root_operation.operation_type || "query"
-          root_type = schema.root_type_for_operation(root_op_type)
-          runtime_object = root_type.wrap(query.root_value, context)
-          runtime_object = schema.sync_lazy(runtime_object)
-          is_eager = root_op_type == "mutation"
-          @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, root_operation.selections, is_eager, root_operation, nil, nil)
-          st = get_current_runtime_state
-          st.current_result = @response
-
-          if runtime_object.nil?
-            # Root .authorized? returned false.
-            @response = nil
+          root_type = query.root_type
+          case query
+          when GraphQL::Query
+            ast_node = query.selected_operation
+            selections = ast_node.selections
+            object = query.root_value
+            is_eager = ast_node.operation_type == "mutation"
+          when GraphQL::Query::Partial
+            ast_node = query.ast_nodes.first
+            selections = query.ast_nodes.map(&:selections).inject(&:+)
+            object = partial.object
+            is_eager = false
           else
-            call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-              each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
-                @response.ordered_result_keys ||= ordered_result_keys
-                if is_selection_array
-                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager, root_operation, nil, nil)
-                  selection_response.ordered_result_keys = ordered_result_keys
-                  final_response = @response
-                else
-                  selection_response = @response
-                  final_response = nil
-                end
-
-                @dataloader.append_job {
-                  evaluate_selections(
-                    selections,
-                    selection_response,
-                    final_response,
-                    nil,
-                  )
-                }
-              end
-            end
+            raise ArgumentError, "Unexpected Runnable, can't execute: #{query.class} (#{query.inspect})"
           end
-          nil
-        end
-
-        # @return [void]
-        def run_partial_eager
-          # `query` is actually a GraphQL::Query::Partial
-          partial = query
-          root_type = partial.root_type
-          object = partial.object
-          selections = partial.ast_nodes.map(&:selections).inject(&:+)
           runtime_state = get_current_runtime_state
           case root_type.kind.name
           when "OBJECT"
             object_proxy = root_type.wrap(object, context)
             object_proxy = schema.sync_lazy(object_proxy)
-            @response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, false, partial.ast_nodes.first, nil, nil)
-            each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
-              @response.ordered_result_keys ||= ordered_result_keys
-              if is_selection_array == true
-                raise "This isn't supported yet"
-              end
+            if object_proxy.nil?
+              @response = nil
+            else
+              @response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, is_eager, ast_node, nil, nil)
+              runtime_state.current_result = @response
+              call_method_on_directives(:resolve, object, ast_node.directives) do
+                each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
+                  @response.ordered_result_keys ||= ordered_result_keys
+                  if is_selection_array
+                    selection_response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, is_eager, ast_node, nil, nil)
+                    selection_response.ordered_result_keys = ordered_result_keys
+                    final_response = @response
+                  else
+                    selection_response = @response
+                    final_response = nil
+                  end
 
-              @dataloader.append_job {
-                evaluate_selections(
-                  selections,
-                  @response,
-                  nil,
-                  runtime_state,
-                )
-              }
+                  @dataloader.append_job {
+                    evaluate_selections(
+                      selections,
+                      selection_response,
+                      final_response,
+                      nil,
+                    )
+                  }
+                end
+              end
             end
           when "LIST"
             inner_type = root_type.unwrap
             case inner_type.kind.name
             when "SCALAR", "ENUM"
-              parent_object_proxy = partial.parent_type.wrap(object, context)
+              parent_object_proxy = query.parent_type.wrap(object, context)
               parent_object_proxy = schema.sync_lazy(parent_object_proxy)
-              field_node = partial.ast_nodes.first
+              field_node = query.ast_nodes.first
               result_name = field_node.alias || field_node.name
-              @response = GraphQLResultHash.new(nil, partial.parent_type, parent_object_proxy, nil, false, nil, false, field_node, nil, nil)
+              @response = GraphQLResultHash.new(nil, query.parent_type, parent_object_proxy, nil, false, nil, false, field_node, nil, nil)
               @response.ordered_result_keys = [result_name]
-              evaluate_selection(result_name, partial.ast_nodes, @response)
+              evaluate_selection(result_name, query.ast_nodes, @response)
             else
               @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false, field_node, nil, nil)
               idx = nil
@@ -165,23 +143,23 @@ module GraphQL
               end
             end
           when "SCALAR", "ENUM"
-            parent_type = partial.parent_type
+            parent_type = query.parent_type
             # TODO what if not object type? Maybe returns a lazy here.
             parent_object_type, object = resolve_type(parent_type, object)
             parent_object_proxy = parent_object_type.wrap(object, context)
             parent_object_proxy = schema.sync_lazy(parent_object_proxy)
-            field_node = partial.ast_nodes.first
+            field_node = query.ast_nodes.first
             result_name = field_node.alias || field_node.name
             @response = GraphQLResultHash.new(nil, parent_object_type, parent_object_proxy, nil, false, selections, false, field_node, nil, nil)
             @response.ordered_result_keys = [result_name]
             @dataloader.append_job do
-              evaluate_selection(result_name, partial.ast_nodes, @response)
+              evaluate_selection(result_name, query.ast_nodes, @response)
             end
           when "UNION", "INTERFACE"
             resolved_type, _resolved_obj = resolve_type(root_type, object) # TODO lazy, errors
             object_proxy = resolved_type.wrap(object, context)
             object_proxy = schema.sync_lazy(object_proxy)
-            @response = GraphQLResultHash.new(nil, resolved_type, object_proxy, nil, false, selections, false, partial.ast_nodes.first, nil, nil)
+            @response = GraphQLResultHash.new(nil, resolved_type, object_proxy, nil, false, selections, false, query.ast_nodes.first, nil, nil)
             each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
               @response.ordered_result_keys ||= ordered_result_keys
               if is_selection_array == true

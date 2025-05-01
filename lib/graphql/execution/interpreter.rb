@@ -160,7 +160,7 @@ module GraphQL
               runtime = Runtime.new(query: partial, lazies_at_depth: lazies_at_depth)
               partial.context.namespace(:interpreter_runtime)[:runtime] = runtime
               partial.current_trace.execute_query(query: partial) do
-                runtime.run_partial_eager
+                runtime.run_eager
               end
             }
           end

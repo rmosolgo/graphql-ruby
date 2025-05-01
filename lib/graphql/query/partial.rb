@@ -32,7 +32,7 @@ module GraphQL
         @result_values = nil
         @result = nil
         selections = [@query.selected_operation]
-        type = @query.root_type_for_operation(@query.selected_operation.operation_type)
+        type = @query.root_type
         parent_type = nil
         field_defn = nil
         @path.each do |name_in_doc|
