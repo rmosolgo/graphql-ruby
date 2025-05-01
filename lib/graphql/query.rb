@@ -237,14 +237,7 @@ module GraphQL
         if ast_node.nil?
           GraphQL::Execution::Lookahead::NULL_LOOKAHEAD
         else
-          root_type = case ast_node.operation_type
-          when nil, "query"
-            types.query_root # rubocop:disable Development/ContextIsPassedCop
-          when "mutation"
-            types.mutation_root # rubocop:disable Development/ContextIsPassedCop
-          when "subscription"
-            types.subscription_root # rubocop:disable Development/ContextIsPassedCop
-          end
+          root_type = root_type_for_operation(ast_node.operation_type)
           GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
         end
       end
@@ -391,14 +384,14 @@ module GraphQL
 
     def root_type_for_operation(op_type)
       case op_type
-      when "query"
+      when "query", nil
         types.query_root # rubocop:disable Development/ContextIsPassedCop
       when "mutation"
         types.mutation_root # rubocop:disable Development/ContextIsPassedCop
       when "subscription"
         types.subscription_root # rubocop:disable Development/ContextIsPassedCop
       else
-        raise ArgumentError, "unexpected root type name: #{op_type.inspect}; expected 'query', 'mutation', or 'subscription'"
+        raise ArgumentError, "unexpected root type name: #{op_type.inspect}; expected nil, 'query', 'mutation', or 'subscription'"
       end
     end
 

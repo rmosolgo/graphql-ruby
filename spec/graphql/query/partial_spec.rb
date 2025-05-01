@@ -105,7 +105,18 @@ describe GraphQL::Query::Partial do
       end
     end
 
+    class Mutation < GraphQL::Schema::Object
+      field :update_farm, Farm do
+        argument :name, String
+      end
+
+      def update_farm(name:)
+        { name: name }
+      end
+    end
+
     query(Query)
+    mutation(Mutation)
 
     def self.object_from_id(id, ctx)
       ctx.dataloader.with(FarmSource).load(id)
@@ -318,6 +329,28 @@ describe GraphQL::Query::Partial do
     assert_equal({ "name" => "Crozet Farmers Market", "__typename" => "Market" }, results[1]["data"])
   end
 
+  it "runs scalars on abstract types" do
+    str = "{
+      entity {
+        name
+        __typename
+      }
+    }"
+
+    results = run_partials(str, [
+      { path: ["entity", "name"], object: { name: "Whisper Hill" } },
+      { path: ["entity", "__typename"], object: { name: "Whisper Hill" } },
+
+      { path: ["entity", "name"], object: { is_market: true, name: "Crozet Farmers Market" } },
+      { path: ["entity", "__typename"], object: { is_market: true, name: "Crozet Farmers Market" } },
+    ])
+
+    assert_equal({ "name" => "Whisper Hill"}, results[0]["data"])
+    assert_equal({ "__typename" => "Farm"}, results[1]["data"])
+    assert_equal({ "name" => "Crozet Farmers Market" }, results[2]["data"])
+    assert_equal({ "__typename" => "Market" }, results[3]["data"])
+  end
+
   it "accepts custom context" do
     str = "{ readContext(key: \"custom\") }"
     results = run_partials(str, [
@@ -328,5 +361,18 @@ describe GraphQL::Query::Partial do
     assert_equal "one", results[0]["data"]["readContext"]
     assert_equal "two", results[1]["data"]["readContext"]
     assert_equal "three", results[2]["data"]["readContext"]
+  end
+
+  it "runs partials on mutation root" do
+    str = "mutation { updateFarm(name: \"Brawndo Acres\") { name } }"
+    results = run_partials(str, [
+      { path: [], object: nil },
+      { path: ["updateFarm"], object: { name: "Georgetown Farm" } },
+      { path: ["updateFarm", "name"], object: { name: "Notta Farm" } },
+    ])
+
+    assert_equal({ "updateFarm" => { "name" => "Brawndo Acres" } }, results[0]["data"])
+    assert_equal({ "name" => "Georgetown Farm" }, results[1]["data"])
+    assert_equal({ "name" => "Notta Farm" }, results[2]["data"])
   end
 end

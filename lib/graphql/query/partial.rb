@@ -32,7 +32,7 @@ module GraphQL
         @result_values = nil
         @result = nil
         selections = [@query.selected_operation]
-        type = @query.schema.query # TODO could be other?
+        type = @query.root_type_for_operation(@query.selected_operation.operation_type)
         parent_type = nil
         field_defn = nil
         @path.each do |name_in_doc|
@@ -70,7 +70,7 @@ module GraphQL
             raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
           end
           field_name = next_selections.first.name
-          field_defn = type.get_field(field_name, @query.context) || raise("Invariant: no field called #{field_name} on #{type.graphql_name}")
+          field_defn = @schema.get_field(type, field_name, @query.context) || raise("Invariant: no field called #{field_name} on #{type.graphql_name}")
           parent_type = type
           type = field_defn.type
           if type.non_null?
