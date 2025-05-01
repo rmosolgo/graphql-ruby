@@ -144,8 +144,8 @@ module GraphQL
             end
           when "SCALAR", "ENUM"
             parent_type = query.parent_type
-            # TODO what if not object type? Maybe returns a lazy here.
             parent_object_type, object = resolve_type(parent_type, object)
+            parent_object_type = schema.sync_lazy(parent_object_type)
             parent_object_proxy = parent_object_type.wrap(object, context)
             parent_object_proxy = schema.sync_lazy(parent_object_proxy)
             field_node = query.ast_nodes.first
@@ -156,7 +156,8 @@ module GraphQL
               evaluate_selection(result_name, query.ast_nodes, @response)
             end
           when "UNION", "INTERFACE"
-            resolved_type, _resolved_obj = resolve_type(root_type, object) # TODO lazy, errors
+            resolved_type, _resolved_obj = resolve_type(root_type, object)
+            resolved_type = schema.sync_lazy(resolved_type)
             object_proxy = resolved_type.wrap(object, context)
             object_proxy = schema.sync_lazy(object_proxy)
             @response = GraphQLResultHash.new(nil, resolved_type, object_proxy, nil, false, selections, false, query.ast_nodes.first, nil, nil)
