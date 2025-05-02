@@ -179,11 +179,10 @@ describe GraphQL::Query::Partial do
     ])
 
 
-    assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>2, "column"=>30}], "path"=>["error"]}], results[0]["errors"]
+    assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>2, "column"=>30}], "path"=>["farm1", "error"]}], results[0]["errors"]
     refute results[1].key?("errors")
-    assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>4, "column"=>35}], "path"=>["fieldError"]}], results[2]["errors"]
-    assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>7, "column"=>11}], "path"=>["neighboringFarm", "error"]}], results[3]["errors"]
-
+    assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>4, "column"=>35}], "path"=>["farm3", "fieldError"]}], results[2]["errors"]
+    assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>7, "column"=>11}], "path"=>["farm4", "neighboringFarm", "error"]}], results[3]["errors"]
     assert_equal({ "error" => nil }, results[0]["data"])
     assert_equal({ "name" => "Henley's Orchard" }, results[1]["data"])
     assert_equal({ "name" => "Wenger Grapes", "fieldError" => nil }, results[2]["data"])
@@ -251,9 +250,14 @@ describe GraphQL::Query::Partial do
     results = run_partials(str, [
       { path: ["query", "farmNames", 0], object: "Twenty Paces" },
       { path: ["query", "farmNames", 1], object: "Caromont" },
+      { path: ["query", "farmNames", 2], object: GraphQL::ExecutionError.new("Boom!") },
     ])
     assert_equal "Twenty Paces", results[0]["data"]
     assert_equal "Caromont", results[1]["data"]
+    assert_equal({
+      "errors" => [{"message" => "Boom!", "locations" => [{"line" => 1, "column" => 11}], "path" => ["query", "farmNames", 2, "farmNames"]}],
+      "data" => nil
+    }, results[2])
   end
 
   it "merges selections when path steps are duplicated" do
@@ -373,6 +377,8 @@ describe GraphQL::Query::Partial do
     assert_equal "three", results[2]["data"]["readContext"]
   end
 
+  it "returns a full context"
+
   it "runs partials on mutation root" do
     str = "mutation { updateFarm(name: \"Brawndo Acres\") { name } }"
     results = run_partials(str, [
@@ -384,5 +390,28 @@ describe GraphQL::Query::Partial do
     assert_equal({ "updateFarm" => { "name" => "Brawndo Acres" } }, results[0]["data"])
     assert_equal({ "name" => "Georgetown Farm" }, results[1]["data"])
     assert_equal("Notta Farm", results[2]["data"])
+  end
+
+  it "handles errors on scalars" do
+    str = "{
+      entity {
+        name
+        __typename
+      }
+    }"
+
+    results = run_partials(str, [
+      { path: ["entity"], object: { name: GraphQL::ExecutionError.new("Boom!") } },
+      { path: ["entity", "name"], object: GraphQL::ExecutionError.new("Bang!") },
+    ])
+
+    assert_equal({
+      "errors" => [{"message" => "Boom!", "locations" => [{"line" => 3, "column" => 9}], "path" => ["entity", "name"]}],
+      "data" => { "name" => nil, "__typename" => "Farm" }
+    }, results[0])
+    assert_equal({
+      "errors" => [{"message" => "Bang!", "locations" => [{"line" => 3, "column" => 9}], "path" => ["entity", "name", "name"]}],
+      "data" => nil
+    }, results[1])
   end
 end

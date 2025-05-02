@@ -73,11 +73,13 @@ module GraphQL
             selections = ast_node.selections
             object = query.root_value
             is_eager = ast_node.operation_type == "mutation"
+            base_path = nil
           when GraphQL::Query::Partial
             ast_node = query.ast_nodes.first
             selections = query.ast_nodes.map(&:selections).inject(&:+)
             object = query.object
             is_eager = false
+            base_path = query.path
           else
             raise ArgumentError, "Unexpected Runnable, can't execute: #{query.class} (#{query.inspect})"
           end
@@ -91,6 +93,7 @@ module GraphQL
               @response = nil
             else
               @response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, is_eager, ast_node, nil, nil)
+              @response.base_path = base_path
               runtime_state.current_result = @response
               call_method_on_directives(:resolve, object, ast_node.directives) do
                 each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
@@ -122,14 +125,20 @@ module GraphQL
               result_name = ast_node.alias || ast_node.name
               owner_type = query.field_definition.owner
               selection_result = GraphQLResultHash.new(nil, owner_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
+              selection_result.base_path = base_path
               selection_result.ordered_result_keys = [result_name]
               runtime_state = get_current_runtime_state
               runtime_state.current_result = selection_result
               runtime_state.current_result_name = result_name
-              continue_field(object, owner_type, query.field_definition, root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
+              field_defn = query.field_definition
+              continue_value = continue_value(object, field_defn, false, ast_node, result_name, selection_result)
+              if HALT != continue_value
+                continue_field(continue_value, owner_type, field_defn, root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
+              end
               @response = selection_result[result_name]
             else
               @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false, ast_node, nil, nil)
+              @response.base_path = base_path
               idx = nil
               object.each do |inner_value|
                 idx ||= 0
@@ -150,11 +159,15 @@ module GraphQL
             owner_type = query.field_definition.owner
             selection_result = GraphQLResultHash.new(nil, query.parent_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
             selection_result.ordered_result_keys = [result_name]
+            selection_result.base_path = base_path
             runtime_state = get_current_runtime_state
             runtime_state.current_result = selection_result
             runtime_state.current_result_name = result_name
-
-            continue_field(object, owner_type, query.field_definition, query.root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
+            field_defn = query.field_definition
+            continue_value = continue_value(object, field_defn, false, ast_node, result_name, selection_result)
+            if HALT != continue_value
+              continue_field(continue_value, owner_type, field_defn, query.root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
+            end
             @response = selection_result[result_name]
           when "UNION", "INTERFACE"
             resolved_type, _resolved_obj = resolve_type(root_type, object)
@@ -162,6 +175,7 @@ module GraphQL
             object_proxy = resolved_type.wrap(object, context)
             object_proxy = schema.sync_lazy(object_proxy)
             @response = GraphQLResultHash.new(nil, resolved_type, object_proxy, nil, false, selections, false, query.ast_nodes.first, nil, nil)
+            @response.base_path = base_path
             each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
               @response.ordered_result_keys ||= ordered_result_keys
               if is_selection_array == true
