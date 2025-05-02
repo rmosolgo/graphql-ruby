@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.3/">API</a>
+            <a href="/api-doc/2.5.5/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -222,7 +222,7 @@
   <span class="k">def</span> <span class="nf">execute</span>
     <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
       <span class="c1"># ...</span>
-      <span class="ss">changeset_version: </span><span class="n">headers</span><span class="p">[</span><span class="s2">"API-Version"</span><span class="p">],</span> <span class="c1"># &lt;- Your header here. Choose something for API clients to pass.</span>
+      <span class="ss">changeset_version: </span><span class="n">request</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s2">"API-Version"</span><span class="p">],</span> <span class="c1"># &lt;- Your header here. Choose something for API clients to pass.</span>
     <span class="p">}</span>
     <span class="n">result</span> <span class="o">=</span> <span class="no">MyAppSchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
     <span class="c1"># ...</span>
