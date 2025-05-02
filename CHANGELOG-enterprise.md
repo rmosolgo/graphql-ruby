@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.5.7 (2 May 2025)
+
+- ObjectCache: Use Rails's `.cache_key_with_version` in `CacheableRelation` for proper cache busting
+
 # 1.5.6 (13 Dec 2024)
 
 - ObjectCache: Add `CacheableRelation` helper for top-level ActiveRecord relations
