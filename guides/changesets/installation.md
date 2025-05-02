@@ -71,7 +71,7 @@ class GraphqlController < ApplicationController
   def execute
     context = {
       # ...
-      changeset_version: headers["API-Version"], # <- Your header here. Choose something for API clients to pass.
+      changeset_version: request.headers["API-Version"], # <- Your header here. Choose something for API clients to pass.
     }
     result = MyAppSchema.execute(..., context: context)
     # ...
