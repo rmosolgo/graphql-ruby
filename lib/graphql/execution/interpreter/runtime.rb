@@ -57,7 +57,7 @@ module GraphQL
         end
 
         def final_result
-          @response && @response.graphql_result_data
+          @response.respond_to?(:graphql_result_data) ? @response.graphql_result_data : @response
         end
 
         def inspect
@@ -81,6 +81,7 @@ module GraphQL
           else
             raise ArgumentError, "Unexpected Runnable, can't execute: #{query.class} (#{query.inspect})"
           end
+          object = schema.sync_lazy(object) # TODO test query partial with lazy root object
           runtime_state = get_current_runtime_state
           case root_type.kind.name
           when "OBJECT"
@@ -118,15 +119,17 @@ module GraphQL
             inner_type = root_type.unwrap
             case inner_type.kind.name
             when "SCALAR", "ENUM"
-              parent_object_proxy = query.parent_type.wrap(object, context)
-              parent_object_proxy = schema.sync_lazy(parent_object_proxy)
-              field_node = query.ast_nodes.first
-              result_name = field_node.alias || field_node.name
-              @response = GraphQLResultHash.new(nil, query.parent_type, parent_object_proxy, nil, false, nil, false, field_node, nil, nil)
-              @response.ordered_result_keys = [result_name]
-              evaluate_selection(result_name, query.ast_nodes, @response)
+              result_name = ast_node.alias || ast_node.name
+              owner_type = query.field_definition.owner
+              selection_result = GraphQLResultHash.new(nil, owner_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
+              selection_result.ordered_result_keys = [result_name]
+              runtime_state = get_current_runtime_state
+              runtime_state.current_result = selection_result
+              runtime_state.current_result_name = result_name
+              continue_field(object, owner_type, query.field_definition, root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
+              @response = selection_result[result_name]
             else
-              @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false, field_node, nil, nil)
+              @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false, ast_node, nil, nil)
               idx = nil
               object.each do |inner_value|
                 idx ||= 0
@@ -143,18 +146,16 @@ module GraphQL
               end
             end
           when "SCALAR", "ENUM"
-            parent_type = query.parent_type
-            parent_object_type, object = resolve_type(parent_type, object)
-            parent_object_type = schema.sync_lazy(parent_object_type)
-            parent_object_proxy = parent_object_type.wrap(object, context)
-            parent_object_proxy = schema.sync_lazy(parent_object_proxy)
-            field_node = query.ast_nodes.first
-            result_name = field_node.alias || field_node.name
-            @response = GraphQLResultHash.new(nil, parent_object_type, parent_object_proxy, nil, false, selections, false, field_node, nil, nil)
-            @response.ordered_result_keys = [result_name]
-            @dataloader.append_job do
-              evaluate_selection(result_name, query.ast_nodes, @response)
-            end
+            result_name = ast_node.alias || ast_node.name
+            owner_type = query.field_definition.owner
+            selection_result = GraphQLResultHash.new(nil, query.parent_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
+            selection_result.ordered_result_keys = [result_name]
+            runtime_state = get_current_runtime_state
+            runtime_state.current_result = selection_result
+            runtime_state.current_result_name = result_name
+
+            continue_field(object, owner_type, query.field_definition, query.root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
+            @response = selection_result[result_name]
           when "UNION", "INTERFACE"
             resolved_type, _resolved_obj = resolve_type(root_type, object)
             resolved_type = schema.sync_lazy(resolved_type)

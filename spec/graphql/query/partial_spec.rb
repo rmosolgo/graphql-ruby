@@ -38,7 +38,7 @@ describe GraphQL::Query::Partial do
     class FarmProduct < GraphQL::Schema::Enum
       value :FRUIT
       value :VEGETABLES
-      value :MEAT
+      value :MEAT, value: :__MEAT__
       value :EGGS
       value :DAIRY
     end
@@ -84,6 +84,8 @@ describe GraphQL::Query::Partial do
       def farm(farm:)
         farm
       end
+
+      field :farm_names, [String], fallback_value: Database::FARMS.each_value.map(&:name)
 
       field :query, Query, fallback_value: true
 
@@ -148,7 +150,7 @@ describe GraphQL::Query::Partial do
     results = run_partials(str, [
       { path: ["farm1"], object: PartialSchema::Database::FARMS["1"] },
       { path: ["farm2"], object: OpenStruct.new(name: "Injected Farm") },
-      { path: ["farms", 0], object: { name: "Kestrel Hollow", products: ["MEAT", "EGGS"]} },
+      { path: ["farms", 0], object: { name: "Kestrel Hollow", products: [:__MEAT__, "EGGS"]} },
     ])
 
     assert_equal [
@@ -244,6 +246,16 @@ describe GraphQL::Query::Partial do
     refute result.partial.leaf?
   end
 
+  it "works on lists of scalars" do
+    str = "{ query { farmNames } }"
+    results = run_partials(str, [
+      { path: ["query", "farmNames", 0], object: "Twenty Paces" },
+      { path: ["query", "farmNames", 1], object: "Caromont" },
+    ])
+    assert_equal "Twenty Paces", results[0]["data"]
+    assert_equal "Caromont", results[1]["data"]
+  end
+
   it "merges selections when path steps are duplicated" do
     str = <<-GRAPHQL
       {
@@ -286,10 +298,10 @@ describe GraphQL::Query::Partial do
   it "runs partials on scalars and enums" do
     str = "{ farm(id: \"BLAH\") { name products } }"
     results = run_partials(str, [
-      { path: ["farm", "name"], object: { name: "Polyface" } },
-      { path: ["farm", "products"], object: { products: ["MEAT"] } },
+      { path: ["farm", "name"], object: "Polyface" },
+      { path: ["farm", "products"], object: [:__MEAT__] },
     ])
-    assert_equal [{"name" => "Polyface"}, { "products" => ["MEAT"] }], results.map { |r| r["data"] }
+    assert_equal ["Polyface", ["MEAT"]], results.map { |r| r["data"] }
 
     assert results[0].partial.leaf?
     assert results[1].partial.leaf?
@@ -339,17 +351,14 @@ describe GraphQL::Query::Partial do
     }"
 
     results = run_partials(str, [
-      { path: ["entity", "name"], object: { name: "Whisper Hill" } },
-      { path: ["entity", "__typename"], object: { name: "Whisper Hill" } },
-
-      { path: ["entity", "name"], object: { is_market: true, name: "Crozet Farmers Market" } },
-      { path: ["entity", "__typename"], object: { is_market: true, name: "Crozet Farmers Market" } },
+      { path: ["entity", "name"], object: "Whisper Hill" },
+      { path: ["entity", "__typename"], object: "Farm" },
+      { path: ["entity", "name"], object: "Crozet Farmers Market" },
     ])
 
-    assert_equal({ "name" => "Whisper Hill"}, results[0]["data"])
-    assert_equal({ "__typename" => "Farm"}, results[1]["data"])
-    assert_equal({ "name" => "Crozet Farmers Market" }, results[2]["data"])
-    assert_equal({ "__typename" => "Market" }, results[3]["data"])
+    assert_equal("Whisper Hill", results[0]["data"])
+    assert_equal("Farm", results[1]["data"])
+    assert_equal("Crozet Farmers Market", results[2]["data"])
   end
 
   it "accepts custom context" do
@@ -369,11 +378,11 @@ describe GraphQL::Query::Partial do
     results = run_partials(str, [
       { path: [], object: nil },
       { path: ["updateFarm"], object: { name: "Georgetown Farm" } },
-      { path: ["updateFarm", "name"], object: { name: "Notta Farm" } },
+      { path: ["updateFarm", "name"], object: "Notta Farm" },
     ])
 
     assert_equal({ "updateFarm" => { "name" => "Brawndo Acres" } }, results[0]["data"])
     assert_equal({ "name" => "Georgetown Farm" }, results[1]["data"])
-    assert_equal({ "name" => "Notta Farm" }, results[2]["data"])
+    assert_equal("Notta Farm", results[2]["data"])
   end
 end
