@@ -11,6 +11,7 @@ on:
         description: "Publish guides to website?"
         type: boolean
         required: true
+        default: true
       publish_version:
         description: "If present, pull this GraphQL-Ruby version to rebuild API docs"
         required: false
@@ -19,7 +20,7 @@ on:
 permissions: {}
 jobs:
   website:
-    if: ${{ inputs.publish_website }}
+    if: ${{ inputs.publish_website || github.ref_name }}
     permissions:
       contents: write # for git push (s0/git-publish-subdir-action)
     name: Publish Website
