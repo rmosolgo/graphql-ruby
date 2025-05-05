@@ -1,24 +1,24 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.5/GraphQL/Query" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.6/GraphQL/Query" />
   </head>
   <body>
     <p>Class: GraphQL::Query &lt; Object
 A combination of query string and Schema instance which can be
 reduced to a #result. 
 Includes:
-GraphQL::Tracing::Traceable
+GraphQL::Query::Runnable, GraphQL::Tracing::Traceable
 Extended by:
 GraphQL::Autoload, Forwardable
 Instance methods:
-after_lazy, arguments_cache, arguments_for, current_trace, document,
-executed?, find_operation, fingerprint, fragments, get_field,
-get_type, handle_or_reraise, initialize, inspect, lookahead,
+current_trace, document, executed?, find_operation, fingerprint,
+fragments, get_field, get_type, initialize, inspect, lookahead,
 mutation?, operation_fingerprint, operations, possible_types,
-prepare_ast, query?, resolve_type, result, root_type_for_operation,
-sanitized_query_string, selected_operation, selected_operation_name,
-static_errors, subscription?, subscription_update?, types, valid?,
+prepare_ast, query?, resolve_type, result, root_type,
+root_type_for_operation, run_partials, sanitized_query_string,
+selected_operation, selected_operation_name, static_errors,
+subscription?, subscription_update?, types, valid?,
 validation_pipeline, variables, variables_fingerprint, warden,
 with_prepared_ast</p>
 

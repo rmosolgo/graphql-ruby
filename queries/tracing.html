@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.5/">API</a>
+            <a href="/api-doc/2.5.6/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -163,7 +163,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p><a href="/api-doc/2.5.5/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a> provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with <a href="/api-doc/2.5.5/GraphQL/Schema#trace_with-class_method" target="_blank" title="API docs for GraphQL::Schema.trace_with"><code>Schema.trace_with</code></a>.</p>
+  <p><a href="/api-doc/2.5.6/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a> provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with <a href="/api-doc/2.5.6/GraphQL/Schema#trace_with-class_method" target="_blank" title="API docs for GraphQL::Schema.trace_with"><code>Schema.trace_with</code></a>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">CustomTrace</span>
   <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">query_string</span><span class="p">:)</span>
@@ -183,35 +183,35 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>For a full list of methods and their arguments, see <a href="/api-doc/2.5.5/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a>.</p>
+<p>For a full list of methods and their arguments, see <a href="/api-doc/2.5.6/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a>.</p>
 
 <p>By default, GraphQL-Ruby makes a new trace instance when it runs a query. You can pass an existing instance as <code class="language-plaintext highlighter-rouge">context: { trace: ... }</code>. Also, <code class="language-plaintext highlighter-rouge">GraphQL.parse( ..., trace: ...)</code> accepts a trace instance.</p>
 
 <h2 id="detailed-traces">Detailed Traces</h2>
 
-<p>You can capture detailed traces of query execution with <a href="/api-doc/2.5.5/GraphQL/Tracing/DetailedTrace" target="_blank" title="API docs for GraphQL::Tracing::DetailedTrace"><code>Tracing::DetailedTrace</code></a>. They can be viewed in Google’s <a href="https://ui.perfetto.dev">Perfetto Trace Viewer</a>. They include a per-Fiber breakdown with links between fields and Dataloader sources.</p>
+<p>You can capture detailed traces of query execution with <a href="/api-doc/2.5.6/GraphQL/Tracing/DetailedTrace" target="_blank" title="API docs for GraphQL::Tracing::DetailedTrace"><code>Tracing::DetailedTrace</code></a>. They can be viewed in Google’s <a href="https://ui.perfetto.dev">Perfetto Trace Viewer</a>. They include a per-Fiber breakdown with links between fields and Dataloader sources.</p>
 
 <p><a href="/queries/perfetto_example.png" target="_blank" class="img-link">
   <img src="/queries/perfetto_example.png" title="GraphQL-Ruby Dataloader Perfetto Trace" alt="GraphQL-Ruby Dataloader Perfetto Trace" />
 </a></p>
 
-<p>Learn how to set it up in the <a href="/api-doc/2.5.5/GraphQL/Tracing/DetailedTrace" target="_blank" title="API docs for GraphQL::Tracing::DetailedTrace"><code>Tracing::DetailedTrace</code></a> docs.</p>
+<p>Learn how to set it up in the <a href="/api-doc/2.5.6/GraphQL/Tracing/DetailedTrace" target="_blank" title="API docs for GraphQL::Tracing::DetailedTrace"><code>Tracing::DetailedTrace</code></a> docs.</p>
 
 <h2 id="external-monitoring-platforms">External Monitoring Platforms</h2>
 
 <p>There integrations for GraphQL-Ruby with several other monitoring systems:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">ActiveSupport::Notifications</code>: See <a href="/api-doc/2.5.5/GraphQL/Tracing/ActiveSupportNotificationsTrace" target="_blank" title="API docs for GraphQL::Tracing::ActiveSupportNotificationsTrace"><code>Tracing::ActiveSupportNotificationsTrace</code></a>.</li>
+  <li><code class="language-plaintext highlighter-rouge">ActiveSupport::Notifications</code>: See <a href="/api-doc/2.5.6/GraphQL/Tracing/ActiveSupportNotificationsTrace" target="_blank" title="API docs for GraphQL::Tracing::ActiveSupportNotificationsTrace"><code>Tracing::ActiveSupportNotificationsTrace</code></a>.</li>
   <li><a href="https://appoptics.com/">AppOptics</a> instrumentation is automatic in <code class="language-plaintext highlighter-rouge">appoptics_apm</code> v4.11.0+.</li>
-  <li><a href="https://appsignal.com/">AppSignal</a>: See <a href="/api-doc/2.5.5/GraphQL/Tracing/AppsignalTrace" target="_blank" title="API docs for GraphQL::Tracing::AppsignalTrace"><code>Tracing::AppsignalTrace</code></a>.</li>
-  <li><a href="https://www.datadoghq.com">Datadog</a>: See <a href="/api-doc/2.5.5/GraphQL/Tracing/DataDogTrace" target="_blank" title="API docs for GraphQL::Tracing::DataDogTrace"><code>Tracing::DataDogTrace</code></a>.</li>
-  <li><a href="https://newrelic.com/">NewRelic</a>: See <a href="/api-doc/2.5.5/GraphQL/Tracing/NewRelicTrace" target="_blank" title="API docs for GraphQL::Tracing::NewRelicTrace"><code>Tracing::NewRelicTrace</code></a>.</li>
-  <li><a href="https://prometheus.io">Prometheus</a>: See <a href="/api-doc/2.5.5/GraphQL/Tracing/PrometheusTrace" target="_blank" title="API docs for GraphQL::Tracing::PrometheusTrace"><code>Tracing::PrometheusTrace</code></a>.</li>
-  <li><a href="https://scoutapp.com/">Scout APM</a>: See <a href="/api-doc/2.5.5/GraphQL/Tracing/ScoutTrace" target="_blank" title="API docs for GraphQL::Tracing::ScoutTrace"><code>Tracing::ScoutTrace</code></a>.</li>
-  <li><a href="https://sentry.io">Sentry</a>: See <a href="/api-doc/2.5.5/GraphQL/Tracing/SentryTrace" target="_blank" title="API docs for GraphQL::Tracing::SentryTrace"><code>Tracing::SentryTrace</code></a>.</li>
-  <li><a href="https://www.skylight.io">Skylight</a>:  either enable the <a href="https://www.skylight.io/support/getting-more-from-skylight#graphql">GraphQL probe</a> or use <a href="/api-doc/2.5.5/GraphQL/Tracing/ActiveSupportNotificationsTrace" target="_blank" title="API docs for GraphQL::Tracing::ActiveSupportNotificationsTrace"><code>Tracing::ActiveSupportNotificationsTrace</code></a>.</li>
-  <li>Statsd: See <a href="/api-doc/2.5.5/GraphQL/Tracing/StatsdTrace" target="_blank" title="API docs for GraphQL::Tracing::StatsdTrace"><code>Tracing::StatsdTrace</code></a>.</li>
+  <li><a href="https://appsignal.com/">AppSignal</a>: See <a href="/api-doc/2.5.6/GraphQL/Tracing/AppsignalTrace" target="_blank" title="API docs for GraphQL::Tracing::AppsignalTrace"><code>Tracing::AppsignalTrace</code></a>.</li>
+  <li><a href="https://www.datadoghq.com">Datadog</a>: See <a href="/api-doc/2.5.6/GraphQL/Tracing/DataDogTrace" target="_blank" title="API docs for GraphQL::Tracing::DataDogTrace"><code>Tracing::DataDogTrace</code></a>.</li>
+  <li><a href="https://newrelic.com/">NewRelic</a>: See <a href="/api-doc/2.5.6/GraphQL/Tracing/NewRelicTrace" target="_blank" title="API docs for GraphQL::Tracing::NewRelicTrace"><code>Tracing::NewRelicTrace</code></a>.</li>
+  <li><a href="https://prometheus.io">Prometheus</a>: See <a href="/api-doc/2.5.6/GraphQL/Tracing/PrometheusTrace" target="_blank" title="API docs for GraphQL::Tracing::PrometheusTrace"><code>Tracing::PrometheusTrace</code></a>.</li>
+  <li><a href="https://scoutapp.com/">Scout APM</a>: See <a href="/api-doc/2.5.6/GraphQL/Tracing/ScoutTrace" target="_blank" title="API docs for GraphQL::Tracing::ScoutTrace"><code>Tracing::ScoutTrace</code></a>.</li>
+  <li><a href="https://sentry.io">Sentry</a>: See <a href="/api-doc/2.5.6/GraphQL/Tracing/SentryTrace" target="_blank" title="API docs for GraphQL::Tracing::SentryTrace"><code>Tracing::SentryTrace</code></a>.</li>
+  <li><a href="https://www.skylight.io">Skylight</a>:  either enable the <a href="https://www.skylight.io/support/getting-more-from-skylight#graphql">GraphQL probe</a> or use <a href="/api-doc/2.5.6/GraphQL/Tracing/ActiveSupportNotificationsTrace" target="_blank" title="API docs for GraphQL::Tracing::ActiveSupportNotificationsTrace"><code>Tracing::ActiveSupportNotificationsTrace</code></a>.</li>
+  <li>Statsd: See <a href="/api-doc/2.5.6/GraphQL/Tracing/StatsdTrace" target="_blank" title="API docs for GraphQL::Tracing::StatsdTrace"><code>Tracing::StatsdTrace</code></a>.</li>
 </ul>
 
 </div>
