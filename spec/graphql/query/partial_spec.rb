@@ -105,6 +105,11 @@ describe GraphQL::Query::Partial do
       def read_context(key:)
         -> { context[key].to_s }
       end
+
+      field :current_path, [String]
+      def current_path
+        context.current_path
+      end
     end
 
     class Mutation < GraphQL::Schema::Object
@@ -209,7 +214,7 @@ describe GraphQL::Query::Partial do
     }"
     results = run_partials(str, [
       { path: ["farm"], object: PartialSchema::Database::FARMS["1"] },
-      { path: ["farm"], object: OpenStruct.new(name: "Injected Farm") }
+      { path: ["farm"], object: -> { OpenStruct.new(name: "Injected Farm") } }
     ])
 
     assert_equal [
@@ -304,11 +309,13 @@ describe GraphQL::Query::Partial do
     results = run_partials(str, [
       { path: ["farm", "name"], object: "Polyface" },
       { path: ["farm", "products"], object: [:__MEAT__] },
+      { path: ["farm", "products"], object: -> { ["EGGS"] } },
     ])
-    assert_equal ["Polyface", ["MEAT"]], results.map { |r| r["data"] }
+    assert_equal ["Polyface", ["MEAT"], ["EGGS"]], results.map { |r| r["data"] }
 
     assert results[0].partial.leaf?
     assert results[1].partial.leaf?
+    assert results[2].partial.leaf?
   end
 
 
@@ -377,7 +384,25 @@ describe GraphQL::Query::Partial do
     assert_equal "three", results[2]["data"]["readContext"]
   end
 
-  it "returns a full context"
+  it "uses a full path relative to the parent query" do
+    str = "{ q1: query { q2: query { query { currentPath } } } }"
+    results = run_partials(str, [
+      { path: [], object: nil },
+      { path: ["q1", "q2"], object: nil },
+      { path: ["q1", "q2", "query"], object: nil },
+      { path: ["q1", "q2", "query", "currentPath"], object: ["injected", "path"] },
+    ])
+
+    pp results
+    assert_equal({"q1" => { "q2" => { "query" => { "currentPath" => ["q1", "q2", "query", "currentPath"] } } } }, results[0]["data"])
+    assert_equal [], results[0].partial.path
+    assert_equal({"query" => {"currentPath" => ["q1", "q2", "query", "currentPath"]}}, results[1]["data"])
+    assert_equal ["q1", "q2"], results[1].partial.path
+    assert_equal({ "currentPath" => ["q1", "q2", "query", "currentPath"] }, results[2]["data"])
+    assert_equal ["q1", "q2", "query"], results[2].partial.path
+    assert_equal(["injected", "path"], results[3]["data"])
+    assert_equal ["q1", "q2", "query", "currentPath"], results[3].partial.path
+  end
 
   it "runs partials on mutation root" do
     str = "mutation { updateFarm(name: \"Brawndo Acres\") { name } }"
@@ -403,6 +428,7 @@ describe GraphQL::Query::Partial do
     results = run_partials(str, [
       { path: ["entity"], object: { name: GraphQL::ExecutionError.new("Boom!") } },
       { path: ["entity", "name"], object: GraphQL::ExecutionError.new("Bang!") },
+      { path: ["entity", "name"], object: -> { GraphQL::ExecutionError.new("Blorp!") } },
     ])
 
     assert_equal({
@@ -413,5 +439,9 @@ describe GraphQL::Query::Partial do
       "errors" => [{"message" => "Bang!", "locations" => [{"line" => 3, "column" => 9}], "path" => ["entity", "name", "name"]}],
       "data" => nil
     }, results[1])
+    assert_equal({
+      "errors" => [{"message" => "Blorp!", "locations" => [{"line" => 3, "column" => 9}], "path" => ["entity", "name", "name"]}],
+      "data" => nil
+    }, results[2])
   end
 end
