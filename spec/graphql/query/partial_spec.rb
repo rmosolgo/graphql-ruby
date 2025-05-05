@@ -393,7 +393,6 @@ describe GraphQL::Query::Partial do
       { path: ["q1", "q2", "query", "currentPath"], object: ["injected", "path"] },
     ])
 
-    pp results
     assert_equal({"q1" => { "q2" => { "query" => { "currentPath" => ["q1", "q2", "query", "currentPath"] } } } }, results[0]["data"])
     assert_equal [], results[0].partial.path
     assert_equal({"query" => {"currentPath" => ["q1", "q2", "query", "currentPath"]}}, results[1]["data"])

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
-if RUBY_VERSION >= "3.1.1"
+if RUBY_VERSION >= "3.2.0"
   require "async"
   describe GraphQL::Dataloader::AsyncDataloader do
     class AsyncSchema < GraphQL::Schema
