@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Tracing::MonitorTrace::Monitor
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Tracing::MonitorTrace::Monitor";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (M)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../MonitorTrace.html" title="GraphQL::Tracing::MonitorTrace (module)">MonitorTrace</a></span></span>
+     &raquo; 
+    <span class="title">Monitor</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Tracing::MonitorTrace::Monitor
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Tracing::MonitorTrace::Monitor</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/tracing/monitor_trace.rb</dd>
+  </dl>
+  
+</div>
+
+<div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="../AppsignalTrace/AppsignalMonitor.html" title="GraphQL::Tracing::AppsignalTrace::AppsignalMonitor (class)">AppsignalTrace::AppsignalMonitor</a></span>, <span class='object_link'><a href="../DataDogTrace/DatadogMonitor.html" title="GraphQL::Tracing::DataDogTrace::DatadogMonitor (class)">DataDogTrace::DatadogMonitor</a></span>, <span class='object_link'><a href="../NewRelicTrace/NewrelicMonitor.html" title="GraphQL::Tracing::NewRelicTrace::NewrelicMonitor (class)">NewRelicTrace::NewrelicMonitor</a></span>, <span class='object_link'><a href="../PrometheusTrace/PrometheusMonitor.html" title="GraphQL::Tracing::PrometheusTrace::PrometheusMonitor (class)">PrometheusTrace::PrometheusMonitor</a></span>, <span class='object_link'><a href="../ScoutTrace/ScoutMonitor.html" title="GraphQL::Tracing::ScoutTrace::ScoutMonitor (class)">ScoutTrace::ScoutMonitor</a></span>, <span class='object_link'><a href="../SentryTrace/SentryMonitor.html" title="GraphQL::Tracing::SentryTrace::SentryMonitor (class)">SentryTrace::SentryMonitor</a></span>, <span class='object_link'><a href="../StatsdTrace/StatsdMonitor.html" title="GraphQL::Tracing::StatsdTrace::StatsdMonitor (class)">StatsdTrace::StatsdMonitor</a></span></p>
+</div>
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Monitor/GraphQLPrefixNames.html" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLPrefixNames (module)">GraphQLPrefixNames</a></span>, <span class='object_link'><a href="Monitor/GraphQLSuffixNames.html" title="GraphQL::Tracing::MonitorTrace::Monitor::GraphQLSuffixNames (module)">GraphQLSuffixNames</a></span>
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Monitor/Event.html" title="GraphQL::Tracing::MonitorTrace::Monitor::Event (class)">Event</a></span>
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fallback_transaction_name-instance_method" title="#fallback_transaction_name (instance method)">#<strong>fallback_transaction_name</strong>(context)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(trace:, set_transaction_name:, **_rest)  &#x21d2; Monitor </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Monitor.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#instrument-instance_method" title="#instrument (instance method)">#<strong>instrument</strong>(keyword, object, &amp;block)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#name_for-instance_method" title="#name_for (instance method)">#<strong>name_for</strong>(keyword, object)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#start_event-instance_method" title="#start_event (instance method)">#<strong>start_event</strong>(keyword, object)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#transaction_name-instance_method" title="#transaction_name (instance method)">#<strong>transaction_name</strong>(query)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Get the transaction name based on the operation type and name if possible, or fall back to a user provided one.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(trace:, set_transaction_name:, **_rest)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Tracing::MonitorTrace::Monitor (class)">Monitor</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Monitor.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+11
+12
+13
+14
+15
+16
+17
+18</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/monitor_trace.rb', line 11</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>trace:</span><span class='comma'>,</span> <span class='label'>set_transaction_name:</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid__rest'>_rest</span><span class='rparen'>)</span>
+  <span class='ivar'>@trace</span> <span class='op'>=</span> <span class='id identifier rubyid_trace'>trace</span>
+  <span class='ivar'>@set_transaction_name</span> <span class='op'>=</span> <span class='id identifier rubyid_set_transaction_name'>set_transaction_name</span>
+  <span class='ivar'>@platform_field_key_cache</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_platform_field_key'>platform_field_key</span><span class='lparen'>(</span><span class='id identifier rubyid_k'>k</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+  <span class='ivar'>@platform_authorized_key_cache</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_platform_authorized_key'>platform_authorized_key</span><span class='lparen'>(</span><span class='id identifier rubyid_k'>k</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+  <span class='ivar'>@platform_resolve_type_key_cache</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_platform_resolve_type_key'>platform_resolve_type_key</span><span class='lparen'>(</span><span class='id identifier rubyid_k'>k</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+  <span class='ivar'>@platform_source_class_key_cache</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_source_cls'>source_cls</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_source_cls'>source_cls</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_platform_source_class_key'>platform_source_class_key</span><span class='lparen'>(</span><span class='id identifier rubyid_source_cls'>source_cls</span><span class='rparen'>)</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="fallback_transaction_name-instance_method">
+  
+    #<strong>fallback_transaction_name</strong>(context)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+44
+45
+46</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/monitor_trace.rb', line 44</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fallback_transaction_name'>fallback_transaction_name</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='symbol'>:tracing_fallback_transaction_name</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="instrument-instance_method">
+  
+    #<strong>instrument</strong>(keyword, object, &amp;block)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+20
+21
+22</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/monitor_trace.rb', line 20</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_instrument'>instrument</span><span class='lparen'>(</span><span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Implement </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>#instrument to measure the block</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="name_for-instance_method">
+  
+    #<strong>name_for</strong>(keyword, object)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/monitor_trace.rb', line 48</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_name_for'>name_for</span><span class='lparen'>(</span><span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_keyword'>keyword</span>
+  <span class='kw'>when</span> <span class='symbol'>:execute_field</span>
+    <span class='ivar'>@platform_field_key_cache</span><span class='lbracket'>[</span><span class='id identifier rubyid_object'>object</span><span class='rbracket'>]</span>
+  <span class='kw'>when</span> <span class='symbol'>:authorized</span>
+    <span class='ivar'>@platform_authorized_key_cache</span><span class='lbracket'>[</span><span class='id identifier rubyid_object'>object</span><span class='rbracket'>]</span>
+  <span class='kw'>when</span> <span class='symbol'>:resolve_type</span>
+    <span class='ivar'>@platform_resolve_type_key_cache</span><span class='lbracket'>[</span><span class='id identifier rubyid_object'>object</span><span class='rbracket'>]</span>
+  <span class='kw'>when</span> <span class='symbol'>:dataloader_source</span>
+    <span class='ivar'>@platform_source_class_key_cache</span><span class='lbracket'>[</span><span class='id identifier rubyid_object'>object</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='rbracket'>]</span>
+  <span class='kw'>when</span> <span class='symbol'>:parse</span> <span class='kw'>then</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='op'>::</span><span class='const'>PARSE_NAME</span>
+  <span class='kw'>when</span> <span class='symbol'>:lex</span> <span class='kw'>then</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='op'>::</span><span class='const'>LEX_NAME</span>
+  <span class='kw'>when</span> <span class='symbol'>:execute</span> <span class='kw'>then</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='op'>::</span><span class='const'>EXECUTE_NAME</span>
+  <span class='kw'>when</span> <span class='symbol'>:analyze</span> <span class='kw'>then</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='op'>::</span><span class='const'>ANALYZE_NAME</span>
+  <span class='kw'>when</span> <span class='symbol'>:validate</span> <span class='kw'>then</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='op'>::</span><span class='const'>VALIDATE_NAME</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>No name for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_keyword'>keyword</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="start_event-instance_method">
+  
+    #<strong>start_event</strong>(keyword, object)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26
+27
+28</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/monitor_trace.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_start_event'>start_event</span><span class='lparen'>(</span><span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_ev'>ev</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='op'>::</span><span class='const'>Event</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span> <span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_ev'>ev</span><span class='period'>.</span><span class='id identifier rubyid_start'>start</span>
+  <span class='id identifier rubyid_ev'>ev</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="transaction_name-instance_method">
+  
+    #<strong>transaction_name</strong>(query)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Get the transaction name based on the operation type and name if possible, or fall back to a user provided
+one. Useful for anonymous queries.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/monitor_trace.rb', line 32</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_transaction_name'>transaction_name</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_selected_op'>selected_op</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_selected_operation'>selected_operation</span>
+  <span class='id identifier rubyid_txn_name'>txn_name</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_selected_op'>selected_op</span>
+    <span class='id identifier rubyid_op_type'>op_type</span> <span class='op'>=</span> <span class='id identifier rubyid_selected_op'>selected_op</span><span class='period'>.</span><span class='id identifier rubyid_operation_type'>operation_type</span>
+    <span class='id identifier rubyid_op_name'>op_name</span> <span class='op'>=</span> <span class='id identifier rubyid_selected_op'>selected_op</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>||</span> <span class='id identifier rubyid_fallback_transaction_name'>fallback_transaction_name</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>anonymous</span><span class='tstring_end'>&quot;</span></span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_op_type'>op_type</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_op_name'>op_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>query.anonymous</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GraphQL/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_txn_name'>txn_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon May  5 14:59:53 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.8).
+</div>
+
+    </div>
+  </body>
+</html>
