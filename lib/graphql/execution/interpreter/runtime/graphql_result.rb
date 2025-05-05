@@ -21,7 +21,11 @@ module GraphQL
             @graphql_metadata = nil
             @graphql_selections = selections
             @graphql_is_eager = is_eager
+            @base_path = nil
           end
+
+          # TODO test full path in Partial
+          attr_writer :base_path
 
           def path
             @path ||= build_path([])
@@ -29,7 +33,13 @@ module GraphQL
 
           def build_path(path_array)
             graphql_result_name && path_array.unshift(graphql_result_name)
-            @graphql_parent ? @graphql_parent.build_path(path_array) : path_array
+            if @graphql_parent
+              @graphql_parent.build_path(path_array)
+            elsif @base_path
+              @base_path + path_array
+            else
+              path_array
+            end
           end
 
           attr_accessor :graphql_dead

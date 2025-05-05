@@ -26,7 +26,7 @@ module GraphQL
             query = case opts
             when Hash
               schema.query_class.new(schema, nil, **opts)
-            when GraphQL::Query
+            when GraphQL::Query, GraphQL::Query::Partial
               opts
             else
               raise "Expected Hash or GraphQL::Query, not #{opts.class} (#{opts.inspect})"

@@ -10,12 +10,47 @@ module GraphQL
     autoload :Context, "graphql/query/context"
     autoload :Fingerprint, "graphql/query/fingerprint"
     autoload :NullContext, "graphql/query/null_context"
+    autoload :Partial, "graphql/query/partial"
     autoload :Result, "graphql/query/result"
     autoload :Variables, "graphql/query/variables"
     autoload :InputValidationResult, "graphql/query/input_validation_result"
     autoload :VariableValidationError, "graphql/query/variable_validation_error"
     autoload :ValidationPipeline, "graphql/query/validation_pipeline"
 
+    # Code shared with {Partial}
+    module Runnable
+      def after_lazy(value, &block)
+        if !defined?(@runtime_instance)
+          @runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
+        end
+
+        if @runtime_instance
+          @runtime_instance.minimal_after_lazy(value, &block)
+        else
+          @schema.after_lazy(value, &block)
+        end
+      end
+
+      # Node-level cache for calculating arguments. Used during execution and query analysis.
+      # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
+      # @param definition [GraphQL::Schema::Field]
+      # @param parent_object [GraphQL::Schema::Object]
+      # @return [Hash{Symbol => Object}]
+      def arguments_for(ast_node, definition, parent_object: nil)
+        arguments_cache.fetch(ast_node, definition, parent_object)
+      end
+
+      def arguments_cache
+        @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
+      end
+
+      # @api private
+      def handle_or_reraise(err)
+        @schema.handle_or_reraise(context, err)
+      end
+    end
+
+    include Runnable
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(name)
         msg = if name.nil?
@@ -198,19 +233,10 @@ module GraphQL
     # @return [GraphQL::Execution::Lookahead]
     def lookahead
       @lookahead ||= begin
-        ast_node = selected_operation
-        if ast_node.nil?
+        if selected_operation.nil?
           GraphQL::Execution::Lookahead::NULL_LOOKAHEAD
         else
-          root_type = case ast_node.operation_type
-          when nil, "query"
-            types.query_root # rubocop:disable Development/ContextIsPassedCop
-          when "mutation"
-            types.mutation_root # rubocop:disable Development/ContextIsPassedCop
-          when "subscription"
-            types.subscription_root # rubocop:disable Development/ContextIsPassedCop
-          end
-          GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
+          GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [selected_operation])
         end
       end
     end
@@ -234,6 +260,18 @@ module GraphQL
 
     def operations
       with_prepared_ast { @operations }
+    end
+
+    # Run subtree partials of this query and return their results.
+    # Each partial is identified with a `path:` and `object:`
+    # where the path references a field in the AST and the object will be treated
+    # as the return value from that field. Subfields of the field named by `path`
+    # will be executed with `object` as the starting point
+    # @param partials_hashes [Array<Hash{Symbol => Object}>] Hashes with `path:` and `object:` keys
+    # @return [Array<GraphQL::Query::Result>]
+    def run_partials(partials_hashes)
+      partials = partials_hashes.map { |partial_options| Partial.new(query: self, **partial_options) }
+      Execution::Interpreter.run_all(@schema, partials, context: @context)
     end
 
     # Get the result for this query, executing it once
@@ -276,19 +314,6 @@ module GraphQL
           )
         }
       end
-    end
-
-    # Node-level cache for calculating arguments. Used during execution and query analysis.
-    # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
-    # @param definition [GraphQL::Schema::Field]
-    # @param parent_object [GraphQL::Schema::Object]
-    # @return [Hash{Symbol => Object}]
-    def arguments_for(ast_node, definition, parent_object: nil)
-      arguments_cache.fetch(ast_node, definition, parent_object)
-    end
-
-    def arguments_cache
-      @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
     end
 
     # A version of the given query string, with:
@@ -357,15 +382,19 @@ module GraphQL
 
     def root_type_for_operation(op_type)
       case op_type
-      when "query"
+      when "query", nil
         types.query_root # rubocop:disable Development/ContextIsPassedCop
       when "mutation"
         types.mutation_root # rubocop:disable Development/ContextIsPassedCop
       when "subscription"
         types.subscription_root # rubocop:disable Development/ContextIsPassedCop
       else
-        raise ArgumentError, "unexpected root type name: #{op_type.inspect}; expected 'query', 'mutation', or 'subscription'"
+        raise ArgumentError, "unexpected root type name: #{op_type.inspect}; expected nil, 'query', 'mutation', or 'subscription'"
       end
+    end
+
+    def root_type
+      root_type_for_operation(selected_operation.operation_type)
     end
 
     def types
@@ -398,23 +427,6 @@ module GraphQL
 
     def subscription?
       with_prepared_ast { @subscription }
-    end
-
-    # @api private
-    def handle_or_reraise(err)
-      schema.handle_or_reraise(context, err)
-    end
-
-    def after_lazy(value, &block)
-      if !defined?(@runtime_instance)
-        @runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
-      end
-
-      if @runtime_instance
-        @runtime_instance.minimal_after_lazy(value, &block)
-      else
-        @schema.after_lazy(value, &block)
-      end
     end
 
     attr_reader :logger

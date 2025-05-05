@@ -57,53 +57,142 @@ module GraphQL
         end
 
         def final_result
-          @response && @response.graphql_result_data
+          @response.respond_to?(:graphql_result_data) ? @response.graphql_result_data : @response
         end
 
         def inspect
           "#<#{self.class.name} response=#{@response.inspect}>"
         end
 
-        # This _begins_ the execution. Some deferred work
-        # might be stored up in lazies.
         # @return [void]
         def run_eager
-          root_operation = query.selected_operation
-          root_op_type = root_operation.operation_type || "query"
-          root_type = schema.root_type_for_operation(root_op_type)
-          runtime_object = root_type.wrap(query.root_value, context)
-          runtime_object = schema.sync_lazy(runtime_object)
-          is_eager = root_op_type == "mutation"
-          @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, root_operation.selections, is_eager, root_operation, nil, nil)
-          st = get_current_runtime_state
-          st.current_result = @response
-
-          if runtime_object.nil?
-            # Root .authorized? returned false.
-            @response = nil
+          root_type = query.root_type
+          case query
+          when GraphQL::Query
+            ast_node = query.selected_operation
+            selections = ast_node.selections
+            object = query.root_value
+            is_eager = ast_node.operation_type == "mutation"
+            base_path = nil
+          when GraphQL::Query::Partial
+            ast_node = query.ast_nodes.first
+            selections = query.ast_nodes.map(&:selections).inject(&:+)
+            object = query.object
+            is_eager = false
+            base_path = query.path
           else
-            call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-              each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
-                @response.ordered_result_keys ||= ordered_result_keys
-                if is_selection_array
-                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager, root_operation, nil, nil)
-                  selection_response.ordered_result_keys = ordered_result_keys
-                  final_response = @response
-                else
-                  selection_response = @response
-                  final_response = nil
-                end
+            raise ArgumentError, "Unexpected Runnable, can't execute: #{query.class} (#{query.inspect})"
+          end
+          object = schema.sync_lazy(object) # TODO test query partial with lazy root object
+          runtime_state = get_current_runtime_state
+          case root_type.kind.name
+          when "OBJECT"
+            object_proxy = root_type.wrap(object, context)
+            object_proxy = schema.sync_lazy(object_proxy)
+            if object_proxy.nil?
+              @response = nil
+            else
+              @response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, is_eager, ast_node, nil, nil)
+              @response.base_path = base_path
+              runtime_state.current_result = @response
+              call_method_on_directives(:resolve, object, ast_node.directives) do
+                each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
+                  @response.ordered_result_keys ||= ordered_result_keys
+                  if is_selection_array
+                    selection_response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, is_eager, ast_node, nil, nil)
+                    selection_response.ordered_result_keys = ordered_result_keys
+                    final_response = @response
+                  else
+                    selection_response = @response
+                    final_response = nil
+                  end
 
-                @dataloader.append_job {
-                  evaluate_selections(
-                    selections,
-                    selection_response,
-                    final_response,
-                    nil,
-                  )
-                }
+                  @dataloader.append_job {
+                    evaluate_selections(
+                      selections,
+                      selection_response,
+                      final_response,
+                      nil,
+                    )
+                  }
+                end
               end
             end
+          when "LIST"
+            inner_type = root_type.unwrap
+            case inner_type.kind.name
+            when "SCALAR", "ENUM"
+              result_name = ast_node.alias || ast_node.name
+              owner_type = query.field_definition.owner
+              selection_result = GraphQLResultHash.new(nil, owner_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
+              selection_result.base_path = base_path
+              selection_result.ordered_result_keys = [result_name]
+              runtime_state = get_current_runtime_state
+              runtime_state.current_result = selection_result
+              runtime_state.current_result_name = result_name
+              field_defn = query.field_definition
+              continue_value = continue_value(object, field_defn, false, ast_node, result_name, selection_result)
+              if HALT != continue_value
+                continue_field(continue_value, owner_type, field_defn, root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
+              end
+              @response = selection_result[result_name]
+            else
+              @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false, ast_node, nil, nil)
+              @response.base_path = base_path
+              idx = nil
+              object.each do |inner_value|
+                idx ||= 0
+                this_idx = idx
+                idx += 1
+                @dataloader.append_job do
+                  runtime_state.current_result_name = this_idx
+                  runtime_state.current_result = @response
+                  continue_field(
+                    inner_value, root_type, nil, inner_type, nil, @response.graphql_selections, false, object_proxy,
+                    nil, this_idx, @response, false, runtime_state
+                  )
+                end
+              end
+            end
+          when "SCALAR", "ENUM"
+            result_name = ast_node.alias || ast_node.name
+            owner_type = query.field_definition.owner
+            selection_result = GraphQLResultHash.new(nil, query.parent_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
+            selection_result.ordered_result_keys = [result_name]
+            selection_result.base_path = base_path
+            runtime_state = get_current_runtime_state
+            runtime_state.current_result = selection_result
+            runtime_state.current_result_name = result_name
+            field_defn = query.field_definition
+            continue_value = continue_value(object, field_defn, false, ast_node, result_name, selection_result)
+            if HALT != continue_value
+              continue_field(continue_value, owner_type, field_defn, query.root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
+            end
+            @response = selection_result[result_name]
+          when "UNION", "INTERFACE"
+            resolved_type, _resolved_obj = resolve_type(root_type, object)
+            resolved_type = schema.sync_lazy(resolved_type)
+            object_proxy = resolved_type.wrap(object, context)
+            object_proxy = schema.sync_lazy(object_proxy)
+            @response = GraphQLResultHash.new(nil, resolved_type, object_proxy, nil, false, selections, false, query.ast_nodes.first, nil, nil)
+            @response.base_path = base_path
+            each_gathered_selections(@response) do |selections, is_selection_array, ordered_result_keys|
+              @response.ordered_result_keys ||= ordered_result_keys
+              if is_selection_array == true
+                raise "This isn't supported yet"
+              end
+
+              @dataloader.append_job {
+                evaluate_selections(
+                  selections,
+                  @response,
+                  nil,
+                  runtime_state,
+                )
+              }
+            end
+          else
+            raise "Invariant: unsupported type kind for partial execution: #{root_type.kind.inspect} (#{root_type})"
           end
           nil
         end
