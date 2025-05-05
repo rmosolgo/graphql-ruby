@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.29.6 (5 May 2025)
+
+- `@stream`: Add `FutureStream` for lazy enumerators
+
 # 1.29.5 (31 Mar 2025)
 
 - OperationStore: Improve Redis cleanup when deleting a single client
