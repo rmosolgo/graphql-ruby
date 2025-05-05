@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.5.6
+
+### New features
+
+- Execution: Add `Query#run_partials` for running sub-trees of valid queries #5183
+
 # 2.5.5
 
 ### Bug fixes
