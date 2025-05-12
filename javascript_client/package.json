@@ -21,7 +21,7 @@
     "@types/react": "^17.0.0",
     "@types/relay-runtime": "^14.0.0",
     "@types/zen-observable": "^0.8.2",
-    "ably": "1.2.50",
+    "ably": ">=2.9",
     "graphql": ">=15.0.0",
     "jest": "^29.0.0",
     "nock": "^11.0.0",

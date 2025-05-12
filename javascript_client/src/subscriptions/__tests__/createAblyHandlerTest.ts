@@ -1,20 +1,20 @@
-import { OnErrorData, createAblyHandler } from "../createAblyHandler"
-import { Realtime, Types } from "ably"
-
+import { createAblyHandler } from "../createAblyHandler"
+import { Realtime } from "ably"
+import type { ErrorInfo } from "ably"
 const dummyOperation = { text: "", name: "" }
 
 const channelTemplate = {
   presence: {
     enter() {},
     enterClient() {},
-    leave(callback?: (err?: Types.ErrorInfo) => void) {
+    leave(callback?: (err?: ErrorInfo) => void) {
       if (callback) callback()
     }
   },
   subscribe: () => {},
   unsubscribe: () => {},
   on: () => {},
-  detach: (callback?: (err?: Types.ErrorInfo) => void) => {
+  detach: (callback?: (err?: ErrorInfo) => void) => {
     if (callback) callback()
   }
 }
@@ -54,7 +54,7 @@ describe("createAblyHandler", () => {
           unsubscribe: () => {
             wasUnsubscribed = true
           },
-          detach: (callback?: (err?: Types.ErrorInfo) => void) => {
+          detach: (callback?: (err?: ErrorInfo) => void) => {
             if (callback) callback()
             wasDetached = true
           },
@@ -119,7 +119,7 @@ describe("createAblyHandler", () => {
     let errorInvokedWith = undefined
     let nextInvokedWith = undefined
 
-    const dummyErrors = [{ message: "baz" }]
+    const dummyErrors = [new Error("baz")]
 
     const producer = createAblyHandler({
       fetchOperation: () =>
@@ -138,7 +138,7 @@ describe("createAblyHandler", () => {
       {},
       {
         onError: (errors: any) => {
-          errorInvokedWith = errors
+          errorInvokedWith = errors.errors
         },
         onNext: () => {},
         onCompleted: () => {}
@@ -292,14 +292,15 @@ describe("createAblyHandler", () => {
     const key = process.env.ABLY_KEY
     const testWithAblyKey = key ? test : test.skip
 
-    test("onError is called when using invalid key", async () => {
+    testWithAblyKey("onError is called when using invalid key", async () => {
       const ably = new Realtime({
         key: "integration-test:invalid",
-        log: { level: 0 }
+        logLevel: 0,
       })
       await new Promise<void>(resolve => {
         const fetchOperation = async () => ({
-          headers: new Map([["X-Subscription-ID", "foo"]])
+          headers: new Map([["X-Subscription-ID", "foo"]]),
+          body: null,
         })
 
         const ablyHandler = createAblyHandler({ ably, fetchOperation })
@@ -327,7 +328,7 @@ describe("createAblyHandler", () => {
     testWithAblyKey(
       "onError is called for too many subscriptions",
       async () => {
-        const ably = new Realtime({ key, log: { level: 0 } })
+        const ably = new Realtime({ key, logLevel: 0 })
         await new Promise<void>(resolve => {
           let subscriptionCounter = 0
           const fetchOperation = async () => {
@@ -335,7 +336,8 @@ describe("createAblyHandler", () => {
             return {
               headers: new Map([
                 ["X-Subscription-ID", `foo-${subscriptionCounter}`]
-              ])
+              ]),
+              body: null
             }
           }
           const ablyHandler = createAblyHandler({ ably, fetchOperation })
@@ -369,21 +371,22 @@ describe("createAblyHandler", () => {
     // Consider setting a higher timeout when running in CI.
     testWithAblyKey("can make more than 200 subscriptions", async () => {
       let caughtError = null
-      const ably = new Realtime({ key, log: { level: 0 } })
+      const ably = new Realtime({ key, logLevel: 0 })
       let subscriptionCounter = 0
       const fetchOperation = async () => {
         subscriptionCounter += 1
         return {
           headers: new Map([
             ["X-Subscription-ID", `foo-${subscriptionCounter}`]
-          ])
+          ]),
+          body: null
         }
       }
       const ablyHandler = createAblyHandler({ ably, fetchOperation })
       const operation = {}
       const variables = {}
       const cacheConfig = {}
-      const onError = (error: OnErrorData) => {
+      const onError = (error: Error) => {
         caughtError = error
       }
       const onNext = () => {}
@@ -429,7 +432,7 @@ describe("createAblyHandler", () => {
       "receives message sent before subscribe takes effect",
       async () => {
         let caughtError = null
-        const ably = new Realtime({ key, log: { level: 0 } })
+        const ably = new Realtime({ key, logLevel: 0 })
         ably.connect()
 
         const subscriptionId = Math.random().toString(36)
@@ -441,7 +444,7 @@ describe("createAblyHandler", () => {
         const operation = {}
         const variables = {}
         const cacheConfig = {}
-        const onError = (error: OnErrorData) => {
+        const onError = (error: Error) => {
           caughtError = error
         }
         const messages: any[] = []
@@ -457,22 +460,21 @@ describe("createAblyHandler", () => {
 
         // Publish before subscribe
         await new Promise<void>((resolve, reject) => {
-          const ablyPublisher = new Realtime({ key, log: { level: 0 } })
+          const ablyPublisher = new Realtime({ key, logLevel: 0 })
           const publishChannel = ablyPublisher.channels.get(subscriptionId)
           publishChannel.publish(
             "update",
             {
               result: { data: "asyncResult" }
             },
-            err => {
-              ablyPublisher.close()
-              if (err) {
-                reject(err)
-              } else {
-                resolve()
-              }
+          ).catch(err => {
+            ablyPublisher.close()
+            if (err) {
+              reject(err)
+            } else {
+              resolve()
             }
-          )
+          })
         })
 
         const { dispose } = ablyHandler(
