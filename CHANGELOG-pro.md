@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.29.7 (12 May 2025)
+
+- `FutureStream`: Add `#to_incremental_h`
+
 # 1.29.6 (5 May 2025)
 
 - `@stream`: Add `FutureStream` for lazy enumerators
