@@ -97,6 +97,8 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 %token UNION 235
 %token VAR_SIGN 236
 
+%type NamedTypeForCondition
+
 %%
 
   // YACC Rules
@@ -419,7 +421,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
       }
 
   inline_fragment:
-      ELLIPSIS ON type directives_list_opt selection_set {
+      ELLIPSIS ON NamedTypeForCondition directives_list_opt selection_set {
         $$ = MAKE_AST_NODE(InlineFragment, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
@@ -439,7 +441,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
       }
 
   fragment_definition:
-    FRAGMENT fragment_name_opt ON type directives_list_opt selection_set {
+    FRAGMENT fragment_name_opt ON NamedTypeForCondition directives_list_opt selection_set {
       $$ = MAKE_AST_NODE(FragmentDefinition, 6,
         rb_ary_entry($1, 1),
         rb_ary_entry($1, 2),
@@ -864,6 +866,21 @@ type_system_definition:
           GraphQL_Language_Nodes_NONE
         );
       }
+
+  NamedTypeForCondition:
+      name
+          {
+              /* This action creates a TypeName AST node.
+                 $1 (yyvsp[0] in C) refers to the semantic value of 'name'.
+                 The MAKE_AST_NODE macro is used, consistent with other rules.
+                 'name' (represented by $1) provides an array: [filename, line, col, name_string] */
+              $$ = MAKE_AST_NODE(TypeName, 3,
+                                 rb_ary_entry($1, 1), /* line from name token */
+                                 rb_ary_entry($1, 2), /* col from name token */
+                                 rb_ary_entry($1, 3)  /* name string itself */
+                                );
+          }
+  ;
 
 %%
 

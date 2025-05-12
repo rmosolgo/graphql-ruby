@@ -95,6 +95,18 @@ createRecord(data: {
     }
   end
 
+  it "raises a parse error for invalid type modification on inline fragment spread" do
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse("{ ... on Foo! { id } }")
+    }
+  end
+
+  it "raises a parse error for invalid type modification on fragment definition" do
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse("fragment on Foo! { id }")
+    }
+  end
+
   describe "when there are no selections" do
     it 'raises a ParseError' do
       assert_raises(GraphQL::ParseError) {
