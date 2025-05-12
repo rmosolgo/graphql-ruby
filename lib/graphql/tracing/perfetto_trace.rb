@@ -644,7 +644,7 @@ module GraphQL
         end
 
         if !@new_interned_da_string_values.empty?
-          str_vals = @new_interned_da_string_values.map { |name, iid| InternedString.new(iid: iid, str: name) }
+          str_vals = @new_interned_da_string_values.map { |name, iid| InternedString.new(iid: iid, str: name.b) }
           @new_interned_da_string_values.clear
         end
 

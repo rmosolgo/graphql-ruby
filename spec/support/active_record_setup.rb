@@ -213,6 +213,15 @@ if testing_rails?
         "A Tale of Two Cities",
         "Great Expectations",
       ]
+    },
+    {
+      author: "한강",
+      titles: [
+        "작별하지 않는다",
+        "흰",
+        "소년이 온다",
+        "노랑무늬영원"
+      ]
     }
   ]
 
