@@ -1,5 +1,9 @@
 # GraphQL::CParser
 
+## 1.1.3
+
+- Fix to disallow non-null sign (`!`) in fragment conditions #5347
+
 ## 1.1.2
 
 - Fix to handle strings with null bytes #5193
