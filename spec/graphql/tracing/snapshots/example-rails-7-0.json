@@ -806,6 +806,51 @@
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
         "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Author"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
           "Field Execution"
         ],
         "categoryIids": [
@@ -1755,6 +1800,288 @@
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
         "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.name",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxBdXRob3IgaWQ6IDQsIG5hbWU6ICLtlZzqsJUiPg==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "7ZWc6rCV\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "Qm9vazo6QWN0aXZlUmVjb3JkX0Fzc29jaWF0aW9uUmVsYXRpb24sIC50b19z\ncWw9IlNFTEVDVCBcImJvb2tzXCIuKiBGUk9NIFwiYm9va3NcIiBXSEVSRSBc\nImJvb2tzXCIuXCJhdXRob3JfaWRcIiA9IDQgTElNSVQgMiI=\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": "type_casted_binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "class_name",
+            "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "record_count"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "instantiation.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "instantiation.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
           "Authorized"
         ],
         "categoryIids": [
@@ -1785,6 +2112,96 @@
             "name": "Authorize: Book"
           }
         ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Book"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Book"
       },
       "sequenceFlags": 101010101010
     },
@@ -8509,25 +8926,298 @@
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
         "categories": [
-          "Authorized"
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.title",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxCb29rIGlkOiAyNiwgdGl0bGU6ICLsnpHrs4TtlZjsp4Ag7JWK64qU64uk\nIiwgYXV0aG9yX2lkOiA0Pg==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "7J6R67OE7ZWY7KeAIOyViuuKlOuLpA==\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.reviews",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "UmV2aWV3OjpBY3RpdmVSZWNvcmRfQXNzb2NpYXRpb25SZWxhdGlvbiwgLnRv\nX3NxbD0iU0VMRUNUIFwicmV2aWV3c1wiLiogRlJPTSBcInJldmlld3NcIiBX\nSEVSRSBcInJldmlld3NcIi5cImJvb2tfaWRcIiA9IDI2IExJTUlUIDIi\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "class_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "record_count"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "instantiation.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "instantiation.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
         ],
         "categoryIids": [
           "10101010101010"
         ],
         "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
         "trackUuid": "10101010101010",
+        "name": "authors.3.books.0.averageReview",
         "flowIds": [
           "10101010101010"
-        ],
-        "name": "Authorize: Review"
-      },
-      "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "Authorize: Review"
-          }
         ]
       },
       "sequenceFlags": 101010101010
@@ -8684,6 +9374,1815 @@
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
         "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.author",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Author"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.3.books.0.otherBook",
+        "flowIds": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.2.books.1.averageReview",
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.title",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxCb29rIGlkOiAyNywgdGl0bGU6ICLtnbAiLCBhdXRob3JfaWQ6IDQ+\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "7Z2w\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.reviews",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "UmV2aWV3OjpBY3RpdmVSZWNvcmRfQXNzb2NpYXRpb25SZWxhdGlvbiwgLnRv\nX3NxbD0iU0VMRUNUIFwicmV2aWV3c1wiLiogRlJPTSBcInJldmlld3NcIiBX\nSEVSRSBcInJldmlld3NcIi5cImJvb2tfaWRcIiA9IDI3IExJTUlUIDIi\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "class_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "record_count"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "instantiation.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "instantiation.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.3.books.1.averageReview",
+        "flowIds": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "trustedPacketSequenceId": 101010101010,
+      "sequenceFlags": 101010101010,
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "fetch keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "PerfettoSchema::AverageReview"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": "type_casted_binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "class_name",
+            "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "record_count"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "instantiation.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "instantiation.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "fetch keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "PerfettoSchema::OtherBook"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "trustedPacketSequenceId": 101010101010,
+      "sequenceFlags": 101010101010,
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@find_by",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "@find_by_many"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@model_class",
+            "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@type_for_column",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "fetch keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Dataloader::ActiveRecordSource"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": "type_casted_binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "class_name",
+            "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "record_count"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "instantiation.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "instantiation.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "fetch keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "PerfettoSchema::OtherBook"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.2.books.1.otherBook",
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Book"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.author",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Author"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.3.books.1.otherBook",
+        "flowIds": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.3.books.0.averageReview",
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      },
+      "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "Authorize: Review"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.3.books.0.otherBook",
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxCb29rIGlkOiAyOSwgdGl0bGU6ICLrhbjrnpHrrLTriqzsmIHsm5AiLCBh\ndXRob3JfaWQ6IDQ+\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Book"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
           "Authorized"
         ],
         "categoryIids": [
@@ -8769,7 +11268,7 @@
         ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
-        "name": "authors.2.books.1.averageReview",
+        "name": "authors.3.books.1.averageReview",
         "flowIds": [
           "10101010101010"
         ]
@@ -9237,7 +11736,7 @@
         ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
-        "name": "authors.2.books.1.otherBook",
+        "name": "authors.3.books.1.otherBook",
         "flowIds": [
           "10101010101010"
         ]
@@ -11102,6 +13601,210 @@
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
         "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
           "Field Execution"
         ],
         "categoryIids": [
@@ -11195,7 +13898,591 @@
         "extraCounterValues": [
           "10101010101010"
         ],
+        "name": "authors.3.books.0.author.name",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "trustedPacketSequenceId": 101010101010,
+      "sequenceFlags": 101010101010,
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "fetch keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010",
+          "10101010101010",
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "PerfettoSchema::Authorized"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxSZXZpZXcgaWQ6IDc4LCBzdGFyczogMiwgdXNlcl9pZDogMiwgYm9va19p\nZDogMjA+\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxSZXZpZXcgaWQ6IDEwMSwgc3RhcnM6IDEsIHVzZXJfaWQ6IDEsIGJvb2tf\naWQ6IDI2Pg==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxSZXZpZXcgaWQ6IDEwMiwgc3RhcnM6IDIsIHVzZXJfaWQ6IDIsIGJvb2tf\naWQ6IDI2Pg==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxSZXZpZXcgaWQ6IDEwNSwgc3RhcnM6IDEsIHVzZXJfaWQ6IDEsIGJvb2tf\naWQ6IDI3Pg==\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
         "name": "authors.2.books.1.otherBook.title",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.author.name",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.otherBook.title",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "64W4656R66y064qs7JiB7JuQ\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.otherBook.title",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -11953,7 +15240,7 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "IzxSZXZpZXcgaWQ6IDc4LCBzdGFyczogMiwgdXNlcl9pZDogMiwgYm9va19p\nZDogMjA+\n"
+            "str": "IzxSZXZpZXcgaWQ6IDEwNiwgc3RhcnM6IDIsIHVzZXJfaWQ6IDIsIGJvb2tf\naWQ6IDI3Pg==\n"
           }
         ]
       },
@@ -13522,6 +16809,638 @@
           },
           {
             "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "result"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.reviews.0.stars",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.reviews.0.user",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: User"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "result"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.reviews.1.stars",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.reviews.1.user",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: User"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "result"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.reviews.0.stars",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.reviews.0.user",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: User"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "result"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.reviews.1.stars",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.reviews.1.user",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: User"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
             "stringValue": null
@@ -14005,6 +17924,234 @@
           "10101010101010"
         ],
         "name": "authors.2.books.1.reviews.1.user.username",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.reviews.0.user.username",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.0.reviews.1.user.username",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.reviews.0.user.username",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.3.books.1.reviews.1.user.username",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
