@@ -151,6 +151,10 @@ module GraphQL
       def static_errors
         @query.static_errors
       end
+
+      def selected_operation_name
+        @query.selected_operation_name
+      end
     end
   end
 end
