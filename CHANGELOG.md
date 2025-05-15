@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.5.7
+
+### Bug fixes
+
+- `PerfettoTrace`: Handle non-ascii strings #5351
+- `Partial`: Add `#selected_operation_name` to support `GraphQL::Current` #5353
+
 # 2.5.6
 
 ### New features
