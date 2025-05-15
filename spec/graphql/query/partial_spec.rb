@@ -110,6 +110,15 @@ describe GraphQL::Query::Partial do
       def current_path
         context.current_path
       end
+
+      field :current_values, [String]
+      def current_values
+        [
+          GraphQL::Current.operation_name,
+          GraphQL::Current.field.path,
+          GraphQL::Current.dataloader_source_class.inspect,
+        ]
+      end
     end
 
     class Mutation < GraphQL::Schema::Object
@@ -163,6 +172,11 @@ describe GraphQL::Query::Partial do
       { "data" => { "name" => "Injected Farm" } },
       {"data" => {"name" => "Kestrel Hollow", "products" => ["MEAT", "EGGS"]} },
     ], results
+  end
+
+  it "works with GraphQL::Current" do
+    res = run_partials("query CheckCurrentValues { query { currentValues } }", [path: ["query"], object: nil])
+    assert_equal ["CheckCurrentValues", "Query.currentValues", "nil"], res[0]["data"]["currentValues"]
   end
 
   it "returns errors if they occur" do
