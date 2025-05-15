@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.29.8 (15 May 2025)
+
+- `FutureStream`: Support `GraphQL::ExecutionError` raised from lazy enumerators
+
 # 1.29.7 (12 May 2025)
 
 - `FutureStream`: Add `#to_incremental_h`
