@@ -1,0 +1,2959 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Tracing::Trace
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Tracing::Trace";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (T)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span>
+     &raquo; 
+    <span class="title">Trace</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Tracing::Trace
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Tracing::Trace</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/tracing/trace.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>This is the base class for a <code>trace</code> instance whose methods are called during query execution.
+“Trace modes” are subclasses of this with custom tracing modules mixed in.</p>
+
+<p>A trace module may implement any of the methods on <code>Trace</code>, being sure to call <code>super</code>
+to continue any tracing hooks and call the actual runtime behavior.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="LegacyTrace.html" title="GraphQL::Tracing::LegacyTrace (class)">LegacyTrace</a></span></p>
+</div>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#analyze_multiplex-instance_method" title="#analyze_multiplex (instance method)">#<strong>analyze_multiplex</strong>(multiplex:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#analyze_query-instance_method" title="#analyze_query (instance method)">#<strong>analyze_query</strong>(query:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#authorized-instance_method" title="#authorized (instance method)">#<strong>authorized</strong>(query:, type:, object:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#authorized_lazy-instance_method" title="#authorized_lazy (instance method)">#<strong>authorized_lazy</strong>(query:, type:, object:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_analyze_multiplex-instance_method" title="#begin_analyze_multiplex (instance method)">#<strong>begin_analyze_multiplex</strong>(multiplex, analyzers)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_authorized-instance_method" title="#begin_authorized (instance method)">#<strong>begin_authorized</strong>(type, object, context)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A call to <code>.authorized?</code> is starting.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_dataloader-instance_method" title="#begin_dataloader (instance method)">#<strong>begin_dataloader</strong>(dataloader)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A dataloader run is starting.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_dataloader_source-instance_method" title="#begin_dataloader_source (instance method)">#<strong>begin_dataloader_source</strong>(source)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A source with pending keys is about to fetch.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_execute_field-instance_method" title="#begin_execute_field (instance method)">#<strong>begin_execute_field</strong>(field, object, arguments, query)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>GraphQL is about to resolve this field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_execute_multiplex-instance_method" title="#begin_execute_multiplex (instance method)">#<strong>begin_execute_multiplex</strong>(multiplex)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This is the first event in the tracing lifecycle.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_parse-instance_method" title="#begin_parse (instance method)">#<strong>begin_parse</strong>(query_str)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_resolve_type-instance_method" title="#begin_resolve_type (instance method)">#<strong>begin_resolve_type</strong>(type, value, context)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A call to <code>.resolve_type</code> is starting.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#begin_validate-instance_method" title="#begin_validate (instance method)">#<strong>begin_validate</strong>(query, validate)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dataloader_fiber_exit-instance_method" title="#dataloader_fiber_exit (instance method)">#<strong>dataloader_fiber_exit</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called when an execution or source fiber terminates.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dataloader_fiber_resume-instance_method" title="#dataloader_fiber_resume (instance method)">#<strong>dataloader_fiber_resume</strong>(source)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called when a Dataloader fiber is resumed because data has been loaded.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dataloader_fiber_yield-instance_method" title="#dataloader_fiber_yield (instance method)">#<strong>dataloader_fiber_yield</strong>(source)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called when a Dataloader fiber is paused to wait for data.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dataloader_spawn_execution_fiber-instance_method" title="#dataloader_spawn_execution_fiber (instance method)">#<strong>dataloader_spawn_execution_fiber</strong>(jobs)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called when Dataloader spins up a new fiber for GraphQL execution.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dataloader_spawn_source_fiber-instance_method" title="#dataloader_spawn_source_fiber (instance method)">#<strong>dataloader_spawn_source_fiber</strong>(pending_sources)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Called when Dataloader spins up a new fiber for fetching data.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_analyze_multiplex-instance_method" title="#end_analyze_multiplex (instance method)">#<strong>end_analyze_multiplex</strong>(multiplex, analyzers)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_authorized-instance_method" title="#end_authorized (instance method)">#<strong>end_authorized</strong>(type, object, context, authorized_result)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A call to <code>.authorized?</code> just finished.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_dataloader-instance_method" title="#end_dataloader (instance method)">#<strong>end_dataloader</strong>(dataloader)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A dataloader run has ended.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_dataloader_source-instance_method" title="#end_dataloader_source (instance method)">#<strong>end_dataloader_source</strong>(source)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A fetch call has just ended.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_execute_field-instance_method" title="#end_execute_field (instance method)">#<strong>end_execute_field</strong>(field, object, arguments, query, result)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>GraphQL just finished resolving this field.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_execute_multiplex-instance_method" title="#end_execute_multiplex (instance method)">#<strong>end_execute_multiplex</strong>(multiplex)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This is the last event of the tracing lifecycle.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_parse-instance_method" title="#end_parse (instance method)">#<strong>end_parse</strong>(query_str)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_resolve_type-instance_method" title="#end_resolve_type (instance method)">#<strong>end_resolve_type</strong>(type, value, context, resolved_type)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A call to <code>.resolve_type</code> just ended.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#end_validate-instance_method" title="#end_validate (instance method)">#<strong>end_validate</strong>(query, validate, errors)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute_field-instance_method" title="#execute_field (instance method)">#<strong>execute_field</strong>(field:, query:, ast_node:, arguments:, object:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute_field_lazy-instance_method" title="#execute_field_lazy (instance method)">#<strong>execute_field_lazy</strong>(field:, query:, ast_node:, arguments:, object:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute_multiplex-instance_method" title="#execute_multiplex (instance method)">#<strong>execute_multiplex</strong>(multiplex:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This wraps an entire <code>.execute</code> call.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute_query-instance_method" title="#execute_query (instance method)">#<strong>execute_query</strong>(query:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute_query_lazy-instance_method" title="#execute_query_lazy (instance method)">#<strong>execute_query_lazy</strong>(query:, multiplex:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(multiplex: nil, query: nil, **_options)  &#x21d2; Trace </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Trace.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#lex-instance_method" title="#lex (instance method)">#<strong>lex</strong>(query_string:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The Ruby parser doesn’t call this method (<code>graphql/c_parser</code> does.).</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse-instance_method" title="#parse (instance method)">#<strong>parse</strong>(query_string:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve_type-instance_method" title="#resolve_type (instance method)">#<strong>resolve_type</strong>(query:, type:, object:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#resolve_type_lazy-instance_method" title="#resolve_type_lazy (instance method)">#<strong>resolve_type_lazy</strong>(query:, type:, object:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#validate-instance_method" title="#validate (instance method)">#<strong>validate</strong>(query:, validate:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(multiplex: nil, query: nil, **_options)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Tracing::Trace (class)">Trace</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Trace.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>multiplex</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Execution/Multiplex.html" title="GraphQL::Execution::Multiplex (class)">GraphQL::Execution::Multiplex</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>query</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">GraphQL::Query</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+16
+17
+18
+19</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 16</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>multiplex:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>query:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid__options'>_options</span><span class='rparen'>)</span>
+  <span class='ivar'>@multiplex</span> <span class='op'>=</span> <span class='id identifier rubyid_multiplex'>multiplex</span>
+  <span class='ivar'>@query</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="analyze_multiplex-instance_method">
+  
+    #<strong>analyze_multiplex</strong>(multiplex:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>multiplex</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Execution/Multiplex.html" title="GraphQL::Execution::Multiplex (class)">GraphQL::Execution::Multiplex</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+58
+59
+60</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 58</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_analyze_multiplex'>analyze_multiplex</span><span class='lparen'>(</span><span class='label'>multiplex:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="analyze_query-instance_method">
+  
+    #<strong>analyze_query</strong>(query:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+62
+63
+64</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 62</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_analyze_query'>analyze_query</span><span class='lparen'>(</span><span class='label'>query:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="authorized-instance_method">
+  
+    #<strong>authorized</strong>(query:, type:, object:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+114
+115
+116</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 114</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_authorized'>authorized</span><span class='lparen'>(</span><span class='label'>query:</span><span class='comma'>,</span> <span class='label'>type:</span><span class='comma'>,</span> <span class='label'>object:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="authorized_lazy-instance_method">
+  
+    #<strong>authorized_lazy</strong>(query:, type:, object:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+134
+135
+136</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 134</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_authorized_lazy'>authorized_lazy</span><span class='lparen'>(</span><span class='label'>query:</span><span class='comma'>,</span> <span class='label'>type:</span><span class='comma'>,</span> <span class='label'>object:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_analyze_multiplex-instance_method">
+  
+    #<strong>begin_analyze_multiplex</strong>(multiplex, analyzers)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>multiplex</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Execution/Multiplex.html" title="GraphQL::Execution::Multiplex (class)">GraphQL::Execution::Multiplex</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>analyzers</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Class&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+51</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 51</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_analyze_multiplex'>begin_analyze_multiplex</span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex'>multiplex</span><span class='comma'>,</span> <span class='id identifier rubyid_analyzers'>analyzers</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_authorized-instance_method">
+  
+    #<strong>begin_authorized</strong>(type, object, context)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>A call to <code>.authorized?</code> is starting</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>type</span>
+      
+      
+        <span class='type'>(<tt>Class&lt;<span class='object_link'><a href="../Schema/Object.html" title="GraphQL::Schema::Object (class)">GraphQL::Schema::Object</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>object</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+123
+124</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 123</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_authorized'>begin_authorized</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_dataloader-instance_method">
+  
+    #<strong>begin_dataloader</strong>(dataloader)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>A dataloader run is starting</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>dataloader</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Dataloader.html" title="GraphQL::Dataloader (class)">GraphQL::Dataloader</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+166</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 166</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_dataloader'>begin_dataloader</span><span class='lparen'>(</span><span class='id identifier rubyid_dataloader'>dataloader</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_dataloader_source-instance_method">
+  
+    #<strong>begin_dataloader_source</strong>(source)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>A source with pending keys is about to fetch</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>source</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Dataloader/Source.html" title="GraphQL::Dataloader::Source (class)">GraphQL::Dataloader::Source</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+175</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 175</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_dataloader_source'>begin_dataloader_source</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_execute_field-instance_method">
+  
+    #<strong>begin_execute_field</strong>(field, object, arguments, query)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>GraphQL is about to resolve this field</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>field</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Schema/Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>object</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Schema/Object.html" title="GraphQL::Schema::Object (class)">GraphQL::Schema::Object</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>arguments</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>query</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">GraphQL::Query</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+97</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 97</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_execute_field'>begin_execute_field</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_execute_multiplex-instance_method">
+  
+    #<strong>begin_execute_multiplex</strong>(multiplex)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>This is the first event in the tracing lifecycle.
+Every Query is technically run <em>inside</em> a Multiplex.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>multiplex</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Execution/Multiplex.html" title="GraphQL::Execution::Multiplex (class)">GraphQL::Execution::Multiplex</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+70</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 70</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_execute_multiplex'>begin_execute_multiplex</span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex'>multiplex</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_parse-instance_method">
+  
+    #<strong>begin_parse</strong>(query_str)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>query_str</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+28</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 28</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_parse'>begin_parse</span><span class='lparen'>(</span><span class='id identifier rubyid_query_str'>query_str</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_resolve_type-instance_method">
+  
+    #<strong>begin_resolve_type</strong>(type, value, context)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>A call to <code>.resolve_type</code> is starting</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>type</span>
+      
+      
+        <span class='type'>(<tt>Class&lt;<span class='object_link'><a href="../Schema/Union.html" title="GraphQL::Schema::Union (class)">GraphQL::Schema::Union</a></span>&gt;</tt>, <tt>Module&lt;<span class='object_link'><a href="../Schema/Interface.html" title="GraphQL::Schema::Interface (module)">GraphQL::Schema::Interface</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+151
+152</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 151</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_resolve_type'>begin_resolve_type</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="begin_validate-instance_method">
+  
+    #<strong>begin_validate</strong>(query, validate)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+42
+43</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 42</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_begin_validate'>begin_validate</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_validate'>validate</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dataloader_fiber_exit-instance_method">
+  
+    #<strong>dataloader_fiber_exit</strong>  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Called when an execution or source fiber terminates</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+191</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 191</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_dataloader_fiber_exit'>dataloader_fiber_exit</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dataloader_fiber_resume-instance_method">
+  
+    #<strong>dataloader_fiber_resume</strong>(source)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Called when a Dataloader fiber is resumed because data has been loaded</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>source</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Dataloader/Source.html" title="GraphQL::Dataloader::Source (class)">GraphQL::Dataloader::Source</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The Source whose <code>load</code> call previously caused this Fiber to wait</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+200</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 200</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_dataloader_fiber_resume'>dataloader_fiber_resume</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dataloader_fiber_yield-instance_method">
+  
+    #<strong>dataloader_fiber_yield</strong>(source)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Called when a Dataloader fiber is paused to wait for data</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>source</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Dataloader/Source.html" title="GraphQL::Dataloader::Source (class)">GraphQL::Dataloader::Source</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The Source whose <code>load</code> call initiated this <code>yield</code></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+196</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 196</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_dataloader_fiber_yield'>dataloader_fiber_yield</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dataloader_spawn_execution_fiber-instance_method">
+  
+    #<strong>dataloader_spawn_execution_fiber</strong>(jobs)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Called when Dataloader spins up a new fiber for GraphQL execution</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>jobs</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;#call&gt;</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Execution steps to run</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+184</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 184</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_dataloader_spawn_execution_fiber'>dataloader_spawn_execution_fiber</span><span class='lparen'>(</span><span class='id identifier rubyid_jobs'>jobs</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dataloader_spawn_source_fiber-instance_method">
+  
+    #<strong>dataloader_spawn_source_fiber</strong>(pending_sources)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Called when Dataloader spins up a new fiber for fetching data</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>pending_sources</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Dataloader/Source.html" title="GraphQL::Dataloader::Source (class)">GraphQL::Dataloader::Source</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Instances with pending keys</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+188</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 188</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_dataloader_spawn_source_fiber'>dataloader_spawn_source_fiber</span><span class='lparen'>(</span><span class='id identifier rubyid_pending_sources'>pending_sources</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_analyze_multiplex-instance_method">
+  
+    #<strong>end_analyze_multiplex</strong>(multiplex, analyzers)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>multiplex</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Execution/Multiplex.html" title="GraphQL::Execution::Multiplex (class)">GraphQL::Execution::Multiplex</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>analyzers</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Class&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+55</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 55</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_analyze_multiplex'>end_analyze_multiplex</span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex'>multiplex</span><span class='comma'>,</span> <span class='id identifier rubyid_analyzers'>analyzers</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_authorized-instance_method">
+  
+    #<strong>end_authorized</strong>(type, object, context, authorized_result)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>A call to <code>.authorized?</code> just finished</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>type</span>
+      
+      
+        <span class='type'>(<tt>Class&lt;<span class='object_link'><a href="../Schema/Object.html" title="GraphQL::Schema::Object (class)">GraphQL::Schema::Object</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>object</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>authorized_result</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+131
+132</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 131</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_authorized'>end_authorized</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_authorized_result'>authorized_result</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_dataloader-instance_method">
+  
+    #<strong>end_dataloader</strong>(dataloader)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>A dataloader run has ended</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>dataloder</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Dataloader.html" title="GraphQL::Dataloader (class)">GraphQL::Dataloader</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+170</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 170</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_dataloader'>end_dataloader</span><span class='lparen'>(</span><span class='id identifier rubyid_dataloader'>dataloader</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_dataloader_source-instance_method">
+  
+    #<strong>end_dataloader_source</strong>(source)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>A fetch call has just ended</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>source</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Dataloader/Source.html" title="GraphQL::Dataloader::Source (class)">GraphQL::Dataloader::Source</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+179</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 179</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_dataloader_source'>end_dataloader_source</span><span class='lparen'>(</span><span class='id identifier rubyid_source'>source</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_execute_field-instance_method">
+  
+    #<strong>end_execute_field</strong>(field, object, arguments, query, result)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>GraphQL just finished resolving this field</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>field</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Schema/Field.html" title="GraphQL::Schema::Field (class)">GraphQL::Schema::Field</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>object</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Schema/Object.html" title="GraphQL::Schema::Object (class)">GraphQL::Schema::Object</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>arguments</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>query</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">GraphQL::Query</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>result</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+104</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 104</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_execute_field'>end_execute_field</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_result'>result</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_execute_multiplex-instance_method">
+  
+    #<strong>end_execute_multiplex</strong>(multiplex)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>This is the last event of the tracing lifecycle.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>multiplex</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Execution/Multiplex.html" title="GraphQL::Execution::Multiplex (class)">GraphQL::Execution::Multiplex</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+75</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 75</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_execute_multiplex'>end_execute_multiplex</span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex'>multiplex</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_parse-instance_method">
+  
+    #<strong>end_parse</strong>(query_str)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>query_str</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+31</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 31</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_parse'>end_parse</span><span class='lparen'>(</span><span class='id identifier rubyid_query_str'>query_str</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_resolve_type-instance_method">
+  
+    #<strong>end_resolve_type</strong>(type, value, context, resolved_type)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>A call to <code>.resolve_type</code> just ended</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>type</span>
+      
+      
+        <span class='type'>(<tt>Class&lt;<span class='object_link'><a href="../Schema/Union.html" title="GraphQL::Schema::Union (class)">GraphQL::Schema::Union</a></span>&gt;</tt>, <tt>Module&lt;<span class='object_link'><a href="../Schema/Interface.html" title="GraphQL::Schema::Interface (module)">GraphQL::Schema::Interface</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>context</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Query/Context.html" title="GraphQL::Query::Context (class)">GraphQL::Query::Context</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>resolved_type</span>
+      
+      
+        <span class='type'>(<tt>Class&lt;<span class='object_link'><a href="../Schema/Object.html" title="GraphQL::Schema::Object (class)">GraphQL::Schema::Object</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+160
+161</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 160</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_resolve_type'>end_resolve_type</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_resolved_type'>resolved_type</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="end_validate-instance_method">
+  
+    #<strong>end_validate</strong>(query, validate, errors)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+45
+46</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 45</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_end_validate'>end_validate</span><span class='lparen'>(</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='id identifier rubyid_validate'>validate</span><span class='comma'>,</span> <span class='id identifier rubyid_errors'>errors</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="execute_field-instance_method">
+  
+    #<strong>execute_field</strong>(field:, query:, ast_node:, arguments:, object:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+106
+107
+108</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 106</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute_field'>execute_field</span><span class='lparen'>(</span><span class='label'>field:</span><span class='comma'>,</span> <span class='label'>query:</span><span class='comma'>,</span> <span class='label'>ast_node:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='comma'>,</span> <span class='label'>object:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="execute_field_lazy-instance_method">
+  
+    #<strong>execute_field_lazy</strong>(field:, query:, ast_node:, arguments:, object:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+110
+111
+112</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 110</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute_field_lazy'>execute_field_lazy</span><span class='lparen'>(</span><span class='label'>field:</span><span class='comma'>,</span> <span class='label'>query:</span><span class='comma'>,</span> <span class='label'>ast_node:</span><span class='comma'>,</span> <span class='label'>arguments:</span><span class='comma'>,</span> <span class='label'>object:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="execute_multiplex-instance_method">
+  
+    #<strong>execute_multiplex</strong>(multiplex:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>This wraps an entire <code>.execute</code> call.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>multiplex</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../Execution/Multiplex.html" title="GraphQL::Execution::Multiplex (class)">GraphQL::Execution::Multiplex</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+80
+81
+82</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 80</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute_multiplex'>execute_multiplex</span><span class='lparen'>(</span><span class='label'>multiplex:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="execute_query-instance_method">
+  
+    #<strong>execute_query</strong>(query:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+84
+85
+86</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 84</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute_query'>execute_query</span><span class='lparen'>(</span><span class='label'>query:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="execute_query_lazy-instance_method">
+  
+    #<strong>execute_query_lazy</strong>(query:, multiplex:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+88
+89
+90</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 88</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute_query_lazy'>execute_query_lazy</span><span class='lparen'>(</span><span class='label'>query:</span><span class='comma'>,</span> <span class='label'>multiplex:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="lex-instance_method">
+  
+    #<strong>lex</strong>(query_string:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>The Ruby parser doesn’t call this method (<code>graphql/c_parser</code> does.)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_lex'>lex</span><span class='lparen'>(</span><span class='label'>query_string:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parse-instance_method">
+  
+    #<strong>parse</strong>(query_string:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>query_string</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+34
+35
+36</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 34</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='label'>query_string:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve_type-instance_method">
+  
+    #<strong>resolve_type</strong>(query:, type:, object:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+138
+139
+140</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 138</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolve_type'>resolve_type</span><span class='lparen'>(</span><span class='label'>query:</span><span class='comma'>,</span> <span class='label'>type:</span><span class='comma'>,</span> <span class='label'>object:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="resolve_type_lazy-instance_method">
+  
+    #<strong>resolve_type_lazy</strong>(query:, type:, object:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+142
+143
+144</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 142</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_resolve_type_lazy'>resolve_type_lazy</span><span class='lparen'>(</span><span class='label'>query:</span><span class='comma'>,</span> <span class='label'>type:</span><span class='comma'>,</span> <span class='label'>object:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="validate-instance_method">
+  
+    #<strong>validate</strong>(query:, validate:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+38
+39
+40</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/trace.rb', line 38</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_validate'>validate</span><span class='lparen'>(</span><span class='label'>query:</span><span class='comma'>,</span> <span class='label'>validate:</span><span class='rparen'>)</span>
+  <span class='kw'>yield</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri May 16 16:06:36 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.8).
+</div>
+
+    </div>
+  </body>
+</html>
