@@ -232,7 +232,7 @@ module GraphQL
 
       # @return [Boolean] True if this type is used for `loads:` but not in the schema otherwise and not _explicitly_ hidden.
       def loadable?(type, _ctx)
-        !reachable_type_set.include?(type) && visible_type?(type)
+        visible_type?(type) && !referenced?(type)
       end
 
       def loadable_possible_types(union_type, _ctx)
