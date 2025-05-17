@@ -246,12 +246,13 @@ module GraphQL
         end
       end
 
+      # Optimization: Use a faster code path for simpler argument cases
       # @api private
       def coerce_into_values(parent_object, values, context, argument_values)
         arg_name = graphql_name
         arg_key = keyword
-        default_used = false
 
+        # Fast path for common case - extracting value from values hash
         if values.key?(arg_name)
           value = values[arg_name]
         elsif values.key?(arg_key)
@@ -270,6 +271,25 @@ module GraphQL
           default_used = true
         end
 
+        # The common case is direct coercion without loading or special preparation
+        if statically_coercible? && !loads
+          coerced_value = begin
+            type.coerce_input(value, context)
+          rescue StandardError => err
+            context.schema.handle_or_reraise(context, err)
+          end
+
+          # For simple cases we can avoid the lazy overhead completely
+          argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
+            value: coerced_value,
+            original_value: coerced_value,
+            definition: self,
+            default_used: default_used || false,
+          )
+          return
+        end
+
+        # Handle complex cases with lazy values, loading, and preparation
         loaded_value = nil
         coerced_value = begin
           type.coerce_input(value, context)
@@ -297,12 +317,11 @@ module GraphQL
 
           maybe_loaded_value = loaded_value || prepared_value
           context.query.after_lazy(maybe_loaded_value) do |resolved_loaded_value|
-            # TODO code smell to access such a deeply-nested constant in a distant module
             argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
               value: resolved_loaded_value,
               original_value: resolved_coerced_value,
               definition: self,
-              default_used: default_used,
+              default_used: default_used || false,
             )
           end
         end

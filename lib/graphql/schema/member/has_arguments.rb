@@ -88,6 +88,11 @@ module GraphQL
           # might be nil if there are actually no arguments
           own_arguments_that_apply || own_arguments
         end
+        
+        # Check if any argument has default values defined
+        def arguments_have_defaults?
+          @arguments_have_defaults ||= all_argument_definitions.any?(&:default_value?)
+        end
 
         def any_arguments?
           !own_arguments.empty?
@@ -238,39 +243,64 @@ module GraphQL
           arg_defns = context.types.arguments(self)
           total_args_count = arg_defns.size
 
+          # Optimization: skip the complex logic if there are no arguments
+          if total_args_count == 0
+            finished_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
+            if block_given?
+              block.call(finished_args)
+              return nil
+            else
+              return finished_args
+            end
+          end
+          
+          # Optimization: for small number of arguments, use a more direct approach
+          if total_args_count <= 2 && !block_given?
+            argument_values = {}
+            raised_error = false
+            
+            arg_defns.each do |arg_defn|
+              begin
+                arg_defn.coerce_into_values(parent_object, values, context, argument_values)
+              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                raised_error = true
+                return err
+              end
+            end
+            
+            # No lazy values for simple cases
+            return GraphQL::Execution::Interpreter::Arguments.new(
+              argument_values: argument_values,
+            )
+          end
+
+          # Complex case with multiple arguments or block given
           finished_args = nil
           prepare_finished_args = -> {
-            if total_args_count == 0
-              finished_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
-              if block_given?
-                block.call(finished_args)
-              end
-            else
-              argument_values = {}
-              resolved_args_count = 0
-              raised_error = false
-              arg_defns.each do |arg_defn|
-                context.dataloader.append_job do
-                  begin
-                    arg_defn.coerce_into_values(parent_object, values, context, argument_values)
-                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                    raised_error = true
-                    finished_args = err
-                    if block_given?
-                      block.call(finished_args)
-                    end
+            argument_values = {}
+            resolved_args_count = 0
+            raised_error = false
+            arg_defns.each do |arg_defn|
+              context.dataloader.append_job do
+                begin
+                  arg_defn.coerce_into_values(parent_object, values, context, argument_values)
+                rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                  raised_error = true
+                  finished_args = err
+                  if block_given?
+                    block.call(finished_args)
                   end
+                end
 
-                  resolved_args_count += 1
-                  if resolved_args_count == total_args_count && !raised_error
-                    finished_args = context.schema.after_any_lazies(argument_values.values) {
-                      GraphQL::Execution::Interpreter::Arguments.new(
-                        argument_values: argument_values,
-                      )
-                    }
-                    if block_given?
-                      block.call(finished_args)
-                    end
+                resolved_args_count += 1
+                if resolved_args_count == total_args_count && !raised_error
+                  finished_args = context.schema.after_any_lazies(argument_values.values) {
+                    GraphQL::Execution::Interpreter::Arguments.new(
+                      argument_values: argument_values,
+                    )
+                  }
+                  if block_given?
+                    block.call(finished_args)
                   end
                 end
               end

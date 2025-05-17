@@ -30,7 +30,6 @@ module GraphQL
               @storage[argument_owner][parent_object][ast_node] = resolved_args
             end
           end
-
         end
 
         # @yield [Interpreter::Arguments, Lazy<Interpreter::Arguments>] The finally-loaded arguments
@@ -40,10 +39,25 @@ module GraphQL
           if (args = arg_storage[ast_node])
             yield(args)
           else
-            args_hash = self.class.prepare_args_hash(@query, ast_node)
-            argument_owner.coerce_arguments(parent_object, args_hash, @query.context) do |resolved_args|
-              arg_storage[ast_node] = resolved_args
-              yield(resolved_args)
+            # Optimization: avoid arguments materialization for empty arguments
+            if argument_owner.any_arguments?
+              args_hash = self.class.prepare_args_hash(@query, ast_node)
+              # Fast path for empty arguments
+              if args_hash.empty? && !argument_owner.arguments_have_defaults?
+                args = GraphQL::Execution::Interpreter::Arguments::EMPTY
+                arg_storage[ast_node] = args
+                yield(args)
+              else
+                argument_owner.coerce_arguments(parent_object, args_hash, @query.context) do |resolved_args|
+                  arg_storage[ast_node] = resolved_args
+                  yield(resolved_args)
+                end
+              end
+            else
+              # No arguments defined on this field
+              args = GraphQL::Execution::Interpreter::Arguments::EMPTY
+              arg_storage[ast_node] = args
+              yield(args)
             end
           end
           nil

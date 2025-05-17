@@ -36,11 +36,17 @@ module GraphQL
         value.map { |i| i.nil? ? nil : of_type.coerce_result(i, ctx) }
       end
 
+      # Optimization: avoid creating a new array if input is already an array
       def coerce_input(value, ctx)
         if value.nil?
           nil
         else
-          coerced = ensure_array(value).map { |item| item.nil? ? item : of_type.coerce_input(item, ctx) }
+          # Optimization: avoid Array() call and handle common case directly
+          coerced = if value.is_a?(Array)
+            value.map { |item| item.nil? ? item : of_type.coerce_input(item, ctx) }
+          else
+            [of_type.coerce_input(value, ctx)]
+          end
           ctx.schema.after_any_lazies(coerced, &:itself)
         end
       end
