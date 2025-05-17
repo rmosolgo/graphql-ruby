@@ -70,10 +70,52 @@ module GraphQL
       def unwrap_value(value)
         case value
         when Array
-          value.map { |item| unwrap_value(item) }
+          # Fast path for empty arrays
+          return [] if value.empty?
+          
+          # Check if any item needs unwrapping (nested structures or InputObjects)
+          has_complex_items = false
+          value.each do |item|
+            if item.is_a?(Array) || item.is_a?(Hash) || item.is_a?(InputObject)
+              has_complex_items = true
+              break
+            end
+          end
+          
+          if has_complex_items
+            # Complex case: create a new array and map values
+            result = Array.new(value.size)
+            value.each_with_index do |item, idx|
+              result[idx] = unwrap_value(item)
+            end
+            result
+          else
+            # Simple case: array of primitive values, just duplicate
+            value.dup
+          end
         when Hash
-          value.reduce({}) do |h, (key, value)|
-            h.merge!(key => unwrap_value(value))
+          # Fast path for empty hashes
+          return {} if value.empty?
+          
+          # Check if any value needs unwrapping
+          has_complex_values = false
+          value.each_value do |v|
+            if v.is_a?(Array) || v.is_a?(Hash) || v.is_a?(InputObject)
+              has_complex_values = true
+              break
+            end
+          end
+          
+          if has_complex_values
+            # Complex case: create a new hash with unwrapped values
+            result = {}
+            value.each do |key, val|
+              result[key] = unwrap_value(val)
+            end
+            result
+          else
+            # Simple case: hash of primitive values, just duplicate
+            value.dup
           end
         when InputObject
           value.to_h
@@ -227,6 +269,12 @@ module GraphQL
         def coerce_input(value, ctx)
           if value.nil?
             return nil
+          end
+          
+          # Fast path for empty input (if we know there are no required arguments)
+          if value.respond_to?(:empty?) && value.empty? && !ctx.types.arguments(self).any? { |arg_defn| arg_defn.type.non_null? && !arg_defn.default_value? }
+            arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
+            return self.new(arguments, ruby_kwargs: {}, context: ctx, defaults_used: nil)
           end
 
           arguments = coerce_arguments(nil, value, ctx)

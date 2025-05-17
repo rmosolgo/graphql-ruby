@@ -418,17 +418,44 @@ module GraphQL
       private
 
       def recursively_prepare_input_object(value, type, context)
+        # Quick early return for nil values
+        return value if value.nil?
+
         if type.non_null?
           type = type.of_type
         end
 
-        if type.list? && !value.nil?
+        # Specialized handling for list types
+        if type.list?
+          # Get the inner type once to avoid repeated unwrapping
           inner_type = type.of_type
-          value.map { |v| recursively_prepare_input_object(v, inner_type, context) }
+          
+          # Fast path for empty arrays
+          if value.empty?
+            return []
+          end
+          
+          # Fast path for arrays of simple scalar values without input objects
+          if value.is_a?(Array) && 
+             !inner_type.list? && # Not a nested list
+             !inner_type.kind.input_object? && # Not an input object type
+             value.none? { |v| v.is_a?(GraphQL::Schema::InputObject) } # No input objects in the array
+            return value.dup
+          end
+          
+          # Standard case for lists - pre-allocate the result array
+          result = Array.new(value.size)
+          value.each_with_index do |item, idx|
+            result[idx] = recursively_prepare_input_object(item, inner_type, context)
+          end
+          
+          return result
         elsif value.is_a?(GraphQL::Schema::InputObject)
+          # Process input objects - combine validate and prepare steps
           value.validate_for(context)
           value.prepare
         else
+          # Return other values as is
           value
         end
       end
