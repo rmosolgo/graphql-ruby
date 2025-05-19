@@ -256,8 +256,7 @@ module GraphQL
         end
 
         def loadable?(t, _ctx)
-          load_all_types
-          !@all_types[t.graphql_name] && @cached_visible[t]
+          @cached_visible[t] && !referenced?(t)
         end
 
         def loadable_possible_types(t, _ctx)
