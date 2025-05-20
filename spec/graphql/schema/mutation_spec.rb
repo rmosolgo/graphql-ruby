@@ -353,4 +353,55 @@ describe GraphQL::Schema::Mutation do
       assert_equal ["1", "1", "1"], result.map { |r| r["data"].first.last["id"] }
     end
   end
+
+  class LogArgumentsExtension < GraphQL::Schema::FieldExtension
+    def resolve(object:, arguments:, context:)
+      # I would like to find a way to log the arguments with the following changes:
+      # 1. Use the camelcase version
+      # 2. Use the raw inputs, not the Ruby parsed ones
+      context[:logged_arguments] = arguments.dup
+      yield(object, arguments)
+    end
+  end
+
+  class UriType < GraphQL::Schema::Scalar
+    def self.coerce_input(value, ctx)
+      URI.parse(value)
+    end
+  end
+
+  class CustomInput < GraphQL::Schema::InputObject
+    argument :str_input, String
+    argument :int_input, Int
+    argument :site_url, UriType
+  end
+
+  class LogCustomInputMutation < GraphQL::Schema::Mutation
+    argument :input, CustomInput
+    field :result, String
+
+    def resolve(input:)
+      { result: input[:str_input] }
+    end
+  end
+
+  class LogCustomInputMutationType < GraphQL::Schema::Object
+    field :log_custom_input, mutation: LogCustomInputMutation do
+      extension LogArgumentsExtension
+    end
+  end
+
+  class LogCustomInputSchema < GraphQL::Schema
+    mutation(LogCustomInputMutationType)
+  end
+
+  it "captures custom input object argument values and their structure" do
+    context = {}
+    LogCustomInputSchema.execute(
+      'mutation { logCustomInput(input: {strInput: "hello", intInput: 42, siteUrl: "https://example.com"}) { result } }',
+      context: context
+    )
+    assert_equal CustomInput, context[:logged_arguments][:input].class
+    assert_equal({ "strInput" => "hello", "intInput" => 42, "siteUrl" => "https://example.com" }, context[:logged_arguments][:input].to_h)
+  end
 end
