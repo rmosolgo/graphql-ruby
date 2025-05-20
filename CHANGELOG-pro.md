@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.29.9 (20 May 2025)
+
+- Stable relation connection: fix missing records with `nil` values in Postgres #5346
+
 # 1.29.8 (15 May 2025)
 
 - `FutureStream`: Support `GraphQL::ExecutionError` raised from lazy enumerators
