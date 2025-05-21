@@ -99,10 +99,10 @@ module GraphQL
           argument_definitions = @validated.arguments(context).values
           required_names = @one_of.map do |arg_keyword|
             if arg_keyword.is_a?(Array)
-              names = arg_keyword.map { |arg| arg_keyword_to_grapqhl_name(argument_definitions, arg) }
+              names = arg_keyword.map { |arg| arg_keyword_to_graphql_name(argument_definitions, arg) }
               "(" + names.join(" and ") + ")"
             else
-              arg_keyword_to_grapqhl_name(argument_definitions, arg_keyword)
+              arg_keyword_to_graphql_name(argument_definitions, arg_keyword)
             end
           end
 
@@ -113,7 +113,7 @@ module GraphQL
           end
         end
 
-        def arg_keyword_to_grapqhl_name(argument_definitions, arg_keyword)
+        def arg_keyword_to_graphql_name(argument_definitions, arg_keyword)
           argument_definition = argument_definitions.find { |defn| defn.keyword == arg_keyword }
           argument_definition.graphql_name
         end
