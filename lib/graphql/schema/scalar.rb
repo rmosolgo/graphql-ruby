@@ -50,12 +50,7 @@ module GraphQL
           end
 
           if coerced_result.nil?
-            str_value = if value == Float::INFINITY
-              ""
-            else
-              " #{GraphQL::Language.serialize(value)}"
-            end
-            Query::InputValidationResult.from_problem("Could not coerce value#{str_value} to #{graphql_name}")
+            Query::InputValidationResult.from_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{graphql_name}")
           elsif coerced_result.is_a?(GraphQL::CoercionError)
             Query::InputValidationResult.from_problem(coerced_result.message, message: coerced_result.message, extensions: coerced_result.extensions)
           else
