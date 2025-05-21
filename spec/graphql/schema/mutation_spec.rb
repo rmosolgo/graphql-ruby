@@ -355,12 +355,45 @@ describe GraphQL::Schema::Mutation do
   end
 
   class LogArgumentsExtension < GraphQL::Schema::FieldExtension
+    extras [:ast_node]
     def resolve(object:, arguments:, context:)
       # I would like to find a way to log the arguments with the following changes:
       # 1. Use the camelcase version
       # 2. Use the raw inputs, not the Ruby parsed ones
-      context[:logged_arguments] = arguments.dup
+      ast_node = arguments[:ast_node]
+      formatted_args = {}
+      ast_node.arguments.each do |argument_node|
+        formatted_args[argument_node.name] = format_argument(context, argument_node.value)
+      end
+      context[:logged_arguments] = formatted_args
       yield(object, arguments)
+    end
+
+    private
+
+    def format_argument(context, argument_value)
+      case argument_value
+      when String, Numeric
+        argument_value
+      when Array
+        argument_value.map { |v| format_argument(context, v) }
+      when GraphQL::Language::Nodes::InputObject
+        args = {}
+        argument_value.arguments.each do |arg_node|
+          args[arg_node.name] = format_argument(context, arg_node.value)
+        end
+        args
+      when GraphQL::Language::Nodes::VariableIdentifier
+        var_value = context.query.variables[argument_value.name]
+        formatted = format_argument(context, var_value)
+        # You could return one of these or both, depending on your needs:
+        {
+          variable: "$" + argument_value.name,
+          runtime_value: formatted,
+        }
+      else
+        raise ArgumentError, "Unsupported argument value, implement a `when` clause for it: #{argument_value.class} (#{argument_value.class})"
+      end
     end
   end
 
@@ -401,7 +434,6 @@ describe GraphQL::Schema::Mutation do
       'mutation { logCustomInput(input: {strInput: "hello", intInput: 42, siteUrl: "https://example.com"}) { result } }',
       context: context
     )
-    assert_equal CustomInput, context[:logged_arguments][:input].class
-    assert_equal({ "strInput" => "hello", "intInput" => 42, "siteUrl" => "https://example.com" }, context[:logged_arguments][:input].to_h)
+    assert_equal({"input"=>{"strInput"=>"hello", "intInput"=>42, "siteUrl"=>"https://example.com"}}, context[:logged_arguments])
   end
 end
