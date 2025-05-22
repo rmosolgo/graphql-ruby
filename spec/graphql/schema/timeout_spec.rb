@@ -9,8 +9,17 @@ describe GraphQL::Schema::Timeout do
     end
   end
 
+  class CustomTimeout < GraphQL::Schema::Timeout
+    def handle_timeout(error, query)
+      if query.context[:disable_timeout]
+        disable_timeout(query)
+      end
+      super
+    end
+  end
+
   let(:max_seconds) { 1 }
-  let(:timeout_class) { GraphQL::Schema::Timeout }
+  let(:timeout_class) { CustomTimeout }
   let(:timeout_schema) {
     nested_sleep_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "NestedSleep"
@@ -36,9 +45,13 @@ describe GraphQL::Schema::Timeout do
 
       field :sleep_for, Float do
         argument :seconds, Float
+        argument :disable_timeout, "Boolean", default_value: false
       end
 
-      def sleep_for(seconds:)
+      def sleep_for(seconds:, disable_timeout:)
+        if disable_timeout
+          context[:disable_timeout] = true
+        end
         sleep(seconds)
         seconds
       end
@@ -252,6 +265,41 @@ describe GraphQL::Schema::Timeout do
         expected_data = {"a"=>0.5, "b"=>0.5, "c"=>0.5, "d"=>0.5, "e"=>0.5}
         assert_equal(expected_data, result["data"])
       end
+    end
+  end
+
+
+  describe "disabling the timeout" do
+    let(:query_string) {%|
+    query GetTimeouts($disable: Boolean) {
+      a: sleepFor(seconds: 0.4)
+      b: sleepFor(seconds: 0.4)
+      c: sleepFor(seconds: 0.4, disableTimeout: $disable)
+      d: sleepFor(seconds: 0.4)
+      e: sleepFor(seconds: 0.4)
+    }
+  |}
+
+    it "can be disabled" do
+      expected_data = {
+        "a"=>0.4,
+        "b"=>0.4,
+        "c"=>0.4,
+        "d"=>nil,
+        "e"=>nil,
+      }
+
+      assert_graphql_equal expected_data, result["data"]
+
+      disabled_timeout_result = timeout_schema.execute(query_string, context: query_context, variables: { disable: true })
+      expected_disabled_data = {
+        "a"=>0.4,
+        "b"=>0.4,
+        "c"=>0.4,
+        "d"=>0.4,
+        "e"=>0.4,
+      }
+      assert_graphql_equal expected_disabled_data, disabled_timeout_result["data"]
     end
   end
 end
