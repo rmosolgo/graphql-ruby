@@ -18,7 +18,8 @@ module GraphQL
       # @param object [Object] A starting object for execution
       # @param query [GraphQL::Query] A full query instance that this partial is based on. Caches are shared.
       # @param context [Hash] Extra context values to merge into `query.context`, if provided
-      def initialize(path:, object:, query:, context: nil, node: nil)
+      # @param fragment_node [GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition]
+      def initialize(path:, object:, query:, context: nil, fragment_node: nil)
         @path = path
         @object = object
         @query = query
@@ -32,17 +33,10 @@ module GraphQL
         @result_values = nil
         @result = nil
 
-        if node && type
-          @ast_nodes = case node
-          when GraphQL::Language::Nodes::Field
-            [node]
-          when GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition
-            node.selections
-          else
-            raise ArgumentError, "AST node not supported by Query::Partial"
-          end
-          @root_type = type
-          # This is only used when `@leaf` -- probably could be based on `node`
+        if node
+          @ast_nodes = node.selections
+          @root_type = type || raise(ArgumentError, "Pass `type:` when using `node:`")
+          # This is only used when `@leaf`
           @field_definition = nil
         else
           set_type_info_from_path
