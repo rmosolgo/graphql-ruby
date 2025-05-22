@@ -18,7 +18,7 @@ module GraphQL
       # @param object [Object] A starting object for execution
       # @param query [GraphQL::Query] A full query instance that this partial is based on. Caches are shared.
       # @param context [Hash] Extra context values to merge into `query.context`, if provided
-      def initialize(path:, object:, query:, context: nil)
+      def initialize(path:, object:, query:, context: nil, node: nil)
         @path = path
         @object = object
         @query = query
@@ -31,57 +31,23 @@ module GraphQL
         @multiplex = nil
         @result_values = nil
         @result = nil
-        selections = [@query.selected_operation]
-        type = @query.root_type
-        parent_type = nil
-        field_defn = nil
-        @path.each do |name_in_doc|
-          if name_in_doc.is_a?(Integer)
-            if type.list?
-              type = type.unwrap
-              next
-            else
-              raise ArgumentError, "Received path with index `#{name_in_doc}`, but type wasn't a list. Type: #{type.to_type_signature}, path: #{@path}"
-            end
-          end
 
-          next_selections = []
-          selections.each do |selection|
-            selections_to_check = []
-            selections_to_check.concat(selection.selections)
-            while (sel = selections_to_check.shift)
-              case sel
-              when GraphQL::Language::Nodes::InlineFragment
-                selections_to_check.concat(sel.selections)
-              when GraphQL::Language::Nodes::FragmentSpread
-                fragment = @query.fragments[sel.name]
-                selections_to_check.concat(fragment.selections)
-              when GraphQL::Language::Nodes::Field
-                if sel.alias == name_in_doc || sel.name == name_in_doc
-                  next_selections << sel
-                end
-              else
-                raise "Unexpected selection in partial path: #{sel.class}, #{sel.inspect}"
-              end
-            end
+        if node && type
+          @ast_nodes = case node
+          when GraphQL::Language::Nodes::Field
+            [node]
+          when GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition
+            node.selections
+          else
+            raise ArgumentError, "AST node not supported by Query::Partial"
           end
-
-          if next_selections.empty?
-            raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
-          end
-          field_name = next_selections.first.name
-          field_defn = @schema.get_field(type, field_name, @query.context) || raise("Invariant: no field called #{field_name} on #{type.graphql_name}")
-          parent_type = type
-          type = field_defn.type
-          if type.non_null?
-            type = type.of_type
-          end
-          selections = next_selections
+          @root_type = type
+          # This is only used when `@leaf` -- probably could be based on `node`
+          @field_definition = nil
+        else
+          set_type_info_from_path
         end
-        @parent_type = parent_type
-        @ast_nodes = selections
-        @root_type = type
-        @field_definition = field_defn
+
         @leaf = @root_type.unwrap.kind.leaf?
       end
 
@@ -89,7 +55,7 @@ module GraphQL
         @leaf
       end
 
-      attr_reader :context, :query, :ast_nodes, :root_type, :object, :field_definition, :path, :parent_type, :schema
+      attr_reader :context, :query, :ast_nodes, :root_type, :object, :field_definition, :path, :schema
 
       attr_accessor :multiplex, :result_values
 
@@ -154,6 +120,63 @@ module GraphQL
 
       def selected_operation_name
         @query.selected_operation_name
+      end
+
+      private
+
+      def set_type_info_from_path
+        selections = [@query.selected_operation]
+        type = @query.root_type
+        parent_type = nil
+        field_defn = nil
+
+        @path.each do |name_in_doc|
+          if name_in_doc.is_a?(Integer)
+            if type.list?
+              type = type.unwrap
+              next
+            else
+              raise ArgumentError, "Received path with index `#{name_in_doc}`, but type wasn't a list. Type: #{type.to_type_signature}, path: #{@path}"
+            end
+          end
+
+          next_selections = []
+          selections.each do |selection|
+            selections_to_check = []
+            selections_to_check.concat(selection.selections)
+            while (sel = selections_to_check.shift)
+              case sel
+              when GraphQL::Language::Nodes::InlineFragment
+                selections_to_check.concat(sel.selections)
+              when GraphQL::Language::Nodes::FragmentSpread
+                fragment = @query.fragments[sel.name]
+                selections_to_check.concat(fragment.selections)
+              when GraphQL::Language::Nodes::Field
+                if sel.alias == name_in_doc || sel.name == name_in_doc
+                  next_selections << sel
+                end
+              else
+                raise "Unexpected selection in partial path: #{sel.class}, #{sel.inspect}"
+              end
+            end
+          end
+
+          if next_selections.empty?
+            raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
+          end
+          field_name = next_selections.first.name
+          field_defn = @schema.get_field(type, field_name, @query.context) || raise("Invariant: no field called #{field_name} on #{type.graphql_name}")
+          parent_type = type
+          type = field_defn.type
+          if type.non_null?
+            type = type.of_type
+          end
+          selections = next_selections
+        end
+
+        @ast_nodes = selections
+        @root_type = type
+        @field_definition = field_defn
       end
     end
   end
