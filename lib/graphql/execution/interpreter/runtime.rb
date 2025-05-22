@@ -123,14 +123,14 @@ module GraphQL
             case inner_type.kind.name
             when "SCALAR", "ENUM"
               result_name = ast_node.alias || ast_node.name
-              owner_type = query.field_definition.owner
+              field_defn = query.field_definition
+              owner_type = field_defn.owner
               selection_result = GraphQLResultHash.new(nil, owner_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
               selection_result.base_path = base_path
               selection_result.ordered_result_keys = [result_name]
               runtime_state = get_current_runtime_state
               runtime_state.current_result = selection_result
               runtime_state.current_result_name = result_name
-              field_defn = query.field_definition
               continue_value = continue_value(object, field_defn, false, ast_node, result_name, selection_result)
               if HALT != continue_value
                 continue_field(continue_value, owner_type, field_defn, root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
@@ -156,14 +156,14 @@ module GraphQL
             end
           when "SCALAR", "ENUM"
             result_name = ast_node.alias || ast_node.name
-            owner_type = query.field_definition.owner
-            selection_result = GraphQLResultHash.new(nil, query.parent_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
+            field_defn = query.field_definition
+            owner_type = field_defn.owner
+            selection_result = GraphQLResultHash.new(nil, owner_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
             selection_result.ordered_result_keys = [result_name]
             selection_result.base_path = base_path
             runtime_state = get_current_runtime_state
             runtime_state.current_result = selection_result
             runtime_state.current_result_name = result_name
-            field_defn = query.field_definition
             continue_value = continue_value(object, field_defn, false, ast_node, result_name, selection_result)
             if HALT != continue_value
               continue_field(continue_value, owner_type, field_defn, query.root_type, ast_node, nil, false, nil, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
