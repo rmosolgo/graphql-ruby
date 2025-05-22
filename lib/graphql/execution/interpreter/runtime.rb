@@ -38,7 +38,7 @@ module GraphQL
         def initialize(query:, lazies_at_depth:)
           @query = query
           @current_trace = query.current_trace
-          @dataloader = query.multiplex.dataloader
+          @dataloader = query.context.dataloader
           @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
@@ -54,6 +54,7 @@ module GraphQL
           end
           # { Class => Boolean }
           @lazy_cache = {}.compare_by_identity
+          @default_lazy_legacy = @schema.legacy_sync_lazy
         end
 
         def final_result
@@ -965,7 +966,6 @@ module GraphQL
             query.resolve_type(type, value)
           end
           @current_trace.end_resolve_type(type, value, context, resolved_type)
-
           if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
               @current_trace.begin_resolve_type(type, value, context)
@@ -980,13 +980,17 @@ module GraphQL
           end
         end
 
-        def lazy?(object)
-          obj_class = object.class
-          is_lazy = @lazy_cache[obj_class]
-          if is_lazy.nil?
-            is_lazy = @lazy_cache[obj_class] = @schema.lazy?(object)
+        def lazy?(object, legacy: @default_lazy_legacy)
+          if legacy
+            obj_class = object.class
+            is_lazy = @lazy_cache[obj_class]
+            if is_lazy.nil?
+              is_lazy = @lazy_cache[obj_class] = @schema.lazy?(object, legacy: true)
+            end
+            is_lazy
+          else
+            false
           end
-          is_lazy
         end
       end
     end

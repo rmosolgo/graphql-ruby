@@ -227,6 +227,7 @@ describe GraphQL::Schema::InputObject do
       class Schema < GraphQL::Schema
         query(Query)
         mutation(Mutation)
+        dataloader_lazy_setup(self)
         lazy_resolve(Proc, :call)
 
         def self.object_from_id(id, ctx)
@@ -1287,7 +1288,7 @@ describe GraphQL::Schema::InputObject do
       def self.object_from_id(id, ctx)
         -> { nil }
       end
-
+      dataloader_lazy_setup(self)
       lazy_resolve(Proc, :call)
 
       rescue_from(StandardError) {

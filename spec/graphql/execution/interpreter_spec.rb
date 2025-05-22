@@ -241,6 +241,10 @@ describe GraphQL::Execution::Interpreter do
       field :value, Integer, null: false
       field :lazy_value, Integer, null: false
 
+      def value
+        object.value
+      end
+
       def lazy_value
         Box.new { object.value }
       end
@@ -266,6 +270,7 @@ describe GraphQL::Execution::Interpreter do
     class Schema < GraphQL::Schema
       query(Query)
       mutation(Mutation)
+      dataloader_lazy_setup(self)
       lazy_resolve(Box, :value)
 
       use GraphQL::Schema::AlwaysVisible
@@ -647,6 +652,7 @@ describe GraphQL::Execution::Interpreter do
       query Query
       subscription Subscription
       use InMemoryBackend::Subscriptions, extra: nil
+      dataloader_lazy_setup(self)
       lazy_resolve Proc, :call
     end
 
