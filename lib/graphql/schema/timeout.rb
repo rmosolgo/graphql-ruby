@@ -71,15 +71,23 @@ module GraphQL
         def execute_field(query:, field:, **_rest)
           timeout_state = query.context.namespace(@timeout).fetch(:state)
           # If the `:state` is `false`, then `max_seconds(query)` opted out of timeout for this query.
-          if timeout_state != false && Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond) > timeout_state.fetch(:timeout_at)
+          if timeout_state == false
+            super
+          elsif Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond) > timeout_state.fetch(:timeout_at)
             error = GraphQL::Schema::Timeout::TimeoutError.new(field)
             # Only invoke the timeout callback for the first timeout
             if !timeout_state[:timed_out]
               timeout_state[:timed_out] = true
               @timeout.handle_timeout(error, query)
+              timeout_state = query.context.namespace(@timeout).fetch(:state)
             end
 
-            error
+            # `handle_timeout` may have set this to be `false`
+            if timeout_state != false
+              error
+            else
+              super
+            end
           else
             super
           end
@@ -100,6 +108,15 @@ module GraphQL
       # @param query [GraphQL::Error]
       def handle_timeout(error, query)
         # override to do something interesting
+      end
+
+      # Call this method (eg, from {#handle_timeout}) to disable timeout tracking
+      # for the given query.
+      # @param query [GraphQL::Query]
+      # @return [void]
+      def disable_timeout(query)
+        query.context.namespace(self)[:state] = false
+        nil
       end
 
       # This error is raised when a query exceeds `max_seconds`.
