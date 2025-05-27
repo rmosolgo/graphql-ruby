@@ -19,7 +19,7 @@ module GraphQL
       # @param query [GraphQL::Query] A full query instance that this partial is based on. Caches are shared.
       # @param context [Hash] Extra context values to merge into `query.context`, if provided
       # @param fragment_node [GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition]
-      def initialize(path:, object:, query:, context: nil, fragment_node: nil)
+      def initialize(path: nil, object:, query:, context: nil, fragment_node: nil, type: nil)
         @path = path
         @object = object
         @query = query
@@ -33,11 +33,13 @@ module GraphQL
         @result_values = nil
         @result = nil
 
-        if node
-          @ast_nodes = node.selections
+        if fragment_node
+          @ast_nodes = [fragment_node]
           @root_type = type || raise(ArgumentError, "Pass `type:` when using `node:`")
           # This is only used when `@leaf`
           @field_definition = nil
+        elsif path.nil?
+          raise ArgumentError, "`path:` is required if `node:` is not given; add `path:`"
         else
           set_type_info_from_path
         end
