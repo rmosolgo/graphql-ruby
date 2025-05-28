@@ -826,6 +826,13 @@ module GraphQL
           else
             dir_defn = @schema_directives.fetch(dir_node.name)
             raw_dir_args = arguments(nil, dir_defn, dir_node)
+            if !raw_dir_args.is_a?(GraphQL::ExecutionError)
+              begin
+                dir_defn.validate!(raw_dir_args, context)
+              rescue GraphQL::ExecutionError => err
+                raw_dir_args = err
+              end
+            end
             dir_args = continue_value(
               raw_dir_args, # value
               nil, # field

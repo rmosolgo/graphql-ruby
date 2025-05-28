@@ -401,6 +401,56 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     assert_equal [["tag", { name: "t7"}], ["tag", { name: "t8"}]], enum_value.directives.map { |dir| [dir.graphql_name, dir.arguments.to_h] }
   end
 
+  describe "Custom validations on definition directives" do
+    class DirectiveValidationSchema < GraphQL::Schema
+      class ValidatedDirective < GraphQL::Schema::Directive
+        locations OBJECT, FIELD
+        argument :f, Float, required: false, validates: { numericality: { greater_than: 0 } }
+        argument :s, String, required: false, validates: { format: { with: /^[a-z]{3}$/ } }
+        validates required: { one_of: [:f, :s]}
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :i, Int, fallback_value: 100
+      end
+
+      query(Query)
+      directive(ValidatedDirective)
+    end
+
+    it "runs custom validation during execution" do
+      f_err_res = DirectiveValidationSchema.execute("{ i @validatedDirective(f: -10) }")
+      assert_equal [{"message" => "f must be greater than 0", "locations" => [{"line" => 1, "column" => 5}], "path" => ["i"]}], f_err_res["errors"]
+
+      s_err_res = DirectiveValidationSchema.execute("{ i @validatedDirective(s: \"wnrn\") }")
+      assert_equal [{"message" => "s is invalid", "locations" => [{"line" => 1, "column" => 5}], "path" => ["i"]}], s_err_res["errors"]
+
+      f_s_err_res = DirectiveValidationSchema.execute("{ i @validatedDirective }")
+      assert_equal [{"message" => "validatedDirective must include exactly one of the following arguments: f, s.", "locations" => [{"line" => 1, "column" => 5}], "path" => ["i"]}], f_s_err_res["errors"]
+    end
+
+    it "runs custom validation during definition" do
+      obj_type = Class.new(GraphQL::Schema::Object)
+      directive_defn = DirectiveValidationSchema::ValidatedDirective
+      obj_type.directive(directive_defn, f: 1)
+      f_err = assert_raises GraphQL::Schema::Validator::ValidationFailedError do
+        obj_type.directive(directive_defn, f: -1)
+      end
+      assert_equal "f must be greater than 0", f_err.message
+
+      obj_type.directive(directive_defn, s: "abc")
+      s_err = assert_raises GraphQL::Schema::Validator::ValidationFailedError do
+        obj_type.directive(directive_defn, s: "defg")
+      end
+      assert_equal "s is invalid", s_err.message
+
+      required_err = assert_raises GraphQL::Schema::Validator::ValidationFailedError do
+        obj_type.directive(directive_defn)
+      end
+      assert_equal "validatedDirective must include exactly one of the following arguments: f, s.", required_err.message
+    end
+  end
+
   describe "Validating schema directives" do
     def build_sdl(size:)
       <<~GRAPHQL
