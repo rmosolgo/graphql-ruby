@@ -10,6 +10,20 @@
 
 ### Bug fixes
 
+# 2.5.8
+
+### New features
+
+- Timeout: support disabling during a query #5361
+- Query::Partial: support running a fragment in isolation #5362
+
+### Bug fixes
+
+- Visibility: improve performance for `loadable?` #5355
+- RequiredValidator: Fix typo #5359
+- Scalar validation: remove redundant infinity handling #5358
+- Directives: fix validation of schema definition directives #5368
+
 # 2.5.7
 
 ### Bug fixes
