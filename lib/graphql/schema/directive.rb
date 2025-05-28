@@ -9,6 +9,7 @@ module GraphQL
     class Directive < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasArguments::HasDirectiveArguments
+      extend GraphQL::Schema::Member::HasValidators
 
       class << self
         # Directives aren't types, they don't have kinds.
@@ -75,6 +76,10 @@ module GraphQL
           yield
         end
 
+        def validate!(arguments, context)
+          Schema::Validator.validate!(validators, self, context, arguments)
+        end
+
         def on_field?
           locations.include?(FIELD)
         end
@@ -111,6 +116,9 @@ module GraphQL
       # @return [GraphQL::Interpreter::Arguments]
       attr_reader :arguments
 
+      class InvalidArgumentError < GraphQL::Error
+      end
+
       def initialize(owner, **arguments)
         @owner = owner
         assert_valid_owner
@@ -119,7 +127,19 @@ module GraphQL
         # - lazy resolution
         # Probably, those won't be needed here, since these are configuration arguments,
         # not runtime arguments.
-        @arguments = self.class.coerce_arguments(nil, arguments, Query::NullContext.instance)
+        context = Query::NullContext.instance
+        self.class.all_argument_definitions.each do |arg_defn|
+          value = arguments[arg_defn.keyword]
+          result = arg_defn.type.validate_input(value, context)
+          if !result.valid?
+            raise InvalidArgumentError, "@#{graphql_name}.#{arg_defn.graphql_name} on #{owner.path} is invalid (#{value.inspect}): #{result.problems.first["explanation"]}"
+          end
+        end
+        self.class.validate!(arguments, context)
+        @arguments = self.class.coerce_arguments(nil, arguments, context)
+        if @arguments.is_a?(GraphQL::ExecutionError)
+          raise @arguments
+        end
       end
 
       def graphql_name

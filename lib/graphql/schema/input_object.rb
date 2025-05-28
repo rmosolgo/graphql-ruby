@@ -182,6 +182,10 @@ module GraphQL
 
           input.each do |argument_name, value|
             argument = types.argument(self, argument_name)
+            if argument.nil? && ctx.is_a?(Query::NullContext) && argument_name.is_a?(Symbol)
+              # Validating definition directive arguments which come in as Symbols
+              argument = types.arguments(self).find { |arg| arg.keyword == argument_name }
+            end
             # Items in the input that are unexpected
             if argument.nil?
               result ||= Query::InputValidationResult.new
