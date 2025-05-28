@@ -65,6 +65,14 @@ describe GraphQL::Query::Partial do
       end
     end
 
+    class UpcasedFarm < GraphQL::Schema::Object
+      field :name, String
+
+      def name
+        object[:name].upcase
+      end
+    end
+
     class Market < GraphQL::Schema::Object
       implements Entity
       field :is_year_round, Boolean
@@ -172,6 +180,43 @@ describe GraphQL::Query::Partial do
       { "data" => { "name" => "Injected Farm" } },
       {"data" => {"name" => "Kestrel Hollow", "products" => ["MEAT", "EGGS"]} },
     ], results
+  end
+
+  it "runs inline fragments" do
+    str = "{
+      farm(id: \"1\") {
+        ... on Farm {
+          name
+          ... {
+            n2: name
+          }
+        }
+      }
+    }"
+
+    document = GraphQL.parse(str)
+    fragment_node = document.definitions.first.selections.first.selections.first
+    other_fragment_node = fragment_node.selections[1]
+    results = run_partials(str, [
+      { fragment_node: fragment_node, type: PartialSchema::Farm, object: { name: "Belair Farm" } },
+      { fragment_node: other_fragment_node, type: PartialSchema::UpcasedFarm, object: { name: "Free Union Grass Farm" } }
+    ])
+    assert_equal({ "name" => "Belair Farm", "n2" => "Belair Farm" }, results[0]["data"])
+    assert_equal({ "n2" => "FREE UNION GRASS FARM" }, results[1]["data"])
+  end
+
+  it "runs fragment definitions" do
+    str = "{
+     farm(id: \"1\") { ... farmFields }
+    }
+
+    fragment farmFields on Farm {
+      farmName: name
+    }"
+
+    node = GraphQL.parse(str).definitions.last
+    results = run_partials(str, [{ fragment_node: node, type: PartialSchema::Farm, object: { name: "Clovertop Creamery" } }])
+    assert_equal({ "farmName" => "Clovertop Creamery" }, results[0]["data"])
   end
 
   it "works with GraphQL::Current" do
