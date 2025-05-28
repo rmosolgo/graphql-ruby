@@ -111,6 +111,9 @@ module GraphQL
       # @return [GraphQL::Interpreter::Arguments]
       attr_reader :arguments
 
+      class InvalidArgumentError < GraphQL::Error
+      end
+
       def initialize(owner, **arguments)
         @owner = owner
         assert_valid_owner
@@ -119,6 +122,14 @@ module GraphQL
         # - lazy resolution
         # Probably, those won't be needed here, since these are configuration arguments,
         # not runtime arguments.
+        self.class.all_argument_definitions.each do |arg_defn|
+          value = arguments[arg_defn.keyword]
+          arg_type = arg_defn.type
+          result = arg_defn.type.validate_input(value, Query::NullContext.instance)
+          if !result.valid?
+            raise InvalidArgumentError, "@#{graphql_name}.#{arg_defn.graphql_name} on #{owner.path} is invalid (#{value.inspect}): #{result.problems.first["explanation"]}"
+          end
+        end
         @arguments = self.class.coerce_arguments(nil, arguments, Query::NullContext.instance)
       end
 

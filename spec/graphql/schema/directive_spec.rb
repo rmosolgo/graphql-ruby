@@ -55,7 +55,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
   end
 
   it "validates arguments" do
-    err = assert_raises ArgumentError do
+    err = assert_raises GraphQL::Schema::Directive::InvalidArgumentError do
       GraphQL::Schema::Field.from_options(
         name: :something,
         type: String,
@@ -65,9 +65,9 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       )
     end
 
-    assert_equal "@secret.topSecret is required, but no value was given", err.message
+    assert_equal "@secret.topSecret on Thing.something is invalid (nil): Expected value to not be null", err.message
 
-    err2 = assert_raises ArgumentError do
+    err2 = assert_raises GraphQL::Schema::Directive::InvalidArgumentError do
       GraphQL::Schema::Field.from_options(
         name: :something,
         type: String,
@@ -77,7 +77,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       )
     end
 
-    assert_equal "@secret.topSecret is required, but no value was given", err2.message
+    assert_equal "@secret.topSecret on Thing.something is invalid (12.5): Could not coerce value 12.5 to Boolean", err2.message
   end
 
   describe 'repeatable directives' do
@@ -399,5 +399,39 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
     enum_value = schema.get_type("Stuff").values["THING"]
     assert_equal [["tag", { name: "t7"}], ["tag", { name: "t8"}]], enum_value.directives.map { |dir| [dir.graphql_name, dir.arguments.to_h] }
+  end
+
+  describe "Validating schema directives" do
+    def build_sdl(size:)
+      <<~GRAPHQL
+        directive @tshirt(size: Size!) on INTERFACE | OBJECT
+
+        type MyType @tshirt(size: #{size}) {
+          color: String
+        }
+
+        type Query {
+          myType: MyType
+        }
+
+        enum Size {
+          LARGE
+          MEDIUM
+          SMALL
+        }
+      GRAPHQL
+    end
+
+    it "Raises a nice error for invalid enum values" do
+      valid_sdl = build_sdl(size: "MEDIUM")
+      assert_equal valid_sdl, GraphQL::Schema.from_definition(valid_sdl).to_definition
+
+      typo_sdl = build_sdl(size: "BLAH")
+      err = assert_raises GraphQL::Schema::Directive::InvalidArgumentError do
+        GraphQL::Schema.from_definition(typo_sdl)
+      end
+      expected_msg = '@tshirt.size on MyType is invalid ("BLAH"): Expected "BLAH" to be one of: LARGE, MEDIUM, SMALL'
+      assert_equal expected_msg, err.message
+    end
   end
 end
