@@ -675,6 +675,8 @@ module GraphQL
           when "SCALAR", "ENUM"
             r = begin
               current_type.coerce_result(value, context)
+            rescue GraphQL::ExecutionError => ex_err
+              return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
             rescue StandardError => err
               query.handle_or_reraise(err)
             end
