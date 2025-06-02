@@ -102,7 +102,7 @@ describe GraphQL::Types::Int do
             end
           end
 
-          expected_warning = "Scalar coercion errors (like this one: `#<IntegerEncodingError message=\"Int cannot represent non 32-bit signed integer value: 2147483648\">`) will return GraphQL execution errors instead of raising Ruby exceptions in a future version.
+          expected_warning = "Scalar coercion errors (like this one: `#<GraphQL::IntegerEncodingError message=\"Int cannot represent non 32-bit signed integer value: 2147483648\">`) will return GraphQL execution errors instead of raising Ruby exceptions in a future version.
 To opt into this new behavior, set `Schema.spec_compliant_scalar_coercion_errors = true`.
 To keep or customize the current behavior, add custom error handling in `IntNonSpecComplaintErrors.type_error`.
 "
