@@ -1331,10 +1331,11 @@ module GraphQL
             execution_error = GraphQL::CoercionError.new(type_error.message)
             raise execution_error
           else
+            schema_name = context.schema&.name || "Schema"
             warn <<~MSG
-            Scalar coercion errors will return GraphQL execution errors instead of raising Ruby exceptions in a future version.
+            Scalar coercion errors (like this one: `#<#{type_error.class.name} message=#{type_error.message.inspect}>`) will return GraphQL execution errors instead of raising Ruby exceptions in a future version.
             To opt into this new behavior, set `Schema.spec_compliant_scalar_coercion_errors = true`.
-            To keep or customize the current behavior, add custom error handling in `Schema.type_error`.
+            To keep or customize the current behavior, add custom error handling in `#{schema_name}.type_error`.
             MSG
 
             raise type_error

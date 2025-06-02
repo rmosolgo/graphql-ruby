@@ -26,6 +26,10 @@ describe GraphQL::Types::Int do
         assert_equal(-(2**31), GraphQL::Types::Int.coerce_result(-(2**31), context))
       end
 
+      it "replaces values, if configured to do so" do
+        assert_equal Dummy::Schema::MAGIC_INT_COERCE_VALUE, GraphQL::Types::Int.coerce_result(99**99, context)
+      end
+
       it "raises on values out of bounds" do
         err_ctx = GraphQL::Query.new(Dummy::Schema, "{ __typename }").context
         assert_raises(GraphQL::IntegerEncodingError) { GraphQL::Types::Int.coerce_result(2**31, err_ctx) }
@@ -91,10 +95,20 @@ describe GraphQL::Types::Int do
         it "raises Ruby exceptions with spec_compliant_scalar_coercion_errors disabled" do
           query = "{ badInt }"
 
-          error = assert_raises(GraphQL::IntegerEncodingError) do
-            IntNonSpecComplaintErrors.execute(query)
+          error = nil
+          stdout, stderr = capture_io do
+            error = assert_raises(GraphQL::IntegerEncodingError) do
+              IntNonSpecComplaintErrors.execute(query)
+            end
           end
 
+          expected_warning = "Scalar coercion errors (like this one: `#<IntegerEncodingError message=\"Int cannot represent non 32-bit signed integer value: 2147483648\">`) will return GraphQL execution errors instead of raising Ruby exceptions in a future version.
+To opt into this new behavior, set `Schema.spec_compliant_scalar_coercion_errors = true`.
+To keep or customize the current behavior, add custom error handling in `IntNonSpecComplaintErrors.type_error`.
+"
+
+          assert_equal expected_warning, stderr
+          assert_equal "", stdout
           assert_equal("Int cannot represent non 32-bit signed integer value: 2147483648", error.message)
         end
       end

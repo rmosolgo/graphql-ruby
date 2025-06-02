@@ -9,5 +9,9 @@ module GraphQL
   #
   # @see GraphQL::Types::Int which raises this error
   class IntegerEncodingError < GraphQL::ScalarCoercionError
+    # Same as {#value}, for backwards compatibility
+    def integer_value
+      @value
+    end
   end
 end

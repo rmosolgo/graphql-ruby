@@ -557,6 +557,21 @@ module Dummy
       -> { Schema.types[obj.class.name.split("::").last] }
     end
 
+    # This is used to confirm that the hook is called:
+    MAGIC_INT_COERCE_VALUE = -1
+
+    def self.type_error(err, ctx)
+      if err.is_a?(GraphQL::IntegerEncodingError)
+        if err.integer_value == 99**99
+          MAGIC_INT_COERCE_VALUE
+        else
+          raise err
+        end
+      else
+        super
+      end
+    end
+
     use GraphQL::Dataloader
 
     lazy_resolve(Proc, :call)
