@@ -113,7 +113,9 @@ class AblyLink extends ApolloLink {
           } else {
             // This isn't a subscription,
             // So pass the data along and close the observer.
-            observer.next(data)
+            if (data) {
+              observer.next(data)
+            }
             observer.complete()
           }
         },
