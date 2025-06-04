@@ -187,6 +187,10 @@ module GraphQL
 
             object_types.each do |t|
               t.interfaces.each do |int_t|
+                if int_t.is_a?(LateBoundType)
+                  int_t = types[int_t.graphql_name]
+                  t.implements(int_t)
+                end
                 int_t.orphan_types(t)
               end
             end
