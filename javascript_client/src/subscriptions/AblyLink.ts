@@ -97,7 +97,7 @@ class AblyLink extends ApolloLink {
       // Check the result of the operation
       const resultObservable = forward(operation)
       // When the operation is done, try to get the subscription ID from the server
-      resultObservable.subscribe({
+      const resultSubscription = resultObservable.subscribe({
         next: (data: any) => {
           // If the operation has the subscription header, it's a subscription
           const subscriptionChannelConfig = this._getSubscriptionChannel(
@@ -135,6 +135,7 @@ class AblyLink extends ApolloLink {
               ablyChannel.presence.leaveClient("graphql-subscriber")
             }
             ablyChannel.unsubscribe()
+            resultSubscription.unsubscribe()
           }
         }
       }
