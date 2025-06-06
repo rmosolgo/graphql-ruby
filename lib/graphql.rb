@@ -72,7 +72,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
 
-  NOT_CONFIGURED = Object.new
+  NOT_CONFIGURED = Object.new.freeze
   private_constant :NOT_CONFIGURED
   module EmptyObjects
     EMPTY_HASH = {}.freeze

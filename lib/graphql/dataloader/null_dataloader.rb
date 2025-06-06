@@ -9,8 +9,11 @@ module GraphQL
     class NullDataloader < Dataloader
       # These are all no-ops because code was
       # executed synchronously.
+
+      def initialize(*); end
       def run; end
       def run_isolated; yield; end
+      def clear_cache; end
       def yield(_source)
         raise GraphQL::Error, "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
       end
@@ -18,6 +21,10 @@ module GraphQL
       def append_job
         yield
         nil
+      end
+
+      def with(*)
+        raise GraphQL::Error, "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
       end
     end
   end

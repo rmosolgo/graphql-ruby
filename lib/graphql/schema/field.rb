@@ -616,6 +616,14 @@ module GraphQL
         end
       end
 
+      def freeze
+        type
+        owner_type
+        arguments_statically_coercible?
+        connection?
+        super
+      end
+
       class MissingReturnTypeError < GraphQL::Error; end
       attr_writer :type
 
