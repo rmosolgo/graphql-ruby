@@ -557,7 +557,7 @@ module GraphQL
           path
         end
 
-        HALT = Object.new
+        HALT = Object.new.freeze
         def continue_value(value, field, is_non_null, ast_node, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
           case value
           when nil

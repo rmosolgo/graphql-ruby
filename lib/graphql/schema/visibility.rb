@@ -45,6 +45,13 @@ module GraphQL
         @loaded_all = false
       end
 
+      def freeze
+        @visit = nil
+        @interface_type_memberships.default_proc = nil
+        @all_references.default_proc = nil
+        super
+      end
+
       def all_directives
         load_all
         @directives
@@ -86,7 +93,7 @@ module GraphQL
         ensure_all_loaded(types_to_visit)
         @profiles.each do |profile_name, example_ctx|
           prof = profile_for(example_ctx)
-          prof.all_types # force loading
+          prof.preload
         end
       end
 

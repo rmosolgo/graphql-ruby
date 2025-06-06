@@ -134,6 +134,10 @@ module GraphQL
           false
         end
 
+        def freeze_schema
+          freeze
+        end
+
         protected
 
         attr_writer :default_graphql_name, :graphql_name

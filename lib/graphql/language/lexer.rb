@@ -271,7 +271,8 @@ module GraphQL
       PUNCTUATION_NAME_FOR_BYTE = Punctuation.constants.each_with_object([]) { |name, arr|
         punct = Punctuation.const_get(name)
         arr[punct.ord] = name
-      }
+      }.freeze
+
 
       QUOTE =         '"'
       UNICODE_DIGIT = /[0-9A-Za-z]/
@@ -321,6 +322,7 @@ module GraphQL
         punct = Punctuation.const_get(punct_name)
         FIRST_BYTES[punct.ord] = ByteFor::PUNCTUATION
       end
+      FIRST_BYTES.freeze
 
 
       # Replace any escaped unicode or whitespace with the _actual_ characters
