@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.8/">API</a>
+            <a href="/api-doc/2.5.9/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -226,7 +226,7 @@
   }
 </span><span class="no">  GRAPHQL</span>
 
-  <span class="n">post_id</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="p">{})</span>
+  <span class="n">post_id</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">draft_post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="p">{})</span>
 
   <span class="c1"># Authors can see their drafts:</span>
   <span class="n">author_result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">viewer: </span><span class="n">author</span> <span class="p">},</span> <span class="ss">variables: </span><span class="p">{</span> <span class="ss">id: </span><span class="n">post_id</span> <span class="p">})</span>
@@ -249,7 +249,7 @@
   <li>Authentication headers are used to load a <code class="language-plaintext highlighter-rouge">context[:viewer]</code></li>
 </ul>
 
-<p>In Rails, you might use a <a href="https://guides.rubyonrails.org/testing.html#functional-tests-for-your-controllers">functional test</a> for this, for example:</p>
+<p>In Rails, you might use a <a href="https://guides.rubyonrails.org/testing.html#functional-testing-for-controllers">functional test</a> for this, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">it</span> <span class="s2">"loads user token into the viewer"</span> <span class="k">do</span>
   <span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ viewer { username } }"</span>
