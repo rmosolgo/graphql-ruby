@@ -30,6 +30,7 @@ function createAbly() {
           },
           unsubscribe(){
             log.push(["unsubscribe", channelName])
+            this._listeners.splice(0, this._listeners.length)
           }
         }
       },
@@ -72,20 +73,29 @@ function createOperation(options: { subscriptionId: string | null }) {
     }
   } as unknown) as Operation
 }
+
+function createNextLink(log: any[]) {
+  return (operation: any) => {
+    log.push(["forward", operation.operationName])
+    return {
+      subscribe(info: any) {
+        info.next()
+        return {
+          unsubscribe() {
+            log.push(["request unsubscribed"])
+          }
+        }
+      }
+    } as any
+  }
+}
+
 describe("AblyLink", () => {
   test("delegates to Ably", () => {
     var mockAbly = createAbly()
     var log = (mockAbly as any).log
     var operation = createOperation({subscriptionId: "sub-1234"})
-
-    var nextLink = (operation: any) => {
-      log.push(["forward", operation.operationName])
-      return {
-        subscribe(info: any) {
-          info.next()
-        }
-      } as any
-    }
+    var nextLink = createNextLink(log)
 
     var observable = new AblyLink({ ably: mockAbly}).request(operation, nextLink)
 
@@ -111,15 +121,7 @@ describe("AblyLink", () => {
     var mockAbly = createAbly()
     var log = (mockAbly as any).log
     var operation = createOperation({subscriptionId: null})
-
-    var nextLink = (operation: any) => {
-      log.push(["forward", operation.operationName])
-      return {
-        subscribe(info: any) {
-          info.next()
-        }
-      } as any
-    }
+    var nextLink = createNextLink(log)
 
     var observable = new AblyLink({ ably: mockAbly}).request(operation, nextLink)
 
@@ -133,4 +135,32 @@ describe("AblyLink", () => {
 
     expect(log).toEqual([["forward", "operationName"]])
   })
+
+  test("it can unsubscribe", () => {
+    var mockAbly = createAbly()
+    var log = (mockAbly as any).log
+    var operation = createOperation({subscriptionId: "sub-1234"})
+    var nextLink = createNextLink(log)
+
+    var observable = new AblyLink({ ably: mockAbly}).request(operation, nextLink)
+
+    var subscription = observable.subscribe(function(result: any) {
+      log.push(["received", result])
+    });
+
+    (mockAbly as any).__testTrigger("sub-1234", "update", { data: { result: { data: "data1" }, more: true} });
+    subscription.unsubscribe();
+    // This is not received:
+    (mockAbly as any).__testTrigger("sub-1234", "update", { data: { result: { data: "data2" }, more: true} });
+
+    expect(log).toEqual([
+      ["forward", "operationName"],
+      ["subscribe", "sub-1234", "update"],
+      ["received", { data: "data1" }],
+      ["unsubscribe", "sub-1234"],
+      ["request unsubscribed"]
+    ])
+  })
+
+
 })
