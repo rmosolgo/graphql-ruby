@@ -57,18 +57,18 @@ jobs:
             ruby: 3.3
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.3
-            graphql_reject_numbers_followed_by_names: 1
+            graphql_future: 1
             redis: 1
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.4
-            graphql_reject_numbers_followed_by_names: 1
+            graphql_future: 1
             isolation_level_fiber: 1
             redis: 1
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
-    - run: echo GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES=1 > $GITHUB_ENV
-      if: ${{ !!matrix.graphql_reject_numbers_followed_by_names }}
+    - run: echo GRAPHQL_FUTURE=1 > $GITHUB_ENV
+      if: ${{ !!matrix.graphql_future }}
     - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
       if: ${{ !!matrix.isolation_level_fiber }}
     - uses: shogo82148/actions-setup-redis@v1
