@@ -66,18 +66,6 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     end
 
     assert_equal "@secret.topSecret on Thing.something is invalid (nil): Expected value to not be null", err.message
-
-    err2 = assert_raises GraphQL::Schema::Directive::InvalidArgumentError do
-      GraphQL::Schema::Field.from_options(
-        name: :something,
-        type: String,
-        null: false,
-        owner: DirectiveTest::Thing,
-        directives: { DirectiveTest::Secret => { top_secret: 12.5 } }
-      )
-    end
-
-    assert_equal "@secret.topSecret on Thing.something is invalid (12.5): Could not coerce value 12.5 to Boolean", err2.message
   end
 
   describe 'repeatable directives' do
@@ -403,10 +391,14 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
   describe "Custom validations on definition directives" do
     class DirectiveValidationSchema < GraphQL::Schema
+      class SomeEnum < GraphQL::Schema::Enum
+        value :VALUE_ONE, value: :v1
+      end
       class ValidatedDirective < GraphQL::Schema::Directive
         locations OBJECT, FIELD
         argument :f, Float, required: false, validates: { numericality: { greater_than: 0 } }
         argument :s, String, required: false, validates: { format: { with: /^[a-z]{3}$/ } }
+        argument :e, SomeEnum, required: false
         validates required: { one_of: [:f, :s]}
       end
 
@@ -427,6 +419,24 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
       f_s_err_res = DirectiveValidationSchema.execute("{ i @validatedDirective }")
       assert_equal [{"message" => "validatedDirective must include exactly one of the following arguments: f, s.", "locations" => [{"line" => 1, "column" => 5}], "path" => ["i"]}], f_s_err_res["errors"]
+    end
+
+    it "works with enums with symbol values" do
+      e_err = DirectiveValidationSchema.execute("{ i @validatedDirective(e: VALUE_BLAH, f: 1.0) }")
+      assert_equal ["Argument 'e' on Directive 'validatedDirective' has an invalid value (VALUE_BLAH). Expected type 'SomeEnum'."], e_err["errors"].map { |e| e["message"] }
+
+      e_res = DirectiveValidationSchema.execute("{ i @validatedDirective(e: VALUE_ONE, f: 1.0) }")
+      assert_equal 100, e_res["data"]["i"]
+
+      obj_type = Class.new(GraphQL::Schema::Object)
+      obj_type.graphql_name("EnumTestObj")
+      directive_defn = DirectiveValidationSchema::ValidatedDirective
+      obj_type.directive(directive_defn, f: 1, e: :v1)
+
+      e_err = assert_raises GraphQL::Schema::Directive::InvalidArgumentError do
+        obj_type.directive(directive_defn, f: 1, e: :blah)
+      end
+      assert_equal "@validatedDirective.e on EnumTestObj is invalid (:blah): Expected \"blah\" to be one of: VALUE_ONE", e_err.message
     end
 
     it "runs custom validation during definition" do
