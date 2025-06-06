@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.14.7 (6 Jun 2025)
+
+- `AblyLink`: Support calling `.unsubscribe()` from application code #5374
+
 # 1.14.6 (25 Mar 2025)
 
 - `ActionCableLink`: accept ActionCable subscription callbacks #5288
