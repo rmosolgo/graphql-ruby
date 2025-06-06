@@ -699,4 +699,72 @@ interface Timestamped implements Node {
       assert_nil int2.comment
     end
   end
+
+  describe "when used as loads" do
+    class InterfaceLoadsSchema < GraphQL::Schema
+      module Sharpenable
+        include GraphQL::Schema::Interface
+        field :is_sharp, Boolean
+      end
+
+      class Pencil < GraphQL::Schema::Object
+        implements Sharpenable
+        field :color, String
+      end
+
+      class Chisel < GraphQL::Schema::Object
+        implements Sharpenable
+        field :width, Float
+      end
+
+      class Mallet < GraphQL::Schema::Object
+        field :weight, Float
+      end
+
+      class Tool < GraphQL::Schema::Union
+        possible_types(Mallet, Chisel, Pencil)
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :tool, Tool do
+          argument :id, ID, loads: Sharpenable, as: :sharpenable_object
+        end
+
+        def tool(sharpenable_object:)
+          sharpenable_object
+        end
+      end
+
+      query(Query)
+      if ADD_WARDEN
+        use GraphQL::Schema::Warden
+      else
+        use GraphQL::Schema::Visibility
+      end
+
+      def self.resolve_type(abs_type, obj, ctx)
+        obj[:object_type]
+      end
+
+      def self.object_from_id(id, ctx)
+        case id
+        when "chisel"
+          { width: 5, is_sharp: true, object_type: Chisel }
+        when "pencil"
+          { color: "gray", is_sharp: false, object_type: Pencil }
+        when "mallet"
+          { weight: 16, object_type: Mallet }
+        else
+          nil
+        end
+      end
+    end
+
+    it "typechecks the loaded object" do
+      assert_equal({ "tool" => { "__typename" => "Chisel" } }, InterfaceLoadsSchema.execute("{ tool(id: \"chisel\") { __typename } }")["data"])
+      assert_equal({ "tool" => { "__typename" => "Pencil" } }, InterfaceLoadsSchema.execute("{ tool(id: \"pencil\") { __typename } }")["data"])
+
+      assert_equal(["No object found for `id: \"mallet\"`"], InterfaceLoadsSchema.execute("{ tool(id: \"mallet\") { __typename } }")["errors"].map {|e| e["message"]})
+    end
+  end
 end

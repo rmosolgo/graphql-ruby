@@ -237,11 +237,17 @@ module GraphQL
           (type.respond_to?(:interfaces) ? interfaces(type).all? { |i| loadable?(i, _ctx) } : true)
       end
 
-      def loadable_possible_types(union_type, _ctx)
+      # This abstract type was determined to be used for `loads` only.
+      # All its possible types are valid possibilities here -- no filtering.
+      def loadable_possible_types(abstract_type, _ctx)
         @loadable_possible_types ||= read_through do |t|
-          t.possible_types # unfiltered
+          if t.is_a?(Class) # union
+            t.possible_types
+          else
+            @schema.possible_types(abstract_type)
+          end
         end
-        @loadable_possible_types[union_type]
+        @loadable_possible_types[abstract_type]
       end
 
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
