@@ -107,7 +107,7 @@ module GraphQL
         def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
         def reachable_type?(type_name); true; end
         def loadable?(type, _ctx); true; end
-        def loadable_possible_types(union_type, _ctx); union_type.possible_types; end
+        def loadable_possible_types(abstract_type, _ctx); union_type.possible_types; end
         def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
         def possible_types(type_defn); @schema.possible_types(type_defn, Query::NullContext.instance, false); end
         def interfaces(obj_type); obj_type.interfaces; end
