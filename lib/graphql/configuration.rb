@@ -1,4 +1,5 @@
-# lib/graphql/configuration.rb
+# frozen_string_literal: true
+
 module GraphQL
   # `GraphQL::Configuration` is a class that holds configuration settings.
   #
