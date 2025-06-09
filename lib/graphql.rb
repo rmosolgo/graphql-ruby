@@ -125,6 +125,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   autoload :LoadApplicationObjectFailedError, "graphql/load_application_object_failed_error"
   autoload :Testing, "graphql/testing"
   autoload :Current, "graphql/current"
+  autoload :Configuration, "graphql/configuration"
   if defined?(::Rails::Engine)
     autoload :Dashboard, 'graphql/dashboard'
   end

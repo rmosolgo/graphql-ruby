@@ -22,8 +22,11 @@ module GraphQL
 
           def field_block
             Proc.new {
-              argument :id, "ID!",
-                description: "ID of the object."
+              argument :id,
+                       GraphQL::Configuration.relay_node_id_type,
+                       required: true,
+                       description: "ID of the object."
+
 
               def resolve(obj, args, ctx)
                 ctx.schema.object_from_id(args[:id], ctx)
