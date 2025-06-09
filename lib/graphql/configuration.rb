@@ -1,5 +1,8 @@
 # lib/graphql/configuration.rb
 module GraphQL
+  # `GraphQL::Configuration` is a class that holds configuration settings.
+  #
+  # I don't expect this class to live long and a better comment will be coming if needed...
   class Configuration
     class << self
       def relay_node_id_type

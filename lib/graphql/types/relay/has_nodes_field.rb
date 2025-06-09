@@ -24,7 +24,6 @@ module GraphQL
             Proc.new {
               argument :ids,
                        [GraphQL::Configuration.relay_node_id_type],
-                       required: true,
                        description: "IDs of the objects."
 
               def resolve(obj, args, ctx)

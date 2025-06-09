@@ -24,7 +24,6 @@ module GraphQL
             Proc.new {
               argument :id,
                        GraphQL::Configuration.relay_node_id_type,
-                       required: true,
                        description: "ID of the object."
 
 
