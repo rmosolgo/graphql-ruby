@@ -8,8 +8,8 @@ module GraphQL
           new_memberships = []
           new_interfaces.each do |int|
             if int.is_a?(Module)
-              unless int.include?(GraphQL::Schema::Interface)
-                raise "#{int} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
+              unless int.include?(GraphQL::Schema::Interface) && !int.is_a?(Class)
+                raise "#{int.respond_to?(:graphql_name) ? "#{int.graphql_name} (#{int})" : int.inspect} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
               end
 
               new_memberships << int.type_membership_class.new(int, self, **options)
