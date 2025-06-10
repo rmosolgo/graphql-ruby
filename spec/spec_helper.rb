@@ -42,7 +42,8 @@ else
   ADD_WARDEN = true
 end
 
-RUN_RACTOR_TESTS = defined?(::Ractor)
+# C methods aren't fair game in non-main Ractors
+RUN_RACTOR_TESTS = defined?(::Ractor) && !USING_C_PARSER
 
 require "rake"
 require "graphql/rake_task"
