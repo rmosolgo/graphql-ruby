@@ -17,13 +17,14 @@ if RUN_RACTOR_TESTS
     end
 
     it "can access some basic GraphQL objects" do
-
       ractor = Ractor.new do
         parent = Ractor.receive
-        query = GraphQL::Query.new(RactorExampleSchema, "{ __typename}", validate: false )
+        query = GraphQL::Query.new(RactorExampleSchema, "{ __typename }" )
         parent.send(query.class.name)
         result = query.result.to_h
         parent.send(result)
+      rescue StandardError => err
+        parent.send(err)
       end
       ractor.send(Ractor.current)
       assert_equal "GraphQL::Query", Ractor.receive
