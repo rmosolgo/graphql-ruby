@@ -8,10 +8,8 @@ if RUN_RACTOR_TESTS
         field :i, Int, fallback_value: 1
       end
       query(Query)
-      validate_timeout(nil) # Timeout doesn't support Ractor yet?
-      use GraphQL::Schema::Visibility, preload: true, dynamic: false, profiles: {
-        nil => {}
-      }
+      validate_timeout(nil) # Timeout doesn't work in non-main Ractors
+      use GraphQL::Schema::Visibility, preload: true, profiles: { nil => {} }
 
       extend GraphQL::Schema::RactorShareable
     end
@@ -24,11 +22,27 @@ if RUN_RACTOR_TESTS
         result = query.result.to_h
         parent.send(result)
       rescue StandardError => err
+        puts err.message
+        puts err.backtrace
         parent.send(err)
       end
       ractor.send(Ractor.current)
       assert_equal "GraphQL::Query", Ractor.receive
       assert_equal({"data" => {"__typename" => "Query"}}, Ractor.receive)
+    end
+
+    it "can get schema members by name" do
+      skip "Doesn't work yet"
+      ractor = Ractor.new do
+        parent = Ractor.receive
+        parent.send(RactorExampleSchema.get_field("Query", "__typename").class.name)
+      rescue StandardError => err
+        puts err.message
+        puts err.backtrace
+        parent.send(err)
+      end
+      ractor.send(Ractor.current)
+      assert_equal "GraphQL::Field", Ractor.receive
     end
 
     it "can parse a schema string to ast" do

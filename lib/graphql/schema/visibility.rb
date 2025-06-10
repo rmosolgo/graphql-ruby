@@ -32,6 +32,7 @@ module GraphQL
           Visibility::Profile
         end
         @preload = preload
+        @preloaded = false
         @profiles = profiles
         @cached_profiles = {}
         @dynamic = dynamic
@@ -46,6 +47,7 @@ module GraphQL
       end
 
       def freeze
+        load_all
         @visit = nil
         @interface_type_memberships.default_proc = nil
         @all_references.default_proc = nil
@@ -72,11 +74,17 @@ module GraphQL
         @types[type_name]
       end
 
+      attr_accessor :types
+
       def preload?
         @preload
       end
 
       def preload
+        if @preloaded
+          raise "Invariant: can't preload twice"
+        end
+        @preloaded = true
         # Traverse the schema now (and in the *_configured hooks below)
         # To make sure things are loaded during boot
         @preloaded_types = Set.new
@@ -207,6 +215,7 @@ module GraphQL
       end
 
       def load_all(types: nil)
+        return if frozen?
         if @visit.nil?
           # Set up the visit system
           @interface_type_memberships = Hash.new { |h, interface_type| h[interface_type] = [] }.compare_by_identity
