@@ -17,7 +17,6 @@ if RUN_RACTOR_TESTS
     end
 
     it "can access some basic GraphQL objects" do
-      assert_equal({ "data" => { "__typename" => "Query" } }, RactorExampleSchema.execute("{ __typename }"))
 
       ractor = Ractor.new do
         parent = Ractor.receive

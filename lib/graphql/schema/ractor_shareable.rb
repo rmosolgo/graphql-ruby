@@ -9,6 +9,12 @@ module GraphQL
 
       module SchemaExtension
         def freeze_schema
+          # warm some ivars:
+          default_analysis_engine
+          default_execution_strategy
+          GraphQL.default_parser
+          default_logger
+
           own_tracers.freeze
           @frozen_tracers = tracers.freeze
           own_trace_modes.each do |m|
