@@ -15,7 +15,6 @@ if RUN_RACTOR_TESTS
 
       extend GraphQL::Schema::RactorShareable
     end
-
     it "can access some basic GraphQL objects" do
       assert_equal({ "data" => { "__typename" => "Query" } }, RactorExampleSchema.execute("{ __typename }"))
 
@@ -27,6 +26,19 @@ if RUN_RACTOR_TESTS
       end
       assert_equal "GraphQL::Query", ractor.take
       assert_equal({"data" => {"__typename" => "Query"}}, ractor.take)
+    end
+
+    it "can parse a schema string to ast" do
+      schema_str = Dummy::Schema.to_definition
+      ractor = Ractor.new do
+        inner_schema_str = Ractor.receive
+        schema_ast = GraphQL.parse(inner_schema_str)
+        Ractor.make_shareable(schema_ast)
+        Ractor.yield(schema_ast)
+      end
+      ractor.send(schema_str)
+      parsed_schema_ast = ractor.take
+      assert_equal schema_str.chomp, parsed_schema_ast.to_query_string
     end
 
     it "doesn't poison other schemas" do

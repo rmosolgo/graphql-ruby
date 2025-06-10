@@ -149,10 +149,12 @@ module GraphQL
       end
 
       # @param new_mode [Symbol] If configured, this will be used when `context: { trace_mode: ... }` isn't set.
-      def default_trace_mode(new_mode = nil)
-        if new_mode
+      def default_trace_mode(new_mode = NOT_CONFIGURED)
+        if !NOT_CONFIGURED.equal?(new_mode)
           @default_trace_mode = new_mode
-        elsif defined?(@default_trace_mode)
+        elsif defined?(@default_trace_mode) &&
+            !@default_trace_mode.nil? # This `nil?` check seems necessary because of
+                                      # Ractors silently initializing @default_trace_mode somehow
           @default_trace_mode
         elsif superclass.respond_to?(:default_trace_mode)
           superclass.default_trace_mode

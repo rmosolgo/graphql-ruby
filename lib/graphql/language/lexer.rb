@@ -20,6 +20,11 @@ module GraphQL
         @finished
       end
 
+      def freeze
+        @scanner = nil
+        super
+      end
+
       attr_reader :pos, :tokens_count
 
       def advance
@@ -242,7 +247,7 @@ module GraphQL
         :SCALAR,
         nil,
         :FRAGMENT
-      ]
+      ].freeze
 
       # This produces a unique integer for bytes 2 and 3 of each keyword string
       # See https://tenderlovemaking.com/2023/09/02/fast-tokenizers-with-stringscanner.html
