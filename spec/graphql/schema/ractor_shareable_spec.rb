@@ -69,7 +69,7 @@ if RUN_RACTOR_TESTS
         query(q)
       end
 
-      assert_equal "Query", new_schema.execute("{ __typename }")["data"]["__typename"]
+      assert_equal "Query", new_schema.execute("{ __typename @include(if: true) }")["data"]["__typename"]
     end
   end
 end

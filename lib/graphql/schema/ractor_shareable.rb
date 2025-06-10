@@ -38,9 +38,6 @@ module GraphQL
           @frozen_directives = Ractor.make_shareable(directives)
 
           Ractor.make_shareable(visibility)
-          visibility.types.each do |_name, type_defn|
-            type_defn.freeze
-          end
           Ractor.make_shareable(introspection_system)
           extend(FrozenMethods)
 
