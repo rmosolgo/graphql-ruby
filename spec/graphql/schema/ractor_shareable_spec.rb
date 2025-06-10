@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-if defined?(::Ractor)
+if RUN_RACTOR_TESTS
   describe GraphQL::Schema::RactorShareable do
     class RactorExampleSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object

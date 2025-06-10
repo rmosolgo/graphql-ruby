@@ -1091,6 +1091,7 @@ describe GraphQL::Dataloader do
           end
           res = schema.execute(query_str)
           assert_equal fields, res["data"].keys.size
+          skip("Doesn't work after Ractor.new (https://bugs.ruby-lang.org/issues/19387)") if RUN_RACTOR_TESTS
           all_fibers = []
           ObjectSpace.each_object(Fiber) do |f|
             all_fibers << f
@@ -1139,6 +1140,7 @@ describe GraphQL::Dataloader do
           end
 
           it "respects a configured fiber_limit" do
+            skip("Doesn't work after Ractor.new (https://bugs.ruby-lang.org/issues/19387)") if RUN_RACTOR_TESTS
             query_str = <<-GRAPHQL
             {
               recipes {
@@ -1178,6 +1180,8 @@ describe GraphQL::Dataloader do
           end
 
           it "accepts a default fiber_limit config" do
+            skip("Doesn't work after Ractor.new (https://bugs.ruby-lang.org/issues/19387)") if RUN_RACTOR_TESTS
+
             schema = Class.new(FiberSchema) do
               use GraphQL::Dataloader, fiber_limit: 4
             end

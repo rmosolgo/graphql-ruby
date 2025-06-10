@@ -42,6 +42,8 @@ else
   ADD_WARDEN = true
 end
 
+RUN_RACTOR_TESTS = defined?(::Ractor)
+
 require "rake"
 require "graphql/rake_task"
 require "pry"
