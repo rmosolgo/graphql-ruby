@@ -3,36 +3,36 @@
 module GraphQL
   module Types
     module Relay
-      # Include this module to your root Query type to get a Relay-style `nodes(id: ID!): [Node]` field that uses the schema's `object_from_id` hook.
       module HasNodesField
         def self.included(child_class)
-          child_class.field(**field_options, &field_block)
+          add_nodes_field(child_class, id_type: GraphQL::Types::ID)
         end
 
-        class << self
-          def field_options
-            {
-              name: "nodes",
-              type: [GraphQL::Types::Relay::Node, null: true],
-              null: false,
-              description: "Fetches a list of objects given a list of IDs.",
-              relay_nodes_field: true,
-            }
+        def self.[](id_type:)
+          Module.new do
+            define_singleton_method(:included) do |child_class|
+              GraphQL::Types::Relay::HasNodesField.add_nodes_field(child_class, id_type: id_type)
+            end
           end
+        end
 
-          def field_block
-            Proc.new {
-              argument :ids, "[ID!]!",
-                       description: "IDs of the objects."
+        def self.add_nodes_field(child_class, id_type:)
+          child_class.field(
+            name: "nodes",
+            type: [GraphQL::Types::Relay::Node, null: true],
+            null: false,
+            description: "Fetches a list of objects given a list of IDs.",
+            relay_nodes_field: true
+          ) do
+            argument :ids, [id_type], required: true, description: "IDs of the objects."
 
-              def resolve(obj, args, ctx)
-                args[:ids].map { |id| ctx.schema.object_from_id(id, ctx) }
-              end
+            def resolve(_obj, args, ctx)
+              args[:ids].map { |id| ctx.schema.object_from_id(id, ctx) }
+            end
 
-              def resolve_field(obj, args, ctx)
-                resolve(obj, args, ctx)
-              end
-            }
+            def resolve_field(obj, args, ctx)
+              resolve(obj, args, ctx)
+            end
           end
         end
       end
