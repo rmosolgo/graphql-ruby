@@ -24,7 +24,7 @@ module GraphQL
             description: "Fetches a list of objects given a list of IDs.",
             relay_nodes_field: true
           ) do
-            argument :ids, [id_type], required: true, description: "IDs of the objects."
+            argument :ids, [id_type], description: "IDs of the objects."
 
             def resolve(_obj, args, ctx)
               args[:ids].map { |id| ctx.schema.object_from_id(id, ctx) }

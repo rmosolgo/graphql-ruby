@@ -24,7 +24,7 @@ module GraphQL
             description: "Fetches an object given its ID.",
             relay_node_field: true
           ) do
-            argument :id, id_type, required: true, description: "ID of the object."
+            argument :id, id_type, description: "ID of the object."
 
             def resolve(_obj, args, ctx)
               ctx.schema.object_from_id(args[:id], ctx)
