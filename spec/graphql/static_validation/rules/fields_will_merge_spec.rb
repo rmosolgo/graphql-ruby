@@ -1073,6 +1073,12 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         }
       assert_equal [expected_error], res.map(&:to_h)
     end
+
+    it "inherits allow_legacy_invalid_empty_selections_on_union" do
+      base_schema = Class.new(schema) { allow_legacy_invalid_return_type_conflicts(true) }
+      ext_schema = Class.new(base_schema)
+      assert ext_schema.allow_legacy_invalid_return_type_conflicts
+    end
   end
 
   describe "conflicting list / non-list fields" do
