@@ -7,7 +7,7 @@ module GraphQL
         def self.included(child_module)
           child_module.extend(ClassMethods)
           child_module.description("An object with an ID.")
-          child_module.field(:id, Configuration.relay_node_id_type, null: false, description: "ID of the object.", resolver_method: :default_global_id)
+          child_module.field(:id, ID, null: false, description: "ID of the object.", resolver_method: :default_global_id)
         end
 
         def default_global_id
