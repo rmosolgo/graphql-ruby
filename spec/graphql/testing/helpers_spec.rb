@@ -110,6 +110,7 @@ describe GraphQL::Testing::Helpers do
 
     query(Query)
     use GraphQL::Dataloader
+    legacy_sync_lazy(true) # TODO this shouldn't be required
     lazy_resolve Proc, :call
 
     def self.unauthorized_object(err)
