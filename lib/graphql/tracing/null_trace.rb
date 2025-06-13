@@ -4,6 +4,6 @@ require "graphql/tracing/trace"
 
 module GraphQL
   module Tracing
-    NullTrace = Trace.new
+    NullTrace = Trace.new.freeze
   end
 end

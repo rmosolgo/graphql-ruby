@@ -37,6 +37,6 @@ module GraphQL
       GraphQL::StaticValidation::SubscriptionRootExistsAndSingleSubscriptionSelection,
       GraphQL::StaticValidation::InputObjectNamesAreUnique,
       GraphQL::StaticValidation::OneOfInputObjectsAreValid,
-    ]
+    ].freeze
   end
 end
