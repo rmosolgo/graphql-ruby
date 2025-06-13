@@ -21,11 +21,16 @@ module GraphQL
       end
 
       def self.coerce_result(value, ctx)
-        value = value.to_i
-        if value >= MIN && value <= MAX
+        value = Integer(value, exception: false)
+
+        if value && (value >= MIN && value <= MAX)
           value
         else
-          err = GraphQL::IntegerEncodingError.new(value, context: ctx)
+          err = GraphQL::IntegerEncodingError.new(
+            "Int cannot represent non 32-bit signed integer value: #{value.inspect}",
+            value: value,
+            context: ctx
+          )
           ctx.schema.type_error(err, ctx)
         end
       end
