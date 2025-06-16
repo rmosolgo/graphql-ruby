@@ -31,10 +31,11 @@ module GraphQL
         # @return [Symbol, nil]
         attr_reader :name
 
-        def initialize(name: nil, context:, schema:)
+        def initialize(name: nil, context:, schema:, visibility:)
           @name = name
           @context = context
           @schema = schema
+          @visibility = visibility
           @all_types = {}
           @all_types_loaded = false
           @unvisited_types = []
@@ -122,7 +123,7 @@ module GraphQL
         end
 
         def type(type_name)
-          t = @schema.visibility.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
+          t = @visibility.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
           if t
             if t.is_a?(Array)
               vis_t = nil
@@ -250,8 +251,8 @@ module GraphQL
         end
 
         def directives
-          @all_directives ||= @schema.visibility.all_directives.select { |dir|
-            @cached_visible[dir] && @schema.visibility.all_references[dir].any? { |ref| ref == true || (@cached_visible[ref] && referenced?(ref)) }
+          @all_directives ||= @visibility.all_directives.select { |dir|
+            @cached_visible[dir] && @visibility.all_references[dir].any? { |ref| ref == true || (@cached_visible[ref] && referenced?(ref)) }
           }
         end
 
@@ -322,7 +323,7 @@ module GraphQL
         end
 
         def referenced?(type_defn)
-          @schema.visibility.all_references[type_defn].any? do |ref|
+          @visibility.all_references[type_defn].any? do |ref|
             case ref
             when GraphQL::Schema::Argument
               @cached_visible_arguments[ref.owner][ref]
@@ -340,7 +341,7 @@ module GraphQL
           case type.kind.name
           when "INTERFACE"
             pts = []
-            @schema.visibility.all_interface_type_memberships[type].each do |(itm, impl_type)|
+            @visibility.all_interface_type_memberships[type].each do |(itm, impl_type)|
               if @cached_visible[itm] && @cached_visible[impl_type] && referenced?(impl_type)
                 pts << impl_type
               end

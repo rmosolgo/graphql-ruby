@@ -18,9 +18,6 @@ module GraphQL
           ctx.freeze
         }
         schema.visibility = self.new(schema, dynamic: dynamic, preload: preload, profiles: profiles, migration_errors: migration_errors)
-        if preload
-          schema.visibility.preload
-        end
       end
 
       def initialize(schema, dynamic:, preload:, profiles:, migration_errors:)
@@ -43,6 +40,9 @@ module GraphQL
         @types = nil
         @all_references = nil
         @loaded_all = false
+        if preload
+          self.preload
+        end
       end
 
       def all_directives
@@ -153,12 +153,12 @@ module GraphQL
           visibility_profile = context[:visibility_profile]
           if @profiles.include?(visibility_profile)
             profile_ctx = @profiles[visibility_profile]
-            @cached_profiles[visibility_profile] ||= @schema.visibility_profile_class.new(name: visibility_profile, context: profile_ctx, schema: @schema)
+            @cached_profiles[visibility_profile] ||= @schema.visibility_profile_class.new(name: visibility_profile, context: profile_ctx, schema: @schema, visibility: self)
           elsif @dynamic
             if context.is_a?(Query::NullContext)
               top_level_profile
             else
-              @schema.visibility_profile_class.new(context: context, schema: @schema)
+              @schema.visibility_profile_class.new(context: context, schema: @schema, visibility: self)
             end
           elsif !context.key?(:visibility_profile)
             raise ArgumentError, "#{@schema} expects a visibility profile, but `visibility_profile:` wasn't passed. Provide a `visibility_profile:` value or add `dynamic: true` to your visibility configuration."
@@ -168,7 +168,7 @@ module GraphQL
         elsif context.is_a?(Query::NullContext)
           top_level_profile
         else
-          @schema.visibility_profile_class.new(context: context, schema: @schema)
+          @schema.visibility_profile_class.new(context: context, schema: @schema, visibility: self)
         end
       end
 
@@ -181,7 +181,7 @@ module GraphQL
         if refresh
           @top_level_profile = nil
         end
-        @top_level_profile ||= @schema.visibility_profile_class.new(context: Query::NullContext.instance, schema: @schema)
+        @top_level_profile ||= @schema.visibility_profile_class.new(context: Query::NullContext.instance, schema: @schema, visibility: self)
       end
 
       private

@@ -121,6 +121,15 @@ describe GraphQL::Schema::Visibility do
       res = exec_query("{ products { name costOfGoodsSold } }", visibility_profile: :admin)
       assert_equal [{ "name" => "Pool Noodle", "costOfGoodsSold" => 5}], res["data"]["products"]
     end
+
+    it "works with subclasses" do
+      child_schema = Class.new(VisSchema) do
+        query(VisSchema::Query)
+      end
+      res = child_schema.execute("{ products { name } }", visibility_profile: :public)
+      assert_equal ["Pool Noodle"], res["data"]["products"].map { |p| p["name"] }
+      assert_equal :public, res.context.types.name
+    end
   end
 
   describe "preloading profiles" do
