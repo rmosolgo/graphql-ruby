@@ -1,7 +1,7 @@
-import type Types from "ably"
+import type { Realtime, RealtimeChannel, Message } from "ably"
 
 type AblyFetcherOptions = {
-  ably: Types.Realtime,
+  ably: Realtime,
   url: String,
   fetch?: typeof fetch,
   fetchOptions?: any,
@@ -15,7 +15,7 @@ type SubscriptionIteratorPayload = {
 const clientName = "graphiql-subscriber"
 
 export default function createAblyFetcher(options: AblyFetcherOptions) {
-  var currentChannel: Types.Types.RealtimeChannelCallbacks | null = null
+  var currentChannel: RealtimeChannel | null = null
 
   return async function*(graphqlParams: any, _fetcherParams: any) {
     var nextPromiseResolve: Function | null = null
@@ -34,7 +34,7 @@ export default function createAblyFetcher(options: AblyFetcherOptions) {
               currentChannel.presence.leaveClient(clientName)
               currentChannel.unsubscribe()
               const channelName = currentChannel.name
-              currentChannel.detach(() => {
+              currentChannel.detach().then(() => {
                 options.ably.channels.release(channelName)
               })
               currentChannel = null
@@ -59,13 +59,12 @@ export default function createAblyFetcher(options: AblyFetcherOptions) {
       if (subId) {
         currentChannel && currentChannel.unsubscribe()
         currentChannel = options.ably.channels.get(subId, { modes: ["SUBSCRIBE", "PRESENCE"] })
-        currentChannel.presence.enterClient(clientName, "subscribed", (err) => {
+        currentChannel.presence.enterClient(clientName, "subscribed").catch((err) => {
           if (err) {
             console.error(err)
           }
         })
-        currentChannel.subscribe("update", (message: Types.Types.Message) => {
-          console.log("update", message)
+        currentChannel.subscribe("update", (message: Message) => {
           if (nextPromiseResolve) {
             nextPromiseResolve({ value: message.data.result, done: false })
           }

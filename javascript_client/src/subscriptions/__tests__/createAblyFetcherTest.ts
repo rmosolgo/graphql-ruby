@@ -12,11 +12,13 @@ function createAbly() {
           _listeners: [] as [string, Function][],
           name: channelName,
           presence: {
-            enterClient(_clientName: string, _status: string) {},
+            enterClient(_clientName: string, _status: string) {
+              return Promise.resolve()
+            },
             leaveClient(_clientName: string) {},
           },
-          detach(callback: Function) {
-            callback()
+          detach() {
+            return Promise.resolve()
           },
           subscribe(eventName: string, callback: Function) {
             this._listeners.push([eventName, callback])
