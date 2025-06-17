@@ -76,10 +76,10 @@ module GraphQL
           end
         end
 
-        def initialize(context:, schema:, name: nil)
+        def initialize(context:, schema:, name: nil, visibility:)
           @name = name
           @skip_error = context[:skip_visibility_migration_error] || context.is_a?(Query::NullContext) || context.is_a?(Hash)
-          @profile_types = GraphQL::Schema::Visibility::Profile.new(context: context, schema: schema)
+          @profile_types = GraphQL::Schema::Visibility::Profile.new(context: context, schema: schema, visibility: visibility)
           if !@skip_error
             context[:visibility_migration_running] = true
             warden_ctx_vals = context.to_h.dup
