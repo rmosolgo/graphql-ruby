@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.14.8 (17 Jun 2025)
+
+- Update some dependencies #5387
+
 # 1.14.7 (6 Jun 2025)
 
 - `AblyLink`: Support calling `.unsubscribe()` from application code #5374
