@@ -14,6 +14,7 @@ module GraphQL
         @leaf = leaf
         @composite = fields? || abstract?
         @description = description
+        freeze
       end
 
       # Does this TypeKind have multiple possible implementers?

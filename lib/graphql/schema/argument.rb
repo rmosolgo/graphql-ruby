@@ -212,6 +212,11 @@ module GraphQL
         @statically_coercible = !requires_parent_object
       end
 
+      def freeze
+        statically_coercible?
+        super
+      end
+
       # Apply the {prepare} configuration to `value`, using methods from `obj`.
       # Used by the runtime.
       # @api private

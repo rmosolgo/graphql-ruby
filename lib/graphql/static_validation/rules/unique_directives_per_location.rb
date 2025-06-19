@@ -19,13 +19,17 @@ module GraphQL
         :on_field,
       ]
 
-      DIRECTIVE_NODE_HOOKS.each do |method_name|
-        define_method(method_name) do |node, parent|
+      VALIDATE_DIRECTIVE_LOCATION_ON_NODE = <<~RUBY
+        def %{method_name}(node, parent)
           if !node.directives.empty?
             validate_directive_location(node)
           end
           super(node, parent)
         end
+      RUBY
+      DIRECTIVE_NODE_HOOKS.each do |method_name|
+        # Can't use `define_method {...}` here  because the proc can't be isolated for use in non-main Ractors
+        module_eval(VALIDATE_DIRECTIVE_LOCATION_ON_NODE % { method_name: method_name }) # rubocop:disable Development/NoEvalCop
       end
 
       private

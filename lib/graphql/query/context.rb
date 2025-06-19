@@ -84,7 +84,7 @@ module GraphQL
 
       attr_writer :types
 
-      RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path])
+      RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path]).freeze
       # @!method []=(key, value)
       #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
 

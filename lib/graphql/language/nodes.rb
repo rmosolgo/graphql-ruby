@@ -83,7 +83,11 @@ module GraphQL
 
         def to_query_string(printer: GraphQL::Language::Printer.new)
           if printer.is_a?(GraphQL::Language::Printer)
-            @query_string ||= printer.print(self)
+            if frozen?
+              @query_string || printer.print(self)
+            else
+              @query_string ||= printer.print(self)
+            end
           else
             printer.print(self)
           end

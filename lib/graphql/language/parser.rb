@@ -2,6 +2,7 @@
 
 require "strscan"
 require "graphql/language/nodes"
+require "graphql/tracing/null_trace"
 
 module GraphQL
   module Language

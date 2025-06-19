@@ -31,6 +31,32 @@ module GraphQL
         # @return [Symbol, nil]
         attr_reader :name
 
+        def freeze
+          @cached_visible.default_proc = nil
+          @cached_visible_fields.default_proc = nil
+          @cached_visible_fields.each do |type, fields|
+            fields.default_proc = nil
+          end
+          @cached_visible_arguments.default_proc = nil
+          @cached_visible_arguments.each do |type, fields|
+            fields.default_proc = nil
+          end
+          @cached_parent_fields.default_proc = nil
+          @cached_parent_fields.each do |type, fields|
+            fields.default_proc = nil
+          end
+          @cached_parent_arguments.default_proc = nil
+          @cached_parent_arguments.each do |type, args|
+            args.default_proc = nil
+          end
+          @cached_possible_types.default_proc = nil
+          @cached_enum_values.default_proc = nil
+          @cached_fields.default_proc = nil
+          @cached_arguments.default_proc = nil
+          @loadable_possible_types.default_proc = nil
+          super
+        end
+
         def initialize(name: nil, context:, schema:, visibility:)
           @name = name
           @context = context
@@ -275,6 +301,42 @@ module GraphQL
 
         def visible_enum_value?(enum_value, _ctx = nil)
           @cached_visible[enum_value]
+        end
+
+        def preload
+          load_all_types
+          @all_types.each do |type_name, type_defn|
+            if type_defn.kind.fields?
+              fields(type_defn).each do |f|
+                field(type_defn, f.graphql_name)
+                arguments(f).each do |arg|
+                  argument(f, arg.graphql_name)
+                end
+              end
+              @schema.introspection_system.dynamic_fields.each do |f|
+                field(type_defn, f.graphql_name)
+              end
+            elsif type_defn.kind.input_object?
+              arguments(type_defn).each do |arg|
+                argument(type_defn, arg.graphql_name)
+              end
+            elsif type_defn.kind.enum?
+              enum_values(type_defn)
+            end
+            # Lots more to do here
+          end
+          @schema.introspection_system.entry_points.each do |f|
+            arguments(f).each do |arg|
+              argument(f, arg.graphql_name)
+            end
+            field(@schema.query, f.graphql_name)
+          end
+          @schema.introspection_system.dynamic_fields.each do |f|
+            arguments(f).each do |arg|
+              argument(f, arg.graphql_name)
+            end
+          end
+
         end
 
         private
