@@ -119,18 +119,28 @@ describe GraphQL::Schema::Scalar do
         def self.coerce_input(val, ctx)
           raise GraphQL::CoercionError, "#{val.inspect} can't be Custom value"
         end
+
+        def self.coerce_result(val, ctx)
+          raise GraphQL::CoercionError, "#{val.inspect} can't be Custom value"
+        end
       end
 
       class Query < GraphQL::Schema::Object
         field :f1, String do
           argument :arg, CustomScalar
         end
+
+        field :f2, CustomScalar
+
+        def f2
+          "bad"
+        end
       end
 
       query(Query)
     end
 
-    it "makes a nice validation error" do
+    it "makes a nice validation error for input coercion" do
       result = CoercionErrorSchema.execute("{ f1(arg: \"a\") }")
       expected_error = {
         "message" => "\"a\" can't be Custom value",
@@ -143,8 +153,17 @@ describe GraphQL::Schema::Scalar do
       }
       assert_equal [expected_error], result["errors"]
     end
-  end
 
+    it "makes a nice validation error for reuslt coercion" do
+      result = CoercionErrorSchema.execute("{ f2 }")
+      expected_error = {
+        "message" => "\"bad\" can't be Custom value",
+        "locations" => [{"line"=>1, "column"=>3}],
+        "path" => ["f2"],
+      }
+      assert_equal [expected_error], result["errors"]
+    end
+  end
 
   describe "validate_input with good input" do
     let(:result) { GraphQL::Types::Int.validate_input(150, GraphQL::Query::NullContext.instance) }

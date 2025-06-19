@@ -1698,7 +1698,11 @@ module GraphQL
       # @return [true, false, nil]
       def allow_legacy_invalid_empty_selections_on_union(new_value = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_value)
-          @allow_legacy_invalid_empty_selections_on_union
+          if defined?(@allow_legacy_invalid_empty_selections_on_union)
+            @allow_legacy_invalid_empty_selections_on_union
+          else
+            find_inherited_value(:allow_legacy_invalid_empty_selections_on_union)
+          end
         else
           @allow_legacy_invalid_empty_selections_on_union = new_value
         end
@@ -1729,7 +1733,11 @@ module GraphQL
       # @return [true, false, nil]
       def allow_legacy_invalid_return_type_conflicts(new_value = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_value)
-          @allow_legacy_invalid_return_type_conflicts
+          if defined?(@allow_legacy_invalid_return_type_conflicts)
+            @allow_legacy_invalid_return_type_conflicts
+          else
+            find_inherited_value(:allow_legacy_invalid_return_type_conflicts)
+          end
         else
           @allow_legacy_invalid_return_type_conflicts = new_value
         end
@@ -1777,7 +1785,11 @@ module GraphQL
       #   complexity_cost_calculation_mode(:compare)
       def complexity_cost_calculation_mode(new_mode = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_mode)
-          @complexity_cost_calculation_mode
+          if defined?(@complexity_cost_calculation_mode)
+            @complexity_cost_calculation_mode
+          else
+            find_inherited_value(:complexity_cost_calculation_mode)
+          end
         else
           @complexity_cost_calculation_mode = new_mode
         end

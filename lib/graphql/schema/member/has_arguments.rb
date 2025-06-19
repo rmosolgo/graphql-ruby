@@ -370,8 +370,8 @@ module GraphQL
                   end
 
                   passes_possible_types_check = if context.types.loadable?(arg_loads_type, context)
-                    if arg_loads_type.kind.union?
-                      # This union is used in `loads:` but not otherwise visible to this query
+                    if arg_loads_type.kind.abstract?
+                      # This union/interface is used in `loads:` but not otherwise visible to this query
                       context.types.loadable_possible_types(arg_loads_type, context).include?(application_object_type)
                     else
                       true

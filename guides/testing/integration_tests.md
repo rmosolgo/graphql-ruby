@@ -82,7 +82,7 @@ it "doesn't show draft posts to anyone except their author" do
   }
   GRAPHQL
 
-  post_id = MySchema.id_from_object(post, Types::Post, {})
+  post_id = MySchema.id_from_object(draft_post, Types::Post, {})
 
   # Authors can see their drafts:
   author_result = MySchema.execute(query_string, context: { viewer: author }, variables: { id: post_id })
@@ -104,7 +104,7 @@ GraphQL is usually served over HTTP. You probably want tests that make sure that
 - Authentication headers are used to load a `context[:viewer]`
 
 
-In Rails, you might use a [functional test](https://guides.rubyonrails.org/testing.html#functional-tests-for-your-controllers) for this, for example:
+In Rails, you might use a [functional test](https://guides.rubyonrails.org/testing.html#functional-testing-for-controllers) for this, for example:
 
 ```ruby
 it "loads user token into the viewer" do

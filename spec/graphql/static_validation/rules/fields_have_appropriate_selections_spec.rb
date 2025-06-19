@@ -155,5 +155,16 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
         assert_includes(errors.map { |e| e["message"] }, expected_err)
       end
     end
+
+    describe "With inherited setting" do
+      let(:schema) { Class.new(Class.new(Dummy::Schema) {
+          allow_legacy_invalid_empty_selections_on_union(true)
+        })
+      }
+
+      it "has correct value" do
+        assert schema.allow_legacy_invalid_empty_selections_on_union
+      end
+    end
   end
 end

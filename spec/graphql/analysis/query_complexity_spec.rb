@@ -638,6 +638,11 @@ describe GraphQL::Analysis::QueryComplexity do
       }
     |}
 
+    it "inherits complexity_cost_calculation_mode" do
+      schema = Class.new(CustomComplexityByMethodSchema)
+      assert_equal CustomComplexityByMethodSchema.complexity_cost_calculation_mode, schema.complexity_cost_calculation_mode
+    end
+
     it "sums the complexity" do
       complexity = reduce_result.first
       # 10 from `complexity`, `0.3` from `value`

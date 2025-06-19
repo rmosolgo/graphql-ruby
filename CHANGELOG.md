@@ -10,7 +10,18 @@
 
 ### Bug fixes
 
-# 2.5.8
+# 2.5.9 (6 Jun 2025)
+
+### New features
+
+- Improve metadata on Scalar coercion errors #5375
+
+### Bug fixes
+
+- Directives: fix validation of Ruby values on definition directive arguments #5377
+- `loads:`: fix typechecking of Interface `loads:` values #5379
+
+# 2.5.8 (28 May 2025)
 
 ### New features
 
@@ -24,20 +35,20 @@
 - Scalar validation: remove redundant infinity handling #5358
 - Directives: fix validation of schema definition directives #5368
 
-# 2.5.7
+# 2.5.7 (15 May 2025)
 
 ### Bug fixes
 
 - `PerfettoTrace`: Handle non-ascii strings #5351
 - `Partial`: Add `#selected_operation_name` to support `GraphQL::Current` #5353
 
-# 2.5.6
+# 2.5.6 (5 May 2025)
 
 ### New features
 
 - Execution: Add `Query#run_partials` for running sub-trees of valid queries #5183
 
-# 2.5.5
+# 2.5.5 (29 Apr 2025)
 
 ### Bug fixes
 
@@ -47,7 +58,7 @@
 - Simplify non-null input object argument handling #5333
 - Fix compatibility with `ruby-head` #5342
 
-# 2.5.4
+# 2.5.4 (18 Apr 2025)
 
 ### Bug fixes
 
@@ -55,7 +66,7 @@
 - `ActiveRecordAssociationSource`: Support has_many associations #5331
 - Remove broken `Context#path` method (use `#current_path` instead) #5332
 
-# 2.5.3
+# 2.5.3 (14 Apr 2025)
 
 ### Deprecations
 
@@ -70,7 +81,7 @@
 - Return more descriptive errors when non-nullable list elements are `null` #5301
 - Visibility: improve performance on large schemas #5325
 
-# 2.5.2
+# 2.5.2 (8 Apr 2025)
 
 ### New features
 
@@ -81,14 +92,14 @@
 - Visibility: hide argument types whose uses are all hidden (to match Warden) #5291
 - InputObject: fix validation for nested input object with `prepare:` method configs #5321
 
-# 2.5.1
+# 2.5.1 (3 Apr 2025)
 
 ### Bug fixes
 
 - Datadog trace: fix Dataloader source tracing method #5318
 - Sentry trace: handle `nil` current span #5313
 
-# 2.5.0
+# 2.5.0 (1 Apr 2025)
 
 ### Breaking changes
 

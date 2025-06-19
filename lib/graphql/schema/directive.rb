@@ -129,8 +129,20 @@ module GraphQL
         # not runtime arguments.
         context = Query::NullContext.instance
         self.class.all_argument_definitions.each do |arg_defn|
-          value = arguments[arg_defn.keyword]
-          result = arg_defn.type.validate_input(value, context)
+          if arguments.key?(arg_defn.keyword)
+            value = arguments[arg_defn.keyword]
+            # This is a Ruby-land value; convert it to graphql for validation
+            graphql_value = begin
+              arg_defn.type.unwrap.coerce_isolated_result(value)
+            rescue GraphQL::Schema::Enum::UnresolvedValueError
+              # Let validation handle this
+              value
+            end
+          else
+            value = graphql_value = nil
+          end
+
+          result = arg_defn.type.validate_input(graphql_value, context)
           if !result.valid?
             raise InvalidArgumentError, "@#{graphql_name}.#{arg_defn.graphql_name} on #{owner.path} is invalid (#{value.inspect}): #{result.problems.first["explanation"]}"
           end

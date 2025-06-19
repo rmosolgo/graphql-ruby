@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.29.10 (3 Jun 2025)
+
+- `@defer`, `@stream`: Include `"data"` in the payload, if there is any, even if there are `"errors"` #5365
+
 # 1.29.9 (20 May 2025)
 
 - Stable relation connection: fix missing records with `nil` values in Postgres #5346
