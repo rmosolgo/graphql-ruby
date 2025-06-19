@@ -320,6 +320,8 @@ module GraphQL
               arguments(type_defn).each do |arg|
                 argument(type_defn, arg.graphql_name)
               end
+            elsif type_defn.kind.enum?
+              enum_values(type_defn)
             end
             # Lots more to do here
           end

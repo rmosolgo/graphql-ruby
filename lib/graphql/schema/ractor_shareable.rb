@@ -8,12 +8,28 @@ module GraphQL
       end
 
       module SchemaExtension
+
+        def freeze_error_handlers(handlers)
+          handlers[:subclass_handlers].default_proc = nil
+          handlers[:subclass_handlers].each do |_class, subclass_handlers|
+            freeze_error_handlers(subclass_handlers)
+          end
+          Ractor.make_shareable(handlers)
+        end
+
         def freeze_schema
           # warm some ivars:
           default_analysis_engine
           default_execution_strategy
           GraphQL.default_parser
           default_logger
+          freeze_error_handlers(error_handlers)
+          # TODO: this freezes errors of parent classes which could cause trouble
+          parent_class = superclass
+          while parent_class.respond_to?(:error_handlers)
+            freeze_error_handlers(parent_class.error_handlers)
+            parent_class = parent_class.superclass
+          end
 
           own_tracers.freeze
           @frozen_tracers = tracers.freeze

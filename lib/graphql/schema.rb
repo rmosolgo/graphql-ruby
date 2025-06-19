@@ -368,7 +368,8 @@ module GraphQL
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
       def get_type(type_name, context = GraphQL::Query::NullContext.instance, use_visibility_profile = use_visibility_profile?)
         if use_visibility_profile
-          return Visibility::Profile.from_context(context, self).type(type_name)
+          profile = Visibility::Profile.from_context(context, self)
+          return profile.type(type_name)
         end
         local_entry = own_types[type_name]
         type_defn = case local_entry
@@ -700,7 +701,21 @@ module GraphQL
         GraphQL::Schema::TypeExpression.build_type(context.query.types, ast_node)
       end
 
-      def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext.instance)
+      def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext.instance, use_visibility_profile = use_visibility_profile?)
+        if use_visibility_profile
+          profile = Visibility::Profile.from_context(context, self)
+          parent_type = case type_or_name
+          when String
+            profile.type(type_or_name)
+          when Module
+            type_or_name
+          when LateBoundType
+            profile.type(type_or_name.name)
+          else
+            raise GraphQL::InvariantError, "Unexpected field owner for #{field_name.inspect}: #{type_or_name.inspect} (#{type_or_name.class})"
+          end
+          return profile.field(parent_type, field_name)
+        end
         parent_type = case type_or_name
         when LateBoundType
           get_type(type_or_name.name, context)
@@ -1108,20 +1123,21 @@ module GraphQL
         end
       end
 
-      NEW_HANDLER_HASH = ->(h, k) {
-        h[k] = {
-          class: k,
-          handler: nil,
-          subclass_handlers: Hash.new(&NEW_HANDLER_HASH),
-         }
-      }
-
       def error_handlers
-        @error_handlers ||= {
-          class: nil,
-          handler: nil,
-          subclass_handlers: Hash.new(&NEW_HANDLER_HASH),
-        }
+        @error_handlers ||= begin
+          new_handler_hash = ->(h, k) {
+            h[k] = {
+              class: k,
+              handler: nil,
+              subclass_handlers: Hash.new(&new_handler_hash),
+            }
+          }
+          {
+            class: nil,
+            handler: nil,
+            subclass_handlers: Hash.new(&new_handler_hash),
+          }
+        end
       end
 
       # @api private

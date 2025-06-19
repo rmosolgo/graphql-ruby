@@ -47,7 +47,7 @@ module GraphQL
 
       def freeze
         load_all
-        @visit = nil
+        @visit = true
         @interface_type_memberships.default_proc = nil
         @all_references.default_proc = nil
         super
