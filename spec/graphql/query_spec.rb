@@ -935,7 +935,7 @@ describe GraphQL::Query do
       end
     end
 
-    warden = GraphQL::Schema::Warden.new(schema: schema_class, context: nil)
+    warden = GraphQL::Schema::Warden.new(schema: schema_class, context: {})
     res = Jazz::Schema.execute("{ __typename } ", warden: warden)
     assert_equal ["Schema is not configured for queries"], res["errors"].map { |e| e["message"] }
   end
