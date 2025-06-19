@@ -500,6 +500,7 @@ describe GraphQL::Schema::Resolver do
     class Schema < GraphQL::Schema
       query(Query)
       mutation(Mutation)
+      dataloader_lazy_setup(self)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
 
