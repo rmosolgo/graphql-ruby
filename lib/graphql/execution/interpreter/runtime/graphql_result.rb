@@ -5,7 +5,8 @@ module GraphQL
     class Interpreter
       class Runtime
         module GraphQLResult
-          def initialize(result_name, result_type, application_value, parent_result, is_non_null_in_parent, selections, is_eager, ast_node, graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
+          def initialize(runtime_instance, result_name, result_type, application_value, parent_result, is_non_null_in_parent, selections, is_eager, ast_node, graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
+            @runtime = runtime_instance
             @ast_node = ast_node
             @graphql_arguments = graphql_arguments
             @graphql_field = graphql_field
@@ -51,11 +52,80 @@ module GraphQL
         end
 
         class GraphQLResultHash
-          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
+          def initialize(_runtime_inst, _result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             super
             @graphql_result_data = {}
             @ordered_result_keys = nil
           end
+
+          def run
+            @runtime.each_gathered_selections(self) do |gathered_selections, is_selection_array, ordered_result_keys|
+              @ordered_result_keys ||= ordered_result_keys
+              if is_selection_array
+                selections_result = GraphQLResultHash.new(
+                  @graphql_response_name,
+                  @graphql_result_type,
+                  @graphql_application_value,
+                  @graphql_parent,
+                  @graphql_is_non_null_in_parent,
+                  gathered_selections,
+                  false,
+                  @ast_node,
+                  @graphql_arguments,
+                  @graphql_field)
+                selections_result.ordered_result_keys = ordered_result_keys
+                target_result = self
+              else
+                selections_result = self
+                target_result = nil
+              end
+              runtime_state = @runtime.get_current_runtime_state
+              runtime_state.current_result_name = nil
+              runtime_state.current_result = selections_result
+              # This is a less-frequent case; use a fast check since it's often not there.
+              if (directives = gathered_selections[:graphql_directives])
+                gathered_selections.delete(:graphql_directives)
+              end
+
+              @runtime.call_method_on_directives(:resolve, selections_result.graphql_application_value, directives) do
+                finished_jobs = 0
+                enqueued_jobs = gathered_selections.size
+                gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
+                  # Field resolution may pause the fiber,
+                  # so it wouldn't get to the `Resolve` call that happens below.
+                  # So instead trigger a run from this outer context.
+                  if selections_result.graphql_is_eager
+                    @runtime.dataloader.clear_cache
+                    @runtime.dataloader.run_isolated {
+                      @runtime.evaluate_selection(
+                        result_name, field_ast_nodes_or_ast_node, selections_result
+                      )
+                      finished_jobs += 1
+                      if finished_jobs == enqueued_jobs
+                        if target_result
+                          selections_result.merge_into(target_result)
+                        end
+                      end
+                      @runtime.dataloader.clear_cache
+                    }
+                  else
+                    @runtime.dataloader.append_job {
+                      @runtime.evaluate_selection(
+                        result_name, field_ast_nodes_or_ast_node, selections_result
+                      )
+                      finished_jobs += 1
+                      if finished_jobs == enqueued_jobs
+                        if target_result
+                          selections_result.merge_into(target_result)
+                        end
+                      end
+                    }
+                  end
+                end
+              end
+            end
+          end
+
 
           attr_accessor :ordered_result_keys
 
@@ -162,9 +232,71 @@ module GraphQL
         class GraphQLResultArray
           include GraphQLResult
 
-          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
+          def initialize(_runtime_inst, _result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections, _is_eager, _ast_node, _graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             super
             @graphql_result_data = []
+          end
+
+          def run
+            current_type = @graphql_result_type
+            inner_type = current_type.of_type
+            # This is true for objects, unions, and interfaces
+            # use_dataloader_job = !inner_type.unwrap.kind.input?
+            inner_type_non_null = inner_type.non_null?
+            idx = nil
+            rts = @runtime.get_current_runtime_state
+            list_value = begin
+              begin
+                @graphql_application_value.each do |inner_value|
+                  idx ||= 0
+                  this_idx = idx
+                  idx += 1
+                  # TODO if use_dataloader_job ...  ??
+                  # Better would be to extract a ListValueStep?
+                  @runtime.resolve_list_item(
+                    inner_value,
+                    inner_type,
+                    inner_type_non_null,
+                    @ast_node,
+                    @graphql_field,
+                    @graphql_application_value,
+                    @graphql_arguments,
+                    this_idx,
+                    self,
+                    @was_scoped, # TODO
+                    rts,
+                  )
+                end
+
+                self
+              rescue NoMethodError => err
+                # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
+                if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == @graphql_application_value : true)
+                  # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
+                  raise ListResultFailedError.new(value: @graphql_application_value, field: @graphql_field, path: @runtime.current_path)
+                else
+                  # This was some other NoMethodError -- let it bubble to reveal the real error.
+                  raise
+                end
+              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+                ex_err
+              rescue StandardError => err
+                begin
+                  @runtime.query.handle_or_reraise(err)
+                rescue GraphQL::ExecutionError => ex_err
+                  ex_err
+                end
+              end
+            rescue StandardError => err
+              begin
+                @runtime.query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
+                ex_err
+              end
+            end
+            # Detect whether this error came while calling `.each` (before `idx` is set) or while running list *items* (after `idx` is set)
+            error_is_non_null = idx.nil? ? is_non_null : inner_type.non_null?
+            @runtime.continue_value(list_value, @graphql_field, error_is_non_null, @ast_node, @graphql_result_name, @graphql_parent)
           end
 
           def graphql_skip_at(index)
