@@ -295,7 +295,7 @@ module GraphQL
               end
             end
             # Detect whether this error came while calling `.each` (before `idx` is set) or while running list *items* (after `idx` is set)
-            error_is_non_null = idx.nil? ? is_non_null : inner_type.non_null?
+            error_is_non_null = idx.nil? ? @graphql_is_non_null_in_parent : inner_type.non_null?
             @runtime.continue_value(list_value, @graphql_field, error_is_non_null, @ast_node, @graphql_result_name, @graphql_parent)
           end
 

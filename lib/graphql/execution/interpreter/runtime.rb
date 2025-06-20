@@ -34,6 +34,28 @@ module GraphQL
             :current_arguments, :current_field, :was_authorized_by_scope_items
         end
 
+        class RunQueue
+          def initialize(dataloader:, lazies_at_depth:)
+            @next_flush = []
+            @dataloader = dataloader
+            @lazies_at_depth = lazies_at_depth
+          end
+
+          def <<(step)
+            @next_flush << step
+          end
+
+          def complete
+            while (fl = @next_flush) && !fl.empty?
+              @next_flush = []
+              while (step = fl.shift)
+                step.run
+              end
+              Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
+            end
+          end
+        end
+
         # @return [GraphQL::Query]
         attr_reader :query
 
@@ -64,13 +86,11 @@ module GraphQL
           end
           # { Class => Boolean }
           @lazy_cache = {}.compare_by_identity
-          @run_queue = []
+          @run_queue = RunQueue.new(dataloader: @dataloader, lazies_at_depth: @lazies_at_depth)
         end
 
         def final_result
-          while (step = @run_queue.shift)
-            step.run
-          end
+          @run_queue.complete
           @response.respond_to?(:graphql_result_data) ? @response.graphql_result_data : @response
         end
 
@@ -222,9 +242,7 @@ module GraphQL
           else
             raise "Invariant: unsupported type kind for partial execution: #{root_type.kind.inspect} (#{root_type})"
           end
-          while (run_step = @run_queue.shift)
-            run_step.run
-          end
+          @run_queue.complete
           nil
         end
 
