@@ -23,6 +23,7 @@ module GraphQL
             @graphql_selections = selections
             @graphql_is_eager = is_eager
             @base_path = nil
+            @graphql_depth = nil
           end
 
           # TODO test full path in Partial
@@ -59,8 +60,19 @@ module GraphQL
             @target_result = nil
           end
 
+          def depth
+            @graphql_depth ||= begin
+              parent_depth = @graphql_parent ? @graphql_parent.depth : 0
+              parent_depth + 1
+            end
+          end
+
           def inspect_step
             "#{self.class}(#{@graphql_result_type.to_type_signature} #{@graphql_result_name} => #{@graphql_selections.size})"
+          end
+
+          def step_finished?
+            true
           end
 
           def run_step
@@ -248,6 +260,14 @@ module GraphQL
 
           def inspect_step
             "#{self.class}(#{@graphql_result_type.to_type_signature} #{@graphql_result_name} => #{@graphql_application_value.size})"
+          end
+
+          def depth
+            @graphql_depth ||= @graphql_parent.depth + 1
+          end
+
+          def step_finished?
+            true
           end
 
           def run_step

@@ -35,10 +35,11 @@ module GraphQL
         end
 
         class RunQueue
-          def initialize(dataloader:, lazies_at_depth:)
+          def initialize(runtime:)
+            @runtime = runtime
             @next_flush = []
-            @dataloader = dataloader
-            @lazies_at_depth = lazies_at_depth
+            @dataloader = runtime.dataloader
+            @lazies_at_depth = runtime.lazies_at_depth
             @running_eagerly = false
           end
 
@@ -59,7 +60,15 @@ module GraphQL
               @next_flush = []
               while (step = fl.shift)
                 # p [:shift_step, step.inspect_step]
-                step.run_step
+                step_result = step.run_step
+                if step.step_finished?
+                  # nothing further
+                else
+                  if @runtime.lazy?(step_result)
+                    @lazies_at_depth[step.depth] << step
+                  end
+                  self << step
+                end
               end
               @dataloader.append_job {
                 Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
@@ -80,7 +89,7 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        attr_reader :dataloader, :run_queue, :current_trace
+        attr_reader :dataloader, :run_queue, :current_trace, :lazies_at_depth
 
         def initialize(query:, lazies_at_depth:)
           @query = query
@@ -101,7 +110,7 @@ module GraphQL
           end
           # { Class => Boolean }
           @lazy_cache = {}.compare_by_identity
-          @run_queue = RunQueue.new(dataloader: @dataloader, lazies_at_depth: @lazies_at_depth)
+          @run_queue = RunQueue.new(runtime: self)
         end
 
         def final_result
@@ -129,6 +138,10 @@ module GraphQL
             end
           end
 
+          def step_finished?
+            true
+          end
+
           def inspect_step
             "#{self.class}(#{ast_node.directives.map(&:name).join(", ")}) => #{@next_step.inspect_step}"
           end
@@ -143,6 +156,10 @@ module GraphQL
 
           def inspect_step
             "#{self.class}(#{@response_hash.graphql_result_type}, #{@response_hash.graphql_application_value})"
+          end
+
+          def step_finished?
+            true
           end
 
           def run_step
@@ -513,52 +530,79 @@ module GraphQL
             @result_name = result_name
             @selection_result = selection_result
             @next_selections = next_selections
+            @step = 0
+          end
+
+          def inspect_step
+            "#{self.class}(#{@field.path})"
+          end
+
+          def step_finished?
+            @step == 2
+          end
+
+          def depth
+            @selection_result.depth + 1
+          end
+
+          attr_accessor :result
+
+          def value # Lazy API
+            @result = @runtime.schema.sync_lazy(@result)
           end
 
           def run_step
-            # if !directives.empty?
-              # This might be executed in a different context; reset this info
-            runtime_state = @runtime.get_current_runtime_state
-            runtime_state.current_field = @field
-            runtime_state.current_arguments = @resolved_arguments
-            runtime_state.current_result_name = @result_name
-            runtime_state.current_result = @selection_result
-            # end
-
-            # Actually call the field resolver and capture the result
-            query = @runtime.query
-            app_result = begin
-              @runtime.current_trace.begin_execute_field(@field, @object, @kwarg_arguments, query)
-              @runtime.current_trace.execute_field(field: @field, ast_node: @ast_node, query: query, object: @object, arguments: @kwarg_arguments) do
-                @field.resolve(@object, @kwarg_arguments, query.context)
-              end
-            rescue GraphQL::ExecutionError => err
-              err
-            rescue StandardError => err
-              begin
-                query.handle_or_reraise(err)
-              rescue GraphQL::ExecutionError => ex_err
-                ex_err
-              end
-            end
-            @runtime.current_trace.end_execute_field(@field, @object, @kwarg_arguments, query, app_result)
-
-            return_type = @field.type
-            continue_value = @runtime.continue_value(app_result, @field, return_type.non_null?, @ast_node, @result_name, @selection_result)
-            if HALT != continue_value
+            case @step
+            when 0
+              # if !directives.empty?
+                # This might be executed in a different context; reset this info
               runtime_state = @runtime.get_current_runtime_state
-              was_scoped = runtime_state.was_authorized_by_scope_items
-              runtime_state.was_authorized_by_scope_items = nil
-              @runtime.continue_field(continue_value, @field, return_type, @ast_node, @next_selections, false, @resolved_arguments, @result_name, @selection_result, was_scoped, runtime_state)
-            else
-              nil
-            end
+              runtime_state.current_field = @field
+              runtime_state.current_arguments = @resolved_arguments
+              runtime_state.current_result_name = @result_name
+              runtime_state.current_result = @selection_result
+              # end
 
-            # If this field is a root mutation field, immediately resolve
-            # all of its child fields before moving on to the next root mutation field.
-            # (Subselections of this mutation will still be resolved level-by-level.)
-            if @selection_result.graphql_is_eager
-              Interpreter::Resolve.resolve_all([app_result], @runtime.dataloader)
+              # Actually call the field resolver and capture the result
+              query = @runtime.query
+              app_result = begin
+                @runtime.current_trace.begin_execute_field(@field, @object, @kwarg_arguments, query)
+                @runtime.current_trace.execute_field(field: @field, ast_node: @ast_node, query: query, object: @object, arguments: @kwarg_arguments) do
+                  @field.resolve(@object, @kwarg_arguments, query.context)
+                end
+              rescue GraphQL::ExecutionError => err
+                err
+              rescue StandardError => err
+                begin
+                  query.handle_or_reraise(err)
+                rescue GraphQL::ExecutionError => ex_err
+                  ex_err
+                end
+              end
+              @runtime.current_trace.end_execute_field(@field, @object, @kwarg_arguments, query, app_result)
+              @result = app_result
+              @step += 1
+              @result
+            when 1
+              return_type = @field.type
+              continue_value = @runtime.continue_value(@result, @field, return_type.non_null?, @ast_node, @result_name, @selection_result)
+              if HALT != continue_value
+                runtime_state = @runtime.get_current_runtime_state
+                was_scoped = runtime_state.was_authorized_by_scope_items
+                runtime_state.was_authorized_by_scope_items = nil
+                @runtime.continue_field(continue_value, @field, return_type, @ast_node, @next_selections, false, @resolved_arguments, @result_name, @selection_result, was_scoped, runtime_state)
+              else
+                nil
+              end
+
+              # If this field is a root mutation field, immediately resolve
+              # all of its child fields before moving on to the next root mutation field.
+              # (Subselections of this mutation will still be resolved level-by-level.)
+              if @selection_result.graphql_is_eager
+                Interpreter::Resolve.resolve_all([@result], @runtime.dataloader)
+              end
+              @step += 1
+              nil
             end
           end
         end
@@ -779,11 +823,17 @@ module GraphQL
         end
 
         class ListItemStep
-          def initialize(runtime, list_result, index, value)
+          def initialize(runtime, list_result, index, item_value)
             @runtime = runtime
             @list_result = list_result
             @index = index
-            @value = value
+            @item_value = item_value
+            @step_finished = false
+            @depth = nil
+          end
+
+          def step_finished?
+            @step_finished
           end
 
           attr_reader :index, :list_result
@@ -792,14 +842,26 @@ module GraphQL
             "#{self.class}@#{@index}"
           end
 
+          def value # Lazy API
+            @item_value = @runtime.schema.sync_lazy(@item_value)
+          end
+
+          def depth
+            @depth ||= @list_result.depth + 1
+          end
+
           def run_step
-            item_type = @list_result.graphql_result_type.of_type
-            item_type_non_null = item_type.non_null?
-            # This will update `response_list` with the lazy
-            continue_value = @runtime.continue_value(@value, @list_result.graphql_field, item_type_non_null, @list_result.ast_node, @index, @list_result)
-            if HALT != continue_value
-              was_scoped = false # TODO!!
-              @runtime.continue_field(continue_value, @list_result.graphql_field, item_type, @list_result.ast_node, @list_result.graphql_selections, false, @list_result.graphql_arguments, @index, @list_result, was_scoped, nil)
+            if @runtime.lazy?(@item_value)
+              @item_value
+            else
+              item_type = @list_result.graphql_result_type.of_type
+              item_type_non_null = item_type.non_null?
+              continue_value = @runtime.continue_value(@item_value, @list_result.graphql_field, item_type_non_null, @list_result.ast_node, @index, @list_result)
+              if HALT != continue_value
+                was_scoped = false # TODO!!
+                @runtime.continue_field(continue_value, @list_result.graphql_field, item_type, @list_result.ast_node, @list_result.graphql_selections, false, @list_result.graphql_arguments, @index, @list_result, was_scoped, nil)
+              end
+              @step_finished = true
             end
           end
         end
