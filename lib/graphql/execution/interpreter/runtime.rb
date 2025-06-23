@@ -143,7 +143,7 @@ module GraphQL
           end
 
           def inspect_step
-            "#{self.class}(#{ast_node.directives.map(&:name).join(", ")}) => #{@next_step.inspect_step}"
+            "#{self.class}(#{@directives ? @directives.map(&:name).join(", ") : nil}) => #{@next_step.inspect_step}"
           end
         end
 
