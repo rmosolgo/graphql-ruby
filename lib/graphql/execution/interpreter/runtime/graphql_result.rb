@@ -56,6 +56,7 @@ module GraphQL
             super
             @graphql_result_data = {}
             @ordered_result_keys = nil
+            @target_result = nil
           end
 
           def inspect_step
@@ -63,76 +64,79 @@ module GraphQL
           end
 
           def run_step
-            @runtime.each_gathered_selections(self) do |gathered_selections, is_selection_array, ordered_result_keys|
-              @ordered_result_keys ||= ordered_result_keys
-              if is_selection_array
-                selections_result = GraphQLResultHash.new(
-                  @graphql_result_name,
-                  @graphql_result_type,
-                  @graphql_application_value,
-                  @graphql_parent,
-                  @graphql_is_non_null_in_parent,
-                  gathered_selections,
-                  @graphql_is_eager,
-                  @ast_node,
-                  @graphql_arguments,
-                  @graphql_field)
-                selections_result.ordered_result_keys = ordered_result_keys
-                target_result = self
-              else
-                selections_result = self
-                target_result = nil
-              end
-              runtime_state = @runtime.get_current_runtime_state
-              runtime_state.current_result_name = nil
-              runtime_state.current_result = selections_result
-              # This is a less-frequent case; use a fast check since it's often not there.
-              if (directives = gathered_selections[:graphql_directives])
-                gathered_selections.delete(:graphql_directives)
-              end
-
-              @runtime.call_method_on_directives(:resolve, selections_result.graphql_application_value, directives) do
-                finished_jobs = 0
-                enqueued_jobs = gathered_selections.size
-                gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
-                  # Field resolution may pause the fiber,
-                  # so it wouldn't get to the `Resolve` call that happens below.
-                  # So instead trigger a run from this outer context.
-                  if selections_result.graphql_is_eager
+            if @ordered_result_keys
+              finished_jobs = 0
+              enqueued_jobs = @graphql_selections.size # TODO needless?
+              @graphql_selections.each do |result_name, field_ast_nodes_or_ast_node|
+                # Field resolution may pause the fiber,
+                # so it wouldn't get to the `Resolve` call that happens below.
+                # So instead trigger a run from this outer context.
+                if @graphql_is_eager
+                  @runtime.dataloader.clear_cache
+                  @runtime.dataloader.run_isolated {
+                    @runtime.evaluate_selection(
+                      result_name, field_ast_nodes_or_ast_node, self
+                    )
+                    finished_jobs += 1
+                    if finished_jobs == enqueued_jobs
+                      if @target_result
+                        self.merge_into(@target_result)
+                      end
+                    end
+                    @runtime.run_queue.complete(eager: true)
                     @runtime.dataloader.clear_cache
-                    @runtime.dataloader.run_isolated {
-                      @runtime.evaluate_selection(
-                        result_name, field_ast_nodes_or_ast_node, selections_result
-                      )
-                      finished_jobs += 1
-                      if finished_jobs == enqueued_jobs
-                        if target_result
-                          selections_result.merge_into(target_result)
-                        end
+                  }
+                else
+                  @runtime.dataloader.append_job {
+                    @runtime.evaluate_selection(
+                      result_name, field_ast_nodes_or_ast_node, self
+                    )
+                    finished_jobs += 1
+                    if finished_jobs == enqueued_jobs
+                      if @target_result
+                        self.merge_into(@target_result)
                       end
-                      @runtime.run_queue.complete(eager: true)
-                      @runtime.dataloader.clear_cache
-                    }
-                  else
-                    @runtime.dataloader.append_job {
-                      @runtime.evaluate_selection(
-                        result_name, field_ast_nodes_or_ast_node, selections_result
-                      )
-                      finished_jobs += 1
-                      if finished_jobs == enqueued_jobs
-                        if target_result
-                          selections_result.merge_into(target_result)
-                        end
-                      end
-                    }
-                  end
+                    end
+                  }
                 end
+              end
+            else
+              @runtime.each_gathered_selections(self) do |gathered_selections, is_selection_array, ordered_result_keys|
+                @ordered_result_keys ||= ordered_result_keys
+                if is_selection_array
+                  selections_result = GraphQLResultHash.new(
+                    @runtime,
+                    @graphql_result_name,
+                    @graphql_result_type,
+                    @graphql_application_value,
+                    @graphql_parent,
+                    @graphql_is_non_null_in_parent,
+                    gathered_selections,
+                    @graphql_is_eager,
+                    @ast_node,
+                    @graphql_arguments,
+                    @graphql_field)
+                  selections_result.target_result = self
+                  selections_result.ordered_result_keys = ordered_result_keys
+                else
+                  selections_result = self
+                  @target_result = nil
+                  @graphql_selections = gathered_selections
+                end
+                runtime_state = @runtime.get_current_runtime_state
+                runtime_state.current_result_name = nil
+                runtime_state.current_result = selections_result
+                # This is a less-frequent case; use a fast check since it's often not there.
+                if (directives = gathered_selections[:graphql_directives])
+                  gathered_selections.delete(:graphql_directives)
+                end
+
+                @runtime.run_queue << DirectivesStep.new(@runtime, selections_result.graphql_application_value, :resolve, directives, selections_result)
               end
             end
           end
 
-
-          attr_accessor :ordered_result_keys
+          attr_accessor :ordered_result_keys, :target_result
 
           include GraphQLResult
 
@@ -251,9 +255,9 @@ module GraphQL
             inner_type = current_type.of_type
             # This is true for objects, unions, and interfaces
             # use_dataloader_job = !inner_type.unwrap.kind.input?
-            inner_type_non_null = inner_type.non_null?
             idx = nil
-            rts = @runtime.get_current_runtime_state
+            dirs = ast_node.directives
+            make_dir_step = !dirs.empty?
             list_value = begin
               begin
                 @graphql_application_value.each do |inner_value|
@@ -262,19 +266,17 @@ module GraphQL
                   idx += 1
                   # TODO if use_dataloader_job ...  ??
                   # Better would be to extract a ListValueStep?
-                  @runtime.resolve_list_item(
-                    inner_value,
-                    inner_type,
-                    inner_type_non_null,
-                    @ast_node,
-                    @graphql_field,
-                    @graphql_application_value,
-                    @graphql_arguments,
-                    this_idx,
+                  list_item_step = ListItemStep.new(
+                    @runtime,
                     self,
-                    @was_scoped, # TODO
-                    rts,
+                    this_idx,
+                    inner_value
                   )
+                  @runtime.run_queue << if make_dir_step
+                    ListItemDirectivesStep.new(@runtime, @graphql_application_value, :resolve_each, dirs, list_item_step)
+                  else
+                    list_item_step
+                  end
                 end
 
                 self

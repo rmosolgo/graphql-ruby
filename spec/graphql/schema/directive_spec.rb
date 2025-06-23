@@ -337,8 +337,11 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
           end
         end
 
-        def self.resolve(obj, args, ctx)
+        def self.resolve(object, arguments, context)
           value = yield
+          # Previously, `yield` returned a finished value. But it doesn't anymore.
+          runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
+          runtime_instance.run_queue.complete
           value.values.compact!
           value
         end

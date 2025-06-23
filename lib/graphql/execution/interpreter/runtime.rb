@@ -114,16 +114,18 @@ module GraphQL
         end
 
         class DirectivesStep
-          def initialize(runtime, object, ast_node, next_step)
+          def initialize(runtime, object, method_to_call, directives, next_step)
             @runtime = runtime
             @object = object
-            @ast_node = ast_node
+            @method_to_call = method_to_call
+            @directives = directives
             @next_step = next_step
           end
 
           def run_step
-            @runtime.call_method_on_directives(:resolve, @object, @ast_node.directives) do
+            @runtime.call_method_on_directives(@method_to_call, @object, @directives) do
               @runtime.run_queue << @next_step
+              @next_step
             end
           end
 
@@ -213,7 +215,7 @@ module GraphQL
               @response.base_path = base_path
               runtime_state.current_result = @response
               if !ast_node.directives.empty?
-                dir_step = DirectivesStep.new(self, object, ast_node, obj_step)
+                dir_step = DirectivesStep.new(self, object, :resolve, ast_node.directives, @response)
                 @run_queue << dir_step
               else
                 @run_queue << @response
@@ -734,6 +736,7 @@ module GraphQL
             response_list = GraphQLResultArray.new(self, result_name, current_type, value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
             set_result(selection_result, result_name, response_list, true, is_non_null)
             @run_queue << response_list
+            response_list # TODO smell this is used because its returned by `yield` inside a directive
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
           end
@@ -749,6 +752,41 @@ module GraphQL
               if HALT != continue_value
                 continue_field(continue_value, field, inner_type, ast_node, response_list.graphql_selections, false, arguments, this_idx, response_list, was_scoped, runtime_state)
               end
+            end
+          end
+        end
+
+        class ListItemDirectivesStep < DirectivesStep
+          def run_step
+            runtime_state = @runtime.get_current_runtime_state
+            runtime_state.current_result_name = @next_step.index
+            runtime_state.current_result = @next_step.list_result
+            super
+          end
+        end
+
+        class ListItemStep
+          def initialize(runtime, list_result, index, value)
+            @runtime = runtime
+            @list_result = list_result
+            @index = index
+            @value = value
+          end
+
+          attr_reader :index, :list_result
+
+          def inspect_step
+            "#{self.class}@#{@index}"
+          end
+
+          def run_step
+            item_type = @list_result.graphql_result_type.of_type
+            item_type_non_null = item_type.non_null?
+            # This will update `response_list` with the lazy
+            continue_value = @runtime.continue_value(@value, @list_result.graphql_field, item_type_non_null, @list_result.ast_node, @index, @list_result)
+            if HALT != continue_value
+              was_scoped = false # TODO!!
+              @runtime.continue_field(continue_value, @list_result.graphql_field, item_type, @list_result.ast_node, @list_result.graphql_selections, false, @list_result.graphql_arguments, @index, @list_result, was_scoped, nil)
             end
           end
         end
