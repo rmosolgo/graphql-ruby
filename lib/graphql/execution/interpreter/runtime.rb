@@ -39,13 +39,20 @@ module GraphQL
             @next_flush = []
             @dataloader = dataloader
             @lazies_at_depth = lazies_at_depth
+            @running_eagerly = false
           end
 
           def <<(step)
-            @next_flush << step
+            if @running_eagerly
+              step.run
+            else
+              @next_flush << step
+            end
           end
 
-          def complete
+          def complete(eager: false)
+            prev_eagerly = @running_eagerly
+            @running_eagerly = eager
             while (fl = @next_flush) && !fl.empty?
               @next_flush = []
               while (step = fl.shift)
@@ -53,6 +60,8 @@ module GraphQL
               end
               Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
             end
+          ensure
+            @running_eagerly = prev_eagerly
           end
         end
 
@@ -65,7 +74,7 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        attr_reader :dataloader
+        attr_reader :dataloader, :run_queue
 
         def initialize(query:, lazies_at_depth:)
           @query = query

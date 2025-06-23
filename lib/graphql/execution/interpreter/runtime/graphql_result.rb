@@ -63,13 +63,13 @@ module GraphQL
               @ordered_result_keys ||= ordered_result_keys
               if is_selection_array
                 selections_result = GraphQLResultHash.new(
-                  @graphql_response_name,
+                  @graphql_result_name,
                   @graphql_result_type,
                   @graphql_application_value,
                   @graphql_parent,
                   @graphql_is_non_null_in_parent,
                   gathered_selections,
-                  false,
+                  @graphql_is_eager,
                   @ast_node,
                   @graphql_arguments,
                   @graphql_field)
@@ -106,6 +106,7 @@ module GraphQL
                           selections_result.merge_into(target_result)
                         end
                       end
+                      @runtime.run_queue.complete(eager: true)
                       @runtime.dataloader.clear_cache
                     }
                   else
