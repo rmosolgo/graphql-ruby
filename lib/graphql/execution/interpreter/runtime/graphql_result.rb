@@ -58,7 +58,11 @@ module GraphQL
             @ordered_result_keys = nil
           end
 
-          def run
+          def inspect_step
+            "#{self.class}(#{@graphql_result_type.to_type_signature} #{@graphql_result_name} => #{@graphql_selections.size})"
+          end
+
+          def run_step
             @runtime.each_gathered_selections(self) do |gathered_selections, is_selection_array, ordered_result_keys|
               @ordered_result_keys ||= ordered_result_keys
               if is_selection_array
@@ -238,7 +242,11 @@ module GraphQL
             @graphql_result_data = []
           end
 
-          def run
+          def inspect_step
+            "#{self.class}(#{@graphql_result_type.to_type_signature} #{@graphql_result_name} => #{@graphql_application_value.size})"
+          end
+
+          def run_step
             current_type = @graphql_result_type
             inner_type = current_type.of_type
             # This is true for objects, unions, and interfaces

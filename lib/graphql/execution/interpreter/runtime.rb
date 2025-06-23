@@ -43,22 +43,28 @@ module GraphQL
           end
 
           def <<(step)
+            # p [:push_step, step.inspect_step]
             if @running_eagerly
-              step.run
+              step.run_step
             else
               @next_flush << step
             end
           end
 
           def complete(eager: false)
+            # p [self.class, __method__, eager, caller(1,1).first, @next_flush.size]
             prev_eagerly = @running_eagerly
             @running_eagerly = eager
             while (fl = @next_flush) && !fl.empty?
               @next_flush = []
               while (step = fl.shift)
-                step.run
+                # p [:shift_step, step.inspect_step]
+                step.run_step
               end
-              Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
+              @dataloader.append_job {
+                Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
+              }
+              @dataloader.run
             end
           ensure
             @running_eagerly = prev_eagerly
@@ -115,10 +121,14 @@ module GraphQL
             @next_step = next_step
           end
 
-          def run
+          def run_step
             @runtime.call_method_on_directives(:resolve, @object, @ast_node.directives) do
               @runtime.run_queue << @next_step
             end
+          end
+
+          def inspect_step
+            "#{self.class}(#{ast_node.directives.map(&:name).join(", ")}) => #{@next_step.inspect_step}"
           end
         end
 
@@ -129,7 +139,11 @@ module GraphQL
             @was_scoped = was_scoped
           end
 
-          def run
+          def inspect_step
+            "#{self.class}(#{@response_hash.graphql_result_type}, #{@response_hash.graphql_application_value})"
+          end
+
+          def run_step
             current_type = @response_hash.graphql_result_type
             value = @response_hash.graphql_application_value
             resolved_type_result = begin
