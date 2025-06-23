@@ -264,8 +264,6 @@ module GraphQL
                   idx ||= 0
                   this_idx = idx
                   idx += 1
-                  # TODO if use_dataloader_job ...  ??
-                  # Better would be to extract a ListValueStep?
                   list_item_step = ListItemStep.new(
                     @runtime,
                     self,
