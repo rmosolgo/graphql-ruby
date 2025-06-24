@@ -44,36 +44,46 @@ module GraphQL
           end
 
           def <<(step)
-            # p [:push_step, step.inspect_step]
-            if @running_eagerly
-              step.run_step
-            else
-              @next_flush << step
-            end
+            # p [:push_step, step.inspect_step, @running_eagerly ? :eager : :queuing]
+            @next_flush << step
           end
 
           def complete(eager: false)
             # p [self.class, __method__, eager, caller(1,1).first, @next_flush.size]
             prev_eagerly = @running_eagerly
             @running_eagerly = eager
+
             while (fl = @next_flush) && !fl.empty?
               @next_flush = []
-              while (step = fl.shift)
-                # p [:shift_step, step.inspect_step]
-                step_result = step.run_step
-                if step.step_finished?
-                  # nothing further
-                else
-                  if @runtime.lazy?(step_result)
-                    @lazies_at_depth[step.depth] << step
+              steps_to_rerun = []
+              @dataloader.append_job do
+                while (step = fl.shift)
+                  # p [:shift_step, step.inspect_step]
+                  step_finished = false
+                  rerun_step = false
+                  while !step_finished
+                    step_result = step.run_step
+                    step_finished = step.step_finished?
+                    if !step_finished && @runtime.lazy?(step_result)
+                      # p [:lazy, step_result.class, step.depth]
+                      @lazies_at_depth[step.depth] << step
+                      rerun_step = true
+                      step_finished = true # we'll come back around to it
+                    end
                   end
-                  self << step
+                  if @running_eagerly && @next_flush.any?
+                    # p [:unshifting, @next_flush.size, :into, fl.size]
+                    fl.unshift(*@next_flush)
+                    @next_flush.clear
+                  end
+                  if rerun_step
+                    steps_to_rerun << step
+                  end
                 end
+                @next_flush.concat(steps_to_rerun)
               end
-              @dataloader.append_job {
-                Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
-              }
               @dataloader.run
+              Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
             end
           ensure
             @running_eagerly = prev_eagerly
@@ -89,7 +99,9 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        attr_reader :dataloader, :run_queue, :current_trace, :lazies_at_depth
+        attr_reader :dataloader, :current_trace, :lazies_at_depth
+
+        attr_accessor :run_queue
 
         def initialize(query:, lazies_at_depth:)
           @query = query
@@ -114,7 +126,6 @@ module GraphQL
         end
 
         def final_result
-          @run_queue.complete
           @response.respond_to?(:graphql_result_data) ? @response.graphql_result_data : @response
         end
 
@@ -143,7 +154,7 @@ module GraphQL
           end
 
           def inspect_step
-            "#{self.class}(#{@directives ? @directives.map(&:name).join(", ") : nil}) => #{@next_step.inspect_step}"
+            "#{self.class.name.split("::").last}##{object_id}(#{@directives ? @directives.map(&:name).join(", ") : nil}) => #{@next_step.inspect_step}"
           end
         end
 
@@ -152,50 +163,63 @@ module GraphQL
             @runtime = runtime
             @response_hash = response_hash
             @was_scoped = was_scoped
+            @step = 0
           end
 
           def inspect_step
-            "#{self.class}(#{@response_hash.graphql_result_type}, #{@response_hash.graphql_application_value})"
+            "#{self.class.name.split("::").last}##{object_id}(#{@response_hash.graphql_result_type}, #{@response_hash.graphql_application_value})"
+          end
+
+          def depth
+            @response_hash.depth
           end
 
           def step_finished?
-            true
+            @step == 2
+          end
+
+          def value
+            @result = @runtime.schema.sync_lazy(@result)
           end
 
           def run_step
-            current_type = @response_hash.graphql_result_type
-            value = @response_hash.graphql_application_value
-            resolved_type_result = begin
-              @runtime.resolve_type(current_type, value)
-            rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
-              return @runtime.continue_value(ex_err, @response_hash.graphql_field, @response_hash.graphql_is_non_null_in_parent, @response_hash.ast_node, @response_hash.graphql_result_name, @response_hash.graphql_parent)
-            rescue StandardError => err
-              begin
-                @runtime.query.handle_or_reraise(err)
-              rescue GraphQL::ExecutionError => ex_err
+            case @step
+            when 0
+              @step += 1
+              current_type = @response_hash.graphql_result_type
+              value = @response_hash.graphql_application_value
+              @result = begin
+                @runtime.resolve_type(current_type, value)
+              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
                 return @runtime.continue_value(ex_err, @response_hash.graphql_field, @response_hash.graphql_is_non_null_in_parent, @response_hash.ast_node, @response_hash.graphql_result_name, @response_hash.graphql_parent)
+              rescue StandardError => err
+                begin
+                  @runtime.query.handle_or_reraise(err)
+                rescue GraphQL::ExecutionError => ex_err
+                  return @runtime.continue_value(ex_err, @response_hash.graphql_field, @response_hash.graphql_is_non_null_in_parent, @response_hash.ast_node, @response_hash.graphql_result_name, @response_hash.graphql_parent)
+                end
               end
-            end
-
-            # after_lazy(resolved_type_or_lazy, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_type_result, runtime_state|
-            if resolved_type_result.is_a?(Array) && resolved_type_result.length == 2
-              resolved_type, resolved_value = resolved_type_result
-            else
-              resolved_type = resolved_type_result
-              resolved_value = value
-            end
-
-            possible_types = @runtime.query.types.possible_types(current_type)
-            if !possible_types.include?(resolved_type)
-              field = @response_hash.graphql_field
-              parent_type = field.owner_type
-              err_class = current_type::UnresolvedTypeError
-              type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
-              @runtime.schema.type_error(type_error, @runtime.context)
-              @runtime.set_result(selection_result, result_name, nil, false, is_non_null)
-              nil
-            else
-              @runtime.continue_field(resolved_value, @response_hash.graphql_field, resolved_type, @response_hash.ast_node, @response_hash.graphql_selections, @response_hash.graphql_is_non_null_in_parent, @response_hash.graphql_arguments, @response_hash.graphql_result_name, @response_hash.graphql_parent, @was_scoped, @runtime_state)
+            when 1
+              @step += 1
+              if @result.is_a?(Array) && @result.length == 2
+                resolved_type, resolved_value = @result
+              else
+                resolved_type = @result
+                resolved_value = value
+              end
+              current_type = @response_hash.graphql_result_type
+              possible_types = @runtime.query.types.possible_types(current_type)
+              if !possible_types.include?(resolved_type)
+                field = @response_hash.graphql_field
+                parent_type = field.owner_type
+                err_class = current_type::UnresolvedTypeError
+                type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
+                @runtime.schema.type_error(type_error, @runtime.context)
+                @runtime.set_result(selection_result, result_name, nil, false, is_non_null)
+                nil
+              else
+                @runtime.continue_field(resolved_value, @response_hash.graphql_field, resolved_type, @response_hash.ast_node, @response_hash.graphql_selections, @response_hash.graphql_is_non_null_in_parent, @response_hash.graphql_arguments, @response_hash.graphql_result_name, @response_hash.graphql_parent, @was_scoped, @runtime.get_current_runtime_state)
+              end
             end
           end
         end
@@ -379,11 +403,6 @@ module GraphQL
         NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
         # @return [void]
-        def evaluate_selections(gathered_selections, selections_result, target_result, runtime_state) # rubocop:disable Metrics/ParameterLists
-
-        end
-
-        # @return [void]
         def evaluate_selection(result_name, field_ast_nodes_or_ast_node, selections_result) # rubocop:disable Metrics/ParameterLists
           return if selections_result.graphql_dead
           # As a performance optimization, the hash key will be a `Node` if
@@ -505,7 +524,6 @@ module GraphQL
             }
           end
 
-
           resolve_field_step = FieldResolveStep.new(self, field_defn, object, ast_node, kwarg_arguments, resolved_arguments, result_name, selection_result, next_selections)
           @run_queue << if !directives.empty?
             # TODO this will get clobbered by other steps in the queue
@@ -534,7 +552,7 @@ module GraphQL
           end
 
           def inspect_step
-            "#{self.class}(#{@field.path})"
+            "#{self.class.name.split("::").last}##{object_id}(#{@field.path} @ #{@result_name})"
           end
 
           def step_finished?
@@ -548,10 +566,25 @@ module GraphQL
           attr_accessor :result
 
           def value # Lazy API
-            @result = @runtime.schema.sync_lazy(@result)
+            @result = begin
+              @runtime.schema.sync_lazy(@result)
+            rescue GraphQL::ExecutionError => err
+              err
+            rescue StandardError => err
+              begin
+                @runtime.query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
+                ex_err
+              end
+            end
           end
 
           def run_step
+            if @selection_result.graphql_dead
+              @step = 2
+              return nil
+            end
+
             case @step
             when 0
               # if !directives.empty?
@@ -586,6 +619,11 @@ module GraphQL
             when 1
               return_type = @field.type
               continue_value = @runtime.continue_value(@result, @field, return_type.non_null?, @ast_node, @result_name, @selection_result)
+              if @selection_result.graphql_is_eager
+                prev_queue = @runtime.run_queue
+                @runtime.run_queue = RunQueue.new(runtime: @runtime)
+              end
+
               if HALT != continue_value
                 runtime_state = @runtime.get_current_runtime_state
                 was_scoped = runtime_state.was_authorized_by_scope_items
@@ -599,7 +637,9 @@ module GraphQL
               # all of its child fields before moving on to the next root mutation field.
               # (Subselections of this mutation will still be resolved level-by-level.)
               if @selection_result.graphql_is_eager
-                Interpreter::Resolve.resolve_all([@result], @runtime.dataloader)
+                @runtime.run_queue.complete(eager: true)
+                @runtime.run_queue = prev_queue
+                # Interpreter::Resolve.resolve_all([@result], @runtime.dataloader)
               end
               @step += 1
               nil
@@ -839,11 +879,21 @@ module GraphQL
           attr_reader :index, :list_result
 
           def inspect_step
-            "#{self.class}@#{@index}"
+            "#{self.class.name.split("::").last}##{object_id}@#{@index}"
           end
 
           def value # Lazy API
-            @item_value = @runtime.schema.sync_lazy(@item_value)
+            @item_value = begin
+              @runtime.schema.sync_lazy(@item_value)
+            rescue GraphQL::ExecutionError => err
+              err
+            rescue StandardError => err
+              begin
+                @runtime.query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
+                ex_err
+              end
+            end
           end
 
           def depth
@@ -859,7 +909,7 @@ module GraphQL
               continue_value = @runtime.continue_value(@item_value, @list_result.graphql_field, item_type_non_null, @list_result.ast_node, @index, @list_result)
               if HALT != continue_value
                 was_scoped = false # TODO!!
-                @runtime.continue_field(continue_value, @list_result.graphql_field, item_type, @list_result.ast_node, @list_result.graphql_selections, false, @list_result.graphql_arguments, @index, @list_result, was_scoped, nil)
+                @runtime.continue_field(continue_value, @list_result.graphql_field, item_type, @list_result.ast_node, @list_result.graphql_selections, false, @list_result.graphql_arguments, @index, @list_result, was_scoped, @runtime.get_current_runtime_state)
               end
               @step_finished = true
             end

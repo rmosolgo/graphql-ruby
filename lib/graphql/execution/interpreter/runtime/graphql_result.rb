@@ -95,7 +95,6 @@ module GraphQL
                         self.merge_into(@target_result)
                       end
                     end
-                    @runtime.run_queue.complete(eager: true)
                     @runtime.dataloader.clear_cache
                   }
                 else
