@@ -523,7 +523,7 @@ module GraphQL
 
         def define_field_resolve_method(owner, method_name, field_name)
           owner.define_method(method_name) { |**args|
-            field_instance = self.class.get_field(field_name)
+            field_instance = context.types.field(owner, field_name)
             context.schema.definition_default_resolve.call(self.class, field_instance, object, args, context)
           }
         end
