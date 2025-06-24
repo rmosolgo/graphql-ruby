@@ -298,8 +298,6 @@ module GraphQL
           end
 
           call_method_on_directives(:resolve, selections_result.graphql_application_value, directives) do
-            finished_jobs = 0
-            enqueued_jobs = gathered_selections.size
             gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
               # Field resolution may pause the fiber,
               # so it wouldn't get to the `Resolve` call that happens below.
@@ -310,12 +308,6 @@ module GraphQL
                   evaluate_selection(
                     result_name, field_ast_nodes_or_ast_node, selections_result
                   )
-                  finished_jobs += 1
-                  if finished_jobs == enqueued_jobs
-                    if target_result
-                      selections_result.merge_into(target_result)
-                    end
-                  end
                   @dataloader.clear_cache
                 }
               else
@@ -323,14 +315,11 @@ module GraphQL
                   evaluate_selection(
                     result_name, field_ast_nodes_or_ast_node, selections_result
                   )
-                  finished_jobs += 1
-                  if finished_jobs == enqueued_jobs
-                    if target_result
-                      selections_result.merge_into(target_result)
-                    end
-                  end
                 }
               end
+            end
+            if target_result
+              selections_result.merge_into(target_result)
             end
             selections_result
           end
