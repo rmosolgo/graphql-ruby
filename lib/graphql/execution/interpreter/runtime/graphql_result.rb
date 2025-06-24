@@ -182,102 +182,7 @@ module GraphQL
               field_ast_nodes = nil
               ast_node = field_ast_nodes_or_ast_node
             end
-            field_name = ast_node.name
-            owner_type = @graphql_result_type
-            field_defn = @runtime.query.types.field(owner_type, field_name)
 
-            # Set this before calling `run_with_directives`, so that the directive can have the latest path
-            runtime_state = @runtime.get_current_runtime_state
-            runtime_state.current_field = field_defn
-            runtime_state.current_result = self
-            runtime_state.current_result_name = result_name
-
-            owner_object = @graphql_application_value
-            if field_defn.dynamic_introspection
-              owner_object = field_defn.owner.wrap(owner_object, @runtime.context)
-            end
-
-            if !field_defn.any_arguments?
-              resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
-              if field_defn.extras.size == 0
-                evaluate_selection_with_resolved_keyword_args(
-                  EmptyObjects::EMPTY_HASH, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, runtime_state
-                )
-              else
-                evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, runtime_state)
-              end
-            else
-              @runtime.query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
-                runtime_state = @runtime.get_current_runtime_state # This might be in a different fiber
-                evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, runtime_state)
-              end
-            end
-          end
-
-          def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, object, result_name, runtime_state)  # rubocop:disable Metrics/ParameterLists
-            # TODO make this a step
-            @runtime.after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: self, runtime_state: runtime_state) do |resolved_arguments, runtime_state|
-              if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
-                return_type_non_null = field_defn.type.non_null?
-                continue_value(resolved_arguments, field_defn, return_type_non_null, ast_node, result_name, self)
-                next
-              end
-
-              kwarg_arguments = if field_defn.extras.empty?
-                if resolved_arguments.empty?
-                  # We can avoid allocating the `{ Symbol => Object }` hash in this case
-                  EmptyObjects::EMPTY_HASH
-                else
-                  resolved_arguments.keyword_arguments
-                end
-              else
-                # Bundle up the extras, then make a new arguments instance
-                # that includes the extras, too.
-                extra_args = {}
-                field_defn.extras.each do |extra|
-                  case extra
-                  when :ast_node
-                    extra_args[:ast_node] = ast_node
-                  when :execution_errors
-                    extra_args[:execution_errors] = ExecutionErrors.new(@runtime.context, ast_node, @runtime.current_path)
-                  when :path
-                    extra_args[:path] = @runtime.current_path
-                  when :lookahead
-                    if !field_ast_nodes
-                      field_ast_nodes = [ast_node]
-                    end
-
-                    extra_args[:lookahead] = Execution::Lookahead.new(
-                      query: @runtime.query,
-                      ast_nodes: field_ast_nodes,
-                      field: field_defn,
-                    )
-                  when :argument_details
-                    # Use this flag to tell Interpreter::Arguments to add itself
-                    # to the keyword args hash _before_ freezing everything.
-                    extra_args[:argument_details] = :__arguments_add_self
-                  when :parent
-                    parent_result = @graphql_parent
-                    if parent_result.is_a?(GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray)
-                      parent_result = parent_result.graphql_parent
-                    end
-                    parent_value = parent_result&.graphql_application_value&.object
-                    extra_args[:parent] = parent_value
-                  else
-                    extra_args[extra] = field_defn.fetch_extra(extra, @runtime.context)
-                  end
-                end
-                if !extra_args.empty?
-                  resolved_arguments = resolved_arguments.merge_extras(extra_args)
-                end
-                resolved_arguments.keyword_arguments
-              end
-
-              evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, object, result_name, runtime_state)
-            end
-          end
-
-          def evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, object, result_name, runtime_state)  # rubocop:disable Metrics/ParameterLists
             # Optimize for the case that field is selected only once
             if field_ast_nodes.nil? || field_ast_nodes.size == 1
               next_selections = ast_node.selections
@@ -291,17 +196,40 @@ module GraphQL
               }
             end
 
-            resolve_field_step = FieldResolveStep.new(@runtime, field_defn, object, ast_node, kwarg_arguments, resolved_arguments, result_name, self, next_selections)
-            @runtime.run_queue.append_step(if !directives.empty?
+            field_name = ast_node.name
+            owner_type = @graphql_result_type
+            field_defn = @runtime.query.types.field(owner_type, field_name)
+
+            owner_object = @graphql_application_value
+            if field_defn.dynamic_introspection
+              owner_object = field_defn.owner.wrap(owner_object, @runtime.context)
+            end
+
+            # Optimize for the case that field is selected only once
+            if field_ast_nodes.nil? || field_ast_nodes.size == 1
+              next_selections = ast_node.selections
+              directives = ast_node.directives
+            else
+              next_selections = []
+              directives = []
+              field_ast_nodes.each { |f|
+                next_selections.concat(f.selections)
+                directives.concat(f.directives)
+              }
+            end
+
+            resolve_field_step = FieldResolveStep.new(@runtime, field_defn, owner_object, ast_node, field_ast_nodes, result_name, self, next_selections)
+            next_step = if !directives.empty?
               # TODO this will get clobbered by other steps in the queue
-              runtime_state.current_field = field_defn
-              runtime_state.current_arguments = resolved_arguments
-              runtime_state.current_result_name = result_name
-              runtime_state.current_result = self
-              DirectivesStep.new(@runtime, object, :resolve, directives, resolve_field_step)
+              # runtime_state.current_field = field_defn
+              # runtime_state.current_arguments = resolved_arguments
+              # runtime_state.current_result_name = result_name
+              # runtime_state.current_result = self
+              DirectivesStep.new(@runtime, owner_object, :resolve, directives, resolve_field_step)
             else
               resolve_field_step
-            end)
+            end
+            @runtime.run_queue.append_step(next_step)
           end
 
           attr_accessor :ordered_result_keys, :target_result, :was_scoped

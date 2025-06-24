@@ -56,7 +56,6 @@ module GraphQL
               steps_to_rerun_after_lazy = []
               while fl.any?
                 while (step = fl.shift)
-                  # p [:shift_step, step.inspect_step]
                   step_finished = false
                   while !step_finished
                     # p [:run_step, step.inspect_step]
@@ -401,13 +400,12 @@ module GraphQL
         end
 
         class FieldResolveStep
-          def initialize(runtime, field, object, ast_node, kwarg_arguments, resolved_arguments, result_name, selection_result, next_selections)
+          def initialize(runtime, field, object, ast_node, ast_nodes, result_name, selection_result, next_selections)
             @runtime = runtime
             @field = field
             @object = object
             @ast_node = ast_node
-            @kwarg_arguments = kwarg_arguments
-            @resolved_arguments = resolved_arguments
+            @ast_nodes = ast_nodes
             @result_name = result_name
             @selection_result = selection_result
             @next_selections = next_selections
@@ -415,11 +413,11 @@ module GraphQL
           end
 
           def inspect_step
-            "#{self.class.name.split("::").last}##{object_id}(#{@field.path} @ #{@selection_result.path.join(".")}.#{@result_name})"
+            "#{self.class.name.split("::").last}##{object_id}/#@step(#{@field.path} @ #{@selection_result.path.join(".")}.#{@result_name})"
           end
 
           def step_finished?
-            @step == 2
+            @step == 4
           end
 
           def depth
@@ -444,12 +442,82 @@ module GraphQL
 
           def run_step
             if @selection_result.graphql_dead
-              @step = 2
+              @step = 4
               return nil
             end
-
+            @step += 1
             case @step
-            when 0
+            when 1
+              if !@field.any_arguments?
+                @resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
+                if @field.extras.size == 0
+                  @kwarg_arguments = EmptyObjects::EMPTY_HASH
+                  @step += 1 # skip step 2
+                end
+                nil
+              else
+                @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @owner_object) do |resolved_arguments|
+                  @resolved_arguments = resolved_arguments
+                end
+              end
+            when 2
+              if @resolved_arguments.is_a?(GraphQL::ExecutionError) || @resolved_arguments.is_a?(GraphQL::UnauthorizedError)
+                return_type_non_null = @field.type.non_null?
+                @runtime.continue_value(@resolved_arguments, @field, return_type_non_null, @ast_node, @result_name, @selection_result)
+                @step = 4
+                return
+              end
+
+              @kwarg_arguments = if @field.extras.empty?
+                if @resolved_arguments.empty?
+                  # We can avoid allocating the `{ Symbol => Object }` hash in this case
+                  EmptyObjects::EMPTY_HASH
+                else
+                  @resolved_arguments.keyword_arguments
+                end
+              else
+                # Bundle up the extras, then make a new arguments instance
+                # that includes the extras, too.
+                extra_args = {}
+                @field.extras.each do |extra|
+                  case extra
+                  when :ast_node
+                    extra_args[:ast_node] = ast_node
+                  when :execution_errors
+                    extra_args[:execution_errors] = ExecutionErrors.new(@runtime.context, @ast_node, @runtime.current_path)
+                  when :path
+                    extra_args[:path] = @runtime.current_path
+                  when :lookahead
+                    if !@field_ast_nodes
+                      @field_ast_nodes = [@ast_node]
+                    end
+
+                    extra_args[:lookahead] = Execution::Lookahead.new(
+                      query: @runtime.query,
+                      ast_nodes: @field_ast_nodes,
+                      field: @field,
+                    )
+                  when :argument_details
+                    # Use this flag to tell Interpreter::Arguments to add itself
+                    # to the keyword args hash _before_ freezing everything.
+                    extra_args[:argument_details] = :__arguments_add_self
+                  when :parent
+                    parent_result = @selection_result.graphql_parent
+                    if parent_result.is_a?(GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray)
+                      parent_result = parent_result.graphql_parent
+                    end
+                    parent_value = parent_result&.graphql_application_value&.object
+                    extra_args[:parent] = parent_value
+                  else
+                    extra_args[extra] = @field.fetch_extra(extra, @runtime.context)
+                  end
+                end
+                if !extra_args.empty?
+                  @resolved_arguments = @resolved_arguments.merge_extras(extra_args)
+                end
+                @resolved_arguments.keyword_arguments
+              end
+            when 3
               # if !directives.empty?
                 # This might be executed in a different context; reset this info
               runtime_state = @runtime.get_current_runtime_state
@@ -477,9 +545,7 @@ module GraphQL
               end
               @runtime.current_trace.end_execute_field(@field, @object, @kwarg_arguments, query, app_result)
               @result = app_result
-              @step += 1
-              @result
-            when 1
+            when 4
               runtime_state = @runtime.get_current_runtime_state
               runtime_state.current_field = @field
               runtime_state.current_arguments = @resolved_arguments
@@ -496,8 +562,6 @@ module GraphQL
               else
                 nil
               end
-
-              @step += 1
               nil
             end
           end
