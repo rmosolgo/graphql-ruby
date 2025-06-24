@@ -37,53 +37,57 @@ module GraphQL
         class RunQueue
           def initialize(runtime:)
             @runtime = runtime
-            @next_flush = []
+            @current_flush = []
             @dataloader = runtime.dataloader
             @lazies_at_depth = runtime.lazies_at_depth
             @running_eagerly = false
           end
 
-          def <<(step)
-            # p [:push_step, step.inspect_step, @running_eagerly ? :eager : :queuing]
-            @next_flush << step
+          def append_step(step)
+            @current_flush << step
           end
 
           def complete(eager: false)
-            # p [self.class, __method__, eager, caller(1,1).first, @next_flush.size]
+            # p [self.class, __method__, eager, caller(1,1).first, @current_flush.size]
             prev_eagerly = @running_eagerly
             @running_eagerly = eager
-
-            while (fl = @next_flush) && !fl.empty?
-              @next_flush = []
-              steps_to_rerun = []
-              @dataloader.append_job do
+            while (fl = @current_flush) && fl.any?
+              @current_flush = []
+              steps_to_rerun_after_lazy = []
+              while fl.any?
                 while (step = fl.shift)
                   # p [:shift_step, step.inspect_step]
                   step_finished = false
-                  rerun_step = false
                   while !step_finished
+                    # p [:run_step, step.inspect_step]
                     step_result = step.run_step
                     step_finished = step.step_finished?
                     if !step_finished && @runtime.lazy?(step_result)
                       # p [:lazy, step_result.class, step.depth]
                       @lazies_at_depth[step.depth] << step
-                      rerun_step = true
+                      steps_to_rerun_after_lazy << step
                       step_finished = true # we'll come back around to it
                     end
                   end
-                  if @running_eagerly && @next_flush.any?
-                    # p [:unshifting, @next_flush.size, :into, fl.size]
-                    fl.unshift(*@next_flush)
-                    @next_flush.clear
-                  end
-                  if rerun_step
-                    steps_to_rerun << step
+
+                  if @running_eagerly && @current_flush.any?
+                    # This is for mutations. If a mutation parent field enqueues any child fields,
+                    # we need to run those before running other mutation parent fields.
+                    fl.unshift(*@current_flush)
+                    @current_flush.clear
                   end
                 end
-                @next_flush.concat(steps_to_rerun)
+
+                if @current_flush.any?
+                  fl.concat(@current_flush)
+                  @current_flush.clear
+                else
+                  fl.concat(steps_to_rerun_after_lazy)
+                  steps_to_rerun_after_lazy.clear
+                  @dataloader.run
+                  Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
+                end
               end
-              @dataloader.run
-              Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
             end
           ensure
             @running_eagerly = prev_eagerly
@@ -126,6 +130,7 @@ module GraphQL
         end
 
         def final_result
+          # TODO can `graphql_result_data` be set to `nil` when `.wrap` fails?
           @response.respond_to?(:graphql_result_data) ? @response.graphql_result_data : @response
         end
 
@@ -144,7 +149,7 @@ module GraphQL
 
           def run_step
             @runtime.call_method_on_directives(@method_to_call, @object, @directives) do
-              @runtime.run_queue << @next_step
+              @runtime.run_queue.append_step(@next_step)
               @next_step
             end
           end
@@ -247,21 +252,16 @@ module GraphQL
           runtime_state = get_current_runtime_state
           case root_type.kind.name
           when "OBJECT"
-            object_proxy = root_type.wrap(object, context)
-            object_proxy = schema.sync_lazy(object_proxy)
-            if object_proxy.nil?
-              @response = nil
+            # TODO: use `nil` for top-level result when `.wrap` returns `nil`
+            @response = GraphQLResultHash.new(self, nil, root_type, object, nil, false, selections, is_eager, ast_node, nil, nil)
+            @response.base_path = base_path
+            runtime_state.current_result = @response
+            next_step = if !ast_node.directives.empty?
+              DirectivesStep.new(self, object, :resolve, ast_node.directives, @response)
             else
-              @response = GraphQLResultHash.new(self, nil, root_type, object_proxy, nil, false, selections, is_eager, ast_node, nil, nil)
-              @response.base_path = base_path
-              runtime_state.current_result = @response
-              if !ast_node.directives.empty?
-                dir_step = DirectivesStep.new(self, object, :resolve, ast_node.directives, @response)
-                @run_queue << dir_step
-              else
-                @run_queue << @response
-              end
+              @response
             end
+            @run_queue.append_step(next_step)
           when "LIST"
             inner_type = root_type.unwrap
             case inner_type.kind.name
@@ -282,7 +282,7 @@ module GraphQL
             else
               @response = GraphQLResultArray.new(self, nil, root_type, object, nil, false, selections, false, ast_node, nil, nil)
               @response.base_path = base_path
-              @run_queue << @response
+              @run_queue.append_step(@response)
             end
           when "SCALAR", "ENUM"
             result_name = ast_node.alias || ast_node.name
@@ -304,7 +304,7 @@ module GraphQL
             @response = GraphQLResultHash.new(nil, root_type, object, nil, false, selections, false, query.ast_nodes.first, nil, nil)
             @response.base_path = base_path
 
-            @run_queue << ResolveTypeStep.new(self, @response, false)
+            @run_queue.append_step(ResolveTypeStep.new(self, @response, false))
           else
             raise "Invariant: unsupported type kind for partial execution: #{root_type.kind.inspect} (#{root_type})"
           end
@@ -400,143 +400,6 @@ module GraphQL
           selections_to_run || selections_by_name
         end
 
-        NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
-
-        # @return [void]
-        def evaluate_selection(result_name, field_ast_nodes_or_ast_node, selections_result) # rubocop:disable Metrics/ParameterLists
-          return if selections_result.graphql_dead
-          # As a performance optimization, the hash key will be a `Node` if
-          # there's only one selection of the field. But if there are multiple
-          # selections of the field, it will be an Array of nodes
-          if field_ast_nodes_or_ast_node.is_a?(Array)
-            field_ast_nodes = field_ast_nodes_or_ast_node
-            ast_node = field_ast_nodes.first
-          else
-            field_ast_nodes = nil
-            ast_node = field_ast_nodes_or_ast_node
-          end
-          field_name = ast_node.name
-          owner_type = selections_result.graphql_result_type
-          field_defn = query.types.field(owner_type, field_name)
-
-          # Set this before calling `run_with_directives`, so that the directive can have the latest path
-          runtime_state = get_current_runtime_state
-          runtime_state.current_field = field_defn
-          runtime_state.current_result = selections_result
-          runtime_state.current_result_name = result_name
-
-          owner_object = selections_result.graphql_application_value
-          if field_defn.dynamic_introspection
-            owner_object = field_defn.owner.wrap(owner_object, context)
-          end
-
-          if !field_defn.any_arguments?
-            resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
-            if field_defn.extras.size == 0
-              evaluate_selection_with_resolved_keyword_args(
-                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state
-              )
-            else
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
-            end
-          else
-            @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
-              runtime_state = get_current_runtime_state # This might be in a different fiber
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
-            end
-          end
-        end
-
-        def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, object, result_name, selection_result, runtime_state)  # rubocop:disable Metrics/ParameterLists
-          after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_arguments, runtime_state|
-            if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
-              return_type_non_null = field_defn.type.non_null?
-              continue_value(resolved_arguments, field_defn, return_type_non_null, ast_node, result_name, selection_result)
-              next
-            end
-
-            kwarg_arguments = if field_defn.extras.empty?
-              if resolved_arguments.empty?
-                # We can avoid allocating the `{ Symbol => Object }` hash in this case
-                NO_ARGS
-              else
-                resolved_arguments.keyword_arguments
-              end
-            else
-              # Bundle up the extras, then make a new arguments instance
-              # that includes the extras, too.
-              extra_args = {}
-              field_defn.extras.each do |extra|
-                case extra
-                when :ast_node
-                  extra_args[:ast_node] = ast_node
-                when :execution_errors
-                  extra_args[:execution_errors] = ExecutionErrors.new(context, ast_node, current_path)
-                when :path
-                  extra_args[:path] = current_path
-                when :lookahead
-                  if !field_ast_nodes
-                    field_ast_nodes = [ast_node]
-                  end
-
-                  extra_args[:lookahead] = Execution::Lookahead.new(
-                    query: query,
-                    ast_nodes: field_ast_nodes,
-                    field: field_defn,
-                  )
-                when :argument_details
-                  # Use this flag to tell Interpreter::Arguments to add itself
-                  # to the keyword args hash _before_ freezing everything.
-                  extra_args[:argument_details] = :__arguments_add_self
-                when :parent
-                  parent_result = selection_result.graphql_parent
-                  if parent_result.is_a?(GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray)
-                    parent_result = parent_result.graphql_parent
-                  end
-                  parent_value = parent_result&.graphql_application_value&.object
-                  extra_args[:parent] = parent_value
-                else
-                  extra_args[extra] = field_defn.fetch_extra(extra, context)
-                end
-              end
-              if !extra_args.empty?
-                resolved_arguments = resolved_arguments.merge_extras(extra_args)
-              end
-              resolved_arguments.keyword_arguments
-            end
-
-            evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, object, result_name, selection_result, runtime_state)
-          end
-        end
-
-        def evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, object, result_name, selection_result, runtime_state)  # rubocop:disable Metrics/ParameterLists
-
-          # Optimize for the case that field is selected only once
-          if field_ast_nodes.nil? || field_ast_nodes.size == 1
-            next_selections = ast_node.selections
-            directives = ast_node.directives
-          else
-            next_selections = []
-            directives = []
-            field_ast_nodes.each { |f|
-              next_selections.concat(f.selections)
-              directives.concat(f.directives)
-            }
-          end
-
-          resolve_field_step = FieldResolveStep.new(self, field_defn, object, ast_node, kwarg_arguments, resolved_arguments, result_name, selection_result, next_selections)
-          @run_queue << if !directives.empty?
-            # TODO this will get clobbered by other steps in the queue
-            runtime_state.current_field = field_defn
-            runtime_state.current_arguments = resolved_arguments
-            runtime_state.current_result_name = result_name
-            runtime_state.current_result = selection_result
-            DirectivesStep.new(self, object, :resolve, directives, resolve_field_step)
-          else
-            resolve_field_step
-          end
-        end
-
         class FieldResolveStep
           def initialize(runtime, field, object, ast_node, kwarg_arguments, resolved_arguments, result_name, selection_result, next_selections)
             @runtime = runtime
@@ -552,7 +415,7 @@ module GraphQL
           end
 
           def inspect_step
-            "#{self.class.name.split("::").last}##{object_id}(#{@field.path} @ #{@result_name})"
+            "#{self.class.name.split("::").last}##{object_id}(#{@field.path} @ #{@selection_result.path.join(".")}.#{@result_name})"
           end
 
           def step_finished?
@@ -617,12 +480,13 @@ module GraphQL
               @step += 1
               @result
             when 1
+              runtime_state = @runtime.get_current_runtime_state
+              runtime_state.current_field = @field
+              runtime_state.current_arguments = @resolved_arguments
+              runtime_state.current_result_name = @result_name
+              runtime_state.current_result = @selection_result
               return_type = @field.type
               continue_value = @runtime.continue_value(@result, @field, return_type.non_null?, @ast_node, @result_name, @selection_result)
-              if @selection_result.graphql_is_eager
-                prev_queue = @runtime.run_queue
-                @runtime.run_queue = RunQueue.new(runtime: @runtime)
-              end
 
               if HALT != continue_value
                 runtime_state = @runtime.get_current_runtime_state
@@ -633,14 +497,6 @@ module GraphQL
                 nil
               end
 
-              # If this field is a root mutation field, immediately resolve
-              # all of its child fields before moving on to the next root mutation field.
-              # (Subselections of this mutation will still be resolved level-by-level.)
-              if @selection_result.graphql_is_eager
-                @runtime.run_queue.complete(eager: true)
-                @runtime.run_queue = prev_queue
-                # Interpreter::Resolve.resolve_all([@result], @runtime.dataloader)
-              end
               @step += 1
               nil
             end
@@ -828,25 +684,15 @@ module GraphQL
             r
           when "UNION", "INTERFACE"
             response_hash = GraphQLResultHash.new(self, result_name, current_type, value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
-            @run_queue << ResolveTypeStep.new(self, response_hash, was_scoped)
+            @run_queue.append_step ResolveTypeStep.new(self, response_hash, was_scoped)
           when "OBJECT"
-            object_proxy = begin
-              was_scoped ? current_type.wrap_scoped(value, context) : current_type.wrap(value, context)
-            rescue GraphQL::ExecutionError => err
-              err
-            end
-            after_lazy(object_proxy, ast_node: ast_node, field: field, owner_object: selection_result.graphql_application_value, arguments: arguments, trace: false, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_object, runtime_state|
-              continue_value = continue_value(inner_object, field, is_non_null, ast_node, result_name, selection_result)
-              if HALT != continue_value
-                response_hash = GraphQLResultHash.new(self, result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
-                set_result(selection_result, result_name, response_hash, true, is_non_null)
-                @run_queue << response_hash
-              end
-            end
+            response_hash = GraphQLResultHash.new(self, result_name, current_type, value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
+            response_hash.was_scoped = was_scoped
+            @run_queue.append_step response_hash
           when "LIST"
             response_list = GraphQLResultArray.new(self, result_name, current_type, value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
             set_result(selection_result, result_name, response_list, true, is_non_null)
-            @run_queue << response_list
+            @run_queue.append_step(response_list)
             response_list # TODO smell this is used because its returned by `yield` inside a directive
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
