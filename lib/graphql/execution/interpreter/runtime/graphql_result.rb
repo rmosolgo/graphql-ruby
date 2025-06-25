@@ -100,6 +100,7 @@ module GraphQL
               elsif @graphql_parent
                 @runtime.set_result(@graphql_parent, @graphql_result_name, self, true, @graphql_is_non_null_in_parent)
               end
+              # TODO Why cant this go right to the next step?
               nil
             when 3
               @runtime.each_gathered_selections(self) do |gathered_selections, is_selection_array, ordered_result_keys|
@@ -119,6 +120,7 @@ module GraphQL
                     @graphql_field)
                   selections_result.target_result = self
                   selections_result.ordered_result_keys = ordered_result_keys
+                  # TODO This hash should start in step 4?
                 else
                   selections_result = self
                   @target_result = nil
@@ -133,6 +135,7 @@ module GraphQL
                   dir_step = DirectivesStep.new(@runtime, selections_result.graphql_application_value, :resolve, directives, selections_result)
                   @runtime.run_queue.append_step(dir_step)
                 elsif @target_result.nil?
+                  # TODO extract these substeps out into methods, call that method directly
                   run_step # Run itself again
                 else
                   @runtime.run_queue.append_step(selections_result)
