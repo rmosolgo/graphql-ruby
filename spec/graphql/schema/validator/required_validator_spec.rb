@@ -36,7 +36,7 @@ describe GraphQL::Schema::Validator::RequiredValidator do
       name: "All options hidden",
       config: { one_of: [:secret, :secret2] },
       cases: [
-        { query: "{ validated: multiValidated(a: 1, b: 2) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, b."] },
+        { query: "{ validated: multiValidated(a: 1, b: 2) }", result: nil, error_messages: ["multiValidated is missing a required argument."] },
       ],
     },
     {
