@@ -359,6 +359,11 @@ interface Timestamped implements Node {
 
       assert_equal ["Named", "Node", "Timestamped"], interfaces_names
     end
+
+    it "doesn't return interfaces as possible types" do
+      pts = TransitiveInterfaceSchema.possible_types(TransitiveInterfaceSchema::Node)
+      assert_equal ["Thing"], pts.map(&:graphql_name)
+    end
   end
 
   describe "supplying a fallback_value to a field" do
