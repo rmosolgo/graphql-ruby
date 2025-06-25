@@ -96,17 +96,26 @@ module GraphQL
         end
 
         def build_message(context)
-          argument_definitions = @validated.arguments(context).values
+          argument_definitions = context.types.arguments(@validated)
+
           required_names = @one_of.map do |arg_keyword|
             if arg_keyword.is_a?(Array)
               names = arg_keyword.map { |arg| arg_keyword_to_graphql_name(argument_definitions, arg) }
+              names.compact! # hidden arguments are `nil`
               "(" + names.join(" and ") + ")"
             else
               arg_keyword_to_graphql_name(argument_definitions, arg_keyword)
             end
           end
+          required_names.compact! # remove entries for hidden arguments
 
-          if required_names.size == 1
+
+          case required_names.size
+          when 0
+            # The required definitions were hidden from the client.
+            # Another option here would be to raise an error in the application....
+            "%{validated} is missing a required argument."
+          when 1
             "%{validated} must include the following argument: #{required_names.first}."
           else
             "%{validated} must include exactly one of the following arguments: #{required_names.join(", ")}."
@@ -115,7 +124,7 @@ module GraphQL
 
         def arg_keyword_to_graphql_name(argument_definitions, arg_keyword)
           argument_definition = argument_definitions.find { |defn| defn.keyword == arg_keyword }
-          argument_definition.graphql_name
+          argument_definition&.graphql_name
         end
       end
     end

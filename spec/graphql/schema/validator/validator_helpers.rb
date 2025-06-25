@@ -20,6 +20,21 @@ module ValidatorHelpers
   def build_schema(arg_type, validates_config)
     schema = Class.new(GraphQL::Schema)
 
+    base_argument = Class.new(GraphQL::Schema::Argument) do
+      def initialize(*args, secret: false, **kwargs, &block)
+        super(*args, **kwargs, &block)
+        @secret = secret
+      end
+
+      def visible?(_ctx)
+        !@secret
+      end
+    end
+
+    base_field = Class.new(GraphQL::Schema::Field) do
+      argument_class(base_argument)
+    end
+
     validated_input = Class.new(GraphQL::Schema::InputObject) do
       graphql_name "ValidatedInput"
       argument :a, arg_type, required: false
@@ -55,6 +70,7 @@ module ValidatorHelpers
 
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
+      field_class(base_field)
       field :validated, arg_type do
         argument :value, arg_type, required: false, validates: validates_config
       end
@@ -67,6 +83,8 @@ module ValidatorHelpers
         argument :a, arg_type, required: false
         argument :b, arg_type, required: false
         argument :c, arg_type, required: false
+        argument :secret, arg_type, required: false, secret: true
+        argument :secret2, arg_type, required: false, secret: true
       end
 
       def multi_validated(a: 0, b: 0, c: 0)
@@ -91,6 +109,11 @@ module ValidatorHelpers
     end
 
     schema.query(query_type)
+    if ADD_WARDEN
+      schema.use(GraphQL::Schema::Warden)
+    else
+      schema.use(GraphQL::Schema::Visibility)
+    end
     schema
   end
 
