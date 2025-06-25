@@ -212,7 +212,11 @@ module GraphQL
       def load_all(types: nil)
         if @visit.nil?
           # Set up the visit system
-          @interface_type_memberships = Hash.new { |h, interface_type| h[interface_type] = [] }.compare_by_identity
+          @interface_type_memberships = Hash.new { |h, interface_type|
+            h[interface_type] = Hash.new { |h2, obj_type|
+              h2[obj_type] = []
+            }.compare_by_identity
+          }.compare_by_identity
           @directives = []
           @types = {} # String => Module
           @all_references = Hash.new { |h, member| h[member] = Set.new.compare_by_identity }.compare_by_identity
@@ -237,7 +241,7 @@ module GraphQL
                   @all_references[itm.abstract_type] << member
                   # `itm.object_type` may not actually be `member` if this implementation
                   # is inherited from a superclass
-                  @interface_type_memberships[itm.abstract_type] << [itm, member]
+                  @interface_type_memberships[itm.abstract_type][member] << itm
                 end
               elsif member < GraphQL::Schema::Union
                 @unions_for_references << member
@@ -286,12 +290,11 @@ module GraphQL
 
         # TODO: somehow don't iterate over all these,
         # only the ones that may have been modified
-        @interface_type_memberships.each do |int_type, type_membership_pairs|
-          referers = @all_references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
-          if !referers.empty?
-            type_membership_pairs.each do |(type_membership, impl_type)|
-              # Add new items only:
-              @all_references[impl_type] |= referers
+        @interface_type_memberships.each do |int_type, obj_type_memberships|
+          referrers = @all_references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
+          if !referrers.empty?
+            obj_type_memberships.each_key do |impl_type|
+              @all_references[impl_type] |= referrers
             end
           end
         end

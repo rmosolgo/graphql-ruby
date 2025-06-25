@@ -258,7 +258,9 @@ module GraphQL
                 # We can get these now; we'll have to get late-bound types later
                 if interface_type.is_a?(Module) && type.is_a?(Class)
                   implementers = @possible_types[interface_type] ||= []
-                  implementers << type
+                  if !implementers.include?(type)
+                    implementers << type
+                  end
                 end
               when String, Schema::LateBoundType
                 interface_type = interface_type_membership

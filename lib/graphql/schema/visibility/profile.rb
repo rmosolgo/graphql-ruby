@@ -403,9 +403,11 @@ module GraphQL
           case type.kind.name
           when "INTERFACE"
             pts = []
-            @visibility.all_interface_type_memberships[type].each do |(itm, impl_type)|
-              if @cached_visible[itm] && @cached_visible[impl_type] && referenced?(impl_type)
-                pts << impl_type
+            @visibility.all_interface_type_memberships[type].each do |impl_type, type_memberships|
+              if impl_type.kind.object? && referenced?(impl_type) && @cached_visible[impl_type]
+                if type_memberships.any? { |itm| @cached_visible[itm] }
+                  pts << impl_type
+                end
               end
             end
             pts
