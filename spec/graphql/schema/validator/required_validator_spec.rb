@@ -7,7 +7,7 @@ describe GraphQL::Schema::Validator::RequiredValidator do
 
   expectations = [
     {
-      config: { one_of: [:a, :b] },
+      config: { one_of: [:a, :b, :secret] },
       cases: [
         { query: "{ validated: multiValidated(a: 1, b: 2) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, b."] },
         { query: "{ validated: multiValidated(a: 1, b: 2, c: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, b."] },
@@ -31,6 +31,13 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         { query: "{ validated: multiValidated(c: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, (b and c)."] },
         { query: "{ validated: multiValidated(b: 2) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, (b and c)."] },
       ]
+    },
+    {
+      name: "All options hidden",
+      config: { one_of: [:secret, :secret2] },
+      cases: [
+        { query: "{ validated: multiValidated(a: 1, b: 2) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, b."] },
+      ],
     },
     {
       name: "Definition order independence",
