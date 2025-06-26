@@ -162,72 +162,6 @@ module GraphQL
           end
         end
 
-        class ResolveTypeStep
-          def initialize(runtime, response_hash, was_scoped)
-            @runtime = runtime
-            @response_hash = response_hash
-            @was_scoped = was_scoped
-            @step = 0
-          end
-
-          def inspect_step
-            "#{self.class.name.split("::").last}##{object_id}(#{@response_hash.graphql_result_type}, #{@response_hash.graphql_application_value})"
-          end
-
-          def depth
-            @response_hash.depth
-          end
-
-          def step_finished?
-            @step == 2
-          end
-
-          def value
-            @result = @runtime.schema.sync_lazy(@result)
-          end
-
-          def run_step
-            case @step
-            when 0
-              @step += 1
-              current_type = @response_hash.graphql_result_type
-              value = @response_hash.graphql_application_value
-              @result = begin
-                @runtime.resolve_type(current_type, value)
-              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
-                return @runtime.continue_value(ex_err, @response_hash.graphql_field, @response_hash.graphql_is_non_null_in_parent, @response_hash.ast_node, @response_hash.graphql_result_name, @response_hash.graphql_parent)
-              rescue StandardError => err
-                begin
-                  @runtime.query.handle_or_reraise(err)
-                rescue GraphQL::ExecutionError => ex_err
-                  return @runtime.continue_value(ex_err, @response_hash.graphql_field, @response_hash.graphql_is_non_null_in_parent, @response_hash.ast_node, @response_hash.graphql_result_name, @response_hash.graphql_parent)
-                end
-              end
-            when 1
-              @step += 1
-              if @result.is_a?(Array) && @result.length == 2
-                resolved_type, resolved_value = @result
-              else
-                resolved_type = @result
-                resolved_value = value
-              end
-              current_type = @response_hash.graphql_result_type
-              possible_types = @runtime.query.types.possible_types(current_type)
-              if !possible_types.include?(resolved_type)
-                field = @response_hash.graphql_field
-                parent_type = field.owner_type
-                err_class = current_type::UnresolvedTypeError
-                type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
-                @runtime.schema.type_error(type_error, @runtime.context)
-                @runtime.set_result(selection_result, result_name, nil, false, is_non_null)
-                nil
-              else
-                @runtime.continue_field(resolved_value, @response_hash.graphql_field, resolved_type, @response_hash.ast_node, @response_hash.graphql_selections, @response_hash.graphql_is_non_null_in_parent, @response_hash.graphql_arguments, @response_hash.graphql_result_name, @response_hash.graphql_parent, @was_scoped, @runtime.get_current_runtime_state)
-              end
-            end
-          end
-        end
-
         # @return [void]
         def run_eager
           root_type = query.root_type
@@ -250,10 +184,11 @@ module GraphQL
           object = schema.sync_lazy(object) # TODO test query partial with lazy root object
           runtime_state = get_current_runtime_state
           case root_type.kind.name
-          when "OBJECT"
+          when "OBJECT", "UNION", "INTERFACE"
             # TODO: use `nil` for top-level result when `.wrap` returns `nil`
             @response = GraphQLResultHash.new(self, nil, root_type, object, nil, false, selections, is_eager, ast_node, nil, nil)
             @response.base_path = base_path
+
             runtime_state.current_result = @response
             next_step = if !ast_node.directives.empty?
               DirectivesStep.new(self, object, :resolve, ast_node.directives, @response)
@@ -268,7 +203,7 @@ module GraphQL
               result_name = ast_node.alias || ast_node.name
               field_defn = query.field_definition
               owner_type = field_defn.owner
-              selection_result = GraphQLResultHash.new(nil, owner_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
+              selection_result = GraphQLResultHash.new(self, nil, owner_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
               selection_result.base_path = base_path
               selection_result.ordered_result_keys = [result_name]
               runtime_state.current_result = selection_result
@@ -287,7 +222,7 @@ module GraphQL
             result_name = ast_node.alias || ast_node.name
             field_defn = query.field_definition
             owner_type = field_defn.owner
-            selection_result = GraphQLResultHash.new(nil, owner_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
+            selection_result = GraphQLResultHash.new(self, nil, owner_type, nil, nil, false, EmptyObjects::EMPTY_ARRAY, false, ast_node, nil, nil)
             selection_result.ordered_result_keys = [result_name]
             selection_result.base_path = base_path
             runtime_state = get_current_runtime_state
@@ -298,12 +233,6 @@ module GraphQL
               continue_field(continue_value, field_defn, query.root_type, ast_node, nil, false, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
             end
             @response = selection_result[result_name]
-          when "UNION", "INTERFACE"
-
-            @response = GraphQLResultHash.new(nil, root_type, object, nil, false, selections, false, query.ast_nodes.first, nil, nil)
-            @response.base_path = base_path
-
-            @run_queue.append_step(ResolveTypeStep.new(self, @response, false))
           else
             raise "Invariant: unsupported type kind for partial execution: #{root_type.kind.inspect} (#{root_type})"
           end
@@ -746,10 +675,7 @@ module GraphQL
             end
             set_result(selection_result, result_name, r, false, is_non_null)
             r
-          when "UNION", "INTERFACE"
-            response_hash = GraphQLResultHash.new(self, result_name, current_type, value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
-            @run_queue.append_step ResolveTypeStep.new(self, response_hash, was_scoped)
-          when "OBJECT"
+          when "OBJECT", "UNION", "INTERFACE"
             response_hash = GraphQLResultHash.new(self, result_name, current_type, value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
             response_hash.was_scoped = was_scoped
             @run_queue.append_step response_hash
