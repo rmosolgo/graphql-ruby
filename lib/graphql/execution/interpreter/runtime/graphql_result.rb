@@ -61,7 +61,15 @@ module GraphQL
             @target_result = nil
             @was_scoped = nil
             @resolve_type_result = nil
-            @step = 0
+            if @graphql_result_type.kind.object?
+              @step = :wrap_application_value
+            else
+              @step = :resolve_abstract_type
+            end
+          end
+
+          def set_step(new_step)
+            @step = new_step
           end
 
           def depth
@@ -76,7 +84,7 @@ module GraphQL
           end
 
           def step_finished?
-            @step == 6
+            @step == :finished
           end
 
           def value
@@ -87,66 +95,77 @@ module GraphQL
             end
           end
 
-          def run_step
-            @step += 1
-            case @step
-            when 1
-              if !@graphql_result_type.kind.abstract?
-                @step = 2 # skip
-                return nil
-              end
-              current_type = @graphql_result_type
-              value = @graphql_application_value
-              @resolve_type_result = begin
-                @runtime.resolve_type(current_type, value)
-              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+          def resolve_abstract_type
+            current_type = @graphql_result_type
+            value = @graphql_application_value
+            @resolve_type_result = begin
+              @runtime.resolve_type(current_type, value)
+            rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+              return @runtime.continue_value(ex_err, @graphql_field, @graphql_is_non_null_in_parent, @ast_node, @graphql_result_name, @graphql_parent)
+            rescue StandardError => err
+              begin
+                @runtime.query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
                 return @runtime.continue_value(ex_err, @graphql_field, @graphql_is_non_null_in_parent, @ast_node, @graphql_result_name, @graphql_parent)
-              rescue StandardError => err
-                begin
-                  @runtime.query.handle_or_reraise(err)
-                rescue GraphQL::ExecutionError => ex_err
-                  return @runtime.continue_value(ex_err, @graphql_field, @graphql_is_non_null_in_parent, @ast_node, @graphql_result_name, @graphql_parent)
-                end
               end
-            when 2
-              if @resolve_type_result.is_a?(Array) && @resolve_type_result.length == 2
-                resolved_type, resolved_value = @resolve_type_result
-              else
-                resolved_type = @resolve_type_result
-                resolved_value = value
-              end
-              @resolve_type_result = nil
-              current_type = @graphql_result_type
-              possible_types = @runtime.query.types.possible_types(current_type)
-              if !possible_types.include?(resolved_type)
-                field = @graphql_field
-                parent_type = field.owner_type
-                err_class = current_type::UnresolvedTypeError
-                type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
-                @runtime.schema.type_error(type_error, @runtime.context)
-                @runtime.set_result(self, @result_name, nil, false, is_non_null)
-                nil
-              else
-                @graphql_result_type = resolved_type
-              end
-            when 3
-              @graphql_application_value = begin
-                value = @graphql_application_value
-                context = @runtime.context
-                @was_scoped ? @graphql_result_type.wrap_scoped(value, context) : @graphql_result_type.wrap(value, context)
-              rescue GraphQL::ExecutionError => err
-                err
-              end
-            when 4
+            end
+          end
+
+          def handle_resolved_type
+            if @resolve_type_result.is_a?(Array) && @resolve_type_result.length == 2
+              resolved_type, resolved_value = @resolve_type_result
+            else
+              resolved_type = @resolve_type_result
+              resolved_value = value
+            end
+            @resolve_type_result = nil
+            current_type = @graphql_result_type
+            possible_types = @runtime.query.types.possible_types(current_type)
+            if !possible_types.include?(resolved_type)
+              field = @graphql_field
+              parent_type = field.owner_type
+              err_class = current_type::UnresolvedTypeError
+              type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
+              @runtime.schema.type_error(type_error, @runtime.context)
+              @runtime.set_result(self, @result_name, nil, false, is_non_null)
+              nil
+            else
+              @graphql_result_type = resolved_type
+            end
+          end
+
+          def wrap_application_value
+            @graphql_application_value = begin
+              value = @graphql_application_value
+              context = @runtime.context
+              @was_scoped ? @graphql_result_type.wrap_scoped(value, context) : @graphql_result_type.wrap(value, context)
+            rescue GraphQL::ExecutionError => err
+              err
+            end
+            @step = :handle_wrapped_application_value
+            @graphql_application_value
+          end
+
+          def run_step
+            case @step
+            when :resolve_abstract_type
+              @step = :handle_resolved_type
+              resolve_abstract_type
+            when :handle_resolved_type
+              handle_resolved_type
+              wrap_application_value
+            when :wrap_application_value
+              wrap_application_value
+            when :handle_wrapped_application_value
               @graphql_application_value = @runtime.continue_value(@graphql_application_value, @graphql_field, @graphql_is_non_null_in_parent, @ast_node, @graphql_result_name, @graphql_parent)
               if HALT.equal?(@graphql_application_value)
-                @step = 6
+                @step = :finished
+                return
               elsif @graphql_parent
                 @runtime.set_result(@graphql_parent, @graphql_result_name, self, true, @graphql_is_non_null_in_parent)
               end
-              # TODO Why cant this go right to the next step?
-              nil
-            when 5
+              @step = :run_selections
+            when :run_selections
               @runtime.each_gathered_selections(self) do |gathered_selections, is_selection_array, ordered_result_keys|
                 @ordered_result_keys ||= ordered_result_keys
                 if is_selection_array
@@ -164,7 +183,7 @@ module GraphQL
                     @graphql_field)
                   selections_result.target_result = self
                   selections_result.ordered_result_keys = ordered_result_keys
-                  # TODO This hash should start in step 4?
+                  selections_result.set_step :call_each_field
                 else
                   selections_result = self
                   @target_result = nil
@@ -180,12 +199,12 @@ module GraphQL
                   @runtime.run_queue.append_step(dir_step)
                 elsif @target_result.nil?
                   # TODO extract these substeps out into methods, call that method directly
-                  run_step # Run itself again
+                  @step = :call_each_field
                 else
                   @runtime.run_queue.append_step(selections_result)
                 end
               end
-            when 6
+            when :call_each_field
               @graphql_selections.each do |result_name, field_ast_nodes_or_ast_node|
                 # Field resolution may pause the fiber,
                 # so it wouldn't get to the `Resolve` call that happens below.
@@ -210,10 +229,13 @@ module GraphQL
                   }
                 end
               end
-              # TODO I'm pretty sure finished_jobs/enqueued_jobs actually did nothing
+
               if @target_result
                 self.merge_into(@target_result)
               end
+              @step = :finished
+            else
+              raise "Invariant: invalid state for #{self.class}: #{@step}"
             end
           end
 
