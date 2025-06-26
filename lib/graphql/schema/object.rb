@@ -43,6 +43,8 @@ module GraphQL
           scoped_new(object, context)
         end
 
+        # TODO Runtime calls to `.wrap` have been removed, maybe clean this up
+
         # This is called by the runtime to return an object to call methods on.
         def wrap(object, context)
           authorized_new(object, context)

@@ -61,8 +61,9 @@ module GraphQL
             @target_result = nil
             @was_scoped = nil
             @resolve_type_result = nil
+            @authorized_check_result = nil
             if @graphql_result_type.kind.object?
-              @step = :wrap_application_value
+              @step = :authorize_application_value
             else
               @step = :resolve_abstract_type
             end
@@ -90,6 +91,12 @@ module GraphQL
           def value
             if @resolve_type_result
               @resolve_type_result = @runtime.schema.sync_lazy(@resolve_type_result)
+            elsif @authorized_check_result
+              @runtime.current_trace.begin_authorized(@graphql_result_type, @graphql_application_value, @runtime.context)
+              @runtime.current_trace.authorized_lazy(query: @runtime.query, type: @graphql_result_type, object: @graphql_application_value) do
+                @authorized_check_result = @runtime.schema.sync_lazy(@authorized_check_result)
+                @runtime.current_trace.end_authorized(@graphql_result_type, @graphql_application_value, @runtime.context, @authorized_check_result)
+              end
             else
               @graphql_application_value = @runtime.schema.sync_lazy(@graphql_application_value)
             end
@@ -146,6 +153,24 @@ module GraphQL
             @graphql_application_value
           end
 
+          def authorize_application_value
+            @runtime.current_trace.begin_authorized(@graphql_result_type, @graphql_application_value, @runtime.context)
+            begin
+              @authorized_check_result = @runtime.current_trace.authorized(query: @runtime.query, type: @graphql_result_type, object: @graphql_application_value) do
+                begin
+                  @graphql_result_type.authorized?(@graphql_application_value, @runtime.context)
+                rescue GraphQL::UnauthorizedError => err
+                  @runtime.schema.unauthorized_object(err)
+                rescue StandardError => err
+                  @runtime.query.handle_or_reraise(err)
+                end
+              end
+            ensure
+              @step = :handle_authorized_application_value
+              @runtime.current_trace.end_authorized(@graphql_result_type, @graphql_application_value, @runtime.context, @authorized_check_result)
+            end
+          end
+
           def run_step
             case @step
             when :resolve_abstract_type
@@ -153,9 +178,31 @@ module GraphQL
               resolve_abstract_type
             when :handle_resolved_type
               handle_resolved_type
-              wrap_application_value
-            when :wrap_application_value
-              wrap_application_value
+              authorize_application_value
+            when :authorize_application_value
+              # TODO skip if scoped
+              authorize_application_value
+            when :handle_authorized_application_value
+              # TODO doesn't actually support `.wrap`
+              if @authorized_check_result
+                # TODO don't call `scoped_new here`
+                @graphql_application_value = @graphql_result_type.scoped_new(@graphql_application_value, @runtime.context)
+              else
+                # It failed the authorization check, so go to the schema's authorized object hook
+                err = GraphQL::UnauthorizedError.new(object: @graphql_application_value, type: @graphql_result_type, context: @runtime.context)
+                # If a new value was returned, wrap that instead of the original value
+                begin
+                  new_obj = @runtime.schema.unauthorized_object(err)
+                  if new_obj
+                    # TODO don't do this work-around
+                    @graphql_application_value = @graphql_result_type.scoped_new(new_obj, @runtime.context)
+                  else
+                    @graphql_application_value = nil
+                  end
+                end
+              end
+              @authorized_check_result = nil
+              @step = :handle_wrapped_application_value
             when :handle_wrapped_application_value
               @graphql_application_value = @runtime.continue_value(@graphql_application_value, @graphql_field, @graphql_is_non_null_in_parent, @ast_node, @graphql_result_name, @graphql_parent)
               if HALT.equal?(@graphql_application_value)
