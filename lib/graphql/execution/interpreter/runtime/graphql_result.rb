@@ -230,26 +230,31 @@ module GraphQL
                     @graphql_field)
                   selections_result.target_result = self
                   selections_result.ordered_result_keys = ordered_result_keys
-                  selections_result.set_step :call_each_field
+                  selections_result.set_step :run_selection_directives
+                  @runtime.run_queue.append_step(selections_result)
+                  @step = :finished # Continuing from others now -- could actually reuse this instance for the first one tho
                 else
                   selections_result = self
                   @target_result = nil
                   @graphql_selections = gathered_selections
+                  # TODO extract these substeps out into methods, call that method directly
+                  @step = :run_selection_directives
                 end
                 runtime_state = @runtime.get_current_runtime_state
                 runtime_state.current_result_name = nil
                 runtime_state.current_result = selections_result
-                # This is a less-frequent case; use a fast check since it's often not there.
-                if (directives = gathered_selections[:graphql_directives])
-                  gathered_selections.delete(:graphql_directives)
-                  dir_step = DirectivesStep.new(@runtime, selections_result.graphql_application_value, :resolve, directives, selections_result)
-                  @runtime.run_queue.append_step(dir_step)
-                elsif @target_result.nil?
-                  # TODO extract these substeps out into methods, call that method directly
+                nil
+              end
+            when :run_selection_directives
+              if (directives = @graphql_selections[:graphql_directives])
+                @graphql_selections.delete(:graphql_directives)
+                @step = :finished # some way to detect whether the block below is called or not
+                @runtime.call_method_on_directives(:resolve, @graphql_application_value, directives) do
                   @step = :call_each_field
-                else
-                  @runtime.run_queue.append_step(selections_result)
                 end
+              else
+                # TODO some way to continue without this step
+                @step = :call_each_field
               end
             when :call_each_field
               @graphql_selections.each do |result_name, field_ast_nodes_or_ast_node|
@@ -299,19 +304,6 @@ module GraphQL
               ast_node = field_ast_nodes_or_ast_node
             end
 
-            # Optimize for the case that field is selected only once
-            if field_ast_nodes.nil? || field_ast_nodes.size == 1
-              next_selections = ast_node.selections
-              directives = ast_node.directives
-            else
-              next_selections = []
-              directives = []
-              field_ast_nodes.each { |f|
-                next_selections.concat(f.selections)
-                directives.concat(f.directives)
-              }
-            end
-
             field_name = ast_node.name
             owner_type = @graphql_result_type
             field_defn = @runtime.query.types.field(owner_type, field_name)
@@ -321,31 +313,8 @@ module GraphQL
               owner_object = field_defn.owner.wrap(owner_object, @runtime.context)
             end
 
-            # Optimize for the case that field is selected only once
-            if field_ast_nodes.nil? || field_ast_nodes.size == 1
-              next_selections = ast_node.selections
-              directives = ast_node.directives
-            else
-              next_selections = []
-              directives = []
-              field_ast_nodes.each { |f|
-                next_selections.concat(f.selections)
-                directives.concat(f.directives)
-              }
-            end
-
-            resolve_field_step = FieldResolveStep.new(@runtime, field_defn, owner_object, ast_node, field_ast_nodes, result_name, self, next_selections)
-            next_step = if !directives.empty?
-              # TODO this will get clobbered by other steps in the queue
-              # runtime_state.current_field = field_defn
-              # runtime_state.current_arguments = resolved_arguments
-              # runtime_state.current_result_name = result_name
-              # runtime_state.current_result = self
-              DirectivesStep.new(@runtime, owner_object, :resolve, directives, resolve_field_step)
-            else
-              resolve_field_step
-            end
-            @runtime.run_queue.append_step(next_step)
+            resolve_field_step = FieldResolveStep.new(@runtime, field_defn, owner_object, ast_node, field_ast_nodes, result_name, self)
+            @runtime.run_queue.append_step(resolve_field_step)
           end
 
           attr_accessor :ordered_result_keys, :target_result, :was_scoped
@@ -488,13 +457,10 @@ module GraphQL
                     @runtime,
                     self,
                     this_idx,
-                    inner_value
+                    inner_value,
+                    dirs,
                   )
-                  @runtime.run_queue.append_step(if make_dir_step
-                    ListItemDirectivesStep.new(@runtime, @graphql_application_value, :resolve_each, dirs, list_item_step)
-                  else
-                    list_item_step
-                  end)
+                  @runtime.run_queue.append_step(list_item_step)
                 end
 
                 self

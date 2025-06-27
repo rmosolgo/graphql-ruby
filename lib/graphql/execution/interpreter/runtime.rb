@@ -137,7 +137,7 @@ module GraphQL
           "#<#{self.class.name} response=#{@response.inspect}>"
         end
 
-        class DirectivesStep
+        class OperationDirectivesStep
           def initialize(runtime, object, method_to_call, directives, next_step)
             @runtime = runtime
             @object = object
@@ -191,7 +191,7 @@ module GraphQL
 
             runtime_state.current_result = @response
             next_step = if !ast_node.directives.empty?
-              DirectivesStep.new(self, object, :resolve, ast_node.directives, @response)
+              OperationDirectivesStep.new(self, object, :resolve, ast_node.directives, @response)
             else
               @response
             end
@@ -329,7 +329,7 @@ module GraphQL
         end
 
         class FieldResolveStep
-          def initialize(runtime, field, object, ast_node, ast_nodes, result_name, selection_result, next_selections)
+          def initialize(runtime, field, object, ast_node, ast_nodes, result_name, selection_result)
             @runtime = runtime
             @field = field
             @object = object
@@ -337,16 +337,18 @@ module GraphQL
             @ast_nodes = ast_nodes
             @result_name = result_name
             @selection_result = selection_result
-            @next_selections = next_selections
-            @step = 0
+            @next_selections = nil
+            @step = :inspect_ast
           end
+
+          attr_reader :selection_result
 
           def inspect_step
             "#{self.class.name.split("::").last}##{object_id}/#@step(#{@field.path} @ #{@selection_result.path.join(".")}.#{@result_name})"
           end
 
           def step_finished?
-            @step == 4
+            @step == :finished
           end
 
           def depth
@@ -371,29 +373,55 @@ module GraphQL
 
           def run_step
             if @selection_result.graphql_dead
-              @step = 4
+              @step = :finished
               return nil
             end
-            @step += 1
             case @step
-            when 1
+            when :inspect_ast
+              # Optimize for the case that field is selected only once
+              if @ast_nodes.nil? || @ast_nodes.size == 1
+                @next_selections = @ast_node.selections
+                directives = @ast_node.directives
+              else
+                @next_selections = []
+                directives = []
+                @ast_nodes.each { |f|
+                  @next_selections.concat(f.selections)
+                  directives.concat(f.directives)
+                }
+              end
+
+              if directives.any?
+                @step = :finished # some way to detect whether the block below is called or not
+                @runtime.call_method_on_directives(:resolve, @object, directives) do
+                  @step = :load_arguments
+                  self # TODO what kind of compatibility is possible here?
+                end
+              else
+                # TODO some way to continue without this step
+                @step = :load_arguments
+              end
+            when :load_arguments
               if !@field.any_arguments?
                 @resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
                 if @field.extras.size == 0
                   @kwarg_arguments = EmptyObjects::EMPTY_HASH
-                  @step += 1 # skip step 2
+                  @step = :call_field_resolver # kwargs are already ready -- they're empty
+                else
+                  @step = :prepare_kwarg_arguments
                 end
                 nil
               else
+                @step = :prepare_kwarg_arguments
                 @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @owner_object) do |resolved_arguments|
                   @resolved_arguments = resolved_arguments
                 end
               end
-            when 2
+            when :prepare_kwarg_arguments
               if @resolved_arguments.is_a?(GraphQL::ExecutionError) || @resolved_arguments.is_a?(GraphQL::UnauthorizedError)
                 return_type_non_null = @field.type.non_null?
                 @runtime.continue_value(@resolved_arguments, @field, return_type_non_null, @ast_node, @result_name, @selection_result)
-                @step = 4
+                @step = :finished
                 return
               end
 
@@ -411,7 +439,7 @@ module GraphQL
                 @field.extras.each do |extra|
                   case extra
                   when :ast_node
-                    extra_args[:ast_node] = ast_node
+                    extra_args[:ast_node] = @ast_node
                   when :execution_errors
                     extra_args[:execution_errors] = ExecutionErrors.new(@runtime.context, @ast_node, @runtime.current_path)
                   when :path
@@ -446,7 +474,9 @@ module GraphQL
                 end
                 @resolved_arguments.keyword_arguments
               end
-            when 3
+              @step = :call_field_resolver
+              nil
+            when :call_field_resolver
               # if !directives.empty?
                 # This might be executed in a different context; reset this info
               runtime_state = @runtime.get_current_runtime_state
@@ -473,25 +503,29 @@ module GraphQL
                 end
               end
               @runtime.current_trace.end_execute_field(@field, @object, @kwarg_arguments, query, app_result)
+              @step = :handle_resolved_value
               @result = app_result
-            when 4
+            when :handle_resolved_value
               runtime_state = @runtime.get_current_runtime_state
               runtime_state.current_field = @field
               runtime_state.current_arguments = @resolved_arguments
               runtime_state.current_result_name = @result_name
               runtime_state.current_result = @selection_result
               return_type = @field.type
-              continue_value = @runtime.continue_value(@result, @field, return_type.non_null?, @ast_node, @result_name, @selection_result)
+              @result = @runtime.continue_value(@result, @field, return_type.non_null?, @ast_node, @result_name, @selection_result)
 
-              if HALT != continue_value
+              if !HALT.equal?(@result)
                 runtime_state = @runtime.get_current_runtime_state
                 was_scoped = runtime_state.was_authorized_by_scope_items
                 runtime_state.was_authorized_by_scope_items = nil
-                @runtime.continue_field(continue_value, @field, return_type, @ast_node, @next_selections, false, @resolved_arguments, @result_name, @selection_result, was_scoped, runtime_state)
+                @runtime.continue_field(@result, @field, return_type, @ast_node, @next_selections, false, @resolved_arguments, @result_name, @selection_result, was_scoped, runtime_state)
               else
                 nil
               end
+              @step = :finished
               nil
+            else
+              raise "Invariant: unexpected #{self.class} step: #{@step.inspect} (#{inspect_step})"
             end
           end
         end
@@ -689,30 +723,20 @@ module GraphQL
           end
         end
 
-        class ListItemDirectivesStep < DirectivesStep
-          def run_step
-            runtime_state = @runtime.get_current_runtime_state
-            runtime_state.current_result_name = @next_step.index
-            runtime_state.current_result = @next_step.list_result
-            super
-          end
-        end
-
         class ListItemStep
-          def initialize(runtime, list_result, index, item_value)
+          def initialize(runtime, list_result, index, item_value, directives)
             @runtime = runtime
             @list_result = list_result
             @index = index
             @item_value = item_value
-            @step_finished = false
+            @directives = directives
             @depth = nil
+            @step = :check_directives
           end
 
           def step_finished?
-            @step_finished
+            @step == :finished
           end
-
-          attr_reader :index, :list_result
 
           def inspect_step
             "#{self.class.name.split("::").last}##{object_id}@#{@index}"
@@ -737,17 +761,37 @@ module GraphQL
           end
 
           def run_step
-            if @runtime.lazy?(@item_value)
-              @item_value
-            else
+            case @step
+            when :check_directives
+              if @directives.any?
+                @step = :finished
+              runtime_state = @runtime.get_current_runtime_state
+              runtime_state.current_result_name = @index
+              runtime_state.current_result = @list_result
+                @runtime.call_method_on_directives(:resolve_each, @list_result.graphql_application_value, @directives) do
+                  @step = :check_lazy_item
+                end
+              else
+                @step = :check_lazy_item
+              end
+            when :check_lazy_item
+              @step = :handle_item
+              if @runtime.lazy?(@item_value)
+                @item_value
+              else
+                nil
+              end
+            when :handle_item
               item_type = @list_result.graphql_result_type.of_type
               item_type_non_null = item_type.non_null?
               continue_value = @runtime.continue_value(@item_value, @list_result.graphql_field, item_type_non_null, @list_result.ast_node, @index, @list_result)
-              if HALT != continue_value
+              if !HALT.equal?(continue_value)
                 was_scoped = false # TODO!!
                 @runtime.continue_field(continue_value, @list_result.graphql_field, item_type, @list_result.ast_node, @list_result.graphql_selections, false, @list_result.graphql_arguments, @index, @list_result, was_scoped, @runtime.get_current_runtime_state)
               end
-              @step_finished = true
+              @step = :finished
+            else
+              raise "Invariant: unexpected step: #{inspect_step}"
             end
           end
         end
