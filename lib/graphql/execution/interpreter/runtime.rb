@@ -329,10 +329,13 @@ module GraphQL
         end
 
         class FieldResolveStep
-          def initialize(runtime, field, object, ast_node, ast_nodes, result_name, selection_result)
+          def initialize(runtime, field, ast_node, ast_nodes, result_name, selection_result)
             @runtime = runtime
             @field = field
-            @object = object
+            @object = selection_result.graphql_application_value
+            if @field.dynamic_introspection
+              @object = field.owner.wrap(@object, @runtime.context)
+            end
             @ast_node = ast_node
             @ast_nodes = ast_nodes
             @result_name = result_name
@@ -413,11 +416,17 @@ module GraphQL
                 nil
               else
                 @step = :prepare_kwarg_arguments
-                @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @owner_object) do |resolved_arguments|
-                  @resolved_arguments = resolved_arguments
+                @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @object) do |resolved_arguments|
+                  @result = resolved_arguments
                 end
+                @result
               end
             when :prepare_kwarg_arguments
+              if @resolved_arguments.nil? && @result.nil?
+                @runtime.dataloader.run
+              end
+              @resolved_arguments ||= @result
+              @result = nil
               if @resolved_arguments.is_a?(GraphQL::ExecutionError) || @resolved_arguments.is_a?(GraphQL::UnauthorizedError)
                 return_type_non_null = @field.type.non_null?
                 @runtime.continue_value(@resolved_arguments, @field, return_type_non_null, @ast_node, @result_name, @selection_result)
@@ -724,13 +733,11 @@ module GraphQL
         end
 
         class ListItemStep
-          def initialize(runtime, list_result, index, item_value, directives)
+          def initialize(runtime, list_result, index, item_value)
             @runtime = runtime
             @list_result = list_result
             @index = index
             @item_value = item_value
-            @directives = directives
-            @depth = nil
             @step = :check_directives
           end
 
@@ -757,18 +764,18 @@ module GraphQL
           end
 
           def depth
-            @depth ||= @list_result.depth + 1
+            @list_result.depth + 1
           end
 
           def run_step
             case @step
             when :check_directives
-              if @directives.any?
+              if (dirs = @list_result.ast_node.directives).any?
                 @step = :finished
               runtime_state = @runtime.get_current_runtime_state
               runtime_state.current_result_name = @index
               runtime_state.current_result = @list_result
-                @runtime.call_method_on_directives(:resolve_each, @list_result.graphql_application_value, @directives) do
+                @runtime.call_method_on_directives(:resolve_each, @list_result.graphql_application_value, dirs) do
                   @step = :check_lazy_item
                 end
               else

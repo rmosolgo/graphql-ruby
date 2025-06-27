@@ -293,9 +293,8 @@ module GraphQL
 
           def evaluate_selection(result_name, field_ast_nodes_or_ast_node) # rubocop:disable Metrics/ParameterLists
             return if @graphql_dead
-            # As a performance optimization, the hash key will be a `Node` if
-            # there's only one selection of the field. But if there are multiple
-            # selections of the field, it will be an Array of nodes
+
+            # Don't create the list of nodes if there's only one node
             if field_ast_nodes_or_ast_node.is_a?(Array)
               field_ast_nodes = field_ast_nodes_or_ast_node
               ast_node = field_ast_nodes.first
@@ -308,12 +307,7 @@ module GraphQL
             owner_type = @graphql_result_type
             field_defn = @runtime.query.types.field(owner_type, field_name)
 
-            owner_object = @graphql_application_value
-            if field_defn.dynamic_introspection
-              owner_object = field_defn.owner.wrap(owner_object, @runtime.context)
-            end
-
-            resolve_field_step = FieldResolveStep.new(@runtime, field_defn, owner_object, ast_node, field_ast_nodes, result_name, self)
+            resolve_field_step = FieldResolveStep.new(@runtime, field_defn, ast_node, field_ast_nodes, result_name, self)
             @runtime.run_queue.append_step(resolve_field_step)
           end
 
@@ -445,8 +439,6 @@ module GraphQL
             # This is true for objects, unions, and interfaces
             # use_dataloader_job = !inner_type.unwrap.kind.input?
             idx = nil
-            dirs = ast_node.directives
-            make_dir_step = !dirs.empty?
             list_value = begin
               begin
                 @graphql_application_value.each do |inner_value|
@@ -458,7 +450,6 @@ module GraphQL
                     self,
                     this_idx,
                     inner_value,
-                    dirs,
                   )
                   @runtime.run_queue.append_step(list_item_step)
                 end
