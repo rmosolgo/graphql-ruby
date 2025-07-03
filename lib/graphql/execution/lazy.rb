@@ -59,11 +59,6 @@ module GraphQL
           lazies.map { |l| l.is_a?(Lazy) ? l.value : l }
         }
       end
-
-      # This can be used for fields which _had no_ lazy results
-      # @api private
-      NullResult = Lazy.new(){}
-      NullResult.value
     end
   end
 end
