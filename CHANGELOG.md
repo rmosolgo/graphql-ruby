@@ -10,6 +10,23 @@
 
 ### Bug fixes
 
+# 2.5.10 (3 Jul 2025)
+
+### New features
+
+- Schema: Add `.freeze_schema` for minimal Ractor support #5370
+
+### Bug fixes
+
+- Schema: inherit validation configurations #5382
+- Visibility: fix inheriting visibility with `preload: true` #5386
+- Improve error messages with interfaces from SDL #5372
+- Remove needless counter in execution code #5392
+- Reduce execution overhead in schemas built from SDL #5393
+- RequiredValidator: remove hidden definitions from error message #5396
+- `.possible_types`: don't return interfaces in this list #5395
+- `dataload_association`: fix loading associations with different scopes on the same object #5398
+
 # 2.5.9 (6 Jun 2025)
 
 ### New features
