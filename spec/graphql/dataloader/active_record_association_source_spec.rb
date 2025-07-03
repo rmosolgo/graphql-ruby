@@ -3,6 +3,77 @@ require "spec_helper"
 
 describe GraphQL::Dataloader::ActiveRecordAssociationSource do
   if testing_rails?
+    class VulfpeckSchema < GraphQL::Schema
+      class Album < GraphQL::Schema::Object
+        field :name, String
+      end
+      class Band < GraphQL::Schema::Object
+        field :albums, [Album] do
+          argument :genre, String, required: false
+          argument :reverse, Boolean, required: false, default_value: false
+          argument :unscoped, Boolean, required: false, default_value: false
+        end
+
+        def albums(genre: nil, reverse:, unscoped:)
+          if unscoped
+            scope = nil
+          else
+            scope = ::Album
+            if genre
+              scope = scope.where(band_genre: genre)
+            end
+
+            scope = if reverse
+              scope.order(name: :desc)
+            else
+              scope.order(:name)
+            end
+          end
+          dataload_association(:albums, scope: scope)
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :band, Band do
+          argument :name, String
+        end
+
+        def band(name:)
+          ::Band.find_by(name: name)
+        end
+      end
+
+      query(Query)
+      use GraphQL::Dataloader
+    end
+
+    it "works with different scopes on the same object at runtime" do
+      query_str = <<~GRAPHQL
+        {
+          band(name: "Vulfpeck") {
+            allAlbums: albums {
+              name
+            }
+            unscopedAlbums: albums(unscoped: true) {
+              name
+            }
+            reverseAlbums: albums(reverse: true) {
+              name
+            }
+            countryAlbums: albums(genre: "country") {
+              name
+            }
+          }
+        }
+      GRAPHQL
+
+      result = VulfpeckSchema.execute(query_str)
+      assert_equal ["Mit Peck", "My First Car"], result["data"]["band"]["allAlbums"].map { |a| a["name"] }
+      assert_equal ["Mit Peck", "My First Car"], result["data"]["band"]["unscopedAlbums"].map { |a| a["name"] }
+      assert_equal ["My First Car", "Mit Peck"], result["data"]["band"]["reverseAlbums"].map { |a| a["name"] }
+      assert_equal [], result["data"]["band"]["countryAlbums"]
+    end
+
     it_dataloads "queries for associated records when the association isn't already loaded" do |d|
       my_first_car = ::Album.find(2)
       homey = ::Album.find(4)
@@ -135,10 +206,11 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
         one_month_ago = 1.month.ago.end_of_day
         albums_by_band_1 = d.with(GraphQL::Dataloader::ActiveRecordAssociationSource, :albums, Album.where("created_at >= ?", one_month_ago)).request(wilco)
         albums_by_band_2 = d.with(GraphQL::Dataloader::ActiveRecordAssociationSource, :albums, Album.where("created_at >= ?", one_month_ago)).request(chon)
-        albums_by_band = [albums_by_band_1.load, albums_by_band_2.load]
+        albums_by_band_3 = d.with(GraphQL::Dataloader::ActiveRecordAssociationSource, :albums, Album.where("created_at <= ?", one_month_ago)).request(wilco)
+        albums_by_band = [albums_by_band_1.load, albums_by_band_2.load, albums_by_band_3.load]
       end
 
-      assert_equal [[6], [4, 5]], albums_by_band.map { |al| al.map(&:id) }
+      assert_equal [[6], [4, 5], []], albums_by_band.map { |al| al.map(&:id) }
       expected_log = if Rails::VERSION::STRING > "8"
         'SELECT "albums".* FROM "albums" WHERE (created_at >= ?) AND "albums"."band_id" IN (?, ?)'
       else

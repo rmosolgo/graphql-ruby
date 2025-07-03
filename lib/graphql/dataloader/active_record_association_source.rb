@@ -31,7 +31,12 @@ module GraphQL
       def fetch(records)
         record_classes = Set.new.compare_by_identity
         associated_classes = Set.new.compare_by_identity
+        scoped_fetch = !@scope.nil?
         records.each do |record|
+          if scoped_fetch
+            assoc = record.association(@association)
+            assoc.reset
+          end
           if record_classes.add?(record.class)
             reflection = record.class.reflect_on_association(@association)
             if !reflection.polymorphic? && reflection.klass
@@ -48,9 +53,16 @@ module GraphQL
 
         ::ActiveRecord::Associations::Preloader.new(records: records, associations: @association, available_records: available_records, scope: @scope).call
 
-        loaded_associated_records = records.map { |r| r.public_send(@association) }
+        loaded_associated_records = records.map { |r|
+          assoc = r.association(@association)
+          lar = assoc.target
+          if scoped_fetch
+            assoc.reset
+          end
+          lar
+        }
 
-        if @scope.nil?
+        if !scoped_fetch
           # Don't cache records loaded via scope because they might have reduced `SELECT`s
           # Could check .select_values here?
           records_by_model = {}
