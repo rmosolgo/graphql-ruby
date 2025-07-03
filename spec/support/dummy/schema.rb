@@ -568,8 +568,7 @@ module Dummy
       end
     end
 
-    use GraphQL::Dataloader
-
+    dataloader_lazy_setup(self, lazy_compat_mode: false)
     lazy_resolve(Proc, :call)
   end
 
