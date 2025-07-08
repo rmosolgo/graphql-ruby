@@ -23,9 +23,9 @@ module GraphQL
           if smallest_depth
             lazies = lazies_at_depth.delete(smallest_depth)
             if !lazies.empty?
-              dataloader.append_job {
-                lazies.each(&:value) # resolve these Lazy instances
-              }
+              lazies.each do |l|
+                dataloader.append_job { l.value }
+              end
               # Run lazies _and_ dataloader, see if more are enqueued
               dataloader.run
               resolve_each_depth(lazies_at_depth, dataloader)
