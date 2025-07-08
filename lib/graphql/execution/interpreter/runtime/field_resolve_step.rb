@@ -112,20 +112,24 @@ module GraphQL
             else
               @step = :prepare_kwarg_arguments
               @result = nil
-              dataload_result = @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @object) do |resolved_arguments|
-                @result = @resolved_arguments = resolved_arguments
-                prepare_kwarg_arguments
+              dataloader_paused = false
+              @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @object) do |resolved_arguments|
+                @result = resolved_arguments
+                if dataloader_paused
+                  prepare_kwarg_arguments
+                end
               end
-              # @result may have been assign by nested calls in the block, thru `prepare_kwarg_arguments`.
-              # Don't clobber it in that case.
-              @result ||= dataload_result
+              dataloader_paused = true
+              @result
             end
           end
 
           def prepare_kwarg_arguments
-            if @resolved_arguments.nil?
+            # @resolved_arguments may have been eagerly set if there aren't actually any args
+            if @resolved_arguments.nil? && @result.nil?
               @runtime.dataloader.run
             end
+            @resolved_arguments ||= @result
             @result = nil # TODO is this still necessary?
             if @resolved_arguments.is_a?(GraphQL::ExecutionError) || @resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               return_type_non_null = @field.type.non_null?
