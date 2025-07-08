@@ -96,8 +96,7 @@ module GraphQL
                 self # TODO what kind of compatibility is possible here?
               end
             else
-              # TODO some way to continue without this step
-              @step = :load_arguments
+              load_arguments
             end
           end
 
@@ -106,26 +105,28 @@ module GraphQL
               @resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
               if @field.extras.size == 0
                 @kwarg_arguments = EmptyObjects::EMPTY_HASH
-                @step = :call_field_resolver # kwargs are already ready -- they're empty
+                call_field_resolver
               else
-                @step = :prepare_kwarg_arguments
+                prepare_kwarg_arguments
               end
-              nil
             else
               @step = :prepare_kwarg_arguments
-              @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @object) do |resolved_arguments|
-                @result = resolved_arguments
+              @result = nil
+              dataload_result = @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @object) do |resolved_arguments|
+                @result = @resolved_arguments = resolved_arguments
+                prepare_kwarg_arguments
               end
-              @result
+              # @result may have been assign by nested calls in the block, thru `prepare_kwarg_arguments`.
+              # Don't clobber it in that case.
+              @result ||= dataload_result
             end
           end
 
           def prepare_kwarg_arguments
-            if @resolved_arguments.nil? && @result.nil?
+            if @resolved_arguments.nil?
               @runtime.dataloader.run
             end
-            @resolved_arguments ||= @result
-            @result = nil
+            @result = nil # TODO is this still necessary?
             if @resolved_arguments.is_a?(GraphQL::ExecutionError) || @resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               return_type_non_null = @field.type.non_null?
               @runtime.continue_value(@resolved_arguments, @field, return_type_non_null, @ast_node, @result_name, @selection_result)
@@ -182,8 +183,7 @@ module GraphQL
               end
               @resolved_arguments.keyword_arguments
             end
-            @step = :call_field_resolver
-            nil
+            call_field_resolver
           end
 
           def call_field_resolver

@@ -626,7 +626,6 @@ describe GraphQL::Dataloader do
           assert_equal({"setCache" => "Salad", "getCache" => "1"}, res["data"])
         end
 
-        focus
         it "batch-loads" do
           res = schema.execute <<-GRAPHQL
           {
