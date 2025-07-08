@@ -5,6 +5,7 @@ module GraphQL
     class Interpreter
       class Runtime
         module GraphQLResult
+          include Runtime::Step
           def initialize(runtime_instance, result_name, result_type, application_value, parent_result, is_non_null_in_parent, selections, is_eager, ast_node, graphql_arguments, graphql_field) # rubocop:disable Metrics/ParameterLists
             @runtime = runtime_instance
             @ast_node = ast_node

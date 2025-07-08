@@ -402,6 +402,9 @@ module GraphQL
           builder = self
 
           Class.new(base_type) do
+            def self.name
+              "GraphQL::Schema::BuildFromDefinition::#{graphql_name}"
+            end
             graphql_name(object_type_definition.name)
             description(object_type_definition.description)
             ast_node(object_type_definition)
