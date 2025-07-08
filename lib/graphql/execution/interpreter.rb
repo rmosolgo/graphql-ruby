@@ -39,6 +39,7 @@ module GraphQL
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
           trace = multiplex.current_trace
           Fiber[:__graphql_current_multiplex] = multiplex
+          run_queue = nil
           trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
@@ -73,7 +74,8 @@ module GraphQL
                       # Although queries in a multiplex _share_ an Interpreter instance,
                       # they also have another item of state, which is private to that query
                       # in particular, assign it here:
-                      runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth)
+                      runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth, run_queue: run_queue)
+                      run_queue ||= runtime.run_queue
                       query.context.namespace(:interpreter_runtime)[:runtime] = runtime
 
                       query.current_trace.execute_query(query: query) do
@@ -88,7 +90,11 @@ module GraphQL
                 }
               end
 
+              multiplex.dataloader.append_job {
+                run_queue&.complete # can be null if errored
+              }
               multiplex.dataloader.run
+
 
               # Then, work through lazy results in a breadth-first way
               multiplex.dataloader.append_job {
@@ -122,7 +128,6 @@ module GraphQL
                   end
 
                   result["data"] = query.context.namespace(:interpreter_runtime)[:runtime].final_result
-
                   result
                 end
                 if query.context.namespace?(:__query_result_extensions__)

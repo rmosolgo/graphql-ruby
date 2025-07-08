@@ -55,17 +55,21 @@ module GraphQL
               @current_flush = []
               steps_to_rerun_after_lazy = []
               while fl.any?
-                while (step = fl.shift)
-                  step_finished = false
-                  while !step_finished
-                    # p [:run_step, step.inspect_step]
-                    step_result = step.run_step
-                    step_finished = step.step_finished?
-                    if !step_finished && @runtime.lazy?(step_result)
-                      # p [:lazy, step_result.class, step.depth]
-                      @lazies_at_depth[step.depth] << step
-                      steps_to_rerun_after_lazy << step
-                      step_finished = true # we'll come back around to it
+                while (next_step = fl.shift)
+                  next_step.tap do |step|
+                    @dataloader.append_job do
+                      step_finished = false
+                      while !step_finished
+                        # p [:run_step, step.inspect_step]
+                        step_result = step.run_step
+                        step_finished = step.step_finished?
+                        if !step_finished && @runtime.lazy?(step_result)
+                          # p [:lazy, step_result.class, step.depth]
+                          @lazies_at_depth[step.depth] << step
+                          steps_to_rerun_after_lazy << step
+                          step_finished = true # we'll come back around to it
+                        end
+                      end
                     end
                   end
 
@@ -81,9 +85,9 @@ module GraphQL
                   fl.concat(@current_flush)
                   @current_flush.clear
                 else
+                  @dataloader.run
                   fl.concat(steps_to_rerun_after_lazy)
                   steps_to_rerun_after_lazy.clear
-                  @dataloader.run
                   Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
                 end
               end
@@ -106,7 +110,7 @@ module GraphQL
 
         attr_accessor :run_queue
 
-        def initialize(query:, lazies_at_depth:)
+        def initialize(query:, lazies_at_depth:, run_queue: nil)
           @query = query
           @current_trace = query.current_trace
           @dataloader = query.multiplex.dataloader
@@ -125,7 +129,7 @@ module GraphQL
           end
           # { Class => Boolean }
           @lazy_cache = {}.compare_by_identity
-          @run_queue = RunQueue.new(runtime: self)
+          @run_queue = run_queue || RunQueue.new(runtime: self)
         end
 
         def final_result
@@ -236,7 +240,6 @@ module GraphQL
           else
             raise "Invariant: unsupported type kind for partial execution: #{root_type.kind.inspect} (#{root_type})"
           end
-          @run_queue.complete
           nil
         end
 
