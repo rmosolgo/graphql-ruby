@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.5.11 (9 Jul 2025)
+
+### Bug fixes
+
+- Dataloader: improve compatibility when objects are loaded by GraphQL-Batch but `.authorized?` uses Dataloader #5400
+
 # 2.5.10 (3 Jul 2025)
 
 ### New features
