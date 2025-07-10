@@ -24,6 +24,14 @@ module GraphQL
 
           attr_reader :selection_result
 
+          def current_result
+            @selection_result
+          end
+
+          def current_result_name
+            @result_name
+          end
+
           def inspect_step
             "#{self.class.name.split("::").last}##{object_id}/#@step(#{@field.path} @ #{@selection_result.path.join(".")}.#{@result_name})"
           end
@@ -40,6 +48,9 @@ module GraphQL
 
           def value # Lazy API
             @result = begin
+              rs = @runtime.get_current_runtime_state
+              rs.current_result = current_result
+              rs.current_result_name = current_result_name
               @runtime.schema.sync_lazy(@result)
             rescue GraphQL::ExecutionError => err
               err
@@ -222,11 +233,6 @@ module GraphQL
           end
 
           def handle_resolved_value
-            runtime_state = @runtime.get_current_runtime_state
-            runtime_state.current_field = @field
-            runtime_state.current_arguments = @resolved_arguments
-            runtime_state.current_result_name = @result_name
-            runtime_state.current_result = @selection_result
             return_type = @field.type
             @result = @runtime.continue_value(@result, @field, return_type.non_null?, @ast_node, @result_name, @selection_result)
 

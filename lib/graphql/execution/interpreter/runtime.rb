@@ -2,6 +2,7 @@
 require "graphql/execution/interpreter/runtime/step"
 require "graphql/execution/interpreter/runtime/field_resolve_step"
 require "graphql/execution/interpreter/runtime/graphql_result"
+require "graphql/execution/interpreter/runtime/run_queue"
 
 #####
 # Next thoughts
@@ -34,56 +35,6 @@ module GraphQL
 
           attr_accessor :current_result, :current_result_name,
             :current_arguments, :current_field, :was_authorized_by_scope_items
-        end
-
-        class RunQueue
-          def initialize(runtime:)
-            @runtime = runtime
-            @current_flush = []
-            @dataloader = runtime.dataloader
-            @lazies_at_depth = runtime.lazies_at_depth
-            @running_eagerly = false
-          end
-
-          def append_step(step)
-            @current_flush << step
-          end
-
-          attr_reader :steps_to_rerun_after_lazy
-
-          def complete(eager: false)
-            # p [self.class, __method__, eager, caller(1,1).first, @current_flush.size]
-            prev_eagerly = @running_eagerly
-            @running_eagerly = eager
-            while (fl = @current_flush) && fl.any?
-              @current_flush = []
-              @steps_to_rerun_after_lazy = []
-              while fl.any?
-                while (next_step = fl.shift)
-                  @dataloader.append_job(next_step)
-
-                  if @running_eagerly && @current_flush.any?
-                    # This is for mutations. If a mutation parent field enqueues any child fields,
-                    # we need to run those before running other mutation parent fields.
-                    fl.unshift(*@current_flush)
-                    @current_flush.clear
-                  end
-                end
-
-                if @current_flush.any?
-                  fl.concat(@current_flush)
-                  @current_flush.clear
-                else
-                  @dataloader.run
-                  fl.concat(@steps_to_rerun_after_lazy)
-                  @steps_to_rerun_after_lazy.clear
-                  Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
-                end
-              end
-            end
-          ensure
-            @running_eagerly = prev_eagerly
-          end
         end
 
         # @return [GraphQL::Query]
@@ -154,6 +105,14 @@ module GraphQL
 
           def step_finished?
             true
+          end
+
+          def current_result
+            @next_step.current_result
+          end
+
+          def current_result_name
+            @next_step.current_result_name
           end
 
           def inspect_step
@@ -528,6 +487,14 @@ module GraphQL
             @index = index
             @item_value = item_value
             @step = :check_directives
+          end
+
+          def current_result
+            @list_result
+          end
+
+          def current_result_name
+            @index
           end
 
           def step_finished?

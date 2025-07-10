@@ -30,6 +30,14 @@ module GraphQL
           # TODO test full path in Partial
           attr_writer :base_path
 
+          def current_result
+            self
+          end
+
+          def current_result_name
+            nil
+          end
+
           def path
             @path ||= build_path([])
           end
