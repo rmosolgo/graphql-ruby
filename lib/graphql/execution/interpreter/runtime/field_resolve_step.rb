@@ -51,6 +51,7 @@ module GraphQL
               rs = @runtime.get_current_runtime_state
               rs.current_result = current_result
               rs.current_result_name = current_result_name
+              rs.current_step = self
               @runtime.schema.sync_lazy(@result)
             rescue GraphQL::ExecutionError => err
               err
@@ -211,6 +212,7 @@ module GraphQL
             runtime_state.current_arguments = @resolved_arguments
             runtime_state.current_result_name = @result_name
             runtime_state.current_result = @selection_result
+            runtime_state.current_step = self
             # end
 
             # Actually call the field resolver and capture the result
@@ -240,8 +242,7 @@ module GraphQL
 
             if !HALT.equal?(@result)
               runtime_state = @runtime.get_current_runtime_state
-              was_scoped = runtime_state.was_authorized_by_scope_items
-              runtime_state.was_authorized_by_scope_items = nil
+              was_scoped =  @was_scoped
               @runtime.continue_field(@result, @field, return_type, @ast_node, @next_selections, false, @resolved_arguments, @result_name, @selection_result, was_scoped, runtime_state)
             else
               nil

@@ -53,7 +53,7 @@ module GraphQL
             end
           end
 
-          attr_accessor :graphql_dead
+          attr_accessor :graphql_dead, :was_scoped
           attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent,
             :graphql_application_value, :graphql_result_type, :graphql_selections, :graphql_is_eager, :ast_node, :graphql_arguments, :graphql_field
 
@@ -152,19 +152,12 @@ module GraphQL
             end
           end
 
-          def wrap_application_value
-            @graphql_application_value = begin
-              value = @graphql_application_value
-              context = @runtime.context
-              @was_scoped ? @graphql_result_type.wrap_scoped(value, context) : @graphql_result_type.wrap(value, context)
-            rescue GraphQL::ExecutionError => err
-              err
-            end
-            @step = :handle_wrapped_application_value
-            @graphql_application_value
-          end
-
           def authorize_application_value
+            if @was_scoped
+              @authorized_check_result = true
+              @step = :handle_authorized_application_value
+              return # TODO continue?
+            end
             @runtime.current_trace.begin_authorized(@graphql_result_type, @graphql_application_value, @runtime.context)
             begin
               @authorized_check_result = @runtime.current_trace.authorized(query: @runtime.query, type: @graphql_result_type, object: @graphql_application_value) do
@@ -194,7 +187,7 @@ module GraphQL
               # TODO skip if scoped
               authorize_application_value
             when :handle_authorized_application_value
-              # TODO doesn't actually support `.wrap`
+              # TODO doesn't actually support `.wrap` - that may be impossible if merged into Schema::Object
               if @authorized_check_result
                 # TODO don't call `scoped_new here`
                 @graphql_application_value = @graphql_result_type.scoped_new(@graphql_application_value, @runtime.context)
@@ -254,6 +247,7 @@ module GraphQL
                 runtime_state = @runtime.get_current_runtime_state
                 runtime_state.current_result_name = nil
                 runtime_state.current_result = selections_result
+                runtime_state.current_step = self
                 nil
               end
             when :run_selection_directives
@@ -322,7 +316,7 @@ module GraphQL
             @runtime.run_queue.append_step(resolve_field_step)
           end
 
-          attr_accessor :ordered_result_keys, :target_result, :was_scoped
+          attr_accessor :ordered_result_keys, :target_result
 
           include GraphQLResult
 

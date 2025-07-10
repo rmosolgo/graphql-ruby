@@ -63,9 +63,7 @@ module BatchLoading
 
       def fetch(keys)
         keys.map { |key|
-          d = GraphQLBatchSchema::DATA.find { |d| d[@column] == key }
-          # p [key, @column, d]
-          d
+          GraphQLBatchSchema::DATA.find { |d| d[@column] == key }
         }
       end
     end

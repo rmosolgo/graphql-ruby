@@ -14,7 +14,8 @@ module GraphQL
               if !scoped_items.equal?(value) && !ret_type.reauthorize_scoped_objects
                 if (current_runtime_state = Fiber[:__graphql_runtime_info]) &&
                     (query_runtime_state = current_runtime_state[context.query])
-                  query_runtime_state.was_authorized_by_scope_items = true
+                  # query_runtime_state.was_authorized_by_scope_items = true
+                  query_runtime_state.current_step.was_scoped = true
                 end
               end
               scoped_items

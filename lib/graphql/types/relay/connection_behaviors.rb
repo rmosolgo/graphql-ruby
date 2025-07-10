@@ -198,7 +198,7 @@ module GraphQL
           # already happened at the connection level.
           current_runtime_state = Fiber[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[context.query]
-          query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
+          query_runtime_state.current_step.was_scoped = @object.was_authorized_by_scope_items?
           @object.edges
         end
 
@@ -207,7 +207,7 @@ module GraphQL
           # already happened at the connection level.
           current_runtime_state = Fiber[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[context.query]
-          query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
+          query_runtime_state.current_step.was_scoped = @object.was_authorized_by_scope_items?
           @object.nodes
         end
       end

@@ -349,8 +349,8 @@ describe GraphQL::Schema::Member::Scoped do
       log = []
       SkipAuthSchema.execute("{ book { title } books { title } }", context: { auth_log: log })
       expected_log = [
-        [:authorized?, "Nonsense Omnibus"],
         [:scope_items, ["Jayber Crow", "Hannah Coulter"]],
+        [:authorized?, "Nonsense Omnibus"],
         [:authorized?, "Jayber Crow"],
         [:authorized?, "Hannah Coulter"],
       ]

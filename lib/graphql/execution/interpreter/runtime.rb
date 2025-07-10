@@ -26,6 +26,7 @@ module GraphQL
             @current_arguments = nil
             @current_result_name = nil
             @current_result = nil
+            @current_step = nil
             @was_authorized_by_scope_items = nil
           end
 
@@ -34,7 +35,7 @@ module GraphQL
           end
 
           attr_accessor :current_result, :current_result_name,
-            :current_arguments, :current_field, :was_authorized_by_scope_items
+            :current_arguments, :current_field, :was_authorized_by_scope_items, :current_step
         end
 
         # @return [GraphQL::Query]
@@ -166,6 +167,7 @@ module GraphQL
               selection_result.ordered_result_keys = [result_name]
               runtime_state.current_result = selection_result
               runtime_state.current_result_name = result_name
+              runtime_state.current_step = selection_result
               continue_value = continue_value(object, field_defn, false, ast_node, result_name, selection_result)
               if HALT != continue_value
                 continue_field(continue_value, field_defn, root_type, ast_node, nil, false, nil, result_name, selection_result, false, runtime_state) # rubocop:disable Metrics/ParameterLists
@@ -470,6 +472,7 @@ module GraphQL
             @run_queue.append_step response_hash
           when "LIST"
             response_list = GraphQLResultArray.new(self, result_name, current_type, value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
+            response_list.was_scoped = was_scoped
             set_result(selection_result, result_name, response_list, true, is_non_null)
             @run_queue.append_step(response_list)
             response_list # TODO smell this is used because its returned by `yield` inside a directive
@@ -549,7 +552,7 @@ module GraphQL
               item_type_non_null = item_type.non_null?
               continue_value = @runtime.continue_value(@item_value, @list_result.graphql_field, item_type_non_null, @list_result.ast_node, @index, @list_result)
               if !HALT.equal?(continue_value)
-                was_scoped = false # TODO!!
+                was_scoped = @list_result.was_scoped
                 @runtime.continue_field(continue_value, @list_result.graphql_field, item_type, @list_result.ast_node, @list_result.graphql_selections, false, @list_result.graphql_arguments, @index, @list_result, was_scoped, @runtime.get_current_runtime_state)
               end
               @step = :finished
@@ -644,6 +647,7 @@ module GraphQL
               runtime_state.current_arguments = arguments
               runtime_state.current_result_name = result_name
               runtime_state.current_result = orig_result
+              runtime_state.current_step = orig_result
               runtime_state.was_authorized_by_scope_items = was_authorized_by_scope_items
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
