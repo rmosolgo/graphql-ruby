@@ -18,14 +18,10 @@ module GraphQL
       end
 
       def run
-        puts "#{self.class}#run ~~~ @q:#{@queue.size} @lad:#{@lazies_at_depth.size} / @stral:#{@steps_to_rerun_after_lazy.size}"
         while @queue.any?
-          puts "#{self.class}#run 111 @q:#{@queue.size} @lad:#{@lazies_at_depth.size} / @stral:#{@steps_to_rerun_after_lazy.size}"
           while (step = @queue.shift)
             step.call
           end
-
-          puts "#{self.class}#run 222 @q:#{@queue.size} @lad:#{@lazies_at_depth.size} / @stral:#{@steps_to_rerun_after_lazy.size}"
 
           while @lazies_at_depth.any?
             smallest_depth = nil
@@ -41,8 +37,6 @@ module GraphQL
               lazies.each(&:value) # resolve these Lazy instances
             end
           end
-
-          puts "#{self.class}#run 333 @q:#{@queue.size} @lad:#{@lazies_at_depth.size} / @stral:#{@steps_to_rerun_after_lazy.size}"
 
           if @steps_to_rerun_after_lazy.any?
             @steps_to_rerun_after_lazy.each(&:call)

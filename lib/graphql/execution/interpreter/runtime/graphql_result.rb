@@ -235,7 +235,7 @@ module GraphQL
                   selections_result.target_result = self
                   selections_result.ordered_result_keys = ordered_result_keys
                   selections_result.set_step :run_selection_directives
-                  @runtime.run_queue.append_step(selections_result)
+                  @runtime.dataloader.append_job(selections_result)
                   @step = :finished # Continuing from others now -- could actually reuse this instance for the first one tho
                 else
                   selections_result = self
@@ -309,7 +309,7 @@ module GraphQL
             field_defn = @runtime.query.types.field(owner_type, field_name)
 
             resolve_field_step = FieldResolveStep.new(@runtime, field_defn, ast_node, field_ast_nodes, result_name, self)
-            @runtime.run_queue.append_step(resolve_field_step)
+            @runtime.dataloader.append_job(resolve_field_step)
           end
 
           attr_accessor :ordered_result_keys, :target_result
@@ -452,7 +452,7 @@ module GraphQL
                     this_idx,
                     inner_value,
                   )
-                  @runtime.run_queue.append_step(list_item_step)
+                  @runtime.dataloader.append_job(list_item_step)
                 end
 
                 self

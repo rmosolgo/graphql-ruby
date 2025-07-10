@@ -75,8 +75,7 @@ module GraphQL
                       # Although queries in a multiplex _share_ an Interpreter instance,
                       # they also have another item of state, which is private to that query
                       # in particular, assign it here:
-                      runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth, run_queue: run_queue)
-                      run_queue ||= runtime.run_queue
+                      runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth)
                       query.context.namespace(:interpreter_runtime)[:runtime] = runtime
 
                       query.current_trace.execute_query(query: query) do

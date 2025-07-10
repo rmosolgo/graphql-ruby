@@ -2,7 +2,6 @@
 require "graphql/execution/interpreter/runtime/step"
 require "graphql/execution/interpreter/runtime/field_resolve_step"
 require "graphql/execution/interpreter/runtime/graphql_result"
-require "graphql/execution/interpreter/runtime/run_queue"
 
 #####
 # Next thoughts
@@ -49,13 +48,11 @@ module GraphQL
 
         attr_reader :dataloader, :current_trace, :lazies_at_depth
 
-        attr_accessor :run_queue
-
         def steps_to_rerun_after_lazy # TODO fix this jank
           @dataloader.steps_to_rerun_after_lazy
         end
 
-        def initialize(query:, lazies_at_depth:, run_queue: nil)
+        def initialize(query:, lazies_at_depth:)
           @query = query
           @current_trace = query.current_trace
           @dataloader = query.multiplex.dataloader
@@ -74,7 +71,6 @@ module GraphQL
           end
           # { Class => Boolean }
           @lazy_cache = {}.compare_by_identity
-          @run_queue = run_queue || RunQueue.new(runtime: self)
         end
 
         def final_result
@@ -99,7 +95,7 @@ module GraphQL
 
           def run_step
             @runtime.call_method_on_directives(@method_to_call, @object, @directives) do
-              @runtime.run_queue.append_step(@next_step)
+              @runtime.dataloader.append_job(@next_step)
               @next_step
             end
           end
@@ -154,7 +150,7 @@ module GraphQL
             else
               @response
             end
-            @run_queue.append_step(next_step)
+            @dataloader.append_job(next_step)
           when "LIST"
             inner_type = root_type.unwrap
             case inner_type.kind.name
@@ -176,7 +172,7 @@ module GraphQL
             else
               @response = GraphQLResultArray.new(self, nil, root_type, object, nil, false, selections, false, ast_node, nil, nil)
               @response.base_path = base_path
-              @run_queue.append_step(@response)
+              @dataloader.append_job(@response)
             end
           when "SCALAR", "ENUM"
             result_name = ast_node.alias || ast_node.name
@@ -469,12 +465,12 @@ module GraphQL
           when "OBJECT", "UNION", "INTERFACE"
             response_hash = GraphQLResultHash.new(self, result_name, current_type, value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
             response_hash.was_scoped = was_scoped
-            @run_queue.append_step response_hash
+            @dataloader.append_job response_hash
           when "LIST"
             response_list = GraphQLResultArray.new(self, result_name, current_type, value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
             response_list.was_scoped = was_scoped
             set_result(selection_result, result_name, response_list, true, is_non_null)
-            @run_queue.append_step(response_list)
+            @dataloader.append_job(response_list)
             response_list # TODO smell this is used because its returned by `yield` inside a directive
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
