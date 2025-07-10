@@ -182,6 +182,14 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class Cookbook < GraphQL::Schema::Object
+      field :featured_recipe, Recipe
+
+      def featured_recipe
+        -> { Database.mget([object[:featured_recipe]]).first }
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       field :recipes, [Recipe], null: false
 
@@ -357,10 +365,18 @@ describe GraphQL::Dataloader do
         argument :input, LookaheadInput
       end
 
-
       def lookahead_ingredient(input:, lookahead:)
         lookahead.arguments # forces a dataloader.run_isolated call
         dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
+      end
+
+      field :cookbooks, [Cookbook]
+
+      def cookbooks
+        [
+          { featured_recipe: "5" },
+          { featured_recipe: "6" },
+        ]
       end
     end
 
@@ -434,6 +450,7 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
+    lazy_resolve Proc, :call
 
     class FieldTestError < StandardError; end
 
@@ -916,6 +933,14 @@ describe GraphQL::Dataloader do
           query_str = "{ recipesById(ids: [5, 6]) { name } }"
           context = { batched_calls_counter: BatchedCallsCounter.new }
           schema.execute(query_str, context: context)
+          assert_equal 1, context[:batched_calls_counter].count
+        end
+
+        it "batches nested object calls in .authorized? after using lazy_resolve" do
+          query_str = "{ cookbooks { featuredRecipe { name } } }"
+          context = { batched_calls_counter: BatchedCallsCounter.new }
+          result = schema.execute(query_str, context: context)
+          refute result.key?("errors")
           assert_equal 1, context[:batched_calls_counter].count
         end
 
