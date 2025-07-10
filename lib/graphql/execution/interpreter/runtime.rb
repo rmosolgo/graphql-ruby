@@ -52,7 +52,7 @@ module GraphQL
         attr_accessor :run_queue
 
         def steps_to_rerun_after_lazy # TODO fix this jank
-          @run_queue.steps_to_rerun_after_lazy
+          @dataloader.steps_to_rerun_after_lazy
         end
 
         def initialize(query:, lazies_at_depth:, run_queue: nil)

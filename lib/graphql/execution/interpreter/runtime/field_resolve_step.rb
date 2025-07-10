@@ -12,6 +12,7 @@ module GraphQL
             @field = field
             @object = selection_result.graphql_application_value
             if @field.dynamic_introspection
+              # TODO `.wrap` isn't used elsewhere
               @object = field.owner.wrap(@object, @runtime.context)
             end
             @ast_node = ast_node
@@ -33,7 +34,7 @@ module GraphQL
           end
 
           def inspect_step
-            "#{self.class.name.split("::").last}##{object_id}/#@step(#{@field.path} @ #{@selection_result.path.join(".")}.#{@result_name})"
+            "#{self.class.name.split("::").last}##{object_id}/#@step(#{@field.path} @ #{@selection_result.path.join(".")}.#{@result_name}, #{@result.class})"
           end
 
           def step_finished?

@@ -44,6 +44,7 @@ module GraphQL
             schema = multiplex.schema
             queries = multiplex.queries
             lazies_at_depth = Hash.new { |h, k| h[k] = [] }
+            multiplex.dataloader.lazies_at_depth = lazies_at_depth
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
@@ -90,9 +91,6 @@ module GraphQL
                 }
               end
 
-              multiplex.dataloader.append_job {
-                run_queue&.complete # can be null if errored
-              }
               multiplex.dataloader.run
 
 

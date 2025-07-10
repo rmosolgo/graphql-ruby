@@ -92,7 +92,7 @@ module GraphQL
           end
 
           def inspect_step
-            "#{self.class.name.split("::").last}##{object_id}(#{@graphql_result_type.to_type_signature} @ #{path.join(".")}})"
+            "#{self.class.name.split("::").last}##{object_id}:#@step(#{@graphql_result_type.to_type_signature} @ #{path.join(".")}, #{(@graphql_application_value&.object.class rescue @graphql_application_value.class)}})"
           end
 
           def step_finished?
@@ -267,8 +267,6 @@ module GraphQL
                 # so it wouldn't get to the `Resolve` call that happens below.
                 # So instead trigger a run from this outer context.
                 if @graphql_is_eager
-                  prev_queue = @runtime.run_queue
-                  @runtime.run_queue = RunQueue.new(runtime: @runtime)
                   @runtime.dataloader.clear_cache
                   @runtime.dataloader.run_isolated {
                     evaluate_selection(
@@ -276,8 +274,6 @@ module GraphQL
                     )
                     @runtime.dataloader.clear_cache
                   }
-                  @runtime.run_queue.complete(eager: true)
-                  @runtime.run_queue = prev_queue
                 else
                   @runtime.dataloader.append_job {
                     evaluate_selection(
@@ -427,7 +423,7 @@ module GraphQL
           end
 
           def inspect_step
-            "#{self.class.name.split("::").last}##{object_id}(#{@graphql_result_type.to_type_signature} @ #{path.join(".")})"
+            "#{self.class.name.split("::").last}##{object_id}:#@step(#{@graphql_result_type.to_type_signature} @ #{path.join(".")})"
           end
 
           def depth
