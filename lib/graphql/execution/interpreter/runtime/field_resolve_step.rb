@@ -54,6 +54,8 @@ module GraphQL
               @runtime.schema.sync_lazy(@result)
             rescue GraphQL::ExecutionError => err
               err
+            rescue UnauthorizedError => err
+              err
             rescue StandardError => err
               begin
                 @runtime.query.handle_or_reraise(err)
