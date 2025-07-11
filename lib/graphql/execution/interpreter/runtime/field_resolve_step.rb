@@ -127,19 +127,25 @@ module GraphQL
             else
               @step = :prepare_kwarg_arguments
               @result = nil
-              dataloader_paused = false
+              @should_continue_args = false
               @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @object) do |resolved_arguments|
                 @result = resolved_arguments
-                if dataloader_paused
+                if @should_continue_args
                   prepare_kwarg_arguments
                 end
               end
-              dataloader_paused = true
+              @should_continue_args = true
               @result
             end
           end
 
           def prepare_kwarg_arguments
+            # TODO the problem is that if Dataloader pauses in the block above,
+            # the step is somehow resumed here.
+            # Then the call in the block above also runs later, resulting in double-execution.
+            # I think the big fix is to move the dataloader-y stuff from argument resolution
+            # and inline it here.
+            @should_continue_args = false
             # @resolved_arguments may have been eagerly set if there aren't actually any args
             if @resolved_arguments.nil? && @result.nil?
               @runtime.dataloader.run

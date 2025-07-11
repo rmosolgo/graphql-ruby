@@ -164,7 +164,14 @@ module GraphQL
                 begin
                   @graphql_result_type.authorized?(@graphql_application_value, @runtime.context)
                 rescue GraphQL::UnauthorizedError => err
-                  @runtime.schema.unauthorized_object(err)
+                  begin
+                    @runtime.schema.unauthorized_object(err)
+                  rescue GraphQL::ExecutionError => err
+                    # TODO this is getting handled like a normal "false" below
+                    # but should skip the re-wrapping with UnauthorizedError
+                    @graphql_application_value = err
+                    false
+                  end
                 rescue StandardError => err
                   @runtime.query.handle_or_reraise(err)
                 end
@@ -203,6 +210,8 @@ module GraphQL
                   else
                     @graphql_application_value = nil
                   end
+                rescue GraphQL::ExecutionError => err
+                  @graphql_application_value = err
                 end
               end
               @authorized_check_result = nil
