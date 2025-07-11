@@ -15,8 +15,12 @@ module GraphQL
           str.encode!(Encoding::UTF_8)
         end
       rescue EncodingError
-        err = GraphQL::StringEncodingError.new(str, context: ctx)
-        ctx.schema.type_error(err, ctx)
+        error = GraphQL::StringEncodingError.new(
+          "String cannot represent value: #{value.inspect}",
+          value: value,
+          context: ctx
+        )
+        ctx.schema.type_error(error, ctx)
       end
 
       def self.coerce_input(value, _ctx)
