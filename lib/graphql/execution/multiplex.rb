@@ -25,9 +25,9 @@ module GraphQL
     class Multiplex
       include Tracing::Traceable
 
-      attr_reader :context, :queries, :schema, :max_complexity, :dataloader, :current_trace
+      attr_reader :context, :queries, :schema, :max_complexity, :dataloader, :current_trace, :analysis
 
-      def initialize(schema:, queries:, context:, max_complexity:)
+      def initialize(schema:, queries:, context:, max_complexity:, analysis: true)
         @schema = schema
         @queries = queries
         @queries.each { |q| q.multiplex = self }
@@ -37,6 +37,7 @@ module GraphQL
         @max_complexity = max_complexity
         @current_trace = context[:trace] ||= schema.new_trace(multiplex: self)
         @logger = nil
+        @analysis = analysis
       end
 
       def logger

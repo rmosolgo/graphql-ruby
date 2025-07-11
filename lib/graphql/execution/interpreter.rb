@@ -37,20 +37,25 @@ module GraphQL
           return GraphQL::EmptyObjects::EMPTY_ARRAY if queries.empty?
 
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
+          run_multiplex(multiplex)
+        end
+
+        def run_multiplex(multiplex)
           trace = multiplex.current_trace
           Fiber[:__graphql_current_multiplex] = multiplex
           trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
             lazies_at_depth = Hash.new { |h, k| h[k] = [] }
-            multiplex_analyzers = schema.multiplex_analyzers
-            if multiplex.max_complexity
-              multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
-            end
 
-            trace.begin_analyze_multiplex(multiplex, multiplex_analyzers)
-            schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
-            trace.end_analyze_multiplex(multiplex, multiplex_analyzers)
+            if multiplex.analysis
+              multiplex_analyzers = schema.multiplex_analyzers
+              multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity] if multiplex.max_complexity
+
+              trace.begin_analyze_multiplex(multiplex, multiplex_analyzers)
+              schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
+              trace.end_analyze_multiplex(multiplex, multiplex_analyzers)
+            end
 
             begin
               # Since this is basically the batching context,
