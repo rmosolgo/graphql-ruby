@@ -17,22 +17,41 @@ module GraphQL
         freeze
       end
 
+      # Is this TypeKind abstract?
+      attr_reader :abstract
+      alias_method :abstract?, :abstract
+      remove_method :abstract
+
       # Does this TypeKind have multiple possible implementers?
       # @deprecated Use `abstract?` instead of `resolves?`.
-      def resolves?;  @abstract;  end
-      # Is this TypeKind abstract?
-      def abstract?; @abstract; end
+      alias_method :resolves?, :abstract?
+
       # Does this TypeKind have queryable fields?
-      def fields?;    @fields;    end
+      attr_reader :fields
+      alias_method :fields?, :fields
+      remove_method :fields
+
       # Does this TypeKind modify another type?
-      def wraps?;     @wraps;     end
+      attr_reader :wraps
+      alias_method :wraps?, :wraps
+      remove_method :wraps
+
       # Is this TypeKind a valid query input?
-      def input?;     @input;     end
-      def to_s;       @name;      end
+      attr_reader :input
+      alias_method :input?, :input
+      remove_method :input
+
       # Is this TypeKind a primitive value?
-      def leaf?; @leaf; end
+      attr_reader :leaf
+      alias_method :leaf?, :leaf
+      remove_method :leaf
+
       # Is this TypeKind composed of many values?
-      def composite?; @composite; end
+      attr_reader :composite
+      alias_method :composite?, :composite
+      remove_method :composite
+
+      alias_method :to_s, :name
 
       def scalar?
         self == TypeKinds::SCALAR
