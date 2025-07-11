@@ -266,6 +266,8 @@ module GraphQL
             build_scalar_type(definition, type_resolver, base_types[:scalar], default_resolve: default_resolve)
           when GraphQL::Language::Nodes::InputObjectTypeDefinition
             build_input_object_type(definition, type_resolver, base_types[:input_object])
+          when GraphQL::Language::Nodes::DirectiveDefinition
+            build_directive(definition, type_resolver)
           end
         end
 
@@ -544,7 +546,7 @@ module GraphQL
             when GraphQL::Language::Nodes::ListType
               resolve_type_proc.call(ast_node.of_type).to_list_type
             when String
-              directives[ast_node]
+              directives[ast_node] ||= missing_type_handler.call(ast_node)
             else
               raise "Unexpected ast_node: #{ast_node.inspect}"
             end
