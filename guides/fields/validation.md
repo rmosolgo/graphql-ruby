@@ -62,7 +62,7 @@ Alternatively, they can be used alone, for example:
 argument :id, ID, required: false, validates: { allow_null: true }
 ```
 
-Will reject any query that passes `id: null`.
+Will permit any query that passes `id: null`.
 
 ## Custom Validators
 
