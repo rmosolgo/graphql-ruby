@@ -923,6 +923,18 @@ module GraphQL
 
       attr_writer :error_bubbling
 
+      def spec_compliant_scalar_coercion_errors(new_spec_compliant_scalar_coercion_errors = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_spec_compliant_scalar_coercion_errors)
+          if defined?(@spec_compliant_scalar_coercion_errors)
+            @spec_compliant_scalar_coercion_errors
+          else
+            find_inherited_value(:spec_compliant_scalar_coercion_errors, false)
+          end
+        else
+          @spec_compliant_scalar_coercion_errors = new_spec_compliant_scalar_coercion_errors
+        end
+      end
+
       attr_writer :max_depth
 
       def max_depth(new_max_depth = nil, count_introspection_fields: true)
@@ -1333,10 +1345,24 @@ module GraphQL
           execution_error.path = context[:current_path]
 
           context.errors << execution_error
-        when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
-          raise type_error
+        when GraphQL::ScalarCoercionError
+          if spec_compliant_scalar_coercion_errors == true
+            execution_error = GraphQL::CoercionError.new(type_error.message)
+            raise execution_error
+          else
+            schema_name = context.schema&.name || "Schema"
+            warn <<~MSG
+            Scalar coercion errors (like this one: `#<#{type_error.class.name} message=#{type_error.message.inspect}>`) will return GraphQL execution errors instead of raising Ruby exceptions in a future version.
+            To opt into this new behavior, set `Schema.spec_compliant_scalar_coercion_errors = true`.
+            To keep or customize the current behavior, add custom error handling in `#{schema_name}.type_error`.
+            MSG
+
+            raise type_error
+          end
         when GraphQL::IntegerDecodingError
           nil
+        when GraphQL::UnresolvedTypeError
+          raise type_error
         end
       end
 
