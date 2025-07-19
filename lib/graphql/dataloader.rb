@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "graphql/dataloader/flat_dataloader"
 require "graphql/dataloader/null_dataloader"
 require "graphql/dataloader/request"
 require "graphql/dataloader/request_all"
@@ -64,7 +65,13 @@ module GraphQL
         @nonblocking = nonblocking
       end
       @fiber_limit = fiber_limit
+      @steps_to_rerun_after_lazy = []
+      @lazies_at_depth = nil
     end
+
+    attr_accessor :lazies_at_depth
+
+    attr_reader :steps_to_rerun_after_lazy
 
     # @return [Integer, nil]
     attr_reader :fiber_limit
@@ -140,10 +147,10 @@ module GraphQL
     end
 
     # @api private Nothing to see here
-    def append_job(&job)
+    def append_job(callable = nil, &job)
       # Given a block, queue it up to be worked through when `#run` is called.
       # (If the dataloader is already running, than a Fiber will pick this up later.)
-      @pending_jobs.push(job)
+      @pending_jobs.push(callable || job)
       nil
     end
 
@@ -189,6 +196,8 @@ module GraphQL
     end
 
     def run
+      # TODO unify the initialization lazies_at_depth
+      @lazies_at_depth ||= Hash.new { |h, k| h[k] = [] }
       trace = Fiber[:__graphql_current_multiplex]&.current_trace
       jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
       job_fibers = []
@@ -221,6 +230,31 @@ module GraphQL
               end
             end
             join_queues(source_fibers, next_source_fibers)
+          end
+
+          if @lazies_at_depth.any?
+            smallest_depth = nil
+            @lazies_at_depth.each_key do |depth_key|
+              smallest_depth ||= depth_key
+              if depth_key < smallest_depth
+                smallest_depth = depth_key
+              end
+            end
+
+            if smallest_depth
+              lazies = @lazies_at_depth.delete(smallest_depth)
+              if !lazies.empty?
+                append_job {
+                  lazies.each(&:value) # resolve these Lazy instances
+                }
+                job_fibers << spawn_job_fiber(trace)
+              end
+            end
+          elsif @steps_to_rerun_after_lazy.any?
+            @pending_jobs.concat(@steps_to_rerun_after_lazy)
+            f = spawn_job_fiber(trace)
+            job_fibers << f
+            @steps_to_rerun_after_lazy.clear
           end
         end
 

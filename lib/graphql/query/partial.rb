@@ -123,7 +123,6 @@ module GraphQL
       def set_type_info_from_path
         selections = [@query.selected_operation]
         type = @query.root_type
-        parent_type = nil
         field_defn = nil
 
         @path.each do |name_in_doc|

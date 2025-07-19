@@ -5,7 +5,6 @@ require "graphql/execution/interpreter/arguments"
 require "graphql/execution/interpreter/arguments_cache"
 require "graphql/execution/interpreter/execution_errors"
 require "graphql/execution/interpreter/runtime"
-require "graphql/execution/interpreter/resolve"
 require "graphql/execution/interpreter/handles_raw_value"
 
 module GraphQL
@@ -43,6 +42,7 @@ module GraphQL
             schema = multiplex.schema
             queries = multiplex.queries
             lazies_at_depth = Hash.new { |h, k| h[k] = [] }
+            multiplex.dataloader.lazies_at_depth = lazies_at_depth
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
@@ -90,15 +90,6 @@ module GraphQL
 
               multiplex.dataloader.run
 
-              # Then, work through lazy results in a breadth-first way
-              multiplex.dataloader.append_job {
-                query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
-                multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
-                  Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
-                end
-              }
-              multiplex.dataloader.run
-
               # Then, find all errors and assign the result to the query object
               results.each_with_index do |data_result, idx|
                 query = queries[idx]
@@ -122,7 +113,6 @@ module GraphQL
                   end
 
                   result["data"] = query.context.namespace(:interpreter_runtime)[:runtime].final_result
-
                   result
                 end
                 if query.context.namespace?(:__query_result_extensions__)
