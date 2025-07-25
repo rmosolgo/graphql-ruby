@@ -313,6 +313,7 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
+  focus
   it "runs a query" do
     query_string = <<-GRAPHQL
     query($expansion: String!, $id1: ID!, $id2: ID!){

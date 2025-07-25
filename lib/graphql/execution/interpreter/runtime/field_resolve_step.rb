@@ -37,10 +37,6 @@ module GraphQL
             "#{self.class.name.split("::").last}##{object_id}/#@step(#{@field.path} @ #{@selection_result.path.join(".")}.#{@result_name}, #{@result.class})"
           end
 
-          def step_finished?
-            @step == :finished
-          end
-
           def depth
             @selection_result.depth + 1
           end
@@ -53,6 +49,7 @@ module GraphQL
               rs.current_result = current_result
               rs.current_result_name = current_result_name
               rs.current_step = self
+              puts "sync_lazy #{@result} #{inspect_step}"
               @runtime.schema.sync_lazy(@result)
             rescue GraphQL::ExecutionError => err
               err
@@ -68,9 +65,9 @@ module GraphQL
           end
 
           def run_step
+            puts "run_step #{inspect_step}"
             if @selection_result.graphql_dead
-              @step = :finished
-              return nil
+              return
             end
             case @step
             when :inspect_ast
@@ -105,10 +102,8 @@ module GraphQL
             end
 
             if directives.any?
-              @step = :finished # some way to detect whether the block below is called or not
               @runtime.call_method_on_directives(:resolve, @object, directives) do
-                @step = :load_arguments
-                self # TODO what kind of compatibility is possible here?
+                load_arguments
               end
             else
               load_arguments
@@ -127,15 +122,14 @@ module GraphQL
             else
               @step = :prepare_kwarg_arguments
               @result = nil
-              @should_continue_args = false
-              @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @object) do |resolved_arguments|
+              dataload_for_result = @runtime.query.arguments_cache.dataload_for(@ast_node, @field, @object) do |resolved_arguments|
                 @result = resolved_arguments
-                if @should_continue_args
-                  prepare_kwarg_arguments
-                end
               end
-              @should_continue_args = true
-              @result
+              if (@result && reenqueue_if_lazy?(@result)) || (reenqueue_if_lazy?(dataload_for_result))
+                return
+              else
+                @runtime.steps_to_rerun_after_lazy << self
+              end
             end
           end
 
@@ -145,17 +139,15 @@ module GraphQL
             # Then the call in the block above also runs later, resulting in double-execution.
             # I think the big fix is to move the dataloader-y stuff from argument resolution
             # and inline it here.
-            @should_continue_args = false
             # @resolved_arguments may have been eagerly set if there aren't actually any args
-            if @resolved_arguments.nil? && @result.nil?
-              @runtime.dataloader.run
-            end
+            # if @resolved_arguments.nil? && @result.nil?
+            #   @runtime.dataloader.run
+            # end
             @resolved_arguments ||= @result
             @result = nil # TODO is this still necessary?
             if @resolved_arguments.is_a?(GraphQL::ExecutionError) || @resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               return_type_non_null = @field.type.non_null?
               @runtime.continue_value(@resolved_arguments, @field, return_type_non_null, @ast_node, @result_name, @selection_result)
-              @step = :finished
               return
             end
 
@@ -239,8 +231,15 @@ module GraphQL
               end
             end
             @runtime.current_trace.end_execute_field(@field, @object, @kwarg_arguments, query, app_result)
-            @step = :handle_resolved_value
             @result = app_result
+            reenc = reenqueue_if_lazy?(@result)
+            p [:app_result, @result, reenc]
+            if reenc
+              @step = :handle_resolved_value
+              return
+            else
+              handle_resolved_value
+            end
           end
 
           def handle_resolved_value
@@ -251,11 +250,7 @@ module GraphQL
               runtime_state = @runtime.get_current_runtime_state
               was_scoped =  @was_scoped
               @runtime.continue_field(@result, @field, return_type, @ast_node, @next_selections, false, @resolved_arguments, @result_name, @selection_result, was_scoped, runtime_state)
-            else
-              nil
             end
-            @step = :finished
-            nil
           end
         end
       end

@@ -2,6 +2,8 @@
 require "graphql/execution/interpreter/runtime/step"
 require "graphql/execution/interpreter/runtime/field_resolve_step"
 require "graphql/execution/interpreter/runtime/graphql_result"
+require "graphql/execution/interpreter/runtime/graphql_result_array"
+require "graphql/execution/interpreter/runtime/graphql_result_hash"
 
 #####
 # Next thoughts
@@ -98,10 +100,6 @@ module GraphQL
               @runtime.dataloader.append_job(@next_step)
               @next_step
             end
-          end
-
-          def step_finished?
-            true
           end
 
           def current_result
@@ -496,10 +494,6 @@ module GraphQL
             @index
           end
 
-          def step_finished?
-            @step == :finished
-          end
-
           def inspect_step
             "#{self.class.name.split("::").last}##{object_id}@#{@index}"
           end
@@ -526,34 +520,39 @@ module GraphQL
             case @step
             when :check_directives
               if (dirs = @list_result.ast_node.directives).any?
-                @step = :finished
-              runtime_state = @runtime.get_current_runtime_state
-              runtime_state.current_result_name = @index
-              runtime_state.current_result = @list_result
+                runtime_state = @runtime.get_current_runtime_state
+                runtime_state.current_result_name = @index
+                runtime_state.current_result = @list_result
                 @runtime.call_method_on_directives(:resolve_each, @list_result.graphql_application_value, dirs) do
-                  @step = :check_lazy_item
+                  check_if_item_lazy
                 end
               else
-                @step = :check_lazy_item
-              end
-            when :check_lazy_item
-              @step = :handle_item
-              if @runtime.lazy?(@item_value)
-                @item_value
-              else
-                nil
+                check_if_item_lazy
               end
             when :handle_item
-              item_type = @list_result.graphql_result_type.of_type
-              item_type_non_null = item_type.non_null?
-              continue_value = @runtime.continue_value(@item_value, @list_result.graphql_field, item_type_non_null, @list_result.ast_node, @index, @list_result)
-              if !HALT.equal?(continue_value)
-                was_scoped = @list_result.was_scoped
-                @runtime.continue_field(continue_value, @list_result.graphql_field, item_type, @list_result.ast_node, @list_result.graphql_selections, false, @list_result.graphql_arguments, @index, @list_result, was_scoped, @runtime.get_current_runtime_state)
-              end
-              @step = :finished
+              handle_item
             else
               raise "Invariant: unexpected step: #{inspect_step}"
+            end
+          end
+
+          private
+
+          def check_if_item_lazy
+            if reenqueue_if_lazy?(@item_value)
+              @step = :handle_item
+            else
+              handle_item
+            end
+          end
+
+          def handle_item
+            item_type = @list_result.graphql_result_type.of_type
+            item_type_non_null = item_type.non_null?
+            continue_value = @runtime.continue_value(@item_value, @list_result.graphql_field, item_type_non_null, @list_result.ast_node, @index, @list_result)
+            if !HALT.equal?(continue_value)
+              was_scoped = @list_result.was_scoped
+              @runtime.continue_field(continue_value, @list_result.graphql_field, item_type, @list_result.ast_node, @list_result.graphql_selections, false, @list_result.graphql_arguments, @index, @list_result, was_scoped, @runtime.get_current_runtime_state)
             end
           end
         end
