@@ -310,4 +310,28 @@ describe GraphQL::Schema::Visibility do
     res = InterfaceSuperclassSchema.execute("{ node { id ... on Thing { name } } }")
     assert_equal "Hat", res["data"]["node"]["name"]
   end
+
+  focus
+  it "defaults to preload: true for Rails.env.staging?" do
+    prev_rails = defined?(Rails) ? Rails : nil
+    mock_env = OpenStruct.new(:development? => false)
+    Object.const_set(:Rails, OpenStruct.new(env: mock_env))
+    schema = Class.new(GraphQL::Schema) do
+      use GraphQL::Schema::Visibility
+    end
+    refute Rails.env.development?
+    assert schema.visibility.preload?
+
+    mock_env[:development?] = true
+
+    schema = Class.new(GraphQL::Schema) do
+      use GraphQL::Schema::Visibility
+    end
+    assert Rails.env.development?
+    refute schema.visibility.preload?
+  ensure
+    if prev_rails
+      const_set(:Rails, prev_rails)
+    end
+  end
 end
