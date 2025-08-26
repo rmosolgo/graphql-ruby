@@ -488,7 +488,8 @@ module GraphQL
           # all of its child fields before moving on to the next root mutation field.
           # (Subselections of this mutation will still be resolved level-by-level.)
           if selection_result.graphql_is_eager
-            Interpreter::Resolve.resolve_all([field_result], @dataloader)
+            # TODO what to do with this
+            # Interpreter::Resolve.resolve_all([field_result], @dataloader)
           end
         end
 

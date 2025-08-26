@@ -671,7 +671,7 @@ module GraphQL
       # @api private
       # @see GraphQL::Dataloader
       def dataloader_class
-        @dataloader_class || GraphQL::Dataloader::NullDataloader
+        @dataloader_class || GraphQL::Dataloader::FlatDataloader
       end
 
       attr_writer :dataloader_class
