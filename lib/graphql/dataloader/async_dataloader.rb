@@ -15,6 +15,8 @@ module GraphQL
       end
 
       def run(trace_query_lazy: nil)
+        # TODO unify the initialization lazies_at_depth
+        @lazies_at_depth ||= Hash.new { |h, k| h[k] = [] }
         trace = Fiber[:__graphql_current_multiplex]&.current_trace
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
         job_fibers = []
