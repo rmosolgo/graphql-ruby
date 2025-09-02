@@ -14,7 +14,7 @@ module GraphQL
         nil
       end
 
-      def run
+      def run(trace_query_lazy: nil)
         trace = Fiber[:__graphql_current_multiplex]&.current_trace
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
         job_fibers = []

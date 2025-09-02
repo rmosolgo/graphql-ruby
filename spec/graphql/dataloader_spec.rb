@@ -1450,7 +1450,7 @@ describe GraphQL::Dataloader do
       end
       query(query_type)
     end.execute("{ __typename }")
-    assert_instance_of GraphQL::Dataloader::NullDataloader, res.context.dataloader
+    assert_instance_of GraphQL::Dataloader::FlatDataloader, res.context.dataloader
     res = FiberSchema.execute("{ __typename }")
     assert_instance_of GraphQL::Dataloader, res.context.dataloader
     refute res.context.dataloader.nonblocking?

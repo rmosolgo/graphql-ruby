@@ -195,7 +195,8 @@ module GraphQL
       end
     end
 
-    def run
+    # @param trace_query_lazy [nil, Execution::Multiplex]
+    def run(trace_query_lazy: nil)
       # TODO unify the initialization lazies_at_depth
       @lazies_at_depth ||= Hash.new { |h, k| h[k] = [] }
       trace = Fiber[:__graphql_current_multiplex]&.current_trace
@@ -231,24 +232,9 @@ module GraphQL
             end
             join_queues(source_fibers, next_source_fibers)
           end
-
           if @lazies_at_depth.any?
-            smallest_depth = nil
-            @lazies_at_depth.each_key do |depth_key|
-              smallest_depth ||= depth_key
-              if depth_key < smallest_depth
-                smallest_depth = depth_key
-              end
-            end
-
-            if smallest_depth
-              lazies = @lazies_at_depth.delete(smallest_depth)
-              if !lazies.empty?
-                append_job {
-                  lazies.each(&:value) # resolve these Lazy instances
-                }
-                job_fibers << spawn_job_fiber(trace)
-              end
+            with_trace_query_lazy(trace_query_lazy) do
+              run_pending_lazies(job_fibers, trace)
             end
           elsif @steps_to_rerun_after_lazy.any?
             @pending_jobs.concat(@steps_to_rerun_after_lazy)
@@ -282,6 +268,11 @@ module GraphQL
       f.resume
     end
 
+    # @api private
+    def lazy_at_depth(depth, lazy)
+      @lazies_at_depth[depth] << lazy
+    end
+
     def spawn_fiber
       fiber_vars = get_fiber_variables
       Fiber.new(blocking: !@nonblocking) {
@@ -308,6 +299,35 @@ module GraphQL
     end
 
     private
+
+    def run_pending_lazies(job_fibers, trace)
+      smallest_depth = nil
+      @lazies_at_depth.each_key do |depth_key|
+        smallest_depth ||= depth_key
+        if depth_key < smallest_depth
+          smallest_depth = depth_key
+        end
+      end
+
+      if smallest_depth
+        lazies = @lazies_at_depth.delete(smallest_depth)
+        if !lazies.empty?
+          append_job {
+            lazies.each(&:value) # resolve these Lazy instances
+          }
+          job_fibers << spawn_job_fiber(trace)
+        end
+      end
+    end
+
+    def with_trace_query_lazy(multiplex_or_nil, &block)
+      if (multiplex = multiplex_or_nil)
+        query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
+        multiplex.current_trace.execute_query_lazy(query: query, multiplex: multiplex, &block)
+      else
+        yield
+      end
+    end
 
     def calculate_fiber_limit
       total_fiber_limit = @fiber_limit || Float::INFINITY

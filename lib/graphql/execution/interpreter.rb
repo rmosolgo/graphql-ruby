@@ -88,7 +88,7 @@ module GraphQL
                 }
               end
 
-              multiplex.dataloader.run
+              multiplex.dataloader.run(trace_query_lazy: multiplex)
 
               # Then, find all errors and assign the result to the query object
               results.each_with_index do |data_result, idx|

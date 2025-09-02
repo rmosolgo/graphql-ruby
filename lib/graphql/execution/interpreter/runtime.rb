@@ -39,7 +39,6 @@ module GraphQL
           @query = query
           @current_trace = query.current_trace
           @dataloader = query.multiplex.dataloader
-          @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
           @response = nil
@@ -446,7 +445,7 @@ module GraphQL
             }
           end
 
-          field_result = call_method_on_directives(:resolve, object, directives) do
+          call_method_on_directives(:resolve, object, directives) do
             if !directives.empty?
               # This might be executed in a different context; reset this info
               runtime_state = get_current_runtime_state
@@ -488,8 +487,7 @@ module GraphQL
           # all of its child fields before moving on to the next root mutation field.
           # (Subselections of this mutation will still be resolved level-by-level.)
           if selection_result.graphql_is_eager
-            # TODO what to do with this
-            # Interpreter::Resolve.resolve_all([field_result], @dataloader)
+            @dataloader.run
           end
         end
 
@@ -933,7 +931,7 @@ module GraphQL
                 current_depth += 1
                 result = result.graphql_parent
               end
-              @lazies_at_depth[current_depth] << lazy
+              @dataloader.lazy_at_depth(current_depth, lazy)
               lazy
             end
           else
