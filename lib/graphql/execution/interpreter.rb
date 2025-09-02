@@ -5,6 +5,7 @@ require "graphql/execution/interpreter/arguments"
 require "graphql/execution/interpreter/arguments_cache"
 require "graphql/execution/interpreter/execution_errors"
 require "graphql/execution/interpreter/runtime"
+require "graphql/execution/interpreter/resolve"
 require "graphql/execution/interpreter/handles_raw_value"
 
 module GraphQL
