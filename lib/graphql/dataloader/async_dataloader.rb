@@ -53,11 +53,6 @@ module GraphQL
                 run_next_pending_lazies(job_fibers, trace)
                 run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
               end
-            elsif !@steps_to_rerun_after_lazy.empty?
-              @pending_jobs.concat(@steps_to_rerun_after_lazy)
-              f = spawn_job_fiber(trace)
-              job_fibers << f
-              @steps_to_rerun_after_lazy.clear
             end
           end
           trace&.end_dataloader(self)

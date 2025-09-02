@@ -5,7 +5,6 @@ module GraphQL
       def initialize(*)
         # TODO unify the initialization lazies_at_depth
         @lazies_at_depth ||= Hash.new { |h, k| h[k] = [] }
-        @steps_to_rerun_after_lazy = []
         @queue = []
       end
 
@@ -18,19 +17,12 @@ module GraphQL
               run_pending_steps
             end
           end
-
-          if !@steps_to_rerun_after_lazy.empty?
-            @steps_to_rerun_after_lazy.each(&:call)
-            @steps_to_rerun_after_lazy.clear
-          end
         end
       end
 
       def run_isolated
         prev_queue = @queue
-        prev_stral = @steps_to_rerun_after_lazy
         prev_lad = @lazies_at_depth
-        @steps_to_rerun_after_lazy = []
         @queue = []
         @lazies_at_depth = @lazies_at_depth.dup&.clear
         res = nil
@@ -41,7 +33,6 @@ module GraphQL
         res
       ensure
         @queue = prev_queue
-        @steps_to_rerun_after_lazy = prev_stral
         @lazies_at_depth = prev_lad
       end
 

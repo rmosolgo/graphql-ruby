@@ -65,13 +65,10 @@ module GraphQL
         @nonblocking = nonblocking
       end
       @fiber_limit = fiber_limit
-      @steps_to_rerun_after_lazy = []
       @lazies_at_depth = nil
     end
 
     attr_accessor :lazies_at_depth
-
-    attr_reader :steps_to_rerun_after_lazy
 
     # @return [Integer, nil]
     attr_reader :fiber_limit
@@ -218,11 +215,6 @@ module GraphQL
               run_next_pending_lazies(job_fibers, trace)
               run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
             end
-          elsif !@steps_to_rerun_after_lazy.empty?
-            @pending_jobs.concat(@steps_to_rerun_after_lazy)
-            f = spawn_job_fiber(trace)
-            job_fibers << f
-            @steps_to_rerun_after_lazy.clear
           end
         end
 
