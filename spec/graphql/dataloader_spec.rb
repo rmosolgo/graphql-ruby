@@ -940,6 +940,7 @@ describe GraphQL::Dataloader do
           query_str = "{ cookbooks { featuredRecipe { name } } }"
           context = { batched_calls_counter: BatchedCallsCounter.new }
           result = schema.execute(query_str, context: context)
+          assert_equal ["Cornbread", "Grits"], result["data"]["cookbooks"].map { |c| c["featuredRecipe"]["name"] }
           refute result.key?("errors")
           assert_equal 1, context[:batched_calls_counter].count
         end
