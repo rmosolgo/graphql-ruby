@@ -65,10 +65,8 @@ module GraphQL
         @nonblocking = nonblocking
       end
       @fiber_limit = fiber_limit
-      @lazies_at_depth = nil
+      @lazies_at_depth = Hash.new { |h, k| h[k] = [] }
     end
-
-    attr_accessor :lazies_at_depth
 
     # @return [Integer, nil]
     attr_reader :fiber_limit
@@ -164,6 +162,8 @@ module GraphQL
     def run_isolated
       prev_queue = @pending_jobs
       prev_pending_keys = {}
+      prev_lazies_at_depth = @lazies_at_depth
+      @lazies_at_depth = @lazies_at_depth.dup.clear
       @source_cache.each do |source_class, batched_sources|
         batched_sources.each do |batch_args, batched_source_instance|
           if batched_source_instance.pending?
@@ -183,6 +183,7 @@ module GraphQL
       res
     ensure
       @pending_jobs = prev_queue
+      @lazies_at_depth = prev_lazies_at_depth
       prev_pending_keys.each do |source_instance, pending|
         pending.each do |key, value|
           if !source_instance.results.key?(key)
@@ -194,8 +195,6 @@ module GraphQL
 
     # @param trace_query_lazy [nil, Execution::Multiplex]
     def run(trace_query_lazy: nil)
-      # TODO unify the initialization lazies_at_depth
-      @lazies_at_depth ||= Hash.new { |h, k| h[k] = [] }
       trace = Fiber[:__graphql_current_multiplex]&.current_trace
       jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
       job_fibers = []

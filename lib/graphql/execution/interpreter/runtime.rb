@@ -35,7 +35,7 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        def initialize(query:, lazies_at_depth:)
+        def initialize(query:)
           @query = query
           @current_trace = query.current_trace
           @dataloader = query.multiplex.dataloader

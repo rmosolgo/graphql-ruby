@@ -2,17 +2,11 @@
 module GraphQL
   class Dataloader
     class FlatDataloader < Dataloader
-      def initialize(*)
-        # TODO unify the initialization lazies_at_depth
-        @lazies_at_depth ||= Hash.new { |h, k| h[k] = [] }
-        @queue = []
-      end
-
       def run(trace_query_lazy: nil)
-        while !@queue.empty?
+        while !@pending_jobs.empty?
           run_pending_steps
           with_trace_query_lazy(trace_query_lazy) do
-            while @lazies_at_depth&.any?
+            while !@lazies_at_depth.empty?
               run_next_pending_lazies
               run_pending_steps
             end
@@ -20,30 +14,12 @@ module GraphQL
         end
       end
 
-      def run_isolated
-        prev_queue = @queue
-        prev_lad = @lazies_at_depth
-        @queue = []
-        @lazies_at_depth = @lazies_at_depth.dup&.clear
-        res = nil
-        append_job {
-          res = yield
-        }
-        run
-        res
-      ensure
-        @queue = prev_queue
-        @lazies_at_depth = prev_lad
-      end
-
-      def clear_cache; end
-
       def yield(_source)
         raise GraphQL::Error, "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
       end
 
       def append_job(callable = nil, &block)
-        @queue << (callable || block)
+        @pending_jobs << (callable || block)
         nil
       end
 
@@ -69,7 +45,7 @@ module GraphQL
       end
 
       def run_pending_steps
-        while (step = @queue.shift)
+        while (step = @pending_jobs.shift)
           step.call
         end
       end

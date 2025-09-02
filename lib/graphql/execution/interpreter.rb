@@ -41,8 +41,6 @@ module GraphQL
           trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
-            lazies_at_depth = Hash.new { |h, k| h[k] = [] }
-            multiplex.dataloader.lazies_at_depth = lazies_at_depth
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
@@ -73,7 +71,7 @@ module GraphQL
                       # Although queries in a multiplex _share_ an Interpreter instance,
                       # they also have another item of state, which is private to that query
                       # in particular, assign it here:
-                      runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth)
+                      runtime = Runtime.new(query: query)
                       query.context.namespace(:interpreter_runtime)[:runtime] = runtime
 
                       query.current_trace.execute_query(query: query) do
