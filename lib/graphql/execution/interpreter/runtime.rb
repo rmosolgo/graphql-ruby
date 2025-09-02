@@ -364,6 +364,10 @@ module GraphQL
           else
             @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
               runtime_state = get_current_runtime_state # This might be in a different fiber
+              runtime_state.current_field = field_defn
+              runtime_state.current_arguments = resolved_arguments
+              runtime_state.current_result_name = result_name
+              runtime_state.current_result = selections_result
               evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
             end
           end
