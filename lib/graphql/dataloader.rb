@@ -149,7 +149,7 @@ module GraphQL
     # @api private Nothing to see here
     def append_job(callable = nil, &job)
       # Given a block, queue it up to be worked through when `#run` is called.
-      # (If the dataloader is already running, than a Fiber will pick this up later.)
+      # (If the dataloader is already running, then a Fiber will pick this up later.)
       @pending_jobs.push(callable || job)
       nil
     end
@@ -211,30 +211,12 @@ module GraphQL
         while first_pass || !job_fibers.empty?
           first_pass = false
 
-          while (f = (job_fibers.shift || (((next_job_fibers.size + job_fibers.size) < jobs_fiber_limit) && spawn_job_fiber(trace))))
-            if f.alive?
-              finished = run_fiber(f)
-              if !finished
-                next_job_fibers << f
-              end
-            end
-          end
-          join_queues(job_fibers, next_job_fibers)
+          run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
 
-          while (!source_fibers.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
-            while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber(trace)))
-              if f.alive?
-                finished = run_fiber(f)
-                if !finished
-                  next_source_fibers << f
-                end
-              end
-            end
-            join_queues(source_fibers, next_source_fibers)
-          end
           if !@lazies_at_depth.empty?
             with_trace_query_lazy(trace_query_lazy) do
-              run_pending_lazies(job_fibers, trace)
+              run_next_pending_lazies(job_fibers, trace)
+              run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
             end
           elsif !@steps_to_rerun_after_lazy.empty?
             @pending_jobs.concat(@steps_to_rerun_after_lazy)
@@ -300,7 +282,7 @@ module GraphQL
 
     private
 
-    def run_pending_lazies(job_fibers, trace)
+    def run_next_pending_lazies(job_fibers, trace)
       smallest_depth = nil
       @lazies_at_depth.each_key do |depth_key|
         smallest_depth ||= depth_key
@@ -312,11 +294,35 @@ module GraphQL
       if smallest_depth
         lazies = @lazies_at_depth.delete(smallest_depth)
         if !lazies.empty?
-          append_job {
-            lazies.each(&:value) # resolve these Lazy instances
-          }
-          job_fibers << spawn_job_fiber(trace)
+          lazies.each_with_index do |l, idx|
+            append_job { l.value }
+          end
+          job_fibers.unshift(spawn_job_fiber(trace))
         end
+      end
+    end
+
+    def run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
+      while (f = (job_fibers.shift || (((next_job_fibers.size + job_fibers.size) < jobs_fiber_limit) && spawn_job_fiber(trace))))
+        if f.alive?
+          finished = run_fiber(f)
+          if !finished
+            next_job_fibers << f
+          end
+        end
+      end
+      join_queues(job_fibers, next_job_fibers)
+
+      while (!source_fibers.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
+        while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber(trace)))
+          if f.alive?
+            finished = run_fiber(f)
+            if !finished
+              next_source_fibers << f
+            end
+          end
+        end
+        join_queues(source_fibers, next_source_fibers)
       end
     end
 
