@@ -73,6 +73,7 @@ module GraphQL
 
         if smallest_depth
           lazies = @lazies_at_depth.delete(smallest_depth)
+          puts "-- run_next_pending_lazies #{smallest_depth} || #{lazies.size}"
           lazies.each(&:value) # resolve these Lazy instances
         end
       end

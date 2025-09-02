@@ -239,16 +239,26 @@ describe GraphQL::Execution::Interpreter do
 
     class Counter < GraphQL::Schema::Object
       field :value, Integer, null: false
+
+      def value
+        v = object.value
+        puts "value #{v} @ #{context.current_path}"
+        v
+      end
       field :lazy_value, Integer, null: false
 
       def lazy_value
-        Box.new { object.value }
+        Box.new {
+          puts "lazy_value #{object.value}"
+          object.value
+        }
       end
 
       field :increment, Counter, null: false
 
       def increment
-        object.value += 1
+        v = object.value += 1
+        puts "increment #{v}"
         object
       end
     end
@@ -258,7 +268,8 @@ describe GraphQL::Execution::Interpreter do
 
       def increment_counter
         counter = context[:counter]
-        counter.value += 1
+        v = counter.value += 1
+        puts "Mutation.incrementCounter #{v}"
         counter
       end
     end
@@ -310,6 +321,9 @@ describe GraphQL::Execution::Interpreter do
         end
       end
       trace_with(EnsureThreadCleanedUp)
+
+      # TODO also test with dataloader enabled
+      # use GraphQL::Dataloader
     end
   end
 
@@ -370,7 +384,10 @@ describe GraphQL::Execution::Interpreter do
     assert_nil Fiber[:__graphql_runtime_info]
   end
 
+  focus
   it "runs mutation roots atomically and sequentially" do
+    # It's not continuing from `increment` to value;
+    # Instead it's calling increment twice before it calls value at all.
     query_str = <<-GRAPHQL
     mutation {
       i1: incrementCounter { value lazyValue
@@ -383,6 +400,7 @@ describe GraphQL::Execution::Interpreter do
     GRAPHQL
 
     result = InterpreterTest::Schema.execute(query_str, context: { counter: OpenStruct.new(value: 0) })
+    pp result.context.dataloader.class
     expected_data = {
       "i1" => {
         "value" => 1,
