@@ -668,7 +668,11 @@ module GraphQL
             rescue GraphQL::ExecutionError => ex_err
               return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
             rescue StandardError => err
-              query.handle_or_reraise(err)
+              begin
+                query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
+                return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
+              end
             end
             set_result(selection_result, result_name, r, false, is_non_null)
             r
