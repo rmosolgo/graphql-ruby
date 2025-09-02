@@ -241,25 +241,36 @@ describe GraphQL::Execution::Interpreter do
       field :value, Integer, null: false
 
       def value
-        v = object.value
-        puts "value #{v} @ #{context.current_path}"
-        v
+        counter.value
       end
+
       field :lazy_value, Integer, null: false
 
       def lazy_value
-        Box.new {
-          puts "lazy_value #{object.value}"
-          object.value
-        }
+        Box.new { counter.value }
       end
+
+      field :incremented_value, Integer, hash_key: :incremented_value
 
       field :increment, Counter, null: false
 
       def increment
-        v = object.value += 1
-        puts "increment #{v}"
-        object
+        v = counter.value += 1
+        {
+          counter: counter,
+          incremented_value: v,
+        }
+      end
+
+
+      private
+
+      def counter
+        if object.is_a?(Hash) && object.key?(:counter)
+          object[:counter]
+        else
+          object
+        end
       end
     end
 
@@ -269,8 +280,10 @@ describe GraphQL::Execution::Interpreter do
       def increment_counter
         counter = context[:counter]
         v = counter.value += 1
-        puts "Mutation.incrementCounter #{v}"
-        counter
+        {
+          counter: counter,
+          incremented_value: v
+        }
       end
     end
 
@@ -321,9 +334,6 @@ describe GraphQL::Execution::Interpreter do
         end
       end
       trace_with(EnsureThreadCleanedUp)
-
-      # TODO also test with dataloader enabled
-      # use GraphQL::Dataloader
     end
   end
 
@@ -384,34 +394,30 @@ describe GraphQL::Execution::Interpreter do
     assert_nil Fiber[:__graphql_runtime_info]
   end
 
-  focus
   it "runs mutation roots atomically and sequentially" do
-    # It's not continuing from `increment` to value;
-    # Instead it's calling increment twice before it calls value at all.
     query_str = <<-GRAPHQL
     mutation {
       i1: incrementCounter { value lazyValue
-        i2: increment { value lazyValue }
-        i3: increment { value lazyValue }
+        i2: increment { value incrementedValue lazyValue }
+        i3: increment { value incrementedValue lazyValue }
       }
-      i4: incrementCounter { value lazyValue }
-      i5: incrementCounter { value lazyValue }
+      i4: incrementCounter { value incrementedValue lazyValue }
+      i5: incrementCounter { value incrementedValue lazyValue }
     }
     GRAPHQL
 
     result = InterpreterTest::Schema.execute(query_str, context: { counter: OpenStruct.new(value: 0) })
-    pp result.context.dataloader.class
     expected_data = {
       "i1" => {
         "value" => 1,
         # All of these get `3` as lazy value. They're resolved together,
         # since they aren't _root_ mutation fields.
         "lazyValue" => 3,
-        "i2" => { "value" => 2, "lazyValue" => 3 },
-        "i3" => { "value" => 3, "lazyValue" => 3 },
+        "i2" => { "value" => 3, "incrementedValue" => 2, "lazyValue" => 3 },
+        "i3" => { "value" => 3, "incrementedValue" => 3, "lazyValue" => 3 },
       },
-      "i4" => { "value" => 4, "lazyValue" => 4},
-      "i5" => { "value" => 5, "lazyValue" => 5},
+      "i4" => { "value" => 4, "incrementedValue" => 4, "lazyValue" => 4},
+      "i5" => { "value" => 5, "incrementedValue" => 5, "lazyValue" => 5},
     }
     assert_graphql_equal expected_data, result["data"]
   end
