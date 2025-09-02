@@ -232,11 +232,11 @@ module GraphQL
             end
             join_queues(source_fibers, next_source_fibers)
           end
-          if @lazies_at_depth.any?
+          if !@lazies_at_depth.empty?
             with_trace_query_lazy(trace_query_lazy) do
               run_pending_lazies(job_fibers, trace)
             end
-          elsif @steps_to_rerun_after_lazy.any?
+          elsif !@steps_to_rerun_after_lazy.empty?
             @pending_jobs.concat(@steps_to_rerun_after_lazy)
             f = spawn_job_fiber(trace)
             job_fibers << f

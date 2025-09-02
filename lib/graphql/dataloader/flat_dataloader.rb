@@ -10,7 +10,7 @@ module GraphQL
       end
 
       def run(trace_query_lazy: nil)
-        while @queue.any?
+        while !@queue.empty?
           run_pending_steps
           with_trace_query_lazy(trace_query_lazy) do
             while @lazies_at_depth&.any?
@@ -19,7 +19,7 @@ module GraphQL
             end
           end
 
-          if @steps_to_rerun_after_lazy.any?
+          if !@steps_to_rerun_after_lazy.empty?
             @steps_to_rerun_after_lazy.each(&:call)
             @steps_to_rerun_after_lazy.clear
           end

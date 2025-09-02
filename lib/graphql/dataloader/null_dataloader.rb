@@ -11,7 +11,7 @@ module GraphQL
       # executed synchronously.
 
       def initialize(*); end
-      def run; end
+      def run(trace_query_lazy: nil); end
       def run_isolated; yield; end
       def clear_cache; end
       def yield(_source)
