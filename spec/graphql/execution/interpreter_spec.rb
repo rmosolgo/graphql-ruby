@@ -413,7 +413,7 @@ describe GraphQL::Execution::Interpreter do
         # All of these get `3` as lazy value. They're resolved together,
         # since they aren't _root_ mutation fields.
         "lazyValue" => 3,
-        "i2" => { "value" => 3, "incrementedValue" => 2, "lazyValue" => 3 },
+        "i2" => { "value" => 2, "incrementedValue" => 2, "lazyValue" => 3 },
         "i3" => { "value" => 3, "incrementedValue" => 3, "lazyValue" => 3 },
       },
       "i4" => { "value" => 4, "incrementedValue" => 4, "lazyValue" => 4},

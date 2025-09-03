@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "graphql/dataloader/flat_dataloader"
 require "graphql/dataloader/null_dataloader"
 require "graphql/dataloader/request"
 require "graphql/dataloader/request_all"

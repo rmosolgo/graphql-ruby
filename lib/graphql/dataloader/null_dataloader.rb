@@ -2,17 +2,48 @@
 
 module GraphQL
   class Dataloader
-    # The default implementation of dataloading -- all no-ops.
+    # GraphQL-Ruby uses this when Dataloader isn't enabled.
     #
-    # The Dataloader interface isn't public, but it enables
-    # simple internal code while adding the option to add Dataloader.
+    # It runs execution code inline and gathers lazy objects (eg. Promises)
+    # and resolves them during {#run}.
     class NullDataloader < Dataloader
-      # These are all no-ops because code was
-      # executed synchronously.
+      def initialize(*)
+        @lazies_at_depth = Hash.new { |h,k| h[k] = [] }
+      end
 
-      def initialize(*); end
-      def run(trace_query_lazy: nil); end
-      def run_isolated; yield; end
+      def freeze
+        @lazies_at_depth.default_proc = nil
+        @lazies_at_depth.freeze
+        super
+      end
+
+      def run(trace_query_lazy: nil)
+        with_trace_query_lazy(trace_query_lazy) do
+          while !@lazies_at_depth.empty?
+            smallest_depth = nil
+            @lazies_at_depth.each_key do |depth_key|
+              smallest_depth ||= depth_key
+              if depth_key < smallest_depth
+                smallest_depth = depth_key
+              end
+            end
+
+            if smallest_depth
+              lazies = @lazies_at_depth.delete(smallest_depth)
+              lazies.each(&:value) # resolve these Lazy instances
+            end
+          end
+        end
+      end
+
+      def run_isolated
+        prev_lazies_at_depth = @lazies_at_depth
+        @lazies_at_depth = @lazies_at_depth.dup.clear
+        yield
+      ensure
+        @lazies_at_depth = prev_lazies_at_depth
+      end
+
       def clear_cache; end
       def yield(_source)
         raise GraphQL::Error, "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
