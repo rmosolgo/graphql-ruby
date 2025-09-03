@@ -18,7 +18,7 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
         max_complexity: nil,
       )
 
-      super(query: query, lazies_at_depth: Hash.new { |h, k| h[k] = [] })
+      super(query: query)
       @breadth_results_by_key = {}
     end
 
@@ -50,7 +50,6 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
       end
 
       @dataloader.run
-      GraphQL::Execution::Interpreter::Resolve.resolve_each_depth(@lazies_at_depth, @dataloader)
 
       @breadth_results_by_key[result_key]
     end
