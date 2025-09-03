@@ -37,14 +37,17 @@ module GraphQL
       end
 
       def run_isolated
-        prev_lazies_at_depth = @lazies_at_depth
-        @lazies_at_depth = @lazies_at_depth.dup.clear
-        yield
-      ensure
-        @lazies_at_depth = prev_lazies_at_depth
+        new_dl = self.class.new
+        res = nil
+        new_dl.append_job {
+          res = yield
+        }
+        new_dl.run
+        res
       end
 
       def clear_cache; end
+
       def yield(_source)
         raise GraphQL::Error, "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
       end

@@ -163,6 +163,8 @@ module GraphQL
       prev_pending_keys = {}
       prev_lazies_at_depth = @lazies_at_depth
       @lazies_at_depth = @lazies_at_depth.dup.clear
+      # Clear pending loads but keep already-cached records
+      # in case they are useful to the given block.
       @source_cache.each do |source_class, batched_sources|
         batched_sources.each do |batch_args, batched_source_instance|
           if batched_source_instance.pending?
