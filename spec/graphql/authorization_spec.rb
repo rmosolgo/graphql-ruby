@@ -767,9 +767,9 @@ describe "GraphQL::Authorization" do
       assert_equal "RelayObjectEdge", edge["__typename"]
 
       unauthorized_object_paths = [
-        ["unauthorizedEdge", "node"],
-        ["unauthorizedConnection", "nodes", 0],
         ["unauthorizedConnection", "edges", 0, "node"],
+        ["unauthorizedConnection", "nodes", 0],
+        ["unauthorizedEdge", "node"]
       ]
 
       assert_equal unauthorized_object_paths, unauthorized_res["errors"].map { |e| e["path"] }
