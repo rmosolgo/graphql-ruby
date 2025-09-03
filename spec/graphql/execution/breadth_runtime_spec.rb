@@ -93,7 +93,7 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
     end
   end
 
-  class BaseField < GraphQL::Schema::Field
+  class BreadthBaseField < GraphQL::Schema::Field
     def authorized?(obj, args, ctx)
       if !ctx[:field_auth].nil?
         ctx[:field_auth]
@@ -107,11 +107,11 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
     end
   end
 
-  class BaseObject < GraphQL::Schema::Object
-    field_class BaseField
+  class BreadthBaseObject < GraphQL::Schema::Object
+    field_class BreadthBaseField
   end
 
-  class Query < BaseObject
+  class BreadthTestQuery < BreadthBaseObject
     field :foo, String
 
     def foo
@@ -190,7 +190,7 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
 
   class BreadthTestSchema < GraphQL::Schema
     use(GraphQL::Batch)
-    query Query
+    query BreadthTestQuery
   end
 
   SCHEMA_FROM_DEF = GraphQL::Schema.from_definition(
