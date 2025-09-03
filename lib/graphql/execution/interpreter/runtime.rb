@@ -475,6 +475,7 @@ module GraphQL
             end
             @current_trace.end_execute_field(field_defn, object, kwarg_arguments, query, app_result)
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_result, runtime_state|
+              next if exit_with_inner_result?(inner_result, result_name, selection_result)
               owner_type = selection_result.graphql_result_type
               return_type = field_defn.type
               continue_value = continue_value(inner_result, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
@@ -493,6 +494,11 @@ module GraphQL
           if selection_result.graphql_is_eager
             @dataloader.run
           end
+        end
+
+        # Hook for breadth-first implementations to exit after a single resolver generation.
+        def exit_with_inner_result?(inner_result, result_name, selection_result)
+          false
         end
 
         def set_result(selection_result, result_name, value, is_child_result, is_non_null)
