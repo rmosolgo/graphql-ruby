@@ -35,11 +35,10 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        def initialize(query:, lazies_at_depth:)
+        def initialize(query:)
           @query = query
           @current_trace = query.current_trace
           @dataloader = query.multiplex.dataloader
-          @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
           @response = nil
@@ -365,6 +364,10 @@ module GraphQL
           else
             @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
               runtime_state = get_current_runtime_state # This might be in a different fiber
+              runtime_state.current_field = field_defn
+              runtime_state.current_arguments = resolved_arguments
+              runtime_state.current_result_name = result_name
+              runtime_state.current_result = selections_result
               evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
             end
           end
@@ -446,7 +449,7 @@ module GraphQL
             }
           end
 
-          field_result = call_method_on_directives(:resolve, object, directives) do
+          call_method_on_directives(:resolve, object, directives) do
             if !directives.empty?
               # This might be executed in a different context; reset this info
               runtime_state = get_current_runtime_state
@@ -489,7 +492,7 @@ module GraphQL
           # all of its child fields before moving on to the next root mutation field.
           # (Subselections of this mutation will still be resolved level-by-level.)
           if selection_result.graphql_is_eager
-            Interpreter::Resolve.resolve_all([field_result], @dataloader)
+            @dataloader.run
           end
         end
 
@@ -673,7 +676,11 @@ module GraphQL
             rescue GraphQL::ExecutionError => ex_err
               return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
             rescue StandardError => err
-              query.handle_or_reraise(err)
+              begin
+                query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
+                return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
+              end
             end
             set_result(selection_result, result_name, r, false, is_non_null)
             r
@@ -934,7 +941,7 @@ module GraphQL
                 current_depth += 1
                 result = result.graphql_parent
               end
-              @lazies_at_depth[current_depth] << lazy
+              @dataloader.lazy_at_depth(current_depth, lazy)
               lazy
             end
           else

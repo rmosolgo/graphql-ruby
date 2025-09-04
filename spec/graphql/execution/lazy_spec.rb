@@ -101,7 +101,7 @@ describe GraphQL::Execution::Lazy do
       end
     end
 
-    it "Handles fields that return nil" do
+    it "Handles fields that return nil and batches lazy resultion across depths when possible" do
       values = [
         LazyHelpers::MAGIC_NUMBER_THAT_RETURNS_NIL,
         LazyHelpers::MAGIC_NUMBER_WITH_LAZY_AUTHORIZED_HOOK,
