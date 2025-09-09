@@ -8,6 +8,12 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
   class SimpleBreadthRuntime < GraphQL::Execution::Interpreter::Runtime
     class BreadthObject < GraphQL::Execution::Interpreter::Runtime::GraphQLResultHash
       attr_accessor :breadth_index
+      attr_accessor :results_by_key
+
+      def collect_result(result_name, result_value)
+        results_by_key[result_name][breadth_index] = result_value
+        true
+      end
     end
 
     def initialize(query:)
@@ -22,14 +28,10 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
       @breadth_results_by_key = {}
     end
 
-    def run
-      result = nil
+    def run(&block)
       query.current_trace.execute_multiplex(multiplex: query.multiplex) do
-        query.current_trace.execute_query(query: query) do
-          result = yield
-        end
+        query.current_trace.execute_query(query: query, &block)
       end
-      result
     ensure
       delete_all_interpreter_context
     end
@@ -37,11 +39,13 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
     def evaluate_breadth_selection(objects, parent_type, node)
       result_key = node.alias || node.name
       @breadth_results_by_key[result_key] = Array.new(objects.size)
+
       objects.each_with_index do |object, index|
         app_value = parent_type.wrap(object, query.context)
         breadth_object = BreadthObject.new(nil, parent_type, app_value, nil, false, node.selections, false, node, nil, nil)
         breadth_object.ordered_result_keys = []
         breadth_object.breadth_index = index
+        breadth_object.results_by_key = @breadth_results_by_key
 
         state = get_current_runtime_state
         state.current_result_name = nil
@@ -52,11 +56,6 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
       @dataloader.run
 
       @breadth_results_by_key[result_key]
-    end
-
-    def exit_with_inner_result?(inner_result, result_key, breadth_object)
-      @breadth_results_by_key[result_key][breadth_object.breadth_index] = inner_result
-      true
     end
   end
 
@@ -169,6 +168,14 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
       "#{a}#{b}"
     end
 
+    field :valid_args, String do |f|
+      f.argument :a, String, validates: { length: { is: 1 } }
+    end
+
+    def valid_args(a:)
+      a
+    end
+
     field :range, String do |f|
       f.argument :input, RangeInput
     end
@@ -266,6 +273,13 @@ describe "GraphQL::Execution::Interpreter for breadth-first execution" do
     doc = %|query($b: String) { args(a:"fizz", b: $b) }|
     result = map_breadth_objects([{}], doc, variables: { b: "buzz" })
     assert_equal ["fizzbuzz"], result
+  end
+
+  def test_maps_invalidated_arguments
+    doc = %|query { validArgs(a: "boo") }|
+    result = map_breadth_objects([{}], doc)
+    assert result.first.is_a?(GraphQL::ExecutionError)
+    assert_equal "a is the wrong length (should be 1)", result.first.message
   end
 
   def test_maps_prepared_input_object
