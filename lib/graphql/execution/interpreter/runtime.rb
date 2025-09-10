@@ -376,6 +376,8 @@ module GraphQL
         def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, object, result_name, selection_result, runtime_state)  # rubocop:disable Metrics/ParameterLists
           after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_arguments, runtime_state|
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
+              next if selection_result.collect_result(result_name, resolved_arguments)
+
               return_type_non_null = field_defn.type.non_null?
               continue_value(resolved_arguments, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               next
@@ -475,7 +477,8 @@ module GraphQL
             end
             @current_trace.end_execute_field(field_defn, object, kwarg_arguments, query, app_result)
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_result, runtime_state|
-              next if exit_with_inner_result?(inner_result, result_name, selection_result)
+              next if selection_result.collect_result(result_name, inner_result)
+
               owner_type = selection_result.graphql_result_type
               return_type = field_defn.type
               continue_value = continue_value(inner_result, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
@@ -494,11 +497,6 @@ module GraphQL
           if selection_result.graphql_is_eager
             @dataloader.run
           end
-        end
-
-        # Hook for breadth-first implementations to exit after a single resolver generation.
-        def exit_with_inner_result?(inner_result, result_name, selection_result)
-          false
         end
 
         def set_result(selection_result, result_name, value, is_child_result, is_non_null)

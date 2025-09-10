@@ -157,6 +157,11 @@ module GraphQL
               end
             end
           end
+
+          # hook for breadth-first implementations to signal when collecting results.
+          def collect_result(result_name, result_value)
+            false
+          end
         end
 
         class GraphQLResultArray
