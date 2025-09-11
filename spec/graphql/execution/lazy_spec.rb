@@ -241,4 +241,109 @@ describe GraphQL::Execution::Lazy do
       assert_equal(:value, map.get(s))
     end
   end
+
+  describe "Interface.resolve_type" do
+    class LazyResolveTypeSchema < GraphQL::Schema
+      class Loader
+        LOG = []
+        DATA = {
+          1 => { versionable: 3 },
+          2 => { versionable: 4 },
+          3 => { foo: "foo" },
+          4 => { bar: "bar" },
+        }
+
+        def initialize(loading_key)
+          @loading_key = loading_key
+          @loading_ids = Set.new
+          @loaded = {}
+        end
+
+        def self.for(context, loading_key)
+          l_cache = context[:loader_cache] ||= Hash.new { |h, k| h[k] = Loader.new(k) }
+          l_cache[loading_key]
+        end
+
+        def load(id)
+          @loading_ids.add(id)
+          -> {
+            resolve
+            result = @loaded.fetch(id)
+            if block_given?
+              yield(result)
+            else
+              result
+            end
+          }
+        end
+
+        def resolve
+          if @loading_ids.any?
+            Loader::LOG << [@loading_key, @loading_ids.to_a]
+            @loading_ids.to_a.each do |id|
+              @loaded[id] = DATA[id]
+            end
+            @loading_ids.clear
+          end
+        end
+      end
+
+      module Version
+        include GraphQL::Schema::Interface
+
+        def self.resolve_type(obj, ctx)
+          Loader.for(ctx, :versionable).load(obj[:versionable]) do |versionable|
+            versionable[:foo] ? FooVersionable : BarVersionable
+          end
+        end
+      end
+
+      class FooVersionable < GraphQL::Schema::Object
+        implements Version
+        field :foo, String
+      end
+
+      class BarVersionable < GraphQL::Schema::Object
+        implements Version
+        field :bar, String
+      end
+
+      class VersionReference < GraphQL::Schema::Object
+        field :version, Version
+
+        def version
+          Loader.for(context, :version).load(object[:version])
+        end
+      end
+      class Query < GraphQL::Schema::Object
+        field :version_references, [VersionReference]
+
+        def version_references
+          [{ version: 1 }, { version: 2 }]
+        end
+      end
+
+      lazy_resolve(Proc, :call)
+      query(Query)
+      orphan_types FooVersionable, BarVersionable
+    end
+
+    it "resolves lazies efficiently" do
+      LazyResolveTypeSchema::Loader::LOG.clear
+      query_str = " {
+        versionReferences {
+          version {
+            ... on FooVersionable { foo }
+            ... on BarVersionable { bar }
+          }
+        }
+      }"
+      res = LazyResolveTypeSchema.execute(query_str)
+      pp res.to_h
+      expected_log = [
+
+      ]
+      assert_equal expected_log, LazyResolveTypeSchema::Loader::LOG
+    end
+  end
 end
