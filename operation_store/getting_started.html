@@ -162,7 +162,8 @@
 </a></li><li class='contents-entry'><a href='#prepare-the-database'>Prepare the Database
 </a></li><li class='contents-entry'><a href='#add-operationstore'>Add <code>OperationStore</code>
 </a></li><li class='contents-entry'><a href='#add-routes'>Add Routes
-</a></li><li class='contents-entry'><a href='#update-the-controller'>Update the Controller
+</a><ol class='contents-list'><li class='contents-entry'><a href='#with-visibility-profiles'>With Visibility Profiles
+</a></li></ol></li><li class='contents-entry'><a href='#update-the-controller'>Update the Controller
 </a></li><li class='contents-entry'><a href='#next-steps'>Next Steps
 </a></li></ol>
 </div>
@@ -253,6 +254,17 @@
 <span class="n">mount</span> <span class="n">lazy_routes</span><span class="p">.</span><span class="nf">dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
 <span class="n">mount</span> <span class="n">lazy_routes</span><span class="p">.</span><span class="nf">operation_store_sync</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/sync"</span>
 </code></pre></div></div>
+
+<h3 id="with-visibility-profiles">With Visibility Profiles</h3>
+
+<p>You can apply a <a href="/authorization/visibility#visibility-profiles">visibility profile</a> to incoming operations by passing the profile name to <code class="language-plaintext highlighter-rouge">operation_store_sync</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mount</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">operation_store_sync</span><span class="p">(</span><span class="ss">visibility_profile: :public_api</span><span class="p">),</span> <span class="ss">at: </span><span class="s2">"/graphql/sync"</span>
+<span class="c1"># or:</span>
+<span class="n">mount</span> <span class="n">lazy_routes</span><span class="p">.</span><span class="nf">operation_store_sync</span><span class="p">(</span><span class="ss">visibility_profile: :public_api</span><span class="p">),</span> <span class="ss">at: </span><span class="s2">"/graphql/sync"</span>
+</code></pre></div></div>
+
+<p>This will apply that profile to all newly-synced operations. (It doesn’t affect operations that were already synced.)</p>
 
 <h2 id="update-the-controller">Update the Controller</h2>
 

@@ -5,11 +5,12 @@
   </head>
   <body>
     <p>Class: GraphQL::Dataloader::NullDataloader &lt; GraphQL::Dataloader
-The default implementation of dataloading   all no-ops. 
-The Dataloader interface isn’t public, but it enables simple
-internal code while adding the option to add Dataloader. 
+GraphQL-Ruby uses this when Dataloader isn’t enabled. 
+It runs execution code inline and gathers lazy objects (eg.
+Promises) and resolves them during #run. 
 Instance methods:
-append_job, clear_cache, initialize, run, run_isolated, with, yield</p>
+append_job, clear_cache, freeze, initialize, run, run_isolated,
+with, yield</p>
 
 
   </body>
