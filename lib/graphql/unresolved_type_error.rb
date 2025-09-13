@@ -34,6 +34,7 @@ module GraphQL
       if abstract_type.kind.interface? && (multiplex = Fiber[:__graphql_current_multiplex])
         types = multiplex.queries.first.types # rubocop:disable Development/ContextIsPassedCop
         if types.is_a?(Schema::Visibility::Profile)
+          message = message.dup
           visibility = types.instance_variable_get(:@visibility)
           cached_vis = types.instance_variable_get(:@cached_visible)
           message << "\n\n`#{abstract_type.graphql_name}.orphan_types`: #{abstract_type.orphan_types}"
