@@ -32,7 +32,7 @@ module GraphQL
         "interface but isn't a return type of any other field."
 
       if abstract_type.kind.interface? && (multiplex = Fiber[:__graphql_current_multiplex])
-        types = multiplex.queries.first.types
+        types = multiplex.queries.first.types # rubocop:disable Development/ContextIsPassedCop
         if types.is_a?(Schema::Visibility::Profile)
           visibility = types.instance_variable_get(:@visibility)
           cached_vis = types.instance_variable_get(:@cached_visible)
