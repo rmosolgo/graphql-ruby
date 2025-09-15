@@ -42,7 +42,6 @@ module GraphQL
           trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
-            lazies_at_depth = Hash.new { |h, k| h[k] = [] }
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
@@ -73,7 +72,7 @@ module GraphQL
                       # Although queries in a multiplex _share_ an Interpreter instance,
                       # they also have another item of state, which is private to that query
                       # in particular, assign it here:
-                      runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth)
+                      runtime = Runtime.new(query: query)
                       query.context.namespace(:interpreter_runtime)[:runtime] = runtime
 
                       query.current_trace.execute_query(query: query) do
@@ -88,16 +87,7 @@ module GraphQL
                 }
               end
 
-              multiplex.dataloader.run
-
-              # Then, work through lazy results in a breadth-first way
-              multiplex.dataloader.append_job {
-                query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
-                multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
-                  Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
-                end
-              }
-              multiplex.dataloader.run
+              multiplex.dataloader.run(trace_query_lazy: multiplex)
 
               # Then, find all errors and assign the result to the query object
               results.each_with_index do |data_result, idx|

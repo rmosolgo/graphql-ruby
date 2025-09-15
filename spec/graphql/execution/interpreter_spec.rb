@@ -239,17 +239,38 @@ describe GraphQL::Execution::Interpreter do
 
     class Counter < GraphQL::Schema::Object
       field :value, Integer, null: false
+
+      def value
+        counter.value
+      end
+
       field :lazy_value, Integer, null: false
 
       def lazy_value
-        Box.new { object.value }
+        Box.new { counter.value }
       end
+
+      field :incremented_value, Integer, hash_key: :incremented_value
 
       field :increment, Counter, null: false
 
       def increment
-        object.value += 1
-        object
+        v = counter.value += 1
+        {
+          counter: counter,
+          incremented_value: v,
+        }
+      end
+
+
+      private
+
+      def counter
+        if object.is_a?(Hash) && object.key?(:counter)
+          object[:counter]
+        else
+          object
+        end
       end
     end
 
@@ -258,8 +279,11 @@ describe GraphQL::Execution::Interpreter do
 
       def increment_counter
         counter = context[:counter]
-        counter.value += 1
-        counter
+        v = counter.value += 1
+        {
+          counter: counter,
+          incremented_value: v
+        }
       end
     end
 
@@ -374,11 +398,11 @@ describe GraphQL::Execution::Interpreter do
     query_str = <<-GRAPHQL
     mutation {
       i1: incrementCounter { value lazyValue
-        i2: increment { value lazyValue }
-        i3: increment { value lazyValue }
+        i2: increment { value incrementedValue lazyValue }
+        i3: increment { value incrementedValue lazyValue }
       }
-      i4: incrementCounter { value lazyValue }
-      i5: incrementCounter { value lazyValue }
+      i4: incrementCounter { value incrementedValue lazyValue }
+      i5: incrementCounter { value incrementedValue lazyValue }
     }
     GRAPHQL
 
@@ -389,11 +413,11 @@ describe GraphQL::Execution::Interpreter do
         # All of these get `3` as lazy value. They're resolved together,
         # since they aren't _root_ mutation fields.
         "lazyValue" => 3,
-        "i2" => { "value" => 2, "lazyValue" => 3 },
-        "i3" => { "value" => 3, "lazyValue" => 3 },
+        "i2" => { "value" => 2, "incrementedValue" => 2, "lazyValue" => 3 },
+        "i3" => { "value" => 3, "incrementedValue" => 3, "lazyValue" => 3 },
       },
-      "i4" => { "value" => 4, "lazyValue" => 4},
-      "i5" => { "value" => 5, "lazyValue" => 5},
+      "i4" => { "value" => 4, "incrementedValue" => 4, "lazyValue" => 4},
+      "i5" => { "value" => 5, "incrementedValue" => 5, "lazyValue" => 5},
     }
     assert_graphql_equal expected_data, result["data"]
   end

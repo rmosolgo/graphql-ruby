@@ -413,6 +413,12 @@ module GraphQL
             end
           end
 
+          # Called when an argument's `loads:` configuration fails to fetch an application object.
+          # By default, this method raises the given error, but you can override it to handle failures differently.
+          #
+          # @param err [GraphQL::LoadApplicationObjectFailedError] The error that occurred
+          # @return [Object, nil] If a value is returned, it will be used instead of the failed load
+          # @api public
           def load_application_object_failed(err)
             raise err
           end

@@ -90,6 +90,18 @@ mount lazy_routes.dashboard, at: "/graphql/dashboard"
 mount lazy_routes.operation_store_sync, at: "/graphql/sync"
 ```
 
+### With Visibility Profiles
+
+You can apply a {% internal_link "visibility profile", "/authorization/visibility#visibility-profiles" %} to incoming operations by passing the profile name to `operation_store_sync`, for example:
+
+```ruby
+mount MySchema.operation_store_sync(visibility_profile: :public_api), at: "/graphql/sync"
+# or:
+mount lazy_routes.operation_store_sync(visibility_profile: :public_api), at: "/graphql/sync"
+```
+
+This will apply that profile to all newly-synced operations. (It doesn't affect operations that were already synced.)
+
 ## Update the Controller
 
 Add `operation_id:` to your GraphQL context:
