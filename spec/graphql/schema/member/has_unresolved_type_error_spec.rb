@@ -37,7 +37,7 @@ describe GraphQL::Schema::Member::HasUnresolvedTypeError do
 
     schema = Class.new(GraphQL::Schema) do
       query(query_type)
-
+      use GraphQL::Schema::Visibility
       def self.resolve_type(abs_t, obj, ctx)
         ctx.schema.query
       end
@@ -52,5 +52,12 @@ describe GraphQL::Schema::Member::HasUnresolvedTypeError do
       schema.execute("{ anonInt { __typename } }")
     end
     assert_equal "GraphQL::UnresolvedTypeError", err.class.name
+    assert_equal <<~ERR.chomp, err.message
+    The value from "anonInt" on "Query" could not be resolved to "AnonInt". (Received: `Query`, Expected: [Obj]) Make sure you have defined a `resolve_type` method on your schema and that value `1` gets resolved to a valid type. You may need to add your type to `orphan_types` if it implements an interface but isn\'t a return type of any other field.
+
+    `AnonInt.orphan_types`: []
+    `Schema.visibility.all_interface_type_memberships[AnonInt]` (1):
+        - `Obj` | Object? true | referenced? true | visible? true | membership_visible? [true]
+    ERR
   end
 end
