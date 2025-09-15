@@ -10,7 +10,7 @@
 
 ### Bug fixes
 
-# 2.5.12 (15 sep 2025)
+# 2.5.12 (15 Sep 2025)
 
 ### New features
 
