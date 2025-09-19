@@ -82,6 +82,10 @@ module GraphQL
 
         NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
         EMPTY = self.new(argument_values: nil, keyword_arguments: NO_ARGS).freeze
+
+        def ==(other)
+          other.class == self.class && @keyword_arguments.all? { |(k, v)| other[k] == v }
+        end
       end
     end
   end

@@ -494,4 +494,71 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       assert_equal expected_msg, err.message
     end
   end
+
+  describe "de-duplicating directives on repeated selections" do
+    class DedupDirectivesSchema < GraphQL::Schema
+      class Count < GraphQL::Schema::Directive
+        argument :if, Boolean, default_value: true
+        locations FIELD
+        def self.resolve(obj, args, ctx)
+          if args[:if]
+            ctx[:directive_count] ||= 0
+            ctx[:directive_count] += 1
+          else
+            ctx[:directive_skipped_count] ||= 0
+            ctx[:directive_skipped_count] += 1
+          end
+          yield
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :int, Integer, fallback_value: 1
+      end
+
+      query(Query)
+      directive(Count)
+    end
+
+    it "doesn't call resolve on a directive twice for duplicate directives" do
+      result = DedupDirectivesSchema.execute("{
+        int @count
+        int @count
+      }")
+
+      assert_equal({"int" => 1}, result["data"])
+      assert_equal 1, result.context[:directive_count]
+    end
+
+    it "does call if the fields are different" do
+      result = DedupDirectivesSchema.execute("{
+        int @count
+        int @count
+        i2: int @count
+        __typename @count
+        __typename @count
+      }")
+
+      assert_equal({"int" => 1, "i2" => 1, "__typename" => "Query"}, result["data"])
+      assert_equal 3, result.context[:directive_count]
+    end
+
+    it "calls if the arguments are different but skips if arguments match" do
+      result = DedupDirectivesSchema.execute("
+      query GetCount($ifFalse: Boolean = false, $ifTrue: Boolean = true) {
+        # +1 / +0
+        int @count(if: true)
+        int @count(if: true)
+        # +1 / +1
+        i2: int @count(if: true)
+        i2: int @count(if: false)
+        # +1 / +1
+        __typename @count(if: true)
+        __typename @count(if: $ifFalse)
+        __typename @count(if: $ifTrue)
+      }")
+      assert_equal 3, result.context[:directive_count]
+      assert_equal 2, result.context[:directive_skipped_count]
+    end
+  end
 end

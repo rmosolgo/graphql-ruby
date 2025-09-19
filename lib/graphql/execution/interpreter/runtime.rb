@@ -818,10 +818,11 @@ module GraphQL
 
         def call_method_on_directives(method_name, object, directives, &block)
           return yield if directives.nil? || directives.empty?
-          run_directive(method_name, object, directives, 0, &block)
+          previous_directives = Array.new(directives.size)
+          run_directive(method_name, object, directives, 0, previous_directives, &block)
         end
 
-        def run_directive(method_name, object, directives, idx, &block)
+        def run_directive(method_name, object, directives, idx, previous_directives, &block)
           dir_node = directives[idx]
           if !dir_node
             yield
@@ -844,11 +845,32 @@ module GraphQL
               nil, # selection_result
             )
 
+
             if dir_args == HALT
               nil
             else
-              dir_defn.public_send(method_name, object, dir_args, context) do
-                run_directive(method_name, object, directives, idx + 1, &block)
+              previous_directives[idx] = [dir_node, dir_args]
+              skip_as_duplicate = false
+              if !dir_defn.repeatable?
+                prev_idx = 0
+                while prev_idx < idx
+                  prev_dir_pair = previous_directives[prev_idx]
+                  prev_dir_node = prev_dir_pair[0]
+                  prev_dir_args = prev_dir_pair[1]
+                  if prev_dir_node.name == dir_node.name && (dir_args == prev_dir_args)
+                    skip_as_duplicate = true
+                    break
+                  end
+                  prev_idx += 1
+                end
+              end
+
+              if skip_as_duplicate
+                run_directive(method_name, object, directives, idx + 1, previous_directives, &block)
+              else
+                dir_defn.public_send(method_name, object, dir_args, context) do
+                  run_directive(method_name, object, directives, idx + 1, previous_directives, &block)
+                end
               end
             end
           end
