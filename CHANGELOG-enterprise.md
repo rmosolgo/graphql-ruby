@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.5.8 (19 Sep 2025)
+
+- ObjectCache: Fix deprecation regarding `Resolve.resolve_all` by using a forward-compatible approach to lazy value resolution #5437
+
 # 1.5.7 (2 May 2025)
 
 - ObjectCache: Use Rails's `.cache_key_with_version` in `CacheableRelation` for proper cache busting
