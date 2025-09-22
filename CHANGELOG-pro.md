@@ -6,6 +6,12 @@
 
 ### New Features
 
+# 1.29.13 (22 Sept 2025)
+
+- Stable connections: fix condition grouping with IS NULL #5435
+- `@defer`: Correctly handle fields where `@defer` is present twice #5434
+- `@defer`: Update implementation to address warnings in GraphQL-Ruby 2.5.12+
+
 # 1.29.12 (12 Sept 2025)
 
 - `OperationStore`: also support `visibility_profile:` on lazy routes.
