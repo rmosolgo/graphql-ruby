@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 2.5.13 (22 Sep 2025)
+
+### New features
+
+- Testing helpers: support `visibility_profile: ...` #5439
+
+### Bug fixes
+
+- Directives: correctly handle schema directive arguments which are lists of input objects #5440
+
 # 2.5.12 (15 Sep 2025)
 
 ### New features
