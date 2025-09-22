@@ -129,11 +129,22 @@ module GraphQL
         # not runtime arguments.
         context = Query::NullContext.instance
         self.class.all_argument_definitions.each do |arg_defn|
-          if arguments.key?(arg_defn.keyword)
-            value = arguments[arg_defn.keyword]
+          keyword = arg_defn.keyword
+          arg_type = arg_defn.type
+          if arguments.key?(keyword)
+            value = arguments[keyword]
             # This is a Ruby-land value; convert it to graphql for validation
             graphql_value = begin
-              arg_defn.type.unwrap.coerce_isolated_result(value)
+              coerce_value = value
+              if arg_type.list? && (!coerce_value.nil?) && (!coerce_value.is_a?(Array))
+                # When validating inputs, GraphQL accepts a single item
+                # and implicitly converts it to a one-item list.
+                # However, we're using result coercion here to go from Ruby value
+                # to GraphQL value, so it doesn't have that feature.
+                # Keep the GraphQL-type behavior but implement it manually:
+                coerce_value = [coerce_value]
+              end
+              arg_type.coerce_isolated_result(coerce_value)
             rescue GraphQL::Schema::Enum::UnresolvedValueError
               # Let validation handle this
               value
@@ -142,7 +153,7 @@ module GraphQL
             value = graphql_value = nil
           end
 
-          result = arg_defn.type.validate_input(graphql_value, context)
+          result = arg_type.validate_input(graphql_value, context)
           if !result.valid?
             raise InvalidArgumentError, "@#{graphql_name}.#{arg_defn.graphql_name} on #{owner.path} is invalid (#{value.inspect}): #{result.problems.first["explanation"]}"
           end
