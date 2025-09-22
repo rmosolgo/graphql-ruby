@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.12/">API</a>
+            <a href="/api-doc/2.5.13/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -175,8 +175,8 @@
 <p>GraphQL-Ruby includes two classes to help you write mutations:</p>
 
 <ul>
-  <li><a href="/api-doc/2.5.12/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a>, a bare-bones base class</li>
-  <li><a href="/api-doc/2.5.12/GraphQL/Schema/RelayClassicMutation" target="_blank" title="API docs for GraphQL::Schema::RelayClassicMutation"><code>GraphQL::Schema::RelayClassicMutation</code></a>, a base class with a set of nice conventions that also supports the Relay Classic mutation specification.</li>
+  <li><a href="/api-doc/2.5.13/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a>, a bare-bones base class</li>
+  <li><a href="/api-doc/2.5.13/GraphQL/Schema/RelayClassicMutation" target="_blank" title="API docs for GraphQL::Schema::RelayClassicMutation"><code>GraphQL::Schema::RelayClassicMutation</code></a>, a base class with a set of nice conventions that also supports the Relay Classic mutation specification.</li>
 </ul>
 
 <p>Besides those, you can also use the plain <a href="/type_definitions/objects#fields">field API</a> to write mutation fields.</p>
@@ -306,11 +306,11 @@
 
 <h3 id="resolving-the-type-of-loaded-objects">Resolving the type of loaded objects</h3>
 
-<p>When <code class="language-plaintext highlighter-rouge">loads:</code> gets an object from <a href="/api-doc/2.5.12/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a>, it passes that object to <a href="/api-doc/2.5.12/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a> to confirm that it resolves to the same type originally configured with <code class="language-plaintext highlighter-rouge">loads:</code>.</p>
+<p>When <code class="language-plaintext highlighter-rouge">loads:</code> gets an object from <a href="/api-doc/2.5.13/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a>, it passes that object to <a href="/api-doc/2.5.13/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a> to confirm that it resolves to the same type originally configured with <code class="language-plaintext highlighter-rouge">loads:</code>.</p>
 
 <h3 id="handling-failed-loads">Handling failed loads</h3>
 
-<p>If <code class="language-plaintext highlighter-rouge">loads:</code> fails to find an object or if the loaded object isn’t resolved to the specified <code class="language-plaintext highlighter-rouge">loads:</code> type (using <a href="/api-doc/2.5.12/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a>), a <a href="/api-doc/2.5.12/GraphQL/LoadApplicationObjectFailedError" target="_blank" title="API docs for GraphQL::LoadApplicationObjectFailedError"><code>GraphQL::LoadApplicationObjectFailedError</code></a> is raised and returned to the client.</p>
+<p>If <code class="language-plaintext highlighter-rouge">loads:</code> fails to find an object or if the loaded object isn’t resolved to the specified <code class="language-plaintext highlighter-rouge">loads:</code> type (using <a href="/api-doc/2.5.13/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a>), a <a href="/api-doc/2.5.13/GraphQL/LoadApplicationObjectFailedError" target="_blank" title="API docs for GraphQL::LoadApplicationObjectFailedError"><code>GraphQL::LoadApplicationObjectFailedError</code></a> is raised and returned to the client.</p>
 
 <p>You can customize this behavior by implementing <code class="language-plaintext highlighter-rouge">def load_application_object_failed</code> in your mutation class, for example:</p>
 
@@ -323,7 +323,7 @@
 
 <h3 id="handling-unauthorized-loaded-objects">Handling unauthorized loaded objects</h3>
 
-<p>When an object is <em>loaded</em> but fails its <a href="/authorization/authorization#object-authorization"><code class="language-plaintext highlighter-rouge">.authorized?</code> check</a>, a <a href="/api-doc/2.5.12/GraphQL/UnauthorizedError" target="_blank" title="API docs for GraphQL::UnauthorizedError"><code>GraphQL::UnauthorizedError</code></a> is raised. By default, it’s passed to <a href="/api-doc/2.5.12/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> (see <a href="/authorization/authorization.html#handling-unauthorized-objects">Handling Unauthorized Objects</a>). You can customize this behavior by implementing <code class="language-plaintext highlighter-rouge">def unauthorized_object(err)</code> in your mutation, for example:</p>
+<p>When an object is <em>loaded</em> but fails its <a href="/authorization/authorization#object-authorization"><code class="language-plaintext highlighter-rouge">.authorized?</code> check</a>, a <a href="/api-doc/2.5.13/GraphQL/UnauthorizedError" target="_blank" title="API docs for GraphQL::UnauthorizedError"><code>GraphQL::UnauthorizedError</code></a> is raised. By default, it’s passed to <a href="/api-doc/2.5.13/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> (see <a href="/authorization/authorization.html#handling-unauthorized-objects">Handling Unauthorized Objects</a>). You can customize this behavior by implementing <code class="language-plaintext highlighter-rouge">def unauthorized_object(err)</code> in your mutation, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">unauthorized_object</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
   <span class="c1"># Raise a nice user-facing error instead</span>
