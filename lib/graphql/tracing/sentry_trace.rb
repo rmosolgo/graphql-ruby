@@ -41,7 +41,9 @@ module GraphQL
                 if query.selected_operation_name
                   span.set_data('graphql.operation.name', query.selected_operation_name)
                 end
-                span.set_data('graphql.operation.type', query.selected_operation.operation_type)
+                if query.selected_operation
+                  span.set_data('graphql.operation.type', query.selected_operation.operation_type)
+                end
               end
             end
 
