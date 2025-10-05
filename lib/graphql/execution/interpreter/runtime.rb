@@ -890,7 +890,6 @@ module GraphQL
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, runtime_state:, trace: true, &block)
           if lazy?(lazy_obj)
-            orig_result = result
             was_authorized_by_scope_items = runtime_state.was_authorized_by_scope_items
             lazy = GraphQL::Execution::Lazy.new(field: field) do
               # This block might be called in a new fiber;
@@ -900,13 +899,13 @@ module GraphQL
               runtime_state.current_field = field
               runtime_state.current_arguments = arguments
               runtime_state.current_result_name = result_name
-              runtime_state.current_result = orig_result
+              runtime_state.current_result = result
               runtime_state.was_authorized_by_scope_items = was_authorized_by_scope_items
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
-              result = nil
+              sync_result = nil
               inner_obj = begin
-                result = if trace
+                sync_result = if trace
                   @current_trace.begin_execute_field(field, owner_object, arguments, query)
                   @current_trace.execute_field_lazy(field: field, query: query, object: owner_object, arguments: arguments, ast_node: ast_node) do
                     schema.sync_lazy(lazy_obj)
@@ -924,7 +923,7 @@ module GraphQL
                 end
               ensure
                 if trace
-                  @current_trace.end_execute_field(field, owner_object, arguments, query, result)
+                  @current_trace.end_execute_field(field, owner_object, arguments, query, sync_result)
                 end
               end
               yield(inner_obj, runtime_state)
@@ -934,12 +933,7 @@ module GraphQL
               lazy.value
             else
               set_result(result, result_name, lazy, false, false) # is_non_null is irrelevant here
-              current_depth = 0
-              while result
-                current_depth += 1
-                result = result.graphql_parent
-              end
-              @dataloader.lazy_at_depth(current_depth, lazy)
+              @dataloader.lazy_at_depth(result.depth, lazy)
               lazy
             end
           else

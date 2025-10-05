@@ -42,6 +42,14 @@ module GraphQL
             end
           end
 
+          def depth
+            @depth ||= if @graphql_parent
+              @graphql_parent.depth + 1
+            else
+              1
+            end
+          end
+
           attr_accessor :graphql_dead
           attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent,
             :graphql_application_value, :graphql_result_type, :graphql_selections, :graphql_is_eager, :ast_node, :graphql_arguments, :graphql_field
