@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Schema::RactorShareable::SchemaExtension
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::RactorShareable::SchemaExtension";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (S)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../RactorShareable.html" title="GraphQL::Schema::RactorShareable (module)">RactorShareable</a></span></span>
+     &raquo; 
+    <span class="title">SchemaExtension</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Schema::RactorShareable::SchemaExtension
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/ractor_shareable.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="SchemaExtension/FrozenMethods.html" title="GraphQL::Schema::RactorShareable::SchemaExtension::FrozenMethods (module)">FrozenMethods</a></span>
+    
+  
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#freeze_error_handlers-instance_method" title="#freeze_error_handlers (instance method)">#<strong>freeze_error_handlers</strong>(handlers)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#freeze_schema-instance_method" title="#freeze_schema (instance method)">#<strong>freeze_schema</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="freeze_error_handlers-instance_method">
+  
+    #<strong>freeze_error_handlers</strong>(handlers)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+12
+13
+14
+15
+16
+17
+18</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/ractor_shareable.rb', line 12</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_freeze_error_handlers'>freeze_error_handlers</span><span class='lparen'>(</span><span class='id identifier rubyid_handlers'>handlers</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_handlers'>handlers</span><span class='lbracket'>[</span><span class='symbol'>:subclass_handlers</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_default_proc'>default_proc</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_handlers'>handlers</span><span class='lbracket'>[</span><span class='symbol'>:subclass_handlers</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid__class'>_class</span><span class='comma'>,</span> <span class='id identifier rubyid_subclass_handlers'>subclass_handlers</span><span class='op'>|</span>
+    <span class='id identifier rubyid_freeze_error_handlers'>freeze_error_handlers</span><span class='lparen'>(</span><span class='id identifier rubyid_subclass_handlers'>subclass_handlers</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_handlers'>handlers</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="freeze_schema-instance_method">
+  
+    #<strong>freeze_schema</strong>  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/ractor_shareable.rb', line 20</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_freeze_schema'>freeze_schema</span>
+  <span class='comment'># warm some ivars:
+</span>  <span class='id identifier rubyid_default_analysis_engine'>default_analysis_engine</span>
+  <span class='id identifier rubyid_default_execution_strategy'>default_execution_strategy</span>
+  <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='period'>.</span><span class='id identifier rubyid_default_parser'><span class='object_link'><a href="../../../GraphQL.html#default_parser-class_method" title="GraphQL.default_parser (method)">default_parser</a></span></span>
+  <span class='id identifier rubyid_default_logger'>default_logger</span>
+  <span class='id identifier rubyid_freeze_error_handlers'>freeze_error_handlers</span><span class='lparen'>(</span><span class='id identifier rubyid_error_handlers'>error_handlers</span><span class='rparen'>)</span>
+  <span class='comment'># TODO: this freezes errors of parent classes which could cause trouble
+</span>  <span class='id identifier rubyid_parent_class'>parent_class</span> <span class='op'>=</span> <span class='id identifier rubyid_superclass'>superclass</span>
+  <span class='kw'>while</span> <span class='id identifier rubyid_parent_class'>parent_class</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:error_handlers</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_freeze_error_handlers'>freeze_error_handlers</span><span class='lparen'>(</span><span class='id identifier rubyid_parent_class'>parent_class</span><span class='period'>.</span><span class='id identifier rubyid_error_handlers'>error_handlers</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_parent_class'>parent_class</span> <span class='op'>=</span> <span class='id identifier rubyid_parent_class'>parent_class</span><span class='period'>.</span><span class='id identifier rubyid_superclass'>superclass</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_own_tracers'>own_tracers</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
+  <span class='ivar'>@frozen_tracers</span> <span class='op'>=</span> <span class='id identifier rubyid_tracers'>tracers</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
+  <span class='id identifier rubyid_own_trace_modes'>own_trace_modes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_m'>m</span><span class='op'>|</span>
+    <span class='id identifier rubyid_trace_options_for'>trace_options_for</span><span class='lparen'>(</span><span class='id identifier rubyid_m'>m</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_build_trace_mode'>build_trace_mode</span><span class='lparen'>(</span><span class='id identifier rubyid_m'>m</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_build_trace_mode'>build_trace_mode</span><span class='lparen'>(</span><span class='symbol'>:default</span><span class='rparen'>)</span>
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='ivar'>@trace_options_for_mode</span><span class='rparen'>)</span>
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_own_trace_modes'>own_trace_modes</span><span class='rparen'>)</span>
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_own_multiplex_analyzers'>own_multiplex_analyzers</span><span class='rparen'>)</span>
+  <span class='ivar'>@frozen_multiplex_analyzers</span> <span class='op'>=</span> <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex_analyzers'>multiplex_analyzers</span><span class='rparen'>)</span>
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_own_query_analyzers'>own_query_analyzers</span><span class='rparen'>)</span>
+  <span class='ivar'>@frozen_query_analyzers</span> <span class='op'>=</span> <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_query_analyzers'>query_analyzers</span><span class='rparen'>)</span>
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_own_plugins'>own_plugins</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_own_plugins'>own_plugins</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='lparen'>(</span><span class='id identifier rubyid_plugin'>plugin</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span><span class='op'>|</span>
+    <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_plugin'>plugin</span><span class='rparen'>)</span>
+    <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@frozen_plugins</span> <span class='op'>=</span> <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_plugins'>plugins</span><span class='rparen'>)</span>
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_own_references_to'>own_references_to</span><span class='rparen'>)</span>
+  <span class='ivar'>@frozen_directives</span> <span class='op'>=</span> <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_directives'>directives</span><span class='rparen'>)</span>
+
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_visibility'>visibility</span><span class='rparen'>)</span>
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='id identifier rubyid_introspection_system'>introspection_system</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_extend'>extend</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="SchemaExtension/FrozenMethods.html" title="GraphQL::Schema::RactorShareable::SchemaExtension::FrozenMethods (module)">FrozenMethods</a></span></span><span class='rparen'>)</span>
+
+  <span class='const'>Ractor</span><span class='period'>.</span><span class='id identifier rubyid_make_shareable'>make_shareable</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:freeze_schema</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_freeze_schema'>freeze_schema</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Wed Oct  8 10:36:57 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.9).
+</div>
+
+    </div>
+  </body>
+</html>
