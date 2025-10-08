@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.5.14 (8 Oct 2025)
+
+### Bug fixes
+
+- Fix error when GraphQL-Batch is used (???) #5444
+
 # 2.5.13 (22 Sep 2025)
 
 ### New features
