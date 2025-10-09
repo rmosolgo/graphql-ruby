@@ -10,7 +10,7 @@ module GraphQL
 
     def initialize(value)
       @date_value = value
-      super("Date cannot be parsed: #{value}. \nDate must be be able to be parsed as a Ruby Date object.")
+      super("Date cannot be parsed: #{value}. \nDate must be able to be parsed as a Ruby Date object.")
     end
   end
 end
