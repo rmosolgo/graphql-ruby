@@ -158,11 +158,11 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>To be available to clients, Changesets added to the schema with <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::Changeset::Release changeset_dir: "..."</code>:</p>
+  <p>To be available to clients, Changesets added to the schema with <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::Changeset::Release changesets_dir: "..."</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Add this before root types so that newly-added types are also added to the schema</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span><span class="o">::</span><span class="no">Release</span><span class="p">,</span> <span class="ss">changeset_dir: </span><span class="s2">"app/graphql/changesets"</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span><span class="o">::</span><span class="no">Release</span><span class="p">,</span> <span class="ss">changesets_dir: </span><span class="s2">"app/graphql/changesets"</span>
 
   <span class="n">query</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
   <span class="n">mutation</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
