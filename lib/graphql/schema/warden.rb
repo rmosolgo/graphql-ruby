@@ -212,7 +212,7 @@ module GraphQL
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
           @reachable_type_set = @visibility_profile = @loadable_possible_types =
             nil
-        @skip_warning = schema.plugins.any? { |(plugin, _opts)| plugin == GraphQL::Schema::Warden }
+        @skip_warning = schema.plugins.any? { |(plugin, _opts)| plugin == GraphQL::Schema::Warden || plugin == GraphQL::Schema::Visibility }
       end
 
       attr_writer :skip_warning
