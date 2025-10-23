@@ -80,7 +80,6 @@ module GraphQL
                       end
                     rescue GraphQL::ExecutionError => err
                       query.context.errors << err
-                      NO_OPERATION
                     end
                   end
                   results[idx] = result
