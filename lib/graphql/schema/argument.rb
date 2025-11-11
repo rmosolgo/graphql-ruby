@@ -86,7 +86,7 @@ module GraphQL
         end
 
         if required == :nullable
-          self.owner.validates(required: { argument: arg_name })
+          self.owner.validates(required: { argument: arg_name, argument_definition: self })
         end
 
         if definition_block
