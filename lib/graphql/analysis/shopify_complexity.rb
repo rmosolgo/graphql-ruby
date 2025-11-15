@@ -4,7 +4,10 @@ require "graphql/analysis"
 
 module GraphQL
   module Analysis
-    # A shopify complexity calculator that applies specific rules for different field types.
+    # A complexity calculator that intends to replicate Shopify's complexity calculation for cost estimation.
+    # The cost estimation is based on a static analysis of the query.
+    # It does not require running the query nor does it require the actual data.
+    # This is because it is a cost estimate, not the actual cost.
     class ShopifyComplexity < GraphQL::Analysis::QueryComplexity
       attr_reader :field_costs
 
