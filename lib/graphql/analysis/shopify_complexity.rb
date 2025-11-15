@@ -36,6 +36,8 @@ module GraphQL
         # Source: https://community.shopify.dev/t/how-to-calculate-graphql-cost-estimates/24364/6
         ZERO_COST_FIELDS = %w[
           address
+          billingAddress
+          currencyFormats
           measurement
           unitCost
           pageInfo

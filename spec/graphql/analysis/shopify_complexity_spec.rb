@@ -4,7 +4,7 @@ require "spec_helper"
 require "graphql/analysis/shopify_complexity"
 
 describe GraphQL::Analysis::ShopifyComplexity do
-  let(:schema_path) { "spec/support/shopify/2025-10.graphql" }
+  let(:schema_path) { "spec/support/shopify/2025-07.graphql" }
   let(:schema) { GraphQL::Schema.from_definition(schema_path) }
 
   it "calculates complexity 9 for the sample order query" do
