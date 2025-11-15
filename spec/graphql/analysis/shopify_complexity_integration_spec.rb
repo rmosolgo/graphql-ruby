@@ -82,7 +82,7 @@ describe "ShopifyComplexity Integration Tests" do
 
     reporter.print_all(queries.size)
 
-    assert invalid_results.size > 0
+    assert_equal invalid_results.size, 0
   end
 
   def print_fields(fields)

@@ -30,6 +30,17 @@ module GraphQL
       class ShopifyScopedTypeComplexity < ScopedTypeComplexity
         attr_accessor :analyzer
 
+        # Known fields that Shopify assigns 0 cost to
+        # Based on observation: These are "primitive value objects" - information wrappers
+        # without an identity or lifecycle in Shopify's domain model.
+        # Source: https://community.shopify.dev/t/how-to-calculate-graphql-cost-estimates/24364/6
+        ZERO_COST_FIELDS = %w[
+          address
+          measurement
+          unitCost
+          pageInfo
+        ].freeze
+
         def own_complexity(child_complexity = 0)
           return child_complexity unless @field_definition
 
@@ -47,11 +58,8 @@ module GraphQL
         private
 
         def calculate_field_cost(field_type, child_complexity)
-          # Shopify: pageInfo is free (zero cost)
-          return 0 if @field_definition.graphql_name == "pageInfo"
-
-          # Shopify: root query fields returning Count type have a fixed cost of 10
-          return 10 if @field_definition.owner == @query.schema.query && field_type.respond_to?(:graphql_name) && field_type.graphql_name == "Count"
+          # Shopify: Some fields are "primitive value objects" and have zero cost
+          return 0 if ZERO_COST_FIELDS.include?(@field_definition.graphql_name)
 
           if @field_definition.owner == @query.schema.mutation
             # Shopify: mutations have a flat cost of 10, regardless of return fields
