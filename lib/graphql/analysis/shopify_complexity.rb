@@ -76,32 +76,25 @@ module GraphQL
 
         private
 
-        # Effective connection size using Shopify's bucketing system
-        # Based on observed behavior from actual Shopify API
+        # Effective connection size using Shopify's actual formula
+        # Formula: cost = 2 + children_cost * (2 * Math.log([2, sizing].max)).floor if sizing > 0
+        # Source: https://community.shopify.dev/t/how-to-calculate-graphql-cost-estimates/24364/6
         # Returns the multiplier for the connection based on the requested page size
         def effective_connection_size(nodes, query)
-          raw = 1
+          sizing = 1  # default if no first/last provided
+          
           nodes.each do |node|
             args = query.arguments_for(node, @field_definition)
             current = args[:first] || args[:last]
-            raw = [raw, current].max if current
+            sizing = [sizing, current].max if current
           end
 
-          # Shopify uses a bucketed logarithmic scale for multipliers
-          case raw
-          when 0..2   then 1
-          when 3..4   then 2
-          when 5..7   then 3
-          when 8..12  then 4
-          when 13..20 then 5
-          when 21..39 then 6
-          when 40..59 then 7
-          when 60..79 then 8
-          when 80..99 then 9
-          when 100..149 then 10
-          when 150..250 then 11
-          else 3 + Math.log2(raw).floor
-          end
+          # Cap at 250 (Shopify's max page size)
+          sizing = [sizing, 250].min
+
+          # Apply Shopify's actual formula: multiplier = (2 * ln(max(2, sizing))).floor
+          return 0 if sizing == 0
+          (2 * Math.log([2, sizing].max)).floor
         end
 
         def record_field_cost(total_cost, child_complexity)
