@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.5.9 (21 Nov 2025)
+
+- RuntimeLimiter: improve compatibility with ObjectCache
+
 # 1.5.8 (19 Sep 2025)
 
 - ObjectCache: Fix deprecation regarding `Resolve.resolve_all` by using a forward-compatible approach to lazy value resolution #5437
