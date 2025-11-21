@@ -909,8 +909,11 @@ describe "GraphQL::Authorization" do
         assert_equal "Query", res["data"]["__typename"]
 
         unauth_res = auth_execute(query, context: { query_unauthorized: true })
-        assert_nil unauth_res["data"]
-        assert_equal [{"message"=>"Unauthorized Query: nil"}], unauth_res["errors"]
+
+        assert_equal({
+          "errors" => [{"message"=>"Unauthorized Query: nil"}],
+          "data" => nil,
+        }, unauth_res.to_h)
       end
 
       describe "when the object authorization raises an UnauthorizedFieldError" do
