@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.6.0 (25 Nov 2025)
+
+- `RuntimeLimiter` and `ActiveOperationLimiter` now support `Redis::Cluster` via `redis_cluster: ...` options #5465
+
 # 1.5.9 (21 Nov 2025)
 
 - RuntimeLimiter: improve compatibility with ObjectCache
