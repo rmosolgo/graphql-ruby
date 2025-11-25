@@ -1921,4 +1921,20 @@ type ReachableType implements Node {
     GRAPHQL
     GraphQL::Schema.from_definition(schema_sdl)
   end
+
+  it "works with invalid directive argument value" do
+    sdl = <<~EOS
+      directive @requiresScopes(scopes: [[String]]) on FIELD_DEFINITION
+
+      type Query {
+        product: Product
+      }
+
+      type Product {
+        shippingEstimate: String @requiresScopes(scopes: "shipping")
+      }
+    EOS
+
+    assert GraphQL::Schema.from_definition(sdl).to_definition
+  end
 end
