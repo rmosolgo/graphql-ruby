@@ -37,8 +37,10 @@ module GraphQL
       class RequiredValidator < Validator
         # @param one_of [Array<Symbol>] A list of arguments, exactly one of which is required for this field
         # @param argument [Symbol] An argument that is required for this field
+        # @param argument_definition [GraphQL::Schema::Argument] The argument definition or instance, which may contain attributes needed by the validator
         # @param message [String]
-        def initialize(one_of: nil, argument: nil, message: nil, **default_options)
+        def initialize(one_of: nil, argument: nil, argument_definition: nil, message: nil, **default_options)
+          @argument_definition = argument_definition
           @one_of = if one_of
             one_of
           elsif argument
