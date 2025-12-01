@@ -2,7 +2,12 @@
 layout: null
 ---
 
-var client = algoliasearch('8VO8708WUV', '1f3e2b6f6a503fa82efdec331fd9c55e');
+var client = algoliasearch('<client_id>', '<api_key>');
+// The author of this library created an api key specifically for this guide
+// and chooses to make it publically available. We don't agree with that
+// decision and are removing it from our publically visible fork. Copy the
+// client id and api key from the same file in the parent of this fork.
+
 var index = client.initIndex('prod_graphql_ruby');
 
 var GraphQLRubySearch = {
