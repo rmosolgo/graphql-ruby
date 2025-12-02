@@ -38,14 +38,17 @@ module GraphQL
         # @param one_of [Array<Symbol>] A list of arguments, exactly one of which is required for this field
         # @param argument [Symbol] An argument that is required for this field
         # @param message [String]
-        def initialize(one_of: nil, argument: nil, message: nil, **default_options)
+        def initialize(one_of: nil, argument: nil, allow_all_hidden: nil, message: nil, **default_options)
           @one_of = if one_of
+            @single_argument = false
             one_of
           elsif argument
-            [argument]
+            @single_argument = true
+            [ argument ]
           else
             raise ArgumentError, "`one_of:` or `argument:` must be given in `validates required: {...}`"
           end
+          @allow_all_hidden = allow_all_hidden.nil? ? @single_argument : allow_all_hidden
           @message = message
           super(**default_options)
         end
@@ -53,6 +56,21 @@ module GraphQL
         def validate(_object, context, value)
           fully_matched_conditions = 0
           partially_matched_conditions = 0
+          if @one_of
+            visible_keywords = context.types.arguments(@validated).map(&:keyword)
+            visible_one_ofs = @one_of & visible_keywords
+            if visible_one_ofs.empty?
+              if @allow_all_hidden
+                return nil
+              else
+                raise GraphQL::Error, <<~ERR
+                  #{@validated.path} validates `required: ...` but all required arguments were hidden.
+
+                  Update your schema definition to allow the client to see some fields or add `required: { ..., allow_all_hidden: true }`
+                ERR
+              end
+            end
+          end
 
           if !value.nil?
             @one_of.each do |one_of_condition|

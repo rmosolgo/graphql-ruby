@@ -33,10 +33,10 @@ describe GraphQL::Schema::Validator::RequiredValidator do
       ]
     },
     {
-      name: "All options hidden",
-      config: { one_of: [:secret, :secret2] },
+      name: "All options hidden, allow_all_hidden: true",
+      config: { one_of: [:secret, :secret2], allow_all_hidden: true },
       cases: [
-        { query: "{ validated: multiValidated(a: 1, b: 2) }", result: nil, error_messages: ["multiValidated is missing a required argument."] },
+        { query: "{ validated: multiValidated(a: 1, b: 2) }", result: 3, error_messages: [] },
       ],
     },
     {
@@ -92,4 +92,72 @@ describe GraphQL::Schema::Validator::RequiredValidator do
   ]
 
   build_tests(:required, Integer, expectations)
+
+
+  describe "when all arguments are hidden" do
+    class RequiredHiddenSchema < GraphQL::Schema
+      class BaseArgument < GraphQL::Schema::Argument
+        def initialize(*args, always_hidden: false, **kwargs, &block)
+          super(*args, **kwargs, &block)
+          @always_hidden = always_hidden
+        end
+
+        def visible?(ctx)
+          !@always_hidden
+        end
+      end
+
+      class BaseField < GraphQL::Schema::Field
+        argument_class(BaseArgument)
+      end
+
+      class Query < GraphQL::Schema::Object
+        field_class(BaseField)
+
+        field :one_argument, Int, fallback_value: 1 do
+          argument :a, Int, required: :nullable, always_hidden: true
+        end
+
+        field :two_arguments, Int, fallback_value: 2 do
+          validates required: { one_of: [:a, :b], allow_all_hidden: true }
+          argument :a, Int, required: false, always_hidden: true
+          argument :b, Int, required: false, always_hidden: true
+        end
+
+        field :two_arguments_error, Int, fallback_value: 2 do
+          validates required: { one_of: [:a, :b] }
+          argument :a, Int, required: false, always_hidden: true
+          argument :b, Int, required: false, always_hidden: true
+        end
+
+        field :three_arguments, Int, fallback_value: 3 do
+          validates required: { one_of: [:a, :b], allow_all_hidden: true }
+          argument :a, Int, required: false, always_hidden: true
+          argument :b, Int, required: false, always_hidden: true
+          argument :c, Int
+        end
+      end
+
+      query(Query)
+      use GraphQL::Schema::Visibility
+    end
+
+    it "Doesn't require any of one_of to be present" do
+      result = RequiredHiddenSchema.execute("{ threeArguments(c: 5) }")
+      assert_equal 3, result["data"]["threeArguments"]
+
+      result = RequiredHiddenSchema.execute("{ twoArguments }")
+      assert_equal 2, result["data"]["twoArguments"]
+
+      err = assert_raises GraphQL::Error do
+        RequiredHiddenSchema.execute("{ twoArgumentsError }")
+      end
+
+      expected_message = "Query.twoArgumentsError validates `required: ...` but all required arguments were hidden.\n\nUpdate your schema definition to allow the client to see some fields or add `required: { ..., allow_all_hidden: true }`\n"
+      assert_equal expected_message, err.message
+
+      result = RequiredHiddenSchema.execute("{ oneArgument }")
+      assert_equal 1, result["data"]["oneArgument"]
+    end
+  end
 end
