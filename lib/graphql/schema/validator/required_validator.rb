@@ -66,7 +66,7 @@ module GraphQL
                 raise GraphQL::Error, <<~ERR
                   #{@validated.path} validates `required: ...` but all required arguments were hidden.
 
-                  Update your schema definition to allow the client to see some fields or add `required: { ..., allow_all_hidden: true }`
+                  Update your schema definition to allow the client to see some fields or skip validation by adding `required: { ..., allow_all_hidden: true }`
                 ERR
               end
             end
