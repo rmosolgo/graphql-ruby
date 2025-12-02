@@ -136,6 +136,14 @@ describe GraphQL::Schema::Validator::RequiredValidator do
           argument :b, Int, required: false, always_hidden: true
           argument :c, Int
         end
+
+        field :four_arguments, Int, fallback_value: 4 do
+          validates required: { one_of: [[:a, :b], :c, :d], allow_all_hidden: true}
+          argument :a, Int, required: false, always_hidden: true
+          argument :b, Int, required: false, always_hidden: true
+          argument :c, Int, required: false, always_hidden: true
+          argument :d, Int, required: false, always_hidden: true
+        end
       end
 
       query(Query)
@@ -155,6 +163,11 @@ describe GraphQL::Schema::Validator::RequiredValidator do
 
       expected_message = "Query.twoArgumentsError validates `required: ...` but all required arguments were hidden.\n\nUpdate your schema definition to allow the client to see some fields or skip validation by adding `required: { ..., allow_all_hidden: true }`\n"
       assert_equal expected_message, err.message
+    end
+
+    it "doesn't require hidden arguments when required as a group" do
+      result = RequiredHiddenSchema.execute("{ fourArguments }")
+      assert_equal 4, result["data"]["fourArguments"]
     end
 
     it "Doesn't require hidden argument to be present" do

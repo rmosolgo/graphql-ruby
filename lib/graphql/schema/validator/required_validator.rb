@@ -40,15 +40,13 @@ module GraphQL
         # @param message [String]
         def initialize(one_of: nil, argument: nil, allow_all_hidden: nil, message: nil, **default_options)
           @one_of = if one_of
-            @single_argument = false
             one_of
           elsif argument
-            @single_argument = true
             [ argument ]
           else
             raise ArgumentError, "`one_of:` or `argument:` must be given in `validates required: {...}`"
           end
-          @allow_all_hidden = allow_all_hidden.nil? ? @single_argument : allow_all_hidden
+          @allow_all_hidden = allow_all_hidden.nil? ? !!argument : allow_all_hidden
           @message = message
           super(**default_options)
         end
@@ -56,26 +54,18 @@ module GraphQL
         def validate(_object, context, value)
           fully_matched_conditions = 0
           partially_matched_conditions = 0
-          if @one_of
-            visible_keywords = context.types.arguments(@validated).map(&:keyword)
-            visible_one_ofs = @one_of & visible_keywords
-            if visible_one_ofs.empty?
-              if @allow_all_hidden
-                return nil
-              else
-                raise GraphQL::Error, <<~ERR
-                  #{@validated.path} validates `required: ...` but all required arguments were hidden.
 
-                  Update your schema definition to allow the client to see some fields or skip validation by adding `required: { ..., allow_all_hidden: true }`
-                ERR
-              end
-            end
-          end
+          visible_keywords = context.types.arguments(@validated).map(&:keyword)
+          no_visible_conditions = true
 
           if !value.nil?
             @one_of.each do |one_of_condition|
               case one_of_condition
               when Symbol
+                if no_visible_conditions && visible_keywords.include?(one_of_condition)
+                  no_visible_conditions = false
+                end
+
                 if value.key?(one_of_condition)
                   fully_matched_conditions += 1
                 end
@@ -84,6 +74,9 @@ module GraphQL
                 full_match = true
 
                 one_of_condition.each do |k|
+                  if no_visible_conditions && visible_keywords.include?(k)
+                    no_visible_conditions = false
+                  end
                   if value.key?(k)
                     any_match = true
                   else
@@ -103,6 +96,18 @@ module GraphQL
               else
                 raise ArgumentError, "Unknown one_of condition: #{one_of_condition.inspect}"
               end
+            end
+          end
+
+          if no_visible_conditions
+            if @allow_all_hidden
+              return nil
+            else
+              raise GraphQL::Error, <<~ERR
+                #{@validated.path} validates `required: ...` but all required arguments were hidden.
+
+                Update your schema definition to allow the client to see some fields or skip validation by adding `required: { ..., allow_all_hidden: true }`
+              ERR
             end
           end
 
