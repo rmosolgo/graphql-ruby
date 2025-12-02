@@ -78,10 +78,10 @@ jobs:
       - name: Build API docs
         run: |
           bundle exec rake site:fetch_latest apidocs:gen_version["${{ inputs.publish_version || env.GITHUB_REF }}"]
-      - name: Commit changes as last committer
+      - name: Commit changes as rmosolgo
         run: |
           git config --global user.name rmosolgo
-          git config --global user.email rdmosolgo@github.com
+          git config --global user.email rdmosolgo@gmail.com
           git status
           bundle exec rake site:commit_changes
           git status
