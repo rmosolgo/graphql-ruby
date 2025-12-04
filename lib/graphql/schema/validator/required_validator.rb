@@ -8,6 +8,13 @@ module GraphQL
       #
       # (This is for specifying mutually exclusive sets of arguments.)
       #
+      # If you use {GraphQL::Schema::Visibility} to hide all the arguments in a `one_of: [..]` set,
+      # then a developer-facing {GraphQL::Error} will be raised during execution. Pass `allow_all_hidden: true` to
+      # skip validation in this case instead.
+      #
+      # This validator also implements `argument ... required: :nullable`. If an argument has `required: :nullable`
+      # but it's hidden with {GraphQL::Schema::Visibility}, then this validator doesn't run.
+      #
       # @example Require exactly one of these arguments
       #
       #   field :update_amount, IngredientAmount, null: false do
@@ -37,6 +44,7 @@ module GraphQL
       class RequiredValidator < Validator
         # @param one_of [Array<Symbol>] A list of arguments, exactly one of which is required for this field
         # @param argument [Symbol] An argument that is required for this field
+        # @param allow_all_hidden [Boolean] If `true`, then this validator won't run if all the `one_of: ...` arguments have been hidden
         # @param message [String]
         def initialize(one_of: nil, argument: nil, allow_all_hidden: nil, message: nil, **default_options)
           @one_of = if one_of
