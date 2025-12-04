@@ -9,8 +9,11 @@ module GraphQL
     # When `MySchema.detailed_trace?(query)` returns `true`, a profiler-specific `trace_mode: ...` will be used for the query,
     # overriding the one in `context[:trace_mode]`.
     #
+    # By default, the detailed tracer calls `.inspect` on application objects returned from fields. You can customize
+    # this behavior by extending {DetailedTrace} and overriding {#inspect_object}.
+    #
     # __Redis__: The sampler stores its results in a provided Redis database. Depending on your needs,
-    # You can configure this database to retail all data (persistent) or to expire data according to your rules.
+    # You can configure this database to retain all data (persistent) or to expire data according to your rules.
     # If you need to save traces indefinitely, you can download them from Perfetto after opening them there.
     #
     # @example Adding the sampler to your schema
@@ -27,6 +30,17 @@ module GraphQL
     #   end
     #
     # @see Graphql::Dashboard GraphQL::Dashboard for viewing stored results
+    #
+    # @example Customizing debug output in traces
+    #   class CustomDetailedTrace < GraphQL::Tracing::DetailedTrace
+    #     def inspect_object(object)
+    #       if object.is_a?(SomeThing)
+    #         # handle it specially ...
+    #       else
+    #         super
+    #        end
+    #     end
+    #   end
     class DetailedTrace
       # @param redis [Redis] If provided, profiles will be stored in Redis for later review
       # @param limit [Integer] A maximum number of profiles to store
@@ -38,7 +52,8 @@ module GraphQL
         else
           raise ArgumentError, "Pass `redis: ...` to store traces in Redis for later review"
         end
-        schema.detailed_trace = self.new(storage: storage, trace_mode: trace_mode)
+        detailed_trace = self.new(storage: storage, trace_mode: trace_mode)
+        schema.detailed_trace = detailed_trace
         schema.trace_with(PerfettoTrace, mode: trace_mode, save_profile: true)
       end
 
@@ -75,6 +90,18 @@ module GraphQL
       # @return [void]
       def delete_all_traces
         @storage.delete_all_traces
+      end
+
+      def inspect_object(object)
+        self.class.inspect_object(object)
+      end
+
+      def self.inspect_object(object)
+        if defined?(ActiveRecord::Relation) && object.is_a?(ActiveRecord::Relation)
+          "#{object.class}, .to_sql=#{object.to_sql.inspect}"
+        else
+          object.inspect
+        end
       end
 
       class StoredTrace

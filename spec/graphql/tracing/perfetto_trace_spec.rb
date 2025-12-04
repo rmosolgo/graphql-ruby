@@ -5,6 +5,7 @@ require "open3"
 if testing_rails?
   describe GraphQL::Tracing::PerfettoTrace do
     include PerfettoSnapshot
+
     class PerfettoSchema < GraphQL::Schema
       class BaseObject < GraphQL::Schema::Object
       end
@@ -115,6 +116,7 @@ if testing_rails?
       end
     end
 
+    focus
     it "traces fields, dataloader, and activesupport notifications" do
       query_str = <<-GRAPHQL
       query GetStuff($thingId: ID!) {
