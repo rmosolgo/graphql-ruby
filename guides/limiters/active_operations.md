@@ -28,6 +28,9 @@ class MySchema < GraphQL::Schema
   # ...
   use GraphQL::Enterprise::ActiveOperationLimiter,
     redis: Redis.new(...),
+    # Or:
+    # connection_pool: ...
+    # redis_cluster: ...
     limit: 5
 end
 ```

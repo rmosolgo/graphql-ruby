@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.29.14 (21 Nov 2025)
+
+- Add configuration for `ostruct` dependency
+
 # 1.29.13 (22 Sept 2025)
 
 - Stable connections: fix condition grouping with IS NULL #5435

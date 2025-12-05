@@ -128,8 +128,13 @@ describe GraphQL::Schema do
       it "rescues execution errors from execute_query" do
         context = {raise_execution_error: true}
         res = schema.execute(" { int(value: 2) } ", context: context)
-        assert_equal "Raised from trace execute_query", res["errors"].first["message"]
-        refute res.key?("data"), "The query doesn't run"
+
+        assert_equal({
+          "data" => nil,
+          "errors" => [
+            { "message" => "Raised from trace execute_query" },
+          ]
+        }, res.to_h)
       end
 
       it "can assign a query string there" do

@@ -142,7 +142,14 @@ module GraphQL
                 # However, we're using result coercion here to go from Ruby value
                 # to GraphQL value, so it doesn't have that feature.
                 # Keep the GraphQL-type behavior but implement it manually:
-                coerce_value = [coerce_value]
+                wrap_type = arg_type
+                while wrap_type.list?
+                  if wrap_type.non_null?
+                    wrap_type = wrap_type.of_type
+                  end
+                  wrap_type = wrap_type.of_type
+                  coerce_value = [coerce_value]
+                end
               end
               arg_type.coerce_isolated_result(coerce_value)
             rescue GraphQL::Schema::Enum::UnresolvedValueError

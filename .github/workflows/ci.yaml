@@ -6,7 +6,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 3.4
@@ -19,7 +19,7 @@ jobs:
       with:
         redis-version: "7.x"
     - run: redis-cli ping
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 3.4
@@ -49,14 +49,11 @@ jobs:
             ruby: head
           - gemfile: Gemfile
             ruby: 2.7 # lowest supported version
-          - gemfile: gemfiles/rails_7.0.gemfile
-            ruby: 3.1
-          - gemfile: gemfiles/rails_7.0.gemfile
-            ruby: 3.2
-          - gemfile: gemfiles/rails_7.1.gemfile
+          - gemfile: gemfiles/rails_8.0.gemfile
             ruby: 3.3
-          - gemfile: gemfiles/rails_master.gemfile
-            ruby: 3.3
+            graphql_reject_numbers_followed_by_names: 1
+          - gemfile: gemfiles/rails_8.1.gemfile
+            ruby: 3.5
             graphql_reject_numbers_followed_by_names: 1
             redis: 1
           - gemfile: gemfiles/rails_master.gemfile
@@ -77,7 +74,7 @@ jobs:
       if: ${{ !!matrix.redis }}
     - run: redis-cli ping
       if: ${{ !!matrix.redis }}
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
@@ -87,7 +84,7 @@ jobs:
   javascript_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-node@v6
       with:
         node-version: '21'
@@ -103,7 +100,7 @@ jobs:
         - gemfile: gemfiles/rails_master.gemfile
           ruby: 3.3
           isolation_level_fiber: 1
-        - gemfile: gemfiles/rails_7.1_postgresql.gemfile
+        - gemfile: gemfiles/rails_7.2_postgresql.gemfile
           ruby: 3.3
     services:
       postgres:
@@ -127,7 +124,7 @@ jobs:
     - run: echo GRAPHQL_CPARSER=1 > $GITHUB_ENV
     - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
       if: ${{ !!matrix.isolation_level_fiber }}
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: "3.3"
@@ -148,7 +145,7 @@ jobs:
         - 27017:27017
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 3.4

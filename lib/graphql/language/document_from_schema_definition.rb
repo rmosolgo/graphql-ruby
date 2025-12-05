@@ -52,8 +52,9 @@ module GraphQL
 
       def build_object_type_node(object_type)
         ints = @types.interfaces(object_type)
+
         if !ints.empty?
-          ints.sort_by!(&:graphql_name)
+          ints = ints.sort_by(&:graphql_name)
           ints.map! { |iface| build_type_name_node(iface) }
         end
 
