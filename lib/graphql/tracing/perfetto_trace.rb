@@ -77,7 +77,10 @@ module GraphQL
         super
         @active_support_notifications_pattern = active_support_notifications_pattern
         @save_profile = save_profile
-        @detailed_trace = (@query || @multiplex).schema.detailed_trace || DetailedTrace
+
+        target =  (@query || @multiplex)
+        @detailed_trace = target&.schema&.detailed_trace || DetailedTrace
+
         Fiber[:graphql_flow_stack] = nil
         @sequence_id = object_id
         @pid = Process.pid

@@ -5475,6 +5475,12 @@
         "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
       },
       "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "GraphQL::Dataloader::ActiveRecordSource"
+          }
+        ],
         "debugAnnotationNames": [
           {
             "iid": "10101010101010",
@@ -5583,12 +5589,6 @@
         "name": "GraphQL::Dataloader::ActiveRecordSource"
       },
       "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "GraphQL::Dataloader::ActiveRecordSource"
-          }
-        ],
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
@@ -5900,6 +5900,12 @@
         "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
       },
       "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "PerfettoSchema::AverageReview"
+          }
+        ],
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
@@ -6018,14 +6024,6 @@
           "10101010101010"
         ],
         "name": "PerfettoSchema::AverageReview"
-      },
-      "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "PerfettoSchema::AverageReview"
-          }
-        ]
       },
       "sequenceFlags": 101010101010
     },
@@ -6264,6 +6262,14 @@
         ],
         "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
       },
+      "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "PerfettoSchema::OtherBook"
+          }
+        ]
+      },
       "sequenceFlags": 101010101010
     },
     {
@@ -6310,14 +6316,6 @@
           "10101010101010"
         ],
         "name": "PerfettoSchema::OtherBook"
-      },
-      "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "PerfettoSchema::OtherBook"
-          }
-        ]
       },
       "sequenceFlags": 101010101010
     },
@@ -20124,6 +20122,14 @@
         ],
         "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
       },
+      "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "PerfettoSchema::Authorized"
+          }
+        ]
+      },
       "sequenceFlags": 101010101010
     },
     {
@@ -20300,12 +20306,6 @@
         "name": "PerfettoSchema::Authorized"
       },
       "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "PerfettoSchema::Authorized"
-          }
-        ],
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
