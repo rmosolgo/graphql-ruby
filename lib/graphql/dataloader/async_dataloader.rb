@@ -22,42 +22,42 @@ module GraphQL
         source_tasks = []
         next_source_tasks = []
         first_pass = true
-        fiber_vars = get_fiber_variables
-        Sync do
-          sources_condition = Async::Condition.new
-          set_fiber_variables(fiber_vars)
-          trace&.begin_dataloader(self)
-          while first_pass || !job_fibers.empty?
-            first_pass = false
-            fiber_vars = get_fiber_variables
 
+        sources_condition = Async::Condition.new
+        trace&.begin_dataloader(self)
+        while first_pass || !job_fibers.empty?
+          first_pass = false
+
+          f = spawn_fiber do
             run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
+          end
+          run_fiber(f)
 
-            Sync do |root_task|
-              set_fiber_variables(fiber_vars)
-              while !source_tasks.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-                while (task = (source_tasks.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size + next_source_tasks.size) < total_fiber_limit) && spawn_source_task(root_task, sources_condition, trace))))
-                  if task.alive?
-                    root_task.yield # give the source task a chance to run
-                    next_source_tasks << task
-                  end
+          fiber_vars = get_fiber_variables
+          Sync do |root_task|
+            set_fiber_variables(fiber_vars)
+            while !source_tasks.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+              while (task = (source_tasks.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size + next_source_tasks.size) < total_fiber_limit) && spawn_source_task(root_task, sources_condition, trace))))
+                if task.alive?
+                  root_task.yield # give the source task a chance to run
+                  next_source_tasks << task
                 end
-                sources_condition.signal
-                source_tasks.concat(next_source_tasks)
-                next_source_tasks.clear
               end
-            end
-
-            if !@lazies_at_depth.empty?
-              with_trace_query_lazy(trace_query_lazy) do
-                run_next_pending_lazies(job_fibers, trace)
-                run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
-              end
+              sources_condition.signal
+              source_tasks.concat(next_source_tasks)
+              next_source_tasks.clear
             end
           end
-          trace&.end_dataloader(self)
-          cleanup_fiber
+
+          if !@lazies_at_depth.empty?
+            with_trace_query_lazy(trace_query_lazy) do
+              run_next_pending_lazies(job_fibers, trace)
+              run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
+            end
+          end
         end
+        trace&.end_dataloader(self)
+
       rescue UncaughtThrowError => e
         throw e.tag, e.value
       end
