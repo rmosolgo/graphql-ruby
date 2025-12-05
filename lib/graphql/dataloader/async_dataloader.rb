@@ -23,7 +23,9 @@ module GraphQL
         next_source_tasks = []
         first_pass = true
         sources_condition = Async::Condition.new
-        manager = spawn_fiber do
+        fiber_vars = get_fiber_variables
+        Sync do
+          set_fiber_variables(fiber_vars)
           trace&.begin_dataloader(self)
           while first_pass || !job_fibers.empty?
             first_pass = false
@@ -55,12 +57,6 @@ module GraphQL
           end
           trace&.end_dataloader(self)
         end
-
-        manager.resume
-        if manager.alive?
-          raise "Invariant: Manager didn't terminate successfully: #{manager}"
-        end
-
       rescue UncaughtThrowError => e
         throw e.tag, e.value
       end
