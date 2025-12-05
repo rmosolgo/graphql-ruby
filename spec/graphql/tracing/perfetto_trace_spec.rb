@@ -114,6 +114,10 @@ if testing_rails?
       def self.resolve_type(type, obj, ctx)
         self.const_get(obj.class.name)
       end
+
+      def self.detailed_trace?(q)
+        true
+      end
     end
 
     it "traces fields, dataloader, and activesupport notifications" do
@@ -169,6 +173,25 @@ if testing_rails?
         PerfettoSchema.execute("{ crash }")
       end
       refute ActiveSupport::Notifications.notifier.listening?("event.nonsense")
+    end
+
+    it "doesn't create DebugAnnotations when `debug: false` or `detailed_trace_debug: false`" do
+      res = PerfettoSchema.execute("{ authors { name } }")
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert_includes json, "debugAnnotations", "it includes them by default"
+
+      res = PerfettoSchema.execute("{ authors { name } }", context: { detailed_trace_debug: false })
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert_nil json["debugAnnotations"], "doesn't write debug annotations with detailed_trace_debug: false"
+
+      # Ususally this would be `use DetailedTrace, debug: false`
+      PerfettoSchema.detailed_trace = GraphQL::Tracing::DetailedTrace.new(storage: nil, trace_mode: nil, debug: false)
+      res = PerfettoSchema.execute("{ authors { name } }")
+      assert_equal 4, res["data"]["authors"].size
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert_nil json["debugAnnotations"], "doesn't write them when top-level setting is false "
+    ensure
+      PerfettoSchema.detailed_trace = nil
     end
   end
 end

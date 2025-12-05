@@ -10,7 +10,8 @@ module GraphQL
     # overriding the one in `context[:trace_mode]`.
     #
     # By default, the detailed tracer calls `.inspect` on application objects returned from fields. You can customize
-    # this behavior by extending {DetailedTrace} and overriding {#inspect_object}.
+    # this behavior by extending {DetailedTrace} and overriding {#inspect_object}. You can opt out of debug annotations
+    # entirely with `use ..., debug: false` or for a single query with `context: { detailed_trace_debug: false }`.
     #
     # __Redis__: The sampler stores its results in a provided Redis database. Depending on your needs,
     # You can configure this database to retain all data (persistent) or to expire data according to your rules.
@@ -41,10 +42,18 @@ module GraphQL
     #        end
     #     end
     #   end
+    #
+    # @example disabling debug annotations completely
+    #    use DetailedTrace, debug: false, ...
+    #
+    # @example disabling debug annotations for one query
+    #    MySchema.execute(query_str, context: { detailed_trace_debug: false })
+    #
     class DetailedTrace
       # @param redis [Redis] If provided, profiles will be stored in Redis for later review
       # @param limit [Integer] A maximum number of profiles to store
-      def self.use(schema, trace_mode: :profile_sample, memory: false, redis: nil, limit: nil)
+      # @param debug [Boolean] if `false`, it won't create `debug` annotations in Perfetto traces (reduces overhead)
+      def self.use(schema, trace_mode: :profile_sample, memory: false, debug: debug?, redis: nil, limit: nil)
         storage = if redis
           RedisBackend.new(redis: redis, limit: limit)
         elsif memory
@@ -52,14 +61,15 @@ module GraphQL
         else
           raise ArgumentError, "Pass `redis: ...` to store traces in Redis for later review"
         end
-        detailed_trace = self.new(storage: storage, trace_mode: trace_mode)
+        detailed_trace = self.new(storage: storage, trace_mode: trace_mode, debug: debug)
         schema.detailed_trace = detailed_trace
         schema.trace_with(PerfettoTrace, mode: trace_mode, save_profile: true)
       end
 
-      def initialize(storage:, trace_mode:)
+      def initialize(storage:, trace_mode:, debug:)
         @storage = storage
         @trace_mode = trace_mode
+        @debug = debug
       end
 
       # @return [Symbol] The trace mode to use when {Schema.detailed_trace?} returns `true`
@@ -68,6 +78,11 @@ module GraphQL
       # @return [String] ID of saved trace
       def save_trace(operation_name, duration_ms, begin_ms, trace_data)
         @storage.save_trace(operation_name, duration_ms, begin_ms, trace_data)
+      end
+
+      # @return [Boolean]
+      def debug?
+        @debug
       end
 
       # @param last [Integer]
@@ -102,6 +117,12 @@ module GraphQL
         else
           object.inspect
         end
+      end
+
+      # Default debug setting
+      # @return [true]
+      def self.debug?
+        true
       end
 
       class StoredTrace
