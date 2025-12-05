@@ -10,6 +10,5 @@ gem "mongoid", "~> 9.0"
 gem "libev_scheduler"
 gem "evt"
 gem "async"
-gem "fiber-storage"
 
 gemspec path: "../"
