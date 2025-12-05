@@ -561,8 +561,12 @@ module Dummy
     MAGIC_INT_COERCE_VALUE = -1
 
     def self.type_error(err, ctx)
-      if err.is_a?(GraphQL::IntegerEncodingError) && err.integer_value == 99**99
-        MAGIC_INT_COERCE_VALUE
+      if err.is_a?(GraphQL::IntegerEncodingError)
+        if err.integer_value == 99**99
+          MAGIC_INT_COERCE_VALUE
+        else
+          raise err
+        end
       else
         super
       end
