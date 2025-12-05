@@ -43,7 +43,7 @@ else
 end
 
 # C methods aren't fair game in non-main Ractors
-RUN_RACTOR_TESTS = defined?(::Ractor) && !USING_C_PARSER
+RUN_RACTOR_TESTS = defined?(::Ractor) && !USING_C_PARSER && !ENV["SKIP_RACTOR_TESTS"]
 
 require "rake"
 require "graphql/rake_task"

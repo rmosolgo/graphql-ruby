@@ -32,6 +32,9 @@ module GraphQL
             run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
           end
           run_fiber(f)
+          if f.alive?
+            raise "GraphQL-Ruby internal error: AsyncDataloader job fiber didn't terminate"
+          end
 
           fiber_vars = get_fiber_variables
           Sync do |root_task|
