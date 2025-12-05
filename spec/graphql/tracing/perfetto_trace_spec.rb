@@ -116,7 +116,6 @@ if testing_rails?
       end
     end
 
-    focus
     it "traces fields, dataloader, and activesupport notifications" do
       query_str = <<-GRAPHQL
       query GetStuff($thingId: ID!) {
