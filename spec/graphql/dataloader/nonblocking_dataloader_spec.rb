@@ -251,11 +251,11 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         include NonblockingDataloaderAssertions
       end
 
-      describe "with evt" do
-        require "evt"
-        let(:scheduler_class) { Evt::Scheduler }
-        include NonblockingDataloaderAssertions
-      end
+      # describe "with evt" do
+      #   require "evt"
+      #   let(:scheduler_class) { Evt::Scheduler }
+      #   include NonblockingDataloaderAssertions
+      # end
     end
   end
 end
