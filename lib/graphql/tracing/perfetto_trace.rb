@@ -160,7 +160,7 @@ module GraphQL
               InternedString.new(str: "(nil)", iid: DA_STR_VAL_NIL_IID),
             ],
             event_names: [
-              EventName.new(name: "#{(@detailed_trace.is_a?(Class) ? @detailed_trace : detailed_trace.class).name}#inspect_object", iid: DEBUG_INSPECT_EVENT_NAME_IID)
+              EventName.new(name: "#{(@detailed_trace.is_a?(Class) ? @detailed_trace : @detailed_trace.class).name}#inspect_object", iid: DEBUG_INSPECT_EVENT_NAME_IID)
             ],
           ),
           trusted_packet_sequence_id: @sequence_id,
