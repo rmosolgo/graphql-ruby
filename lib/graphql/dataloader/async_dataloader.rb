@@ -22,9 +22,9 @@ module GraphQL
         source_tasks = []
         next_source_tasks = []
         first_pass = true
-        sources_condition = Async::Condition.new
         fiber_vars = get_fiber_variables
         Sync do
+          sources_condition = Async::Condition.new
           set_fiber_variables(fiber_vars)
           trace&.begin_dataloader(self)
           while first_pass || !job_fibers.empty?
@@ -56,6 +56,7 @@ module GraphQL
             end
           end
           trace&.end_dataloader(self)
+          cleanup_fiber
         end
       rescue UncaughtThrowError => e
         throw e.tag, e.value
