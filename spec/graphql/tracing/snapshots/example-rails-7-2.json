@@ -609,6 +609,10 @@
           },
           {
             "iid": "10101010101010",
+            "name": "statement_name"
+          },
+          {
+            "iid": "10101010101010",
             "name": "async"
           },
           {
@@ -627,7 +631,7 @@
           },
           {
             "iid": "10101010101010",
-            "str": "QWN0aXZlUmVjb3JkOjpDb25uZWN0aW9uQWRhcHRlcnM6OlNRTGl0ZTNBZGFw\ndGVy\n"
+            "str": "QWN0aXZlUmVjb3JkOjpDb25uZWN0aW9uQWRhcHRlcnM6OlBvc3RncmVTUUxB\nZGFwdGVy\n"
           },
           {
             "iid": "10101010101010",
@@ -692,6 +696,12 @@
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
             "name": "transaction",
             "stringValue": null
           },
@@ -718,7 +728,7 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OkNvbm5lY3Rpb25BZGFwdGVyczo6U1FMaXRlM0Fk\nYXB0ZXI=\n"
+            "str": "IzxBY3RpdmVSZWNvcmQ6OkNvbm5lY3Rpb25BZGFwdGVyczo6UG9zdGdyZVNR\nTEFkYXB0ZXI=\n"
           }
         ]
       },
@@ -1088,13 +1098,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "async"
+            "stringValue": "statement_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": "connection"
+            "stringValue": "async"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1211,13 +1221,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "async"
+            "stringValue": "statement_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": "row_count"
+            "stringValue": "transaction"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1293,7 +1303,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -1372,13 +1382,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1402,7 +1412,7 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "U0VMRUNUICJib29rcyIuKiBGUk9NICJib29rcyIgV0hFUkUgImJvb2tzIi4i\nYXV0aG9yX2lkIiA9ID8gTElNSVQgPw==\n"
+            "str": "U0VMRUNUICJib29rcyIuKiBGUk9NICJib29rcyIgV0hFUkUgImJvb2tzIi4i\nYXV0aG9yX2lkIiA9ICQxIExJTUlUICQy\n"
           },
           {
             "iid": "10101010101010",
@@ -1444,13 +1454,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1547,6 +1557,10 @@
           {
             "iid": "10101010101010",
             "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "YTI=\n"
           }
         ]
       },
@@ -1601,7 +1615,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -1612,7 +1626,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
-            "stringValue": "record_count"
+            "stringValue": "row_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": "@model_class"
           },
           {
             "nameIid": "10101010101010",
@@ -1926,7 +1946,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -1997,13 +2017,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2043,13 +2063,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2176,7 +2196,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -2187,7 +2207,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
-            "stringValue": "record_count"
+            "stringValue": "row_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": "@model_class"
           },
           {
             "nameIid": "10101010101010",
@@ -2493,7 +2519,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -2564,13 +2590,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2610,13 +2636,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2743,7 +2769,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -2754,7 +2780,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
-            "stringValue": "record_count"
+            "stringValue": "row_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": "@model_class"
           },
           {
             "nameIid": "10101010101010",
@@ -3060,7 +3092,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -3131,13 +3163,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3177,13 +3209,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3310,7 +3342,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -3321,7 +3353,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
-            "stringValue": "record_count"
+            "stringValue": "row_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": "@model_class"
           },
           {
             "nameIid": "10101010101010",
@@ -3995,7 +4033,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -4066,13 +4104,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4090,7 +4128,7 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "U0VMRUNUICJyZXZpZXdzIi4qIEZST00gInJldmlld3MiIFdIRVJFICJyZXZp\nZXdzIi4iYm9va19pZCIgPSA/IExJTUlUID8=\n"
+            "str": "U0VMRUNUICJyZXZpZXdzIi4qIEZST00gInJldmlld3MiIFdIRVJFICJyZXZp\nZXdzIi4iYm9va19pZCIgPSAkMSBMSU1JVCAkMg==\n"
           },
           {
             "iid": "10101010101010",
@@ -4124,13 +4162,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4203,6 +4241,10 @@
           {
             "iid": "10101010101010",
             "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "YTM=\n"
           }
         ]
       },
@@ -4268,6 +4310,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -4469,7 +4517,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": "async"
+            "stringValue": "statement_name"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4932,7 +4980,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -5003,13 +5051,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -5049,13 +5097,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -5193,6 +5241,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -5397,12 +5451,6 @@
         "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
       },
       "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "GraphQL::Dataloader::ActiveRecordSource"
-          }
-        ],
         "debugAnnotationNames": [
           {
             "iid": "10101010101010",
@@ -5432,7 +5480,7 @@
           },
           {
             "iid": "10101010101010",
-            "str": "QWN0aXZlUmVjb3JkOjpDb25uZWN0aW9uQWRhcHRlcnM6OlNRTGl0ZTNBZGFw\ndGVyOjpTUUxpdGUzSW50ZWdlcg==\n"
+            "str": "QWN0aXZlTW9kZWw6OlR5cGU6OkludGVnZXI=\n"
           },
           {
             "iid": "10101010101010",
@@ -5511,10 +5559,16 @@
         "name": "GraphQL::Dataloader::ActiveRecordSource"
       },
       "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "GraphQL::Dataloader::ActiveRecordSource"
+          }
+        ],
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OkNvbm5lY3Rpb25BZGFwdGVyczo6U1FMaXRlM0Fk\nYXB0ZXI6OlNRTGl0ZTNJbnRlZ2Vy\n"
+            "str": "IzxBY3RpdmVNb2RlbDo6VHlwZTo6SW50ZWdlcg==\n"
           }
         ]
       },
@@ -5535,13 +5589,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -5559,7 +5613,7 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "U0VMRUNUICJib29rcyIuKiBGUk9NICJib29rcyIgV0hFUkUgImJvb2tzIi4i\naWQiID0gPw==\n"
+            "str": "U0VMRUNUICJib29rcyIuKiBGUk9NICJib29rcyIgV0hFUkUgImJvb2tzIi4i\naWQiID0gJDE=\n"
           }
         ]
       },
@@ -5614,6 +5668,10 @@
           {
             "iid": "10101010101010",
             "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "YTQ=\n"
           }
         ]
       },
@@ -5664,7 +5722,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -5675,6 +5733,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -5812,12 +5876,6 @@
         "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
       },
       "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "PerfettoSchema::AverageReview"
-          }
-        ],
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
@@ -5937,6 +5995,14 @@
         ],
         "name": "PerfettoSchema::AverageReview"
       },
+      "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "PerfettoSchema::AverageReview"
+          }
+        ]
+      },
       "sequenceFlags": 101010101010
     },
     {
@@ -6023,7 +6089,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -6034,6 +6100,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -6164,14 +6236,6 @@
         ],
         "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
       },
-      "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "PerfettoSchema::OtherBook"
-          }
-        ]
-      },
       "sequenceFlags": 101010101010
     },
     {
@@ -6219,6 +6283,14 @@
         ],
         "name": "PerfettoSchema::OtherBook"
       },
+      "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "PerfettoSchema::OtherBook"
+          }
+        ]
+      },
       "sequenceFlags": 101010101010
     },
     {
@@ -6236,13 +6308,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -6260,7 +6332,7 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "U0VMRUNUIE1BWCgiYm9va3MiLiJpZCIpIEFTICJtYXhpbXVtX2lkIiwgImJv\nb2tzIi4iYXV0aG9yX2lkIiBBUyAiYm9va3NfYXV0aG9yX2lkIiBGUk9NICJi\nb29rcyIgV0hFUkUgImJvb2tzIi4iYXV0aG9yX2lkIiA9ID8gQU5EICJib29r\ncyIuImlkIiAhPSA/IEdST1VQIEJZICJib29rcyIuImF1dGhvcl9pZCI=\n"
+            "str": "U0VMRUNUIE1BWCgiYm9va3MiLiJpZCIpIEFTICJtYXhpbXVtX2lkIiwgImJv\nb2tzIi4iYXV0aG9yX2lkIiBBUyAiYm9va3NfYXV0aG9yX2lkIiBGUk9NICJi\nb29rcyIgV0hFUkUgImJvb2tzIi4iYXV0aG9yX2lkIiA9ICQxIEFORCAiYm9v\na3MiLiJpZCIgIT0gJDIgR1JPVVAgQlkgImJvb2tzIi4iYXV0aG9yX2lkIg==\n"
           },
           {
             "iid": "10101010101010",
@@ -6294,13 +6366,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -6438,6 +6510,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -6664,13 +6742,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -6785,7 +6863,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -6796,6 +6874,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -7276,7 +7360,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": "async"
+            "stringValue": "statement_name"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -7528,8 +7612,9 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -7590,6 +7675,60 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Debug Inspect"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspect instance of",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspecting for",
+            "stringValue": "valid?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "QmlnRGVjaW1hbA==\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
         "type": "TYPE_SLICE_END",
         "trackUuid": "10101010101010",
         "extraCounterValues": [
@@ -7599,6 +7738,14 @@
         "extraCounterTrackUuids": [
           "10101010101010",
           "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "MC4yNWUx\n"
+          }
         ]
       },
       "sequenceFlags": 101010101010
@@ -7819,7 +7966,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -7890,13 +8037,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -7936,13 +8083,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -8080,6 +8227,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -8705,8 +8858,9 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -8739,6 +8893,52 @@
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
             "stringValue": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Debug Inspect"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspect instance of",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspecting for",
+            "stringValue": "valid?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -8996,7 +9196,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -9067,13 +9267,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -9113,13 +9313,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -9257,6 +9457,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -9636,7 +9842,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -9647,6 +9853,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -9892,13 +10104,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -9916,7 +10128,7 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "U0VMRUNUIE1BWCgiYm9va3MiLiJpZCIpIEFTICJtYXhpbXVtX2lkIiwgImJv\nb2tzIi4iYXV0aG9yX2lkIiBBUyAiYm9va3NfYXV0aG9yX2lkIiBGUk9NICJi\nb29rcyIgV0hFUkUgImJvb2tzIi4iYXV0aG9yX2lkIiBJTiAoPywgPykgQU5E\nICJib29rcyIuImlkIiBOT1QgSU4gKD8sID8pIEdST1VQIEJZICJib29rcyIu\nImF1dGhvcl9pZCI=\n"
+            "str": "U0VMRUNUIE1BWCgiYm9va3MiLiJpZCIpIEFTICJtYXhpbXVtX2lkIiwgImJv\nb2tzIi4iYXV0aG9yX2lkIiBBUyAiYm9va3NfYXV0aG9yX2lkIiBGUk9NICJi\nb29rcyIgV0hFUkUgImJvb2tzIi4iYXV0aG9yX2lkIiBJTiAoJDEsICQyKSBB\nTkQgImJvb2tzIi4iaWQiIE5PVCBJTiAoJDMsICQ0KSBHUk9VUCBCWSAiYm9v\na3MiLiJhdXRob3JfaWQi\n"
           }
         ]
       },
@@ -9946,13 +10158,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -10000,7 +10212,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
@@ -10064,7 +10276,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
@@ -10236,6 +10448,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -10470,13 +10688,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -10591,7 +10809,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -10602,6 +10820,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -11303,8 +11527,9 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -11337,6 +11562,52 @@
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
             "stringValue": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Debug Inspect"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspect instance of",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspecting for",
+            "stringValue": "valid?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -11594,7 +11865,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -11665,13 +11936,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -11711,13 +11982,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -11855,6 +12126,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -12480,8 +12757,9 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -12514,6 +12792,52 @@
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
             "stringValue": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Debug Inspect"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspect instance of",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspecting for",
+            "stringValue": "valid?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -12771,7 +13095,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -12842,13 +13166,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -12888,13 +13212,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -13032,6 +13356,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -13411,7 +13741,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -13422,6 +13752,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -13667,13 +14003,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -13713,13 +14049,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -13767,7 +14103,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
@@ -13821,7 +14157,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
@@ -13973,6 +14309,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -14207,13 +14549,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -14328,7 +14670,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -14339,6 +14681,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -15040,8 +15388,9 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -15074,6 +15423,52 @@
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
             "stringValue": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Debug Inspect"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspect instance of",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspecting for",
+            "stringValue": "valid?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -15331,7 +15726,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -15402,13 +15797,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -15448,13 +15843,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -15592,6 +15987,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -16217,8 +16618,9 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -16251,6 +16653,52 @@
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
             "stringValue": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Debug Inspect"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspect instance of",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspecting for",
+            "stringValue": "valid?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -16508,7 +16956,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "transaction"
+            "stringValue": "connection"
           },
           {
             "nameIid": "10101010101010",
@@ -16579,13 +17027,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -16625,13 +17073,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -16769,6 +17217,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -17148,7 +17602,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -17159,6 +17613,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -17404,13 +17864,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -17450,13 +17910,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -17504,7 +17964,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
@@ -17558,7 +18018,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
@@ -17710,6 +18170,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -17944,13 +18410,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -18065,7 +18531,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "name\n",
-            "stringValue": "class_name"
+            "stringValue": "record_count"
           },
           {
             "nameIid": "10101010101010",
@@ -18076,6 +18542,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {
@@ -18777,8 +19249,9 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -18811,6 +19284,52 @@
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
             "stringValue": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Debug Inspect"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspect instance of",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspecting for",
+            "stringValue": "valid?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -19203,8 +19722,9 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -19265,6 +19785,52 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Debug Inspect"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspect instance of",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "inspecting for",
+            "stringValue": "valid?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
         "type": "TYPE_SLICE_END",
         "trackUuid": "10101010101010",
         "extraCounterValues": [
@@ -19297,13 +19863,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "async"
+            "stringValue": "statement_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": "connection"
+            "stringValue": "async"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -19559,13 +20125,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -19605,13 +20171,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "binds.0"
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -19754,6 +20320,12 @@
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
             "name": "transaction",
             "stringValue": null
           },
@@ -19843,14 +20415,6 @@
           "10101010101010"
         ],
         "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
-      },
-      "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "PerfettoSchema::Authorized"
-          }
-        ]
       },
       "sequenceFlags": 101010101010
     },
@@ -20028,6 +20592,12 @@
         "name": "PerfettoSchema::Authorized"
       },
       "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "PerfettoSchema::Authorized"
+          }
+        ],
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
@@ -20504,13 +21074,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "async"
+            "stringValue": "statement_name"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": "connection"
+            "stringValue": "async"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -25038,13 +25608,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "binds.1"
+            "stringValue": "binds.0"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -25062,7 +25632,7 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "U0VMRUNUICJ1c2VycyIuKiBGUk9NICJ1c2VycyIgV0hFUkUgInVzZXJzIi4i\naWQiIElOICg/LCA/KQ==\n"
+            "str": "U0VMRUNUICJ1c2VycyIuKiBGUk9NICJ1c2VycyIgV0hFUkUgInVzZXJzIi4i\naWQiIElOICgkMSwgJDIp\n"
           },
           {
             "iid": "10101010101010",
@@ -25096,13 +25666,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspect instance of",
-            "stringValue": "type_casted_binds.1"
+            "stringValue": "type_casted_binds.0"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "inspecting for",
-            "stringValue": "10101010101010"
+            "stringValue": "type_casted_binds.1"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -25240,6 +25810,12 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
             "stringValue": null
           },
           {

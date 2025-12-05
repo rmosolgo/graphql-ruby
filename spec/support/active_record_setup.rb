@@ -22,9 +22,10 @@ if testing_rails?
     ))
     databases = ActiveRecord::Base.connection.execute("select datname from pg_database;")
     test_db = databases.find { |d| d["datname"] == "graphql_ruby_test" }
-    if test_db.nil?
-      ActiveRecord::Base.connection.execute("create database graphql_ruby_test;")
+    if test_db
+      ActiveRecord::Base.connection.execute("drop database graphql_ruby_test;")
     end
+    ActiveRecord::Base.connection.execute("create database graphql_ruby_test;")
 
     ActiveRecord::Base.configurations = {
       starwars: ar_connection_options,
@@ -41,7 +42,7 @@ if testing_rails?
   end
 
   ActiveRecord::Base.establish_connection(:starwars)
-  ActiveRecord::Schema.define do
+  ActiveRecord::Schema.define(force: true) do
     self.verbose = !!ENV["GITHUB_ACTIONS"]
     create_table :bases, force: true do |t|
       t.column :name, :string
@@ -157,6 +158,11 @@ if testing_rails?
   w.albums.create!(id: 6, name: "Summerteeth")
   class Author < ActiveRecord::Base
     has_many :books
+
+    def self.inspect
+      sleep 0.2
+      super
+    end
   end
 
   class User < ActiveRecord::Base

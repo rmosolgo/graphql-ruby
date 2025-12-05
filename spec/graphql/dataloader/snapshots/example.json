@@ -34,6 +34,16 @@
           {
             "iid": "10101010101010",
             "name": "Resolve Type"
+          },
+          {
+            "iid": "10101010101010",
+            "name": "Debug Inspect"
+          }
+        ],
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "GraphQL::Tracing::DetailedTrace#inspect_object"
           }
         ],
         "debugAnnotationNames": [
@@ -43,15 +53,23 @@
           },
           {
             "iid": "10101010101010",
-            "name": "arguments"
-          },
-          {
-            "iid": "10101010101010",
             "name": "result"
           },
           {
             "iid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "iid": "10101010101010",
             "name": "fetch keys"
+          },
+          {
+            "iid": "10101010101010",
+            "name": "inspect instance of"
+          },
+          {
+            "iid": "10101010101010",
+            "name": "inspecting for"
           }
         ],
         "debugAnnotationStringValues": [
@@ -697,7 +715,8 @@
         ],
         "debugAnnotationNames": [
           {
-            "iid": "10101010101010"
+            "iid": "10101010101010",
+            "name": "10101010101010"
           },
           {
             "iid": "10101010101010",
