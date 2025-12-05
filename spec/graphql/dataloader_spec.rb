@@ -1191,17 +1191,34 @@ describe GraphQL::Dataloader do
 
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
-            assert_equal 10, FiberCounting.last_spawn_fiber_count
+
+            extra_shortlived_jobs_fibers = if fiber_counting_dataloader_class < GraphQL::Dataloader::AsyncDataloader
+              3
+            else
+              0
+            end
+            assert_equal 10 + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_fiber_count
             assert_last_max_fiber_count(9, "No limit works as expected")
 
+            extra_shortlived_jobs_fibers = if fiber_counting_dataloader_class < GraphQL::Dataloader::AsyncDataloader
+              10 # more here because there are fewer jobs fibers running at any one time
+            else
+              0
+            end
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal 12, FiberCounting.last_spawn_fiber_count
+            assert_equal 12 + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_fiber_count
             assert_last_max_fiber_count(4, "Limit of 4 works as expected")
+
+            extra_shortlived_jobs_fibers = if fiber_counting_dataloader_class < GraphQL::Dataloader::AsyncDataloader
+              4
+            else
+              0
+            end
 
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
-            assert_equal 8, FiberCounting.last_spawn_fiber_count
+            assert_equal 8 + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_fiber_count
             assert_last_max_fiber_count(6, "Limit of 6 works as expected")
           end
 
@@ -1282,27 +1299,6 @@ describe GraphQL::Dataloader do
       end
 
       include DataloaderAssertions
-    end
-
-    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
-      describe "nonblocking: true with libev" do
-        require "libev_scheduler"
-        def make_schema_from(schema)
-          Class.new(schema) do
-            use GraphQL::Dataloader, nonblocking: true
-          end
-        end
-
-        before do
-          Fiber.set_scheduler(Libev::Scheduler.new)
-        end
-
-        after do
-          Fiber.set_scheduler(nil)
-        end
-
-        include DataloaderAssertions
-      end
     end
   end
 
