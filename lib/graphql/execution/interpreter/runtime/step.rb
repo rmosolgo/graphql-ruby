@@ -10,8 +10,9 @@ module GraphQL
           # @return [Boolean] True if `value` was lazy and this step was re-enqueued
           def reenqueue_if_lazy?(value)
             if @runtime.lazy?(value)
-              @runtime.lazies_at_depth[depth] << self
-              @runtime.steps_to_rerun_after_lazy << self
+              dl = @runtime.dataloader
+              dl.lazies_at_depth[depth] << self
+              dl.steps_to_rerun_after_lazy << self
               true
             else
               false

@@ -10,6 +10,30 @@
 
 ### Bug fixes
 
+# 2.5.14 (8 Oct 2025)
+
+### Bug fixes
+
+- Fix error when GraphQL-Batch is used (???) #5444
+
+# 2.5.13 (22 Sep 2025)
+
+### New features
+
+- Testing helpers: support `visibility_profile: ...` #5439
+
+### Bug fixes
+
+- Directives: correctly handle schema directive arguments which are lists of input objects #5440
+
+# 2.5.12 (15 Sep 2025)
+
+### New features
+
+- Runtime: add hooks for experimental custom runtimes #5425, #5429
+- Lazy handling and Dataloader have been merged under the hood #5422
+- Doc: merk `load_application_object_failed` as public #5426
+
 # 2.5.11 (9 Jul 2025)
 
 ### Bug fixes

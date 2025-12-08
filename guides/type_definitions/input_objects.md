@@ -151,4 +151,4 @@ An input object with `one_of` will require exactly one given argument and it wil
 
 When you use `one_of`, it will appear in schema print-outs with `input ... @oneOf` and you can query it using `{ __type(name: $typename) { isOneOf } }`.
 
-This behavior is described in a [proposed change](https://github.com/graphql/graphql-spec/pull/825) to the GraphQL specification.
+This behavior was adopted to the September 2025 GraphQL specification.

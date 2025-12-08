@@ -48,17 +48,11 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        attr_reader :dataloader, :current_trace, :lazies_at_depth
-
-        def steps_to_rerun_after_lazy # TODO fix this jank
-          @dataloader.steps_to_rerun_after_lazy
-        end
-
-        def initialize(query:, lazies_at_depth:)
+        attr_reader :current_trace, :dataloader
+        def initialize(query:)
           @query = query
           @current_trace = query.current_trace
           @dataloader = query.multiplex.dataloader
-          @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
           @response = nil
@@ -456,7 +450,11 @@ module GraphQL
             rescue GraphQL::ExecutionError => ex_err
               return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
             rescue StandardError => err
-              query.handle_or_reraise(err)
+              begin
+                query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
+                return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
+              end
             end
             set_result(selection_result, result_name, r, false, is_non_null)
             r
@@ -519,7 +517,7 @@ module GraphQL
           def run_step
             case @step
             when :check_directives
-              if (dirs = @list_result.ast_node.directives).any?
+              if !(dirs = @list_result.ast_node.directives).empty?
                 runtime_state = @runtime.get_current_runtime_state
                 runtime_state.current_result_name = @index
                 runtime_state.current_result = @list_result
@@ -631,7 +629,6 @@ module GraphQL
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, runtime_state:, trace: true, &block)
           if lazy?(lazy_obj)
-            orig_result = result
             was_authorized_by_scope_items = runtime_state.was_authorized_by_scope_items
             lazy = GraphQL::Execution::Lazy.new(field: field) do
               # This block might be called in a new fiber;
@@ -641,14 +638,14 @@ module GraphQL
               runtime_state.current_field = field
               runtime_state.current_arguments = arguments
               runtime_state.current_result_name = result_name
-              runtime_state.current_result = orig_result
-              runtime_state.current_step = orig_result
+              runtime_state.current_result = result
+              runtime_state.current_step = result
               runtime_state.was_authorized_by_scope_items = was_authorized_by_scope_items
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
-              result = nil
+              sync_result = nil
               inner_obj = begin
-                result = if trace
+                sync_result = if trace
                   @current_trace.begin_execute_field(field, owner_object, arguments, query)
                   @current_trace.execute_field_lazy(field: field, query: query, object: owner_object, arguments: arguments, ast_node: ast_node) do
                     schema.sync_lazy(lazy_obj)
@@ -666,7 +663,7 @@ module GraphQL
                 end
               ensure
                 if trace
-                  @current_trace.end_execute_field(field, owner_object, arguments, query, result)
+                  @current_trace.end_execute_field(field, owner_object, arguments, query, sync_result)
                 end
               end
               yield(inner_obj, runtime_state)
@@ -676,12 +673,7 @@ module GraphQL
               lazy.value
             else
               set_result(result, result_name, lazy, false, false) # is_non_null is irrelevant here
-              current_depth = 0
-              while result
-                current_depth += 1
-                result = result.graphql_parent
-              end
-              @lazies_at_depth[current_depth] << lazy
+              @dataloader.lazy_at_depth(result.depth, lazy)
               lazy
             end
           else

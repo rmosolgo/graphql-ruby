@@ -111,6 +111,9 @@ describe GraphQL::Testing::Helpers do
     query(Query)
     use GraphQL::Dataloader
     lazy_resolve Proc, :call
+    use GraphQL::Schema::Visibility, profiles: {
+      public: { public: true }
+    }, dynamic: true
 
     def self.unauthorized_object(err)
       raise err
@@ -160,6 +163,16 @@ describe GraphQL::Testing::Helpers do
           rc.run_graphql_field("name")
           rc.run_graphql_field("isAdminFor")
           assert_equal "Student.currentField", rc.run_graphql_field("currentField")
+        end
+      end
+
+      it "works with a visibility_profile" do
+        student2 = run_graphql_field(AssertionsSchema, "Query.student", nil, visibility_profile: :public, arguments: { student: "s1" })
+        expected_student = { name: "Student1", type: AssertionsSchema::Student }
+        assert_equal(expected_student, student2)
+
+        with_resolution_context(AssertionsSchema, object: {}, type: "Query", context: {}, visibility_profile: :public) do |rc|
+          assert_equal :public, rc.visibility_profile
         end
       end
 

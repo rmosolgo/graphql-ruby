@@ -4,7 +4,7 @@ require "json"
 require "set"
 require "singleton"
 require "forwardable"
-require "fiber/storage"
+require "fiber/storage" if RUBY_VERSION < "3.2.0"
 require "graphql/autoload"
 
 module GraphQL

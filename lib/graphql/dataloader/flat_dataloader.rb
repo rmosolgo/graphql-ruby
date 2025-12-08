@@ -10,7 +10,7 @@ module GraphQL
         @queue = []
       end
 
-      def run
+      def run(trace_query_lazy: nil)
         while @queue.any?
           while (step = @queue.shift)
             step.call
@@ -26,14 +26,17 @@ module GraphQL
             end
 
             if smallest_depth
-              lazies = @lazies_at_depth.delete(smallest_depth)
-              lazies.each(&:value) # resolve these Lazy instances
+              with_trace_query_lazy(trace_query_lazy) do
+                lazies = @lazies_at_depth.delete(smallest_depth)
+                lazies.each(&:value) # resolve these Lazy instances
+              end
             end
           end
 
           if @steps_to_rerun_after_lazy.any?
-            @steps_to_rerun_after_lazy.each(&:call)
+            current_srrl = @steps_to_rerun_after_lazy.dup
             @steps_to_rerun_after_lazy.clear
+            current_srrl.each(&:call)
           end
         end
       end

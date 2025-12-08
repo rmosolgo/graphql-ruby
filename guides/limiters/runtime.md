@@ -28,6 +28,9 @@ class MySchema < GraphQL::Schema
   # ...
   use GraphQL::Enterprise::RuntimeLimiter,
     redis: Redis.new(...),
+    # Or:
+    # connection_pool: ...
+    # redis_cluster: ...
     limit_ms: 90 * 1000 # 90 seconds per minute
 end
 ```

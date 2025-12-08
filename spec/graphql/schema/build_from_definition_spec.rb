@@ -1905,4 +1905,36 @@ type ReachableType implements Node {
       assert schema_class.query.ast_node.name.frozen?
     end
   end
+
+  it "works when directives use argument types defined after them" do
+    schema_sdl = <<~GRAPHQL
+      directive @foo(value: SomeEnum!) on OBJECT
+      directive @bar on ENUM_VALUE
+
+      enum SomeEnum {
+        BAZ @bar
+      }
+
+      type Query {
+        someEnum: SomeEnum!
+      }
+    GRAPHQL
+    GraphQL::Schema.from_definition(schema_sdl)
+  end
+
+  it "works with invalid directive argument value" do
+    sdl = <<~EOS
+      directive @requiresScopes(scopes: [[String]]) on FIELD_DEFINITION
+
+      type Query {
+        product: Product
+      }
+
+      type Product {
+        shippingEstimate: String @requiresScopes(scopes: "shipping")
+      }
+    EOS
+
+    assert GraphQL::Schema.from_definition(sdl).to_definition
+  end
 end

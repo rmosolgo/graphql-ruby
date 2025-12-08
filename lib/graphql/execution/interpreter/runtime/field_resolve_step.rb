@@ -49,7 +49,6 @@ module GraphQL
               rs.current_result = current_result
               rs.current_result_name = current_result_name
               rs.current_step = self
-              puts "sync_lazy #{@result} #{inspect_step}"
               @runtime.schema.sync_lazy(@result)
             rescue GraphQL::ExecutionError => err
               err
@@ -65,7 +64,7 @@ module GraphQL
           end
 
           def run_step
-            puts "run_step #{inspect_step}"
+            # puts "run_step #{inspect_step}"
             if @selection_result.graphql_dead
               return
             end
@@ -128,7 +127,7 @@ module GraphQL
               if (@result && reenqueue_if_lazy?(@result)) || (reenqueue_if_lazy?(dataload_for_result))
                 return
               else
-                @runtime.steps_to_rerun_after_lazy << self
+                @runtime.dataloader.steps_to_rerun_after_lazy << self
               end
             end
           end
@@ -233,7 +232,6 @@ module GraphQL
             @runtime.current_trace.end_execute_field(@field, @object, @kwarg_arguments, query, app_result)
             @result = app_result
             reenc = reenqueue_if_lazy?(@result)
-            p [:app_result, @result, reenc]
             if reenc
               @step = :handle_resolved_value
               return

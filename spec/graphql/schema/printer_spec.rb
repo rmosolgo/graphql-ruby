@@ -1006,4 +1006,34 @@ enum Thing {
       assert_equal expected_defn, Class.new(GraphQL::Schema) { extra_types(union_type, obj_1, obj_2) }.to_definition
     end
   end
+
+  it "works with interfaces and @oneOf directive" do
+    class SomeInputObject < GraphQL::Schema::InputObject
+      one_of
+      argument :a, Integer, required: false
+      argument :b, String, required: false
+    end
+
+    module SomeInterface
+      include GraphQL::Schema::Interface
+      field :id, ID
+    end
+
+    class SomeObject < GraphQL::Schema::Object
+      implements SomeInterface
+      field :some_field, Boolean do
+        argument :input, SomeInputObject
+      end
+    end
+
+    class SomeQueryType < GraphQL::Schema::Object
+      field :some_object, SomeObject, method: :some_object
+    end
+
+    class SomeSchema < GraphQL::Schema
+      query SomeQueryType
+    end
+
+    GraphQL::Schema::Printer.new(SomeSchema).print_type(SomeObject)
+  end
 end

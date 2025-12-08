@@ -12,6 +12,15 @@ describe GraphQL::Schema::Directive do
   module DirectiveTest
     class Secret < GraphQL::Schema::Directive
       argument :top_secret, Boolean
+      class PermissionRule < GraphQL::Schema::InputObject
+        class Permission < GraphQL::Schema::Enum
+          value :READ
+          value :WRITE
+        end
+        argument :team, String
+        argument :permission, Permission
+      end
+      argument :permission_rules, [PermissionRule], required: false
       locations(FIELD_DEFINITION, ARGUMENT_DEFINITION)
     end
 
@@ -21,6 +30,13 @@ describe GraphQL::Schema::Directive do
         argument :nickname, Boolean, required: false do
           directive Secret, top_secret: false
         end
+      end
+
+      field :other_info, String do
+        directive Secret, top_secret: false, permission_rules: [
+          { team: "admins", permission: "WRITE" },
+          { team: "others", permission: "READ"},
+        ]
       end
     end
   end
@@ -36,6 +52,12 @@ describe GraphQL::Schema::Directive do
     assert_equal [DirectiveTest::Secret], argument.directives.map(&:class)
     assert_equal [argument], argument.directives.map(&:owner)
     assert_equal [false], argument.directives.map{ |d| d.arguments[:top_secret] }
+
+    other_field = DirectiveTest::Thing.fields.values.last
+    other_field_dir = other_field.directives.first
+    perm_roles = other_field_dir.arguments[:permission_rules]
+    assert_equal Array.new(2, DirectiveTest::Secret::PermissionRule), perm_roles.map(&:class)
+    assert_equal ["WRITE", "READ"], perm_roles.map(&:permission)
   end
 
   it "raises an error when added to the wrong thing" do
@@ -117,6 +139,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         result = nil
         ctx.dataloader.run_isolated do
           result = yield
+          ctx.dataloader.run
         end
 
         ctx[:count_fields] ||= Hash.new { |h, k| h[k] = [] }
