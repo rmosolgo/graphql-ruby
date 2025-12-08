@@ -311,23 +311,24 @@ describe GraphQL::Schema::Visibility do
     assert_equal "Hat", res["data"]["node"]["name"]
   end
 
-  focus
   it "defaults to preload: true for Rails.env.staging?" do
     prev_rails = defined?(Rails) ? Rails : nil
-    mock_env = OpenStruct.new(:development? => false)
+    mock_env = OpenStruct.new(:staging? => true)
     Object.const_set(:Rails, OpenStruct.new(env: mock_env))
     schema = Class.new(GraphQL::Schema) do
       use GraphQL::Schema::Visibility
     end
-    refute Rails.env.development?
+    assert Rails.env.staging?
     assert schema.visibility.preload?
 
-    mock_env[:development?] = true
+    mock_env[:staging?] = false
+    mock_env[:test?] = true
 
     schema = Class.new(GraphQL::Schema) do
       use GraphQL::Schema::Visibility
     end
-    assert Rails.env.development?
+    assert Rails.env.test?
+    refute Rails.env.staging?
     refute schema.visibility.preload?
   ensure
     if prev_rails
