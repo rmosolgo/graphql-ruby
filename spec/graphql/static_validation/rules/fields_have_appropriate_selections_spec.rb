@@ -90,6 +90,21 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
 
   describe "selections on unions" do
     let(:query_string) { "{ searchDairy }"}
+    describe "When the schema has custom handling with type to return the message" do
+      let(:schema) { Class.new(Dummy::Schema) {
+          allow_legacy_invalid_empty_selections_on_union(true)
+          def self.legacy_invalid_empty_selections_on_union_with_type(query, type)
+            :return_validation_error
+          end
+        }
+      }
+
+      it "returns the default message" do
+        expected_err = "Field must have selections (field 'searchDairy' returns DairyProduct but has no selections. Did you mean 'searchDairy { ... }'?)"
+        assert_includes(errors.map { |e| e["message"] }, expected_err)
+      end
+    end
+
     describe "When the schema has custom handling to return the message" do
       let(:schema) { Class.new(Dummy::Schema) {
           allow_legacy_invalid_empty_selections_on_union(true)
@@ -101,6 +116,21 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
 
       it "returns the default message" do
         expected_err = "Field must have selections (field 'searchDairy' returns DairyProduct but has no selections. Did you mean 'searchDairy { ... }'?)"
+        assert_includes(errors.map { |e| e["message"] }, expected_err)
+      end
+    end
+
+    describe "When the schema has custom handling with type to return a custom message" do
+      let(:schema) { Class.new(Dummy::Schema) {
+          allow_legacy_invalid_empty_selections_on_union(true)
+          def self.legacy_invalid_empty_selections_on_union_with_type(query, type)
+            "Boo, hiss!"
+          end
+        }
+      }
+
+      it "returns the custom message" do
+        expected_err = "Boo, hiss!"
         assert_includes(errors.map { |e| e["message"] }, expected_err)
       end
     end
@@ -117,6 +147,20 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
       it "returns the custom message" do
         expected_err = "Boo, hiss!"
         assert_includes(errors.map { |e| e["message"] }, expected_err)
+      end
+    end
+
+    describe "When the schema has custom handling with type to allow the query" do
+      let(:schema) { Class.new(Dummy::Schema) {
+          allow_legacy_invalid_empty_selections_on_union(true)
+          def self.legacy_invalid_empty_selections_on_union_with_type(query, type)
+            nil
+          end
+        }
+      }
+
+      it "returns no errors" do
+        assert_equal [], errors
       end
     end
 
