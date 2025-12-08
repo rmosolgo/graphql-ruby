@@ -6,6 +6,24 @@
 
 ### New Features
 
+# 1.29.14 (21 Nov 2025)
+
+- Add configuration for `ostruct` dependency
+
+# 1.29.13 (22 Sept 2025)
+
+- Stable connections: fix condition grouping with IS NULL #5435
+- `@defer`: Correctly handle fields where `@defer` is present twice #5434
+- `@defer`: Update implementation to address warnings in GraphQL-Ruby 2.5.12+
+
+# 1.29.12 (12 Sept 2025)
+
+- `OperationStore`: also support `visibility_profile:` on lazy routes.
+
+# 1.29.11 (12 Sept 2025)
+
+- `OperationStore`: add `visibility_profile: ...` argument to `operation_store_sync` so that incoming operations are bound to the given profile.
+
 # 1.29.10 (3 Jun 2025)
 
 - `@defer`, `@stream`: Include `"data"` in the payload, if there is any, even if there are `"errors"` #5365

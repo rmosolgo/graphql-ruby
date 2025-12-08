@@ -4,7 +4,7 @@ require "open3"
 
 describe GraphQL do
   it "loads without warnings" do
-    stderr_and_stdout, _status = Open3.capture2e(%|ruby -Ilib -e "require 'bundler/inline'; gemfile(true, quiet: true) { source('https://rubygems.org'); gem('fiber-storage'); gem('graphql', path: './') }; GraphQL.eager_load!"|)
+    stderr_and_stdout, _status = Open3.capture2e(%|ruby -Ilib -e "require 'bundler/inline'; gemfile(true, quiet: true) { source('https://rubygems.org'); gem('graphql', path: './') }; GraphQL.eager_load!"|)
     assert_equal "", stderr_and_stdout
   end
 
@@ -18,7 +18,6 @@ describe GraphQL do
       gemfile(true, quiet: true) do
         source('https://rubygems.org')
         gem 'graphql', path: './'
-        gem 'fiber-storage'
       end
 
       class MySchema < GraphQL::Schema

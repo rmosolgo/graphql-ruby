@@ -35,11 +35,10 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        def initialize(query:, lazies_at_depth:)
+        def initialize(query:)
           @query = query
           @current_trace = query.current_trace
           @dataloader = query.multiplex.dataloader
-          @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
           @response = nil
@@ -365,6 +364,10 @@ module GraphQL
           else
             @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
               runtime_state = get_current_runtime_state # This might be in a different fiber
+              runtime_state.current_field = field_defn
+              runtime_state.current_arguments = resolved_arguments
+              runtime_state.current_result_name = result_name
+              runtime_state.current_result = selections_result
               evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
             end
           end
@@ -373,6 +376,8 @@ module GraphQL
         def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, object, result_name, selection_result, runtime_state)  # rubocop:disable Metrics/ParameterLists
           after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_arguments, runtime_state|
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
+              next if selection_result.collect_result(result_name, resolved_arguments)
+
               return_type_non_null = field_defn.type.non_null?
               continue_value(resolved_arguments, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               next
@@ -446,7 +451,7 @@ module GraphQL
             }
           end
 
-          field_result = call_method_on_directives(:resolve, object, directives) do
+          call_method_on_directives(:resolve, object, directives) do
             if !directives.empty?
               # This might be executed in a different context; reset this info
               runtime_state = get_current_runtime_state
@@ -472,6 +477,8 @@ module GraphQL
             end
             @current_trace.end_execute_field(field_defn, object, kwarg_arguments, query, app_result)
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_result, runtime_state|
+              next if selection_result.collect_result(result_name, inner_result)
+
               owner_type = selection_result.graphql_result_type
               return_type = field_defn.type
               continue_value = continue_value(inner_result, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
@@ -488,7 +495,7 @@ module GraphQL
           # all of its child fields before moving on to the next root mutation field.
           # (Subselections of this mutation will still be resolved level-by-level.)
           if selection_result.graphql_is_eager
-            Interpreter::Resolve.resolve_all([field_result], @dataloader)
+            @dataloader.run
           end
         end
 
@@ -667,7 +674,11 @@ module GraphQL
             rescue GraphQL::ExecutionError => ex_err
               return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
             rescue StandardError => err
-              query.handle_or_reraise(err)
+              begin
+                query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
+                return continue_value(ex_err, field, is_non_null, ast_node, result_name, selection_result)
+              end
             end
             set_result(selection_result, result_name, r, false, is_non_null)
             r
@@ -879,7 +890,6 @@ module GraphQL
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, runtime_state:, trace: true, &block)
           if lazy?(lazy_obj)
-            orig_result = result
             was_authorized_by_scope_items = runtime_state.was_authorized_by_scope_items
             lazy = GraphQL::Execution::Lazy.new(field: field) do
               # This block might be called in a new fiber;
@@ -889,13 +899,13 @@ module GraphQL
               runtime_state.current_field = field
               runtime_state.current_arguments = arguments
               runtime_state.current_result_name = result_name
-              runtime_state.current_result = orig_result
+              runtime_state.current_result = result
               runtime_state.was_authorized_by_scope_items = was_authorized_by_scope_items
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
-              result = nil
+              sync_result = nil
               inner_obj = begin
-                result = if trace
+                sync_result = if trace
                   @current_trace.begin_execute_field(field, owner_object, arguments, query)
                   @current_trace.execute_field_lazy(field: field, query: query, object: owner_object, arguments: arguments, ast_node: ast_node) do
                     schema.sync_lazy(lazy_obj)
@@ -913,7 +923,7 @@ module GraphQL
                 end
               ensure
                 if trace
-                  @current_trace.end_execute_field(field, owner_object, arguments, query, result)
+                  @current_trace.end_execute_field(field, owner_object, arguments, query, sync_result)
                 end
               end
               yield(inner_obj, runtime_state)
@@ -923,12 +933,7 @@ module GraphQL
               lazy.value
             else
               set_result(result, result_name, lazy, false, false) # is_non_null is irrelevant here
-              current_depth = 0
-              while result
-                current_depth += 1
-                result = result.graphql_parent
-              end
-              @lazies_at_depth[current_depth] << lazy
+              @dataloader.lazy_at_depth(result.depth, lazy)
               lazy
             end
           else

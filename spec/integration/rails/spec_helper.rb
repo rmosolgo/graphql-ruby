@@ -22,7 +22,15 @@ def with_active_record_log(colorize: true)
   io = StringIO.new
   prev_logger = ActiveRecord::Base.logger
   ActiveRecord::Base.logger = Logger.new(io)
-  yield
+  # Work aroudn .logger = ... issue on Rails main
+  # https://github.com/rails/rails/issues/56230
+  if ActiveSupport.respond_to?(:event_reporter)
+    ActiveSupport.event_reporter.with_debug do
+      yield
+    end
+  else
+    yield
+  end
   str = io.string
   if !colorize
     str.gsub!(/\e\[([;\d]+)?m/, '')

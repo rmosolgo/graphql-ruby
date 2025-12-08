@@ -14,7 +14,7 @@ module GraphQL
         nil
       end
 
-      def run
+      def run(trace_query_lazy: nil)
         trace = Fiber[:__graphql_current_multiplex]&.current_trace
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
         job_fibers = []
@@ -29,16 +29,7 @@ module GraphQL
             first_pass = false
             fiber_vars = get_fiber_variables
 
-            while (f = (job_fibers.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && spawn_job_fiber(trace))))
-              if f.alive?
-                finished = run_fiber(f)
-                if !finished
-                  next_job_fibers << f
-                end
-              end
-            end
-            job_fibers.concat(next_job_fibers)
-            next_job_fibers.clear
+            run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
 
             Sync do |root_task|
               set_fiber_variables(fiber_vars)
@@ -52,6 +43,13 @@ module GraphQL
                 sources_condition.signal
                 source_tasks.concat(next_source_tasks)
                 next_source_tasks.clear
+              end
+            end
+
+            if !@lazies_at_depth.empty?
+              with_trace_query_lazy(trace_query_lazy) do
+                run_next_pending_lazies(job_fibers, trace)
+                run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
               end
             end
           end
@@ -68,6 +66,19 @@ module GraphQL
       end
 
       private
+
+      def run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
+        while (f = (job_fibers.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && spawn_job_fiber(trace))))
+          if f.alive?
+            finished = run_fiber(f)
+            if !finished
+              next_job_fibers << f
+            end
+          end
+        end
+        job_fibers.concat(next_job_fibers)
+        next_job_fibers.clear
+      end
 
       def spawn_source_task(parent_task, condition, trace)
         pending_sources = nil

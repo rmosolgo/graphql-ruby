@@ -39,9 +39,9 @@ module GraphQL
         end
       end
 
-      def run_graphql_field(schema, field_path, object, arguments: {}, context: {}, ast_node: nil, lookahead: nil)
+      def run_graphql_field(schema, field_path, object, arguments: {}, context: {}, ast_node: nil, lookahead: nil, visibility_profile: nil)
         type_name, *field_names = field_path.split(".")
-        dummy_query = GraphQL::Query.new(schema, "{ __typename }", context: context)
+        dummy_query = GraphQL::Query.new(schema, "{ __typename }", context: context, visibility_profile: visibility_profile)
         query_context = dummy_query.context
         dataloader = query_context.dataloader
         object_type = dummy_query.types.type(type_name) # rubocop:disable Development/ContextIsPassedCop
@@ -104,32 +104,35 @@ module GraphQL
         end
       end
 
-      def with_resolution_context(schema, type:, object:, context:{})
+      def with_resolution_context(schema, type:, object:, context:{}, visibility_profile: nil)
         resolution_context = ResolutionAssertionContext.new(
           self,
           schema: schema,
           type_name: type,
           object: object,
-          context: context
+          context: context,
+          visibility_profile: visibility_profile,
         )
         yield(resolution_context)
       end
 
       class ResolutionAssertionContext
-        def initialize(test, type_name:, object:, schema:, context:)
+        def initialize(test, type_name:, object:, schema:, context:, visibility_profile:)
           @test = test
           @type_name = type_name
           @object = object
           @schema = schema
           @context = context
+          @visibility_profile = visibility_profile
         end
 
+        attr_reader :visibility_profile
 
         def run_graphql_field(field_name, arguments: {})
           if @schema
-            @test.run_graphql_field(@schema, "#{@type_name}.#{field_name}", @object, arguments: arguments, context: @context)
+            @test.run_graphql_field(@schema, "#{@type_name}.#{field_name}", @object, arguments: arguments, context: @context, visibility_profile: @visibility_profile)
           else
-            @test.run_graphql_field("#{@type_name}.#{field_name}", @object, arguments: arguments, context: @context)
+            @test.run_graphql_field("#{@type_name}.#{field_name}", @object, arguments: arguments, context: @context, visibility_profile: @visibility_profile)
           end
         end
       end
@@ -137,8 +140,8 @@ module GraphQL
       module SchemaHelpers
         include Helpers
 
-        def run_graphql_field(field_path, object, arguments: {}, context: {})
-          super(@@schema_class_for_helpers, field_path, object, arguments: arguments, context: context)
+        def run_graphql_field(field_path, object, arguments: {}, context: {}, visibility_profile: nil)
+          super(@@schema_class_for_helpers, field_path, object, arguments: arguments, context: context, visibility_profile: visibility_profile)
         end
 
         def with_resolution_context(*args, **kwargs, &block)

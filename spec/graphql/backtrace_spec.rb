@@ -132,7 +132,7 @@ describe GraphQL::Backtrace do
       b = err.cause.backtrace
       assert_backtrace_includes(b, file: "backtrace_spec.rb", method: "block")
       assert_backtrace_includes(b, file: "field.rb", method: "resolve")
-      assert_backtrace_includes(b, file: "runtime.rb", method: "evaluate_selections")
+      assert_backtrace_includes(b, file: "runtime.rb", method: "evaluate_selection")
       assert_backtrace_includes(b, file: "interpreter.rb", method: "run_all")
 
       # GraphQL backtrace is present

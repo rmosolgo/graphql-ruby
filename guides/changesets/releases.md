@@ -9,12 +9,12 @@ desc: Associating changes to version numbers
 index: 3
 ---
 
-To be available to clients, Changesets added to the schema with `use GraphQL::Enterprise::Changeset::Release changeset_dir: "..."`:
+To be available to clients, Changesets added to the schema with `use GraphQL::Enterprise::Changeset::Release changesets_dir: "..."`:
 
 ```ruby
 class MyAppSchema < GraphQL::Schema
   # Add this before root types so that newly-added types are also added to the schema
-  use GraphQL::Enterprise::Changeset::Release, changeset_dir: "app/graphql/changesets"
+  use GraphQL::Enterprise::Changeset::Release, changesets_dir: "app/graphql/changesets"
 
   query(...)
   mutation(...)
