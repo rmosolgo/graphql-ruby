@@ -53,7 +53,7 @@ jobs:
           REPO: git@github.com/rmosolgo/graphql-ruby.git
           BRANCH: gh-pages
           FOLDER: gh-pages
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
   api_docs:
     needs: website
     if: ${{ inputs.publish_version || github.ref_name }}
@@ -91,4 +91,4 @@ jobs:
           REPO: git@github.com/rmosolgo/graphql-ruby.git
           BRANCH: gh-pages
           FOLDER: gh-pages
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
