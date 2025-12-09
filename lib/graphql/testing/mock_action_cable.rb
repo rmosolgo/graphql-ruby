@@ -5,8 +5,6 @@ module GraphQL
     # Any methods to support the mock backend have `mock` in the name.
     #
     # @example Configuring your schema to use MockActionCable in the test environment
-    #   require "graphql/testing/mock_action_cable"
-    #
     #   class MySchema < GraphQL::Schema
     #     # Use MockActionCable in test:
     #     use GraphQL::Subscriptions::ActionCableSubscriptions,

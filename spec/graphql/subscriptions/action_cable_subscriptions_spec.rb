@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "spec_helper"
-require "graphql/testing/mock_action_cable"
 
 describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
   class ActionCableTestSchema < GraphQL::Schema
