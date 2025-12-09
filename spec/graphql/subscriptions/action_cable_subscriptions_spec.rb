@@ -1,69 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
+require "graphql/testing/mock_action_cable"
 
-
-describe GraphQL::Subscriptions::ActionCableSubscriptions do
-  # A stub implementation of ActionCable.
-  # Any methods to support the mock backend have `mock` in the name.
-  class MockActionCable
-    class MockChannel
-      def initialize
-        @mock_broadcasted_messages = []
-      end
-
-      attr_reader :mock_broadcasted_messages
-
-      def stream_from(stream_name, coder: nil, &block)
-        # Rails uses `coder`, we don't
-        block ||= ->(msg) { @mock_broadcasted_messages << msg }
-        MockActionCable.mock_stream_for(stream_name).add_mock_channel(self, block)
-      end
-    end
-
-    class MockStream
-      def initialize
-        @mock_channels = {}
-      end
-
-      def add_mock_channel(channel, handler)
-        @mock_channels[channel] = handler
-      end
-
-      def mock_broadcast(message)
-        @mock_channels.each do |channel, handler|
-          handler && handler.call(message)
-        end
-      end
-    end
-
-    class << self
-      def clear_mocks
-        @mock_streams = {}
-      end
-
-      def server
-        self
-      end
-
-      def broadcast(stream_name, message)
-        stream = @mock_streams[stream_name]
-        stream && stream.mock_broadcast(message)
-      end
-
-      def mock_stream_for(stream_name)
-        @mock_streams[stream_name] ||= MockStream.new
-      end
-
-      def get_mock_channel
-        MockChannel.new
-      end
-
-      def mock_stream_names
-        @mock_streams.keys
-      end
-    end
-  end
-
+describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
   class ActionCableTestSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
       field :int, Integer
@@ -106,7 +45,7 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
     query(Query)
     subscription(Subscription)
     use GraphQL::Subscriptions::ActionCableSubscriptions,
-      action_cable: MockActionCable,
+      action_cable: GraphQL::Testing::MockActionCable,
       action_cable_coder: JSON
   end
 
@@ -115,12 +54,12 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
     subscription(ActionCableTestSchema::Subscription)
     use GraphQL::Subscriptions::ActionCableSubscriptions,
       namespace: "other:",
-      action_cable: MockActionCable,
+      action_cable: GraphQL::Testing::MockActionCable,
       action_cable_coder: JSON
   end
 
   before do
-    MockActionCable.clear_mocks
+    GraphQL::Testing::MockActionCable.clear_mocks
   end
 
   def subscription_update(data)
@@ -128,7 +67,7 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
   end
 
   it "sends updates over the given `action_cable:`" do
-    mock_channel = MockActionCable.get_mock_channel
+    mock_channel = GraphQL::Testing::MockActionCable.get_mock_channel
     ActionCableTestSchema.execute("subscription { newsFlash { text } }", context: { channel: mock_channel })
     ActionCableTestSchema.subscriptions.trigger(:news_flash, {}, {text: "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"})
     expected_msg = subscription_update({
@@ -140,7 +79,7 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
   end
 
   it "uses arguments to divide traffic" do
-    mock_channel = MockActionCable.get_mock_channel
+    mock_channel = GraphQL::Testing::MockActionCable.get_mock_channel
     ActionCableTestSchema.execute("subscription { newsFlash(maxPerHour: 3) { text } }", context: { channel: mock_channel })
     ActionCableTestSchema.subscriptions.trigger(:news_flash, {}, {text: "Sunrise enjoyed over a cup of coffee"})
     ActionCableTestSchema.subscriptions.trigger(:news_flash, {max_per_hour: 3}, {text: "Neighbor shares bumper crop of summer squash with widow next door"})
@@ -154,7 +93,7 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
   end
 
   it "handles custom argument correctly" do
-    mock_channel = MockActionCable.get_mock_channel
+    mock_channel = GraphQL::Testing::MockActionCable.get_mock_channel
     ActionCableTestSchema.execute("subscription { newsFlash(filter: { trending: true }) { text } }", context: { channel: mock_channel })
     ActionCableTestSchema.subscriptions.trigger(:news_flash, {filter: {trending: true}}, {text: "Neighbor shares bumper crop of summer squash with widow next door"})
     expected_msg = subscription_update({
@@ -166,7 +105,7 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
   end
 
   it "handles nested custom argument correctly" do
-    mock_channel = MockActionCable.get_mock_channel
+    mock_channel = GraphQL::Testing::MockActionCable.get_mock_channel
     ActionCableTestSchema.execute("subscription { newsFlash(keywords: [{ value: \"rain\", fuzzy: true }]) { text } }", context: { channel: mock_channel })
     ActionCableTestSchema.subscriptions.trigger(:news_flash, {keywords: [{value: "rain", fuzzy: true}]}, {text: "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"})
     expected_msg = subscription_update({
@@ -178,11 +117,11 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
   end
 
   it "uses namespace to divide traffic" do
-    mock_channel_1 = MockActionCable.get_mock_channel
+    mock_channel_1 = GraphQL::Testing::MockActionCable.get_mock_channel
     ctx_1 = { channel: mock_channel_1 }
     ActionCableTestSchema.execute("subscription { newsFlash { text } }", context: ctx_1)
 
-    mock_channel_2 = MockActionCable.get_mock_channel
+    mock_channel_2 = GraphQL::Testing::MockActionCable.get_mock_channel
     ctx_2 = { channel: mock_channel_2 }
     NamespacedActionCableTestSchema.execute("subscription { newsFlash { text } }", context: ctx_2)
 
@@ -212,11 +151,11 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
       "graphql-subscription:other:#{ctx_2[:subscription_id]}",
       "graphql-event:other::newsFlash:",
     ]
-    assert_equal expected_streams, MockActionCable.mock_stream_names
+    assert_equal expected_streams, GraphQL::Testing::MockActionCable.mock_stream_names
   end
 
   it "supports no_update" do
-    mock_channel = MockActionCable.get_mock_channel
+    mock_channel = GraphQL::Testing::MockActionCable.get_mock_channel
     ctx = { channel: mock_channel }
     ActionCableTestSchema.execute("subscription { evenCounter { count } }", context: ctx)
 
@@ -330,17 +269,17 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
       end
 
       use GraphQL::Subscriptions::ActionCableSubscriptions,
-        action_cable: MockActionCable,
+        action_cable: GraphQL::Testing::MockActionCable,
         action_cable_coder: JSON,
         serializer: Serialize
     end
 
     it "works with multi-tenant architecture" do
-      mock_channel_1 = MockActionCable.get_mock_channel
+      mock_channel_1 = GraphQL::Testing::MockActionCable.get_mock_channel
       ctx_1 = { channel: mock_channel_1, tenant: "tenant-1" }
       MultiTenantSchema.execute("subscription { pointScored { score player { name } } }", context: ctx_1)
 
-      mock_channel_2 = MockActionCable.get_mock_channel
+      mock_channel_2 = GraphQL::Testing::MockActionCable.get_mock_channel
       ctx_2 = { channel: mock_channel_2, tenant: "tenant-2" }
       MultiTenantSchema.execute("subscription { pointScored { score player { name } } }", context: ctx_2)
       # This will use the `.find` in `def update`:
