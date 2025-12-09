@@ -10,7 +10,7 @@ index: 4
 
 [ActionCable](https://guides.rubyonrails.org/action_cable_overview.html) is a great platform for delivering GraphQL subscriptions on Rails 5+. It handles message passing (via `broadcast`) and transport (via `transmit` over a websocket).
 
-To get started, see examples in the API docs: {{ "GraphQL::Subscriptions::ActionCableSubscriptions" | api_doc }}.
+To get started, see examples in the API docs: {{ "GraphQL::Subscriptions::ActionCableSubscriptions" | api_doc }}. GraphQL-Ruby also includes a mock ActionCable implementation for testing: {{ "GraphQL::Testing::MockActionCable" | api_doc }}.
 
 See client usage for:
 
