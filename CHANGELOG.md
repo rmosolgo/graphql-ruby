@@ -10,6 +10,24 @@
 
 ### Bug fixes
 
+# 2.5.15 (9 Dec 2025)
+
+### New features
+
+- `DetailedTrace`: add separate spans for debug-only `.inspect` calls, support `debug: false` config #5477
+- `required:` validator: Raise a developer error when all `one_of:` options are hidden, support `allow_all_hidden: true` to allow this case #5474
+- `GraphQL::Testing::MockActionCable`: added to support testing ActionCableSubscriptions #5482
+- `legacy_invalid_empty_selections_on_union_with_type`: new method added for better metadata about legacy behavior #5480
+
+### Bug fixes
+
+- Fix typo in date encoding error #5447
+- Fix schema printer bug #5468
+- Ensure `data` exists for execution errors #5452
+- Improve SDL directive argument coercion #5469
+- Don't require `fiber-storage` on Ruby 3.2+ #5456
+- Visibility: default to `preload: true` when Rails.env.staging? #5409
+
 # 2.5.14 (8 Oct 2025)
 
 ### Bug fixes
