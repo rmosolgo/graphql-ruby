@@ -1747,7 +1747,7 @@ module GraphQL
       # and notify them about changing their queries. Then return a suitable value to
       # tell GraphQL-Ruby how to continue.
       # @param query [GraphQL::Query]
-      # @param type1 [Module] A GraphQL type definition
+      # @param type [Module] A GraphQL type definition
       # @return [:return_validation_error] Let GraphQL-Ruby return the (new) normal validation error for this query
       # @return [String] A validation error to return for this query
       # @return [nil] Don't send the client an error, continue the legacy behavior (allow this query to execute)
