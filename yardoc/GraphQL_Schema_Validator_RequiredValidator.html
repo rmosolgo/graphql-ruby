@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.14/GraphQL/Schema/Validator/RequiredValidator" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.15/GraphQL/Schema/Validator/RequiredValidator" />
   </head>
   <body>
     <p>Class: GraphQL::Schema::Validator::RequiredValidator &lt; GraphQL::Sche…
@@ -9,6 +9,13 @@ Use this validator to require <em>one</em> of the named arguments to be
 present. Or, use Arrays of symbols to name a valid <em>set</em> of
 arguments. 
 (This is for specifying mutually exclusive sets of arguments.) 
+If you use GraphQL::Schema::Visibility to hide all the arguments in
+a <code class="language-plaintext highlighter-rouge">one_of: [..]</code> set, then a developer-facing GraphQL::Error will be
+raised during execution. Pass <code class="language-plaintext highlighter-rouge">allow_all_hidden: true</code> to skip
+validation in this case instead. 
+This validator also implements <code class="language-plaintext highlighter-rouge">argument ... required: :nullable</code>.
+If an argument has <code class="language-plaintext highlighter-rouge">required: :nullable</code> but it’s hidden with
+GraphQL::Schema::Visibility, then this validator doesn’t run. 
 Examples:</p>
 <h1 id="require-exactly-one-of-these-arguments">Require exactly one of these arguments</h1>
 <p>field :update_amount, IngredientAmount, null: false do

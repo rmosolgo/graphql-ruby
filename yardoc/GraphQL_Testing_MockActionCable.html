@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.15/GraphQL/Testing/MockActionCable" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Testing::MockActionCable &lt; Object
+A stub implementation of ActionCable. Any methods to support the
+mock backend have <code class="language-plaintext highlighter-rouge">mock</code> in the name. 
+Examples:</p>
+<h1 id="configuring-your-schema-to-use-mockactioncable-in-the-test-environment">Configuring your schema to use MockActionCable in the test environment</h1>
+<p>class MySchema &lt; GraphQL::Schema</p>
+<h1 id="use-mockactioncable-in-test">Use MockActionCable in test:</h1>
+<p>use GraphQL::Subscriptions::ActionCableSubscriptions,
+action_cable: Rails.env.test? ? GraphQL::Testing::MockActionCable : ActionCable
+end</p>
+<h1 id="clearing-old-data-before-each-test">Clearing old data before each test</h1>
+<p>setup do
+GraphQL::Testing::MockActionCable.clear_mocks
+end</p>
+<h1 id="using-mockactioncable-in-a-test-case">Using MockActionCable in a test case</h1>
+<h1 id="create-a-channel-to-use-in-the-test-pass-it-to-graphql">Create a channel to use in the test, pass it to GraphQL</h1>
+<p>mock_channel = GraphQL::Testing::MockActionCable.get_mock_channel
+ActionCableTestSchema.execute(“subscription { newsFlash { text } }”, context: { channel: mock_channel })</p>
+<h1 id="trigger-a-subscription-update">Trigger a subscription update</h1>
+<p>ActionCableTestSchema.subscriptions.trigger(:news_flash, {}, {text: “After yesterday’s rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic”})</p>
+<h1 id="check-messages-on-the-channel">Check messages on the channel</h1>
+<p>expected_msg = {
+result: {
+“data” =&gt; {
+“newsFlash” =&gt; {
+“text” =&gt; “After yesterday’s rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic”
+}
+}
+},
+more: true,
+}
+assert_equal [expected_msg], mock_channel.mock_broadcasted_messages
+Class methods:
+broadcast, clear_mocks, get_mock_channel, mock_stream_for,
+mock_stream_names, server</p>
+
+
+  </body>
+</html>

@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.14/">API</a>
+            <a href="/api-doc/2.5.15/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -182,6 +182,9 @@
   <span class="c1"># ...</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ActiveOperationLimiter</span><span class="p">,</span>
     <span class="ss">redis: </span><span class="no">Redis</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+    <span class="c1"># Or:</span>
+    <span class="c1"># connection_pool: ...</span>
+    <span class="c1"># redis_cluster: ...</span>
     <span class="ss">limit: </span><span class="mi">5</span>
 <span class="k">end</span>
 </code></pre></div></div>

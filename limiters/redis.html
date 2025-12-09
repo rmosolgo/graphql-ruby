@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.14/">API</a>
+            <a href="/api-doc/2.5.15/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -155,17 +155,37 @@
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#memory-usage'>Memory Usage
+</a></li><li class='contents-entry'><a href='#connection-pool'>Connection Pool
+</a></li><li class='contents-entry'><a href='#redis-cluster'>Redis Cluster
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
-  <p>Rate limiting requires persistent Redis instance, just like <a href="https://github.com/mperham/sidekiq/wiki/Using-Redis">Sidekiq</a> or the <a href="/operation_store/redis_backend">Operation Store</a>. Set <code class="language-plaintext highlighter-rouge">maxmemory-policy noeviction</code> in <code class="language-plaintext highlighter-rouge">redis.conf</code> to ensure that Redis doesn’t silently drop keys when it reaches its memory limit.</p>
+  <p>Rate limiting requires a persistent Redis instance, just like <a href="https://github.com/mperham/sidekiq/wiki/Using-Redis">Sidekiq</a> or the <a href="/operation_store/redis_backend">Operation Store</a>. Set <code class="language-plaintext highlighter-rouge">maxmemory-policy noeviction</code> in <code class="language-plaintext highlighter-rouge">redis.conf</code> to ensure that Redis doesn’t silently drop keys when it reaches its memory limit.</p>
 
 <h2 id="memory-usage">Memory Usage</h2>
 
 <p>Estimating memory usage depends on the string used to identify clients, since those are used in the Redis keys. Using 100-character client keys, the runtime limiter uses 400 bytes per client (two keys). Memory usage by the active operation limiter depends on the limit because each concurrent operation uses some memory; a higher limit permits more concurrent operations. With 10 active operations and a 100-character client key, the active operation limiter uses 350 bytes per client. Additionally, the limiters use up to 35kb for dashboards (2 limiters, for each one: 2x 60 per-minute keys, 24 hourly keys, and 30 daily keys @ 72 bytes per key).</p>
 
 <p>By those estimates, 1 gigabyte of memory would support both rate limiters for over 1.4 million active clients.</p>
+
+<h2 id="connection-pool">Connection Pool</h2>
+
+<p><code class="language-plaintext highlighter-rouge">ActiveOperationsLimiter</code> and <code class="language-plaintext highlighter-rouge">RuntimeLimiter</code> support <a href="https://github.com/mperham/connection_pool">ConnectionPool</a>. To use it, pass <code class="language-plaintext highlighter-rouge">connection_pool:</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">RuntimeLimiter</span><span class="p">,</span> <span class="c1"># or ActiveOperationLimiter</span>
+  <span class="ss">connection_pool: </span><span class="no">ConnectionPool</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+  <span class="c1"># ...</span>
+</code></pre></div></div>
+
+<h2 id="redis-cluster">Redis Cluster</h2>
+
+<p><code class="language-plaintext highlighter-rouge">ActiveOperationsLimiter</code> and <code class="language-plaintext highlighter-rouge">RuntimeLimiter</code> support <a href="https://github.com/redis/redis-rb/tree/master/cluster"><code class="language-plaintext highlighter-rouge">redis-cluster</code></a>. To use it, pass <code class="language-plaintext highlighter-rouge">redis_cluster:</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">RuntimeLimiter</span><span class="p">,</span> <span class="c1"># or ActiveOperationLimiter</span>
+  <span class="ss">redis_cluster: </span><span class="no">Redis</span><span class="o">::</span><span class="no">Cluster</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">
