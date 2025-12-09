@@ -49,7 +49,7 @@ module GraphQL
           if !resolved_type.kind.fields?
             case @schema.allow_legacy_invalid_empty_selections_on_union
             when true
-              legacy_invalid_empty_selection_result = @schema.legacy_invalid_empty_selections_on_union(@context.query)
+              legacy_invalid_empty_selection_result = @schema.legacy_invalid_empty_selections_on_union_with_type(@context.query, resolved_type)
               case legacy_invalid_empty_selection_result
               when :return_validation_error
                 # keep `return_validation_error = true`
@@ -61,7 +61,7 @@ module GraphQL
                 return_validation_error = false
                 legacy_invalid_empty_selection_result = nil
               else
-                raise GraphQL::InvariantError, "Unexpected return value from legacy_invalid_empty_selections_on_union, must be `:return_validation_error`, String, or nil (got: #{legacy_invalid_empty_selection_result.inspect})"
+                raise GraphQL::InvariantError, "Unexpected return value from legacy_invalid_empty_selections_on_union_with_type, must be `:return_validation_error`, String, or nil (got: #{legacy_invalid_empty_selection_result.inspect})"
               end
             when false
               # pass -- error below
