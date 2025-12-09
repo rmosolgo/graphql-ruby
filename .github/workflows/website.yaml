@@ -50,7 +50,7 @@ jobs:
       - name: Deploy to GitHub pages via gh-pages branch
         uses: s0/git-publish-subdir-action@master
         env:
-          REPO: self
+          REPO: git@github.com/rmosolgo/graphql-ruby.git
           BRANCH: gh-pages
           FOLDER: gh-pages
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -88,7 +88,7 @@ jobs:
       - name: Deploy to GitHub pages via gh-pages branch
         uses: s0/git-publish-subdir-action@master
         env:
-          REPO: self
+          REPO: git@github.com/rmosolgo/graphql-ruby.git
           BRANCH: gh-pages
           FOLDER: gh-pages
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
