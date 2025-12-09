@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::Visibility
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::Visibility";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (V)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span>
+     &raquo; 
+    <span class="title">Visibility</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::Visibility
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Schema::Visibility</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/visibility.rb<span class="defines">,<br />
+  lib/graphql/schema/visibility/visit.rb,<br /> lib/graphql/schema/visibility/profile.rb,<br /> lib/graphql/schema/visibility/migration.rb</span>
+</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Use this plugin to make some parts of your schema hidden from some viewers.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Visibility/Migration.html" title="GraphQL::Schema::Visibility::Migration (class)">Migration</a></span>, <span class='object_link'><a href="Visibility/Profile.html" title="GraphQL::Schema::Visibility::Profile (class)">Profile</a></span>, <span class='object_link'><a href="Visibility/Visit.html" title="GraphQL::Schema::Visibility::Visit (class)">Visit</a></span>
+    
+  
+</p>
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#cached_profiles-instance_method" title="#cached_profiles (instance method)">#<strong>cached_profiles</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute cached_profiles.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#top_level-instance_method" title="#top_level (instance method)">#<strong>top_level</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute top_level.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#types-instance_method" title="#types (instance method)">#<strong>types</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute types.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#unfiltered_interface_type_memberships-instance_method" title="#unfiltered_interface_type_memberships (instance method)">#<strong>unfiltered_interface_type_memberships</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#use-class_method" title="use (class method)">.<strong>use</strong>(schema, dynamic: false, profiles: EmptyObjects::EMPTY_HASH, preload: (Rails.env) ? (Rails.env.production? || Rails.env.staging?) : nil), migration_errors: false)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#all_directives-instance_method" title="#all_directives (instance method)">#<strong>all_directives</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#all_interface_type_memberships-instance_method" title="#all_interface_type_memberships (instance method)">#<strong>all_interface_type_memberships</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#all_references-instance_method" title="#all_references (instance method)">#<strong>all_references</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dup_for-instance_method" title="#dup_for (instance method)">#<strong>dup_for</strong>(other_schema)  &#x21d2; Visibility </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'><p>Make another Visibility for <code>schema</code> based on this one.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#freeze-instance_method" title="#freeze (instance method)">#<strong>freeze</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get_type-instance_method" title="#get_type (instance method)">#<strong>get_type</strong>(type_name)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(schema, dynamic:, preload:, profiles:, migration_errors:)  &#x21d2; Visibility </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Visibility.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#introspection_system_configured-instance_method" title="#introspection_system_configured (instance method)">#<strong>introspection_system_configured</strong>(introspection_system)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#migration_errors%3F-instance_method" title="#migration_errors? (instance method)">#<strong>migration_errors?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#mutation_configured-instance_method" title="#mutation_configured (instance method)">#<strong>mutation_configured</strong>(mutation_type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#orphan_types_configured-instance_method" title="#orphan_types_configured (instance method)">#<strong>orphan_types_configured</strong>(orphan_types)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#preload-instance_method" title="#preload (instance method)">#<strong>preload</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#preload%3F-instance_method" title="#preload? (instance method)">#<strong>preload?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#profile_for-instance_method" title="#profile_for (instance method)">#<strong>profile_for</strong>(context)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#query_configured-instance_method" title="#query_configured (instance method)">#<strong>query_configured</strong>(query_type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#subscription_configured-instance_method" title="#subscription_configured (instance method)">#<strong>subscription_configured</strong>(subscription_type)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#top_level_profile-instance_method" title="#top_level_profile (instance method)">#<strong>top_level_profile</strong>(refresh: false)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(schema, dynamic:, preload:, profiles:, migration_errors:)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Schema::Visibility (class)">Visibility</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Visibility.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 23</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='label'>dynamic:</span><span class='comma'>,</span> <span class='label'>preload:</span><span class='comma'>,</span> <span class='label'>profiles:</span><span class='comma'>,</span> <span class='label'>migration_errors:</span><span class='rparen'>)</span>
+  <span class='ivar'>@schema</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span>
+  <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_use_visibility_profile'>use_visibility_profile</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_visibility_profile_class'>visibility_profile_class</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_migration_errors'>migration_errors</span>
+    <span class='const'><span class='object_link'><a href="" title="GraphQL::Schema::Visibility (class)">Visibility</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Visibility/Migration.html" title="GraphQL::Schema::Visibility::Migration (class)">Migration</a></span></span>
+  <span class='kw'>else</span>
+    <span class='const'><span class='object_link'><a href="" title="GraphQL::Schema::Visibility (class)">Visibility</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Visibility/Profile.html" title="GraphQL::Schema::Visibility::Profile (class)">Profile</a></span></span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@preload</span> <span class='op'>=</span> <span class='id identifier rubyid_preload'>preload</span>
+  <span class='ivar'>@profiles</span> <span class='op'>=</span> <span class='id identifier rubyid_profiles'>profiles</span>
+  <span class='ivar'>@cached_profiles</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@dynamic</span> <span class='op'>=</span> <span class='id identifier rubyid_dynamic'>dynamic</span>
+  <span class='ivar'>@migration_errors</span> <span class='op'>=</span> <span class='id identifier rubyid_migration_errors'>migration_errors</span>
+  <span class='comment'># Top-level type caches:
+</span>  <span class='ivar'>@visit</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@interface_type_memberships</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@directives</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@types</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@all_references</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@loaded_all</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_preload'>preload</span>
+    <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_preload'>preload</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="cached_profiles-instance_method">
+  
+    #<strong>cached_profiles</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute cached_profiles.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+159
+160
+161</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 159</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_cached_profiles'>cached_profiles</span>
+  <span class='ivar'>@cached_profiles</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="top_level-instance_method">
+  
+    #<strong>top_level</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute top_level.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+185
+186
+187</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 185</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_top_level'>top_level</span>
+  <span class='ivar'>@top_level</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="types=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="types-instance_method">
+  
+    #<strong>types</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute types.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+76
+77
+78</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 76</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_types'>types</span>
+  <span class='ivar'>@types</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="unfiltered_interface_type_memberships-instance_method">
+  
+    #<strong>unfiltered_interface_type_memberships</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+188
+189
+190</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 188</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_unfiltered_interface_type_memberships'>unfiltered_interface_type_memberships</span>
+  <span class='ivar'>@unfiltered_interface_type_memberships</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="use-class_method">
+  
+    .<strong>use</strong>(schema, dynamic: false, profiles: EmptyObjects::EMPTY_HASH, preload: (Rails.env) ? (Rails.env.production? || Rails.env.staging?) : nil), migration_errors: false)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>schema</span>
+      
+      
+        <span class='type'>(<tt>Class&lt;<span class='object_link'><a href="../Schema.html" title="GraphQL::Schema (class)">GraphQL::Schema</a></span>&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>profiles</span>
+      
+      
+        <span class='type'>(<tt>Hash&lt;Symbol =&gt; Hash&gt;</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>EmptyObjects::EMPTY_HASH</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>A hash of <code>name =&gt; context</code> pairs for preloading visibility profiles</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>preload</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>(Rails.env) ? (Rails.env.production? || Rails.env.staging?) : nil)</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>if <code>true</code>, load the default schema profile and all named profiles immediately (defaults to <code>true</code> for <code>Rails.env.production?</code> and <code>Rails.env.staging?</code>)</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>migration_errors</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>if <code>true</code>, raise an error when <code>Visibility</code> and <code>Warden</code> return different results</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+15
+16
+17
+18
+19
+20
+21</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 15</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_use'>use</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='label'>dynamic:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>profiles:</span> <span class='const'><span class='object_link'><a href="../EmptyObjects.html" title="GraphQL::EmptyObjects (module)">EmptyObjects</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../EmptyObjects.html#EMPTY_HASH-constant" title="GraphQL::EmptyObjects::EMPTY_HASH (constant)">EMPTY_HASH</a></span></span><span class='comma'>,</span> <span class='label'>preload:</span> <span class='lparen'>(</span><span class='kw'>defined?</span><span class='lparen'>(</span><span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_env'>env</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='lparen'>(</span><span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_env'>env</span><span class='period'>.</span><span class='id identifier rubyid_production?'>production?</span> <span class='op'>||</span> <span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_env'>env</span><span class='period'>.</span><span class='id identifier rubyid_staging?'>staging?</span><span class='rparen'>)</span> <span class='op'>:</span> <span class='kw'>nil</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='label'>migration_errors:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_profiles'>profiles</span><span class='op'>&amp;.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='op'>|</span>
+    <span class='id identifier rubyid_ctx'>ctx</span><span class='lbracket'>[</span><span class='symbol'>:visibility_profile</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_name'>name</span>
+    <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
+  <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_visibility'>visibility</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='label'>dynamic:</span> <span class='id identifier rubyid_dynamic'>dynamic</span><span class='comma'>,</span> <span class='label'>preload:</span> <span class='id identifier rubyid_preload'>preload</span><span class='comma'>,</span> <span class='label'>profiles:</span> <span class='id identifier rubyid_profiles'>profiles</span><span class='comma'>,</span> <span class='label'>migration_errors:</span> <span class='id identifier rubyid_migration_errors'>migration_errors</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="all_directives-instance_method">
+  
+    #<strong>all_directives</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+56
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 56</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_all_directives'>all_directives</span>
+  <span class='id identifier rubyid_load_all'>load_all</span>
+  <span class='ivar'>@directives</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="all_interface_type_memberships-instance_method">
+  
+    #<strong>all_interface_type_memberships</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+61
+62
+63
+64</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 61</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_all_interface_type_memberships'>all_interface_type_memberships</span>
+  <span class='id identifier rubyid_load_all'>load_all</span>
+  <span class='ivar'>@interface_type_memberships</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="all_references-instance_method">
+  
+    #<strong>all_references</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+66
+67
+68
+69</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 66</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_all_references'>all_references</span>
+  <span class='id identifier rubyid_load_all'>load_all</span>
+  <span class='ivar'>@all_references</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dup_for-instance_method">
+  
+    #<strong>dup_for</strong>(other_schema)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Schema::Visibility (class)">Visibility</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+<p>Make another Visibility for <code>schema</code> based on this one</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="GraphQL::Schema::Visibility (class)">Visibility</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+145
+146
+147
+148
+149
+150
+151
+152
+153</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 145</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_dup_for'>dup_for</span><span class='lparen'>(</span><span class='id identifier rubyid_other_schema'>other_schema</span><span class='rparen'>)</span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span>
+    <span class='id identifier rubyid_other_schema'>other_schema</span><span class='comma'>,</span>
+    <span class='label'>dynamic:</span> <span class='ivar'>@dynamic</span><span class='comma'>,</span>
+    <span class='label'>preload:</span> <span class='ivar'>@preload</span><span class='comma'>,</span>
+    <span class='label'>profiles:</span> <span class='ivar'>@profiles</span><span class='comma'>,</span>
+    <span class='label'>migration_errors:</span> <span class='ivar'>@migration_errors</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="freeze-instance_method">
+  
+    #<strong>freeze</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+48
+49
+50
+51
+52
+53
+54</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 48</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_freeze'>freeze</span>
+  <span class='id identifier rubyid_load_all'>load_all</span>
+  <span class='ivar'>@visit</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='ivar'>@interface_type_memberships</span><span class='period'>.</span><span class='id identifier rubyid_default_proc'>default_proc</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@all_references</span><span class='period'>.</span><span class='id identifier rubyid_default_proc'>default_proc</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="get_type-instance_method">
+  
+    #<strong>get_type</strong>(type_name)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+71
+72
+73
+74</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 71</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get_type'>get_type</span><span class='lparen'>(</span><span class='id identifier rubyid_type_name'>type_name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_load_all'>load_all</span>
+  <span class='ivar'>@types</span><span class='lbracket'>[</span><span class='id identifier rubyid_type_name'>type_name</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="introspection_system_configured-instance_method">
+  
+    #<strong>introspection_system_configured</strong>(introspection_system)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+132
+133
+134
+135
+136
+137
+138
+139
+140</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 132</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_introspection_system_configured'>introspection_system_configured</span><span class='lparen'>(</span><span class='id identifier rubyid_introspection_system'>introspection_system</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@preload</span>
+    <span class='id identifier rubyid_introspection_types'>introspection_types</span> <span class='op'>=</span> <span class='lbracket'>[</span>
+      <span class='op'>*</span><span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_introspection_system'>introspection_system</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='comma'>,</span>
+      <span class='op'>*</span><span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_introspection_system'>introspection_system</span><span class='period'>.</span><span class='id identifier rubyid_entry_points'>entry_points</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ep'>ep</span><span class='op'>|</span> <span class='id identifier rubyid_ep'>ep</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span> <span class='rbrace'>}</span><span class='comma'>,</span>
+    <span class='rbracket'>]</span>
+    <span class='id identifier rubyid_ensure_all_loaded'>ensure_all_loaded</span><span class='lparen'>(</span><span class='id identifier rubyid_introspection_types'>introspection_types</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="migration_errors?-instance_method">
+  
+    #<strong>migration_errors?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+155
+156
+157</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 155</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_migration_errors?'>migration_errors?</span>
+  <span class='ivar'>@migration_errors</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="mutation_configured-instance_method">
+  
+    #<strong>mutation_configured</strong>(mutation_type)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+111
+112
+113
+114
+115</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 111</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_mutation_configured'>mutation_configured</span><span class='lparen'>(</span><span class='id identifier rubyid_mutation_type'>mutation_type</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@preload</span>
+    <span class='id identifier rubyid_ensure_all_loaded'>ensure_all_loaded</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='id identifier rubyid_mutation_type'>mutation_type</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="orphan_types_configured-instance_method">
+  
+    #<strong>orphan_types_configured</strong>(orphan_types)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+125
+126
+127
+128
+129</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 125</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_orphan_types_configured'>orphan_types_configured</span><span class='lparen'>(</span><span class='id identifier rubyid_orphan_types'>orphan_types</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@preload</span>
+    <span class='id identifier rubyid_ensure_all_loaded'>ensure_all_loaded</span><span class='lparen'>(</span><span class='id identifier rubyid_orphan_types'>orphan_types</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="preload-instance_method">
+  
+    #<strong>preload</strong>  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 82</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_preload'>preload</span>
+  <span class='comment'># Traverse the schema now (and in the *_configured hooks below)
+</span>  <span class='comment'># To make sure things are loaded during boot
+</span>  <span class='ivar'>@preloaded_types</span> <span class='op'>=</span> <span class='const'>Set</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='id identifier rubyid_types_to_visit'>types_to_visit</span> <span class='op'>=</span> <span class='lbracket'>[</span>
+    <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span>
+    <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_mutation'>mutation</span><span class='comma'>,</span>
+    <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_subscription'>subscription</span><span class='comma'>,</span>
+    <span class='op'>*</span><span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_introspection_system'>introspection_system</span><span class='period'>.</span><span class='id identifier rubyid_types'>types</span><span class='period'>.</span><span class='id identifier rubyid_values'>values</span><span class='comma'>,</span>
+    <span class='op'>*</span><span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_introspection_system'>introspection_system</span><span class='period'>.</span><span class='id identifier rubyid_entry_points'>entry_points</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_ep'>ep</span><span class='op'>|</span> <span class='id identifier rubyid_ep'>ep</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span> <span class='rbrace'>}</span><span class='comma'>,</span>
+    <span class='op'>*</span><span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_orphan_types'>orphan_types</span><span class='comma'>,</span>
+  <span class='rbracket'>]</span>
+  <span class='comment'># Root types may have been nil:
+</span>  <span class='id identifier rubyid_types_to_visit'>types_to_visit</span><span class='period'>.</span><span class='id identifier rubyid_compact!'>compact!</span>
+  <span class='id identifier rubyid_ensure_all_loaded'>ensure_all_loaded</span><span class='lparen'>(</span><span class='id identifier rubyid_types_to_visit'>types_to_visit</span><span class='rparen'>)</span>
+  <span class='ivar'>@profiles</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_profile_name'>profile_name</span><span class='comma'>,</span> <span class='id identifier rubyid_example_ctx'>example_ctx</span><span class='op'>|</span>
+    <span class='id identifier rubyid_prof'>prof</span> <span class='op'>=</span> <span class='id identifier rubyid_profile_for'>profile_for</span><span class='lparen'>(</span><span class='id identifier rubyid_example_ctx'>example_ctx</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_prof'>prof</span><span class='period'>.</span><span class='id identifier rubyid_preload'>preload</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="preload?-instance_method">
+  
+    #<strong>preload?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+78
+79
+80</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 78</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_preload?'>preload?</span>
+  <span class='ivar'>@preload</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="profile_for-instance_method">
+  
+    #<strong>profile_for</strong>(context)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 161</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_profile_for'>profile_for</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='ivar'>@profiles</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_visibility_profile'>visibility_profile</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='symbol'>:visibility_profile</span><span class='rbracket'>]</span>
+    <span class='kw'>if</span> <span class='ivar'>@profiles</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_visibility_profile'>visibility_profile</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_profile_ctx'>profile_ctx</span> <span class='op'>=</span> <span class='ivar'>@profiles</span><span class='lbracket'>[</span><span class='id identifier rubyid_visibility_profile'>visibility_profile</span><span class='rbracket'>]</span>
+      <span class='ivar'>@cached_profiles</span><span class='lbracket'>[</span><span class='id identifier rubyid_visibility_profile'>visibility_profile</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_visibility_profile_class'>visibility_profile_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>name:</span> <span class='id identifier rubyid_visibility_profile'>visibility_profile</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='id identifier rubyid_profile_ctx'>profile_ctx</span><span class='comma'>,</span> <span class='label'>schema:</span> <span class='ivar'>@schema</span><span class='comma'>,</span> <span class='label'>visibility:</span> <span class='kw'>self</span><span class='rparen'>)</span>
+    <span class='kw'>elsif</span> <span class='ivar'>@dynamic</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query/NullContext.html" title="GraphQL::Query::NullContext (class)">NullContext</a></span></span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_top_level_profile'>top_level_profile</span>
+      <span class='kw'>else</span>
+        <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_visibility_profile_class'>visibility_profile_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>context:</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='label'>schema:</span> <span class='ivar'>@schema</span><span class='comma'>,</span> <span class='label'>visibility:</span> <span class='kw'>self</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>elsif</span> <span class='op'>!</span><span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='symbol'>:visibility_profile</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@schema</span><span class='embexpr_end'>}</span><span class='tstring_content'> expects a visibility profile, but `visibility_profile:` wasn&#39;t passed. Provide a `visibility_profile:` value or add `dynamic: true` to your visibility configuration.</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>`</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_visibility_profile'>visibility_profile</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>` isn&#39;t allowed for `visibility_profile:` (must be one of </span><span class='embexpr_beg'>#{</span><span class='ivar'>@profiles</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:inspect</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>, </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>). Or, add `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_visibility_profile'>visibility_profile</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>` to the list of profiles in the schema definition.</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query/NullContext.html" title="GraphQL::Query::NullContext (class)">NullContext</a></span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_top_level_profile'>top_level_profile</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_visibility_profile_class'>visibility_profile_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>context:</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='label'>schema:</span> <span class='ivar'>@schema</span><span class='comma'>,</span> <span class='label'>visibility:</span> <span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="query_configured-instance_method">
+  
+    #<strong>query_configured</strong>(query_type)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+104
+105
+106
+107
+108</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 104</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_query_configured'>query_configured</span><span class='lparen'>(</span><span class='id identifier rubyid_query_type'>query_type</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@preload</span>
+    <span class='id identifier rubyid_ensure_all_loaded'>ensure_all_loaded</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='id identifier rubyid_query_type'>query_type</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="subscription_configured-instance_method">
+  
+    #<strong>subscription_configured</strong>(subscription_type)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+118
+119
+120
+121
+122</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 118</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_subscription_configured'>subscription_configured</span><span class='lparen'>(</span><span class='id identifier rubyid_subscription_type'>subscription_type</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@preload</span>
+    <span class='id identifier rubyid_ensure_all_loaded'>ensure_all_loaded</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='id identifier rubyid_subscription_type'>subscription_type</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="top_level_profile-instance_method">
+  
+    #<strong>top_level_profile</strong>(refresh: false)  &#x21d2; <tt><span class='object_link'><a href="Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+190
+191
+192
+193
+194
+195</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/visibility.rb', line 190</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_top_level_profile'>top_level_profile</span><span class='lparen'>(</span><span class='label'>refresh:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_refresh'>refresh</span>
+    <span class='ivar'>@top_level_profile</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@top_level_profile</span> <span class='op'>||=</span> <span class='ivar'>@schema</span><span class='period'>.</span><span class='id identifier rubyid_visibility_profile_class'>visibility_profile_class</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>context:</span> <span class='const'><span class='object_link'><a href="../Query.html" title="GraphQL::Query (class)">Query</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Query/NullContext.html" title="GraphQL::Query::NullContext (class)">NullContext</a></span></span><span class='period'>.</span><span class='id identifier rubyid_instance'>instance</span><span class='comma'>,</span> <span class='label'>schema:</span> <span class='ivar'>@schema</span><span class='comma'>,</span> <span class='label'>visibility:</span> <span class='kw'>self</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Dec  9 20:11:49 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.38 (ruby-3.2.9).
+</div>
+
+    </div>
+  </body>
+</html>
