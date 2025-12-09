@@ -22,7 +22,7 @@ jobs:
   website:
     if: ${{ inputs.publish_website || github.ref_name }}
     permissions:
-      contents: write # for git push (s0/git-publish-subdir-action)
+      contents: write
     name: Publish Website
     runs-on: ubuntu-latest
     steps:
@@ -56,7 +56,7 @@ jobs:
     needs: website
     if: ${{ inputs.publish_version || github.ref_name }}
     permissions:
-      contents: write # for git push (s0/git-publish-subdir-action)
+      contents: write
     name: Publish API Docs
     runs-on: ubuntu-latest
     steps:
@@ -84,9 +84,7 @@ jobs:
           bundle exec rake site:commit_changes
           git status
       - name: Deploy to GitHub pages via gh-pages branch
-        uses: s0/git-publish-subdir-action@master
-        env:
-          REPO: git@github.com:rmosolgo/graphql-ruby.git
-          BRANCH: gh-pages
-          FOLDER: gh-pages
-          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
