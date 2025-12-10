@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.15/">API</a>
+            <a href="/api-doc/2.5.16/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -244,7 +244,7 @@
 
 <h3 id="fields">Fields</h3>
 
-<p>To add or redefine a field, use <code class="language-plaintext highlighter-rouge">field(..., added_in: ...)</code>, including all configuration values for the new implementation (see <a href="/api-doc/2.5.15/GraphQL/Schema/Field#initialize-instance_method" target="_blank" title="API docs for GraphQL::Schema::Field#initialize"><code>GraphQL::Schema::Field#initialize</code></a>). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.</p>
+<p>To add or redefine a field, use <code class="language-plaintext highlighter-rouge">field(..., added_in: ...)</code>, including all configuration values for the new implementation (see <a href="/api-doc/2.5.16/GraphQL/Schema/Field#initialize-instance_method" target="_blank" title="API docs for GraphQL::Schema::Field#initialize"><code>GraphQL::Schema::Field#initialize</code></a>). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Recipe</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># This new field is available when `context[:changeset_version]`</span>
