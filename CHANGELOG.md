@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.5.16 (10 Dec 2025)
+
+### Bug fixes
+
+- `fiber-storage`: properly include dependency on Ruby < 3.2 #5484
+- Fix typo in `legacy_invalid_empty_selections_on_union_with_type` warning #5481
+
 # 2.5.15 (9 Dec 2025)
 
 ### New features
