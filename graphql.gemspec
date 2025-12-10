@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
 
   s.add_runtime_dependency "base64"
-  s.add_runtime_dependency "fiber-storage" if RUBY_VERSION < "3.2.0"
+  s.add_runtime_dependency "fiber-storage"
   s.add_runtime_dependency "logger"
 
   s.add_development_dependency "benchmark-ips"
