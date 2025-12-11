@@ -93,6 +93,32 @@ describe GraphQL::Schema::Field do
       assert_equal true, field_defn.scoped?
       assert_equal true, field_defn.connection?
       assert_equal [GraphQL::Schema::Field::ScopeExtension, GraphQL::Schema::Field::ConnectionExtension], field_defn.extensions.map(&:class)
+
+      class LazyConnectionSchema < GraphQL::Schema
+        module Entity
+          include GraphQL::Schema::Interface
+          field :things, description: "THINGS-DESCRIPTION" do
+            type Thing.connection_type
+          end
+        end
+
+        class Thing < GraphQL::Schema::Object
+          field :name, String
+          implements Entity
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :entity, Entity
+        end
+        query(Query)
+        orphan_types Thing
+      end
+
+      defn_str = LazyConnectionSchema.to_definition
+      assert_includes defn_str, "ThingConnection"
+      assert_includes defn_str, "first: Int"
+      assert_includes defn_str, "THINGS-DESCRIPTION"
+      assert_equal "ThingConnection", LazyConnectionSchema.get_field("Entity", "things").type.graphql_name
     end
 
     it "accepts a block for definition and yields the field if the block has an arity of one" do
