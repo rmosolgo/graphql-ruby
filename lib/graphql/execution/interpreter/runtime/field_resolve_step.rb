@@ -243,7 +243,6 @@ module GraphQL
           def handle_resolved_value
             return_type = @field.type
             @result = @runtime.continue_value(@result, @field, return_type.non_null?, @ast_node, @result_name, @selection_result)
-
             if !HALT.equal?(@result)
               runtime_state = @runtime.get_current_runtime_state
               was_scoped =  @was_scoped

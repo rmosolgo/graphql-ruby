@@ -30,7 +30,7 @@ module GraphQL
           # TODO test full path in Partial
           attr_writer :base_path
 
-          attr_reader :graphql_dead
+          attr_accessor :graphql_dead
 
           def current_result
             self

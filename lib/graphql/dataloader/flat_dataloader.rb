@@ -11,7 +11,7 @@ module GraphQL
       end
 
       def run(trace_query_lazy: nil)
-        while @queue.any?
+        while @queue.any? || @steps_to_rerun_after_lazy.any?
           while (step = @queue.shift)
             step.call
           end
