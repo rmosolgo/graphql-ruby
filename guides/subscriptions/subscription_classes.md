@@ -137,11 +137,11 @@ subscription($roomId: ID!) {
 
 If you remove `null: false`, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)
 
-Instead of a generated type, you can provide an already-configured type with `payload_type`:
+Instead of a generated type, you can provide an already-configured type with `type` just like mutations and resolvers:
 
 ```ruby
 # Just return a message
-payload_type Types::MessageType
+type Types::MessageType
 ```
 
 (In that case, don't return a hash from `#subscribe` or `#update`, return a `message` object instead.)
