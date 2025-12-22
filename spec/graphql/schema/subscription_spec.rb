@@ -420,7 +420,7 @@ describe GraphQL::Schema::Subscription do
       res = exec_query <<-GRAPHQL, context: { legacy_schema: false }
       subscription {
         userChanged(handle: "matz") {
-          toot { body }
+          handle
         }
       }
       GRAPHQL
@@ -434,7 +434,7 @@ describe GraphQL::Schema::Subscription do
       res = exec_query <<-GRAPHQL, context: { legacy_schema: true }
       subscription {
         userChanged(handle: "matz") {
-          toot { body }
+          handle
         }
       }
       GRAPHQL
@@ -475,6 +475,23 @@ describe GraphQL::Schema::Subscription do
       mailbox = res.context[:subscription_mailbox]
       update_payload = mailbox.first
       assert_equal "I am a C programmer", update_payload["data"]["tootWasTooted"]["toot"]["body"]
+    end
+
+    it "updates with the returned value but no initial subscription value" do
+      res = exec_query <<-GRAPHQL
+      subscription {
+        userChanged {
+          handle
+        }
+      }
+      GRAPHQL
+
+      assert_equal({"data" => { "userChanged" => nil }}, res)
+      assert_equal 1, in_memory_subscription_count
+      SubscriptionFieldSchema.subscriptions.trigger(:user_changed, { handle: "matz" }, {handle: "matz", private: false })
+
+      update = res.context[:subscription_mailbox].first
+      assert_equal "matz", update["data"]["userChanged"]["handle"]
     end
 
     it "updates with the returned value" do
