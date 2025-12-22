@@ -118,7 +118,7 @@ describe GraphQL::Schema::Subscription do
           description: "Includes newly-created users, or all users on the initial load"
       end
 
-      payload_type UsersJoinedManualPayload
+      type UsersJoinedManualPayload
 
       def subscribe
         { users: USERS.values }
@@ -137,6 +137,42 @@ describe GraphQL::Schema::Subscription do
         description: "Includes newly-created users, or all users on the initial load"
     end
 
+    # The newer API changes using type and not needing to implement the "subscribe" method
+    # which aligns with how relay or apollo digest the payload.
+    class UserChanged < BaseSubscription
+      type User
+
+      argument :handle, String, loads: User, as: :user, camelize: false
+
+      # don't need to implement the subscribe method. Returns an empty payload as
+      # the initial subscribe action shouldn't need to load any data, only when the event happens
+
+      def update(user:)
+        user
+      end
+
+      def self.visible?(context)
+        !context[:legacy_schema]
+      end
+    end
+
+    # The newer API changes using type and not needing to implement the "subscribe" method
+    # which aligns with how relay or apollo digest the payload.
+    class LegacyUserChanged < BaseSubscription
+      null true
+      payload_type User
+
+      argument :handle, String, loads: User, as: :user, camelize: false
+
+      def update(user:)
+        user
+      end
+
+      def self.visible?(context)
+        !!context[:legacy_schema]
+      end
+    end
+
     class Subscription < GraphQL::Schema::Object
       field :toot_was_tooted, subscription: TootWasTooted, extras: [:path, :query]
       field :toot_was_tooted, subscription: LegacyTootWasTooted, extras: [:path, :query]
@@ -144,6 +180,8 @@ describe GraphQL::Schema::Subscription do
       field :direct_toot_was_tooted_with_optional_scope, subscription: DirectTootWasTootedWithOptionalScope
       field :users_joined, subscription: UsersJoined
       field :new_users_joined, subscription: NewUsersJoined
+      field :user_changed, subscription: UserChanged
+      field :user_changed, subscription: LegacyUserChanged
     end
 
     class Mutation < GraphQL::Schema::Object
@@ -254,13 +292,13 @@ describe GraphQL::Schema::Subscription do
   end
 
   it "generates a return type" do
-    return_type = SubscriptionFieldSchema::TootWasTooted.payload_type
+    return_type = SubscriptionFieldSchema::TootWasTooted.type
     assert_equal "TootWasTootedPayload", return_type.graphql_name
     assert_equal ["toot", "user"], return_type.fields.keys
   end
 
-  it "can use a premade `payload_type`" do
-    return_type = SubscriptionFieldSchema::UsersJoined.payload_type
+  it "can use a premade `type`" do
+    return_type = SubscriptionFieldSchema::UsersJoined.type
     assert_equal "UsersJoinedManualPayload", return_type.graphql_name
     assert_equal ["users"], return_type.fields.keys
     assert_equal SubscriptionFieldSchema::UsersJoined::UsersJoinedManualPayload, return_type
@@ -304,7 +342,7 @@ describe GraphQL::Schema::Subscription do
       GRAPHQL
 
       expected_response = {
-        "data"=>nil,
+        "data"=> { "tootWasTooted" => nil },
         "errors"=>[
           {
             "message"=>"You don't have permission to subscribe",
@@ -328,7 +366,7 @@ describe GraphQL::Schema::Subscription do
       GRAPHQL
 
       expected_response = {
-        "data" => nil,
+        "data" => { "tootWasTooted" => nil },
         "errors" => [
           {
             "message"=>"No object found for `handle: \"jack\"`",
@@ -350,7 +388,7 @@ describe GraphQL::Schema::Subscription do
       }
       GRAPHQL
       expected_response = {
-        "data"=>nil,
+        "data"=> { "tootWasTooted" => nil },
         "errors"=>[
           {
             "message"=>"Can't subscribe to private user ([\"tootWasTooted\"])",
@@ -373,6 +411,34 @@ describe GraphQL::Schema::Subscription do
       }
       GRAPHQL
       assert_equal({"data" => {}}, res)
+      assert_equal 1, in_memory_subscription_count
+    end
+
+    it "sends a minimal initial response if :no_response is returned when using type instead of payload_type, which is the default" do
+      assert_equal 0, in_memory_subscription_count
+
+      res = exec_query <<-GRAPHQL, context: { legacy_schema: false }
+      subscription {
+        userChanged(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal({"data" => { "userChanged" => nil }}, res)
+      assert_equal 1, in_memory_subscription_count
+    end
+
+    it "sends no initial response if :no_response is returned when using legacy payload_type" do
+      assert_equal 0, in_memory_subscription_count
+
+      res = exec_query <<-GRAPHQL, context: { legacy_schema: true }
+      subscription {
+        userChanged(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal({"data" => nil}, res)
       assert_equal 1, in_memory_subscription_count
     end
 
