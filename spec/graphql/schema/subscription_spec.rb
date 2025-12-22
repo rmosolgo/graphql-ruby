@@ -417,7 +417,7 @@ describe GraphQL::Schema::Subscription do
     it "sends a minimal initial response if :no_response is returned when using type instead of payload_type, which is the default" do
       assert_equal 0, in_memory_subscription_count
 
-      res = exec_query <<-GRAPHQL, context: { legacy_schema: false }
+      res = exec_query <<-GRAPHQL
       subscription {
         userChanged(handle: "matz") {
           handle
@@ -480,7 +480,7 @@ describe GraphQL::Schema::Subscription do
     it "updates with the returned value but no initial subscription value" do
       res = exec_query <<-GRAPHQL
       subscription {
-        userChanged {
+        userChanged(handle: "matz") {
           handle
         }
       }
