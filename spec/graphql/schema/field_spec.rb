@@ -951,14 +951,14 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     it "HasFields::field documents each argument" do
       has_fields_field_comment = File.read("./lib/graphql/schema/member/has_fields.rb")[/(\s+#[^\n]*\n)+\s+def field\(/m]
       has_field_field_doc_param_names = has_fields_field_comment.split("\n").map { |line| line[/@param (\S+)/]; $1 }.compact
-      has_fields_field_argument_names = GraphQL::Schema::Member::HasFields.instance_method(:field).parameters.map { |param| param[1].name }
+      has_fields_field_argument_names = GraphQL::Schema::Member::HasFields.instance_method(:field).parameters.map { |param| param[1].to_s }
       assert_equal has_field_field_doc_param_names.sort, has_fields_field_argument_names.sort
     end
 
     it "Field::initialize documents each argument" do
       field_initialize_comment = File.read("./lib/graphql/schema/field.rb")[/(\s+#[^\n]*\n)+ {6}def initialize\(/m]
       field_initialize_doc_param_names = field_initialize_comment.split("\n").map { |line| line[/@param (\S+)/]; $1 }.compact
-      field_initialize_argument_names = GraphQL::Schema::Field.instance_method(:initialize).parameters.map { |param| param[1].name }
+      field_initialize_argument_names = GraphQL::Schema::Field.instance_method(:initialize).parameters.map { |param| param[1].to_s }
       assert_equal field_initialize_doc_param_names.sort, field_initialize_argument_names.sort
     end
   end

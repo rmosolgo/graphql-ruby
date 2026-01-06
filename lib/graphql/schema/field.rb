@@ -136,7 +136,7 @@ module GraphQL
 
         if !type.nil?
           if desc
-            if kwargs[:description]
+            if !NOT_CONFIGURED.equal?(kwargs[:description])
               raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{kwargs[:description].inspect})"
             end
 
