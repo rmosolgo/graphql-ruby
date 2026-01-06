@@ -31,7 +31,8 @@ describe GraphQL::Schema::Field do
     it "camelizes the field name, unless camelize: false" do
       assert_equal 'inspectInput', field.name
 
-      underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
+      example_obj = Class.new(GraphQL::Schema::Object) { graphql_name("Example") }
+      underscored_field = example_obj.field(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, camelize: false
       end.ensure_loaded
 
@@ -142,7 +143,8 @@ describe GraphQL::Schema::Field do
       type = Class.new(GraphQL::Schema::Object) do
         graphql_name 'MyType'
       end
-      field = GraphQL::Schema::Field.from_options(:my_field, type, owner: nil, null: true)
+      example_obj = Class.new(GraphQL::Schema::Object) { graphql_name("Example") }
+      field = example_obj.field(:my_field, type, owner: nil, null: true)
       assert_equal type, field.type
     end
 
@@ -501,7 +503,8 @@ describe GraphQL::Schema::Field do
 
   describe "#original_name" do
     it "is exactly the same as the passed in name" do
-      field = GraphQL::Schema::Field.from_options(
+      example_obj = Class.new(GraphQL::Schema::Object) { graphql_name("Example") }
+      field = example_obj.field(
         :my_field,
         String,
         null: false,
@@ -929,7 +932,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
       field_new_arguments = GraphQL::Schema::Field.instance_method(:initialize).parameters
       has_fields_field_arguments = GraphQL::Schema::Member::HasFields.instance_method(:field).parameters
       extra_field_args = [
-        # These are merged into option by `.from_options`
+        # These are merged into options
         [:opt, :name_positional],
         [:opt, :type_positional],
         [:opt, :desc_positional],

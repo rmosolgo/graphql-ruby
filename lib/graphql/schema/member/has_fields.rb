@@ -51,8 +51,29 @@ module GraphQL
         # @yieldreturn [void]
         # @return [GraphQL::Schema::Field]
         def field(name_positional = nil, type_positional = nil, desc_positional = nil, type: nil, name: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: NOT_CONFIGURED, resolver: nil, subscription: nil, mutation: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, **custom_kwargs, &definition_block)
-          field_defn = field_class.from_options(
-            name_positional, type_positional, desc_positional,
+          name ||= name_positional
+
+          if !type_positional.nil?
+            if desc_positional
+              if !NOT_CONFIGURED.equal?(description)
+                raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc_positional.inspect}, #{description.inspect})"
+              end
+
+              description = desc_positional
+              type = type_positional
+            elsif (resolver || mutation) && type_positional.is_a?(String)
+              # The return type should be copied from the resolver, and the second positional argument is the description
+              description = type_positional
+            else
+              type = type_positional
+            end
+
+            if type_positional.is_a?(Class) && type_positional < GraphQL::Schema::Mutation
+              raise ArgumentError, "Use `field #{name.inspect}, mutation: Mutation, ...` to provide a mutation to this field instead"
+            end
+          end
+
+          field_defn = field_class.new(
             owner: self,
             type: type,
             name: name,
@@ -76,9 +97,7 @@ module GraphQL
             extras: extras,
             extensions: extensions,
             connection_extension: connection_extension,
-            resolver: resolver,
-            subscription: subscription,
-            mutation: mutation,
+            resolver_class: resolver || mutation || subscription,
             subscription_scope: subscription_scope,
             relay_node_field: relay_node_field,
             relay_nodes_field: relay_nodes_field,
