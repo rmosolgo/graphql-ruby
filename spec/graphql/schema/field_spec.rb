@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+
 describe GraphQL::Schema::Field do
   describe "graphql definition" do
     let(:object_class) { Jazz::Query }
@@ -921,5 +922,44 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     refute field.connection?
     field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::Connection, connection: true)
     assert field.connection?
+  end
+
+  describe "argument definitions" do
+    it "matches the HasFields field arguments for better IDE support" do
+      field_new_arguments = GraphQL::Schema::Field.instance_method(:initialize).parameters
+      has_fields_field_arguments = GraphQL::Schema::Member::HasFields.instance_method(:field).parameters
+      extra_field_args = [
+        # These are merged into option by `.from_options`
+        [:opt, :name_positional],
+        [:opt, :type_positional],
+        [:opt, :desc_positional],
+        # These become `resolver_class`
+        [:key, :resolver],
+        [:key, :subscription],
+        [:key, :mutation],
+        # This is a pass-thru for custom keywords
+        [:keyrest, :custom_kwargs]
+      ]
+      assert_equal extra_field_args, has_fields_field_arguments - field_new_arguments
+      extra_new_args = [
+        [:key, :owner], # populated by the receiver of `.field`
+        [:key, :resolver_class] # from resolver/subscription/mutation
+      ]
+      assert_equal extra_new_args, field_new_arguments - has_fields_field_arguments
+    end
+
+    it "HasFields::field documents each argument" do
+      has_fields_field_comment = File.read("./lib/graphql/schema/member/has_fields.rb")[/(\s+#[^\n]*\n)+\s+def field\(/m]
+      has_field_field_doc_param_names = has_fields_field_comment.split("\n").map { |line| line[/@param (\S+)/]; $1 }.compact
+      has_fields_field_argument_names = GraphQL::Schema::Member::HasFields.instance_method(:field).parameters.map { |param| param[1].name }
+      assert_equal has_field_field_doc_param_names.sort, has_fields_field_argument_names.sort
+    end
+
+    it "Field::initialize documents each argument" do
+      field_initialize_comment = File.read("./lib/graphql/schema/field.rb")[/(\s+#[^\n]*\n)+ {6}def initialize\(/m]
+      field_initialize_doc_param_names = field_initialize_comment.split("\n").map { |line| line[/@param (\S+)/]; $1 }.compact
+      field_initialize_argument_names = GraphQL::Schema::Field.instance_method(:initialize).parameters.map { |param| param[1].name }
+      assert_equal field_initialize_doc_param_names.sort, field_initialize_argument_names.sort
+    end
   end
 end

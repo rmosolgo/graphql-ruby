@@ -255,6 +255,11 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @param fallback_value [Object] A fallback value if the method is not defined
+      # @param dynamic_introspection [Boolean] (Private, used by GraphQL-Ruby)
+      # @param relay_node_field [Boolean] (Private, used by GraphQL-Ruby)
+      # @param relay_nodes_field [Boolean] (Private, used by GraphQL-Ruby)
+      # @param extras [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] Extra arguments to be injected into the resolver for this field
+      # @param definition_block [Proc] an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new {Field}.
       def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
@@ -347,7 +352,7 @@ module GraphQL
 
         @extensions = EMPTY_ARRAY
         @call_after_define = false
-        set_pagination_extensions(connection_extension: connection_extension)
+        set_pagination_extensions(connection_extension: NOT_CONFIGURED.equal?(connection_extension) ? self.class.connection_extension : connection_extension)
         # Do this last so we have as much context as possible when initializing them:
         if !extensions.empty?
           self.extensions(extensions)

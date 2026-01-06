@@ -5,11 +5,93 @@ module GraphQL
     class Member
       # Shared code for Objects, Interfaces, Mutations, Subscriptions
       module HasFields
+        include EmptyObjects
         # Add a field to this object or interface with the given definition
-        # @see {GraphQL::Schema::Field#initialize} for method signature
+        # @param name_positional [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API); `name:` keyword is also accepted
+        # @param type_positional [Class, GraphQL::BaseType, Array] The return type of this field; `type:` keyword is also accepted
+        # @param desc_positional [String] Field description; `description:` keyword is also accepted
+        # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API); positional argument also accepted
+        # @param type [Class, GraphQL::BaseType, Array] The return type of this field; positional argument is also accepted
+        # @param null [Boolean] (defaults to `true`) `true` if this field may return `null`, `false` if it is never `null`
+        # @param description [String] Field description; positional argument also accepted
+        # @param comment [String] Field comment
+        # @param deprecation_reason [String] If present, the field is marked "deprecated" with this message
+        # @param method [Symbol] The method to call on the underlying object to resolve this field (defaults to `name`)
+        # @param hash_key [String, Symbol] The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
+        # @param dig [Array<String, Symbol>] The nested hash keys to lookup on the underlying hash to resolve this field using dig
+        # @param resolver_method [Symbol] The method on the type to call to resolve this field (defaults to `name`)
+        # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
+        # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
+        # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
+        # @param default_page_size [Integer, nil] For connections, the default number of items to return from this field, or `nil` to return unlimited results.
+        # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
+        # @param arguments [{String=>GraphQL::Schema::Argument, Hash}] Arguments for this field (may be added in the block, also)
+        # @param camelize [Boolean] If true, the field name will be camelized when building the schema
+        # @param complexity [Numeric] When provided, set the complexity for this field
+        # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
+        # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
+        # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
+        # @param directives [Hash{Class => Hash}] Directives to apply to this field
+        # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
+        # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
+        # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
+        # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
+        # @param validates [Array<Hash>] Configurations for validating this field
+        # @param fallback_value [Object] A fallback value if the method is not defined
+        # @param mutation [Class<GraphQL::Schema::Mutation>]
+        # @param resolver [Class<GraphQL::Schema::Resolver>]
+        # @param subscription [Class<GraphQL::Schema::Subscription>]
+        # @param dynamic_introspection [Boolean] (Private, used by GraphQL-Ruby)
+        # @param relay_node_field [Boolean] (Private, used by GraphQL-Ruby)
+        # @param relay_nodes_field [Boolean] (Private, used by GraphQL-Ruby)
+        # @param extras [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] Extra arguments to be injected into the resolver for this field
+        # @param custom_kwargs [Hash] Application-specific keywords; must be handled by your base {Field} class
+        # @param definition_block [Proc] an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new {Field}.
+        # @yieldparam field [GraphQL::Schema::Field] The newly-created field instance
+        # @yieldreturn [void]
         # @return [GraphQL::Schema::Field]
-        def field(*args, **kwargs, &block)
-          field_defn = field_class.from_options(*args, owner: self, **kwargs, &block)
+        def field(name_positional = nil, type_positional = nil, desc_positional = nil, type: nil, name: nil, null: nil, description: nil, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: NOT_CONFIGURED, resolver: nil, subscription: nil, mutation: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, **custom_kwargs, &definition_block)
+          field_defn = field_class.from_options(
+            name_positional, type_positional, desc_positional,
+            owner: self,
+            type: type,
+            name: name,
+            null: null,
+            description: description,
+            comment: comment,
+            deprecation_reason: deprecation_reason,
+            method: method,
+            hash_key: hash_key,
+            dig: dig,
+            resolver_method: resolver_method,
+            connection: connection,
+            max_page_size: max_page_size,
+            default_page_size: default_page_size,
+            scope: scope,
+            introspection: introspection,
+            camelize: camelize,
+            trace: trace,
+            complexity: complexity,
+            ast_node: ast_node,
+            extras: extras,
+            extensions: extensions,
+            connection_extension: connection_extension,
+            resolver: resolver,
+            subscription: subscription,
+            mutation: mutation,
+            subscription_scope: subscription_scope,
+            relay_node_field: relay_node_field,
+            relay_nodes_field: relay_nodes_field,
+            method_conflict_warning: method_conflict_warning,
+            broadcastable: broadcastable,
+            arguments: arguments,
+            directives: directives,
+            validates: validates,
+            fallback_value: fallback_value,
+            dynamic_introspection: dynamic_introspection,
+            **custom_kwargs,
+            &definition_block
+          )
           add_field(field_defn)
           field_defn
         end
