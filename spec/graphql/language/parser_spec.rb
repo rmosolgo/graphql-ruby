@@ -267,6 +267,7 @@ createRecord(data: {
       "{ a(b: 123e5 ) }" => nil,
       "{ a(b: 12.3e5) }" => nil,
       "{ a(b: 12.3e5 ) }" => nil,
+      "query($cursor1_something: Int) { f(a: $cursor1_something) }" => nil,
       "query($obj: Input = { a: 1e5b: 2c: 3e-1}) { t }" => "query($obj: Input = { a: 1e5 b: 2 c: 3e-1}) { t }" ,
     }
 
