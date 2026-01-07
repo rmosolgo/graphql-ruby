@@ -37,7 +37,6 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "minitest"
   s.add_development_dependency "minitest-focus"
-  s.add_development_dependency "minitest-mock"
   s.add_development_dependency "minitest-reporters"
   s.add_development_dependency "ostruct"
   s.add_development_dependency "rake"
