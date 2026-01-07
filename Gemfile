@@ -13,11 +13,8 @@ if RUBY_VERSION >= "3.0"
   gem "evt"
 end
 
-if RUBY_VERSION >= "3.1.0"
-  gem "minitest-mock"
-end
-
 if RUBY_VERSION >= "3.2.0"
+  gem "minitest-mock"
   gem "async", "~>2.0"
 end
 
