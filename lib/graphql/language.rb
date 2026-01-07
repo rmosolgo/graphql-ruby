@@ -77,7 +77,10 @@ module GraphQL
       new_query_str || query_str
     end
 
+    LEADING_REGEX = Regexp.union(" ", *Lexer::Punctuation.constants.map { |const| Lexer::Punctuation.const_get(const) })
+
     INVALID_NUMBER_FOLLOWED_BY_NAME_REGEXP = %r{
+      (?<leading>#{LEADING_REGEX})
       (
         ((?<num>#{Lexer::INT_REGEXP}(#{Lexer::FLOAT_EXP_REGEXP})?)(?<name>#{Lexer::IDENTIFIER_REGEXP})#{Lexer::IGNORE_REGEXP}:)
         |
@@ -88,7 +91,7 @@ module GraphQL
 
     def self.add_space_between_numbers_and_names(query_str)
       if query_str.match?(INVALID_NUMBER_FOLLOWED_BY_NAME_REGEXP)
-        query_str.gsub(INVALID_NUMBER_FOLLOWED_BY_NAME_REGEXP, "\\k<num> \\k<name>:")
+        query_str.gsub(INVALID_NUMBER_FOLLOWED_BY_NAME_REGEXP, "\\k<leading>\\k<num> \\k<name>:")
       else
         query_str
       end
