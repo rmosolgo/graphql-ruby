@@ -15,6 +15,7 @@ end
 
 if RUBY_VERSION >= "3.2.0"
   gem "async", "~>2.0"
+  gem "minitest-mock"
 end
 
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)
