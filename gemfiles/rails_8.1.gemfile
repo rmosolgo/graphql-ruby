@@ -13,5 +13,6 @@ gem "sequel"
 gem "evt"
 gem "async"
 gem "google-protobuf"
+gem "minitest-mock"
 
 gemspec path: "../"

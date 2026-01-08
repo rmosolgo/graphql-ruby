@@ -109,52 +109,6 @@ module GraphQL
       end
       attr_writer :subscription_scope
 
-      # Create a field instance from a list of arguments, keyword arguments, and a block.
-      #
-      # This method implements prioritization between the `resolver` or `mutation` defaults
-      # and the local overrides via other keywords.
-      #
-      # It also normalizes positional arguments into keywords for {Schema::Field#initialize}.
-      # @param resolver [Class] A {GraphQL::Schema::Resolver} class to use for field configuration
-      # @param mutation [Class] A {GraphQL::Schema::Mutation} class to use for field configuration
-      # @param subscription [Class] A {GraphQL::Schema::Subscription} class to use for field configuration
-      # @return [GraphQL::Schema:Field] an instance of `self`
-      # @see {.initialize} for other options
-      def self.from_options(name = nil, type = nil, desc = nil, comment: nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
-        if (resolver_class = resolver || mutation || subscription)
-          # Add a reference to that parent class
-          kwargs[:resolver_class] = resolver_class
-        end
-
-        if name
-          kwargs[:name] = name
-        end
-
-        if comment
-          kwargs[:comment] = comment
-        end
-
-        if !type.nil?
-          if desc
-            if kwargs[:description]
-              raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{kwargs[:description].inspect})"
-            end
-
-            kwargs[:description] = desc
-            kwargs[:type] = type
-          elsif (resolver || mutation) && type.is_a?(String)
-            # The return type should be copied from the resolver, and the second positional argument is the description
-            kwargs[:description] = type
-          else
-            kwargs[:type] = type
-          end
-          if type.is_a?(Class) && type < GraphQL::Schema::Mutation
-            raise ArgumentError, "Use `field #{name.inspect}, mutation: Mutation, ...` to provide a mutation to this field instead"
-          end
-        end
-        new(**kwargs, &block)
-      end
-
       # Can be set with `connection: true|false` or inferred from a type name ending in `*Connection`
       # @return [Boolean] if true, this field will be wrapped with Relay connection behavior
       def connection?
