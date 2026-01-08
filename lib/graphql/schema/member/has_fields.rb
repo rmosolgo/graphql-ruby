@@ -6,10 +6,42 @@ module GraphQL
       # Shared code for Objects, Interfaces, Mutations, Subscriptions
       module HasFields
         # Add a field to this object or interface with the given definition
-        # @see {GraphQL::Schema::Field#initialize} for method signature
+        # @param name_positional [Symbol] Keyword `name:` also supported
+        # @param type_positional [Class, Array<Class>] Keyword `type:` also supported
+        # @param desc_positional [String] Keyword `description:` also supported
+        # @see {GraphQL::Schema::Field#initialize} for keywords
         # @return [GraphQL::Schema::Field]
-        def field(*args, **kwargs, &block)
-          field_defn = field_class.from_options(*args, owner: self, **kwargs, &block)
+        def field(name_positional = nil, type_positional = nil, desc_positional = nil, **kwargs, &block)
+          resolver = kwargs.delete(:resolver)
+          mutation = kwargs.delete(:mutation)
+          subscription = kwargs.delete(:subscription)
+          if (resolver_class = resolver || mutation || subscription)
+            # Add a reference to that parent class
+            kwargs[:resolver_class] = resolver_class
+          end
+
+          kwargs[:name] ||= name_positional
+          if !type_positional.nil?
+            if desc_positional
+              if kwargs[:description]
+                raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc_positional.inspect}, #{kwargs[:description].inspect})"
+              end
+
+              kwargs[:description] = desc_positional
+              kwargs[:type] = type_positional
+            elsif (resolver || mutation) && type_positional.is_a?(String)
+              # The return type should be copied from the resolver, and the second positional argument is the description
+              kwargs[:description] = type_positional
+            else
+              kwargs[:type] = type_positional
+            end
+
+            if type_positional.is_a?(Class) && type_positional < GraphQL::Schema::Mutation
+              raise ArgumentError, "Use `field #{name_positional.inspect}, mutation: Mutation, ...` to provide a mutation to this field instead"
+            end
+          end
+
+          field_defn = field_class.new(owner: self, **kwargs, &block)
           add_field(field_defn)
           field_defn
         end

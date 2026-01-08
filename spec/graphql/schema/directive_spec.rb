@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Schema::Directive do
+describe "GraphQL Schema::Directive" do
   class MultiWord < GraphQL::Schema::Directive
   end
 
@@ -78,13 +78,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
   it "validates arguments" do
     err = assert_raises GraphQL::Schema::Directive::InvalidArgumentError do
-      GraphQL::Schema::Field.from_options(
-        name: :something,
-        type: String,
-        null: false,
-        owner: DirectiveTest::Thing,
-        directives: { DirectiveTest::Secret => {} }
-      )
+      DirectiveTest::Thing.field(:something, String, null: false, directives: { DirectiveTest::Secret => {} })
     end
 
     assert_equal "@secret.topSecret on Thing.something is invalid (nil): Expected value to not be null", err.message
