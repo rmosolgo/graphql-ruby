@@ -10,107 +10,79 @@ module GraphQL
         # @param name_positional [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API); `name:` keyword is also accepted
         # @param type_positional [Class, GraphQL::BaseType, Array] The return type of this field; `type:` keyword is also accepted
         # @param desc_positional [String] Field description; `description:` keyword is also accepted
-        # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API); positional argument also accepted
-        # @param type [Class, GraphQL::BaseType, Array] The return type of this field; positional argument is also accepted
-        # @param null [Boolean] (defaults to `true`) `true` if this field may return `null`, `false` if it is never `null`
-        # @param description [String] Field description; positional argument also accepted
-        # @param comment [String] Field comment
-        # @param deprecation_reason [String] If present, the field is marked "deprecated" with this message
-        # @param method [Symbol] The method to call on the underlying object to resolve this field (defaults to `name`)
-        # @param hash_key [String, Symbol] The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
-        # @param dig [Array<String, Symbol>] The nested hash keys to lookup on the underlying hash to resolve this field using dig
-        # @param resolver_method [Symbol] The method on the type to call to resolve this field (defaults to `name`)
-        # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
-        # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
-        # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
-        # @param default_page_size [Integer, nil] For connections, the default number of items to return from this field, or `nil` to return unlimited results.
-        # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
-        # @param arguments [{String=>GraphQL::Schema::Argument, Hash}] Arguments for this field (may be added in the block, also)
-        # @param camelize [Boolean] If true, the field name will be camelized when building the schema
-        # @param complexity [Numeric] When provided, set the complexity for this field
-        # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
-        # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
-        # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
-        # @param directives [Hash{Class => Hash}] Directives to apply to this field
-        # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
-        # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
-        # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
-        # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
-        # @param validates [Array<Hash>] Configurations for validating this field
-        # @param fallback_value [Object] A fallback value if the method is not defined
-        # @param mutation [Class<GraphQL::Schema::Mutation>]
-        # @param resolver [Class<GraphQL::Schema::Resolver>]
-        # @param subscription [Class<GraphQL::Schema::Subscription>]
-        # @param dynamic_introspection [Boolean] (Private, used by GraphQL-Ruby)
-        # @param relay_node_field [Boolean] (Private, used by GraphQL-Ruby)
-        # @param relay_nodes_field [Boolean] (Private, used by GraphQL-Ruby)
-        # @param extras [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] Extra arguments to be injected into the resolver for this field
-        # @param custom_kwargs [Hash] Application-specific keywords; must be handled by your base {Field} class
+        # @option kwargs [Symbol] :name The underscore-cased version of this field name (will be camelized for the GraphQL API); positional argument also accepted
+        # @option kwargs [Class, GraphQL::BaseType, Array] :type The return type of this field; positional argument is also accepted
+        # @option kwargs [Boolean] :null (defaults to `true`) `true` if this field may return `null`, `false` if it is never `null`
+        # @option kwargs [String] :description Field description; positional argument also accepted
+        # @option kwargs [String] :comment Field comment
+        # @option kwargs [String] :deprecation_reason If present, the field is marked "deprecated" with this message
+        # @option kwargs [Symbol] :method The method to call on the underlying object to resolve this field (defaults to `name`)
+        # @option kwargs [String, Symbol] :hash_key The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
+        # @option kwargs [Array<String, Symbol>] :dig The nested hash keys to lookup on the underlying hash to resolve this field using dig
+        # @option kwargs [Symbol] :resolver_method The method on the type to call to resolve this field (defaults to `name`)
+        # @option kwargs [Boolean] :connection `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
+        # @option kwargs [Class] :connection_extension The extension to add, to implement connections. If `nil`, no extension is added.
+        # @option kwargs [Integer, nil] :max_page_size For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
+        # @option kwargs [Integer, nil] :default_page_size For connections, the default number of items to return from this field, or `nil` to return unlimited results.
+        # @option kwargs [Boolean] :introspection If true, this field will be marked as `#introspection?` and the name may begin with `__`
+        # @option kwargs [{String=>GraphQL::Schema::Argument, Hash}] :arguments Arguments for this field (may be added in the block, also)
+        # @option kwargs [Boolean] :camelize If true, the field name will be camelized when building the schema
+        # @option kwargs [Numeric] :complexity When provided, set the complexity for this field
+        # @option kwargs [Boolean] :scope If true, the return type's `.scope_items` method will be called on the return value
+        # @option kwargs [Symbol, String] :subscription_scope A key in `context` which will be used to scope subscription payloads
+        # @option kwargs [Array<Class, Hash<Class => Object>>] :extensions Named extensions to apply to this field (see also {#extension})
+        # @option kwargs [Hash{Class => Hash}] :directives Directives to apply to this field
+        # @option kwargs [Boolean] :trace If true, a {GraphQL::Tracing} tracer will measure this scalar field
+        # @option kwargs [Boolean] :broadcastable Whether or not this field can be distributed in subscription broadcasts
+        # @option kwargs [Language::Nodes::FieldDefinition, nil] :ast_node If this schema was parsed from definition, this AST node defined the field
+        # @option kwargs [Boolean] :method_conflict_warning If false, skip the warning if this field's method conflicts with a built-in method
+        # @option kwargs [Array<Hash>] :validates Configurations for validating this field
+        # @option kwargs [Object] :fallback_value A fallback value if the method is not defined
+        # @option kwargs [Class<GraphQL::Schema::Mutation>] :mutation
+        # @option kwargs [Class<GraphQL::Schema::Resolver>] :resolver
+        # @option kwargs [Class<GraphQL::Schema::Subscription>] :subscription
+        # @option kwargs [Boolean] :dynamic_introspection (Private, used by GraphQL-Ruby)
+        # @option kwargs [Boolean] :relay_node_field (Private, used by GraphQL-Ruby)
+        # @option kwargs [Boolean] :relay_nodes_field (Private, used by GraphQL-Ruby)
+        # @option kwargs [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] :extras Extra arguments to be injected into the resolver for this field
+
+        # @param kwargs [Hash] Keywords for defining the field. Any not documented here will be passed to your base field class where they must be handled.
         # @param definition_block [Proc] an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new {Field}.
         # @yieldparam field [GraphQL::Schema::Field] The newly-created field instance
         # @yieldreturn [void]
         # @return [GraphQL::Schema::Field]
-        def field(name_positional = nil, type_positional = nil, desc_positional = nil, type: nil, name: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: NOT_CONFIGURED, resolver: nil, subscription: nil, mutation: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, **custom_kwargs, &definition_block)
-          name ||= name_positional
+        def field(name_positional = nil, type_positional = nil, desc_positional = nil, **kwargs, &definition_block)
+          resolver = kwargs.delete(:resolver)
+          mutation = kwargs.delete(:mutation)
+          subscription = kwargs.delete(:subscription)
+          if (resolver_class = resolver || mutation || subscription)
+            # Add a reference to that parent class
+            kwargs[:resolver_class] = resolver_class
+          end
 
+          kwargs[:name] ||= name_positional
           if !type_positional.nil?
             if desc_positional
-              if !NOT_CONFIGURED.equal?(description)
-                raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc_positional.inspect}, #{description.inspect})"
+              if kwargs[:description]
+                raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc_positional.inspect}, #{kwargs[:description].inspect})"
               end
 
-              description = desc_positional
-              type = type_positional
+              kwargs[:description] = desc_positional
+              kwargs[:type] = type_positional
             elsif (resolver || mutation) && type_positional.is_a?(String)
               # The return type should be copied from the resolver, and the second positional argument is the description
-              description = type_positional
+              kwargs[:description] = type_positional
             else
-              type = type_positional
+              kwargs[:type] = type_positional
             end
 
             if type_positional.is_a?(Class) && type_positional < GraphQL::Schema::Mutation
-              raise ArgumentError, "Use `field #{name.inspect}, mutation: Mutation, ...` to provide a mutation to this field instead"
+              raise ArgumentError, "Use `field #{name_positional.inspect}, mutation: Mutation, ...` to provide a mutation to this field instead"
             end
           end
 
-          field_defn = field_class.new(
-            owner: self,
-            type: type,
-            name: name,
-            null: null,
-            description: description,
-            comment: comment,
-            deprecation_reason: deprecation_reason,
-            method: method,
-            hash_key: hash_key,
-            dig: dig,
-            resolver_method: resolver_method,
-            connection: connection,
-            max_page_size: max_page_size,
-            default_page_size: default_page_size,
-            scope: scope,
-            introspection: introspection,
-            camelize: camelize,
-            trace: trace,
-            complexity: complexity,
-            ast_node: ast_node,
-            extras: extras,
-            extensions: extensions,
-            connection_extension: connection_extension,
-            resolver_class: resolver || mutation || subscription,
-            subscription_scope: subscription_scope,
-            relay_node_field: relay_node_field,
-            relay_nodes_field: relay_nodes_field,
-            method_conflict_warning: method_conflict_warning,
-            broadcastable: broadcastable,
-            arguments: arguments,
-            directives: directives,
-            validates: validates,
-            fallback_value: fallback_value,
-            dynamic_introspection: dynamic_introspection,
-            **custom_kwargs,
-            &definition_block
-          )
+          kwargs[:owner] = self
+          field_defn = field_class.new(**kwargs, &definition_block)
           add_field(field_defn)
           field_defn
         end
@@ -333,7 +305,7 @@ module GraphQL
           end
         end
 
-        # @param [GraphQL::Schema::Field]
+        # @param field_defn [GraphQL::Schema::Field]
         # @return [String] A warning to give when this field definition might conflict with a built-in method
         def conflict_field_name_warning(field_defn)
           "#{self.graphql_name}'s `field :#{field_defn.original_name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.resolver_method}` and `def resolve_#{field_defn.resolver_method}`). Or use `method_conflict_warning: false` to suppress this warning."

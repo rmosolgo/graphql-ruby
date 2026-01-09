@@ -927,35 +927,27 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     assert field.connection?
   end
 
-  describe "argument definitions" do
-    it "matches the HasFields field arguments for better IDE support" do
-      field_new_arguments = GraphQL::Schema::Field.instance_method(:initialize).parameters
-      has_fields_field_arguments = GraphQL::Schema::Member::HasFields.instance_method(:field).parameters
-      extra_field_args = [
-        # These are merged into options
-        [:opt, :name_positional],
-        [:opt, :type_positional],
-        [:opt, :desc_positional],
-        # These become `resolver_class`
-        [:key, :resolver],
-        [:key, :subscription],
-        [:key, :mutation],
-        # This is a pass-thru for custom keywords
-        [:keyrest, :custom_kwargs]
-      ]
-      assert_equal extra_field_args, has_fields_field_arguments - field_new_arguments
-      extra_new_args = [
-        [:key, :owner], # populated by the receiver of `.field`
-        [:key, :resolver_class] # from resolver/subscription/mutation
-      ]
-      assert_equal extra_new_args, field_new_arguments - has_fields_field_arguments
-    end
-
+  describe "argument documentation" do
     it "HasFields::field documents each argument" do
       has_fields_field_comment = File.read("./lib/graphql/schema/member/has_fields.rb")[/(\s+#[^\n]*\n)+\s+def field\(/m]
-      has_field_field_doc_param_names = has_fields_field_comment.split("\n").map { |line| line[/@param (\S+)/]; $1 }.compact
-      has_fields_field_argument_names = GraphQL::Schema::Member::HasFields.instance_method(:field).parameters.map { |param| param[1].to_s }
-      assert_equal has_field_field_doc_param_names.sort, has_fields_field_argument_names.sort
+      has_field_field_doc_param_names = has_fields_field_comment.split("\n").map do |line|
+        line[/@param (\S+)/] || line[/@option kwargs \[.*\] :(\S+)/]
+        $1
+      end.compact
+
+      field_initialize_argument_names = GraphQL::Schema::Field.instance_method(:initialize).parameters.map { |param| param[1].to_s }
+
+      expected_differences = [
+        "name_positional",
+        "type_positional",
+        "desc_positional",
+        "mutation",
+        "resolver",
+        "subscription",
+        "kwargs",
+      ]
+      assert_equal expected_differences, has_field_field_doc_param_names - field_initialize_argument_names
+      assert_equal ["owner", "resolver_class"], field_initialize_argument_names - has_field_field_doc_param_names
     end
 
     it "Field::initialize documents each argument" do
