@@ -39,9 +39,14 @@ module GraphQL
       # @param arg_name [Symbol]
       # @param type_expr
       # @param desc [String]
+      # @param type [Class, Array<Class>] Input type; positional argument also accepted
+      # @param name [Symbol] positional argument also accepted        # @param loads [Class, Array<Class>] A GraphQL type to load for the given ID when one is present
+      # @param definition_block [Proc] Called with the newly-created {Argument}
+      # @param owner [Class] Private, used by GraphQL-Ruby during schema definition
       # @param required [Boolean, :nullable] if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
       # @param description [String]
       # @param default_value [Object]
+      # @param loads [Class, Array<Class>] A GraphQL type to load for the given ID when one is present
       # @param as [Symbol] Override the keyword name when passed to a method
       # @param prepare [Symbol] A method to call to transform this argument's valuebefore sending it to field resolution
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
@@ -50,6 +55,8 @@ module GraphQL
       # @param deprecation_reason [String]
       # @param validates [Hash, nil] Options for building validators, if any should be applied
       # @param replace_null_with_default [Boolean] if `true`, incoming values of `null` will be replaced with the configured `default_value`
+      # @param comment [String] Private, used by GraphQL-Ruby when parsing GraphQL schema files
+      # @param ast_node [GraphQL::Language::Nodes::InputValueDefinition] Private, used by GraphQL-Ruby when parsing schema files
       def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, comment: nil, ast_node: nil, default_value: NOT_CONFIGURED, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)

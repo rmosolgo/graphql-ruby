@@ -5,13 +5,52 @@ module GraphQL
     class Member
       # Shared code for Objects, Interfaces, Mutations, Subscriptions
       module HasFields
+        include EmptyObjects
         # Add a field to this object or interface with the given definition
-        # @param name_positional [Symbol] Keyword `name:` also supported
-        # @param type_positional [Class, Array<Class>] Keyword `type:` also supported
-        # @param desc_positional [String] Keyword `description:` also supported
-        # @see {GraphQL::Schema::Field#initialize} for keywords
+        # @param name_positional [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API); `name:` keyword is also accepted
+        # @param type_positional [Class, GraphQL::BaseType, Array] The return type of this field; `type:` keyword is also accepted
+        # @param desc_positional [String] Field description; `description:` keyword is also accepted
+        # @option kwargs [Symbol] :name The underscore-cased version of this field name (will be camelized for the GraphQL API); positional argument also accepted
+        # @option kwargs [Class, GraphQL::BaseType, Array] :type The return type of this field; positional argument is also accepted
+        # @option kwargs [Boolean] :null (defaults to `true`) `true` if this field may return `null`, `false` if it is never `null`
+        # @option kwargs [String] :description Field description; positional argument also accepted
+        # @option kwargs [String] :comment Field comment
+        # @option kwargs [String] :deprecation_reason If present, the field is marked "deprecated" with this message
+        # @option kwargs [Symbol] :method The method to call on the underlying object to resolve this field (defaults to `name`)
+        # @option kwargs [String, Symbol] :hash_key The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
+        # @option kwargs [Array<String, Symbol>] :dig The nested hash keys to lookup on the underlying hash to resolve this field using dig
+        # @option kwargs [Symbol] :resolver_method The method on the type to call to resolve this field (defaults to `name`)
+        # @option kwargs [Boolean] :connection `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
+        # @option kwargs [Class] :connection_extension The extension to add, to implement connections. If `nil`, no extension is added.
+        # @option kwargs [Integer, nil] :max_page_size For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
+        # @option kwargs [Integer, nil] :default_page_size For connections, the default number of items to return from this field, or `nil` to return unlimited results.
+        # @option kwargs [Boolean] :introspection If true, this field will be marked as `#introspection?` and the name may begin with `__`
+        # @option kwargs [{String=>GraphQL::Schema::Argument, Hash}] :arguments Arguments for this field (may be added in the block, also)
+        # @option kwargs [Boolean] :camelize If true, the field name will be camelized when building the schema
+        # @option kwargs [Numeric] :complexity When provided, set the complexity for this field
+        # @option kwargs [Boolean] :scope If true, the return type's `.scope_items` method will be called on the return value
+        # @option kwargs [Symbol, String] :subscription_scope A key in `context` which will be used to scope subscription payloads
+        # @option kwargs [Array<Class, Hash<Class => Object>>] :extensions Named extensions to apply to this field (see also {#extension})
+        # @option kwargs [Hash{Class => Hash}] :directives Directives to apply to this field
+        # @option kwargs [Boolean] :trace If true, a {GraphQL::Tracing} tracer will measure this scalar field
+        # @option kwargs [Boolean] :broadcastable Whether or not this field can be distributed in subscription broadcasts
+        # @option kwargs [Language::Nodes::FieldDefinition, nil] :ast_node If this schema was parsed from definition, this AST node defined the field
+        # @option kwargs [Boolean] :method_conflict_warning If false, skip the warning if this field's method conflicts with a built-in method
+        # @option kwargs [Array<Hash>] :validates Configurations for validating this field
+        # @option kwargs [Object] :fallback_value A fallback value if the method is not defined
+        # @option kwargs [Class<GraphQL::Schema::Mutation>] :mutation
+        # @option kwargs [Class<GraphQL::Schema::Resolver>] :resolver
+        # @option kwargs [Class<GraphQL::Schema::Subscription>] :subscription
+        # @option kwargs [Boolean] :dynamic_introspection (Private, used by GraphQL-Ruby)
+        # @option kwargs [Boolean] :relay_node_field (Private, used by GraphQL-Ruby)
+        # @option kwargs [Boolean] :relay_nodes_field (Private, used by GraphQL-Ruby)
+        # @option kwargs [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] :extras Extra arguments to be injected into the resolver for this field
+        # @param kwargs [Hash] Keywords for defining the field. Any not documented here will be passed to your base field class where they must be handled.
+        # @param definition_block [Proc] an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new {Field}.
+        # @yieldparam field [GraphQL::Schema::Field] The newly-created field instance
+        # @yieldreturn [void]
         # @return [GraphQL::Schema::Field]
-        def field(name_positional = nil, type_positional = nil, desc_positional = nil, **kwargs, &block)
+        def field(name_positional = nil, type_positional = nil, desc_positional = nil, **kwargs, &definition_block)
           resolver = kwargs.delete(:resolver)
           mutation = kwargs.delete(:mutation)
           subscription = kwargs.delete(:subscription)
@@ -41,7 +80,8 @@ module GraphQL
             end
           end
 
-          field_defn = field_class.new(owner: self, **kwargs, &block)
+          kwargs[:owner] = self
+          field_defn = field_class.new(**kwargs, &definition_block)
           add_field(field_defn)
           field_defn
         end
@@ -264,7 +304,7 @@ module GraphQL
           end
         end
 
-        # @param [GraphQL::Schema::Field]
+        # @param field_defn [GraphQL::Schema::Field]
         # @return [String] A warning to give when this field definition might conflict with a built-in method
         def conflict_field_name_warning(field_defn)
           "#{self.graphql_name}'s `field :#{field_defn.original_name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.resolver_method}` and `def resolve_#{field_defn.resolver_method}`). Or use `method_conflict_warning: false` to suppress this warning."

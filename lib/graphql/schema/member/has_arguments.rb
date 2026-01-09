@@ -14,29 +14,52 @@ module GraphQL
           cls.extend(ClassConfigured)
         end
 
-        # @see {GraphQL::Schema::Argument#initialize} for parameters
-        # @return [GraphQL::Schema::Argument] An instance of {argument_class}, created from `*args`
-        def argument(*args, **kwargs, &block)
-          kwargs[:owner] = self
-          loads = kwargs[:loads]
-          if loads
-            name = args[0]
-            name_as_string = name.to_s
+        # @param arg_name [Symbol] The underscore-cased name of this argument, `name:` keyword also accepted
+        # @param type_expr The GraphQL type of this argument; `type:` keyword also accepted
+        # @param desc [String] Argument description, `description:` keyword also accepted
+        # @option kwargs [Boolean, :nullable] :required if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
+        # @option kwargs [String] :description Positional argument also accepted
+        # @option kwargs [Class, Array<Class>] :type Input type; positional argument also accepted
+        # @option kwargs [Symbol] :name positional argument also accepted
+        # @option kwargs [Object] :default_value
+        # @option kwargs [Class, Array<Class>] :loads A GraphQL type to load for the given ID when one is present
+        # @option kwargs [Symbol] :as Override the keyword name when passed to a method
+        # @option kwargs [Symbol] :prepare A method to call to transform this argument's valuebefore sending it to field resolution
+        # @option kwargs [Boolean] :camelize if true, the name will be camelized when building the schema
+        # @option kwargs [Boolean] :from_resolver if true, a Resolver class defined this argument
+        # @option kwargs [Hash{Class => Hash}] :directives
+        # @option kwargs [String] :deprecation_reason
+        # @option kwargs [String] :comment Private, used by GraphQL-Ruby when parsing GraphQL schema files
+        # @option kwargs [GraphQL::Language::Nodes::InputValueDefinition] :ast_node Private, used by GraphQL-Ruby when parsing schema files
+        # @option kwargs [Hash, nil] :validates Options for building validators, if any should be applied
+        # @option kwargs [Boolean] :replace_null_with_default if `true`, incoming values of `null` will be replaced with the configured `default_value`
+        # @param definition_block [Proc] Called with the newly-created {Argument}
+        # @param kwargs [Hash] Keywords for defining an argument. Any keywords not documented here must be handled by your base Argument class.
+        # @return [GraphQL::Schema::Argument] An instance of {argument_class} created from these arguments
+        def argument(arg_name = nil, type_expr = nil, desc = nil, **kwargs, &definition_block)
+          if kwargs[:loads]
+            loads_name = arg_name || kwargs[:name]
+            loads_name_as_string = loads_name.to_s
 
-            inferred_arg_name = case name_as_string
+            inferred_arg_name = case loads_name_as_string
             when /_id$/
-              name_as_string.sub(/_id$/, "").to_sym
+              loads_name_as_string.sub(/_id$/, "").to_sym
             when /_ids$/
-              name_as_string.sub(/_ids$/, "")
+              loads_name_as_string.sub(/_ids$/, "")
                 .sub(/([^s])$/, "\\1s")
                 .to_sym
             else
-              name
+              loads_name
             end
 
             kwargs[:as] ||= inferred_arg_name
           end
-          arg_defn = self.argument_class.new(*args, **kwargs, &block)
+          kwargs[:owner] = self
+          arg_defn = self.argument_class.new(
+            arg_name, type_expr, desc,
+            **kwargs,
+            &definition_block
+          )
           add_argument(arg_defn)
           arg_defn
         end
