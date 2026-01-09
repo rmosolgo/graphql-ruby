@@ -23,6 +23,7 @@ module GraphQL
         jobs_condition = Async::Condition.new
         trace&.begin_dataloader(self)
         fiber_vars = get_fiber_variables
+        raised_error = nil
         Sync do |root_task|
           while first_pass || !job_fibers.empty?
             first_pass = false
@@ -34,6 +35,8 @@ module GraphQL
                 if task.alive?
                   root_task.yield
                   next_source_tasks << task
+                else
+                  task.wait # re-raise errors
                 end
               end
 
@@ -41,16 +44,21 @@ module GraphQL
               source_tasks.concat(next_source_tasks)
               next_source_tasks.clear
             end
-
             jobs_condition.signal
-          end
 
-          if !@lazies_at_depth.empty?
-            with_trace_query_lazy(trace_query_lazy) do
-              run_next_pending_lazies(job_fibers, trace)
-              run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
+            if !@lazies_at_depth.empty?
+              with_trace_query_lazy(trace_query_lazy) do
+                run_next_pending_lazies(job_fibers, trace, root_task, jobs_condition)
+                run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace, root_task, jobs_condition)
+              end
             end
           end
+        rescue StandardError => err
+          raised_error = err
+        end
+
+        if raised_error
+          raise raised_error
         end
         trace&.end_dataloader(self)
 
@@ -65,6 +73,8 @@ module GraphQL
           if f.alive?
             parent_task.yield
             next_job_fibers << f
+          else
+            f.wait # re-raise errors
           end
         end
         job_fibers.concat(next_job_fibers)
@@ -83,6 +93,27 @@ module GraphQL
             end
             cleanup_fiber
             trace&.dataloader_fiber_exit
+          end
+        end
+      end
+
+      #### TODO DRY  Had to duplicate to remove spawn_job_fiber
+      def run_next_pending_lazies(job_fibers, trace, parent_task, condition)
+        smallest_depth = nil
+        @lazies_at_depth.each_key do |depth_key|
+          smallest_depth ||= depth_key
+          if depth_key < smallest_depth
+            smallest_depth = depth_key
+          end
+        end
+
+        if smallest_depth
+          lazies = @lazies_at_depth.delete(smallest_depth)
+          if !lazies.empty?
+            lazies.each_with_index do |l, idx|
+              append_job { l.value }
+            end
+            job_fibers.unshift(spawn_job_task(trace, parent_task, condition))
           end
         end
       end
@@ -109,6 +140,10 @@ module GraphQL
               s.run_pending_keys
               trace&.end_dataloader_source(s)
             end
+            nil
+          rescue StandardError => err
+            err
+          ensure
             cleanup_fiber
             trace&.dataloader_fiber_exit
           end
