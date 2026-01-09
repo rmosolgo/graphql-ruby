@@ -45,7 +45,6 @@ module GraphQL
         # @option kwargs [Boolean] :relay_node_field (Private, used by GraphQL-Ruby)
         # @option kwargs [Boolean] :relay_nodes_field (Private, used by GraphQL-Ruby)
         # @option kwargs [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] :extras Extra arguments to be injected into the resolver for this field
-
         # @param kwargs [Hash] Keywords for defining the field. Any not documented here will be passed to your base field class where they must be handled.
         # @param definition_block [Proc] an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new {Field}.
         # @yieldparam field [GraphQL::Schema::Field] The newly-created field instance

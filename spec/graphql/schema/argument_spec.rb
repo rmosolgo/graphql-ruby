@@ -800,20 +800,12 @@ describe GraphQL::Schema::Argument do
   end
 
   describe "argument definitions" do
-    it "matches the HasArgument::argument arguments for better IDE support" do
-      argument_new_arguments = GraphQL::Schema::Argument.instance_method(:initialize).parameters
-      has_arguments_argument_arguments = GraphQL::Schema::Member::HasArguments.instance_method(:argument).parameters
-      extra_argument_args = [[:keyrest, :custom_kwargs]]
-      assert_equal extra_argument_args, has_arguments_argument_arguments - argument_new_arguments
-      extra_new_args = [[:keyreq, :owner]]
-      assert_equal extra_new_args, argument_new_arguments - has_arguments_argument_arguments
-    end
-
     it "HasArguments::argument documents each argument" do
       has_arguments_argument_comment = File.read("./lib/graphql/schema/member/has_arguments.rb")[/(\s+#[^\n]*\n)+\s+def argument\(/m]
-      has_arguments_argument_doc_param_names = has_arguments_argument_comment.split("\n").map { |line| line[/@param (\S+)/]; $1 }.compact
-      has_arguments_argument_argument_names = GraphQL::Schema::Member::HasArguments.instance_method(:argument).parameters.map { |param| param[1].to_s }
-      assert_equal has_arguments_argument_doc_param_names.sort, has_arguments_argument_argument_names.sort
+      has_arguments_argument_doc_param_names = has_arguments_argument_comment.split("\n").map { |line| (line[/@param (\S+)/] || line[/@option kwargs \[.*\] :(\S+)/]); $1 }.compact
+      argument_initialize_argument_names = GraphQL::Schema::Argument.instance_method(:initialize).parameters.map { |param| param[1].to_s }
+      assert_equal ["kwargs"], has_arguments_argument_doc_param_names - argument_initialize_argument_names
+      assert_equal ["owner"], argument_initialize_argument_names - has_arguments_argument_doc_param_names
     end
 
     it "Argument::initialize documents each argument" do
