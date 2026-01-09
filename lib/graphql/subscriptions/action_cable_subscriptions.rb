@@ -81,6 +81,7 @@ module GraphQL
     #       end
     #   end
     #
+    # @see GraphQL::Testing::MockActionCable for test helpers
     class ActionCableSubscriptions < GraphQL::Subscriptions
       SUBSCRIPTION_PREFIX = "graphql-subscription:"
       EVENT_PREFIX = "graphql-event:"

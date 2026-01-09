@@ -30,7 +30,8 @@ describe GraphQL::Schema::Field do
     it "camelizes the field name, unless camelize: false" do
       assert_equal 'inspectInput', field.name
 
-      underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
+      example_obj = Class.new(GraphQL::Schema::Object) { graphql_name("Example") }
+      underscored_field = example_obj.field(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, camelize: false
       end.ensure_loaded
 
@@ -93,6 +94,32 @@ describe GraphQL::Schema::Field do
       assert_equal true, field_defn.scoped?
       assert_equal true, field_defn.connection?
       assert_equal [GraphQL::Schema::Field::ScopeExtension, GraphQL::Schema::Field::ConnectionExtension], field_defn.extensions.map(&:class)
+
+      class LazyConnectionSchema < GraphQL::Schema
+        module Entity
+          include GraphQL::Schema::Interface
+          field :things, description: "THINGS-DESCRIPTION" do
+            type Thing.connection_type
+          end
+        end
+
+        class Thing < GraphQL::Schema::Object
+          field :name, String
+          implements Entity
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :entity, Entity
+        end
+        query(Query)
+        orphan_types Thing
+      end
+
+      defn_str = LazyConnectionSchema.to_definition
+      assert_includes defn_str, "ThingConnection"
+      assert_includes defn_str, "first: Int"
+      assert_includes defn_str, "THINGS-DESCRIPTION"
+      assert_equal "ThingConnection", LazyConnectionSchema.get_field("Entity", "things").type.graphql_name
     end
 
     it "accepts a block for definition and yields the field if the block has an arity of one" do
@@ -115,7 +142,8 @@ describe GraphQL::Schema::Field do
       type = Class.new(GraphQL::Schema::Object) do
         graphql_name 'MyType'
       end
-      field = GraphQL::Schema::Field.from_options(:my_field, type, owner: nil, null: true)
+      example_obj = Class.new(GraphQL::Schema::Object) { graphql_name("Example") }
+      field = example_obj.field(:my_field, type, owner: nil, null: true)
       assert_equal type, field.type
     end
 
@@ -474,7 +502,8 @@ describe GraphQL::Schema::Field do
 
   describe "#original_name" do
     it "is exactly the same as the passed in name" do
-      field = GraphQL::Schema::Field.from_options(
+      example_obj = Class.new(GraphQL::Schema::Object) { graphql_name("Example") }
+      field = example_obj.field(
         :my_field,
         String,
         null: false,

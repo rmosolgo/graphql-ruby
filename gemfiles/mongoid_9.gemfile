@@ -8,5 +8,6 @@ gem "pry"
 gem "pry-stack_explorer", platform: :ruby
 gem "mongoid", "~> 9.0"
 gem "async"
+gem "minitest-mock"
 
 gemspec path: "../"

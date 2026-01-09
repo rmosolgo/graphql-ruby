@@ -22,7 +22,7 @@ jobs:
   website:
     if: ${{ inputs.publish_website || github.ref_name }}
     permissions:
-      contents: write # for git push (s0/git-publish-subdir-action)
+      contents: write
     name: Publish Website
     runs-on: ubuntu-latest
     steps:
@@ -48,17 +48,15 @@ jobs:
           git config --global user.email "$(git log --format="%aE" -n 1)"
           bundle exec rake site:commit_changes
       - name: Deploy to GitHub pages via gh-pages branch
-        uses: s0/git-publish-subdir-action@master
-        env:
-          REPO: self
-          BRANCH: gh-pages
-          FOLDER: gh-pages
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
   api_docs:
     needs: website
     if: ${{ inputs.publish_version || github.ref_name }}
     permissions:
-      contents: write # for git push (s0/git-publish-subdir-action)
+      contents: write
     name: Publish API Docs
     runs-on: ubuntu-latest
     steps:
@@ -86,9 +84,7 @@ jobs:
           bundle exec rake site:commit_changes
           git status
       - name: Deploy to GitHub pages via gh-pages branch
-        uses: s0/git-publish-subdir-action@master
-        env:
-          REPO: self
-          BRANCH: gh-pages
-          FOLDER: gh-pages
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages

@@ -51,6 +51,7 @@ require "pry"
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
+require "minitest/mock"
 require "graphql/batch"
 
 running_in_rubymine = ENV["RM_INFO"]

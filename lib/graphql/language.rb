@@ -77,21 +77,30 @@ module GraphQL
       new_query_str || query_str
     end
 
+    LEADING_REGEX = Regexp.union(" ", *Lexer::Punctuation.constants.map { |const| Lexer::Punctuation.const_get(const) })
+
+    # Optimized pattern using:
+    # - Possessive quantifiers (*+, ++) to prevent backtracking in number patterns
+    # - Atomic group (?>...) for IGNORE to prevent backtracking
+    # - Single unified number pattern instead of three alternatives
+    EFFICIENT_NUMBER_REGEXP = /-?(?:0|[1-9][0-9]*+)(?:\.[0-9]++)?(?:[eE][+-]?[0-9]++)?/
+    EFFICIENT_IGNORE_REGEXP = /(?>[, \r\n\t]+|\#[^\n]*$)*/
+
+    MAYBE_INVALID_NUMBER = /\d[_a-zA-Z]/
+
     INVALID_NUMBER_FOLLOWED_BY_NAME_REGEXP = %r{
-      (
-        ((?<num>#{Lexer::INT_REGEXP}(#{Lexer::FLOAT_EXP_REGEXP})?)(?<name>#{Lexer::IDENTIFIER_REGEXP})#{Lexer::IGNORE_REGEXP}:)
-        |
-        ((?<num>#{Lexer::INT_REGEXP}#{Lexer::FLOAT_DECIMAL_REGEXP}#{Lexer::FLOAT_EXP_REGEXP})(?<name>#{Lexer::IDENTIFIER_REGEXP})#{Lexer::IGNORE_REGEXP}:)
-        |
-        ((?<num>#{Lexer::INT_REGEXP}#{Lexer::FLOAT_DECIMAL_REGEXP})(?<name>#{Lexer::IDENTIFIER_REGEXP})#{Lexer::IGNORE_REGEXP}:)
-      )}x
+      (?<leading>#{LEADING_REGEX})
+      (?<num>#{EFFICIENT_NUMBER_REGEXP})
+      (?<name>#{Lexer::IDENTIFIER_REGEXP})
+      #{EFFICIENT_IGNORE_REGEXP}
+      :
+    }x
 
     def self.add_space_between_numbers_and_names(query_str)
-      if query_str.match?(INVALID_NUMBER_FOLLOWED_BY_NAME_REGEXP)
-        query_str.gsub(INVALID_NUMBER_FOLLOWED_BY_NAME_REGEXP, "\\k<num> \\k<name>:")
-      else
-        query_str
-      end
+      # Fast check for digit followed by identifier char. If this doesn't match, skip the more expensive regexp entirely.
+      return query_str unless query_str.match?(MAYBE_INVALID_NUMBER)
+      return query_str unless query_str.match?(INVALID_NUMBER_FOLLOWED_BY_NAME_REGEXP)
+      query_str.gsub(INVALID_NUMBER_FOLLOWED_BY_NAME_REGEXP, "\\k<leading>\\k<num> \\k<name>:")
     end
   end
 end

@@ -53,7 +53,7 @@ jobs:
             ruby: 3.3
             graphql_reject_numbers_followed_by_names: 1
           - gemfile: gemfiles/rails_8.1.gemfile
-            ruby: 3.5
+            ruby: 4.0
             graphql_reject_numbers_followed_by_names: 1
             redis: 1
           - gemfile: gemfiles/rails_master.gemfile
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
-    - uses: actions/setup-node@v5
+    - uses: actions/setup-node@v6
       with:
         node-version: '21'
     - run: npm ci

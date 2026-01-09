@@ -21,6 +21,7 @@ gem 'puma'
 gem 'sprockets-rails'
 gem 'capybara'
 gem 'selenium-webdriver'
+gem "minitest-mock"
 
 gemspec path: "../"
 

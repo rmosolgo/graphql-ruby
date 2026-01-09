@@ -12,5 +12,6 @@ gem "pg", platform: :ruby
 gem "sequel"
 gem "async"
 gem "google-protobuf"
+gem "minitest-mock"
 
 gemspec path: "../"

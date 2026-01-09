@@ -1708,7 +1708,7 @@ module GraphQL
       # If you need to support previous, non-spec behavior which allowed selecting union fields
       # but *not* selecting any fields on that union, set this to `true` to continue allowing that behavior.
       #
-      # If this is `true`, then {.legacy_invalid_empty_selections_on_union} will be called with {Query} objects
+      # If this is `true`, then {.legacy_invalid_empty_selections_on_union_with_type} will be called with {Query} objects
       # with that kind of selections. You must implement that method
       # @param new_value [Boolean]
       # @return [true, false, nil]
@@ -1727,15 +1727,32 @@ module GraphQL
       # This method is called during validation when a previously-allowed, but non-spec
       # query is encountered where a union field has no child selections on it.
       #
-      # You should implement this method to log the violation so that you can contact clients
-      # and notify them about changing their queries. Then return a suitable value to
-      # tell GraphQL-Ruby how to continue.
+      # If `legacy_invalid_empty_selections_on_union_with_type` is overridden, this method will not be called.
+      #
+      # You should implement this method or `legacy_invalid_empty_selections_on_union_with_type`
+      # to log the violation so that you can contact clients and notify them about changing their queries.
+      # Then return a suitable value to tell GraphQL-Ruby how to continue.
       # @param query [GraphQL::Query]
       # @return [:return_validation_error] Let GraphQL-Ruby return the (new) normal validation error for this query
       # @return [String] A validation error to return for this query
       # @return [nil] Don't send the client an error, continue the legacy behavior (allow this query to execute)
       def legacy_invalid_empty_selections_on_union(query)
-        raise "Implement `def self.legacy_invalid_empty_selections_on_union(query)` to handle this scenario"
+        raise "Implement `def self.legacy_invalid_empty_selections_on_union_with_type(query, type)` or `def self.legacy_invalid_empty_selections_on_union(query)` to handle this scenario"
+      end
+
+      # This method is called during validation when a previously-allowed, but non-spec
+      # query is encountered where a union field has no child selections on it.
+      #
+      # You should implement this method to log the violation so that you can contact clients
+      # and notify them about changing their queries. Then return a suitable value to
+      # tell GraphQL-Ruby how to continue.
+      # @param query [GraphQL::Query]
+      # @param type [Module] A GraphQL type definition
+      # @return [:return_validation_error] Let GraphQL-Ruby return the (new) normal validation error for this query
+      # @return [String] A validation error to return for this query
+      # @return [nil] Don't send the client an error, continue the legacy behavior (allow this query to execute)
+      def legacy_invalid_empty_selections_on_union_with_type(query, type)
+        legacy_invalid_empty_selections_on_union(query)
       end
 
       # This setting controls how GraphQL-Ruby handles overlapping selections on scalar types when the types

@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.14.9 (12 Dec 2025)
+
+- Update `glob` #5472
+
 # 1.14.8 (17 Jun 2025)
 
 - Update some dependencies #5387
