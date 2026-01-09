@@ -5,11 +5,7 @@ module GraphQL
       def yield(source = Fiber[:__graphql_current_dataloader_source])
         trace = Fiber[:__graphql_current_multiplex]&.current_trace
         trace&.dataloader_fiber_yield(source)
-        if (condition = Fiber[:graphql_dataloader_next_tick])
-          condition.wait
-        else
-          Fiber.yield
-        end
+        Fiber[:graphql_dataloader_next_tick].wait
         trace&.dataloader_fiber_resume(source)
         nil
       end
@@ -24,32 +20,29 @@ module GraphQL
         first_pass = true
 
         sources_condition = Async::Condition.new
+        jobs_condition = Async::Condition.new
         trace&.begin_dataloader(self)
-        while first_pass || !job_fibers.empty?
-          first_pass = false
-
-          f = spawn_fiber do
-            run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
-          end
-          run_fiber(f)
-          if f.alive?
-            raise "GraphQL-Ruby internal error: AsyncDataloader job fiber didn't terminate"
-          end
-
-          fiber_vars = get_fiber_variables
-          Sync do |root_task|
+        fiber_vars = get_fiber_variables
+        Sync do |root_task|
+          while first_pass || !job_fibers.empty?
+            first_pass = false
             set_fiber_variables(fiber_vars)
+            run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace, root_task, jobs_condition)
+
             while !source_tasks.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
               while (task = (source_tasks.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size + next_source_tasks.size) < total_fiber_limit) && spawn_source_task(root_task, sources_condition, trace))))
                 if task.alive?
-                  root_task.yield # give the source task a chance to run
+                  root_task.yield
                   next_source_tasks << task
                 end
               end
+
               sources_condition.signal
               source_tasks.concat(next_source_tasks)
               next_source_tasks.clear
             end
+
+            jobs_condition.signal
           end
 
           if !@lazies_at_depth.empty?
@@ -67,17 +60,31 @@ module GraphQL
 
       private
 
-      def run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
-        while (f = (job_fibers.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && spawn_job_fiber(trace))))
+      def run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace, parent_task, condition)
+        while (f = (job_fibers.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && spawn_job_task(trace, parent_task, condition))))
           if f.alive?
-            finished = run_fiber(f)
-            if !finished
-              next_job_fibers << f
-            end
+            parent_task.yield
+            next_job_fibers << f
           end
         end
         job_fibers.concat(next_job_fibers)
         next_job_fibers.clear
+      end
+
+      def spawn_job_task(trace, parent_task, condition)
+        if !@pending_jobs.empty?
+          fiber_vars = get_fiber_variables
+          parent_task.async do
+            trace&.dataloader_spawn_execution_fiber(@pending_jobs)
+            Fiber[:graphql_dataloader_next_tick] = condition
+            set_fiber_variables(fiber_vars)
+            while job = @pending_jobs.shift
+              job.call
+            end
+            cleanup_fiber
+            trace&.dataloader_fiber_exit
+          end
+        end
       end
 
       def spawn_source_task(parent_task, condition, trace)
