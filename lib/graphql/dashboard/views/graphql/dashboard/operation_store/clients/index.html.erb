@@ -33,7 +33,7 @@
           <td><%= link_to(client.name, graphql_dashboard.edit_operation_store_client_path(name: client.name)) %></td>
           <td>
             <%= link_to(graphql_dashboard.operation_store_client_operations_path(client_name: client.name)) do %>
-              <%= client.operations_count %><% if client.archived_operations_count > 0 %> <span class="muted">(<%=client.archived_operations_count%> archived)</span><% end %>
+              <%= client.operations_count %><% if client.archived_operations_count > 0 %> <span class="muted">(<%= client.archived_operations_count %> archived)</span><% end %>
             <% end %>
           </td>
           <td><%= client.created_at %></td>

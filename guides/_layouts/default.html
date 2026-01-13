@@ -8,7 +8,7 @@
     {% else %}
       <title>GraphQL - {{ page.title }}</title>
     {% endif %}
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="{{ site.baseurl }}/css/main.css">
     <link rel="icon" href="{{ site.baseurl }}/graphql-ruby-icon.png">
   </head>
@@ -51,7 +51,7 @@
       <div class="header-container">
         <div class="nav">
           <a href="{{ site.baseurl }}/" class="img-link">
-            <img class="graphql-ruby-img" src="{{ site.baseurl }}/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="{{ site.baseurl }}/graphql-ruby.png" alt="GraphQL Ruby Logo">
           </a>
           <div class="nav-links">
             <a href="{{ site.baseurl }}/getting_started">Get Started</a>
@@ -65,7 +65,8 @@
               onkeyup="GraphQLRubySearch.run(this)"
               type="text"
               placeholder="Search the docs..."
-            />
+              autocomplete="off"
+            >
             <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
           </div>
         </div>
