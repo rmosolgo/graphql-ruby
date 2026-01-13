@@ -215,7 +215,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
-      assert_equal({ 'f1' => {arg: "echo", required_with_default_arg: 1}.inspect }, res['data'])
+      assert_equal({ 'f1' => {arg: "echo", required_with_default_arg: 1}.inspect, 'f2' => nil }, res['data'])
       assert_equal(res['errors'][0]['message'], 'boom!')
       assert_equal(res['errors'][0]['path'], ['f2'])
     end
