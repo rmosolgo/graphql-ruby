@@ -340,7 +340,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str)
       assert_nil res["errors"]
-      assert_equal "{required_with_default_arg: 1, unauthorized_instrument: nil}", res["data"].fetch("field")
+      assert_equal({required_with_default_arg: 1, unauthorized_instrument: nil}.inspect, res["data"].fetch("field"))
     end
 
     it "handles applies authorization even when a custom load method is provided" do

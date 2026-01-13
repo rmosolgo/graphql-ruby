@@ -370,9 +370,9 @@ module GraphQL
 
             @dataloader.append_job {
               while !arguments.argument_values.each_value.all?(&:completed?)
-                puts "Waiting for argument_values finished @ #{field_defn.path} / #{context.current_path}"
                 @dataloader.yield # TODO this is a hack to let those finish first
               end
+
               if !arguments.argument_values.each_value.any?(&:errored?)
                 runtime_state = get_current_runtime_state # This might be in a different fiber
                 runtime_state.current_field = field_defn

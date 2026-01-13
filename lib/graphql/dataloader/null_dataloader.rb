@@ -48,8 +48,10 @@ module GraphQL
 
       def clear_cache; end
 
-      def yield(_source)
-        raise GraphQL::Error, "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
+      def yield(_source = nil)
+        run
+        # TODO solve this problem another way
+        # raise GraphQL::Error, "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
       end
 
       def append_job(callable = nil)

@@ -31,6 +31,7 @@ module GraphQL
           @value = context.schema.unauthorized_object(err)
         rescue GraphQL::ExecutionError => exec_err
           @state = :errored
+          context = @arguments.context
           exec_err.path ||= context.current_path
           exec_err.ast_node ||= @ast_node
           context.errors << exec_err
@@ -92,6 +93,7 @@ module GraphQL
           @state == :errored
         end
 
+        attr_reader :state
         # # @return [Object] The Ruby-ready value for this Argument
         # attr_reader :value
 
