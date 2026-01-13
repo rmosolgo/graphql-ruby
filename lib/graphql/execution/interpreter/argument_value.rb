@@ -30,11 +30,10 @@ module GraphQL
           context = @arguments.context
           @value = context.schema.unauthorized_object(err)
         rescue GraphQL::ExecutionError => exec_err
-          @state = :errored
+          @state = :finished
           context = @arguments.context
           exec_err.path ||= context.current_path
           exec_err.ast_node ||= @ast_node
-          context.errors << exec_err
           @value = exec_err
         rescue StandardError => err
           @state = :finished
@@ -69,16 +68,14 @@ module GraphQL
             call
           end
         rescue GraphQL::UnauthorizedError => err
-          @state = :errored
+          @state = :finished
           context = @arguments.context
           @value = context.schema.unauthorized_object(err)
-          @state = :finished
-          @value
         rescue GraphQL::ExecutionError => exec_err
-          @state = :errored
+          @state = :finished
           exec_err.path ||= context.current_path
           exec_err.ast_node ||= @ast_node
-          context.add_error(exec_err)
+          @value = exec_err
         rescue StandardError => err
           @state = :finished
           context = @arguments.context
@@ -86,11 +83,11 @@ module GraphQL
         end
 
         def completed?
-          @state == :finished || @state == :errored
+          @state == :finished
         end
 
         def errored?
-          @state == :errored
+          @value.is_a?(StandardError)
         end
 
         attr_reader :state

@@ -295,7 +295,7 @@ describe GraphQL::Schema::InputObject do
       input = { "a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5, "instrumentId" => "Instrument/Drum Kit", "danger" => 1 }
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 },
                                                    variables: { input: input})
-      assert_equal({}, res["data"])
+      assert_nil(res["data"])
 
       assert_equal("boom!", res["errors"][0]["message"])
       assert_equal([{ "line" => 1, "column" => 33 }], res["errors"][0]["locations"])

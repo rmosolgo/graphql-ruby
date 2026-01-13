@@ -373,14 +373,15 @@ module GraphQL
                 @dataloader.yield # TODO this is a hack to let those finish first
               end
 
-              if !arguments.argument_values.each_value.any?(&:errored?)
-                runtime_state = get_current_runtime_state # This might be in a different fiber
-                runtime_state.current_field = field_defn
-                runtime_state.current_arguments = arguments
-                runtime_state.current_result_name = result_name
-                runtime_state.current_result = selections_result
-                evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
+              if (first_error = arguments.argument_values.each_value.find(&:errored?))
+                arguments = first_error.value
               end
+              runtime_state = get_current_runtime_state # This might be in a different fiber
+              runtime_state.current_field = field_defn
+              runtime_state.current_arguments = arguments
+              runtime_state.current_result_name = result_name
+              runtime_state.current_result = selections_result
+              evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
             }
 
             # @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
