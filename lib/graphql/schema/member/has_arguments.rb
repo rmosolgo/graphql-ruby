@@ -263,7 +263,7 @@ module GraphQL
             end
 
             if value.nil? && argument_defn.replace_null_with_default?
-              value = default_value
+              value = argument_defn.default_value
               default_used = true
             end
 
