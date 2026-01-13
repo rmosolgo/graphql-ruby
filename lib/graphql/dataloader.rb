@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "graphql/dataloader/flat_dataloader"
 require "graphql/dataloader/null_dataloader"
 require "graphql/dataloader/request"
 require "graphql/dataloader/request_all"
@@ -65,7 +66,12 @@ module GraphQL
       end
       @fiber_limit = fiber_limit
       @lazies_at_depth = Hash.new { |h, k| h[k] = [] }
+      @steps_to_rerun_after_lazy = []
     end
+
+    attr_accessor :lazies_at_depth
+
+    attr_reader :steps_to_rerun_after_lazy
 
     # @return [Integer, nil]
     attr_reader :fiber_limit
@@ -215,6 +221,31 @@ module GraphQL
               run_next_pending_lazies(job_fibers, trace)
               run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
             end
+          end
+
+          if !@lazies_at_depth.empty?
+            smallest_depth = nil
+            @lazies_at_depth.each_key do |depth_key|
+              smallest_depth ||= depth_key
+              if depth_key < smallest_depth
+                smallest_depth = depth_key
+              end
+            end
+
+            if smallest_depth
+              lazies = @lazies_at_depth.delete(smallest_depth)
+              if !lazies.empty?
+                append_job {
+                  lazies.each(&:value) # resolve these Lazy instances
+                }
+                job_fibers << spawn_job_fiber(trace)
+              end
+            end
+          elsif !@steps_to_rerun_after_lazy.empty?
+            @pending_jobs.concat(@steps_to_rerun_after_lazy)
+            f = spawn_job_fiber(trace)
+            job_fibers << f
+            @steps_to_rerun_after_lazy.clear
           end
         end
 

@@ -353,9 +353,10 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
           end
         end
 
-        def self.resolve(obj, args, ctx)
+        def self.resolve(object, arguments, context)
           value = yield
-          value.values.compact!
+          # Previously, `yield` returned a finished value. But it doesn't anymore.
+          value.selection_result.values.compact!
           value
         end
       end
