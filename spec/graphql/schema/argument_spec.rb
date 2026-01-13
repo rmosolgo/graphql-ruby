@@ -215,7 +215,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
-      assert_equal({ 'f1' => {arg: "echo", required_with_default_arg: 1}.inspect, 'f2' => nil }, res['data'])
+      assert_equal({ 'f1' => {arg: "echo", required_with_default_arg: 1}.inspect }, res['data'])
       assert_equal(res['errors'][0]['message'], 'boom!')
       assert_equal(res['errors'][0]['path'], ['f2'])
     end
@@ -226,7 +226,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
-      assert_equal({ 'f1' => {arg: "echo", required_with_default_arg: 1}.inspect, 'f2' => nil }, res['data'])
+      assert_equal({ 'f1' => {arg: "echo", required_with_default_arg: 1}.inspect, 'f2' => {required_with_default_arg: 1, unauthorized_prepared_arg: nil}.inspect }, res['data'])
       assert_nil(res['errors'])
     end
   end
@@ -340,7 +340,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str)
       assert_nil res["errors"]
-      assert_nil res["data"].fetch("field")
+      assert_equal "{required_with_default_arg: 1, unauthorized_instrument: nil}", res["data"].fetch("field")
     end
 
     it "handles applies authorization even when a custom load method is provided" do

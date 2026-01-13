@@ -315,6 +315,7 @@ module GraphQL
               original_value: resolved_coerced_value,
               definition: self,
               default_used: default_used,
+              ast_node: nil,
             )
           end
         end

@@ -6,12 +6,13 @@ module GraphQL
       # A container for metadata regarding arguments present in a GraphQL query.
       # @see Interpreter::Arguments#argument_values for a hash of these objects.
       class ArgumentValue
-        def initialize(definition:, value:, original_value:, default_used:)
+        def initialize(definition:, value:, original_value:, default_used:, ast_node:)
           @arguments = nil
           @definition = definition
           @value = value
           @original_value = original_value
           @default_used = default_used
+          @ast_node = ast_node
           @state = :initialized
         end
 
@@ -28,6 +29,12 @@ module GraphQL
           @state = :finished
           context = @arguments.context
           @value = context.schema.unauthorized_object(err)
+        rescue GraphQL::ExecutionError => exec_err
+          @state = :errored
+          exec_err.path ||= context.current_path
+          exec_err.ast_node ||= @ast_node
+          context.errors << exec_err
+          @value = exec_err
         rescue StandardError => err
           @state = :finished
           context = @arguments.context
@@ -61,18 +68,28 @@ module GraphQL
             call
           end
         rescue GraphQL::UnauthorizedError => err
-          @state = :finished
+          @state = :errored
           context = @arguments.context
           @value = context.schema.unauthorized_object(err)
+          @state = :finished
+          @value
+        rescue GraphQL::ExecutionError => exec_err
+          @state = :errored
+          exec_err.path ||= context.current_path
+          exec_err.ast_node ||= @ast_node
+          context.add_error(exec_err)
         rescue StandardError => err
           @state = :finished
           context = @arguments.context
           @value = context.schema.handle_or_reraise(context, err)
         end
 
-        # @private is this value finished being dataloaded?
-        def finished?
-          @state == :finished
+        def completed?
+          @state == :finished || @state == :errored
+        end
+
+        def errored?
+          @state == :errored
         end
 
         # # @return [Object] The Ruby-ready value for this Argument

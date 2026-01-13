@@ -247,7 +247,7 @@ module GraphQL
           self.class.argument_class(new_arg_class)
         end
 
-        def create_runtime_arguments(parent_object, values, context)
+        def create_runtime_arguments(parent_object, values, context, ast_node)
           argument_values = nil
           arg_defns = context.types.arguments(self)
           arg_defns.each do |argument_defn|
@@ -273,6 +273,7 @@ module GraphQL
               original_value: value,
               definition: argument_defn,
               default_used: default_used,
+              ast_node: ast_node,
             )
           end
 
