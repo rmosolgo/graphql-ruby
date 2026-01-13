@@ -362,14 +362,33 @@ module GraphQL
               evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
             end
           else
-            @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
+            args_hash = GraphQL::Execution::Interpreter::ArgumentsCache.prepare_args_hash(query, ast_node)
+            arguments = field_defn.create_runtime_arguments(owner_object, args_hash, context)
+            arguments.argument_values.each_value do |arg_value|
+              @dataloader.append_job(arg_value)
+            end
+
+            @dataloader.append_job {
+              while !arguments.argument_values.each_value.all?(&:finished?)
+                puts "Waiting for argument_values finished @ #{field_defn.path} / #{context.current_path}"
+                @dataloader.yield # TODO this is a hack to let those finish first
+              end
               runtime_state = get_current_runtime_state # This might be in a different fiber
               runtime_state.current_field = field_defn
-              runtime_state.current_arguments = resolved_arguments
+              runtime_state.current_arguments = arguments
               runtime_state.current_result_name = result_name
               runtime_state.current_result = selections_result
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
-            end
+              evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
+            }
+
+            # @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
+            #   runtime_state = get_current_runtime_state # This might be in a different fiber
+            #   runtime_state.current_field = field_defn
+            #   runtime_state.current_arguments = resolved_arguments
+            #   runtime_state.current_result_name = result_name
+            #   runtime_state.current_result = selections_result
+            #   evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
+            # end
           end
         end
 
