@@ -37,6 +37,7 @@ module GraphQL
         @object = object
         @context = context
         @field = field
+        @interpreter_arguments = context[:current_arguments]
         # Since this hash is constantly rebuilt, cache it for this call
         @arguments_by_keyword = {}
         context.types.arguments(self.class).each do |arg|
@@ -193,6 +194,14 @@ module GraphQL
           arg_defn = @arguments_by_keyword[key]
           if arg_defn
             prepped_value = prepared_args[key] = arg_defn.load_and_authorize_value(self, value, context)
+            while prepped_value.is_a?(Array) && prepped_value.any? { |v| NOT_CONFIGURED.equal?(v) }
+              @context.dataloader.yield # TODO hack to wait for other work to finish
+            end
+
+            if prepped_value.is_a?(Array) && (first_error = prepped_value.find { |v| v.is_a?(GraphQL::ExecutionError) } )
+              raise first_error
+            end
+
             if context.schema.lazy?(prepped_value)
               prepare_lazies << context.query.after_lazy(prepped_value) do |finished_prepped_value|
                 prepared_args[key] = finished_prepped_value

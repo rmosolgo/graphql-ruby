@@ -5,7 +5,6 @@ module GraphQL
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
-
       class ExecutionErrors
         def initialize(ctx)
           @context = ctx

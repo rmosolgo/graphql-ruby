@@ -54,6 +54,25 @@ module GraphQL
         # @return [Hash{Symbol => ArgumentValue}]
         attr_reader :argument_values
 
+        def wait_until_dataloaded
+          @argument_values.each_value do |arg_value|
+            @context.dataloader.append_job(arg_value)
+          end
+
+          while !argument_values.each_value.all?(&:completed?)
+            @context.dataloader.yield # TODO this is a hack to let those finish first
+          end
+          p [@parent_object]
+          p argument_values.each_value.map(&:value)
+          if (first_error = argument_values.each_value.find(&:errored?))
+            first_error.value
+          elsif @parent_object.is_a?(Class) && @parent_object < GraphQL::Schema::InputObject
+            @parent_object.new(self, ruby_kwargs: keyword_arguments, context: @context, defaults_used: nil)
+          else
+            self
+          end
+        end
+
         def empty?
           @empty
         end

@@ -362,20 +362,9 @@ module GraphQL
               evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
             end
           else
-            args_hash = GraphQL::Execution::Interpreter::ArgumentsCache.prepare_args_hash(query, ast_node)
-            arguments = field_defn.create_runtime_arguments(owner_object, args_hash, context, ast_node)
-            arguments.argument_values.each_value do |arg_value|
-              @dataloader.append_job(arg_value)
-            end
-
+            arguments = field_defn.create_runtime_arguments(owner_object, context, ast_node)
             @dataloader.append_job {
-              while !arguments.argument_values.each_value.all?(&:completed?)
-                @dataloader.yield # TODO this is a hack to let those finish first
-              end
-
-              if (first_error = arguments.argument_values.each_value.find(&:errored?))
-                arguments = first_error.value
-              end
+              arguments = arguments.wait_until_dataloaded
               runtime_state = get_current_runtime_state # This might be in a different fiber
               runtime_state.current_field = field_defn
               runtime_state.current_arguments = arguments

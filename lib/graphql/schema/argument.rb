@@ -359,6 +359,8 @@ module GraphQL
               loaded_values[idx] = NOT_CONFIGURED
               context.dataloader.append_job do
                 loaded_values[idx] = load_method_owner.load_and_authorize_application_object(self, val, context)
+              rescue GraphQL::ExecutionError => exec_err
+                loaded_values[idx] = exec_err
               end
             }
 
