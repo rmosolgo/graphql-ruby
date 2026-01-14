@@ -13,18 +13,20 @@ module GraphQL
         extend Forwardable
         include GraphQL::Dig
 
-        # The Ruby-style arguments hash, ready for a resolver.
-        # This hash is the one used at runtime.
-        #
-        # @return [Hash<Symbol, Object>]
-        attr_reader :keyword_arguments
+        # @return [GraphQL::Query::Context]
+        attr_reader :context
+
+        # @return [Object, nil]
+        attr_reader :parent_object
 
         # @param argument_values [nil, Hash{Symbol => ArgumentValue}]
         # @param keyword_arguments [nil, Hash{Symbol => Object}]
-        def initialize(keyword_arguments: nil, argument_values:)
+        def initialize(keyword_arguments: nil, parent_object: nil, context: nil, argument_values:)
           @empty = argument_values.nil? || argument_values.empty?
+          @context = context
+          @parent_object = parent_object
           # This is only present when `extras` have been merged in:
-          if keyword_arguments
+          @keyword_arguments = if keyword_arguments
             # This is a little crazy. We expect the `:argument_details` extra to _include extras_,
             # but the object isn't created until _after_ extras are put together.
             # So, we have to use a special flag here to say, "at the last minute, add yourself to the keyword args."
@@ -38,25 +40,57 @@ module GraphQL
             if keyword_arguments[:argument_details] == :__arguments_add_self
               keyword_arguments[:argument_details] = self
             end
-            @keyword_arguments = keyword_arguments.freeze
-          elsif !@empty
-            @keyword_arguments = {}
-            argument_values.each do |name, arg_val|
-              @keyword_arguments[name] = arg_val.value
-            end
-            @keyword_arguments.freeze
+            keyword_arguments.freeze
+          elsif @empty
+            NO_ARGS
           else
-            @keyword_arguments = NO_ARGS
+            nil
           end
           @argument_values = argument_values ? argument_values.freeze : NO_ARGS
-          freeze
+          @argument_values.each_value { |v| v.arguments = self }
+          # freeze TODO put this call elsewhere?
         end
 
         # @return [Hash{Symbol => ArgumentValue}]
         attr_reader :argument_values
 
+        def wait_until_dataloaded
+          @argument_values.each_value do |arg_value|
+            @context.dataloader.append_job(arg_value)
+          end
+
+          while !argument_values.each_value.all?(&:completed?)
+            @context.dataloader.yield # TODO this is a hack to let those finish first
+          end
+          p [@parent_object]
+          p argument_values.each_value.map(&:value)
+          if (first_error = argument_values.each_value.find(&:errored?))
+            first_error.value
+          elsif @parent_object.is_a?(Class) && @parent_object < GraphQL::Schema::InputObject
+            @parent_object.new(self, ruby_kwargs: keyword_arguments, context: @context, defaults_used: nil)
+          else
+            self
+          end
+        end
+
         def empty?
           @empty
+        end
+
+        # The Ruby-style arguments hash, ready for a resolver.
+        # This hash is the one used at runtime.
+        #
+        # @return [Hash<Symbol, Object>]
+        def keyword_arguments
+          kws = {}
+          argument_values.each do |name, arg_val|
+            kws[name] = arg_val.value
+          end
+          if @keyword_arguments
+            @keyword_arguments.merge(kws)
+          else
+            kws
+          end
         end
 
         def_delegators :keyword_arguments, :key?, :[], :fetch, :keys, :each, :values, :size, :to_h
