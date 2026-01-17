@@ -10,7 +10,7 @@ index: 0
 ---
 
 
-Out-of-the-box, GraphQL is [versionless by design](https://graphql.org/learn/best-practices/#versioning). GraphQL's openness to extension paves the way for continuously expanding and improving an API. You can _always_ add new fields, new arguments, and new types to implement new features and customize existing behavior.
+Out-of-the-box, GraphQL is [versionless by design](https://graphql.org/learn/schema-design/). GraphQL's openness to extension paves the way for continuously expanding and improving an API. You can _always_ add new fields, new arguments, and new types to implement new features and customize existing behavior.
 
 However, sometimes a business case may call for a different versioning scheme. [GraphQL-Enterprise](https://graphql.pro/enterprise)'s "Changesets" enable schemas to release _any_ change -- even breaking changes -- to clients, depending on what version of the schema they're using. With Changesets, you can redefine existing fields, define new types using old names, add or remove enum values -- anything, really -- while maintaining compatibility for existing clients.
 
