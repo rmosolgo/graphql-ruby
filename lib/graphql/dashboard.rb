@@ -34,47 +34,54 @@ module Graphql
   class Dashboard < Rails::Engine
     engine_name "graphql_dashboard"
     isolate_namespace(Graphql::Dashboard)
-    routes.draw do
-      root "landings#show"
-      resources :statics, only: :show, constraints: { id: /[0-9A-Za-z\-.]+/ }
 
-      namespace :detailed_traces do
-        resources :traces, only: [:index, :show, :destroy] do
-          collection do
-            delete :delete_all, to: "traces#delete_all", as: :delete_all
-          end
-        end
-      end
+    class << self
+      def routes
+        @routes ||= ActionDispatch::Routing::RouteSet.new.tap do |rs|
+          rs.draw do
+            root "landings#show"
+            resources :statics, only: :show, constraints: { id: /[0-9A-Za-z\-.]+/ }
 
-      namespace :limiters do
-        resources :limiters, only: [:show, :update], param: :name
-      end
+            namespace :detailed_traces do
+              resources :traces, only: [:index, :show, :destroy] do
+                collection do
+                  delete :delete_all, to: "traces#delete_all", as: :delete_all
+                end
+              end
+            end
 
-      namespace :operation_store do
-        resources :clients, param: :name do
-          resources :operations, param: :digest, only: [:index] do
-            collection do
-              get :archived, to: "operations#index", archived_status: :archived, as: :archived
-              post :archive, to: "operations#update", modification: :archive, as: :archive
-              post :unarchive, to: "operations#update", modification: :unarchive, as: :unarchive
+            namespace :limiters do
+              resources :limiters, only: [:show, :update], param: :name
+            end
+
+            namespace :operation_store do
+              resources :clients, param: :name do
+                resources :operations, param: :digest, only: [:index] do
+                  collection do
+                    get :archived, to: "operations#index", archived_status: :archived, as: :archived
+                    post :archive, to: "operations#update", modification: :archive, as: :archive
+                    post :unarchive, to: "operations#update", modification: :unarchive, as: :unarchive
+                  end
+                end
+              end
+
+              resources :operations, param: :digest, only: [:index, :show] do
+                collection do
+                  get :archived, to: "operations#index", archived_status: :archived, as: :archived
+                  post :archive, to: "operations#update", modification: :archive, as: :archive
+                  post :unarchive, to: "operations#update", modification: :unarchive, as: :unarchive
+                end
+              end
+              resources :index_entries, only: [:index, :show], param: :name, constraints: { name: /[A-Za-z0-9_.]+/}
+            end
+
+            namespace :subscriptions do
+              resources :topics, only: [:index, :show], param: :name, constraints: { name: /.*/ }
+              resources :subscriptions, only: [:show], constraints: { id: /[a-zA-Z0-9\-]+/ }
+              post "/subscriptions/clear_all", to: "subscriptions#clear_all", as: :clear_all
             end
           end
         end
-
-        resources :operations, param: :digest, only: [:index, :show] do
-          collection do
-            get :archived, to: "operations#index", archived_status: :archived, as: :archived
-            post :archive, to: "operations#update", modification: :archive, as: :archive
-            post :unarchive, to: "operations#update", modification: :unarchive, as: :unarchive
-          end
-        end
-        resources :index_entries, only: [:index, :show], param: :name, constraints: { name: /[A-Za-z0-9_.]+/}
-      end
-
-      namespace :subscriptions do
-        resources :topics, only: [:index, :show], param: :name, constraints: { name: /.*/ }
-        resources :subscriptions, only: [:show], constraints: { id: /[a-zA-Z0-9\-]+/ }
-        post "/subscriptions/clear_all", to: "subscriptions#clear_all", as: :clear_all
       end
     end
 
