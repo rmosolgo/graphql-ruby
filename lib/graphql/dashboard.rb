@@ -34,7 +34,7 @@ module Graphql
   class Dashboard < Rails::Engine
     engine_name "graphql_dashboard"
     isolate_namespace(Graphql::Dashboard)
-    routes.draw do
+    routes do
       root "landings#show"
       resources :statics, only: :show, constraints: { id: /[0-9A-Za-z\-.]+/ }
 
