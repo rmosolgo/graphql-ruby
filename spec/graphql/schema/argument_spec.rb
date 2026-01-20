@@ -289,10 +289,10 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = Jazz::Schema.execute(query_str, variables: { ensembleId: "Ensemble/Robert Glasper Experiment" })
-      assert_equal "ROBERT GLASPER Experiment", res["data"]["loadAndReturnEnsemble"]["ensemble"]["name"]
+      assert_equal "ROBERT GLASPER Experiment", res["data"]["loadAndReturnEnsemble"]["ensemble"]["name"], "It works iwth a given value"
 
       res2 = Jazz::Schema.execute(query_str, variables: { ensembleId: nil })
-      assert_nil res2["data"]["loadAndReturnEnsemble"].fetch("ensemble")
+      assert_nil res2["data"]["loadAndReturnEnsemble"].fetch("ensemble"), "It returns nil when given nil"
 
 
       query_str2 = <<-GRAPHQL

@@ -362,7 +362,7 @@ module GraphQL
               evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, result_name, selections_result, runtime_state)
             end
           else
-            arguments = field_defn.create_runtime_arguments(owner_object, context, ast_node)
+            arguments = field_defn.create_runtime_arguments(owner_object, field_defn, context, ast_node)
             @dataloader.append_job {
               arguments = arguments.wait_until_dataloaded
               runtime_state = get_current_runtime_state # This might be in a different fiber

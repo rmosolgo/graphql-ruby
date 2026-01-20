@@ -21,9 +21,10 @@ module GraphQL
 
         # @param argument_values [nil, Hash{Symbol => ArgumentValue}]
         # @param keyword_arguments [nil, Hash{Symbol => Object}]
-        def initialize(keyword_arguments: nil, parent_object: nil, context: nil, argument_values:)
+        def initialize(keyword_arguments: nil, owner: nil, parent_object: nil, context: nil, argument_values:)
           @empty = argument_values.nil? || argument_values.empty?
           @context = context
+          @owner = owner
           @parent_object = parent_object
           # This is only present when `extras` have been merged in:
           @keyword_arguments = if keyword_arguments
@@ -62,15 +63,17 @@ module GraphQL
           while !argument_values.each_value.all?(&:completed?)
             @context.dataloader.yield # TODO this is a hack to let those finish first
           end
-          p [@parent_object]
-          p argument_values.each_value.map(&:value)
-          if (first_error = argument_values.each_value.find(&:errored?))
+          result = if (first_error = argument_values.each_value.find(&:errored?))
             first_error.value
-          elsif @parent_object.is_a?(Class) && @parent_object < GraphQL::Schema::InputObject
-            @parent_object.new(self, ruby_kwargs: keyword_arguments, context: @context, defaults_used: nil)
+          elsif @owner.is_a?(Schema::HasSingleInputArgument)
+            input_object_class = @owner.input_type
+            input_object_class.new(self, ruby_kwargs: keyword_arguments, context: @context, defaults_used: nil)
+          elsif @owner.is_a?(Class) && @owner < GraphQL::Schema::InputObject
+            @owner.new(self, ruby_kwargs: keyword_arguments, context: @context, defaults_used: nil)
           else
             self
           end
+          result
         end
 
         def empty?

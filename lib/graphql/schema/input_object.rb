@@ -233,9 +233,8 @@ module GraphQL
             return nil
           end
 
-          args = create_runtime_arguments(self, ctx, value)
+          args = create_runtime_arguments(self, self, ctx, value)
           result = args.wait_until_dataloaded
-          p [self, result]
           result
         end
 

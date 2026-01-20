@@ -247,7 +247,7 @@ module GraphQL
           self.class.argument_class(new_arg_class)
         end
 
-        def create_runtime_arguments(parent_object, context, ast_node)
+        def create_runtime_arguments(parent_object, field_defn, context, ast_node)
           values = GraphQL::Execution::Interpreter::ArgumentsCache.prepare_args_hash(context.query, ast_node)
           argument_values = nil
           arg_defns = context.types.arguments(self)
@@ -281,11 +281,18 @@ module GraphQL
           if argument_values
             Execution::Interpreter::Arguments.new(
               context: context,
+              owner: field_defn,
               parent_object: parent_object,
               argument_values: argument_values
             )
           else
-            Execution::Interpreter::Arguments::EMPTY
+            # TODO really should use ::EMPTY here
+            Execution::Interpreter::Arguments.new(
+              context: context,
+              owner: field_defn,
+              parent_object: parent_object,
+              argument_values: EmptyObjects::EMPTY_HASH
+            )
           end
         end
 
