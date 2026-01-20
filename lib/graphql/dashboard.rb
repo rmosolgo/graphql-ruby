@@ -76,6 +76,8 @@ module Graphql
         resources :subscriptions, only: [:show], constraints: { id: /[a-zA-Z0-9\-]+/ }
         post "/subscriptions/clear_all", to: "subscriptions#clear_all", as: :clear_all
       end
+
+      ApplicationController.include(Dashboard.routes.url_helpers)
     end
 
     class ApplicationController < ActionController::Base
