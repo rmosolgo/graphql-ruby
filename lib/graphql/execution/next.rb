@@ -58,11 +58,48 @@ module GraphQL
 
 
           def execute
-            field_defn = @runner.schema.get_field(@parent_type, @ast_node.name)
+            field_defn = @runner.schema.get_field(@parent_type, @ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{@ast_node.name}")
             result_key = @ast_node.alias || @ast_node.name
-            field_results = field_defn.resolve_all(@objects, @runner.context) # Todo arguments here
-            field_results.each_with_index do |result, i|
-              @results[i][result_key] = result
+            field_results = field_defn.resolve_all(@objects, @runner.context) # TODO arguments here
+            return_type = field_defn.type
+            return_result_type = return_type.unwrap
+            if return_result_type.kind.composite?
+              if return_type.list?
+                all_next_objects = []
+                all_next_results = []
+                field_results.each_with_index do |result_arr, i|
+                  next_results = Array.new(result_arr.length) { Hash.new }
+                  result_h = @results[i]
+                  result_h[result_key] = next_results
+                  all_next_objects.concat(result_arr)
+                  all_next_results.concat(next_results)
+                end
+                @runner.steps_queue << SelectionsStep.new(
+                  parent_type: return_result_type,
+                  selections: @ast_node.selections,
+                  objects: all_next_objects,
+                  results: all_next_results,
+                  runner: @runner,
+                )
+              else
+                next_results = Array.new(field_results.length) { Hash.new }
+                field_results.each_with_index do |_result, i|
+                  result_h = @results[i]
+                  result_h[result_key] = next_results[i]
+                end
+                @runner.steps_queue << SelectionsStep.new(
+                  parent_type: return_result_type,
+                  selections: @ast_node.selections,
+                  objects: field_results,
+                  results: next_results,
+                  runner: @runner,
+                )
+              end
+            else
+              field_results.each_with_index do |result, i|
+                result_h = @results[i] || raise("Invariant: no result object at index #{i} for #{@parent_type.to_type_signature}.#{@ast_node.name} (result: #{result.inspect})")
+                result_h[result_key] = result
+              end
             end
           end
         end

@@ -4,9 +4,21 @@ require "graphql/execution/next"
 describe "Next Execution" do
   class NextExecutionSchema < GraphQL::Schema
     class BaseField < GraphQL::Schema::Field
+      def initialize(value: nil, object_method: nil, **kwargs, &block)
+        @static_value = value
+        @object_method = object_method
+        super(**kwargs, &block)
+      end
+
       def resolve_all(objects, context)
-        @all_method_name ||= :"all_#{method_sym}"
-        owner.public_send(@all_method_name, objects, context) # TODO args
+        if !@static_value.nil?
+          Array.new(objects.length, @static_value)
+        elsif @object_method
+          objects.map { |o| o.public_send(@object_method) }
+        else
+          @all_method_name ||= :"all_#{method_sym}"
+          owner.public_send(@all_method_name, objects, context) # TODO args
+        end
       end
     end
 
@@ -14,7 +26,19 @@ describe "Next Execution" do
       field_class BaseField
     end
 
+    ALL_FAMILIES = [
+      OpenStruct.new(name: "Legumes"),
+      OpenStruct.new(name: "Nightshades"),
+      OpenStruct.new(name: "Curcurbits")
+    ]
+
+    class PlantFamily < BaseObject
+      field :name, String, object_method: :name
+    end
+
     class Query < BaseObject
+      field :families, [PlantFamily], value: ALL_FAMILIES
+
       field :int, Integer
 
       def self.all_int(objects, context)
@@ -37,9 +61,9 @@ describe "Next Execution" do
   end
 
   it "runs a query" do
-    result = run_next("{ int str }", root_object: "Abc")
+    result = run_next("{ int str families { name }}", root_object: "Abc")
     expected_result = {
-      "data" => { "int" => 0, "str" => "String"}
+      "data" => { "int" => 0, "str" => "String", "families" => [{"name" => "Legumes"}, {"name" => "Nightshades"}, {"name" => "Curcurbits"}]}
     }
     assert_equal(expected_result, result)
   end
