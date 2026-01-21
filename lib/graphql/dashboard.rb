@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'rails/engine'
+require 'action_controller'
 module Graphql
   # `GraphQL::Dashboard` is a `Rails::Engine`-based dashboard for viewing metadata about your GraphQL schema.
   #
