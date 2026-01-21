@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 2.5.17 (21 Jan 2026)
+
+### Bug fixes
+
+- `GraphQL::Dashboard`: fix routes compatibility with Devise #5505
+- `GraphQL::Dashboard`: fix HTML/erb lint issues #5497
+- Parser: improve check for invalid number followed by name #5492 #5492
+- `GraphQL::Field`: optimize boot memory by removing `Field.from_options` #5495
+- `field`, `argument`: improve API documentation for DSL methods #5491
+
 # 2.5.16 (10 Dec 2025)
 
 ### Bug fixes
