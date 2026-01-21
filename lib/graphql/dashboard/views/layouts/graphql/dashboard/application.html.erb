@@ -5,11 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GraphQL Dashboard <%= content_for?(:title) ? " · #{content_for(:title)}" : "" %> </title>
-    <%= stylesheet_link_tag graphql_dashboard.static_path("bootstrap-5.3.3.min.css") %>
-    <%= stylesheet_link_tag graphql_dashboard.static_path("charts.min.css") %>
-    <%= stylesheet_link_tag graphql_dashboard.static_path("dashboard.css") %>
-    <%= javascript_include_tag graphql_dashboard.static_path("bootstrap-5.3.3.min.js") %>
-    <%= javascript_include_tag graphql_dashboard.static_path("dashboard.js") %>
+    <link rel="stylesheet" href="<%= graphql_dashboard.static_path("bootstrap-5.3.3.min.css") %>" media="screen" />
+    <link rel="stylesheet" href="<%= graphql_dashboard.static_path("charts.min.css") %>" media="screen" />
+    <link rel="stylesheet" href="<%= graphql_dashboard.static_path("dashboard.css") %>" media="screen" />
+    <script src="<%= graphql_dashboard.static_path("bootstrap-5.3.3.min.js") %>"></script>
+    <script src="<%= graphql_dashboard.static_path("dashboard.js") %>"></script>
     <%= csrf_meta_tags %>
   </head>
   <body class="h-100 d-flex flex-column">
