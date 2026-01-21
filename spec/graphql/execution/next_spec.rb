@@ -10,14 +10,14 @@ describe "Next Execution" do
         super(**kwargs, &block)
       end
 
-      def resolve_all(objects, context)
+      def resolve_all(objects, context, **arguments)
         if !@static_value.nil?
           Array.new(objects.length, @static_value)
         elsif @object_method
           objects.map { |o| o.public_send(@object_method) }
         else
           @all_method_name ||= :"all_#{method_sym}"
-          owner.public_send(@all_method_name, objects, context) # TODO args
+          owner.public_send(@all_method_name, objects, context, **arguments)
         end
       end
     end
@@ -27,28 +27,50 @@ describe "Next Execution" do
     end
 
     ALL_FAMILIES = [
-      OpenStruct.new(name: "Legumes"),
-      OpenStruct.new(name: "Nightshades"),
-      OpenStruct.new(name: "Curcurbits")
+      OpenStruct.new(name: "Legumes", grows_in: ["SPRING", "SUMMER", "FALL"], species: [OpenStruct.new(name: "Snow Pea")]),
+      OpenStruct.new(name: "Nightshades", grows_in: ["SUMMER"], species: [OpenStruct.new(name: "Tomato")]),
+      OpenStruct.new(name: "Curcurbits", grows_in: ["SUMMER"], species: [OpenStruct.new(name: "Cucumber")])
     ]
 
-    class PlantFamily < BaseObject
+    class Season < GraphQL::Schema::Enum
+      value "WINTER"
+      value "SPRING"
+      value "SUMMER"
+      value "FALL"
+    end
+
+    class Species < BaseObject
       field :name, String, object_method: :name
     end
 
+    class PlantFamily < BaseObject
+      field :name, String, object_method: :name
+      field :grows_in, Season, object_method: :grows_in
+      field :species, [Species], object_method: :species
+    end
+
+
     class Query < BaseObject
       field :families, [PlantFamily], value: ALL_FAMILIES
-
-      field :int, Integer
-
-      def self.all_int(objects, context)
-        objects.each_with_index.map { |obj, i| i }
-      end
 
       field :str, String
 
       def self.all_str(objects, context)
         objects.map { |obj| obj.class.name }
+      end
+
+      field :find_species, Species do
+        argument :name, String
+      end
+
+      def self.all_find_species(objects, context, name:)
+        species = nil
+        ALL_FAMILIES.each do |f|
+          if (species = f.species.find { |s| s.name == name })
+            break
+          end
+        end
+        Array.new(objects.length, species)
       end
     end
 
@@ -61,9 +83,25 @@ describe "Next Execution" do
   end
 
   it "runs a query" do
-    result = run_next("{ int str families { name }}", root_object: "Abc")
+    result = run_next("{
+      str
+      families { name growsIn species { name } }
+      t: findSpecies(name: \"Tomato\") { name }
+      c: findSpecies(name: \"Cucumber\") { name }
+      x: findSpecies(name: \"Blue Rasperry\") { name }
+    }", root_object: "Abc")
     expected_result = {
-      "data" => { "int" => 0, "str" => "String", "families" => [{"name" => "Legumes"}, {"name" => "Nightshades"}, {"name" => "Curcurbits"}]}
+      "data" => {
+        "str" => "String",
+        "families" => [
+          {"name" => "Legumes", "growsIn" => ["SPRING", "SUMMER", "FALL"], "species" => [{"name" => "Snow Pea"}]},
+          {"name" => "Nightshades", "growsIn" => ["SUMMER"], "species" => [{"name" => "Tomato"}]},
+          {"name" => "Curcurbits", "growsIn" => ["SUMMER"], "species" => [{"name" => "Cucumber"}]}
+        ],
+        "t" => { "name" => "Tomato" },
+        "c" => { "name" => "Cucumber" },
+        "x" => nil
+      }
     }
     assert_equal(expected_result, result)
   end

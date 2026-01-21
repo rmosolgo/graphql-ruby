@@ -60,7 +60,15 @@ module GraphQL
           def execute
             field_defn = @runner.schema.get_field(@parent_type, @ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{@ast_node.name}")
             result_key = @ast_node.alias || @ast_node.name
-            field_results = field_defn.resolve_all(@objects, @runner.context) # TODO arguments here
+
+            arguments = @ast_node.arguments.each_with_object({}) { |arg_node, obj| obj[arg_node.name.to_sym] = arg_node.value }
+
+            field_results = if arguments.empty?
+              field_defn.resolve_all(@objects, @runner.context)
+            else
+              field_defn.resolve_all(@objects, @runner.context, **arguments)
+            end
+
             return_type = field_defn.type
             return_result_type = return_type.unwrap
             if return_result_type.kind.composite?
@@ -82,18 +90,27 @@ module GraphQL
                   runner: @runner,
                 )
               else
-                next_results = Array.new(field_results.length) { Hash.new }
-                field_results.each_with_index do |_result, i|
+                next_results = nil
+
+                field_results.each_with_index do |result, i|
                   result_h = @results[i]
-                  result_h[result_key] = next_results[i]
+                  if result.nil?
+                    result_h[result_key] = nil
+                  else
+                    next_results ||= []
+                    next_results << result_h[result_key] = {}
+                  end
                 end
-                @runner.steps_queue << SelectionsStep.new(
-                  parent_type: return_result_type,
-                  selections: @ast_node.selections,
-                  objects: field_results,
-                  results: next_results,
-                  runner: @runner,
-                )
+
+                if next_results
+                  @runner.steps_queue << SelectionsStep.new(
+                    parent_type: return_result_type,
+                    selections: @ast_node.selections,
+                    objects: field_results,
+                    results: next_results,
+                    runner: @runner,
+                  )
+                end
               end
             else
               field_results.each_with_index do |result, i|
