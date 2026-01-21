@@ -2,36 +2,21 @@
 module GraphQL
   module Execution
     module Next
-      def self.run(schema:, query_string:, context:, variables:)
+      def self.run(schema:, query_string:, context:, variables:, root_object:)
 
         document = GraphQL.parse(query_string)
-        query = Query.new(schema, document, context, variables)
-        query.result
-      end
-
-
-      class Query
-        def initialize(schema, document, context, variables)
-          @schema = schema
-          @document = document
-          @context = context
-          @variables = variables
-          @result = nil
-        end
-
-        attr_reader :schema, :document, :context, :variables
-
-        def result
-          @result ||= Runner.new(self).execute
-        end
+        runner = Runner.new(schema, document, context, variables, root_object)
+        runner.execute
       end
 
 
       class Runner
-        def initialize(query)
-          @query = query
-          @schema = query.schema
-          @context = query.context
+        def initialize(schema, document, context, variables, root_object)
+          @schema = schema
+          @document = document
+          @context = context
+          @variables = variables
+          @root_object = root_object
           @steps_queue = []
           @data = {}
         end
@@ -39,7 +24,7 @@ module GraphQL
         attr_reader :steps_queue, :schema, :context
 
         def execute
-          operation = @query.document.definitions.first # TODO select named operation
+          operation = @document.definitions.first # TODO select named operation
           root_type = case operation.operation_type
           when nil, "query"
             @schema.query
@@ -50,7 +35,7 @@ module GraphQL
           @steps_queue << SelectionsStep.new(
             parent_type: root_type,
             selections: operation.selections,
-            objects: [nil], # TODO support root_object,
+            objects: [@root_object],
             results: [@data],
             runner: self,
           )

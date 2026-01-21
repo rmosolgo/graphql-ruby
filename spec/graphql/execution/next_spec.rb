@@ -20,20 +20,26 @@ describe "Next Execution" do
       def self.all_int(objects, context)
         objects.each_with_index.map { |obj, i| i }
       end
+
+      field :str, String
+
+      def self.all_str(objects, context)
+        objects.map { |obj| obj.class.name }
+      end
     end
 
     query(Query)
   end
 
 
-  def run_next(query_str)
-    GraphQL::Execution::Next.run(schema: NextExecutionSchema, query_string: query_str, context: {}, variables: {})
+  def run_next(query_str, root_object: nil)
+    GraphQL::Execution::Next.run(schema: NextExecutionSchema, query_string: query_str, context: {}, variables: {}, root_object: root_object)
   end
 
   it "runs a query" do
-    result = run_next("{ int }")
+    result = run_next("{ int str }", root_object: "Abc")
     expected_result = {
-      "data" => { "int" => 0 }
+      "data" => { "int" => 0, "str" => "String"}
     }
     assert_equal(expected_result, result)
   end
