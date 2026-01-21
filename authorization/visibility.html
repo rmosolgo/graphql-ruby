@@ -6,7 +6,7 @@
     
       <title>GraphQL - Visibility</title>
     
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
@@ -49,12 +49,12 @@
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo">
           </a>
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.16/">API</a>
+            <a href="/api-doc/2.5.17/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -63,7 +63,8 @@
               onkeyup="GraphQLRubySearch.run(this)"
               type="text"
               placeholder="Search the docs..."
-            />
+              autocomplete="off"
+            >
             <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
           </div>
         </div>
@@ -302,7 +303,7 @@
 
 <h2 id="migration-notes">Migration Notes</h2>
 
-<p><a href="/api-doc/2.5.16/GraphQL/Schema/Visibility" target="_blank" title="API docs for GraphQL::Schema::Visibility"><code>GraphQL::Schema::Visibility</code></a> is a <em>new</em> implementation of visibility in GraphQL-Ruby. It has some slight differences from the previous implementation (<a href="/api-doc/2.5.16/GraphQL/Schema/Warden" target="_blank" title="API docs for GraphQL::Schema::Warden"><code>GraphQL::Schema::Warden</code></a>):</p>
+<p><a href="/api-doc/2.5.17/GraphQL/Schema/Visibility" target="_blank" title="API docs for GraphQL::Schema::Visibility"><code>GraphQL::Schema::Visibility</code></a> is a <em>new</em> implementation of visibility in GraphQL-Ruby. It has some slight differences from the previous implementation (<a href="/api-doc/2.5.17/GraphQL/Schema/Warden" target="_blank" title="API docs for GraphQL::Schema::Warden"><code>GraphQL::Schema::Warden</code></a>):</p>
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">Visibility</code> speeds up Rails app boot because it doesn’t require all types to be loaded during boot and only loads types as they are used by queries.</li>

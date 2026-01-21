@@ -6,7 +6,7 @@
     
       <title>GraphQL - Apollo Subscriptions</title>
     
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
@@ -49,12 +49,12 @@
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo">
           </a>
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.16/">API</a>
+            <a href="/api-doc/2.5.17/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -63,7 +63,8 @@
               onkeyup="GraphQLRubySearch.run(this)"
               type="text"
               placeholder="Search the docs..."
-            />
+              autocomplete="off"
+            >
             <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
           </div>
         </div>
@@ -220,7 +221,7 @@
 
 <p>This link will check responses for the <code class="language-plaintext highlighter-rouge">X-Subscription-ID</code> header, and if it’s present, it will use that value to subscribe to Pusher for future updates.</p>
 
-<p>If you’re using <a href="/subscriptions/pusher_implementation#compressed-payloads">compressed payloads</a>, configure a <code class="language-plaintext highlighter-rouge">decompress:</code> function, too:</p>
+<p>If you’re using <a href="/subscriptions/pusher_implementation#payload-compression">compressed payloads</a>, configure a <code class="language-plaintext highlighter-rouge">decompress:</code> function, too:</p>
 
 <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Add `pako` to the project for gunzipping</span>
 <span class="k">import</span> <span class="nx">pako</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pako</span><span class="dl">"</span>
@@ -352,7 +353,7 @@
 <span class="nx">RailsNetworkInterface</span><span class="p">.</span><span class="nf">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
 </code></pre></div></div>
 
-<p>If you’re using <a href="/subscriptions/pusher_implementation#compressed-payloads">compressed payloads</a>, configure a <code class="language-plaintext highlighter-rouge">decompress:</code> function, too:</p>
+<p>If you’re using <a href="/subscriptions/pusher_implementation#payload-compression">compressed payloads</a>, configure a <code class="language-plaintext highlighter-rouge">decompress:</code> function, too:</p>
 
 <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Add `pako` to the project for gunzipping</span>
 <span class="k">import</span> <span class="nx">pako</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pako</span><span class="dl">"</span>

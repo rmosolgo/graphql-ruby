@@ -6,7 +6,7 @@
     
       <title>GraphQL - Async Source Execution</title>
     
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
@@ -49,12 +49,12 @@
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo">
           </a>
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.16/">API</a>
+            <a href="/api-doc/2.5.17/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -63,7 +63,8 @@
               onkeyup="GraphQLRubySearch.run(this)"
               type="text"
               placeholder="Search the docs..."
-            />
+              autocomplete="off"
+            >
             <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
           </div>
         </div>
@@ -156,7 +157,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p><code class="language-plaintext highlighter-rouge">AsyncDataloader</code> will run <a href="/api-doc/2.5.16/GraphQL/Dataloader/Source#fetch-instance_method" target="_blank" title="API docs for GraphQL::Dataloader::Source#fetch"><code>GraphQL::Dataloader::Source#fetch</code></a> calls in parallel, so that external service calls (like database queries or network calls) don’t have to wait in a queue.</p>
+  <p><code class="language-plaintext highlighter-rouge">AsyncDataloader</code> will run <a href="/api-doc/2.5.17/GraphQL/Dataloader/Source#fetch-instance_method" target="_blank" title="API docs for GraphQL::Dataloader::Source#fetch"><code>GraphQL::Dataloader::Source#fetch</code></a> calls in parallel, so that external service calls (like database queries or network calls) don’t have to wait in a queue.</p>
 
 <p>To use <code class="language-plaintext highlighter-rouge">AsyncDataloader</code>, hook it up in your schema <em>instead of</em> <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code>:</p>
 
@@ -169,7 +170,7 @@
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle add async
 </code></pre></div></div>
 
-<p>Now, <a href="/api-doc/2.5.16/GraphQL/Dataloader/AsyncDataloader" target="_blank" title="API docs for GraphQL::Dataloader::AsyncDataloader"><code>GraphQL::Dataloader::AsyncDataloader</code></a> will create <code class="language-plaintext highlighter-rouge">Async::Task</code> instances instead of plain <code class="language-plaintext highlighter-rouge">Fiber</code>s and the <code class="language-plaintext highlighter-rouge">async</code> gem will manage parallelism.</p>
+<p>Now, <a href="/api-doc/2.5.17/GraphQL/Dataloader/AsyncDataloader" target="_blank" title="API docs for GraphQL::Dataloader::AsyncDataloader"><code>GraphQL::Dataloader::AsyncDataloader</code></a> will create <code class="language-plaintext highlighter-rouge">Async::Task</code> instances instead of plain <code class="language-plaintext highlighter-rouge">Fiber</code>s and the <code class="language-plaintext highlighter-rouge">async</code> gem will manage parallelism.</p>
 
 <p>For a demonstration of this behavior, see: <a href="https://github.com/rmosolgo/rails-graphql-async-demo">https://github.com/rmosolgo/rails-graphql-async-demo</a></p>
 

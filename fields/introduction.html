@@ -6,7 +6,7 @@
     
       <title>GraphQL - Introduction</title>
     
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
@@ -49,12 +49,12 @@
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo">
           </a>
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.16/">API</a>
+            <a href="/api-doc/2.5.17/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -63,7 +63,8 @@
               onkeyup="GraphQLRubySearch.run(this)"
               type="text"
               placeholder="Search the docs..."
-            />
+              autocomplete="off"
+            >
             <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
           </div>
         </div>
@@ -381,7 +382,7 @@
   <li><code class="language-plaintext highlighter-rouge">owner</code> (the type that this field belongs to)</li>
   <li><code class="language-plaintext highlighter-rouge">lookahead</code> (see <a href="/queries/lookahead">Lookahead</a>)</li>
   <li><code class="language-plaintext highlighter-rouge">execution_errors</code>, whose <code class="language-plaintext highlighter-rouge">#add(err_or_msg)</code> method should be used for adding errors</li>
-  <li><code class="language-plaintext highlighter-rouge">argument_details</code> (Interpreter only), an instance of <a href="/api-doc/2.5.16/GraphQL/Execution/Interpreter/Arguments" target="_blank" title="API docs for GraphQL::Execution::Interpreter::Arguments"><code>GraphQL::Execution::Interpreter::Arguments</code></a> with argument metadata</li>
+  <li><code class="language-plaintext highlighter-rouge">argument_details</code> (Interpreter only), an instance of <a href="/api-doc/2.5.17/GraphQL/Execution/Interpreter/Arguments" target="_blank" title="API docs for GraphQL::Execution::Interpreter::Arguments"><code>GraphQL::Execution::Interpreter::Arguments</code></a> with argument metadata</li>
   <li><code class="language-plaintext highlighter-rouge">parent</code> (the previous <code class="language-plaintext highlighter-rouge">object</code> in the query)</li>
   <li>Custom extras, see below</li>
 </ul>

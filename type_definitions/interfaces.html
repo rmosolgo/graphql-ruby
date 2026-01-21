@@ -6,7 +6,7 @@
     
       <title>GraphQL - Interfaces</title>
     
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
@@ -49,12 +49,12 @@
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo">
           </a>
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.16/">API</a>
+            <a href="/api-doc/2.5.17/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -63,7 +63,8 @@
               onkeyup="GraphQLRubySearch.run(this)"
               type="text"
               placeholder="Search the docs..."
-            />
+              autocomplete="off"
+            >
             <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
           </div>
         </div>
@@ -221,7 +222,7 @@
 
 <h2 id="defining-interface-types">Defining Interface Types</h2>
 
-<p>Interfaces are Ruby modules which include <a href="/api-doc/2.5.16/GraphQL/Schema/Interface" target="_blank" title="API docs for GraphQL::Schema::Interface"><code>GraphQL::Schema::Interface</code></a>. First, make a base module:</p>
+<p>Interfaces are Ruby modules which include <a href="/api-doc/2.5.17/GraphQL/Schema/Interface" target="_blank" title="API docs for GraphQL::Schema::Interface"><code>GraphQL::Schema::Interface</code></a>. First, make a base module:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types::BaseInterface</span>
   <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Interface</span>

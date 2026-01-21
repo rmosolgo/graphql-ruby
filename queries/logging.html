@@ -6,7 +6,7 @@
     
       <title>GraphQL - Logging</title>
     
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
@@ -49,12 +49,12 @@
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo">
           </a>
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.16/">API</a>
+            <a href="/api-doc/2.5.17/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -63,7 +63,8 @@
               onkeyup="GraphQLRubySearch.run(this)"
               type="text"
               placeholder="Search the docs..."
-            />
+              autocomplete="off"
+            >
             <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
           </div>
         </div>
@@ -157,9 +158,9 @@
 <h1 class="guide-header">Logging</h1>
 <div class="guide-table-of-contents"></div>
 <div class="guide-container">
-  <p>At runtime, GraphQL-Ruby will output debug information using <a href="/api-doc/2.5.16/GraphQL/Query#logger-class_method" target="_blank" title="API docs for GraphQL::Query.logger"><code>GraphQL::Query.logger</code></a>. By default, this uses <code class="language-plaintext highlighter-rouge">Rails.logger</code>. To see output, make sure <code class="language-plaintext highlighter-rouge">config.log_level = :debug</code> is set. (This information isn’t meant for production logs.)</p>
+  <p>At runtime, GraphQL-Ruby will output debug information using <a href="/api-doc/2.5.17/GraphQL/Query#logger-class_method" target="_blank" title="API docs for GraphQL::Query.logger"><code>GraphQL::Query.logger</code></a>. By default, this uses <code class="language-plaintext highlighter-rouge">Rails.logger</code>. To see output, make sure <code class="language-plaintext highlighter-rouge">config.log_level = :debug</code> is set. (This information isn’t meant for production logs.)</p>
 
-<p>You can configure a custom logger with <a href="/api-doc/2.5.16/GraphQL/Schema#default_logger-class_method" target="_blank" title="API docs for GraphQL::Schema.default_logger"><code>GraphQL::Schema.default_logger</code></a>, for example:</p>
+<p>You can configure a custom logger with <a href="/api-doc/2.5.17/GraphQL/Schema#default_logger-class_method" target="_blank" title="API docs for GraphQL::Schema.default_logger"><code>GraphQL::Schema.default_logger</code></a>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># This logger will be used by queries during execution:</span>

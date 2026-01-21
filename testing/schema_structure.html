@@ -6,7 +6,7 @@
     
       <title>GraphQL - Schema Structure</title>
     
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
@@ -49,12 +49,12 @@
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo">
           </a>
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.16/">API</a>
+            <a href="/api-doc/2.5.17/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -63,7 +63,8 @@
               onkeyup="GraphQLRubySearch.run(this)"
               type="text"
               placeholder="Search the docs..."
-            />
+              autocomplete="off"
+            >
             <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
           </div>
         </div>
@@ -166,7 +167,7 @@
 
 <p>Make structure changes part of the normal code review process by adding a <code class="language-plaintext highlighter-rouge">schema.graphql</code> artifact to your project. This way, any changes to schema structure will show up clearly in a pull request as a diff to that file.</p>
 
-<p>You can read about this approach in <a href="https://rmosolgo.github.io/ruby/graphql/2017/03/16/tracking-schema-changes-with-graphql-ruby">“Tracking Schema Changes with GraphQL-Ruby”</a> or the built-in <a href="/api-doc/2.5.16/GraphQL/RakeTask" target="_blank" title="API docs for GraphQL::RakeTask"><code>GraphQL::RakeTask</code></a> for generating schema dumps.</p>
+<p>You can read about this approach in <a href="https://rmosolgo.github.io/ruby/graphql/2017/03/16/tracking-schema-changes-with-graphql-ruby">“Tracking Schema Changes with GraphQL-Ruby”</a> or the built-in <a href="/api-doc/2.5.17/GraphQL/RakeTask" target="_blank" title="API docs for GraphQL::RakeTask"><code>GraphQL::RakeTask</code></a> for generating schema dumps.</p>
 
 <h2 id="automatically-check-for-breaking-changes">Automatically check for breaking changes</h2>
 

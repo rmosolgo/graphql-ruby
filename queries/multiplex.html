@@ -6,7 +6,7 @@
     
       <title>GraphQL - Multiplex</title>
     
-    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
@@ -49,12 +49,12 @@
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo">
           </a>
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.16/">API</a>
+            <a href="/api-doc/2.5.17/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -63,7 +63,8 @@
               onkeyup="GraphQLRubySearch.run(this)"
               type="text"
               placeholder="Search the docs..."
-            />
+              autocomplete="off"
+            >
             <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
           </div>
         </div>
@@ -167,7 +168,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>Some clients may send <em>several</em> queries to the server at once (for example, <a href="https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/">Apollo Client’s query batching</a>). You can execute them concurrently with <a href="/api-doc/2.5.16/GraphQL/Schema#multiplex-instance_method" target="_blank" title="API docs for GraphQL::Schema#multiplex"><code>Schema#multiplex</code></a>.</p>
+  <p>Some clients may send <em>several</em> queries to the server at once (for example, <a href="https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/">Apollo Client’s query batching</a>). You can execute them concurrently with <a href="/api-doc/2.5.17/GraphQL/Schema#multiplex-instance_method" target="_blank" title="API docs for GraphQL::Schema#multiplex"><code>Schema#multiplex</code></a>.</p>
 
 <p>Multiplex runs have their own context, analyzers and instrumentation.</p>
 
@@ -244,7 +245,7 @@
 
 <h2 id="multiplex-level-context">Multiplex-Level Context</h2>
 
-<p>You can add values to <a href="/api-doc/2.5.16/GraphQL/Execution/Multiplex#context-instance_method" target="_blank" title="API docs for GraphQL::Execution::Multiplex#context"><code>Execution::Multiplex#context</code></a> by providing a <code class="language-plaintext highlighter-rouge">context:</code> hash:</p>
+<p>You can add values to <a href="/api-doc/2.5.17/GraphQL/Execution/Multiplex#context-instance_method" target="_blank" title="API docs for GraphQL::Execution::Multiplex#context"><code>Execution::Multiplex#context</code></a> by providing a <code class="language-plaintext highlighter-rouge">context:</code> hash:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user: </span><span class="n">current_user</span> <span class="p">})</span>
 </code></pre></div></div>
@@ -263,13 +264,13 @@
 
 <p>The API is the same as <a href="/queries/ast_analysis#analyzing-multiplexes">query analyzers</a>.</p>
 
-<p>Multiplex analyzers may return <a href="/api-doc/2.5.16/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>AnalysisError</code></a> to halt execution of the whole multiplex.</p>
+<p>Multiplex analyzers may return <a href="/api-doc/2.5.17/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>AnalysisError</code></a> to halt execution of the whole multiplex.</p>
 
 <h2 id="multiplex-tracing">Multiplex Tracing</h2>
 
 <p>You can add hooks for each multiplex run with <a href="/queries/tracing">trace modules</a>.</p>
 
-<p>The trace module may implement <code class="language-plaintext highlighter-rouge">def execute_multiplex(multiplex:)</code> which <code class="language-plaintext highlighter-rouge">yield</code>s to allow the multiplex to execute. See <a href="/api-doc/2.5.16/GraphQL/Execution/Multiplex" target="_blank" title="API docs for GraphQL::Execution::Multiplex"><code>Execution::Multiplex</code></a> for available methods.</p>
+<p>The trace module may implement <code class="language-plaintext highlighter-rouge">def execute_multiplex(multiplex:)</code> which <code class="language-plaintext highlighter-rouge">yield</code>s to allow the multiplex to execute. See <a href="/api-doc/2.5.17/GraphQL/Execution/Multiplex" target="_blank" title="API docs for GraphQL::Execution::Multiplex"><code>Execution::Multiplex</code></a> for available methods.</p>
 
 <p>For example:</p>
 
