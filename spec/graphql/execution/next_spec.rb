@@ -47,14 +47,6 @@ describe "Next Execution" do
     module Nameable
       include BaseInterface
       field :name, String, object_method: :name
-
-      def self.resolve_type(obj, ctx)
-        if obj.respond_to?(:grows_in)
-          PlantFamily
-        else
-          PlantSpecies
-        end
-      end
     end
 
     class PlantSpecies < BaseObject
@@ -100,6 +92,15 @@ describe "Next Execution" do
     end
 
     query(Query)
+
+
+    def self.resolve_type(abs_type, obj, ctx)
+      if obj.respond_to?(:grows_in)
+        PlantFamily
+      else
+        PlantSpecies
+      end
+    end
   end
 
 
@@ -141,7 +142,7 @@ describe "Next Execution" do
           {"name" => "Nightshades", "growsIn" => ["SUMMER"], "species" => [{"name" => "Tomato"}]},
           {"name" => "Curcurbits", "growsIn" => ["SUMMER"], "species" => [{"name" => "Cucumber"}]}
         ],
-        "t" => { "name" => "Tomato", "poisonous" => false  },
+        "t" => { "poisonous" => false, "name" => "Tomato" },
         "c" => { "name" => "Cucumber", "poisonous" => false },
         "x" => nil,
         "allThings" => [

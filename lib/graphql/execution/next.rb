@@ -81,42 +81,54 @@ module GraphQL
               @ast_nodes.each do |ast_node|
                 next_selections.concat(ast_node.selections)
               end
+              all_next_objects = []
+              all_next_results = []
               if return_type.list?
-                all_next_objects = []
-                all_next_results = []
                 field_results.each_with_index do |result_arr, i|
+                  # TODO handle `nil` here - DRY with below
                   next_results = Array.new(result_arr.length) { Hash.new }
                   result_h = @results[i]
                   result_h[result_key] = next_results
                   all_next_objects.concat(result_arr)
                   all_next_results.concat(next_results)
                 end
-                @runner.steps_queue << SelectionsStep.new(
-                  parent_type: return_result_type,
-                  selections: next_selections,
-                  objects: all_next_objects,
-                  results: all_next_results,
-                  runner: @runner,
-                )
               else
-                next_results = nil
-
+                all_next_objects.concat(field_results)
                 field_results.each_with_index do |result, i|
                   result_h = @results[i]
                   if result.nil?
                     result_h[result_key] = nil
                   else
-                    next_results ||= []
-                    next_results << result_h[result_key] = {}
+                    all_next_results << result_h[result_key] = {}
                   end
                 end
+              end
 
-                if next_results
+              if !all_next_results.empty?
+                if return_result_type.kind.abstract?
+                  next_objects_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
+                  next_results_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
+                  all_next_objects.each_with_index do |next_object, i|
+                    object_type, _ignored_new_value = @runner.schema.resolve_type(return_result_type, next_object, @runner.context)
+                    next_objects_by_type[object_type] << next_object
+                    next_results_by_type[object_type] << all_next_results[i]
+                  end
+
+                  next_objects_by_type.each do |obj_type, next_objects|
+                    @runner.steps_queue << SelectionsStep.new(
+                      parent_type: obj_type,
+                      selections: next_selections,
+                      objects: next_objects,
+                      results: next_results_by_type[obj_type],
+                      runner: @runner,
+                    )
+                  end
+                else
                   @runner.steps_queue << SelectionsStep.new(
                     parent_type: return_result_type,
                     selections: next_selections,
-                    objects: field_results,
-                    results: next_results,
+                    objects: all_next_objects,
+                    results: all_next_results,
                     runner: @runner,
                   )
                 end
