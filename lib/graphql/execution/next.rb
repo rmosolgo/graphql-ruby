@@ -143,11 +143,17 @@ module GraphQL
 
           def execute
             grouped_selections = {}
-            @selections.each do |ast_selection|
+            gather_selections(@selections, into: grouped_selections)
+          end
+
+          private
+
+          def gather_selections(ast_selections, into:)
+            ast_selections.each do |ast_selection|
               case ast_selection
               when GraphQL::Language::Nodes::Field
                 key = ast_selection.alias || ast_selection.name
-                step = grouped_selections[key] ||= begin
+                step = into[key] ||= begin
                   frs = FieldResolveStep.new(
                     parent_type: @parent_type,
                     objects: @objects,
@@ -158,6 +164,11 @@ module GraphQL
                   frs
                 end
                 step.append_selection(ast_selection)
+              when GraphQL::Language::Nodes::InlineFragment
+                type_condition = ast_selection.type.name
+                if type_condition == @parent_type.graphql_name
+                  gather_selections(ast_selection.selections, into: into)
+                end
               else
                 raise ArgumentError, "Unsupported graphql selection node: #{ast_selection.class} (#{ast_selection.inspect})"
               end

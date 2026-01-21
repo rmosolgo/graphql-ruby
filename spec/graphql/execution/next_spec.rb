@@ -39,14 +39,14 @@ describe "Next Execution" do
       value "FALL"
     end
 
-    class Species < BaseObject
+    class PlantSpecies < BaseObject
       field :name, String, object_method: :name
     end
 
     class PlantFamily < BaseObject
       field :name, String, object_method: :name
       field :grows_in, Season, object_method: :grows_in
-      field :species, [Species], object_method: :species
+      field :species, [PlantSpecies], object_method: :species
     end
 
 
@@ -59,7 +59,7 @@ describe "Next Execution" do
         objects.map { |obj| obj.class.name }
       end
 
-      field :find_species, Species do
+      field :find_species, PlantSpecies do
         argument :name, String
       end
 
@@ -85,7 +85,10 @@ describe "Next Execution" do
   it "runs a query" do
     result = run_next("{
       str
-      families { name growsIn }
+      families {
+        name
+        ... on PlantFamily { growsIn }
+      }
       families { species { name } }
       t: findSpecies(name: \"Tomato\") { name }
       c: findSpecies(name: \"Cucumber\") { name }
