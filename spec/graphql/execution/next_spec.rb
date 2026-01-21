@@ -85,7 +85,8 @@ describe "Next Execution" do
   it "runs a query" do
     result = run_next("{
       str
-      families { name growsIn species { name } }
+      families { name growsIn }
+      families { species { name } }
       t: findSpecies(name: \"Tomato\") { name }
       c: findSpecies(name: \"Cucumber\") { name }
       x: findSpecies(name: \"Blue Rasperry\") { name }
