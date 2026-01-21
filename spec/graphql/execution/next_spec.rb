@@ -26,6 +26,11 @@ describe "Next Execution" do
       field_class BaseField
     end
 
+    module BaseInterface
+      include GraphQL::Schema::Interface
+      field_class BaseField
+    end
+
     ALL_FAMILIES = [
       OpenStruct.new(name: "Legumes", grows_in: ["SPRING", "SUMMER", "FALL"], species: [OpenStruct.new(name: "Snow Pea")]),
       OpenStruct.new(name: "Nightshades", grows_in: ["SUMMER"], species: [OpenStruct.new(name: "Tomato")]),
@@ -39,14 +44,32 @@ describe "Next Execution" do
       value "FALL"
     end
 
-    class PlantSpecies < BaseObject
+    module Nameable
+      include BaseInterface
       field :name, String, object_method: :name
+
+      def self.resolve_type(obj, ctx)
+        if obj.respond_to?(:grows_in)
+          PlantFamily
+        else
+          PlantSpecies
+        end
+      end
+    end
+
+    class PlantSpecies < BaseObject
+      implements Nameable
+      field :poisonous, Boolean, value: false
     end
 
     class PlantFamily < BaseObject
-      field :name, String, object_method: :name
+      implements Nameable
       field :grows_in, Season, object_method: :grows_in
       field :species, [PlantSpecies], object_method: :species
+    end
+
+    class Thing < GraphQL::Schema::Union
+      possible_types(PlantFamily, PlantSpecies)
     end
 
 
@@ -72,6 +95,8 @@ describe "Next Execution" do
         end
         Array.new(objects.length, species)
       end
+
+      field :all_things, [Thing], value: ALL_FAMILIES + ALL_FAMILIES.map { |f| f.species }.flatten
     end
 
     query(Query)
@@ -86,14 +111,28 @@ describe "Next Execution" do
     result = run_next("{
       str
       families {
-        name
+        ... on Nameable { name }
         ... on PlantFamily { growsIn }
       }
       families { species { name } }
-      t: findSpecies(name: \"Tomato\") { name }
-      c: findSpecies(name: \"Cucumber\") { name }
+      t: findSpecies(name: \"Tomato\") { ...SpeciesInfo  ... NameableInfo }
+      c: findSpecies(name: \"Cucumber\") { name ...SpeciesInfo }
       x: findSpecies(name: \"Blue Rasperry\") { name }
-    }", root_object: "Abc")
+      allThings {
+        # __typename
+        ... on Nameable { name }
+        ... on PlantFamily { growsIn }
+      }
+    }
+
+    fragment SpeciesInfo on PlantSpecies {
+      poisonous
+    }
+
+    fragment NameableInfo on Nameable {
+      name
+    }
+    ", root_object: "Abc")
     expected_result = {
       "data" => {
         "str" => "String",
@@ -102,9 +141,17 @@ describe "Next Execution" do
           {"name" => "Nightshades", "growsIn" => ["SUMMER"], "species" => [{"name" => "Tomato"}]},
           {"name" => "Curcurbits", "growsIn" => ["SUMMER"], "species" => [{"name" => "Cucumber"}]}
         ],
-        "t" => { "name" => "Tomato" },
-        "c" => { "name" => "Cucumber" },
-        "x" => nil
+        "t" => { "name" => "Tomato", "poisonous" => false  },
+        "c" => { "name" => "Cucumber", "poisonous" => false },
+        "x" => nil,
+        "allThings" => [
+          {"name" => "Legumes", "growsIn" => ["SPRING", "SUMMER", "FALL"]},
+          {"name" => "Nightshades", "growsIn" => ["SUMMER"]},
+          {"name" => "Curcurbits", "growsIn" => ["SUMMER"]},
+          {"name" => "Snow Pea"},
+          {"name" => "Tomato"},
+          {"name" => "Cucumber"},
+        ]
       }
     }
     assert_equal(expected_result, result)

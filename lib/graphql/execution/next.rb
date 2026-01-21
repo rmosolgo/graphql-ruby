@@ -21,7 +21,7 @@ module GraphQL
           @data = {}
         end
 
-        attr_reader :steps_queue, :schema, :context
+        attr_reader :steps_queue, :schema, :context, :document
 
         def execute
           operation = @document.definitions.first # TODO select named operation
@@ -148,6 +148,16 @@ module GraphQL
 
           private
 
+          def type_condition_applies?(type_name)
+            if type_name == @parent_type.graphql_name
+              true
+            else
+              abs_t = @runner.schema.get_type(type_name, @runner.context)
+              p_types = @runner.schema.possible_types(abs_t, @runner.context)
+              p_types.include?(@parent_type)
+            end
+          end
+
           def gather_selections(ast_selections, into:)
             ast_selections.each do |ast_selection|
               case ast_selection
@@ -166,8 +176,14 @@ module GraphQL
                 step.append_selection(ast_selection)
               when GraphQL::Language::Nodes::InlineFragment
                 type_condition = ast_selection.type.name
-                if type_condition == @parent_type.graphql_name
+                if type_condition_applies?(type_condition)
                   gather_selections(ast_selection.selections, into: into)
+                end
+              when GraphQL::Language::Nodes::FragmentSpread
+                fragment_definition = @runner.document.definitions.find { |defn| defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
+                type_condition = fragment_definition.type.name
+                if type_condition_applies?(type_condition)
+                  gather_selections(fragment_definition.selections, into: into)
                 end
               else
                 raise ArgumentError, "Unsupported graphql selection node: #{ast_selection.class} (#{ast_selection.inspect})"
