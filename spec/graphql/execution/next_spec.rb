@@ -104,19 +104,20 @@ describe "Next Execution" do
   end
 
 
-  def run_next(query_str, root_object: nil)
-    GraphQL::Execution::Next.run(schema: NextExecutionSchema, query_string: query_str, context: {}, variables: {}, root_object: root_object)
+  def run_next(query_str, root_object: nil, variables:)
+    GraphQL::Execution::Next.run(schema: NextExecutionSchema, query_string: query_str, context: {}, variables: variables, root_object: root_object)
   end
 
   it "runs a query" do
-    result = run_next("{
+    result = run_next("
+    query TestNext($name: String) {
       str
       families {
         ... on Nameable { name }
         ... on PlantFamily { growsIn }
       }
       families { species { name } }
-      t: findSpecies(name: \"Tomato\") { ...SpeciesInfo  ... NameableInfo }
+      t: findSpecies(name: $name) { ...SpeciesInfo  ... NameableInfo }
       c: findSpecies(name: \"Cucumber\") { name ...SpeciesInfo }
       x: findSpecies(name: \"Blue Rasperry\") { name }
       allThings {
@@ -133,7 +134,7 @@ describe "Next Execution" do
     fragment NameableInfo on Nameable {
       name
     }
-    ", root_object: "Abc")
+    ", root_object: "Abc", variables: { "name" => "Tomato" })
     expected_result = {
       "data" => {
         "str" => "String",

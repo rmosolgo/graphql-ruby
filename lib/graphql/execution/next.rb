@@ -21,7 +21,7 @@ module GraphQL
           @data = {}
         end
 
-        attr_reader :steps_queue, :schema, :context, :document
+        attr_reader :steps_queue, :schema, :context, :document, :variables
 
         def execute
           operation = @document.definitions.first # TODO select named operation
@@ -60,13 +60,19 @@ module GraphQL
             @ast_nodes << ast_node
           end
 
-
           def execute
             ast_node = @ast_nodes.first
             field_defn = @runner.schema.get_field(@parent_type, ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
             result_key = ast_node.alias || ast_node.name
 
-            arguments = ast_node.arguments.each_with_object({}) { |arg_node, obj| obj[arg_node.name.to_sym] = arg_node.value }
+            arguments = ast_node.arguments.each_with_object({}) { |arg_node, obj|
+              arg_value = arg_node.value
+              if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+                arg_value = @runner.variables.fetch(arg_value.name)
+              end
+
+              obj[arg_node.name.to_sym] = arg_value
+            }
 
             field_results = if arguments.empty?
               field_defn.resolve_all(@objects, @runner.context)
@@ -77,31 +83,37 @@ module GraphQL
             return_type = field_defn.type
             return_result_type = return_type.unwrap
             if return_result_type.kind.composite?
-              next_selections = [] # TODO optimize for one ast node
-              @ast_nodes.each do |ast_node|
-                next_selections.concat(ast_node.selections)
+              if @ast_nodes.size == 1
+                next_selections = @ast_nodes.first.selections
+              else
+                next_selections = []
+                @ast_nodes.each do |ast_node|
+                  next_selections.concat(ast_node.selections)
+                end
               end
+
               all_next_objects = []
               all_next_results = []
-              if return_type.list?
-                field_results.each_with_index do |result_arr, i|
-                  # TODO handle `nil` here - DRY with below
-                  next_results = Array.new(result_arr.length) { Hash.new }
-                  result_h = @results[i]
-                  result_h[result_key] = next_results
-                  all_next_objects.concat(result_arr)
+              is_list = return_type.list?
+
+              field_results.each_with_index do |result, i|
+                result_h = @results[i]
+                if result.nil?
+                  result_h[result_key] = nil
+                  next
+                elsif is_list
+                  next_results = Array.new(result.length) { Hash.new }
+                  all_next_objects.concat(result)
                   all_next_results.concat(next_results)
+                else
+                  next_results = {}
+                  all_next_results << next_results
                 end
-              else
+                result_h[result_key] = next_results
+              end
+
+              if !is_list && !all_next_results.empty?
                 all_next_objects.concat(field_results)
-                field_results.each_with_index do |result, i|
-                  result_h = @results[i]
-                  if result.nil?
-                    result_h[result_key] = nil
-                  else
-                    all_next_results << result_h[result_key] = {}
-                  end
-                end
               end
 
               if !all_next_results.empty?
