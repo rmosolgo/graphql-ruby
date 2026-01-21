@@ -31,11 +31,13 @@ describe "Next Execution" do
       field_class BaseField
     end
 
-    ALL_FAMILIES = [
+    CLEAN_DATA = [
       OpenStruct.new(name: "Legumes", grows_in: ["SPRING", "SUMMER", "FALL"], species: [OpenStruct.new(name: "Snow Pea")]),
       OpenStruct.new(name: "Nightshades", grows_in: ["SUMMER"], species: [OpenStruct.new(name: "Tomato")]),
       OpenStruct.new(name: "Curcurbits", grows_in: ["SUMMER"], species: [OpenStruct.new(name: "Cucumber")])
     ]
+
+    DATA = []
 
     class Season < GraphQL::Schema::Enum
       value "WINTER"
@@ -52,21 +54,32 @@ describe "Next Execution" do
     class PlantSpecies < BaseObject
       implements Nameable
       field :poisonous, Boolean, value: false
+      field :family, "NextExecutionSchema::PlantFamily"
+
+      def self.all_family(objects, context)
+        objects.map { |species_obj|
+          DATA.find { |f| f.species.include?(species_obj) }
+        }
+      end
     end
 
     class PlantFamily < BaseObject
       implements Nameable
       field :grows_in, Season, object_method: :grows_in
       field :species, [PlantSpecies], object_method: :species
+      field :plant_count, Integer
+
+      def self.all_plant_count(objects, context)
+        objects.map { |o| o.species.length }
+      end
     end
 
     class Thing < GraphQL::Schema::Union
       possible_types(PlantFamily, PlantSpecies)
     end
 
-
     class Query < BaseObject
-      field :families, [PlantFamily], value: ALL_FAMILIES
+      field :families, [PlantFamily], value: DATA
 
       field :str, String
 
@@ -80,7 +93,7 @@ describe "Next Execution" do
 
       def self.all_find_species(objects, context, name:)
         species = nil
-        ALL_FAMILIES.each do |f|
+        DATA.each do |f|
           if (species = f.species.find { |s| s.name == name })
             break
           end
@@ -88,11 +101,29 @@ describe "Next Execution" do
         Array.new(objects.length, species)
       end
 
-      field :all_things, [Thing], value: ALL_FAMILIES + ALL_FAMILIES.map { |f| f.species }.flatten
+      field :all_things, [Thing]
+
+      def self.all_all_things(_objs, _ctx)
+        [DATA + DATA.map(&:species).flatten]
+      end
+    end
+
+    class Mutation < BaseObject
+      field :create_plant, PlantSpecies do
+        argument :name, String
+        argument :family, String
+      end
+
+      def self.all_create_plant(_objs, _ctx, name:,family:)
+        family_obj = DATA.find { |f| f.name == family}
+        species_obj = OpenStruct.new(name: name)
+        family_obj.species << species_obj
+        [species_obj]
+      end
     end
 
     query(Query)
-
+    mutation(Mutation)
 
     def self.resolve_type(abs_type, obj, ctx)
       if obj.respond_to?(:grows_in)
@@ -104,8 +135,13 @@ describe "Next Execution" do
   end
 
 
-  def run_next(query_str, root_object: nil, variables:)
+  def run_next(query_str, root_object: nil, variables: {})
     GraphQL::Execution::Next.run(schema: NextExecutionSchema, query_string: query_str, context: {}, variables: variables, root_object: root_object)
+  end
+
+  before do
+    NextExecutionSchema::DATA.clear
+    NextExecutionSchema::DATA.concat(Marshal.load(Marshal.dump(NextExecutionSchema::CLEAN_DATA)))
   end
 
   it "runs a query" do
@@ -156,6 +192,23 @@ describe "Next Execution" do
         ]
       }
     }
-    assert_equal(expected_result, result)
+    assert_graphql_equal(expected_result, result)
+  end
+
+  it "runs mutations in isolation" do
+    result = run_next <<~GRAPHQL
+    mutation TestSequence {
+      p1: createPlant(name: "Eggplant", family: "Nightshades") { family { plantCount } }
+      p2: createPlant(name: "Ground Cherry", family: "Nightshades") { family { plantCount } }
+      p3: createPlant(name: "Potato", family: "Nightshades") { family { plantCount } }
+    }
+    GRAPHQL
+
+    expected_result = { "data" => {
+      "p1" => { "family" => { "plantCount" => 2 }},
+      "p2" => { "family" => { "plantCount" => 3 }},
+      "p3" => { "family" => { "plantCount" => 4 }}
+    } }
+    assert_graphql_equal(expected_result, result)
   end
 end

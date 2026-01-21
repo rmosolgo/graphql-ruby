@@ -21,40 +21,98 @@ module GraphQL
           @data = {}
         end
 
-        attr_reader :steps_queue, :schema, :context, :document, :variables
+        attr_reader :steps_queue, :schema, :context, :variables
 
         def execute
           operation = @document.definitions.first # TODO select named operation
-          root_type = case operation.operation_type
+          isolated_steps = case operation.operation_type
           when nil, "query"
-            @schema.query
+            [
+              SelectionsStep.new(
+                parent_type: @schema.query,
+                selections: operation.selections,
+                objects: [@root_object],
+                results: [@data],
+                runner: self,
+              )
+            ]
+          when "mutation"
+            fields = {}
+            gather_selections(@schema.mutation, operation.selections, into: fields)
+            fields.each_value.map do |field_resolve_step|
+              SelectionsStep.new(
+                parent_type: @schema.mutation,
+                selections: field_resolve_step.ast_nodes,
+                objects: [@root_object],
+                results: [@data],
+                runner: self,
+              )
+            end
           else
             raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
           end
 
-          @steps_queue << SelectionsStep.new(
-            parent_type: root_type,
-            selections: operation.selections,
-            objects: [@root_object],
-            results: [@data],
-            runner: self,
-          )
-
-          while (next_step = @steps_queue.shift)
-            next_step.execute
+          while (next_isolated_step = isolated_steps.shift)
+            @steps_queue << next_isolated_step
+            while (step = @steps_queue.shift)
+              step.execute
+            end
           end
 
           { "data" => @data }
         end
 
+        def gather_selections(type_defn, ast_selections, into:)
+          ast_selections.each do |ast_selection|
+            case ast_selection
+            when GraphQL::Language::Nodes::Field
+              key = ast_selection.alias || ast_selection.name
+              step = into[key] ||= FieldResolveStep.new(
+                parent_type: type_defn,
+                runner: self,
+              )
+              step.append_selection(ast_selection)
+            when GraphQL::Language::Nodes::InlineFragment
+              type_condition = ast_selection.type.name
+              if type_condition_applies?(type_defn, type_condition)
+                gather_selections(type_defn, ast_selection.selections, into: into)
+              end
+            when GraphQL::Language::Nodes::FragmentSpread
+              fragment_definition = @document.definitions.find { |defn| defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
+              type_condition = fragment_definition.type.name
+              if type_condition_applies?(type_defn, type_condition)
+                gather_selections(type_defn, fragment_definition.selections, into: into)
+              end
+            else
+              raise ArgumentError, "Unsupported graphql selection node: #{ast_selection.class} (#{ast_selection.inspect})"
+            end
+          end
+        end
+
+        private
+
+        def type_condition_applies?(concrete_type, type_name)
+          if type_name == concrete_type.graphql_name
+            true
+          else
+            abs_t = @schema.get_type(type_name, @context)
+            p_types = @schema.possible_types(abs_t, @context)
+            p_types.include?(concrete_type)
+          end
+        end
+
         class FieldResolveStep
-          def initialize(parent_type:, objects:, results:, runner:)
+          def initialize(parent_type:, runner:)
             @parent_type = parent_type
             @ast_nodes = []
-            @objects = objects
-            @results = results
+            @objects = nil
+            @results = nil
             @runner = runner
           end
+
+          attr_writer :objects, :results
+
+          attr_reader :ast_nodes
 
           def append_selection(ast_node)
             @ast_nodes << ast_node
@@ -82,6 +140,7 @@ module GraphQL
 
             return_type = field_defn.type
             return_result_type = return_type.unwrap
+
             if return_result_type.kind.composite?
               if @ast_nodes.size == 1
                 next_selections = @ast_nodes.first.selections
@@ -163,55 +222,13 @@ module GraphQL
             @runner = runner
           end
 
-          attr_reader :runner
-
           def execute
             grouped_selections = {}
-            gather_selections(@selections, into: grouped_selections)
-          end
-
-          private
-
-          def type_condition_applies?(type_name)
-            if type_name == @parent_type.graphql_name
-              true
-            else
-              abs_t = @runner.schema.get_type(type_name, @runner.context)
-              p_types = @runner.schema.possible_types(abs_t, @runner.context)
-              p_types.include?(@parent_type)
-            end
-          end
-
-          def gather_selections(ast_selections, into:)
-            ast_selections.each do |ast_selection|
-              case ast_selection
-              when GraphQL::Language::Nodes::Field
-                key = ast_selection.alias || ast_selection.name
-                step = into[key] ||= begin
-                  frs = FieldResolveStep.new(
-                    parent_type: @parent_type,
-                    objects: @objects,
-                    results: @results,
-                    runner: @runner,
-                  )
-                  runner.steps_queue << frs
-                  frs
-                end
-                step.append_selection(ast_selection)
-              when GraphQL::Language::Nodes::InlineFragment
-                type_condition = ast_selection.type.name
-                if type_condition_applies?(type_condition)
-                  gather_selections(ast_selection.selections, into: into)
-                end
-              when GraphQL::Language::Nodes::FragmentSpread
-                fragment_definition = @runner.document.definitions.find { |defn| defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
-                type_condition = fragment_definition.type.name
-                if type_condition_applies?(type_condition)
-                  gather_selections(fragment_definition.selections, into: into)
-                end
-              else
-                raise ArgumentError, "Unsupported graphql selection node: #{ast_selection.class} (#{ast_selection.inspect})"
-              end
+            @runner.gather_selections(@parent_type, @selections, into: grouped_selections)
+            grouped_selections.each_value do |frs|
+              frs.objects = @objects
+              frs.results = @results
+              @runner.steps_queue << frs
             end
           end
         end
