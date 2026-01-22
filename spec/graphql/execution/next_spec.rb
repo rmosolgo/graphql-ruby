@@ -61,6 +61,12 @@ describe "Next Execution" do
           DATA.find { |f| f.species.include?(species_obj) }
         }
       end
+
+      field :grows_in, [Season]
+
+      def self.all_grows_in(objects, context)
+        objects.map { |o| o.grows_in || [] }
+      end
     end
 
     class PlantFamily < BaseObject
@@ -109,14 +115,22 @@ describe "Next Execution" do
     end
 
     class Mutation < BaseObject
-      field :create_plant, PlantSpecies do
+      class CreatePlantInput < GraphQL::Schema::InputObject
         argument :name, String
         argument :family, String
+        argument :grows_in, [Season]
       end
 
-      def self.all_create_plant(_objs, _ctx, name:,family:)
+      field :create_plant, PlantSpecies do
+        argument :input, CreatePlantInput
+      end
+
+      def self.all_create_plant(_objs, _ctx, input:)
+        name = input[:name]
+        family = input[:family]
+        grows_in = input[:grows_in]
         family_obj = DATA.find { |f| f.name == family}
-        species_obj = OpenStruct.new(name: name)
+        species_obj = OpenStruct.new(name: name, grows_in: grows_in )
         family_obj.species << species_obj
         [species_obj]
       end
@@ -198,16 +212,16 @@ describe "Next Execution" do
   it "runs mutations in isolation" do
     result = run_next <<~GRAPHQL
     mutation TestSequence {
-      p1: createPlant(name: "Eggplant", family: "Nightshades") { family { plantCount } }
-      p2: createPlant(name: "Ground Cherry", family: "Nightshades") { family { plantCount } }
-      p3: createPlant(name: "Potato", family: "Nightshades") { family { plantCount } }
+      p1: createPlant(input: { name: "Eggplant", family: "Nightshades", growsIn: [SUMMER] }) { growsIn family { plantCount } }
+      p2: createPlant(input: { name: "Ground Cherry", family: "Nightshades", growsIn: [SUMMER] }) { growsIn family { plantCount } }
+      p3: createPlant(input: { name: "Potato", family: "Nightshades", growsIn: [SPRING, SUMMER] }) { growsIn family { plantCount } }
     }
     GRAPHQL
 
     expected_result = { "data" => {
-      "p1" => { "family" => { "plantCount" => 2 }},
-      "p2" => { "family" => { "plantCount" => 3 }},
-      "p3" => { "family" => { "plantCount" => 4 }}
+      "p1" => { "growsIn" => ["SUMMER"], "family" => { "plantCount" => 2 }},
+      "p2" => { "growsIn" => ["SUMMER"], "family" => { "plantCount" => 3 }},
+      "p3" => { "growsIn" => ["SPRING", "SUMMER"], "family" => { "plantCount" => 4 }}
     } }
     assert_graphql_equal(expected_result, result)
   end

@@ -118,19 +118,39 @@ module GraphQL
             @ast_nodes << ast_node
           end
 
+          def coerce_arguments(ast_arguments)
+            ast_arguments.each_with_object({}) { |arg_node, obj|
+              arg_value = coerce_argument_value(arg_node.value)
+              arg_key = Schema::Member::BuildType.underscore(arg_node.name).to_sym
+              obj[arg_key] = arg_value
+            }
+          end
+
+          def coerce_argument_value(arg_value)
+            case arg_value
+            when String, Numeric, true, false, nil
+              arg_value
+            when Language::Nodes::VariableIdentifier
+              @runner.variables.fetch(arg_value.name)
+            when Language::Nodes::InputObject
+              coerce_arguments(arg_value.arguments)
+            when Language::Nodes::Enum
+              arg_value.name
+            when Array
+              arg_value.map { |v| coerce_argument_value(v) }
+            when Language::Nodes::NullValue
+              nil
+            else
+              raise "Unsupported argument value: #{arg_value.class} (#{arg_value.inspect})"
+            end
+          end
+
           def execute
             ast_node = @ast_nodes.first
             field_defn = @runner.schema.get_field(@parent_type, ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
             result_key = ast_node.alias || ast_node.name
 
-            arguments = ast_node.arguments.each_with_object({}) { |arg_node, obj|
-              arg_value = arg_node.value
-              if arg_value.is_a?(Language::Nodes::VariableIdentifier)
-                arg_value = @runner.variables.fetch(arg_value.name)
-              end
-
-              obj[arg_node.name.to_sym] = arg_value
-            }
+            arguments = coerce_arguments(ast_node.arguments)
 
             field_results = if arguments.empty?
               field_defn.resolve_all(@objects, @runner.context)
