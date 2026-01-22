@@ -10,6 +10,11 @@
 
 ### Bug fixes
 
+# 2.5.18 (22 Jan 2026)
+
+- `GraphQL::Dashboard`: properly require `action_controller` before using it #5510
+- `GraphQL::Dashboard`: don't use `config.asset_host` for Dashboard assets since they're handled by the dashboard itself #5511
+
 # 2.5.17 (21 Jan 2026)
 
 ### Bug fixes
