@@ -231,4 +231,21 @@ describe "Next Execution" do
     new_schema = GraphQL::Schema.from_introspection(result)
     assert_equal NextExecutionSchema.to_definition, new_schema.to_definition
   end
+
+  it "skips and includes" do
+    result = run_next <<~GRAPHQL
+    {
+      c1: findSpecies(name: "Cucumber") @skip(if: true) { name }
+      c2: findSpecies(name: "Cucumber") @include(if: false) { name }
+      c3: findSpecies(name: "Cucumber") @skip(if: false) { name }
+      c4: findSpecies(name: "Cucumber") @include(if: true) { name }
+    }
+    GRAPHQL
+
+    expected_result = { "data" => {
+      "c3" => {"name" => "Cucumber"},
+      "c4" => {"name" => "Cucumber"}
+    } }
+    assert_equal expected_result, result
+  end
 end

@@ -67,6 +67,7 @@ module GraphQL
 
         def gather_selections(type_defn, ast_selections, into:)
           ast_selections.each do |ast_selection|
+            next if !directives_include?(ast_selection)
             case ast_selection
             when GraphQL::Language::Nodes::Field
               key = ast_selection.alias || ast_selection.name
@@ -93,6 +94,17 @@ module GraphQL
         end
 
         private
+
+        def directives_include?(ast_selection)
+          if ast_selection.directives.any? { |dir_node|
+                (dir_node.name == "skip" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == true }) ||
+                (dir_node.name == "include" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == false })
+              }
+            false
+          else
+            true
+          end
+        end
 
         def type_condition_applies?(concrete_type, type_name)
           if type_name == concrete_type.graphql_name
