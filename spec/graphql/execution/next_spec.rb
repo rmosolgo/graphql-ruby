@@ -160,7 +160,7 @@ describe "Next Execution" do
 
   it "runs a query" do
     result = run_next("
-    query TestNext($name: String) {
+    query TestNext($name: String!) {
       str
       families {
         ... on Nameable { name }

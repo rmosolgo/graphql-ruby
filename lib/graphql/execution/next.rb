@@ -5,6 +5,12 @@ module GraphQL
       def self.run(schema:, query_string:, context:, variables:, root_object:)
 
         document = GraphQL.parse(query_string)
+        validation_errors = schema.validate(document, context: context)
+        if !validation_errors.empty?
+          return {
+            "errors" => validation_errors.map(&:to_h)
+          }
+        end
         dummy_q = GraphQL::Query.new(schema, document: document, context: context, variables: variables, root_value: root_object)
         query_context = dummy_q.context
 
