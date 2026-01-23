@@ -118,7 +118,7 @@ describe "Next Execution" do
       class CreatePlantInput < GraphQL::Schema::InputObject
         argument :name, String
         argument :family, String
-        argument :grows_in, [Season]
+        argument :grows_in, [Season], default_value: ["SUMMER"]
       end
 
       field :create_plant, PlantSpecies do
@@ -213,7 +213,7 @@ describe "Next Execution" do
     result = run_next <<~GRAPHQL
     mutation TestSequence {
       p1: createPlant(input: { name: "Eggplant", family: "Nightshades", growsIn: [SUMMER] }) { growsIn family { plantCount } }
-      p2: createPlant(input: { name: "Ground Cherry", family: "Nightshades", growsIn: [SUMMER] }) { growsIn family { plantCount } }
+      p2: createPlant(input: { name: "Ground Cherry", family: "Nightshades" }) { growsIn family { plantCount } }
       p3: createPlant(input: { name: "Potato", family: "Nightshades", growsIn: [SPRING, SUMMER] }) { growsIn family { plantCount } }
     }
     GRAPHQL
@@ -224,5 +224,11 @@ describe "Next Execution" do
       "p3" => { "growsIn" => ["SPRING", "SUMMER"], "family" => { "plantCount" => 4 }}
     } }
     assert_graphql_equal(expected_result, result)
+  end
+
+  it "runs introspection" do
+    result = run_next(GraphQL::Introspection::INTROSPECTION_QUERY)
+    new_schema = GraphQL::Schema.from_introspection(result)
+    assert_equal NextExecutionSchema.to_definition, new_schema.to_definition
   end
 end

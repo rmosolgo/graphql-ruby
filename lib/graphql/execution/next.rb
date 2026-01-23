@@ -5,7 +5,10 @@ module GraphQL
       def self.run(schema:, query_string:, context:, variables:, root_object:)
 
         document = GraphQL.parse(query_string)
-        runner = Runner.new(schema, document, context, variables, root_object)
+        dummy_q = GraphQL::Query.new(schema, document: document, context: context, variables: variables, root_value: root_object)
+        query_context = dummy_q.context
+
+        runner = Runner.new(schema, document, query_context, variables, root_object)
         runner.execute
       end
 
@@ -118,26 +121,37 @@ module GraphQL
             @ast_nodes << ast_node
           end
 
-          def coerce_arguments(ast_arguments)
-            ast_arguments.each_with_object({}) { |arg_node, obj|
-              arg_value = coerce_argument_value(arg_node.value)
+          def coerce_arguments(argument_owner, ast_arguments)
+            arg_defns = argument_owner.arguments(@runner.context)
+            args_hash = ast_arguments.each_with_object({}) { |arg_node, obj|
+              arg_defn = arg_defns[arg_node.name]
+              arg_value = coerce_argument_value(arg_defn, arg_node.value)
               arg_key = Schema::Member::BuildType.underscore(arg_node.name).to_sym
               obj[arg_key] = arg_value
             }
+
+            arg_defns.each do |arg_graphql_name, arg_defn|
+              if arg_defn.default_value? && !args_hash.key?(arg_defn.keyword)
+                args_hash[arg_defn.keyword] = arg_defn.default_value
+              end
+            end
+
+            args_hash
           end
 
-          def coerce_argument_value(arg_value)
+          def coerce_argument_value(argument_defn, arg_value)
             case arg_value
             when String, Numeric, true, false, nil
               arg_value
             when Language::Nodes::VariableIdentifier
               @runner.variables.fetch(arg_value.name)
             when Language::Nodes::InputObject
-              coerce_arguments(arg_value.arguments)
+              coerce_arguments(argument_defn.type.unwrap, arg_value.arguments)  # rubocop:disable Development/ContextIsPassedCop
             when Language::Nodes::Enum
               arg_value.name
             when Array
-              arg_value.map { |v| coerce_argument_value(v) }
+              inner_arg_t = argument_defn.type.unwrap
+              arg_value.map { |v| coerce_argument_value(inner_arg_t, v) }
             when Language::Nodes::NullValue
               nil
             else
@@ -150,8 +164,7 @@ module GraphQL
             field_defn = @runner.schema.get_field(@parent_type, ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
             result_key = ast_node.alias || ast_node.name
 
-            arguments = coerce_arguments(ast_node.arguments)
-
+            arguments = coerce_arguments(field_defn, ast_node.arguments)
             field_results = if arguments.empty?
               field_defn.resolve_all(@objects, @runner.context)
             else
@@ -187,12 +200,9 @@ module GraphQL
                 else
                   next_results = {}
                   all_next_results << next_results
+                  all_next_objects << result
                 end
                 result_h[result_key] = next_results
-              end
-
-              if !is_list && !all_next_results.empty?
-                all_next_objects.concat(field_results)
               end
 
               if !all_next_results.empty?
@@ -253,6 +263,27 @@ module GraphQL
           end
         end
       end
+
+
+      module FieldCompatibility
+        def resolve_all(objects, context, **kwargs)
+          if @owner.method_defined?(@method_sym)
+            # Terrible perf but might work
+            objects.map { |o|
+              obj_inst = @owner.scoped_new(o, context)
+              if kwargs.empty?
+                obj_inst.public_send(@method_sym)
+              else
+                obj_inst.public_send(@method_sym, **kwargs)
+              end
+            }
+          else
+            objects.map { |o| o.public_send(@method_sym) }
+          end
+        end
+      end
+
+      GraphQL::Schema::Field.include(FieldCompatibility)
     end
   end
 end
