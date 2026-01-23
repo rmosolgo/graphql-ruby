@@ -97,8 +97,8 @@ module GraphQL
 
         def directives_include?(ast_selection)
           if ast_selection.directives.any? { |dir_node|
-                (dir_node.name == "skip" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == true }) ||
-                (dir_node.name == "include" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == false })
+                (dir_node.name == "skip" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == true }) || # rubocop:disable Development/ContextIsPassedCop
+                (dir_node.name == "include" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == false }) # rubocop:disable Development/ContextIsPassedCop
               }
             false
           else
