@@ -171,7 +171,7 @@ describe "Next Execution" do
       c: findSpecies(name: \"Cucumber\") { name ...SpeciesInfo }
       x: findSpecies(name: \"Blue Rasperry\") { name }
       allThings {
-        # __typename
+        __typename
         ... on Nameable { name }
         ... on PlantFamily { growsIn }
       }
@@ -197,12 +197,12 @@ describe "Next Execution" do
         "c" => { "name" => "Cucumber", "poisonous" => false },
         "x" => nil,
         "allThings" => [
-          {"name" => "Legumes", "growsIn" => ["SPRING", "SUMMER", "FALL"]},
-          {"name" => "Nightshades", "growsIn" => ["SUMMER"]},
-          {"name" => "Curcurbits", "growsIn" => ["SUMMER"]},
-          {"name" => "Snow Pea"},
-          {"name" => "Tomato"},
-          {"name" => "Cucumber"},
+          {"__typename" => "PlantFamily", "name" => "Legumes", "growsIn" => ["SPRING", "SUMMER", "FALL"]},
+          {"__typename" => "PlantFamily", "name" => "Nightshades", "growsIn" => ["SUMMER"]},
+          {"__typename" => "PlantFamily", "name" => "Curcurbits", "growsIn" => ["SUMMER"]},
+          {"__typename" => "PlantSpecies", "name" => "Snow Pea"},
+          {"__typename" => "PlantSpecies", "name" => "Tomato"},
+          {"__typename" => "PlantSpecies", "name" => "Cucumber"},
         ]
       }
     }

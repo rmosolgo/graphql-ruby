@@ -165,10 +165,16 @@ module GraphQL
             result_key = ast_node.alias || ast_node.name
 
             arguments = coerce_arguments(field_defn, ast_node.arguments)
-            field_results = if arguments.empty?
-              field_defn.resolve_all(@objects, @runner.context)
+
+            field_objs = if field_defn.dynamic_introspection
+              @objects.map { |o| @parent_type.scoped_new(o, @runner.context) }
             else
-              field_defn.resolve_all(@objects, @runner.context, **arguments)
+              @objects
+            end
+            field_results = if arguments.empty?
+              field_defn.resolve_all(field_objs, @runner.context)
+            else
+              field_defn.resolve_all(field_objs, @runner.context, **arguments)
             end
 
             return_type = field_defn.type
