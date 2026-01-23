@@ -32,9 +32,9 @@ describe "Next Execution" do
     end
 
     CLEAN_DATA = [
-      OpenStruct.new(name: "Legumes", grows_in: ["SPRING", "SUMMER", "FALL"], species: [OpenStruct.new(name: "Snow Pea")]),
-      OpenStruct.new(name: "Nightshades", grows_in: ["SUMMER"], species: [OpenStruct.new(name: "Tomato")]),
-      OpenStruct.new(name: "Curcurbits", grows_in: ["SUMMER"], species: [OpenStruct.new(name: "Cucumber")])
+      OpenStruct.new(name: "Legumes", grows_in: ["SPRING", "🌻", "FALL"], species: [OpenStruct.new(name: "Snow Pea")]),
+      OpenStruct.new(name: "Nightshades", grows_in: ["🌻"], species: [OpenStruct.new(name: "Tomato")]),
+      OpenStruct.new(name: "Curcurbits", grows_in: ["🌻"], species: [OpenStruct.new(name: "Cucumber")])
     ]
 
     DATA = []
@@ -42,7 +42,7 @@ describe "Next Execution" do
     class Season < GraphQL::Schema::Enum
       value "WINTER"
       value "SPRING"
-      value "SUMMER"
+      value "SUMMER", value: "🌻"
       value "FALL"
     end
 
@@ -71,12 +71,12 @@ describe "Next Execution" do
 
     class PlantFamily < BaseObject
       implements Nameable
-      field :grows_in, Season, object_method: :grows_in
+      field :grows_in, [Season], object_method: :grows_in
       field :species, [PlantSpecies], object_method: :species
       field :plant_count, Integer
 
       def self.all_plant_count(objects, context)
-        objects.map { |o| o.species.length }
+        objects.map { |o| o.species.length.to_f } # let it be coerced to int
       end
     end
 
@@ -118,7 +118,7 @@ describe "Next Execution" do
       class CreatePlantInput < GraphQL::Schema::InputObject
         argument :name, String
         argument :family, String
-        argument :grows_in, [Season], default_value: ["SUMMER"]
+        argument :grows_in, [Season], default_value: ["🌻"]
       end
 
       field :create_plant, PlantSpecies do
@@ -250,7 +250,7 @@ describe "Next Execution" do
   end
 
   it "does scalar coercion" do
-    result = run_next <<~GRAPHQL, variables: { input: { name: :Zucchini, family: "Curcurbits", grows_in: "SUMMER" }}
+    result = run_next <<~GRAPHQL, variables: { input: { name: :Zucchini, family: "Curcurbits", grows_in: "🌻" }}
     mutation TestCoerce($input: CreatePlantInput!) {
       createPlant(input: $input) {
         name

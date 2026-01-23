@@ -280,8 +280,12 @@ module GraphQL
                 end
               end
             else
+              return_type = field_defn.type
               field_results.each_with_index do |result, i|
                 result_h = @results[i] || raise("Invariant: no result object at index #{i} for #{@parent_type.to_type_signature}.#{@ast_node.name} (result: #{result.inspect})")
+                if !result.nil?
+                  result = return_type.coerce_result(result, @runner.context)
+                end
                 result_h[result_key] = result
               end
             end
