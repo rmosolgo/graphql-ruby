@@ -248,4 +248,22 @@ describe "Next Execution" do
     } }
     assert_equal expected_result, result
   end
+
+  it "does scalar coercion" do
+    result = run_next <<~GRAPHQL, variables: { input: { name: :Zucchini, family: "Curcurbits", grows_in: "SUMMER" }}
+    mutation TestCoerce($input: CreatePlantInput!) {
+      createPlant(input: $input) {
+        name
+        growsIn
+        family { name }
+      }
+    }
+    GRAPHQL
+    expected_result = { "data" => { "createPlant" => {
+      "name" => nil, # coerced away
+      "growsIn" => ["SUMMER"], # made into a one-item list
+      "family" => { "name" => "Curcurbits" }
+    }} }
+    assert_equal expected_result, result
+  end
 end

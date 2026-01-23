@@ -139,14 +139,23 @@ module GraphQL
             @ast_nodes << ast_node
           end
 
-          def coerce_arguments(argument_owner, ast_arguments)
+          def coerce_arguments(argument_owner, ast_arguments_or_hash)
             arg_defns = argument_owner.arguments(@runner.context)
-            args_hash = ast_arguments.each_with_object({}) { |arg_node, obj|
-              arg_defn = arg_defns[arg_node.name]
-              arg_value = coerce_argument_value(arg_defn, arg_node.value)
-              arg_key = Schema::Member::BuildType.underscore(arg_node.name).to_sym
-              obj[arg_key] = arg_value
-            }
+            args_hash = {}
+            if ast_arguments_or_hash.is_a?(Hash)
+              ast_arguments_or_hash.each do |key, value|
+                arg_defn = arg_defns.each_value.find { |a| a.keyword == key }
+                arg_value = coerce_argument_value(arg_defn.type, value)
+                args_hash[key] = arg_value
+              end
+            else
+              ast_arguments_or_hash.each { |arg_node|
+                arg_defn = arg_defns[arg_node.name]
+                arg_value = coerce_argument_value(arg_defn.type, arg_node.value)
+                arg_key = Schema::Member::BuildType.underscore(arg_node.name).to_sym
+                args_hash[arg_key] = arg_value
+              }
+            end
 
             arg_defns.each do |arg_graphql_name, arg_defn|
               if arg_defn.default_value? && !args_hash.key?(arg_defn.keyword)
@@ -157,23 +166,35 @@ module GraphQL
             args_hash
           end
 
-          def coerce_argument_value(argument_defn, arg_value)
-            case arg_value
-            when String, Numeric, true, false, nil
-              arg_value
-            when Language::Nodes::VariableIdentifier
-              @runner.variables.fetch(arg_value.name)
-            when Language::Nodes::InputObject
-              coerce_arguments(argument_defn.type.unwrap, arg_value.arguments)  # rubocop:disable Development/ContextIsPassedCop
-            when Language::Nodes::Enum
-              arg_value.name
-            when Array
-              inner_arg_t = argument_defn.type.unwrap
-              arg_value.map { |v| coerce_argument_value(inner_arg_t, v) }
-            when Language::Nodes::NullValue
-              nil
+          def coerce_argument_value(arg_t, arg_value)
+            if arg_t.non_null?
+              arg_t = arg_t.of_type
+            end
+
+            if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+              arg_value = if @runner.variables.key?(arg_value.name)
+                @runner.variables[arg_value.name]
+              elsif @runner.variables.key?(arg_value.name.to_sym)
+                @runner.variables[arg_value.name.to_sym]
+              end
+            elsif arg_value.is_a?(Language::Nodes::NullValue)
+              arg_value = nil
+            elsif arg_value.is_a?(Language::Nodes::Enum)
+              arg_value = arg_value.name
+            elsif arg_value.is_a?(Language::Nodes::InputObject)
+              arg_value = arg_value.arguments # rubocop:disable Development/ContextIsPassedCop
+            end
+
+            if arg_t.list?
+              arg_value = Array(arg_value)
+              inner_t = arg_t.of_type
+              arg_value.map { |v| coerce_argument_value(inner_t, v) }
+            elsif arg_t.kind.leaf?
+              arg_t.coerce_input(arg_value, @runner.context)
+            elsif arg_t.kind.input_object?
+              coerce_arguments(arg_t, arg_value)
             else
-              raise "Unsupported argument value: #{arg_value.class} (#{arg_value.inspect})"
+              raise "Unsupported argument value: #{arg_t.to_type_signature} / #{arg_value.class} (#{arg_value.inspect})"
             end
           end
 
