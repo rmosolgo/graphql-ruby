@@ -57,7 +57,7 @@ module GraphQL
             fields.each_value.map do |field_resolve_step|
               SelectionsStep.new(
                 parent_type: @root_type = @schema.mutation,
-                selections: Array(field_resolve_step.ast_node_or_nodes),
+                selections: field_resolve_step.ast_nodes || Array(field_resolve_step.ast_node),
                 objects: [@root_object],
                 results: [@data],
                 path: EmptyObjects::EMPTY_ARRAY,
@@ -252,7 +252,7 @@ module GraphQL
             @selection_step = selections_step
             @key = key
             @parent_type = parent_type
-            @ast_node_or_nodes = nil
+            @ast_node = @ast_nodes = nil
             @objects = nil
             @results = nil
             @runner = runner
@@ -261,21 +261,19 @@ module GraphQL
 
           attr_writer :objects, :results
 
-          attr_reader :ast_node_or_nodes
+          attr_reader :ast_node, :ast_nodes
 
           def path
             @path ||= [*@selection_step.path, @key].freeze
           end
 
           def append_selection(ast_node)
-            if @ast_node_or_nodes.nil?
-              @ast_node_or_nodes = ast_node
-            elsif @ast_node_or_nodes.is_a?(Array)
-              @ast_node_or_nodes << ast_node
+            if @ast_node.nil?
+              @ast_node = ast_node
+            elsif @ast_nodes.nil?
+              @ast_nodes = [@ast_node, ast_node]
             else
-              nodes = [@ast_node_or_nodes]
-              nodes << ast_node
-              @ast_node_or_nodes = nodes
+              @ast_nodes << ast_node
             end
             nil
           end
@@ -343,17 +341,10 @@ module GraphQL
           end
 
           def execute
-            if @ast_node_or_nodes.is_a?(Array)
-              ast_nodes = @ast_node_or_nodes
-              ast_node = ast_nodes.first
-            else
-              ast_nodes = nil
-              ast_node = @ast_node_or_nodes
-            end
-            field_defn = @runner.schema.get_field(@parent_type, ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
-            result_key = ast_node.alias || ast_node.name
+            field_defn = @runner.schema.get_field(@parent_type, @ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
+            result_key = @ast_node.alias || @ast_node.name
 
-            arguments = coerce_arguments(field_defn, ast_node.arguments)
+            arguments = coerce_arguments(field_defn, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
 
             field_objs = if field_defn.dynamic_introspection
               @objects.map { |o| @parent_type.scoped_new(o, @runner.context) }
@@ -370,19 +361,24 @@ module GraphQL
             return_result_type = return_type.unwrap
 
             if return_result_type.kind.composite?
-              if ast_nodes
+              if @ast_nodes
                 next_selections = []
-                ast_nodes.each do |ast_node|
+                @ast_nodes.each do |ast_node|
                   next_selections.concat(ast_node.selections)
                 end
               else
-                next_selections = ast_node.selections
+                next_selections = @ast_node.selections
               end
 
               all_next_objects = []
               all_next_results = []
 
-              gather_next_objects(all_next_objects, all_next_results, field_defn, ast_node, result_key, field_results, return_type)
+              is_list = return_type.list?
+              is_non_null = return_type.non_null?
+              field_results.each_with_index do |result, i|
+                result_h = @results[i]
+                result_h[result_key] = build_graphql_result(field_defn, result, return_type, is_non_null, is_list, all_next_objects, all_next_results, false)
+              end
 
               if !all_next_results.empty?
                 all_next_objects.compact!
@@ -422,7 +418,7 @@ module GraphQL
                 result_h = @results[i] || raise("Invariant: no result object at index #{i} for #{@parent_type.to_type_signature}.#{ast_node.name} (result: #{result.inspect})")
                 result_h[result_key] = if result.nil?
                   if return_type.non_null?
-                    @runner.add_non_null_error(@parent_type, field_defn, ast_node, false, path)
+                    @runner.add_non_null_error(@parent_type, field_defn, @ast_node, false, path)
                   else
                     nil
                   end
@@ -435,50 +431,29 @@ module GraphQL
 
           private
 
-          def gather_next_objects(all_next_objects, all_next_results, field_defn, ast_node, result_key, field_results, result_type)
-            is_list = result_type.list?
-            field_results.each_with_index do |result, i|
-              result_h = @results[i]
-              if result.nil?
-                if result_type.non_null?
-                  # TODO Add error and propagate
-                else
-                  result_h[result_key] = nil
-                end
-                next
-              elsif is_list
-                inner_t = result_type.non_null? ? result_type.of_type.of_type : result_type.of_type
-                if (inner_t_nn = inner_t.non_null?)
-                  # TODO nested lists?
-                  unwrapped_inner_t = inner_t.of_type
-                else
-                  unwrapped_inner_t = inner_t
-                end
-                next_results = []
-                result.each_with_index do |r, idx|
-                  if r.nil?
-                    if inner_t_nn
-                      err = @runner.add_non_null_error(@parent_type, field_defn, ast_node, true, [*path, idx])
-                      next_results << err
-                    else
-                      next_results << nil
-                    end
-                  else
-                    next_r = {}
-                    @runner.runtime_types_at_result[next_r] = unwrapped_inner_t
-                    next_results << next_r
-                  end
-                end
-
-                all_next_objects.concat(result)
-                all_next_results.concat(next_results)
+          def build_graphql_result(field_defn, field_result, return_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array) # rubocop:disable Metrics/ParameterLists
+            if field_result.nil?
+              if is_nn
+                @runner.add_non_null_error(@parent_type, field_defn, @ast_node, is_from_array, path)
               else
-                next_results = {}
-                @runner.runtime_types_at_result[next_results] = result_type.unwrap
-                all_next_results << next_results
-                all_next_objects << result
+                nil
               end
-              result_h[result_key] = next_results
+            elsif is_list
+              if is_nn
+                return_type = return_type.of_type
+              end
+              inner_type = return_type.of_type
+              inner_type_nn = inner_type.non_null?
+              inner_type_l = inner_type.list?
+              field_result.map do |inner_f_r|
+                build_graphql_result(field_defn, inner_f_r, inner_type, inner_type_nn, inner_type_l, all_next_objects, all_next_results, true)
+              end
+            else
+              next_result_h = {}
+              @runner.runtime_types_at_result[next_result_h] = return_type.unwrap
+              all_next_results << next_result_h
+              all_next_objects << field_result
+              next_result_h
             end
           end
         end
