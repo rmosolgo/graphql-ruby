@@ -71,6 +71,7 @@ describe "Next Execution" do
 
     class PlantFamily < BaseObject
       implements Nameable
+      field :name, String, null: false, object_method: :name
       field :grows_in, [Season], object_method: :grows_in
       field :species, [PlantSpecies], object_method: :species
       field :plant_count, Integer
@@ -86,6 +87,7 @@ describe "Next Execution" do
 
     class Query < BaseObject
       field :families, [PlantFamily], value: DATA
+      field :nullable_families, [PlantFamily, null: true], value: DATA
 
       field :str, String
 
@@ -264,6 +266,109 @@ describe "Next Execution" do
       "growsIn" => ["SUMMER"], # made into a one-item list
       "family" => { "name" => "Curcurbits" }
     }} }
+    assert_equal expected_result, result
+  end
+
+  it "propagates nulls in lists" do
+    NextExecutionSchema::DATA << nil
+    result = run_next <<~GRAPHQL
+      {
+        families { name }
+        nullableFamilies { name }
+      }
+    GRAPHQL
+
+    expected_result = {
+      "errors" => [
+        {
+          "message" => "Cannot return null for non-nullable element of type 'PlantFamily' for Query.families",
+          "locations" => [{"line" => 2, "column" => 3}],
+          "path" => ["families", 3]
+        }
+      ],
+      "data" => {
+        "families" => nil,
+        "nullableFamilies" => [
+          { "name" => "Legumes" },
+          { "name" => "Nightshades" },
+          { "name" => "Curcurbits" },
+          nil,
+        ]
+      }
+    }
+    assert_equal expected_result, result
+  end
+
+  it "propages nulls in objects" do
+    NextExecutionSchema::DATA << OpenStruct.new(
+      name: nil,
+      species: [OpenStruct.new(name: "Artichoke")]
+    )
+
+    result = run_next <<-GRAPHQL
+      {
+        findSpecies(name: "Artichoke") {
+          name
+          family { name }
+        }
+      }
+    GRAPHQL
+
+    expected_result = {
+      "errors" => [{
+        "message" => "Cannot return null for non-nullable field PlantFamily.name",
+        "locations" => [{"line" => 4, "column" => 20}],
+        "path" => ["findSpecies", "family", "name"]
+      }],
+      "data" => {
+        "findSpecies" => {
+          "name" => "Artichoke",
+          "family" => nil,
+        }
+      },
+    }
+    assert_equal expected_result, result
+  end
+
+  it "propages nested nulls in objects in lists" do
+    NextExecutionSchema::DATA << OpenStruct.new(
+      name: nil,
+      species: [OpenStruct.new(name: "Artichoke")]
+    )
+
+    result = run_next <<-GRAPHQL
+      {
+        families {
+          ...FamilyInfo
+        }
+      }
+
+      fragment FamilyInfo on PlantFamily {
+        species {
+          family {
+            ... on Nameable { name }
+          }
+        }
+      }
+    GRAPHQL
+
+    expected_result = {
+      "errors" => [
+        {
+          "message" => "Cannot return null for non-nullable field PlantFamily.name",
+          "locations" => [{"line" => 10, "column" => 31}],
+          "path" => ["families", 3, "species", 0, "family", "name"]
+        }
+      ],
+      "data" => {
+        "families" => [
+          {"species" => [{"family" => {"name" => "Legumes"}}]},
+          {"species" => [{"family" => {"name" => "Nightshades"}}]},
+          {"species" => [{"family" => {"name" => "Curcurbits"}}]},
+          {"species" => [{"family" => nil}]}
+        ]
+      },
+    }
     assert_equal expected_result, result
   end
 end
