@@ -57,7 +57,7 @@ module GraphQL
             fields.each_value.map do |field_resolve_step|
               SelectionsStep.new(
                 parent_type: @root_type = @schema.mutation,
-                selections: field_resolve_step.ast_nodes,
+                selections: Array(field_resolve_step.ast_node_or_nodes),
                 objects: [@root_object],
                 results: [@data],
                 path: EmptyObjects::EMPTY_ARRAY,
@@ -252,7 +252,7 @@ module GraphQL
             @selection_step = selections_step
             @key = key
             @parent_type = parent_type
-            @ast_nodes = [] # TODO optimize for one node
+            @ast_node_or_nodes = nil
             @objects = nil
             @results = nil
             @runner = runner
@@ -261,14 +261,23 @@ module GraphQL
 
           attr_writer :objects, :results
 
-          attr_reader :ast_nodes
+          attr_reader :ast_node_or_nodes
 
           def path
             @path ||= [*@selection_step.path, @key].freeze
           end
 
           def append_selection(ast_node)
-            @ast_nodes << ast_node
+            if @ast_node_or_nodes.nil?
+              @ast_node_or_nodes = ast_node
+            elsif @ast_node_or_nodes.is_a?(Array)
+              @ast_node_or_nodes << ast_node
+            else
+              nodes = [@ast_node_or_nodes]
+              nodes << ast_node
+              @ast_node_or_nodes = nodes
+            end
+            nil
           end
 
           def coerce_arguments(argument_owner, ast_arguments_or_hash)
@@ -334,7 +343,13 @@ module GraphQL
           end
 
           def execute
-            ast_node = @ast_nodes.first
+            if @ast_node_or_nodes.is_a?(Array)
+              ast_nodes = @ast_node_or_nodes
+              ast_node = ast_nodes.first
+            else
+              ast_nodes = nil
+              ast_node = @ast_node_or_nodes
+            end
             field_defn = @runner.schema.get_field(@parent_type, ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
             result_key = ast_node.alias || ast_node.name
 
@@ -355,66 +370,23 @@ module GraphQL
             return_result_type = return_type.unwrap
 
             if return_result_type.kind.composite?
-              if @ast_nodes.size == 1
-                next_selections = @ast_nodes.first.selections
-              else
+              if ast_nodes
                 next_selections = []
-                @ast_nodes.each do |ast_node|
+                ast_nodes.each do |ast_node|
                   next_selections.concat(ast_node.selections)
                 end
+              else
+                next_selections = ast_node.selections
               end
 
               all_next_objects = []
               all_next_results = []
-              is_list = return_type.list?
 
-              field_results.each_with_index do |result, i|
-                result_h = @results[i]
-                if result.nil?
-                  if return_type.non_null?
-                    # TODO Add error and propagate
-                  else
-                    result_h[result_key] = nil
-                  end
-                  next
-                elsif is_list
-                  inner_t = return_type.non_null? ? return_type.of_type.of_type : return_type.of_type
-                  if (inner_t_nn = inner_t.non_null?)
-                    # TODO nested lists?
-                    unwrapped_inner_t = inner_t.of_type
-                  else
-                    unwrapped_inner_t = inner_t
-                  end
-                  next_results = []
-                  next_objs = []
-                  result.each_with_index do |r, idx|
-                    if r.nil?
-                      if inner_t_nn
-                        err = @runner.add_non_null_error(@parent_type, field_defn, @ast_nodes.first, true, [*path, idx])
-                        next_results << err
-                      else
-                        next_results << nil
-                      end
-                    else
-                      next_r = {}
-                      @runner.runtime_types_at_result[next_r] = unwrapped_inner_t
-                      next_objs << r
-                      next_results << next_r
-                    end
-                  end
-
-                  all_next_objects.concat(next_objs)
-                  all_next_results.concat(next_results)
-                else
-                  next_results = {}
-                  @runner.runtime_types_at_result[next_results] = return_result_type
-                  all_next_results << next_results
-                  all_next_objects << result
-                end
-                result_h[result_key] = next_results
-              end
+              gather_next_objects(all_next_objects, all_next_results, field_defn, ast_node, result_key, field_results, return_type)
 
               if !all_next_results.empty?
+                all_next_objects.compact!
+
                 if return_result_type.kind.abstract?
                   next_objects_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
                   next_results_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
@@ -447,16 +419,66 @@ module GraphQL
               end
             else
               field_results.each_with_index do |result, i|
-                result_h = @results[i] || raise("Invariant: no result object at index #{i} for #{@parent_type.to_type_signature}.#{@ast_node.name} (result: #{result.inspect})")
-                if result.nil?
+                result_h = @results[i] || raise("Invariant: no result object at index #{i} for #{@parent_type.to_type_signature}.#{ast_node.name} (result: #{result.inspect})")
+                result_h[result_key] = if result.nil?
                   if return_type.non_null?
-                    result = @runner.add_non_null_error(@parent_type, field_defn, @ast_nodes.first, false, path)
+                    @runner.add_non_null_error(@parent_type, field_defn, ast_node, false, path)
+                  else
+                    nil
                   end
                 else
-                  result = return_type.coerce_result(result, @runner.context)
+                  return_type.coerce_result(result, @runner.context)
                 end
-                result_h[result_key] = result
               end
+            end
+          end
+
+          private
+
+          def gather_next_objects(all_next_objects, all_next_results, field_defn, ast_node, result_key, field_results, result_type)
+            is_list = result_type.list?
+            field_results.each_with_index do |result, i|
+              result_h = @results[i]
+              if result.nil?
+                if result_type.non_null?
+                  # TODO Add error and propagate
+                else
+                  result_h[result_key] = nil
+                end
+                next
+              elsif is_list
+                inner_t = result_type.non_null? ? result_type.of_type.of_type : result_type.of_type
+                if (inner_t_nn = inner_t.non_null?)
+                  # TODO nested lists?
+                  unwrapped_inner_t = inner_t.of_type
+                else
+                  unwrapped_inner_t = inner_t
+                end
+                next_results = []
+                result.each_with_index do |r, idx|
+                  if r.nil?
+                    if inner_t_nn
+                      err = @runner.add_non_null_error(@parent_type, field_defn, ast_node, true, [*path, idx])
+                      next_results << err
+                    else
+                      next_results << nil
+                    end
+                  else
+                    next_r = {}
+                    @runner.runtime_types_at_result[next_r] = unwrapped_inner_t
+                    next_results << next_r
+                  end
+                end
+
+                all_next_objects.concat(result)
+                all_next_results.concat(next_results)
+              else
+                next_results = {}
+                @runner.runtime_types_at_result[next_results] = result_type.unwrap
+                all_next_results << next_results
+                all_next_objects << result
+              end
+              result_h[result_key] = next_results
             end
           end
         end
