@@ -12,10 +12,8 @@ module GraphQL
             }
           end
         end
-        dummy_q = GraphQL::Query.new(schema, document: document, context: context, variables: variables, root_value: root_object)
-        query_context = dummy_q.context
 
-        runner = Runner.new(schema, document, query_context, variables, root_object)
+        runner = Runner.new(schema, document, context, variables, root_object)
         runner.execute
       end
 
@@ -23,7 +21,8 @@ module GraphQL
         def initialize(schema, document, context, variables, root_object)
           @schema = schema
           @document = document
-          @context = context
+          @query = GraphQL::Query.new(schema, document: document, context: context, variables: variables, root_value: root_object)
+          @context = @query.context
           @variables = variables
           @root_object = root_object
           @path = @context[:current_path_next] = []
@@ -32,6 +31,11 @@ module GraphQL
           @runtime_types_at_result = {}.compare_by_identity
           @selected_operation = nil
           @root_type = nil
+          @dataloader = @context[:dataloader] ||= schema.dataloader_class.new
+        end
+
+        def add_step(step)
+          @dataloader.append_job(step)
         end
 
         attr_reader :steps_queue, :schema, :context, :variables, :runtime_types_at_result
@@ -70,11 +74,10 @@ module GraphQL
           end
 
           while (next_isolated_step = isolated_steps.shift)
-            @steps_queue << next_isolated_step
-            while (step = @steps_queue.shift)
-              step.execute
-            end
+            add_step(next_isolated_step)
+            @dataloader.run
           end
+
           result = if @context.errors.empty?
             {
               "data" => @data
@@ -86,7 +89,8 @@ module GraphQL
               "data" => data
             }
           end
-          result
+
+          GraphQL::Query::Result.new(query: @query, values: result)
         end
 
         def gather_selections(type_defn, ast_selections, selections_step, into:)
@@ -262,7 +266,7 @@ module GraphQL
 
           attr_writer :objects, :results
 
-          attr_reader :ast_node, :ast_nodes
+          attr_reader :ast_node, :ast_nodes, :key
 
           def path
             @path ||= [*@selection_step.path, @key].freeze
@@ -287,15 +291,17 @@ module GraphQL
             args_hash = {}
             if ast_arguments_or_hash.is_a?(Hash)
               ast_arguments_or_hash.each do |key, value|
-                arg_defn = arg_defns.each_value.find { |a| a.keyword == key }
+                arg_defn = arg_defns.each_value.find { |a|
+                  a.keyword == key || a.graphql_name == String(key)
+                }
                 arg_value = coerce_argument_value(arg_defn.type, value)
-                args_hash[key] = arg_value
+                args_hash[arg_defn.keyword] = arg_value
               end
             else
               ast_arguments_or_hash.each { |arg_node|
                 arg_defn = arg_defns[arg_node.name]
                 arg_value = coerce_argument_value(arg_defn.type, arg_node.value)
-                arg_key = Schema::Member::BuildType.underscore(arg_node.name).to_sym
+                arg_key = arg_defn.keyword
                 args_hash[arg_key] = arg_value
               }
             end
@@ -341,7 +347,7 @@ module GraphQL
             end
           end
 
-          def execute
+          def call
             field_defn = @runner.schema.get_field(@parent_type, @ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
             result_key = @ast_node.alias || @ast_node.name
 
@@ -394,24 +400,24 @@ module GraphQL
                   end
 
                   next_objects_by_type.each do |obj_type, next_objects|
-                    @runner.steps_queue << SelectionsStep.new(
+                    @runner.add_step(SelectionsStep.new(
                       path: path, # TODO pass self here?
                       parent_type: obj_type,
                       selections: next_selections,
                       objects: next_objects,
                       results: next_results_by_type[obj_type],
                       runner: @runner,
-                    )
+                    ))
                   end
                 else
-                  @runner.steps_queue << SelectionsStep.new(
+                  @runner.add_step(SelectionsStep.new(
                     path: path, # TODO pass self here?
                     parent_type: return_result_type,
                     selections: next_selections,
                     objects: all_next_objects,
                     results: all_next_results,
                     runner: @runner,
-                  )
+                  ))
                 end
               end
             else
@@ -471,21 +477,48 @@ module GraphQL
 
           attr_reader :path
 
-          def execute
+          def call
             grouped_selections = {}
             @runner.gather_selections(@parent_type, @selections, self, into: grouped_selections)
             grouped_selections.each_value do |frs|
               frs.objects = @objects
               frs.results = @results
-              @runner.steps_queue << frs
+              # TODO order result hashes correctly.
+              # I don't think this implementation will work forever
+              @results.each { |r| r[frs.key] = nil }
+              @runner.add_step(frs)
             end
           end
         end
       end
 
       module FieldCompatibility
+        def resolve_all_load_arguments(arguments, argument_owner, context)
+          arg_defns = context.types.arguments(argument_owner)
+          arg_defns.each do |arg_defn|
+            if arg_defn.loads
+              id = arguments.delete(arg_defn.keyword)
+              if id
+                value = context.schema.object_from_id(id, context)
+                arguments[arg_defn.keyword] = value
+              end
+            elsif (input_type = arg_defn.type.unwrap).kind.input_object? # TODO lists
+              value = arguments[arg_defn.keyword]
+              resolve_all_load_arguments(value, input_type, context)
+            end
+          end
+        end
+
         def resolve_all(objects, context, **kwargs)
-          if objects.first.is_a?(Hash)
+          resolve_all_load_arguments(kwargs, self, context)
+          resolve_all_m = :"all_#{@method_sym}"
+          if @owner.respond_to?(resolve_all_m)
+            if kwargs.empty?
+              @owner.public_send(resolve_all_m, objects, context)
+            else
+              @owner.public_send(resolve_all_m, objects, context, **kwargs)
+            end
+          elsif objects.first.is_a?(Hash)
             objects.map { |o| o[method_sym] || o[graphql_name] }
           elsif @owner.method_defined?(@method_sym)
             # Terrible perf but might work
@@ -495,6 +528,15 @@ module GraphQL
                 obj_inst.public_send(@method_sym)
               else
                 obj_inst.public_send(@method_sym, **kwargs)
+              end
+            }
+          elsif @resolver_class
+            objects.map { |o|
+              resolver_inst = @resolver_class.new(object: o, context: context, field: self)
+              if kwargs.empty?
+                resolver_inst.public_send(@resolver_class.resolver_method)
+              else
+                resolver_inst.public_send(@resolver_class.resolver_method, **kwargs)
               end
             }
           else
