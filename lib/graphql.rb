@@ -129,7 +129,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     # This needs to be defined before Rails runs `add_routing_paths`,
     # otherwise GraphQL::Dashboard's routes won't have been gathered for loading
     # when that initializer runs.
-    require 'graphql/dashboard'
+    ActiveSupport.on_load(:action_controller) { require 'graphql/dashboard' }
   end
 end
 
