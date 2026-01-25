@@ -2,7 +2,7 @@
 module GraphQL
   module Execution
     module Next
-      def self.run(schema:, query_string: nil, document: nil, context:, validate: true, variables:, root_object:)
+      def self.run(schema:, query_string: nil, document: nil, context: {}, validate: true, variables: {}, root_object: nil)
         document ||= GraphQL.parse(query_string)
         if validate
           validation_errors = schema.validate(document, context: context)
@@ -18,7 +18,6 @@ module GraphQL
         runner = Runner.new(schema, document, query_context, variables, root_object)
         runner.execute
       end
-
 
       class Runner
         def initialize(schema, document, context, variables, root_object)
@@ -64,6 +63,8 @@ module GraphQL
                 runner: self,
               )
             end
+          when "subscription"
+            raise ArgumentError, "TODO implement subscriptions"
           else
             raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
           end
@@ -485,7 +486,7 @@ module GraphQL
       module FieldCompatibility
         def resolve_all(objects, context, **kwargs)
           if objects.first.is_a?(Hash)
-            objects.map { |o| o[graphql_name] }
+            objects.map { |o| o[method_sym] || o[graphql_name] }
           elsif @owner.method_defined?(@method_sym)
             # Terrible perf but might work
             objects.map { |o|
