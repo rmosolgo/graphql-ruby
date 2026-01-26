@@ -609,7 +609,7 @@ describe GraphQL::Dataloader do
         let(:schema) { make_schema_from(FiberSchema) }
         let(:parts_schema) { make_schema_from(PartsSchema) }
 
-        def exec_query(query_string, context: nil, variables: nil)
+        def exec_query(query_string, schema: self.schema, context: nil, variables: nil)
           if TESTING_BATCHING
             schema.execute_batching(query_string, context: context, variables: variables)
           else
@@ -931,15 +931,13 @@ describe GraphQL::Dataloader do
           assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
-            [:mget, ["5"]],
-            [:mget, ["6"]],
+            [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
           assert_equal expected_log, database_log
         end
 
         it "batches calls in .authorized?" do
-          skip "NOT IMPLEMENTED YET TODO"
           query_str = "{ r1: recipe(id: 5) { name } r2: recipe(id: 6) { name } }"
           context = { batched_calls_counter: BatchedCallsCounter.new }
           exec_query(query_str, context: context)
@@ -962,7 +960,6 @@ describe GraphQL::Dataloader do
           result = exec_query(query_str, context: context)
           assert_equal ["Cornbread", "Grits"], result["data"]["cookbooks"].map { |c| c["featuredRecipe"]["name"] }
           refute result.key?("errors")
-          skip "TODO MAKE this test actually do something"
           assert_equal 1, context[:batched_calls_counter].count
         end
 
@@ -1008,8 +1005,7 @@ describe GraphQL::Dataloader do
           assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
-            [:mget, ["5"]],
-            [:mget, ["6"]],
+            [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
           assert_equal expected_log, database_log
@@ -1251,7 +1247,7 @@ describe GraphQL::Dataloader do
               }
             }
             GRAPHQL
-            res = exec_query(query_str)
+            res = exec_query(query_str, schema: schema)
             assert_equal 4, res.context.dataloader.fiber_limit
             assert_nil res["errors"]
           end
