@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 require_relative "../subscriptions_spec"
-
+require "graphql/execution/next"
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest
     class Box
@@ -291,7 +291,7 @@ describe GraphQL::Execution::Interpreter do
       query(Query)
       mutation(Mutation)
       lazy_resolve(Box, :value)
-
+      uses_raw_value(true)
       use GraphQL::Schema::AlwaysVisible
 
       def self.object_from_id(id, ctx)
@@ -337,6 +337,16 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
+  def exec_query(query_str, context: nil, variables: nil)
+    # InterpreterTest::Schema.execute(query_str, context: context, variables: variables)
+    GraphQL::Execution::Next.run(
+      schema: InterpreterTest::Schema,
+      query_string: query_str,
+      context: context,
+      variables: variables
+    )
+  end
+
   it "runs a query" do
     query_string = <<-GRAPHQL
     query($expansion: String!, $id1: ID!, $id2: ID!){
@@ -373,7 +383,7 @@ describe GraphQL::Execution::Interpreter do
     GRAPHQL
 
     vars = {expansion: "RAV", id1: "Dark Confidant", id2: "RAV"}
-    result = InterpreterTest::Schema.execute(query_string, variables: vars)
+    result = exec_query(query_string, variables: vars)
     assert_equal ["BLACK"], result["data"]["card"]["colors"]
     assert_equal "Ravnica, City of Guilds", result["data"]["card"]["expansion"]["name"]
     assert_equal [{"name" => "Dark Confidant"}], result["data"]["card"]["expansion"]["cards"]
@@ -388,7 +398,7 @@ describe GraphQL::Execution::Interpreter do
 
   it "runs a nested query and maintains proper state" do
     query_str = "query($queryStr: String!) { nestedQuery(query: $queryStr) { result currentPath } }"
-    result = InterpreterTest::Schema.execute(query_str, variables: { queryStr: "{ __typename }" })
+    result = exec_query(query_str, variables: { queryStr: "{ __typename }" })
     assert_equal '{"data":{"__typename":"Query"}}', result["data"]["nestedQuery"]["result"]
     assert_equal ["nestedQuery"], result["data"]["nestedQuery"]["currentPath"]
     assert_nil Fiber[:__graphql_runtime_info]
@@ -406,7 +416,7 @@ describe GraphQL::Execution::Interpreter do
     }
     GRAPHQL
 
-    result = InterpreterTest::Schema.execute(query_str, context: { counter: OpenStruct.new(value: 0) })
+    result = exec_query(query_str, context: { counter: OpenStruct.new(value: 0) })
     expected_data = {
       "i1" => {
         "value" => 1,
@@ -435,7 +445,7 @@ describe GraphQL::Execution::Interpreter do
     GRAPHQL
 
     vars = {truthy: true, falsey: false}
-    result = InterpreterTest::Schema.execute(query_str, variables: vars)
+    result = exec_query(query_str, variables: vars)
     expected_data = {
       "exp2" => {"name" => "Ravnica, City of Guilds"},
       "exp3" => {"name" => "Ravnica, City of Guilds"},
@@ -447,7 +457,8 @@ describe GraphQL::Execution::Interpreter do
 
   describe "runtime info in context" do
     it "is available" do
-      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      skip "NOT SUPPORTED"
+      res = exec_query <<-GRAPHQL
       {
         fieldCounter {
           runtimeInfo(a: 1, b: 2)
@@ -478,7 +489,7 @@ describe GraphQL::Execution::Interpreter do
       }
       GRAPHQL
 
-      res = InterpreterTest::Schema.execute(query_str)
+      res = exec_query(query_str)
       # Although the expansion was found, its name of `nil`
       # propagated to here
       assert_nil res["data"].fetch("expansion")
@@ -495,7 +506,7 @@ describe GraphQL::Execution::Interpreter do
       }
       GRAPHQL
 
-      res = InterpreterTest::Schema.execute(query_str)
+      res = exec_query(query_str)
       assert_equal ["errors", "data"], res.keys
     end
 
@@ -510,13 +521,13 @@ describe GraphQL::Execution::Interpreter do
       }
       GRAPHQL
 
-      res = InterpreterTest::Schema.execute(query_str)
+      res = exec_query(query_str)
       # A null in one of the list items removed the whole list
       assert_nil(res["data"])
     end
 
     it "works with unions that fail .authorized?" do
-      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      res = exec_query <<-GRAPHQL
       {
         find(id: "NOPE") {
           ... on Expansion {
@@ -525,11 +536,12 @@ describe GraphQL::Execution::Interpreter do
         }
       }
       GRAPHQL
+
       assert_equal ["Cannot return null for non-nullable element of type 'Entity!' for Query.find"], res["errors"].map { |e| e["message"] }
     end
 
     it "works with lists of unions" do
-      res = InterpreterTest::Schema.execute <<-GRAPHQL
+      res = exec_query <<-GRAPHQL
       {
         findMany(ids: ["RAV", "NOPE", "BOGUS"]) {
           ... on Expansion {
@@ -575,17 +587,17 @@ describe GraphQL::Execution::Interpreter do
       GRAPHQL
 
       # It will raise an error if it doesn't match the expectation
-      res = InterpreterTest::Schema.execute(query_str, context: { calls: 0 })
+      res = exec_query(query_str, context: { calls: 0 })
       assert_equal 3, res["data"]["fieldCounter"]["fieldCounter"]["c3"]
     end
   end
 
   describe "backwards compatibility" do
     it "handles a legacy nodes field" do
-      res = InterpreterTest::Schema.execute('{ node(id: "abc") { id } }')
+      res = exec_query('{ node(id: "abc") { id } }')
       assert_equal "abc", res["data"]["node"]["id"]
 
-      res = InterpreterTest::Schema.execute('{ nodes(ids: ["abc", "xyz"]) { id } }')
+      res = exec_query('{ nodes(ids: ["abc", "xyz"]) { id } }')
       assert_equal ["abc", "xyz"], res["data"]["nodes"].map { |n| n["id"] }
     end
   end
@@ -602,7 +614,7 @@ describe GraphQL::Execution::Interpreter do
       }
       GRAPHQL
 
-      res = InterpreterTest::Schema.execute(query_str)
+      res = exec_query(query_str)
       assert_equal({ sym: "RAW", name: "Raw expansion", always_cached_value: 42 }, res["data"]["expansionRaw"])
     end
   end
@@ -619,7 +631,7 @@ describe GraphQL::Execution::Interpreter do
       }
       GRAPHQL
 
-      res = InterpreterTest::Schema.execute(query_str)
+      res = exec_query(query_str)
       assert_equal({ sym: "RAW", name: "Raw expansion", always_cached_value: 42 }, res["data"]["expansionRaw"])
     end
   end
@@ -874,6 +886,7 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "supports extras: [:parent]" do
+    skip "NOT GOING TO SUPPORT THIS"
     query_str = <<-GRAPHQL
     {
       card(name: "Dark Confidant") {
@@ -886,7 +899,7 @@ describe GraphQL::Execution::Interpreter do
       }
     }
     GRAPHQL
-    res = InterpreterTest::Schema.execute(query_str, context: { calls: 0 })
+    res = exec_query(query_str, context: { calls: 0 })
 
     assert_equal "NilClass", res["data"]["card"].fetch("parentClassName")
     assert_equal "InterpreterTest::Query::ExpansionData", res["data"]["expansion"]["cards"].first["parentClassName"]

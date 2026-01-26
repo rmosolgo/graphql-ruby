@@ -10,7 +10,7 @@ describe "Next Execution" do
         super(**kwargs, &block)
       end
 
-      def resolve_all(objects, context, **arguments)
+      def resolve_all(_frs, objects, context, **arguments)
         if !@static_value.nil?
           Array.new(objects.length, @static_value)
         elsif @object_method

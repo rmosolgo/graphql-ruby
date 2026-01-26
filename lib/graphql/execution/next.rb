@@ -2,7 +2,14 @@
 module GraphQL
   module Execution
     module Next
-      def self.run(schema:, query_string: nil, document: nil, context:, validate: true, variables:, root_object:)
+      class AuthFailedError < GraphQL::ExecutionError
+        def initialize(path:)
+          @path = path
+        end
+
+        attr_accessor :path
+      end
+      def self.run(schema:, query_string: nil, document: nil, context: {}, validate: true, variables: {}, root_object: nil)
         document ||= GraphQL.parse(query_string)
         if validate
           validation_errors = schema.validate(document, context: context)
@@ -12,30 +19,36 @@ module GraphQL
             }
           end
         end
-        dummy_q = GraphQL::Query.new(schema, document: document, context: context, variables: variables, root_value: root_object)
-        query_context = dummy_q.context
 
-        runner = Runner.new(schema, document, query_context, variables, root_object)
+        runner = Runner.new(schema, document, context, variables, root_object)
         runner.execute
       end
-
 
       class Runner
         def initialize(schema, document, context, variables, root_object)
           @schema = schema
           @document = document
-          @context = context
+          @query = GraphQL::Query.new(schema, document: document, context: context, variables: variables, root_value: root_object)
+          @context = @query.context
           @variables = variables
           @root_object = root_object
-          @path = @context[:current_path_next] = []
+          @path = []
           @steps_queue = []
           @data = {}
           @runtime_types_at_result = {}.compare_by_identity
+          @static_types_at_result = {}.compare_by_identity
           @selected_operation = nil
           @root_type = nil
+          @dataloader = @context[:dataloader] ||= schema.dataloader_class.new
+          @resolves_lazies = @schema.resolves_lazies?
+          @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
         end
 
-        attr_reader :steps_queue, :schema, :context, :variables, :runtime_types_at_result
+        def add_step(step)
+          @dataloader.append_job(step)
+        end
+
+        attr_reader :steps_queue, :schema, :context, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies
 
         def execute
           @selected_operation = @document.definitions.first # TODO select named operation
@@ -64,16 +77,17 @@ module GraphQL
                 runner: self,
               )
             end
+          when "subscription"
+            raise ArgumentError, "TODO implement subscriptions"
           else
             raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
           end
 
           while (next_isolated_step = isolated_steps.shift)
-            @steps_queue << next_isolated_step
-            while (step = @steps_queue.shift)
-              step.execute
-            end
+            add_step(next_isolated_step)
+            @dataloader.run
           end
+
           result = if @context.errors.empty?
             {
               "data" => @data
@@ -85,7 +99,8 @@ module GraphQL
               "data" => data
             }
           end
-          result
+
+          GraphQL::Query::Result.new(query: @query, values: result)
         end
 
         def gather_selections(type_defn, ast_selections, selections_step, into:)
@@ -94,7 +109,7 @@ module GraphQL
             case ast_selection
             when GraphQL::Language::Nodes::Field
               key = ast_selection.alias || ast_selection.name
-              step = into[key] ||= FieldResolveStep.new(
+              step = into[key] ||= @field_resolve_step_class.new(
                 selections_step: selections_step,
                 key: key,
                 parent_type: type_defn,
@@ -102,8 +117,8 @@ module GraphQL
               )
               step.append_selection(ast_selection)
             when GraphQL::Language::Nodes::InlineFragment
-              type_condition = ast_selection.type.name
-              if type_condition_applies?(type_defn, type_condition)
+              type_condition = ast_selection.type&.name
+              if type_condition.nil? || type_condition_applies?(type_defn, type_condition)
                 gather_selections(type_defn, ast_selection.selections, selections_step, into: into)
               end
             when GraphQL::Language::Nodes::FragmentSpread
@@ -171,14 +186,14 @@ module GraphQL
                 current_result_path.pop
               end
             when Language::Nodes::InlineFragment
-              runtime_type_at_result = @runtime_types_at_result[result_h]
-              if type_condition_applies?(runtime_type_at_result, ast_selection.type.name)
+              static_type_at_result = @static_types_at_result[result_h]
+              if type_condition_applies?(static_type_at_result, ast_selection.type.name)
                 result_h = check_object_result(result_h, static_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
               end
             when Language::Nodes::FragmentSpread
               fragment_defn = @document.definitions.find { |defn| defn.is_a?(Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
-              runtime_type_at_result = @runtime_types_at_result[result_h]
-              if type_condition_applies?(runtime_type_at_result, fragment_defn.type.name)
+              static_type_at_result = @static_types_at_result[result_h]
+              if type_condition_applies?(static_type_at_result, fragment_defn.type.name)
                 result_h = check_object_result(result_h, static_type, fragment_defn.selections, current_exec_path, current_result_path, paths_to_check)
               end
             end
@@ -225,11 +240,25 @@ module GraphQL
           end
         end
 
+        def dir_arg_value(arg_node)
+          if arg_node.value.is_a?(Language::Nodes::VariableIdentifier)
+            var_key = arg_node.value.name
+            if @variables.key?(var_key)
+              @variables[var_key]
+            else
+              @variables[var_key.to_sym]
+            end
+          else
+            arg_node.value
+          end
+        end
         def directives_include?(ast_selection)
           if ast_selection.directives.any? { |dir_node|
-                # TODO support variables here
-                (dir_node.name == "skip" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == true }) || # rubocop:disable Development/ContextIsPassedCop
-                (dir_node.name == "include" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == false }) # rubocop:disable Development/ContextIsPassedCop
+                if dir_node.name == "skip"
+                  dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(arg_node) == true } # rubocop:disable Development/ContextIsPassedCop
+                elsif dir_node.name == "include"
+                  dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(arg_node) == false } # rubocop:disable Development/ContextIsPassedCop
+                end
               }
             false
           else
@@ -249,22 +278,24 @@ module GraphQL
 
         class FieldResolveStep
           def initialize(parent_type:, runner:, key:, selections_step:)
-            @selection_step = selections_step
+            @selections_step = selections_step
             @key = key
             @parent_type = parent_type
             @ast_node = @ast_nodes = nil
             @objects = nil
             @results = nil
             @runner = runner
+            @field_definition = nil
+            @field_results = nil
             @path = nil
           end
 
           attr_writer :objects, :results
 
-          attr_reader :ast_node, :ast_nodes
+          attr_reader :ast_node, :ast_nodes, :key, :parent_type, :selections_step
 
           def path
-            @path ||= [*@selection_step.path, @key].freeze
+            @path ||= [*@selections_step.path, @key].freeze
           end
 
           def append_selection(ast_node)
@@ -286,15 +317,17 @@ module GraphQL
             args_hash = {}
             if ast_arguments_or_hash.is_a?(Hash)
               ast_arguments_or_hash.each do |key, value|
-                arg_defn = arg_defns.each_value.find { |a| a.keyword == key }
+                arg_defn = arg_defns.each_value.find { |a|
+                  a.keyword == key || a.graphql_name == String(key)
+                }
                 arg_value = coerce_argument_value(arg_defn.type, value)
-                args_hash[key] = arg_value
+                args_hash[arg_defn.keyword] = arg_value
               end
             else
               ast_arguments_or_hash.each { |arg_node|
                 arg_defn = arg_defns[arg_node.name]
                 arg_value = coerce_argument_value(arg_defn.type, arg_node.value)
-                arg_key = Schema::Member::BuildType.underscore(arg_node.name).to_sym
+                arg_key = arg_defn.keyword
                 args_hash[arg_key] = arg_value
               }
             end
@@ -340,24 +373,69 @@ module GraphQL
             end
           end
 
-          def execute
-            field_defn = @runner.schema.get_field(@parent_type, @ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
-            result_key = @ast_node.alias || @ast_node.name
-
-            arguments = coerce_arguments(field_defn, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
-
-            field_objs = if field_defn.dynamic_introspection
-              @objects.map { |o| @parent_type.scoped_new(o, @runner.context) }
+          # Implement that Lazy API
+          def value
+            if @field_results.is_a?(Array)
+              @field_results = @field_results.map! { |r|
+                r2 = @runner.schema.sync_lazy(r)
+                if r2.is_a?(Array)
+                  r2.map! {|r3| @runner.schema.sync_lazy(r3) }
+                end
+                r2
+              }
             else
-              @objects
+              @field_results = @runner.schema.sync_lazy(@field_results)
             end
-            field_results = if arguments.empty?
-              field_defn.resolve_all(field_objs, @runner.context)
-            else
-              field_defn.resolve_all(field_objs, @runner.context, **arguments)
-            end
+            @runner.add_step(self)
+            true
+          end
 
-            return_type = field_defn.type
+          def call
+            if @field_results
+              build_results
+            else
+              @field_definition = @runner.schema.get_field(@parent_type, @ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
+
+              arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
+
+              @field_results = if arguments.empty?
+                @field_definition.resolve_all(self, @objects, @runner.context)
+              else
+                @field_definition.resolve_all(self, @objects, @runner.context, **arguments)
+              end
+
+
+              if @runner.resolves_lazies
+                lazies = false
+                @field_results.each do |field_result|
+                  if @runner.schema.lazy?(field_result)
+                    lazies = true
+                    break
+                  elsif field_result.is_a?(Array)
+                    field_result.each do |inner_fr|
+                      if @runner.schema.lazy?(inner_fr)
+                        break lazies = true
+                      end
+                    end
+                    if lazies
+                      break
+                    end
+                  end
+                end
+
+                if lazies
+                  @runner.dataloader.lazy_at_depth(path.size, self)
+                else
+                  build_results
+                end
+              else
+                build_results
+              end
+            end
+          end
+
+          def build_results
+            return_type = @field_definition.type
             return_result_type = return_type.unwrap
 
             if return_result_type.kind.composite?
@@ -375,9 +453,9 @@ module GraphQL
 
               is_list = return_type.list?
               is_non_null = return_type.non_null?
-              field_results.each_with_index do |result, i|
+              @field_results.each_with_index do |result, i|
                 result_h = @results[i]
-                result_h[result_key] = build_graphql_result(field_defn, result, return_type, is_non_null, is_list, all_next_objects, all_next_results, false)
+                result_h[@key] = build_graphql_result(result, return_type, return_result_type, is_non_null, is_list, all_next_objects, all_next_results, false)
               end
 
               if !all_next_results.empty?
@@ -386,43 +464,46 @@ module GraphQL
                 if return_result_type.kind.abstract?
                   next_objects_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
                   next_results_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
+
                   all_next_objects.each_with_index do |next_object, i|
-                    object_type, _ignored_new_value = @runner.schema.resolve_type(return_result_type, next_object, @runner.context)
+                    result = all_next_results[i]
+                    object_type = @runner.runtime_types_at_result[result]
                     next_objects_by_type[object_type] << next_object
-                    next_results_by_type[object_type] << all_next_results[i]
+                    next_results_by_type[object_type] << result
                   end
 
                   next_objects_by_type.each do |obj_type, next_objects|
-                    @runner.steps_queue << SelectionsStep.new(
-                      path: path, # TODO pass self here?
+                    @runner.add_step(SelectionsStep.new(
+                      path: path,
                       parent_type: obj_type,
                       selections: next_selections,
                       objects: next_objects,
                       results: next_results_by_type[obj_type],
                       runner: @runner,
-                    )
+                    ))
                   end
                 else
-                  @runner.steps_queue << SelectionsStep.new(
-                    path: path, # TODO pass self here?
+                  @runner.add_step(SelectionsStep.new(
+                    path: path,
                     parent_type: return_result_type,
                     selections: next_selections,
                     objects: all_next_objects,
                     results: all_next_results,
                     runner: @runner,
-                  )
+                  ))
                 end
               end
             else
-              field_results.each_with_index do |result, i|
-                result_h = @results[i] || raise("Invariant: no result object at index #{i} for #{@parent_type.to_type_signature}.#{ast_node.name} (result: #{result.inspect})")
-                result_h[result_key] = if result.nil?
+              @field_results.each_with_index do |result, i|
+                result_h = @results[i]
+                result_h[@key] = if result.nil?
                   if return_type.non_null?
-                    @runner.add_non_null_error(@parent_type, field_defn, @ast_node, false, path)
+                    @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, false, path)
                   else
                     nil
                   end
                 else
+                  # TODO `nil`s in [T!] types aren't handled
                   return_type.coerce_result(result, @runner.context)
                 end
               end
@@ -431,10 +512,10 @@ module GraphQL
 
           private
 
-          def build_graphql_result(field_defn, field_result, return_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array) # rubocop:disable Metrics/ParameterLists
+          def build_graphql_result(field_result, return_type, return_result_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array) # rubocop:disable Metrics/ParameterLists
             if field_result.nil?
               if is_nn
-                @runner.add_non_null_error(@parent_type, field_defn, @ast_node, is_from_array, path)
+                @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, is_from_array, path)
               else
                 nil
               end
@@ -446,14 +527,36 @@ module GraphQL
               inner_type_nn = inner_type.non_null?
               inner_type_l = inner_type.list?
               field_result.map do |inner_f_r|
-                build_graphql_result(field_defn, inner_f_r, inner_type, inner_type_nn, inner_type_l, all_next_objects, all_next_results, true)
+                build_graphql_result(inner_f_r, inner_type, inner_type.unwrap, inner_type_nn, inner_type_l, all_next_objects, all_next_results, true)
               end
             else
-              next_result_h = {}
-              @runner.runtime_types_at_result[next_result_h] = return_type.unwrap
-              all_next_results << next_result_h
-              all_next_objects << field_result
-              next_result_h
+              obj_type, _ignored_value = return_result_type.kind.abstract? ? @runner.schema.resolve_type(return_result_type, field_result, @runner.context) : return_result_type
+              is_auth = obj_type.authorized?(field_result, @runner.context)
+              if @runner.resolves_lazies
+                is_auth = @runner.schema.sync_lazy(is_auth)
+              end
+              if is_auth
+                next_result_h = {}
+                all_next_results << next_result_h
+                all_next_objects << field_result
+                @runner.runtime_types_at_result[next_result_h] = obj_type
+                @runner.static_types_at_result[next_result_h] = return_result_type
+                next_result_h
+              elsif is_nn
+                @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, is_from_array, path)
+              else
+                nil
+              end
+            end
+          end
+        end
+
+        class RawValueFieldResolveStep < FieldResolveStep
+          def build_graphql_result(field_result, return_type, return_result_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array)
+            if field_result.is_a?(Interpreter::RawValue)
+              field_result.resolve
+            else
+              super
             end
           end
         end
@@ -463,39 +566,93 @@ module GraphQL
             @path = path
             @parent_type = parent_type
             @selections = selections
+            @runner = runner
             @objects = objects
             @results = results
-            @runner = runner
+            @graphql_objects = nil
           end
 
           attr_reader :path
 
-          def execute
+          def graphql_objects
+            @graphql_objects ||= @objects.map do |obj|
+              @parent_type.scoped_new(obj, @runner.context)
+            end
+          end
+
+          def call
             grouped_selections = {}
             @runner.gather_selections(@parent_type, @selections, self, into: grouped_selections)
             grouped_selections.each_value do |frs|
               frs.objects = @objects
               frs.results = @results
-              @runner.steps_queue << frs
+              # TODO order result hashes correctly.
+              # I don't think this implementation will work forever
+              @results.each { |r| r[frs.key] = nil }
+              @runner.add_step(frs)
             end
           end
         end
       end
 
       module FieldCompatibility
-        def resolve_all(objects, context, **kwargs)
-          if objects.first.is_a?(Hash)
-            objects.map { |o| o[graphql_name] }
+        def resolve_all_load_arguments(arguments, argument_owner, context)
+          arg_defns = context.types.arguments(argument_owner)
+          arg_defns.each do |arg_defn|
+            if arg_defn.loads
+              id = arguments.delete(arg_defn.keyword)
+              if id
+                value = context.schema.object_from_id(id, context)
+                arguments[arg_defn.keyword] = value
+              end
+            elsif (input_type = arg_defn.type.unwrap).kind.input_object? # TODO lists
+              value = arguments[arg_defn.keyword]
+              resolve_all_load_arguments(value, input_type, context)
+            end
+          end
+        end
+
+        def resolve_all(frs, objects, context, **kwargs)
+          resolve_all_load_arguments(kwargs, self, context)
+          @resolve_all_method ||= :"all_#{@method_sym}"
+          if extras.include?(:lookahead)
+            kwargs[:lookahead] = Execution::Lookahead.new(
+              query: context.query,
+              ast_nodes: frs.ast_nodes || Array(frs.ast_node),
+              field: self,
+            )
+          end
+
+          if @owner.respond_to?(@resolve_all_method)
+            if kwargs.empty?
+              @owner.public_send(@resolve_all_method, objects, context)
+            else
+              @owner.public_send(@resolve_all_method, objects, context, **kwargs)
+            end
           elsif @owner.method_defined?(@method_sym)
-            # Terrible perf but might work
-            objects.map { |o|
-              obj_inst = @owner.scoped_new(o, context)
+            frs.selections_step.graphql_objects.map do |obj_inst|
+              if dynamic_introspection
+                obj_inst = @owner.wrap(obj_inst, context)
+              end
               if kwargs.empty?
                 obj_inst.public_send(@method_sym)
               else
                 obj_inst.public_send(@method_sym, **kwargs)
               end
+            end
+          elsif @resolver_class
+            objects.map { |o|
+              resolver_inst = @resolver_class.new(object: o, context: context, field: self)
+              if kwargs.empty?
+                resolver_inst.public_send(@resolver_class.resolver_method)
+              else
+                resolver_inst.public_send(@resolver_class.resolver_method, **kwargs)
+              end
             }
+          elsif objects.first.is_a?(Hash)
+            objects.map { |o| o[method_sym] || o[graphql_name] }
+          elsif objects.first.is_a?(Interpreter::RawValue)
+            objects
           else
             objects.map { |o| o.public_send(@method_sym) }
           end

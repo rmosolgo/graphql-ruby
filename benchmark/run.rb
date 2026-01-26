@@ -265,22 +265,55 @@ module GraphQLBenchmark
 
   # Adapted from https://github.com/rmosolgo/graphql-ruby/issues/861
   def self.profile_large_result
+    require "graphql/execution/next"
     schema = ProfileLargeResult::Schema
+    schema.use(GraphQL::Dataloader)
     document = ProfileLargeResult::ALL_FIELDS
-    Benchmark.ips do |x|
-      x.config(time: 10)
-      x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
-        schema.execute(document: document)
-      }
-    end
-
+    # Benchmark.ips do |x|
+    #   x.config(time: 10)
+    #   x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
+    #     schema.execute(document: document)
+    #   }
+    # end
+      GraphQL::Execution::Next.run(
+        schema: schema,
+        document: document,
+        variables: {},
+        context: {},
+        root_object: nil,
+      )
     result = StackProf.run(mode: :wall, interval: 1) do
-      schema.execute(document: document)
+      GraphQL::Execution::Next.run(
+        schema: schema,
+        document: document,
+        variables: {},
+        context: {},
+        root_object: nil,
+      )
+      # schema.execute(document: document)
     end
     StackProf::Report.new(result).print_text
 
+    StackProf.run(mode: :wall, interval: 1, out: "tmp/stackprof.dump") do
+      GraphQL::Execution::Next.run(
+        schema: schema,
+        document: document,
+        variables: {},
+        context: {},
+        root_object: nil,
+      )
+      # schema.execute(document: document)
+    end
+
     report = MemoryProfiler.report do
-      schema.execute(document: document)
+      # schema.execute(document: document)
+      GraphQL::Execution::Next.run(
+        schema: schema,
+        document: document,
+        variables: {},
+        context: {},
+        root_object: nil,
+      )
     end
 
     report.pretty_print
@@ -452,7 +485,9 @@ module GraphQLBenchmark
     class Schema < GraphQL::Schema
       query QueryType
       # use GraphQL::Dataloader
-      lazy_resolve Proc, :call
+      if !ENV["EAGER"]
+        lazy_resolve Proc, :call
+      end
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL
