@@ -38,7 +38,7 @@ module GraphQL
           @dataloader.append_job(step)
         end
 
-        attr_reader :steps_queue, :schema, :context, :variables, :runtime_types_at_result
+        attr_reader :steps_queue, :schema, :context, :variables, :runtime_types_at_result, :dataloader
 
         def execute
           @selected_operation = @document.definitions.first # TODO select named operation
@@ -107,8 +107,8 @@ module GraphQL
               )
               step.append_selection(ast_selection)
             when GraphQL::Language::Nodes::InlineFragment
-              type_condition = ast_selection.type.name
-              if type_condition_applies?(type_defn, type_condition)
+              type_condition = ast_selection.type&.name
+              if type_condition.nil? || type_condition_applies?(type_defn, type_condition)
                 gather_selections(type_defn, ast_selection.selections, selections_step, into: into)
               end
             when GraphQL::Language::Nodes::FragmentSpread
@@ -268,13 +268,15 @@ module GraphQL
 
         class FieldResolveStep
           def initialize(parent_type:, runner:, key:, selections_step:)
-            @selection_step = selections_step
+            @selections_step = selections_step
             @key = key
             @parent_type = parent_type
             @ast_node = @ast_nodes = nil
             @objects = nil
             @results = nil
             @runner = runner
+            @field_definition = nil
+            @field_results = nil
             @path = nil
           end
 
@@ -283,7 +285,7 @@ module GraphQL
           attr_reader :ast_node, :ast_nodes, :key, :parent_type
 
           def path
-            @path ||= [*@selection_step.path, @key].freeze
+            @path ||= [*@selections_step.path, @key].freeze
           end
 
           def append_selection(ast_node)
@@ -362,18 +364,60 @@ module GraphQL
           end
 
           def call
-            field_defn = @runner.schema.get_field(@parent_type, @ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
-            result_key = @ast_node.alias || @ast_node.name
-
-            arguments = coerce_arguments(field_defn, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
-
-            field_results = if arguments.empty?
-              field_defn.resolve_all(self, @objects, @runner.context)
+            if @field_results
+              # TODO make this opt-in
+              if @field_results.is_a?(Array)
+                @field_results = @field_results.map! { |r|
+                  r2 = @runner.schema.sync_lazy(r)
+                  if r2.is_a?(Array)
+                    r2.map! {|r3| @runner.schema.sync_lazy(r3) }
+                  end
+                  r2
+                }
+                build_results
+              else
+                @field_results = @runner.schema.sync_lazy(@field_results)
+                @runner.add_step(self)
+              end
             else
-              field_defn.resolve_all(self, @objects, @runner.context, **arguments)
-            end
+              @field_definition = @runner.schema.get_field(@parent_type, @ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
 
-            return_type = field_defn.type
+              arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
+
+              @field_results = if arguments.empty?
+                @field_definition.resolve_all(self, @objects, @runner.context)
+              else
+                @field_definition.resolve_all(self, @objects, @runner.context, **arguments)
+              end
+
+              # TODO Make this check opt-in
+              # TODO use a class-based lazy cache
+              lazy_depth = nil
+              @field_results.each do |field_result|
+                if @runner.schema.lazy?(field_result)
+                  lazy_depth ||= path.size
+                  @runner.dataloader.lazy_at_depth(lazy_depth, field_result)
+                elsif field_result.is_a?(Array)
+                  field_result.each do |inner_fr|
+                    if @runner.schema.lazy?(inner_fr)
+                      lazy_depth ||= path.size
+                      @runner.dataloader.lazy_at_depth(lazy_depth, inner_fr)
+                    end
+                  end
+                end
+              end
+
+              if lazy_depth.nil?
+                build_results
+              else
+                @runner.add_step(self)
+              end
+            end
+          end
+
+          def build_results
+            result_key = @ast_node.alias || @ast_node.name
+            return_type = @field_definition.type
             return_result_type = return_type.unwrap
 
             if return_result_type.kind.composite?
@@ -391,9 +435,13 @@ module GraphQL
 
               is_list = return_type.list?
               is_non_null = return_type.non_null?
-              field_results.each_with_index do |result, i|
+              @field_results.each_with_index do |result, i|
                 result_h = @results[i]
-                result_h[result_key] = build_graphql_result(field_defn, result, return_type, is_non_null, is_list, all_next_objects, all_next_results, false)
+                result_h[result_key] = if result.is_a?(Interpreter::RawValue) # TODO remove this, make it opt-in somehow
+                  result.resolve
+                else
+                  build_graphql_result(result, return_type, is_non_null, is_list, all_next_objects, all_next_results, false)
+                end
               end
 
               if !all_next_results.empty?
@@ -410,7 +458,7 @@ module GraphQL
 
                   next_objects_by_type.each do |obj_type, next_objects|
                     @runner.add_step(SelectionsStep.new(
-                      path: path, # TODO pass self here?
+                      path: path,
                       parent_type: obj_type,
                       selections: next_selections,
                       objects: next_objects,
@@ -420,7 +468,7 @@ module GraphQL
                   end
                 else
                   @runner.add_step(SelectionsStep.new(
-                    path: path, # TODO pass self here?
+                    path: path,
                     parent_type: return_result_type,
                     selections: next_selections,
                     objects: all_next_objects,
@@ -430,11 +478,11 @@ module GraphQL
                 end
               end
             else
-              field_results.each_with_index do |result, i|
+              @field_results.each_with_index do |result, i|
                 result_h = @results[i] || raise("Invariant: no result object at index #{i} for #{@parent_type.to_type_signature}.#{ast_node.name} (result: #{result.inspect})")
                 result_h[result_key] = if result.nil?
                   if return_type.non_null?
-                    @runner.add_non_null_error(@parent_type, field_defn, @ast_node, false, path)
+                    @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, false, path)
                   else
                     nil
                   end
@@ -447,10 +495,10 @@ module GraphQL
 
           private
 
-          def build_graphql_result(field_defn, field_result, return_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array) # rubocop:disable Metrics/ParameterLists
+          def build_graphql_result(field_result, return_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array) # rubocop:disable Metrics/ParameterLists
             if field_result.nil?
               if is_nn
-                @runner.add_non_null_error(@parent_type, field_defn, @ast_node, is_from_array, path)
+                @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, is_from_array, path)
               else
                 nil
               end
@@ -462,7 +510,7 @@ module GraphQL
               inner_type_nn = inner_type.non_null?
               inner_type_l = inner_type.list?
               field_result.map do |inner_f_r|
-                build_graphql_result(field_defn, inner_f_r, inner_type, inner_type_nn, inner_type_l, all_next_objects, all_next_results, true)
+                build_graphql_result(inner_f_r, inner_type, inner_type_nn, inner_type_l, all_next_objects, all_next_results, true)
               end
             else
               next_result_h = {}
@@ -520,7 +568,7 @@ module GraphQL
 
         def resolve_all(frs, objects, context, **kwargs)
           resolve_all_load_arguments(kwargs, self, context)
-          resolve_all_m = :"all_#{@method_sym}"
+          @resolve_all_method ||= :"all_#{@method_sym}"
           if extras.include?(:lookahead)
             kwargs[:lookahead] = Execution::Lookahead.new(
               query: context.query,
@@ -528,11 +576,12 @@ module GraphQL
               field: self,
             )
           end
-          if @owner.respond_to?(resolve_all_m)
+
+          if @owner.respond_to?(@resolve_all_method)
             if kwargs.empty?
-              @owner.public_send(resolve_all_m, objects, context)
+              @owner.public_send(@resolve_all_method, objects, context)
             else
-              @owner.public_send(resolve_all_m, objects, context, **kwargs)
+              @owner.public_send(@resolve_all_method, objects, context, **kwargs)
             end
           # elsif dynamic_introspection
           #   objects.map { |o| o.public_send(@method_sym) }

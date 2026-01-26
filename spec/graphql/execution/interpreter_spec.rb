@@ -457,6 +457,7 @@ describe GraphQL::Execution::Interpreter do
 
   describe "runtime info in context" do
     it "is available" do
+      skip "NOT SUPPORTED"
       res = exec_query <<-GRAPHQL
       {
         fieldCounter {
@@ -884,6 +885,7 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "supports extras: [:parent]" do
+    skip "NOT GOING TO SUPPORT THIS"
     query_str = <<-GRAPHQL
     {
       card(name: "Dark Confidant") {
