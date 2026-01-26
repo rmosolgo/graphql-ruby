@@ -25,7 +25,7 @@ module GraphQL
           @context = @query.context
           @variables = variables
           @root_object = root_object
-          @path = @context[:current_path_next] = []
+          @path = []
           @steps_queue = []
           @data = {}
           @runtime_types_at_result = {}.compare_by_identity
@@ -50,6 +50,7 @@ module GraphQL
                 selections: @selected_operation.selections,
                 objects: [@root_object],
                 results: [@data],
+                graphql_objects: [@schema.sync_lazy(@root_type.wrap(@root_object, @context))],
                 path: EmptyObjects::EMPTY_ARRAY,
                 runner: self,
               )
@@ -62,6 +63,7 @@ module GraphQL
                 parent_type: @root_type = @schema.mutation,
                 selections: field_resolve_step.ast_nodes || Array(field_resolve_step.ast_node),
                 objects: [@root_object],
+                graphql_objects: [@schema.sync_lazy(@root_type.wrap(@root_object, @context))],
                 results: [@data],
                 path: EmptyObjects::EMPTY_ARRAY,
                 runner: self,
@@ -282,7 +284,7 @@ module GraphQL
 
           attr_writer :objects, :results
 
-          attr_reader :ast_node, :ast_nodes, :key, :parent_type
+          attr_reader :ast_node, :ast_nodes, :key, :parent_type, :selections_step
 
           def path
             @path ||= [*@selections_step.path, @key].freeze
@@ -432,6 +434,7 @@ module GraphQL
 
               all_next_objects = []
               all_next_results = []
+              all_next_graphql_objects = [] # TODO opt-in somehow
 
               is_list = return_type.list?
               is_non_null = return_type.non_null?
@@ -440,7 +443,7 @@ module GraphQL
                 result_h[result_key] = if result.is_a?(Interpreter::RawValue) # TODO remove this, make it opt-in somehow
                   result.resolve
                 else
-                  build_graphql_result(result, return_type, is_non_null, is_list, all_next_objects, all_next_results, false)
+                  build_graphql_result(result, return_type, return_result_type, is_non_null, is_list, all_next_objects, all_next_results, all_next_graphql_objects, false)
                 end
               end
 
@@ -449,10 +452,12 @@ module GraphQL
 
                 if return_result_type.kind.abstract?
                   next_objects_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
+                  next_graphql_objects_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
                   next_results_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
-                  all_next_objects.each_with_index do |next_object, i|
-                    object_type, _ignored_new_value = @runner.schema.resolve_type(return_result_type, next_object, @runner.context)
-                    next_objects_by_type[object_type] << next_object
+                  all_next_graphql_objects.each_with_index do |next_graphql_object, i|
+                    object_type = next_graphql_object.class
+                    next_graphql_objects_by_type[object_type] << next_graphql_object
+                    next_objects_by_type[object_type] << all_next_objects[i]
                     next_results_by_type[object_type] << all_next_results[i]
                   end
 
@@ -462,6 +467,7 @@ module GraphQL
                       parent_type: obj_type,
                       selections: next_selections,
                       objects: next_objects,
+                      graphql_objects: next_graphql_objects_by_type[obj_type],
                       results: next_results_by_type[obj_type],
                       runner: @runner,
                     ))
@@ -472,6 +478,7 @@ module GraphQL
                     parent_type: return_result_type,
                     selections: next_selections,
                     objects: all_next_objects,
+                    graphql_objects: all_next_graphql_objects,
                     results: all_next_results,
                     runner: @runner,
                   ))
@@ -495,7 +502,7 @@ module GraphQL
 
           private
 
-          def build_graphql_result(field_result, return_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array) # rubocop:disable Metrics/ParameterLists
+          def build_graphql_result(field_result, return_type, return_result_type, is_nn, is_list, all_next_objects, all_next_results, all_next_graphql_objects, is_from_array) # rubocop:disable Metrics/ParameterLists
             if field_result.nil?
               if is_nn
                 @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, is_from_array, path)
@@ -510,29 +517,42 @@ module GraphQL
               inner_type_nn = inner_type.non_null?
               inner_type_l = inner_type.list?
               field_result.map do |inner_f_r|
-                build_graphql_result(inner_f_r, inner_type, inner_type_nn, inner_type_l, all_next_objects, all_next_results, true)
+                build_graphql_result(inner_f_r, inner_type, inner_type.unwrap, inner_type_nn, inner_type_l, all_next_objects, all_next_results, all_next_graphql_objects, true)
               end
             else
-              next_result_h = {}
-              @runner.runtime_types_at_result[next_result_h] = return_type.unwrap
-              all_next_results << next_result_h
-              all_next_objects << field_result
-              next_result_h
+              wrapper_type = if return_result_type.kind.abstract?
+                object_type, _ignored_new_value = @runner.schema.resolve_type(return_result_type, field_result, @runner.context)
+                object_type
+              else
+                return_result_type
+              end
+              graphql_obj = @runner.schema.sync_lazy(wrapper_type.wrap(field_result, @runner.context))
+              if graphql_obj
+                next_result_h = {}
+                @runner.runtime_types_at_result[next_result_h] = return_result_type
+                all_next_results << next_result_h
+                all_next_objects << field_result
+                all_next_graphql_objects << graphql_obj
+                next_result_h
+              else
+                nil
+              end
             end
           end
         end
 
         class SelectionsStep
-          def initialize(parent_type:, selections:, objects:, results:, runner:, path:)
+          def initialize(parent_type:, selections:, objects:, graphql_objects:, results:, runner:, path:)
             @path = path
             @parent_type = parent_type
             @selections = selections
-            @objects = objects
-            @results = results
             @runner = runner
+            @objects = objects
+            @graphql_objects = graphql_objects
+            @results = results
           end
 
-          attr_reader :path
+          attr_reader :path, :graphql_objects
 
           def call
             grouped_selections = {}
@@ -583,23 +603,17 @@ module GraphQL
             else
               @owner.public_send(@resolve_all_method, objects, context, **kwargs)
             end
-          # elsif dynamic_introspection
-          #   objects.map { |o| o.public_send(@method_sym) }
           elsif @owner.method_defined?(@method_sym)
-            # Terrible perf but might work
-            # I think the viable possible future is for `frs`
-            # to maintain a list of object instances and use them here
-            objects.map { |o|
-              obj_inst = frs.parent_type.scoped_new(o, context)
+            frs.selections_step.graphql_objects.map do |obj_inst|
               if dynamic_introspection
-                obj_inst = @owner.scoped_new(obj_inst, context)
+                obj_inst = @owner.wrap(obj_inst, context)
               end
               if kwargs.empty?
                 obj_inst.public_send(@method_sym)
               else
                 obj_inst.public_send(@method_sym, **kwargs)
               end
-            }
+            end
           elsif @resolver_class
             objects.map { |o|
               resolver_inst = @resolver_class.new(object: o, context: context, field: self)
