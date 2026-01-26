@@ -266,7 +266,7 @@ module GraphQL
 
           attr_writer :objects, :results
 
-          attr_reader :ast_node, :ast_nodes, :key
+          attr_reader :ast_node, :ast_nodes, :key, :parent_type
 
           def path
             @path ||= [*@selection_step.path, @key].freeze
@@ -353,15 +353,10 @@ module GraphQL
 
             arguments = coerce_arguments(field_defn, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
 
-            field_objs = if field_defn.dynamic_introspection
-              @objects.map { |o| @parent_type.scoped_new(o, @runner.context) }
-            else
-              @objects
-            end
             field_results = if arguments.empty?
-              field_defn.resolve_all(field_objs, @runner.context)
+              field_defn.resolve_all(self, @objects, @runner.context)
             else
-              field_defn.resolve_all(field_objs, @runner.context, **arguments)
+              field_defn.resolve_all(self, @objects, @runner.context, **arguments)
             end
 
             return_type = field_defn.type
@@ -509,21 +504,31 @@ module GraphQL
           end
         end
 
-        def resolve_all(objects, context, **kwargs)
+        def resolve_all(frs, objects, context, **kwargs)
           resolve_all_load_arguments(kwargs, self, context)
           resolve_all_m = :"all_#{@method_sym}"
+          if extras.include?(:lookahead)
+            kwargs[:lookahead] = Execution::Lookahead.new(
+              query: context.query,
+              ast_nodes: frs.ast_nodes || Array(frs.ast_node),
+              field: self,
+            )
+          end
           if @owner.respond_to?(resolve_all_m)
             if kwargs.empty?
               @owner.public_send(resolve_all_m, objects, context)
             else
               @owner.public_send(resolve_all_m, objects, context, **kwargs)
             end
-          elsif objects.first.is_a?(Hash)
-            objects.map { |o| o[method_sym] || o[graphql_name] }
+          # elsif dynamic_introspection
+          #   objects.map { |o| o.public_send(@method_sym) }
           elsif @owner.method_defined?(@method_sym)
             # Terrible perf but might work
             objects.map { |o|
-              obj_inst = @owner.scoped_new(o, context)
+              obj_inst = frs.parent_type.scoped_new(o, context)
+              if dynamic_introspection
+                obj_inst = @owner.scoped_new(obj_inst, context)
+              end
               if kwargs.empty?
                 obj_inst.public_send(@method_sym)
               else
@@ -539,6 +544,8 @@ module GraphQL
                 resolver_inst.public_send(@resolver_class.resolver_method, **kwargs)
               end
             }
+          elsif objects.first.is_a?(Hash)
+            objects.map { |o| o[method_sym] || o[graphql_name] }
           else
             objects.map { |o| o.public_send(@method_sym) }
           end
