@@ -230,11 +230,25 @@ module GraphQL
           end
         end
 
+        def dir_arg_value(arg_node)
+          if arg_node.value.is_a?(Language::Nodes::VariableIdentifier)
+            var_key = arg_node.value.name
+            if @variables.key?(var_key)
+              @variables[var_key]
+            else
+              @variables[var_key.to_sym]
+            end
+          else
+            arg_node.value
+          end
+        end
         def directives_include?(ast_selection)
           if ast_selection.directives.any? { |dir_node|
-                # TODO support variables here
-                (dir_node.name == "skip" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == true }) || # rubocop:disable Development/ContextIsPassedCop
-                (dir_node.name == "include" && dir_node.arguments.any? { |arg_node| arg_node.name == "if" && arg_node.value == false }) # rubocop:disable Development/ContextIsPassedCop
+                if dir_node.name == "skip"
+                  dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(arg_node) == true } # rubocop:disable Development/ContextIsPassedCop
+                elsif dir_node.name == "include"
+                  dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(arg_node) == false } # rubocop:disable Development/ContextIsPassedCop
+                end
               }
             false
           else
@@ -524,6 +538,8 @@ module GraphQL
           #   objects.map { |o| o.public_send(@method_sym) }
           elsif @owner.method_defined?(@method_sym)
             # Terrible perf but might work
+            # I think the viable possible future is for `frs`
+            # to maintain a list of object instances and use them here
             objects.map { |o|
               obj_inst = frs.parent_type.scoped_new(o, context)
               if dynamic_introspection
@@ -546,6 +562,8 @@ module GraphQL
             }
           elsif objects.first.is_a?(Hash)
             objects.map { |o| o[method_sym] || o[graphql_name] }
+          elsif objects.first.is_a?(Interpreter::RawValue)
+            objects
           else
             objects.map { |o| o.public_send(@method_sym) }
           end
