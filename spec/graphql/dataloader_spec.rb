@@ -706,8 +706,10 @@ describe GraphQL::Dataloader do
               "6",                # recipeIngredient recipeId
             ]],
             [:mget, [
-              "3", "4",           # The two unfetched ingredients the first recipe
               "7",                # recipeIngredient ingredient_id
+            ]],
+            [:mget, [
+              "3", "4",           # The two unfetched ingredients the first recipe
             ]],
           ]
           assert_equal expected_log, database_log
@@ -867,8 +869,7 @@ describe GraphQL::Dataloader do
         assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
-            [:mget, ["5"]],
-            [:mget, ["6"]],
+            [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
           assert_equal expected_log, database_log
