@@ -267,6 +267,7 @@ module GraphQLBenchmark
   def self.profile_large_result
     require "graphql/execution/next"
     schema = ProfileLargeResult::Schema
+    schema.use(GraphQL::Dataloader)
     document = ProfileLargeResult::ALL_FIELDS
     # Benchmark.ips do |x|
     #   x.config(time: 10)
@@ -274,7 +275,13 @@ module GraphQLBenchmark
     #     schema.execute(document: document)
     #   }
     # end
-
+      GraphQL::Execution::Next.run(
+        schema: schema,
+        document: document,
+        variables: {},
+        context: {},
+        root_object: nil,
+      )
     result = StackProf.run(mode: :wall, interval: 1) do
       GraphQL::Execution::Next.run(
         schema: schema,
@@ -478,7 +485,9 @@ module GraphQLBenchmark
     class Schema < GraphQL::Schema
       query QueryType
       # use GraphQL::Dataloader
-      lazy_resolve Proc, :call
+      if !ENV["EAGER"]
+        lazy_resolve Proc, :call
+      end
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL

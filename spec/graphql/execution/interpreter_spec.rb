@@ -291,7 +291,7 @@ describe GraphQL::Execution::Interpreter do
       query(Query)
       mutation(Mutation)
       lazy_resolve(Box, :value)
-
+      uses_raw_value(true)
       use GraphQL::Schema::AlwaysVisible
 
       def self.object_from_id(id, ctx)
@@ -536,6 +536,7 @@ describe GraphQL::Execution::Interpreter do
         }
       }
       GRAPHQL
+
       assert_equal ["Cannot return null for non-nullable element of type 'Entity!' for Query.find"], res["errors"].map { |e| e["message"] }
     end
 
