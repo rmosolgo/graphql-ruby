@@ -3,6 +3,11 @@ module GraphQL
   module Execution
     module Batching
       module FieldCompatibility
+        def initialize(...)
+          super(...)
+          @resolve_all_method = nil
+        end
+
         def resolve_all_load_arguments(arguments, argument_owner, context)
           arg_defns = context.types.arguments(argument_owner)
           arg_defns.each do |arg_defn|
