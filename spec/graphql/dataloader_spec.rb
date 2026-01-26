@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
 require "fiber"
-require "graphql/execution/next"
 
 if defined?(Console) && defined?(Async)
   Console.logger.disable(Async::Task)
@@ -611,13 +610,11 @@ describe GraphQL::Dataloader do
         let(:parts_schema) { make_schema_from(PartsSchema) }
 
         def exec_query(query_string, context: nil, variables: nil)
-          # schema.execute(query_string, context: context, variables: variables)
-          GraphQL::Execution::Next.run(
-            schema: schema,
-            query_string: query_string,
-            context: context,
-            variables: variables,
-          )
+          if TESTING_BATCHING
+            schema.execute_batching(query_string, context: context, variables: variables)
+          else
+            schema.execute(query_string, context: context, variables: variables)
+          end
         end
 
         it "Works with request(...)" do

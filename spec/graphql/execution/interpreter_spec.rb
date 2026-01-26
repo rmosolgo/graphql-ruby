@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
 require_relative "../subscriptions_spec"
-require "graphql/execution/next"
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest
     class Box
@@ -338,13 +337,11 @@ describe GraphQL::Execution::Interpreter do
   end
 
   def exec_query(query_str, context: nil, variables: nil)
-    # InterpreterTest::Schema.execute(query_str, context: context, variables: variables)
-    GraphQL::Execution::Next.run(
-      schema: InterpreterTest::Schema,
-      query_string: query_str,
-      context: context,
-      variables: variables
-    )
+    if TESTING_BATCHING
+      InterpreterTest::Schema.execute_batching(query_str, context: context, variables: variables)
+    else
+      InterpreterTest::Schema.execute(query_str, context: context, variables: variables)
+    end
   end
 
   it "runs a query" do
@@ -397,6 +394,9 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "runs a nested query and maintains proper state" do
+    if TESTING_BATCHING
+      skip "Haven't figure out if/how to implement context[:current_path]"
+    end
     query_str = "query($queryStr: String!) { nestedQuery(query: $queryStr) { result currentPath } }"
     result = exec_query(query_str, variables: { queryStr: "{ __typename }" })
     assert_equal '{"data":{"__typename":"Query"}}', result["data"]["nestedQuery"]["result"]
@@ -457,7 +457,9 @@ describe GraphQL::Execution::Interpreter do
 
   describe "runtime info in context" do
     it "is available" do
-      skip "NOT SUPPORTED"
+      if TESTING_BATCHING
+        skip "NOT SUPPORTABLE"
+      end
       res = exec_query <<-GRAPHQL
       {
         fieldCounter {
@@ -886,7 +888,9 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "supports extras: [:parent]" do
-    skip "NOT GOING TO SUPPORT THIS"
+    if TESTING_BATCHING
+      skip "NOT SUPPORTABLE"
+    end
     query_str = <<-GRAPHQL
     {
       card(name: "Dark Confidant") {

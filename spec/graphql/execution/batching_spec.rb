@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
-require "graphql/execution/next"
+require "graphql/execution/batching"
 describe "Next Execution" do
   class NextExecutionSchema < GraphQL::Schema
     class BaseField < GraphQL::Schema::Field
@@ -152,7 +152,7 @@ describe "Next Execution" do
 
 
   def run_next(query_str, root_object: nil, variables: {})
-    GraphQL::Execution::Next.run(schema: NextExecutionSchema, query_string: query_str, context: {}, variables: variables, root_object: root_object)
+    NextExecutionSchema.execute_batching(query_str, context: {}, variables: variables, root_object: root_object)
   end
 
   before do

@@ -21,7 +21,7 @@ module GraphQL
               null: true,
               description: "Fetches an object given its ID.",
               relay_node_field: true,
-              method: :get_relay_node
+              resolver_method: :get_relay_node
             }
           end
 
