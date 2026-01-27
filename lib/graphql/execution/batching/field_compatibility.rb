@@ -12,8 +12,8 @@ module GraphQL
           arg_defns = context.types.arguments(argument_owner)
           arg_defns.each do |arg_defn|
             if arg_defn.loads
-              if arguments.key?(arg_defn.keyword) && !arguments[arg_defn.keyword].nil?
-                id = arguments.delete(arg_defn.keyword)
+              if arguments.key?(arg_defn.original_keyword) && !arguments[arg_defn.original_keyword].nil?
+                id = arguments.delete(arg_defn.original_keyword)
                 value = if arg_defn.type.list?
                   id.map {  |inner_id|
                     object_from_id_receiver.load_and_authorize_application_object(arg_defn, inner_id, context)
@@ -30,7 +30,7 @@ module GraphQL
                 end
                 arguments[arg_defn.keyword] = value
               end
-            elsif (input_type = arg_defn.type.unwrap).kind.input_object? && value = arguments[arg_defn.keyword] # TODO lists
+            elsif (input_type = arg_defn.type.unwrap).kind.input_object? && (value = arguments[arg_defn.original_keyword]) # TODO lists
               resolve_all_load_arguments(frs, object_from_id_receiver, value, input_type, context)
             end
           end
@@ -38,13 +38,21 @@ module GraphQL
         end
 
         def resolve_all(frs, objects, context, **kwargs)
+          @resolve_all_method ||= :"all_#{@method_sym}"
+          if @owner.respond_to?(@resolve_all_method)
+            if kwargs.empty?
+              return @owner.public_send(@resolve_all_method, objects, context)
+            else
+              return @owner.public_send(@resolve_all_method, objects, context, **kwargs)
+            end
+          end
+
           if !@resolver_class
             maybe_err = resolve_all_load_arguments(frs, self, kwargs, self, context)
             if maybe_err
               return nil
             end
           end
-          @resolve_all_method ||= :"all_#{@method_sym}"
           if extras.include?(:lookahead)
             kwargs[:lookahead] = Execution::Lookahead.new(
               query: context.query,
@@ -57,13 +65,7 @@ module GraphQL
             kwargs[:ast_node] = frs.ast_node
           end
 
-          if @owner.respond_to?(@resolve_all_method)
-            if kwargs.empty?
-              @owner.public_send(@resolve_all_method, objects, context)
-            else
-              @owner.public_send(@resolve_all_method, objects, context, **kwargs)
-            end
-          elsif @owner.method_defined?(@resolver_method)
+          if @owner.method_defined?(@resolver_method)
             frs.selections_step.graphql_objects.map do |obj_inst|
               if dynamic_introspection
                 obj_inst = @owner.wrap(obj_inst, context)

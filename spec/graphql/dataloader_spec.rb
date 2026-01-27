@@ -202,6 +202,13 @@ describe GraphQL::Dataloader do
     class Query < GraphQL::Schema::Object
       field :recipes, [Recipe], null: false
 
+      def self.all_recipes(objects, context)
+        recipes = Database.mget(["5", "6"])
+        is_authed = context.dataloader.with(AuthorizedSource, context[:batched_calls_counter]).load_all(recipes)
+        recipes.select!.with_index { |r, i| is_authed[i] }
+        Array.new(objects.size, recipes)
+      end
+
       def recipes
         Database.mget(["5", "6"])
       end
@@ -268,6 +275,11 @@ describe GraphQL::Dataloader do
         argument :ids, [ID], loads: Recipe, as: :recipes
       end
 
+      def self.all_recipes_by_id(objects, context, ids:)
+        recipes = context.dataloader.with(DataObject).load_all(ids)
+        Array.new(objects.size, recipes)
+      end
+
       def recipes_by_id(recipes:)
         recipes
       end
@@ -315,6 +327,13 @@ describe GraphQL::Dataloader do
         argument :recipe_2_id, ID, loads: Recipe
       end
 
+      def self.all_common_ingredients_with_load(objects, context, recipe_1_id:, recipe_2_id:)
+        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([recipe_1_id, recipe_2_id])
+        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
+        results = context.dataloader.with(DataObject).load_all(common_ids)
+        Array.new(objects.size, results)
+      end
+
       def common_ingredients_with_load(recipe_1:, recipe_2:)
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         dataloader.with(DataObject).load_all(common_ids)
@@ -334,6 +353,13 @@ describe GraphQL::Dataloader do
 
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         dataloader.with(DataObject).load_all(common_ids)
+      end
+
+      def self.all_common_ingredients_from_input_object(objects, context, input:)
+        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([input[:recipe_1_id], input[:recipe_2_id]])
+        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
+        results = context.dataloader.with(DataObject).load_all(common_ids)
+        Array.new(objects.size, results)
       end
 
       field :ingredient_with_custom_batch_key, Ingredient do
