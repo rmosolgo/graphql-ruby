@@ -68,10 +68,12 @@ module GraphQL
               if dynamic_introspection
                 obj_inst = @owner.wrap(obj_inst, context)
               end
-              if kwargs.empty?
-                obj_inst.public_send(@resolver_method)
-              else
-                obj_inst.public_send(@resolver_method, **kwargs)
+              with_extensions(obj_inst, kwargs, context) do |obj, ruby_kwargs|
+                if ruby_kwargs.empty?
+                  obj.public_send(@resolver_method)
+                else
+                  obj.public_send(@resolver_method, **ruby_kwargs)
+                end
               end
             end
           elsif @resolver_class
@@ -118,7 +120,16 @@ module GraphQL
           elsif objects.first.is_a?(Interpreter::RawValue)
             objects
           else
-            objects.map { |o| o.public_send(@method_sym) }
+            # need to use connection extension if present, and extensions expect object type instances
+            if extensions.empty?
+              objects.map { |o| o.public_send(@method_sym)}
+            else
+              frs.selections_step.graphql_objects.map do |obj_inst|
+                with_extensions(obj_inst, EmptyObjects::EMPTY_HASH, context) do |obj|
+                  obj.object.public_send(@method_sym)
+                end
+              end
+            end
           end
         end
       end
