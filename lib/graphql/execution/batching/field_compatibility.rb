@@ -125,8 +125,12 @@ module GraphQL
               objects.map { |o| o.public_send(@method_sym)}
             else
               frs.selections_step.graphql_objects.map do |obj_inst|
-                with_extensions(obj_inst, EmptyObjects::EMPTY_HASH, context) do |obj|
-                  obj.object.public_send(@method_sym)
+                with_extensions(obj_inst, EmptyObjects::EMPTY_HASH, context) do |obj, arguments|
+                  if arguments.empty?
+                    obj.object.public_send(@method_sym)
+                  else
+                    obj.object.public_send(@method_sym, **arguments)
+                  end
                 end
               end
             end

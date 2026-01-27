@@ -1578,6 +1578,7 @@ module GraphQL
         GraphQL::Execution::Batching.run(
           schema: self,
           query_string: query_str,
+          document: document,
           context: context,
           validate: validate,
           variables: variables,
