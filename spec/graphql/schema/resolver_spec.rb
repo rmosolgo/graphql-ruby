@@ -599,7 +599,7 @@ describe GraphQL::Schema::Resolver do
 
     it "gets path from extras" do
       if TESTING_BATCHING
-        skip "PATH IS NOT SUPPORTED"
+        skip "path isn't supported with Batching"
       end
       res = exec_query " { resolverWithPath } ", root_value: OpenStruct.new(value: 0)
       assert_equal '["resolverWithPath"]', res["data"]["resolverWithPath"]
@@ -786,6 +786,7 @@ describe GraphQL::Schema::Resolver do
     # Add assertions for a given field, assuming the behavior of `check_for_magic_number`
     def add_error_assertions(field_name, description)
       res = exec_query("{ int: #{field_name}(int: 13) }")
+      pp res
       assert_nil res["data"].fetch("int"), "#{description}: no result for execution error"
       assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }, "#{description}: top-level error is added"
 
@@ -839,23 +840,33 @@ describe GraphQL::Schema::Resolver do
     describe "loading arguments" do
       it "calls load methods and injects the return value" do
         res = exec_query("{ prepResolver1(int: 5) }")
-        assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
+        if TESTING_BATCHING
+          assert_equal 5, res["data"]["prepResolver1"], "def load_\#{...} was not called"
+        else
+          assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
+        end
       end
 
       it "supports lazy values" do
         res = exec_query("{ prepResolver2(int: 5) }")
-        assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
+        if TESTING_BATCHING
+          assert_equal 5, res["data"]["prepResolver2"], "def load_\#{...} was not called"
+        else
+          assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
+        end
       end
 
       it "supports raising GraphQL::UnauthorizedError and GraphQL::ExecutionError" do
         res = exec_query("{ prepResolver3(int: 5) }")
         assert_equal 5, res["data"]["prepResolver3"]
+        skip("def load_... not supported") if TESTING_BATCHING
         add_error_assertions("prepResolver3", "load_ hook")
       end
 
       it "supports raising errors from promises" do
         res = exec_query("{ prepResolver4(int: 5) }")
         assert_equal 5, res["data"]["prepResolver4"]
+        skip("def load_... not supported") if TESTING_BATCHING
         add_error_assertions("prepResolver4", "lazy load_ hook")
       end
     end

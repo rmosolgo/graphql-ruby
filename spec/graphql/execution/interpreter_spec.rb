@@ -458,7 +458,7 @@ describe GraphQL::Execution::Interpreter do
   describe "runtime info in context" do
     it "is available" do
       if TESTING_BATCHING
-        skip "NOT SUPPORTABLE"
+        skip "Doesn't exist with Execution::Batching"
       end
       res = exec_query <<-GRAPHQL
       {
@@ -889,7 +889,7 @@ describe GraphQL::Execution::Interpreter do
 
   it "supports extras: [:parent]" do
     if TESTING_BATCHING
-      skip "NOT SUPPORTABLE"
+      skip "Not possible in batching"
     end
     query_str = <<-GRAPHQL
     {
