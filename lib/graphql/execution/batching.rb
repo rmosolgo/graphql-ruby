@@ -6,14 +6,6 @@ require "graphql/execution/batching/selections_step"
 module GraphQL
   module Execution
     module Batching
-      class AuthFailedError < GraphQL::ExecutionError
-        def initialize(path:)
-          @path = path
-        end
-
-        attr_accessor :path
-      end
-
       def self.run(schema:, query_string: nil, document: nil, context: {}, validate: true, variables: {}, root_object: nil)
         document ||= GraphQL.parse(query_string)
         if validate
@@ -28,8 +20,6 @@ module GraphQL
         runner = Runner.new(schema, document, context, variables, root_object)
         runner.execute
       end
-
-
     end
   end
 end

@@ -1574,14 +1574,14 @@ module GraphQL
         end
       end
 
-      def execute_batching(query_str = nil, context: nil, document: nil, variables: nil, root_object: nil, validate: true)
+      def execute_batching(query_str = nil, context: nil, document: nil, variables: nil, root_value: nil, validate: true)
         GraphQL::Execution::Batching.run(
           schema: self,
           query_string: query_str,
           context: context,
           validate: validate,
           variables: variables,
-          root_object: root_object,
+          root_object: root_value,
         )
       end
 

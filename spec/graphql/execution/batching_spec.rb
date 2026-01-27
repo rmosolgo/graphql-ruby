@@ -152,7 +152,7 @@ describe "Next Execution" do
 
 
   def run_next(query_str, root_object: nil, variables: {})
-    NextExecutionSchema.execute_batching(query_str, context: {}, variables: variables, root_object: root_object)
+    NextExecutionSchema.execute_batching(query_str, context: {}, variables: variables, root_value: root_object)
   end
 
   before do

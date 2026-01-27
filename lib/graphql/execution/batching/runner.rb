@@ -72,10 +72,18 @@ module GraphQL
             }
           else
             data = propagate_errors(@data, @context.errors)
-            {
-              "errors" => @context.errors.map(&:to_h),
-              "data" => data
-            }
+            errors = []
+            @context.errors.each do |err|
+              if err.respond_to?(:to_h)
+                errors << err.to_h
+              end
+            end
+            res_h = {}
+            if !errors.empty?
+              res_h["errors"] = errors
+            end
+            res_h["data"] = data
+            res_h
           end
 
           GraphQL::Query::Result.new(query: @query, values: result)

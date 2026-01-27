@@ -18,7 +18,7 @@ module GraphQL
 
         attr_writer :objects, :results
 
-        attr_reader :ast_node, :ast_nodes, :key, :parent_type, :selections_step
+        attr_reader :ast_node, :ast_nodes, :key, :parent_type, :selections_step, :runner
 
         def path
           @path ||= [*@selections_step.path, @key].freeze
@@ -87,9 +87,13 @@ module GraphQL
           end
 
           if arg_t.list?
-            arg_value = Array(arg_value)
-            inner_t = arg_t.of_type
-            arg_value.map { |v| coerce_argument_value(inner_t, v) }
+            if arg_value.nil?
+              arg_value
+            else
+              arg_value = Array(arg_value)
+              inner_t = arg_t.of_type
+              arg_value.map { |v| coerce_argument_value(inner_t, v) }
+            end
           elsif arg_t.kind.leaf?
             arg_t.coerce_input(arg_value, @runner.context)
           elsif arg_t.kind.input_object?
@@ -101,19 +105,21 @@ module GraphQL
 
         # Implement that Lazy API
         def value
-          if @field_results.is_a?(Array)
-            @field_results = @field_results.map! { |r|
-              r2 = @runner.schema.sync_lazy(r)
-              if r2.is_a?(Array)
-                r2.map! {|r3| @runner.schema.sync_lazy(r3) }
-              end
-              r2
-            }
-          else
-            @field_results = @runner.schema.sync_lazy(@field_results)
-          end
+          @field_results = sync(@field_results)
           @runner.add_step(self)
           true
+        end
+
+        def sync(lazy)
+          if lazy.is_a?(Array)
+            lazy.map! { |l| sync(l)}
+          else
+            @runner.schema.sync_lazy(lazy)
+          end
+        rescue GraphQL::ExecutionError => err
+          err.path = path
+          @runner.context.add_error(err)
+          err
         end
 
         def call
@@ -257,6 +263,9 @@ module GraphQL
             end
           else
             obj_type, _ignored_value = return_result_type.kind.abstract? ? @runner.schema.resolve_type(return_result_type, field_result, @runner.context) : return_result_type
+            if @runner.resolves_lazies
+              obj_type, _ignored_value = @runner.schema.sync_lazy(obj_type)
+            end
             is_auth = obj_type.authorized?(field_result, @runner.context)
             if @runner.resolves_lazies
               is_auth = @runner.schema.sync_lazy(is_auth)
