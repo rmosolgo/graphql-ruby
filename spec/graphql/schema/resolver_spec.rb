@@ -786,7 +786,6 @@ describe GraphQL::Schema::Resolver do
     # Add assertions for a given field, assuming the behavior of `check_for_magic_number`
     def add_error_assertions(field_name, description)
       res = exec_query("{ int: #{field_name}(int: 13) }")
-      pp res
       assert_nil res["data"].fetch("int"), "#{description}: no result for execution error"
       assert_equal ["13 is unlucky!"], res["errors"].map { |e| e["message"] }, "#{description}: top-level error is added"
 
