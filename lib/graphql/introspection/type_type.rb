@@ -11,7 +11,7 @@ module GraphQL
                   "they describe. Abstract types, Union and Interface, provide the Object types "\
                   "possible at runtime. List and NonNull types compose other types."
 
-      field :kind, GraphQL::Schema::LateBoundType.new("__TypeKind"), null: false
+      field :kind, GraphQL::Schema::LateBoundType.new("__TypeKind"), null: false, resolve_each: :object_kind
       field :name, String, method: :graphql_name
       field :description, String
       field :fields, [GraphQL::Schema::LateBoundType.new("__Field")], scope: false do
@@ -44,8 +44,12 @@ module GraphQL
         end
       end
 
+      def self.object_kind(object, context)
+        object.kind.name
+      end
+
       def kind
-        @object.kind.name
+        self.class.object_kind(object, context)
       end
 
       def enum_values(include_deprecated:)

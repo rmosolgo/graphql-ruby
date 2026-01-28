@@ -126,18 +126,20 @@ module GraphQL
           if @field_results
             build_results
           else
-            @field_definition = @runner.schema.get_field(@parent_type, @ast_node.name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
+            field_name = @ast_node.name
+            @field_definition = @runner.schema.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
+
+            if field_name == "__typename"
+              @field_results = Array.new(@objects.size, @parent_type.graphql_name)
+              build_results
+              return
+            end
 
             arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
 
-            @field_results = if arguments.empty?
-              @field_definition.resolve_all(self, @objects, @runner.context)
-            else
-              @field_definition.resolve_all(self, @objects, @runner.context, **arguments)
-            end
+            @field_results = @field_definition.resolve_batch(self, @objects, @runner.context, arguments)
 
-
-            if @runner.resolves_lazies
+            if @runner.resolves_lazies # TODO extract this
               lazies = false
               @field_results.each do |field_result|
                 if @runner.schema.lazy?(field_result)
@@ -263,13 +265,16 @@ module GraphQL
             end
           else
             obj_type, _ignored_value = return_result_type.kind.abstract? ? @runner.schema.resolve_type(return_result_type, field_result, @runner.context) : return_result_type
-            if @runner.resolves_lazies
+            if @runner.resolves_lazies # TODO extract this
               obj_type, _ignored_value = @runner.schema.sync_lazy(obj_type)
             end
+
+            # TODO extract this vv
             is_auth = obj_type.authorized?(field_result, @runner.context)
             if @runner.resolves_lazies
               is_auth = @runner.schema.sync_lazy(is_auth)
             end
+
             if is_auth
               next_result_h = {}
               all_next_results << next_result_h

@@ -8,7 +8,7 @@ module GraphQL
           @document = document
           @query = GraphQL::Query.new(schema, document: document, context: context, variables: variables, root_value: root_object)
           @context = @query.context
-          @variables = variables
+          @variables = variables || EmptyObjects::EMPTY_HASH
           @root_object = root_object
           @path = []
           @steps_queue = []

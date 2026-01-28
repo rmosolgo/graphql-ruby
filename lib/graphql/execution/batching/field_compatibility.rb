@@ -37,7 +37,7 @@ module GraphQL
           nil
         end
 
-        def resolve_all(frs, objects, context, **kwargs)
+        def resolve_batch(frs, objects, context, kwargs)
           @resolve_all_method ||= :"all_#{@method_sym}"
           if @owner.respond_to?(@resolve_all_method)
             if kwargs.empty?
@@ -139,8 +139,6 @@ module GraphQL
           end
         end
       end
-
-      GraphQL::Schema::Field.include(FieldCompatibility)
     end
   end
 end

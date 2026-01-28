@@ -265,7 +265,8 @@ module GraphQLBenchmark
 
   # Adapted from https://github.com/rmosolgo/graphql-ruby/issues/861
   def self.profile_large_result
-    require "graphql/execution/next"
+    require "graphql/execution/batching"
+    GraphQL::Schema::Field.prepend(GraphQL::Execution::Batching::FieldCompatibility)
     schema = ProfileLargeResult::Schema
     schema.use(GraphQL::Dataloader)
     document = ProfileLargeResult::ALL_FIELDS
@@ -275,45 +276,21 @@ module GraphQLBenchmark
     #     schema.execute(document: document)
     #   }
     # end
-      GraphQL::Execution::Next.run(
-        schema: schema,
-        document: document,
-        variables: {},
-        context: {},
-        root_object: nil,
-      )
+    schema.execute_batching(document: document)
     result = StackProf.run(mode: :wall, interval: 1) do
-      GraphQL::Execution::Next.run(
-        schema: schema,
-        document: document,
-        variables: {},
-        context: {},
-        root_object: nil,
-      )
+      schema.execute_batching(document: document)
       # schema.execute(document: document)
     end
     StackProf::Report.new(result).print_text
 
     StackProf.run(mode: :wall, interval: 1, out: "tmp/stackprof.dump") do
-      GraphQL::Execution::Next.run(
-        schema: schema,
-        document: document,
-        variables: {},
-        context: {},
-        root_object: nil,
-      )
+      schema.execute_batching(document: document)
       # schema.execute(document: document)
     end
 
     report = MemoryProfiler.report do
       # schema.execute(document: document)
-      GraphQL::Execution::Next.run(
-        schema: schema,
-        document: document,
-        variables: {},
-        context: {},
-        root_object: nil,
-      )
+      schema.execute_batching(document: document)
     end
 
     report.pretty_print

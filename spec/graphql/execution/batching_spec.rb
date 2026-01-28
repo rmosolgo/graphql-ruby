@@ -1,36 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 require "graphql/execution/batching"
-describe "Next Execution" do
+describe "Batching Execution" do
   class NextExecutionSchema < GraphQL::Schema
-    class BaseField < GraphQL::Schema::Field
-      def initialize(value: nil, object_method: nil, **kwargs, &block)
-        @static_value = value
-        @object_method = object_method
-        super(**kwargs, &block)
-      end
-
-      def resolve_all(_frs, objects, context, **arguments)
-        if !@static_value.nil?
-          Array.new(objects.length, @static_value)
-        elsif @object_method
-          objects.map { |o| o.public_send(@object_method) }
-        else
-          @all_method_name ||= :"all_#{method_sym}"
-          owner.public_send(@all_method_name, objects, context, **arguments)
-        end
-      end
-    end
-
-    class BaseObject < GraphQL::Schema::Object
-      field_class BaseField
-    end
-
-    module BaseInterface
-      include GraphQL::Schema::Interface
-      field_class BaseField
-    end
-
     CLEAN_DATA = [
       OpenStruct.new(name: "Legumes", grows_in: ["SPRING", "🌻", "FALL"], species: [OpenStruct.new(name: "Snow Pea")]),
       OpenStruct.new(name: "Nightshades", grows_in: ["🌻"], species: [OpenStruct.new(name: "Tomato")]),
@@ -47,37 +19,40 @@ describe "Next Execution" do
     end
 
     module Nameable
-      include BaseInterface
-      field :name, String, object_method: :name
+      include GraphQL::Schema::Interface
+      field :name, String
     end
 
-    class PlantSpecies < BaseObject
+    class PlantSpecies < GraphQL::Schema::Object
       implements Nameable
-      field :poisonous, Boolean, value: false
-      field :family, "NextExecutionSchema::PlantFamily"
+      field :poisonous, Boolean, resolve_static: :all_poisonous
 
-      def self.all_family(objects, context)
-        objects.map { |species_obj|
-          DATA.find { |f| f.species.include?(species_obj) }
-        }
+      def self.all_poisonous(_ctx)
+        false
       end
 
+      field :family, "NextExecutionSchema::PlantFamily", resolve_each: :resolve_family
+
+      def self.resolve_family(object, context)
+        DATA.find { |f| f.species.include?(object) }
+      end
+
+      field :grows_in, [Season], resolve_each: :resolve_grows_in
+
+      def self.resolve_grows_in(object, context)
+        object.grows_in || []
+      end
+    end
+
+    class PlantFamily < GraphQL::Schema::Object
+      implements Nameable
+      field :name, String, null: false
       field :grows_in, [Season]
+      field :species, [PlantSpecies]
+      field :plant_count, Integer, resolve_each: :resolve_plant_count
 
-      def self.all_grows_in(objects, context)
-        objects.map { |o| o.grows_in || [] }
-      end
-    end
-
-    class PlantFamily < BaseObject
-      implements Nameable
-      field :name, String, null: false, object_method: :name
-      field :grows_in, [Season], object_method: :grows_in
-      field :species, [PlantSpecies], object_method: :species
-      field :plant_count, Integer
-
-      def self.all_plant_count(objects, context)
-        objects.map { |o| o.species.length.to_f } # let it be coerced to int
+      def self.resolve_plant_count(objects, context)
+        objects.species.length.to_f # let it be coerced to int
       end
     end
 
@@ -85,56 +60,60 @@ describe "Next Execution" do
       possible_types(PlantFamily, PlantSpecies)
     end
 
-    class Query < BaseObject
-      field :families, [PlantFamily], value: DATA
-      field :nullable_families, [PlantFamily, null: true], value: DATA
+    class Query < GraphQL::Schema::Object
+      field :families, [PlantFamily], resolve_static: :resolve_families
+      field :nullable_families, [PlantFamily, null: true], resolve_static: :resolve_families
 
-      field :str, String
+      def self.resolve_families(_ctx)
+        DATA
+      end
+
+      field :str, String, resolve_batch: :all_str
 
       def self.all_str(objects, context)
         objects.map { |obj| obj.class.name }
       end
 
-      field :find_species, PlantSpecies do
+      field :find_species, PlantSpecies, resolve_static: :all_find_species do
         argument :name, String
       end
 
-      def self.all_find_species(objects, context, name:)
+      def self.all_find_species(context, name:)
         species = nil
         DATA.each do |f|
           if (species = f.species.find { |s| s.name == name })
             break
           end
         end
-        Array.new(objects.length, species)
+        species
       end
 
-      field :all_things, [Thing]
+      field :all_things, [Thing], resolve_static: :resolve_all_things
 
-      def self.all_all_things(_objs, _ctx)
-        [DATA + DATA.map(&:species).flatten]
+      def self.resolve_all_things(_ctx)
+        DATA + DATA.map(&:species).flatten
       end
     end
 
-    class Mutation < BaseObject
+    class Mutation < GraphQL::Schema::Object
       class CreatePlantInput < GraphQL::Schema::InputObject
         argument :name, String
         argument :family, String
         argument :grows_in, [Season], default_value: ["🌻"]
       end
 
-      field :create_plant, PlantSpecies do
+      field :create_plant, PlantSpecies, resolve_static: :resolve_create_plant do
         argument :input, CreatePlantInput
       end
 
-      def self.all_create_plant(_objs, _ctx, input:)
+      def self.resolve_create_plant( _ctx, input:)
         name = input[:name]
         family = input[:family]
         grows_in = input[:grows_in]
         family_obj = DATA.find { |f| f.name == family}
         species_obj = OpenStruct.new(name: name, grows_in: grows_in )
         family_obj.species << species_obj
-        [species_obj]
+        species_obj
       end
     end
 
