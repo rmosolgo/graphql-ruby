@@ -246,7 +246,7 @@ module GraphQL
 
         private
 
-        def build_graphql_result(field_result, return_type, return_result_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array) # rubocop:disable Metrics/ParameterLists
+        def build_graphql_result(field_result, return_type, unwrapped_return_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array) # rubocop:disable Metrics/ParameterLists
           if field_result.nil?
             if is_nn
               @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, is_from_array, path)
@@ -261,10 +261,10 @@ module GraphQL
             inner_type_nn = inner_type.non_null?
             inner_type_l = inner_type.list?
             field_result.map do |inner_f_r|
-              build_graphql_result(inner_f_r, inner_type, inner_type.unwrap, inner_type_nn, inner_type_l, all_next_objects, all_next_results, true)
+              build_graphql_result(inner_f_r, inner_type, unwrapped_return_type, inner_type_nn, inner_type_l, all_next_objects, all_next_results, true)
             end
           else
-            obj_type, _ignored_value = return_result_type.kind.abstract? ? @runner.schema.resolve_type(return_result_type, field_result, @runner.context) : return_result_type
+            obj_type, _ignored_value = unwrapped_return_type.kind.abstract? ? @runner.schema.resolve_type(unwrapped_return_type, field_result, @runner.context) : unwrapped_return_type
             if @runner.resolves_lazies # TODO extract this
               obj_type, _ignored_value = @runner.schema.sync_lazy(obj_type)
             end
@@ -280,7 +280,7 @@ module GraphQL
               all_next_results << next_result_h
               all_next_objects << field_result
               @runner.runtime_types_at_result[next_result_h] = obj_type
-              @runner.static_types_at_result[next_result_h] = return_result_type
+              @runner.static_types_at_result[next_result_h] = unwrapped_return_type
               next_result_h
             elsif is_nn
               @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, is_from_array, path)
