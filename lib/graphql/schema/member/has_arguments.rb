@@ -247,6 +247,55 @@ module GraphQL
           self.class.argument_class(new_arg_class)
         end
 
+        def create_runtime_arguments(parent_object, field_defn, context, ast_node)
+          values = GraphQL::Execution::Interpreter::ArgumentsCache.prepare_args_hash(context.query, ast_node)
+          argument_values = nil
+          arg_defns = context.types.arguments(self)
+          arg_defns.each do |argument_defn|
+            default_used = false
+            value = if values.key?(argument_defn.graphql_name)
+              values[argument_defn.graphql_name]
+            # elsif values.key?(argument_defn.keyword) TODO can I not need this?
+            elsif argument_defn.default_value?
+              default_used = true
+              argument_defn.default_value
+            else
+              next
+            end
+
+            if value.nil? && argument_defn.replace_null_with_default?
+              value = argument_defn.default_value
+              default_used = true
+            end
+
+            argument_values ||= {}
+            argument_values[argument_defn.keyword] = GraphQL::Execution::Interpreter::ArgumentValue.new(
+              value: NOT_CONFIGURED,
+              original_value: value,
+              definition: argument_defn,
+              default_used: default_used,
+              ast_node: ast_node,
+            )
+          end
+
+          if argument_values
+            Execution::Interpreter::Arguments.new(
+              context: context,
+              owner: field_defn,
+              parent_object: parent_object,
+              argument_values: argument_values
+            )
+          else
+            # TODO really should use ::EMPTY here
+            Execution::Interpreter::Arguments.new(
+              context: context,
+              owner: field_defn,
+              parent_object: parent_object,
+              argument_values: EmptyObjects::EMPTY_HASH
+            )
+          end
+        end
+
         # @api private
         # If given a block, it will eventually yield the loaded args to the block.
         #

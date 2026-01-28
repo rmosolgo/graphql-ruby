@@ -315,6 +315,7 @@ module GraphQL
               original_value: resolved_coerced_value,
               definition: self,
               default_used: default_used,
+              ast_node: nil,
             )
           end
         end
@@ -354,15 +355,15 @@ module GraphQL
         elsif loads
           if type.list?
             loaded_values = []
-            # We want to run these list items all together,
-            # but we also need to wait for the result so we can return it :S
-            context.dataloader.run_isolated do
-              coerced_value.each_with_index { |val, idx|
-                context.dataloader.append_job do
-                  loaded_values[idx] = load_method_owner.load_and_authorize_application_object(self, val, context)
-                end
-              }
-            end
+            coerced_value.each_with_index { |val, idx|
+              loaded_values[idx] = NOT_CONFIGURED
+              context.dataloader.append_job do
+                loaded_values[idx] = load_method_owner.load_and_authorize_application_object(self, val, context)
+              rescue GraphQL::ExecutionError => exec_err
+                loaded_values[idx] = exec_err
+              end
+            }
+
             context.schema.after_any_lazies(loaded_values, &:itself)
           else
             load_method_owner.load_and_authorize_application_object(self, coerced_value, context)

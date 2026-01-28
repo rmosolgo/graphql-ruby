@@ -233,15 +233,9 @@ module GraphQL
             return nil
           end
 
-          arguments = coerce_arguments(nil, value, ctx)
-
-          ctx.query.after_lazy(arguments) do |resolved_arguments|
-            if resolved_arguments.is_a?(GraphQL::Error)
-              raise resolved_arguments
-            else
-              self.new(resolved_arguments, ruby_kwargs: resolved_arguments.keyword_arguments, context: ctx, defaults_used: nil)
-            end
-          end
+          args = create_runtime_arguments(self, self, ctx, value)
+          result = args.wait_until_dataloaded
+          result
         end
 
         # It's funny to think of a _result_ of an input object.

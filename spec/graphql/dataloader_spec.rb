@@ -934,6 +934,17 @@ describe GraphQL::Dataloader do
           context = { batched_calls_counter: BatchedCallsCounter.new }
           schema.execute(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
+
+          database_log.clear
+          query_str = "{ r1: recipe(id: 5) { name } recipesById(ids: [6]) { name } }"
+          context = { batched_calls_counter: BatchedCallsCounter.new }
+          result = schema.execute(query_str, context: context)
+          pp result.to_h
+          pp database_log
+          assert_graphql_equal({ "r1" => {"name" => "Cornbread" }, "recipesById" => [ { "name" => "Grits"}]}, result["data"])
+          assert_equal 1, context[:batched_calls_counter].count
+          expected_log = [[:mget, ["5", "6"]]]
+          assert_equal expected_log, database_log
         end
 
         it "batches nested object calls in .authorized? after using lazy_resolve" do
