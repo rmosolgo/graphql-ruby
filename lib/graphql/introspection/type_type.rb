@@ -11,32 +11,32 @@ module GraphQL
                   "they describe. Abstract types, Union and Interface, provide the Object types "\
                   "possible at runtime. List and NonNull types compose other types."
 
-      field :kind, GraphQL::Schema::LateBoundType.new("__TypeKind"), null: false, resolve_each: :object_kind
+      field :kind, GraphQL::Schema::LateBoundType.new("__TypeKind"), null: false, resolve_each: :resolve_kind
       field :name, String, method: :graphql_name
       field :description, String
-      field :fields, [GraphQL::Schema::LateBoundType.new("__Field")], scope: false do
+      field :fields, [GraphQL::Schema::LateBoundType.new("__Field")], scope: false, resolve_each: :resolve_fields do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :interfaces, [GraphQL::Schema::LateBoundType.new("__Type")], scope: false
-      field :possible_types, [GraphQL::Schema::LateBoundType.new("__Type")], scope: false
-      field :enum_values, [GraphQL::Schema::LateBoundType.new("__EnumValue")], scope: false do
+      field :interfaces, [GraphQL::Schema::LateBoundType.new("__Type")], scope: false, resolve_each: :resolve_interfaces
+      field :possible_types, [GraphQL::Schema::LateBoundType.new("__Type")], scope: false, resolve_each: :resolve_possible_types
+      field :enum_values, [GraphQL::Schema::LateBoundType.new("__EnumValue")], scope: false, resolve_each: :resolve_enum_values do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], scope: false  do
+      field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], scope: false, resolve_each: :resolve_input_fields  do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :of_type, GraphQL::Schema::LateBoundType.new("__Type")
+      field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), resolve_each: :resolve_of_type
 
-      field :specifiedByURL, String, resolver_method: :specified_by_url
+      field :specifiedByURL, String, resolve_each: :resolve_specified_by_url
 
-      field :is_one_of, Boolean, null: false
+      field :is_one_of, Boolean, null: false, resolve_each: :resolve_is_one_of
 
-      def is_one_of
+      def self.resolve_is_one_of(object, _ctx)
         object.kind.input_object? &&
           object.directives.any? { |d| d.graphql_name == "oneOf" }
       end
 
-      def specified_by_url
+      def self.resolve_specified_by_url(object, _ctx)
         if object.kind.scalar?
           object.specified_by_url
         else
@@ -44,19 +44,15 @@ module GraphQL
         end
       end
 
-      def self.object_kind(object, context)
+      def self.resolve_kind(object, context)
         object.kind.name
       end
 
-      def kind
-        self.class.object_kind(object, context)
-      end
-
-      def enum_values(include_deprecated:)
-        if !@object.kind.enum?
+      def self.resolve_enum_values(object, context, include_deprecated:)
+        if !object.kind.enum?
           nil
         else
-          enum_values = @context.types.enum_values(@object)
+          enum_values = context.types.enum_values(object)
 
           if !include_deprecated
             enum_values = enum_values.select {|f| !f.deprecation_reason }
@@ -66,17 +62,17 @@ module GraphQL
         end
       end
 
-      def interfaces
-        if @object.kind.object? || @object.kind.interface?
-          @context.types.interfaces(@object).sort_by(&:graphql_name)
+      def self.resolve_interfaces(object, context)
+        if object.kind.object? || object.kind.interface?
+          context.types.interfaces(object).sort_by(&:graphql_name)
         else
           nil
         end
       end
 
-      def input_fields(include_deprecated:)
-        if @object.kind.input_object?
-          args = @context.types.arguments(@object)
+      def self.resolve_input_fields(object, context, include_deprecated:)
+        if object.kind.input_object?
+          args = context.types.arguments(object)
           args = args.reject(&:deprecation_reason) unless include_deprecated
           args
         else
@@ -84,19 +80,19 @@ module GraphQL
         end
       end
 
-      def possible_types
-        if @object.kind.abstract?
-          @context.types.possible_types(@object).sort_by(&:graphql_name)
+      def self.resolve_possible_types(object, context)
+        if object.kind.abstract?
+          context.types.possible_types(object).sort_by(&:graphql_name)
         else
           nil
         end
       end
 
-      def fields(include_deprecated:)
-        if !@object.kind.fields?
+      def self.resolve_fields(object, context, include_deprecated:)
+        if !object.kind.fields?
           nil
         else
-          fields = @context.types.fields(@object)
+          fields = context.types.fields(object)
           if !include_deprecated
             fields = fields.select {|f| !f.deprecation_reason }
           end
@@ -104,8 +100,8 @@ module GraphQL
         end
       end
 
-      def of_type
-        @object.kind.wraps? ? @object.of_type : nil
+      def self.resolve_of_type(object, _ctx)
+        object.kind.wraps? ? object.of_type : nil
       end
     end
   end
