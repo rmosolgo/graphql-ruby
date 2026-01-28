@@ -196,18 +196,20 @@ module GraphQL
         def edges
           # Assume that whatever authorization needed to happen
           # already happened at the connection level.
-          current_runtime_state = Fiber[:__graphql_runtime_info]
-          query_runtime_state = current_runtime_state[context.query]
-          query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
+          if (current_runtime_state = Fiber[:__graphql_runtime_info])
+            query_runtime_state = current_runtime_state[context.query]
+            query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
+          end
           @object.edges
         end
 
         def nodes
           # Assume that whatever authorization needed to happen
           # already happened at the connection level.
-          current_runtime_state = Fiber[:__graphql_runtime_info]
-          query_runtime_state = current_runtime_state[context.query]
-          query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
+          if (current_runtime_state = Fiber[:__graphql_runtime_info])
+            query_runtime_state = current_runtime_state[context.query]
+            query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
+          end
           @object.nodes
         end
       end
