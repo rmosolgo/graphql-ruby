@@ -292,7 +292,7 @@ module GraphQL
       end
 
       class RawValueFieldResolveStep < FieldResolveStep
-        def build_graphql_result(field_result, return_type, return_result_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array)
+        def build_graphql_result(field_result, return_type, return_result_type, is_nn, is_list, all_next_objects, all_next_results, is_from_array) # rubocop:disable Metrics/ParameterLists
           if field_result.is_a?(Interpreter::RawValue)
             field_result.resolve
           else
