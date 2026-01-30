@@ -137,8 +137,20 @@ describe GraphQL::Dataloader do
       end
     end
 
-    module Ingredient
+    class BaseField < GraphQL::Schema::Field
+    end
+
+    class BaseObject < GraphQL::Schema::Object
+      field_class(BaseField)
+    end
+
+    module BaseInterface
       include GraphQL::Schema::Interface
+      field_class(BaseField)
+    end
+
+    module Ingredient
+      include BaseInterface
       field :name, String, null: false
       field :id, ID, null: false
 
@@ -149,29 +161,30 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Grain < GraphQL::Schema::Object
+    class Grain < BaseObject
       implements Ingredient
     end
 
-    class LeaveningAgent < GraphQL::Schema::Object
+    class LeaveningAgent < BaseObject
       implements Ingredient
     end
 
-    class Dairy < GraphQL::Schema::Object
+    class Dairy < BaseObject
       implements Ingredient
     end
 
-    class Recipe < GraphQL::Schema::Object
+    class Recipe < BaseObject
       def self.authorized?(obj, ctx)
         ctx.dataloader.with(AuthorizedSource, ctx[:batched_calls_counter]).load(obj)
       end
 
       field :name, String, null: false
-      field :ingredients, [Ingredient], null: false
+      field :ingredients, [Ingredient], null: false, resolve_batch: true
 
-      def self.all_ingredients(objects, context)
-        reqs = objects.map { |obj| context.dataloader.with(DataObject).request_all(obj[:ingredient_ids]) }
-        reqs.map(&:load)
+      def self.ingredients(objects, context)
+        reqs = objects
+          .map { |obj| context.dataloader.with(DataObject).request_all(obj[:ingredient_ids]) }
+          .map(&:load)
       end
 
       def ingredients
@@ -187,7 +200,7 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Cookbook < GraphQL::Schema::Object
+    class Cookbook < BaseObject
       field :featured_recipe, Recipe
 
       def self.all_featured_recipe(objects, context)
@@ -199,14 +212,14 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Query < GraphQL::Schema::Object
-      field :recipes, [Recipe], null: false
+    class Query < BaseObject
+      field :recipes, [Recipe], null: false, resolve_static: true
 
-      def self.all_recipes(objects, context)
+      def self.recipes(context)
         recipes = Database.mget(["5", "6"])
         is_authed = context.dataloader.with(AuthorizedSource, context[:batched_calls_counter]).load_all(recipes)
         recipes.select!.with_index { |r, i| is_authed[i] }
-        Array.new(objects.size, recipes)
+        recipes
       end
 
       def recipes
@@ -322,13 +335,14 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load_all(common_ids)
       end
 
-      field :common_ingredients_with_load, [Ingredient], null: false do
+      field :common_ingredients_with_load, [Ingredient], null: false, resolve_batch: true do
         argument :recipe_1_id, ID, loads: Recipe
         argument :recipe_2_id, ID, loads: Recipe
       end
 
-      def self.all_common_ingredients_with_load(objects, context, recipe_1:, recipe_2:)
+      def self.common_ingredients_with_load(objects, context, recipe_1:, recipe_2:)
         recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([recipe_1, recipe_2])
+
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         results = context.dataloader.with(DataObject).load_all(common_ids)
         Array.new(objects.size, results)
@@ -339,7 +353,7 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load_all(common_ids)
       end
 
-      field :common_ingredients_from_input_object, [Ingredient], null: false do
+      field :common_ingredients_from_input_object, [Ingredient], null: false, resolve_batch: true do
         class CommonIngredientsInput < GraphQL::Schema::InputObject
           argument :recipe_1_id, ID, loads: Recipe
           argument :recipe_2_id, ID, loads: Recipe
@@ -355,7 +369,7 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load_all(common_ids)
       end
 
-      def self.all_common_ingredients_from_input_object(objects, context, input:)
+      def self.common_ingredients_from_input_object(objects, context, input:)
         recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([input[:recipe_1], input[:recipe_2]])
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         results = context.dataloader.with(DataObject).load_all(common_ids)
@@ -458,7 +472,7 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Mutation < GraphQL::Schema::Object
+    class Mutation < BaseObject
       field :mutation_1, mutation: Mutation1
       field :mutation_2, mutation: Mutation2
       field :mutation_3, mutation: Mutation3

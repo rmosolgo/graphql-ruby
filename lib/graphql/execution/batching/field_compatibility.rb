@@ -38,7 +38,7 @@ module GraphQL
         end
 
         def resolve_batch(frs, objects, context, kwargs)
-          if @batch_mode
+          if @batch_mode && !:direct_send.equal?(@batch_mode)
             return super
           end
 

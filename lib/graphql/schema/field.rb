@@ -268,13 +268,13 @@ module GraphQL
 
         if resolve_static
           @batch_mode = :resolve_static
-          @batch_mode_key = resolve_static
+          @batch_mode_key = resolve_static == true ? @method_sym : resolve_static
         elsif resolve_batch
           @batch_mode = :resolve_batch
-          @batch_mode_key = resolve_batch
+          @batch_mode_key = resolve_batch == true ? @method_sym : resolve_batch
         elsif resolve_each
           @batch_mode = :resolve_each
-          @batch_mode_key = resolve_each
+          @batch_mode_key = resolve_each == true ? @method_sym : resolve_each
         elsif hash_key
           @batch_mode = :hash_key
           @batch_mode_key = hash_key
