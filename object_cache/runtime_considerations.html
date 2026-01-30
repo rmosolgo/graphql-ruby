@@ -218,7 +218,7 @@
 
 <p>If you need to manually clear the cache for a query, pass <code class="language-plaintext highlighter-rouge">context: { refresh_object_cache: true, ... }</code>. This will cause the <code class="language-plaintext highlighter-rouge">ObjectCache</code> to remove the already-cached result (if there was one), reassess the query for cache validity, and return a freshly-executed result.</p>
 
-<p>Usually, this shouldn’t be necessary; making sure objects update their <a href="/object_cache/schema_setup.html#object-fingerprint">cache fingerprints</a> will cause entries to expire when they should be re-executed. See also <a href="/object_cache/schema_setup.html#schema-fingerprin">Schema fingerprint</a> for expiring <em>all</em> results in the cache.</p>
+<p>Usually, this shouldn’t be necessary; making sure objects update their <a href="/object_cache/schema_setup.html#object-fingerprint">cache fingerprints</a> will cause entries to expire when they should be re-executed. See also <a href="/object_cache/schema_setup.html#schema-fingerprint">Schema fingerprint</a> for expiring <em>all</em> results in the cache.</p>
 
 </div>
 <p class="guide-footer">

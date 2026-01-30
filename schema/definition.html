@@ -197,7 +197,7 @@
 <h2 id="types-in-the-schema">Types in the Schema</h2>
 
 <ul>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#query-class_method" target="_blank" title="API docs for GraphQL::Schema.query"><code>Schema.query</code></a>, <a href="/api-doc/2.5.18/GraphQL/Schema#mutation-class_method" target="_blank" title="API docs for GraphQL::Schema.mutation"><code>Schema.mutation</code></a>, and <a href="/api-doc/2.5.18/GraphQL/Schema#subscription-class_method" target="_blank" title="API docs for GraphQL::Schema.subscription"><code>Schema.subscription</code></a> declare the <a href="https://graphql.org/learn/schema/#the-query-and-mutation-types">entry-point types</a> of the schema.</li>
+  <li><a href="/api-doc/2.5.18/GraphQL/Schema#query-class_method" target="_blank" title="API docs for GraphQL::Schema.query"><code>Schema.query</code></a>, <a href="/api-doc/2.5.18/GraphQL/Schema#mutation-class_method" target="_blank" title="API docs for GraphQL::Schema.mutation"><code>Schema.mutation</code></a>, and <a href="/api-doc/2.5.18/GraphQL/Schema#subscription-class_method" target="_blank" title="API docs for GraphQL::Schema.subscription"><code>Schema.subscription</code></a> declare the <a href="https://graphql.org/learn/schema/#the-query-mutation-and-subscription-types">entry-point types</a> of the schema.</li>
   <li><a href="/api-doc/2.5.18/GraphQL/Schema#orphan_types-class_method" target="_blank" title="API docs for GraphQL::Schema.orphan_types"><code>Schema.orphan_types</code></a> declares object types which implement <a href="/type_definitions/interfaces">Interfaces</a> but aren’t used as field return types in the schema. For more about this specific scenario, see <a href="/type_definitions/interfaces#orphan-types">Orphan Types</a></li>
 </ul>
 
@@ -298,7 +298,7 @@
 <h2 id="production-considerations">Production Considerations</h2>
 
 <ul>
-  <li><strong>Parser caching</strong>: if your application parses GraphQL <em>files</em> (queries or schema definition), it may benefit from enabling <a href="/api-doc/2.5.18/GraphQL/Parser/Cache" target="_blank" title="API docs for GraphQL::Parser::Cache"><code>GraphQL::Parser::Cache</code></a>.</li>
+  <li><strong>Parser caching</strong>: if your application parses GraphQL <em>files</em> (queries or schema definition), it may benefit from enabling <a href="/api-doc/2.5.18/GraphQL/Language/Cache" target="_blank" title="API docs for GraphQL::Language::Cache"><code>GraphQL::Language::Cache</code></a>.</li>
   <li>
     <p><strong>Eager loading the library</strong>: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be eager loaded instead, using <code class="language-plaintext highlighter-rouge">GraphQL.eager_load!</code>.</p>
 

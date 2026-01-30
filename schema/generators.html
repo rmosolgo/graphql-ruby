@@ -191,10 +191,12 @@
   <li>Add a <code class="language-plaintext highlighter-rouge">Mutation</code> type definition with a base mutation class</li>
   <li>Add a route and controller for executing queries</li>
   <li>Install <a href="https://github.com/rmosolgo/graphiql-rails"><code class="language-plaintext highlighter-rouge">graphiql-rails</code></a></li>
-  <li>
-    <p>Enable <a href="https://api.rubyonrails.org/classes/ActiveRecord/QueryLogs.html"><code class="language-plaintext highlighter-rouge">ActiveRecord::QueryLogs</code></a> and add GraphQL-related metadata (using <a href="/api-doc/2.5.18/GraphQL/Current" target="_blank" title="API docs for GraphQL::Current"><code>GraphQL::Current</code></a>)
-After installing you can see your new schema by:</p>
-  </li>
+  <li>Enable <a href="https://api.rubyonrails.org/classes/ActiveRecord/QueryLogs.html"><code class="language-plaintext highlighter-rouge">ActiveRecord::QueryLogs</code></a> and add GraphQL-related metadata (using <a href="/api-doc/2.5.18/GraphQL/Current" target="_blank" title="API docs for GraphQL::Current"><code>GraphQL::Current</code></a>)</li>
+</ul>
+
+<p>After installing you can see your new schema by:</p>
+
+<ul>
   <li><code class="language-plaintext highlighter-rouge">bundle install</code></li>
   <li><code class="language-plaintext highlighter-rouge">rails server</code></li>
   <li>Open <code class="language-plaintext highlighter-rouge">localhost:3000/graphiql</code></li>
@@ -203,7 +205,7 @@ After installing you can see your new schema by:</p>
 <h3 id="options">Options</h3>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">--directory=DIRECTORY</code> will directory where generated files should be saved (default is <code class="language-plaintext highlighter-rouge">app/graphql</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">--directory=DIRECTORY</code> will specify the directory where generated files should be saved (default is <code class="language-plaintext highlighter-rouge">app/graphql</code>)</li>
   <li><code class="language-plaintext highlighter-rouge">--schema=MySchemaName</code> will be used for naming the schema (default is <code class="language-plaintext highlighter-rouge">#{app_name}Schema</code>)</li>
   <li><code class="language-plaintext highlighter-rouge">--skip-graphiql</code> will exclude <code class="language-plaintext highlighter-rouge">graphiql-rails</code> from the setup</li>
   <li><code class="language-plaintext highlighter-rouge">--skip-mutation-root-type</code> will not create of the mutation root type</li>
