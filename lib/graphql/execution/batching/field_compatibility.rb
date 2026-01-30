@@ -3,11 +3,6 @@ module GraphQL
   module Execution
     module Batching
       module FieldCompatibility
-        def initialize(...)
-          super(...)
-          @resolve_all_method = nil
-        end
-
         def resolve_all_load_arguments(frs, object_from_id_receiver, arguments, argument_owner, context)
           arg_defns = context.types.arguments(argument_owner)
           arg_defns.each do |arg_defn|
@@ -43,13 +38,8 @@ module GraphQL
         end
 
         def resolve_batch(frs, objects, context, kwargs)
-          @resolve_all_method ||= :"all_#{@method_sym}"
-          if @owner.respond_to?(@resolve_all_method)
-            if kwargs.empty?
-              return @owner.public_send(@resolve_all_method, objects, context)
-            else
-              return @owner.public_send(@resolve_all_method, objects, context, **kwargs)
-            end
+          if @batch_mode
+            return super
           end
 
           if !@resolver_class
