@@ -137,20 +137,8 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class BaseField < GraphQL::Schema::Field
-    end
-
-    class BaseObject < GraphQL::Schema::Object
-      field_class(BaseField)
-    end
-
-    module BaseInterface
-      include GraphQL::Schema::Interface
-      field_class(BaseField)
-    end
-
     module Ingredient
-      include BaseInterface
+      include GraphQL::Schema::Interface
       field :name, String, null: false
       field :id, ID, null: false
 
@@ -161,19 +149,19 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Grain < BaseObject
+    class Grain < GraphQL::Schema::Object
       implements Ingredient
     end
 
-    class LeaveningAgent < BaseObject
+    class LeaveningAgent < GraphQL::Schema::Object
       implements Ingredient
     end
 
-    class Dairy < BaseObject
+    class Dairy < GraphQL::Schema::Object
       implements Ingredient
     end
 
-    class Recipe < BaseObject
+    class Recipe < GraphQL::Schema::Object
       def self.authorized?(obj, ctx)
         ctx.dataloader.with(AuthorizedSource, ctx[:batched_calls_counter]).load(obj)
       end
@@ -200,7 +188,7 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Cookbook < BaseObject
+    class Cookbook < GraphQL::Schema::Object
       field :featured_recipe, Recipe
 
       def self.all_featured_recipe(objects, context)
@@ -212,7 +200,7 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Query < BaseObject
+    class Query < GraphQL::Schema::Object
       field :recipes, [Recipe], null: false, resolve_static: true
 
       def self.recipes(context)
@@ -468,7 +456,7 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Mutation < BaseObject
+    class Mutation < GraphQL::Schema::Object
       field :mutation_1, mutation: Mutation1
       field :mutation_2, mutation: Mutation2
       field :mutation_3, mutation: Mutation3
@@ -1315,11 +1303,11 @@ describe GraphQL::Dataloader do
         }
       end
 
-      # include DataloaderAssertions
+      include DataloaderAssertions
     end
   end
 
-  if false && Fiber.respond_to?(:scheduler)
+  if Fiber.respond_to?(:scheduler)
     describe "nonblocking: true" do
       def make_schema_from(schema)
         Class.new(schema) do
@@ -1335,7 +1323,7 @@ describe GraphQL::Dataloader do
         Fiber.set_scheduler(nil)
       end
 
-      # include DataloaderAssertions
+      include DataloaderAssertions
     end
 
     if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
@@ -1355,7 +1343,7 @@ describe GraphQL::Dataloader do
           Fiber.set_scheduler(nil)
         end
 
-        # include DataloaderAssertions
+        include DataloaderAssertions
       end
     end
   end
