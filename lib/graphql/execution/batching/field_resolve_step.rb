@@ -43,17 +43,18 @@ module GraphQL
           args_hash = {}
           if ast_arguments_or_hash.is_a?(Hash)
             ast_arguments_or_hash.each do |key, value|
+              key_s = nil
               arg_defn = arg_defns.each_value.find { |a|
-                a.keyword == key || a.graphql_name == String(key)
+                a.keyword == key || a.graphql_name == (key_s ||= String(key))
               }
               arg_value = coerce_argument_value(arg_defn.type, value)
-              args_hash[arg_defn.original_keyword] = arg_value
+              args_hash[arg_defn.keyword] = arg_value
             end
           else
             ast_arguments_or_hash.each { |arg_node|
               arg_defn = arg_defns[arg_node.name]
               arg_value = coerce_argument_value(arg_defn.type, arg_node.value)
-              arg_key = arg_defn.original_keyword
+              arg_key = arg_defn.keyword
               args_hash[arg_key] = arg_value
             }
           end

@@ -12,21 +12,26 @@ module GraphQL
           arg_defns = context.types.arguments(argument_owner)
           arg_defns.each do |arg_defn|
             if arg_defn.loads
-              if arguments.key?(arg_defn.original_keyword) && !arguments[arg_defn.original_keyword].nil?
-                id = arguments.delete(arg_defn.original_keyword)
-                value = if arg_defn.type.list?
-                  id.map {  |inner_id|
-                    object_from_id_receiver.load_and_authorize_application_object(arg_defn, inner_id, context)
-                  }
+              if arguments.key?(arg_defn.keyword)
+                id = arguments.delete(arg_defn.keyword)
+                if !id.nil?
+                  value = if arg_defn.type.list?
+                    id.map {  |inner_id|
+                      object_from_id_receiver.load_and_authorize_application_object(arg_defn, inner_id, context)
+                    }
+                  else
+                    object_from_id_receiver.load_and_authorize_application_object(arg_defn, id, context)
+                  end
+
+                  if frs.runner.resolves_lazies
+                    value = frs.sync(value)
+                  end
+                  if value.is_a?(GraphQL::Error)
+                    value.path = frs.path
+                    return value
+                  end
                 else
-                  object_from_id_receiver.load_and_authorize_application_object(arg_defn, id, context)
-                end
-                if frs.runner.resolves_lazies
-                  value = frs.sync(value)
-                end
-                if value.is_a?(GraphQL::Error)
-                  value.path = frs.path
-                  return value
+                  value = nil
                 end
                 arguments[arg_defn.keyword] = value
               end
@@ -54,6 +59,9 @@ module GraphQL
             end
           end
           if extras.include?(:lookahead)
+            if kwargs.frozen?
+              kwargs = kwargs.dup
+            end
             kwargs[:lookahead] = Execution::Lookahead.new(
               query: context.query,
               ast_nodes: frs.ast_nodes || Array(frs.ast_node),
@@ -62,6 +70,9 @@ module GraphQL
           end
 
           if extras.include?(:ast_node)
+            if kwargs.frozen?
+              kwargs = kwargs.dup
+            end
             kwargs[:ast_node] = frs.ast_node
           end
 

@@ -275,8 +275,8 @@ describe GraphQL::Dataloader do
         argument :ids, [ID], loads: Recipe, as: :recipes
       end
 
-      def self.all_recipes_by_id(objects, context, ids:)
-        recipes = context.dataloader.with(DataObject).load_all(ids)
+      def self.all_recipes_by_id(objects, context, recipes:)
+        recipes = context.dataloader.with(DataObject).load_all(recipes)
         Array.new(objects.size, recipes)
       end
 
@@ -327,8 +327,8 @@ describe GraphQL::Dataloader do
         argument :recipe_2_id, ID, loads: Recipe
       end
 
-      def self.all_common_ingredients_with_load(objects, context, recipe_1_id:, recipe_2_id:)
-        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([recipe_1_id, recipe_2_id])
+      def self.all_common_ingredients_with_load(objects, context, recipe_1:, recipe_2:)
+        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([recipe_1, recipe_2])
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         results = context.dataloader.with(DataObject).load_all(common_ids)
         Array.new(objects.size, results)
@@ -356,7 +356,7 @@ describe GraphQL::Dataloader do
       end
 
       def self.all_common_ingredients_from_input_object(objects, context, input:)
-        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([input[:recipe_1_id], input[:recipe_2_id]])
+        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([input[:recipe_1], input[:recipe_2]])
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         results = context.dataloader.with(DataObject).load_all(common_ids)
         Array.new(objects.size, results)
