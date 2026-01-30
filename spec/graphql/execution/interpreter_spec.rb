@@ -529,7 +529,7 @@ describe GraphQL::Execution::Interpreter do
     end
 
     it "works with unions that fail .authorized?" do
-      res = exec_query <<-GRAPHQL
+      res = exec_query <<-GRAPHQL, context: { batching_authorizes: true }
       {
         find(id: "NOPE") {
           ... on Expansion {
@@ -543,7 +543,7 @@ describe GraphQL::Execution::Interpreter do
     end
 
     it "works with lists of unions" do
-      res = exec_query <<-GRAPHQL
+      res = exec_query <<-GRAPHQL, context: { batching_authorizes: true }
       {
         findMany(ids: ["RAV", "NOPE", "BOGUS"]) {
           ... on Expansion {

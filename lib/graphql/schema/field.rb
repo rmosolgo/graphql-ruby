@@ -772,18 +772,6 @@ module GraphQL
                 else
                   hash_value || (@fallback_value != NOT_CONFIGURED ? @fallback_value : nil)
                 end
-              elsif @batch_mode == :resolve_static
-                if ruby_kwargs.empty?
-                  object.class.public_send(@batch_mode_key, query_ctx)
-                else
-                  object.class.public_send(@batch_mode_key, query_ctx, **ruby_kwargs)
-                end
-              elsif @batch_mode == :resolve_each
-                if ruby_kwargs.empty?
-                  object.class.public_send(@batch_mode_key, object.object, query_ctx)
-                else
-                  object.class.public_send(@batch_mode_key, object.object, query_ctx, **ruby_kwargs)
-                end
               elsif obj.respond_to?(resolver_method)
                 method_to_call = resolver_method
                 method_receiver = obj

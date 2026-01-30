@@ -3,7 +3,7 @@ module GraphQL
   module Execution
     module Batching
       class AuthorizeStep
-        def initialize(static_type:, object:, runner:, graphql_result:, key:, is_non_null:, field_resolve_step:, next_objects:, next_results:)
+        def initialize(static_type:, object:, runner:, graphql_result:, key:, is_non_null:, field_resolve_step:, next_objects:, next_results:, is_from_array:)
           @static_type = static_type
           @object = object
           @runner = runner
@@ -16,13 +16,14 @@ module GraphQL
           @authorized_value = nil
           @key = key
           @next_step = :resolve_type
+          @is_from_array = is_from_array
         end
 
         def value
           if @authorized_value
             @authorized_value = @field_resolve_step.sync(@authorized_value)
           elsif @resolved_type
-            @resolved_type = @field_resolve_step.sync(@resolved_type)
+            @resolved_type, _ignored_value = @field_resolve_step.sync(@resolved_type)
           end
           @runner.add_step(self)
         end
@@ -64,12 +65,13 @@ module GraphQL
             @graphql_result[@key] = next_result_h
             @runner.runtime_types_at_result[next_result_h] = @resolved_type
             @runner.static_types_at_result[next_result_h] = @static_type
-            @field_resolve_step.authorized_finished
           elsif @is_non_null
-            @graphql_result[@key] = @runner.add_non_null_error(@field_result_step.parent_type, @field_result_step.field_definition, @field_result_step.ast_node, is_from_array, @field_resolve_step.path)
+            @graphql_result[@key] = @runner.add_non_null_error(@field_resolve_step.parent_type, @field_resolve_step.field_definition, @field_resolve_step.ast_node, @is_from_array, @field_resolve_step.path)
           else
             @graphql_result[@key] = nil
           end
+
+          @field_resolve_step.authorized_finished
         end
       end
     end

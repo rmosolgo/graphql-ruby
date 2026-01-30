@@ -182,7 +182,7 @@ describe GraphQL::Dataloader do
       field :ingredients, [Ingredient], null: false, resolve_batch: true
 
       def self.ingredients(objects, context)
-        reqs = objects
+        objects
           .map { |obj| context.dataloader.with(DataObject).request_all(obj[:ingredient_ids]) }
           .map(&:load)
       end
@@ -220,7 +220,7 @@ describe GraphQL::Dataloader do
       end
 
       def recipes
-        self.class.recipes
+        self.class.recipes(context)
       end
 
       field :ingredient, Ingredient do

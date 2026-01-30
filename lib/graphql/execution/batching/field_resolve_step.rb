@@ -310,6 +310,7 @@ module GraphQL
               next_results: @all_next_results,
               is_non_null: is_nn,
               key: key,
+              is_from_array: is_from_array,
             ))
           else
             next_result_h = {}
@@ -322,9 +323,9 @@ module GraphQL
       end
 
       class RawValueFieldResolveStep < FieldResolveStep
-        def build_graphql_result(field_result, return_type, return_result_type, is_nn, is_list, is_from_array) # rubocop:disable Metrics/ParameterLists
+        def build_graphql_result(graphql_result, key, field_result, return_type, is_nn, is_list, is_from_array) # rubocop:disable Metrics/ParameterLists
           if field_result.is_a?(Interpreter::RawValue)
-            field_result.resolve
+            graphql_result[key] = field_result.resolve
           else
             super
           end
