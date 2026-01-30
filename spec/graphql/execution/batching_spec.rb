@@ -275,7 +275,7 @@ describe "Batching Execution" do
         ]
       }
     }
-    assert_equal expected_result, result
+    assert_graphql_equal expected_result, result.to_h
   end
 
   it "propages nulls in objects" do
@@ -306,7 +306,7 @@ describe "Batching Execution" do
         }
       },
     }
-    assert_equal expected_result, result
+    assert_graphql_equal expected_result, result
   end
 
   it "propages nested nulls in objects in lists" do

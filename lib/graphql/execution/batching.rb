@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/execution/batching/authorize_step"
 require "graphql/execution/batching/field_compatibility"
 require "graphql/execution/batching/field_resolve_step"
 require "graphql/execution/batching/runner"

@@ -216,14 +216,11 @@ describe GraphQL::Dataloader do
       field :recipes, [Recipe], null: false, resolve_static: true
 
       def self.recipes(context)
-        recipes = Database.mget(["5", "6"])
-        is_authed = context.dataloader.with(AuthorizedSource, context[:batched_calls_counter]).load_all(recipes)
-        recipes.select!.with_index { |r, i| is_authed[i] }
-        recipes
+        Database.mget(["5", "6"])
       end
 
       def recipes
-        Database.mget(["5", "6"])
+        self.class.recipes
       end
 
       field :ingredient, Ingredient do
@@ -284,13 +281,12 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load_all(ids)
       end
 
-      field :recipes_by_id, [Recipe] do
+      field :recipes_by_id, [Recipe], resolve_static: true do
         argument :ids, [ID], loads: Recipe, as: :recipes
       end
 
-      def self.all_recipes_by_id(objects, context, recipes:)
-        recipes = context.dataloader.with(DataObject).load_all(recipes)
-        Array.new(objects.size, recipes)
+      def self.recipes_by_id(context, recipes:)
+        context.dataloader.with(DataObject).load_all(recipes)
       end
 
       def recipes_by_id(recipes:)
@@ -979,24 +975,24 @@ describe GraphQL::Dataloader do
 
         it "batches calls in .authorized?" do
           query_str = "{ r1: recipe(id: 5) { name } r2: recipe(id: 6) { name } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new }
+          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
           exec_query(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
 
           query_str = "{ recipes { name } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new }
+          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
           exec_query(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
 
           query_str = "{ recipesById(ids: [5, 6]) { name } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new }
+          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
           exec_query(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
         end
 
         it "batches nested object calls in .authorized? after using lazy_resolve" do
           query_str = "{ cookbooks { featuredRecipe { name } } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new }
+          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
           result = exec_query(query_str, context: context)
           assert_equal ["Cornbread", "Grits"], result["data"]["cookbooks"].map { |c| c["featuredRecipe"]["name"] }
           refute result.key?("errors")
@@ -1249,17 +1245,17 @@ describe GraphQL::Dataloader do
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
-            assert_equal 10, FiberCounting.last_spawn_fiber_count
-            assert_last_max_fiber_count(9, "No limit works as expected")
+            assert_equal((TESTING_BATCHING ? 7 : 10), FiberCounting.last_spawn_fiber_count)
+            assert_last_max_fiber_count((TESTING_BATCHING ? 7 : 9), "No limit works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal 12, FiberCounting.last_spawn_fiber_count
+            assert_equal((TESTING_BATCHING ? 8 : 12), FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(4, "Limit of 4 works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
-            assert_equal 8, FiberCounting.last_spawn_fiber_count
+            assert_equal((TESTING_BATCHING ? 7 : 8), FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(6, "Limit of 6 works as expected")
           end
 

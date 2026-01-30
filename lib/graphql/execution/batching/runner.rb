@@ -19,8 +19,11 @@ module GraphQL
           @root_type = nil
           @dataloader = @context[:dataloader] ||= schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
+          @authorizes = !!@context[:batching_authorizes]
           @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
         end
+
+        attr_reader :authorizes
 
         def add_step(step)
           @dataloader.append_job(step)
