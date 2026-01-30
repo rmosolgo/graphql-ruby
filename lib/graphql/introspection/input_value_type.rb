@@ -17,6 +17,10 @@ module GraphQL
         !!object.deprecation_reason
       end
 
+      def is_deprecated
+        self.class.resolve_is_deprecated(object, context)
+      end
+
       def self.resolve_default_value(object, context)
         if object.default_value?
           value = object.default_value
@@ -35,6 +39,10 @@ module GraphQL
         else
           nil
         end
+      end
+
+      def default_value
+        self.class.resolve_default_value(object, context)
       end
 
 

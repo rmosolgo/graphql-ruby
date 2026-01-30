@@ -14,6 +14,10 @@ module GraphQL
       def self.resolve_is_deprecated(object, context)
         !!object.deprecation_reason
       end
+
+      def is_deprecated
+        self.class.resolve_is_deprecated(object, context)
+      end
     end
   end
 end

@@ -27,13 +27,17 @@ module GraphQL
       end
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), resolve_each: :resolve_of_type
 
-      field :specifiedByURL, String, resolve_each: :resolve_specified_by_url
+      field :specifiedByURL, String, resolve_each: :resolve_specified_by_url, resolver_method: :specified_by_url
 
       field :is_one_of, Boolean, null: false, resolve_each: :resolve_is_one_of
 
       def self.resolve_is_one_of(object, _ctx)
         object.kind.input_object? &&
           object.directives.any? { |d| d.graphql_name == "oneOf" }
+      end
+
+      def is_one_of
+        self.class.resolve_is_one_of(object, context)
       end
 
       def self.resolve_specified_by_url(object, _ctx)
@@ -44,8 +48,16 @@ module GraphQL
         end
       end
 
+      def specified_by_url
+        self.class.resolve_specified_by_url(object, context)
+      end
+
       def self.resolve_kind(object, context)
         object.kind.name
+      end
+
+      def kind
+        self.class.resolve_kind(object, context)
       end
 
       def self.resolve_enum_values(object, context, include_deprecated:)
@@ -62,12 +74,20 @@ module GraphQL
         end
       end
 
+      def enum_values(include_deprecated:)
+        self.class.resolve_enum_values(object, context, include_deprecated: include_deprecated)
+      end
+
       def self.resolve_interfaces(object, context)
         if object.kind.object? || object.kind.interface?
           context.types.interfaces(object).sort_by(&:graphql_name)
         else
           nil
         end
+      end
+
+      def interfaces
+        self.class.resolve_interfaces(object, context)
       end
 
       def self.resolve_input_fields(object, context, include_deprecated:)
@@ -80,12 +100,20 @@ module GraphQL
         end
       end
 
+      def input_fields(include_deprecated:)
+        self.class.resolve_input_fields(object, context, include_deprecated: include_deprecated)
+      end
+
       def self.resolve_possible_types(object, context)
         if object.kind.abstract?
           context.types.possible_types(object).sort_by(&:graphql_name)
         else
           nil
         end
+      end
+
+      def possible_types
+        self.class.resolve_possible_types(object, context)
       end
 
       def self.resolve_fields(object, context, include_deprecated:)
@@ -100,8 +128,16 @@ module GraphQL
         end
       end
 
+      def fields(include_deprecated:)
+        self.class.resolve_fields(object, context, include_deprecated: include_deprecated)
+      end
+
       def self.resolve_of_type(object, _ctx)
         object.kind.wraps? ? object.of_type : nil
+      end
+
+      def of_type
+        self.class.resolve_of_type(object, context)
       end
     end
   end
