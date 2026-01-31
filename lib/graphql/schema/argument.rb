@@ -31,9 +31,6 @@ module GraphQL
       # @return [Class, Module, nil] If this argument should load an application object, this is the type of object to load
       attr_reader :loads
 
-      # @return [Symbol] Based on the argument's name (may be different from `as:`)
-      attr_reader :original_keyword
-
       # @return [Boolean] true if a resolver defined this argument
       def from_resolver?
         @from_resolver
@@ -79,8 +76,7 @@ module GraphQL
         @owner = owner
         @as = as
         @loads = loads
-        @original_keyword = arg_name.is_a?(Symbol) ? arg_name : Schema::Member::BuildType.underscore(@name).to_sym
-        @keyword = as || @original_keyword
+        @keyword = as || (arg_name.is_a?(Symbol) ? arg_name : Schema::Member::BuildType.underscore(@name).to_sym)
         @prepare = prepare
         @ast_node = ast_node
         @from_resolver = from_resolver

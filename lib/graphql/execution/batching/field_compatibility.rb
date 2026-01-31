@@ -30,7 +30,8 @@ module GraphQL
                 end
                 arguments[arg_defn.keyword] = value
               end
-            elsif (input_type = arg_defn.type.unwrap).kind.input_object? && (value = arguments[arg_defn.original_keyword]) # TODO lists
+            elsif (input_type = arg_defn.type.unwrap).kind.input_object? &&
+                (value = arguments[arg_defn.keyword]) # TODO lists
               resolve_all_load_arguments(frs, object_from_id_receiver, value, input_type, context)
             end
           end
