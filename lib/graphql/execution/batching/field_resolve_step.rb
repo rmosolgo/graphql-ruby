@@ -123,8 +123,11 @@ module GraphQL
           else
             @runner.schema.sync_lazy(lazy)
           end
+        rescue GraphQL::UnauthorizedError => err
+          @runner.schema.unauthorized_object(err)
         rescue GraphQL::ExecutionError => err
           err.path = path
+          err.ast_node = @ast_node
           @runner.context.add_error(err)
           err
         end
@@ -281,7 +284,7 @@ module GraphQL
         private
 
         def build_graphql_result(graphql_result, key, field_result, return_type, is_nn, is_list, is_from_array) # rubocop:disable Metrics/ParameterLists
-          if field_result.nil?
+          if field_result.nil? || field_result.is_a?(GraphQL::Error)
             if is_nn
               graphql_result[key] = @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, is_from_array, path)
             else

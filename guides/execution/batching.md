@@ -274,3 +274,5 @@ Performance improvements in batching execution come at the cost of removing supp
 - Schema class error handling hooks
 
 ### Connection fields
+
+### Custom Introspection
