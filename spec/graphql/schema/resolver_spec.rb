@@ -24,7 +24,7 @@ describe GraphQL::Schema::Resolver do
       argument :value, Integer, required: false
       type [Integer, null: true], null: false
 
-      def initialize(object:, context:, field:, **kwargs)
+      def initialize(object:, context:, field:)
         super
         if defined?(@value)
           raise "The instance should start fresh"
