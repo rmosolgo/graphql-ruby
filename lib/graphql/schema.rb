@@ -1329,7 +1329,7 @@ module GraphQL
       def type_error(type_error, context)
         case type_error
         when GraphQL::InvalidNullError
-          execution_error = GraphQL::ExecutionError.new(type_error.message, ast_node: type_error.ast_node)
+          execution_error = GraphQL::ExecutionError.new(type_error.message, ast_nodes: type_error.ast_nodes)
           execution_error.path = type_error.path || context[:current_path]
 
           context.errors << execution_error

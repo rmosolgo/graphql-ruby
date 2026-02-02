@@ -64,6 +64,9 @@ module GraphQL
             raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
           end
 
+          @static_types_at_result[@data] = @root_type
+          @runtime_types_at_result[@data] = @root_type
+
           while (next_isolated_step = isolated_steps.shift)
             add_step(next_isolated_step)
             @dataloader.run
@@ -126,8 +129,8 @@ module GraphQL
           end
         end
 
-        def add_non_null_error(type, field, ast_node, is_from_array, path)
-          err = InvalidNullError.new(type, field, ast_node, is_from_array: is_from_array, path: path)
+        def add_non_null_error(type, field, ast_node_or_nodes, is_from_array, path)
+          err = InvalidNullError.new(type, field, ast_node_or_nodes, is_from_array: is_from_array, path: path)
           @schema.type_error(err, @context)
         end
 
@@ -180,13 +183,13 @@ module GraphQL
               end
             when Language::Nodes::InlineFragment
               static_type_at_result = @static_types_at_result[result_h]
-              if type_condition_applies?(static_type_at_result, ast_selection.type.name)
+              if static_type_at_result && type_condition_applies?(static_type_at_result, ast_selection.type.name)
                 result_h = check_object_result(result_h, static_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
               end
             when Language::Nodes::FragmentSpread
               fragment_defn = @document.definitions.find { |defn| defn.is_a?(Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
               static_type_at_result = @static_types_at_result[result_h]
-              if type_condition_applies?(static_type_at_result, fragment_defn.type.name)
+              if static_type_at_result && type_condition_applies?(static_type_at_result, fragment_defn.type.name)
                 result_h = check_object_result(result_h, static_type, fragment_defn.selections, current_exec_path, current_result_path, paths_to_check)
               end
             end
@@ -265,7 +268,8 @@ module GraphQL
           else
             abs_t = @schema.get_type(type_name, @context)
             p_types = @schema.possible_types(abs_t, @context)
-            p_types.include?(concrete_type)
+            c_p_types = @schema.possible_types(concrete_type, @context)
+            p_types.any? { |t| c_p_types.include?(t) }
           end
         end
       end

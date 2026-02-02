@@ -24,10 +24,14 @@ module GraphQL
 
         attr_writer :objects, :results
 
-        attr_reader :ast_node, :ast_nodes, :key, :parent_type, :selections_step, :runner, :field_definition
+        attr_reader :ast_node, :key, :parent_type, :selections_step, :runner, :field_definition
 
         def path
           @path ||= [*@selections_step.path, @key].freeze
+        end
+
+        def ast_nodes
+          @ast_nodes ||= [@ast_node]
         end
 
         def append_selection(ast_node)
@@ -127,7 +131,7 @@ module GraphQL
           @runner.schema.unauthorized_object(err)
         rescue GraphQL::ExecutionError => err
           err.path = path
-          err.ast_node = @ast_node
+          err.ast_nodes = ast_nodes
           @runner.context.add_error(err)
           err
         end
@@ -220,10 +224,15 @@ module GraphQL
               result_h = @results[i]
               result_h[@key] = if result.nil?
                 if return_type.non_null?
-                  @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, false, path)
+                  @runner.add_non_null_error(@parent_type, @field_definition, ast_nodes, false, path)
                 else
                   nil
                 end
+              elsif result.is_a?(GraphQL::Error)
+                result.path = path
+                result.ast_nodes = ast_nodes
+                @runner.context.add_error(result)
+                result
               else
                 # TODO `nil`s in [T!] types aren't handled
                 return_type.coerce_result(result, @runner.context)
@@ -284,12 +293,17 @@ module GraphQL
         private
 
         def build_graphql_result(graphql_result, key, field_result, return_type, is_nn, is_list, is_from_array) # rubocop:disable Metrics/ParameterLists
-          if field_result.nil? || field_result.is_a?(GraphQL::Error)
+          if field_result.nil?
             if is_nn
-              graphql_result[key] = @runner.add_non_null_error(@parent_type, @field_definition, @ast_node, is_from_array, path)
+              graphql_result[key] = @runner.add_non_null_error(@parent_type, @field_definition, ast_nodes, is_from_array, path)
             else
               graphql_result[key] = nil
             end
+          elsif field_result.is_a?(GraphQL::Error)
+            field_result.path = path
+            field_result.ast_nodes = ast_nodes
+            @runner.context.add_error(field_result)
+            graphql_result[key] = field_result
           elsif is_list
             if is_nn
               return_type = return_type.of_type

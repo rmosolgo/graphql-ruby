@@ -66,7 +66,7 @@ module GraphQL
             @runner.runtime_types_at_result[next_result_h] = @resolved_type
             @runner.static_types_at_result[next_result_h] = @static_type
           elsif @is_non_null
-            @graphql_result[@key] = @runner.add_non_null_error(@field_resolve_step.parent_type, @field_resolve_step.field_definition, @field_resolve_step.ast_node, @is_from_array, @field_resolve_step.path)
+            @graphql_result[@key] = @runner.add_non_null_error(@field_resolve_step.parent_type, @field_resolve_step.field_definition, @field_resolve_step.ast_nodes, @is_from_array, @field_resolve_step.path)
           else
             @graphql_result[@key] = nil
           end
