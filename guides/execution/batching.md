@@ -16,9 +16,11 @@ This feature is in heavy development, so if you give it a try and run into any p
 
 ## Background
 
-Batching execution follows the work of [GraphQL-Cardinal](https://github.com/gmac/graphql-breadth-exec), an experimental GraphQL runtime from [@gmac](https://github.com/gmac) and collaborators at Shopify. They wanted better performance from their GraphQL API -- faster responses, less memory use -- and were willing to rethink things at a high level in order to pursue it. At this point, Shopify runs a similar, custom runtime for production traffic and has seen tremendous benefits. Ideally, the same benefits will be available to GraphQL-Ruby users soon. Thanks, `@gmac` and Shopify!
+Breadth-first GraphQL execution (or, "execution batching") is an algorithmic paradigm developed by Shopify to address problems of scale when resolving large lists and nested sets. Rather than paying field-level overhead costs (resolver calls, instrumentation, lazy promises, etc) for every field _of every resolved object_, the pattern instead incurs these costs only once per field selection and runs the corresponding breadth of objects with no additional overhead.
 
-Specifically, Cardinal (and GraphQL-Ruby's batching execution after it) use a few novel techniques for implementing GraphQL:
+The original proof-of-concept of Shopify's core algorithm and white paper notes can be found in [graphql-breadth-exec](https://github.com/gmac/graphql-breadth-exec). That prototype matured into Shopify's proprietary _GraphQL Cardinal_ execution engine that now runs much of their core traffic.
+
+GraphQL-Ruby brings these breadth-first design principles to the open-source community with several novel techniques for implementing GraphQL:
 
 - It resolves fields breadth-first instead of depth-first
 - Consequently, it resolves list results in batches, reducing "context switching" between the execution engine and an application's resolvers
