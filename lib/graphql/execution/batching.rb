@@ -7,18 +7,15 @@ require "graphql/execution/batching/selections_step"
 module GraphQL
   module Execution
     module Batching
-      def self.run(schema:, query_string: nil, document: nil, context: {}, validate: true, variables: {}, root_object: nil)
+      def self.run(schema:, query_string: nil, document: nil, context: {}, validate: true, variables: {}, root_object: nil, visibility_profile: nil)
         document ||= GraphQL.parse(query_string)
-        if validate
-          validation_errors = schema.validate(document, context: context)
-          if !validation_errors.empty?
-            return {
-              "errors" => validation_errors.map(&:to_h)
-            }
-          end
+        query = GraphQL::Query.new(schema, document: document, validate: validate, context: context, variables: variables, root_value: root_object, visibility_profile: visibility_profile)
+        if validate && !query.valid?
+          return {
+            "errors" => query.static_errors.map(&:to_h)
+          }
         end
-
-        runner = Runner.new(schema, document, context, variables, root_object)
+        runner = Runner.new(query)
         runner.execute
       end
     end

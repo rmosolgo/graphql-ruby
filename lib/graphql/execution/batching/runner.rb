@@ -3,13 +3,13 @@ module GraphQL
   module Execution
     module Batching
       class Runner
-        def initialize(schema, document, context, variables, root_object)
-          @schema = schema
-          @document = document
-          @query = GraphQL::Query.new(schema, document: document, context: context, variables: variables, root_value: root_object)
-          @context = @query.context
-          @variables = variables || EmptyObjects::EMPTY_HASH
-          @root_object = root_object
+        def initialize(query)
+          @query = query
+          @schema = query.schema
+          @document = query.document
+          @context = query.context
+          @variables = query.variables
+          @root_object = query.root_value
           @path = []
           @steps_queue = []
           @data = {}
@@ -17,13 +17,13 @@ module GraphQL
           @static_types_at_result = {}.compare_by_identity
           @selected_operation = nil
           @root_type = nil
-          @dataloader = @context[:dataloader] ||= schema.dataloader_class.new
+          @dataloader = @context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
           @authorizes = !!@context[:batching_authorizes]
           @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
         end
 
-        attr_reader :authorizes
+        attr_reader :authorizes, :query
 
         def add_step(step)
           @dataloader.append_job(step)

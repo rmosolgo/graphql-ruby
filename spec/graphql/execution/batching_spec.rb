@@ -240,11 +240,19 @@ describe "Batching Execution" do
       }
     }
     GRAPHQL
-    expected_result = { "data" => { "createPlant" => {
-      "name" => nil, # coerced away
-      "growsIn" => ["SUMMER"], # made into a one-item list
-      "family" => { "name" => "Curcurbits" }
-    }} }
+
+    expected_result = {"errors" =>
+      [{"message" =>
+        "Variable $input of type CreatePlantInput! was provided invalid value for name (Could not coerce value \"Zucchini\" to String), grows_in (Field is not defined on CreatePlantInput)",
+        "locations" => [{"line" => 1, "column" => 21}],
+        "extensions" =>
+        {"value" =>
+          {"name" => :Zucchini, "family" => "Curcurbits", "grows_in" => "🌻"},
+          "problems" =>
+          [{"path" => ["name"],
+            "explanation" => "Could not coerce value \"Zucchini\" to String"},
+            {"path" => ["grows_in"],
+            "explanation" => "Field is not defined on CreatePlantInput"}]}}]}
     assert_equal expected_result, result
   end
 

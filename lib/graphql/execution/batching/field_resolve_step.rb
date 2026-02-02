@@ -144,7 +144,7 @@ module GraphQL
 
         def execute_field
           field_name = @ast_node.name
-          @field_definition = @runner.schema.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
+          @field_definition = @runner.query.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
 
           if field_name == "__typename"
             @field_results = Array.new(@objects.size, @parent_type.graphql_name)
