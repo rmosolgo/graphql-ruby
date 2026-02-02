@@ -28,7 +28,7 @@ GraphQL-Ruby brings these breadth-first design principles to the open-source com
 - Stack profiling becomes much more organized with a linear flow and aggregate field spans, rather than fields getting split up across subtree repetitions.
 - The engine is driven by enqueuing rather than recursion, which shrinks stack traces and reduces memory usage.
 
-This approach can produce a GraphQL result _very_ quickly: In a bare-bones example, Cardinal runs about __15x__ faster than GraphQL-Ruby, using __75% less__ memory.
+Breadth-first patterns can produce dramatic results in responses with a high degree of repetition: it's not uncommon to see breadth batching run __15x__ faster and use __75% less__ memory than classic GraphQL Ruby execution. However – gains are relative. A flat tree with no lists will see little difference. A list of 2 resolving one field each will see a small gain, while a list of 100 resolving ten fields each will likely see dramatic results.
 
 The downside is that many of GraphQL-Ruby's "bonus features" -- beyond the behavior described in the GraphQL Specification -- are either _impossible_ to implement in this paradigm or add non-trivial latency when added back in. So, the task ahead is to "lift the ceiling" of performance in GraphQL-Ruby while retaining as much compatibility as possible and supporting a gradual transition to this new runtime engine.
 
