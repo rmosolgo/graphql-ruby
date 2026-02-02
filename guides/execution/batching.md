@@ -22,9 +22,11 @@ The original proof-of-concept of Shopify's core algorithm and white paper notes 
 
 GraphQL-Ruby brings these breadth-first design principles to the open-source community with several novel techniques for implementing GraphQL:
 
-- It resolves fields breadth-first instead of depth-first
-- Consequently, it resolves list results in batches, reducing "context switching" between the execution engine and an application's resolvers
-- It optimizes error handling to be finalized in a second pass over the result (when errors are present), speeding up the "happy path"
+- Fields are resolved breadth-first using implicitly batched resolvers (no DataLoader). These run longer and hotter on application logic with no execution overhead.
+- Batched resolvers may bind entire load sets to a single lazy promise to dramatically reduce promise bloat. 
+- Error handling is optimized into a second pass that only runs when errors actually occur.
+- Stack profiling becomes much more organized with a linear flow and aggregate field spans, rather than fields getting split up across subtree repetitions.
+- The engine is driven by enqueuing rather than recursion, which shrinks stack traces and reduces memory usage.
 
 This approach can produce a GraphQL result _very_ quickly: In a bare-bones example, Cardinal runs about __15x__ faster than GraphQL-Ruby, using __75% less__ memory.
 
