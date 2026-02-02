@@ -47,7 +47,7 @@ module GraphQL
             ]
           when "mutation"
             fields = {}
-            gather_selections(@schema.mutation, @selected_operation.selections, nil, into: fields)
+            gather_selections(@schema.mutation, @selected_operation.selections, nil, {}, into: fields)
             fields.each_value.map do |field_resolve_step|
               SelectionsStep.new(
                 parent_type: @root_type = @schema.mutation,
@@ -92,29 +92,33 @@ module GraphQL
           GraphQL::Query::Result.new(query: @query, values: result)
         end
 
-        def gather_selections(type_defn, ast_selections, selections_step, into:)
+        def gather_selections(type_defn, ast_selections, selections_step, prototype_result, into:)
           ast_selections.each do |ast_selection|
             next if !directives_include?(ast_selection)
             case ast_selection
             when GraphQL::Language::Nodes::Field
               key = ast_selection.alias || ast_selection.name
-              step = into[key] ||= @field_resolve_step_class.new(
-                selections_step: selections_step,
-                key: key,
-                parent_type: type_defn,
-                runner: self,
-              )
+              step = into[key] ||= begin
+                prototype_result[key] = nil
+
+                @field_resolve_step_class.new(
+                  selections_step: selections_step,
+                  key: key,
+                  parent_type: type_defn,
+                  runner: self,
+                )
+              end
               step.append_selection(ast_selection)
             when GraphQL::Language::Nodes::InlineFragment
               type_condition = ast_selection.type&.name
               if type_condition.nil? || type_condition_applies?(type_defn, type_condition)
-                gather_selections(type_defn, ast_selection.selections, selections_step, into: into)
+                gather_selections(type_defn, ast_selection.selections, selections_step, prototype_result, into: into)
               end
             when GraphQL::Language::Nodes::FragmentSpread
               fragment_definition = @document.definitions.find { |defn| defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
               type_condition = fragment_definition.type.name
               if type_condition_applies?(type_defn, type_condition)
-                gather_selections(type_defn, fragment_definition.selections, selections_step, into: into)
+                gather_selections(type_defn, fragment_definition.selections, selections_step, prototype_result, into: into)
               end
             else
               raise ArgumentError, "Unsupported graphql selection node: #{ast_selection.class} (#{ast_selection.inspect})"
