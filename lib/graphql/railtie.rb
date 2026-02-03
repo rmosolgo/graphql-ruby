@@ -19,5 +19,9 @@ module GraphQL
         )
       end
     end
+
+    initializer('graphql.setup_dashboard', before: :add_routing_paths) do
+      require 'graphql/dashboard'
+    end
   end
 end
