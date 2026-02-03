@@ -46,7 +46,7 @@ module GraphQL
           if !@resolver_class
             maybe_err = resolve_all_load_arguments(frs, self, kwargs, self, context)
             if maybe_err
-              return nil
+              return maybe_err
             end
           end
           if extras.include?(:lookahead)
@@ -86,7 +86,7 @@ module GraphQL
               resolver_inst = @resolver_class.new(object: o, context: context, field: self)
               maybe_err = resolve_all_load_arguments(frs, resolver_inst, resolver_inst_kwargs, self, context)
               if maybe_err
-                next nil
+                next maybe_err
               end
               resolver_inst_kwargs = if @resolver_class < Schema::HasSingleInputArgument
                 resolver_inst_kwargs[:input]
