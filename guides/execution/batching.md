@@ -269,7 +269,11 @@ TODO: not supported yet because the new runtime module doesn't actually product 
 
 ### `@defer` and `@stream` ❌
 
+This depends on `current_path` so isn't possible yet.
+
 ### Caching ❌
+
+Actually this probably works but I haven't tested it.
 
 ### Argument `as:` ✅
 

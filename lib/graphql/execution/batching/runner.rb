@@ -32,6 +32,12 @@ module GraphQL
         attr_reader :steps_queue, :schema, :context, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies
 
         def execute
+          if query.validate && !query.valid?
+            return {
+              "errors" => query.static_errors.map(&:to_h)
+            }
+          end
+
           @selected_operation = @document.definitions.first # TODO select named operation
           isolated_steps = case @selected_operation.operation_type
           when nil, "query"

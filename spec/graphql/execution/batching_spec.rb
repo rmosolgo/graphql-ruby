@@ -119,6 +119,7 @@ describe "Batching Execution" do
 
     query(Query)
     mutation(Mutation)
+    use GraphQL::Execution::Batching
 
     def self.resolve_type(abs_type, obj, ctx)
       if obj.respond_to?(:grows_in)

@@ -1574,19 +1574,6 @@ module GraphQL
         end
       end
 
-      def execute_batching(query_str = nil, context: nil, document: nil, variables: nil, root_value: nil, validate: true, visibility_profile: nil)
-        GraphQL::Execution::Batching.run(
-          schema: self,
-          query_string: query_str,
-          document: document,
-          context: context,
-          validate: validate,
-          variables: variables,
-          root_object: root_value,
-          visibility_profile: visibility_profile,
-        )
-      end
-
       # Execute a query on itself.
       # @see {Query#initialize} for arguments.
       # @return [GraphQL::Query::Result] query result, ready to be serialized as JSON

@@ -41,6 +41,7 @@ if ENV["GRAPHQL_FUTURE"]
   TESTING_BATCHING = true
   puts "Opting into Execution::Batching"
   require "graphql/execution/batching"
+  GraphQL::Schema.use(GraphQL::Execution::Batching)
   GraphQL::Schema::Field.prepend(GraphQL::Execution::Batching::FieldCompatibility)
 else
   ADD_WARDEN = true
