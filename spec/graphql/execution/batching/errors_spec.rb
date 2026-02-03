@@ -587,9 +587,17 @@ class ErrorResultFormatterTest < Minitest::Test
         "message" => "first",
         "locations" => [{ "line" => 1, "column" => 10 }],
         "path" => ["test", 1, "req"],
+      },{
+        "message" => "second",
+        "locations" => [{ "line" => 1, "column" => 10 }],
+        "path" => ["test", 2, "req"],
       }],
     }
 
+    # The original Shopify spec only expected the _first_ error to be present,
+    # because of how the query would be terminated when an error was encountered.
+    # We might change this in the future to only return a single error.
+    # See: https://github.com/rmosolgo/graphql-ruby/pull/5509#discussion_r2756873801
     assert_equal expected, exec_test(schema, "{ test { req opt } }", source)
   end
 

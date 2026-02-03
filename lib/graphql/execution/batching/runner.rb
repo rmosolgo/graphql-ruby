@@ -221,7 +221,7 @@ module GraphQL
 
             if new_result.nil? && inner_type_non_null
               new_invalid_null = true
-              break
+              nil
             else
               new_result
             end
