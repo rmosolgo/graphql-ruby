@@ -132,7 +132,6 @@ module GraphQL
         rescue GraphQL::ExecutionError => err
           err.path = path
           err.ast_nodes = ast_nodes
-          @runner.context.add_error(err)
           err
         end
 
