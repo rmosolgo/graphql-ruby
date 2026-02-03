@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+if defined?(ActiveRecord)
+  require "graphql/tracing/detailed_trace/active_record_backend"
+end
 require "graphql/tracing/detailed_trace/memory_backend"
 require "graphql/tracing/detailed_trace/redis_backend"
 
@@ -58,8 +61,10 @@ module GraphQL
           RedisBackend.new(redis: redis, limit: limit)
         elsif memory
           MemoryBackend.new(limit: limit)
+        elsif defined?(ActiveRecord)
+          ActiveRecordBackend.new(limit: limit)
         else
-          raise ArgumentError, "Pass `redis: ...` to store traces in Redis for later review"
+          raise ArgumentError, "To store traces, install ActiveRecord or provide `redis: ...`"
         end
         detailed_trace = self.new(storage: storage, trace_mode: trace_mode, debug: debug)
         schema.detailed_trace = detailed_trace
