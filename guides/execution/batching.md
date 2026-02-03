@@ -23,7 +23,7 @@ The original proof-of-concept of Shopify's core algorithm and white paper notes 
 GraphQL-Ruby brings these breadth-first design principles to the open-source community with several novel techniques for implementing GraphQL:
 
 - Fields are resolved breadth-first using implicitly batched resolvers (no DataLoader). These run longer and hotter on application logic with no execution overhead.
-- Batched resolvers may bind entire load sets to a single lazy promise to dramatically reduce promise bloat. 
+- Batched resolvers may bind entire load sets to a single lazy promise to dramatically reduce promise bloat.
 - Error handling is optimized into a second pass that only runs when errors actually occur.
 - Stack profiling becomes much more organized with a linear flow and aggregate field spans, rather than fields getting split up across subtree repetitions.
 - The engine is driven by enqueuing rather than recursion, which shrinks stack traces and reduces memory usage.
@@ -232,51 +232,93 @@ One schema can run _both_ legacy execution and batching execution. This enable a
 
 Performance improvements in batching execution come at the cost of removing support for many "nice-to-have" features in GraphQL-Ruby by default. Those features are addressed here.
 
-### Query Analyzers, including complexity
+### Query Analyzers, including complexity ❌
 
-### Authorization, Scoping
+TODO: these are not hooked up at all yet.
 
-- Objects
-- Fields
-- Arguments
-- Resolvers
+### Authorization, Scoping ❌
 
-### Visibility, including Changesets
+TODO: requires a clunky opt-in. This should be made to enable at schema-level, and it should have a future-compatible happy path.
 
-### Dataloader
+- [ ] Objects
+- [ ] Fields
+- [ ] Arguments
+- [ ] Resolvers
 
-### Tracing
+### Visibility, including Changesets ✅
 
-### Lazy resolution (GraphQL-Batch)
+Visibility works exactly as before; both runtime modules call the same method to get type information from the schema.
 
-### `current_path`
+### Dataloader 🌕
 
-### `@defer` and `@stream`
+Dataloader _works_ but batching behavior is different in some cases. TODO document those cases, consider better future compatibility.
 
-### Caching
+### Tracing ❌
 
-### Argument `as:`
+TODO: not added at all
 
-### Argument `loads:`
+### Lazy resolution (GraphQL-Batch) 🌕
 
-### Argument `prepare:`
+Works but different in some cases. TODO document those cases, document opt-in.
 
-### Argument `validates:`
+Right now, lazy result from `resolve_type` is tied up in authorization compat shim.
 
-### Field Extensions
+### `current_path` ❌
 
-### Resolver classes (including Mutations and Subscriptions)
+TODO: not supported yet because the new runtime module doesn't actually product `current_path` while it's running. I think it's possible to support it though.
 
-### Field `extras:`, including `lookahead`
+### `@defer` and `@stream` ❌
 
-### `raw_value`
+### Caching ❌
 
-### Errors and `rescue_from`
+### Argument `as:` ✅
+
+`as:` is applied: arguments are passed into Ruby methods by their `as:` names instead of their GraphQL names.
+
+### Argument `loads:` ❌
+
+TODO: supporting this will be possible with some opt-in code. Legacy support is also implemented but not documented
+
+### Argument `prepare:` ❌
+
+Possible but not implemented. Legacy support is implemented I believe.
+
+### Argument `validates:` ❌
+
+Partial support is possible, `obj` will not be given to `validates:` anymore maybe?
+
+### Field Extensions ❌
+
+Maybe this will be possible to support but with `objects` instead of `object` given to the hook. Change the hook name to `resolve_batch`?
+
+### Resolver classes (including Mutations and Subscriptions) ❌
+
+This should be supported somehow; legacy support is present now
+
+### Field `extras:`, including `lookahead` ❌
+
+TODO support here is possible but not implemented. Legacy support is implemented but should be extracted to an opt-in thing.
+
+### `raw_value` ❌
+
+Supported but requires a manual opt-in at schema level. TODO: clean up the opt-in code and document it here.
+
+### Errors and `rescue_from` ❌
+
+TODO: support is possible here but not tested
 
 - rescue_from handlers
 - raising GraphQL::ExecutionError
 - Schema class error handling hooks
 
-### Connection fields
+### Connection fields ❌
 
-### Custom Introspection
+TODO -- make this better.
+
+Currently, argument definitions _are_ added to the field when a connection type is used as a return type.
+
+But arguments are not automatically hidden from the resolver and Connection wrappers are not automatically applied. Should they be?
+
+### Custom Introspection ✅
+
+This _works_ but if you want custom authorization or any lazy values, see notes about that compatibility.

@@ -55,6 +55,11 @@ module GraphQL
           else
             create_result
           end
+        rescue GraphQL::Error => err
+          err.path = @field_resolve_step.path
+          err.ast_nodes = @field_resolve_step.ast_nodes
+          @runner.context.errors << err
+          @graphql_result[@key] = err
         end
 
         def create_result
