@@ -1,0 +1,10 @@
+class CreateGraphqlDetailedTraces < ActiveRecord::Migration[<%= ActiveRecord::Migration.current_version %>]
+  def change
+    create_table :graphql_detailed_traces, force: true do |t|
+      t.integer :begin_ms, null: false
+      t.float :duration_ms, null: false
+      t.text :trace_data, null: false
+      t.string :operation_name, null: false
+    end
+  end
+end
