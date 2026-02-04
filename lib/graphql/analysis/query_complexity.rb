@@ -27,14 +27,14 @@ module GraphQL
             future_complexity
           end
         when nil
-          subject.logger.warn <<~GRAPHQL
+          subject.logger.warn <<~MESSAGE
             GraphQL-Ruby's complexity cost system is getting some "breaking fixes" in a future version. See the migration notes at https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#complexity_cost_calculation_mode_for-class_method
 
             To opt into the future behavior, configure your schema (#{subject.schema.name ? subject.schema.name : subject.schema.ancestors}) with:
 
               complexity_cost_calculation_mode(:future) # or `:legacy`, `:compare`
 
-          GRAPHQL
+          MESSAGE
           max_possible_complexity(mode: :legacy)
         else
           raise ArgumentError, "Expected `:future`, `:legacy`, `:compare`, or `nil` from `#{query.schema}.complexity_cost_calculation_mode_for` but got: #{query.schema.complexity_cost_calculation_mode.inspect}"

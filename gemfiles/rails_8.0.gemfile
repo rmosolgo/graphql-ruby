@@ -10,7 +10,6 @@ gem "rails", "~> 8.0.0", require: "rails/all"
 gem "sqlite3"
 gem "pg", platform: :ruby
 gem "sequel"
-gem "evt"
 gem "async"
 gem "google-protobuf"
 gem "minitest-mock"

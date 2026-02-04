@@ -8,8 +8,6 @@ gem "ruby-prof", platform: :ruby
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
 gem "mongoid", "~> 8.0"
-gem "libev_scheduler"
-gem "evt"
 gem "async"
 gem "concurrent-ruby", "1.3.4"
 gem "minitest-mock"
