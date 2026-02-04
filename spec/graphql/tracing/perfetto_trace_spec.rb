@@ -46,7 +46,7 @@ if testing_rails?
         end
 
         def user
-          dataload_record(::User, object.user_id)
+          dataload_record(::User, object[:user_id])
         end
       end
 
@@ -57,7 +57,7 @@ if testing_rails?
         field :author, "PerfettoSchema::Author"
         field :other_book, Book
         def reviews
-          object.reviews.limit(2)
+          object.reviews.limit(2).map { |r| { stars: r.stars, user_id: r.user } }
         end
 
         def average_review

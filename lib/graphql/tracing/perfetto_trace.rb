@@ -634,7 +634,19 @@ module GraphQL
         when Array
           debug_annotation(iid, :array_values, v.each_with_index.map { |v2, idx| payload_to_debug((k ? "#{k}.#{idx}" : String(idx)), v2, intern_value: intern_value) }.compact)
         when Hash
-          debug_annotation(iid, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2, intern_value: intern_value) }.compact)
+          debug_v = v.map { |k2, v2|
+            debug_k = case k2
+            when String
+              k2
+            when Symbol
+              k2.name
+            else
+              String(k2)
+            end
+            payload_to_debug(debug_k, v2, intern_value: intern_value)
+          }
+          debug_v.compact!
+          debug_annotation(iid, :dict_entries, debug_v)
         else
           class_name_iid = @interned_da_string_values[v.class.name]
           da = [
