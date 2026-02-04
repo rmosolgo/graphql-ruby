@@ -7,7 +7,7 @@ require "graphql/tracing/detailed_trace/redis_backend"
 
 module GraphQL
   module Tracing
-    # `DetailedTrace` can make detailed profiles for a subset of production traffic.
+    # `DetailedTrace` can make detailed profiles for a subset of production traffic. Install it in Rails with `rails generate graphql:detailed_trace`.
     #
     # When `MySchema.detailed_trace?(query)` returns `true`, a profiler-specific `trace_mode: ...` will be used for the query,
     # overriding the one in `context[:trace_mode]`.
@@ -16,9 +16,18 @@ module GraphQL
     # this behavior by extending {DetailedTrace} and overriding {#inspect_object}. You can opt out of debug annotations
     # entirely with `use ..., debug: false` or for a single query with `context: { detailed_trace_debug: false }`.
     #
-    # __Redis__: The sampler stores its results in a provided Redis database. Depending on your needs,
-    # You can configure this database to retain all data (persistent) or to expire data according to your rules.
+    # You can store saved traces in two ways:
+    #
+    # - __ActiveRecord__: With `rails generate graphql:detailed_trace`, a new migration will be added to your app.
+    # That table will be used to store trace data.
+    #
+    # - __Redis__: Pass `redis: ...` to save trace data to a Redis database. Depending on your needs,
+    # you can configure this database to retain all data (persistent) or to expire data according to your rules.
+    #
     # If you need to save traces indefinitely, you can download them from Perfetto after opening them there.
+    #
+    # @example Installing with Rails
+    #   rails generate graphql:detailed_trace # optional: --redis
     #
     # @example Adding the sampler to your schema
     #   class MySchema < GraphQL::Schema
@@ -56,13 +65,14 @@ module GraphQL
       # @param redis [Redis] If provided, profiles will be stored in Redis for later review
       # @param limit [Integer] A maximum number of profiles to store
       # @param debug [Boolean] if `false`, it won't create `debug` annotations in Perfetto traces (reduces overhead)
-      def self.use(schema, trace_mode: :profile_sample, memory: false, debug: debug?, redis: nil, limit: nil)
+      # @param model_class [Class<ActiveRecord::Base>] Overrides {ActiveRecordBackend::GraphqlDetailedTrace} if present
+      def self.use(schema, trace_mode: :profile_sample, memory: false, debug: debug?, redis: nil, limit: nil, model_class: nil)
         storage = if redis
           RedisBackend.new(redis: redis, limit: limit)
         elsif memory
           MemoryBackend.new(limit: limit)
         elsif defined?(ActiveRecord)
-          ActiveRecordBackend.new(limit: limit)
+          ActiveRecordBackend.new(limit: limit, model_class: model_class)
         else
           raise ArgumentError, "To store traces, install ActiveRecord or provide `redis: ...`"
         end

@@ -7,12 +7,13 @@ module GraphQL
         class GraphqlDetailedTrace < ActiveRecord::Base
         end
 
-        def initialize(limit: nil)
+        def initialize(limit: nil, model_class: nil)
           @limit = limit
+          @model_class = model_class || GraphqlDetailedTrace
         end
 
         def traces(last:, before:)
-          gdts = GraphqlDetailedTrace.all.order("begin_ms DESC")
+          gdts = @model_class.all.order("begin_ms DESC")
           if before
             gdts = gdts.where("begin_ms < ?", before)
           end
@@ -23,16 +24,16 @@ module GraphQL
         end
 
         def delete_trace(id)
-          GraphqlDetailedTrace.where(id: id).destroy_all
+          @model_class.where(id: id).destroy_all
           nil
         end
 
         def delete_all_traces
-          GraphqlDetailedTrace.all.destroy_all
+          @model_class.all.destroy_all
         end
 
         def find_trace(id)
-          gdt = GraphqlDetailedTrace.find_by(id: id)
+          gdt = @model_class.find_by(id: id)
           if gdt
             record_to_stored_trace(gdt)
           else
@@ -41,14 +42,14 @@ module GraphQL
         end
 
         def save_trace(operation_name, duration_ms, begin_ms, trace_data)
-          gdt = GraphqlDetailedTrace.create!(
+          gdt = @model_class.create!(
             begin_ms: begin_ms,
             operation_name: operation_name,
             duration_ms: duration_ms,
             trace_data: Base64.encode64(trace_data),
           )
           if @limit
-            GraphqlDetailedTrace
+            @model_class
               .where("id NOT IN(SELECT id FROM graphql_detailed_traces ORDER BY begin_ms DESC LIMIT ?)", @limit)
               .delete_all
           end
