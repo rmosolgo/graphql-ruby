@@ -12,7 +12,7 @@ if testing_rails?
     class DummyModel
       def self.find_by(id:)
         OpenStruct.new(
-          trace_data: Base64.encode64("DummyModel##{id}")
+          trace_data: "DummyModel##{id}"
         )
       end
     end
