@@ -91,6 +91,22 @@ module GraphQL
           ctx_debug
         end
 
+        @arguments_filter = if (ctx = query&.context) && (dtf = ctx[:detailed_trace_filter])
+          dtf
+        elsif defined?(ActiveSupport)
+          fp = if defined?(Rails) && Rails.application && (app_config = Rails.application.config.filter_parameters)
+            app_config
+          elsif ActiveSupport.respond_to?(:filter_parameters)
+            ActiveSupport.filter_parameters
+          else
+            []
+          end
+          as_param_filter = ActiveSupport::ParameterFilter.new(fp, mask: ArgumentsFilter::FILTERED)
+          ActiveSupportArgumentsFilter.new(as_param_filter)
+        else
+          ArgumentsFilter.new
+        end
+
         Fiber[:graphql_flow_stack] = nil
         @sequence_id = object_id
         @pid = Process.pid
@@ -255,7 +271,7 @@ module GraphQL
           start_field.track_event = dup_with(start_field.track_event,{
             debug_annotations: [
                 payload_to_debug(nil, object.object, iid: DA_OBJECT_IID, intern_value: true),
-                payload_to_debug(nil, arguments, iid: DA_ARGUMENTS_IID),
+                payload_to_debug(nil, filter_arguments(arguments), iid: DA_ARGUMENTS_IID),
                 payload_to_debug(nil, app_result, iid: DA_RESULT_IID, intern_value: true)
               ]
             })
@@ -588,6 +604,86 @@ module GraphQL
 
       def fid
         Fiber.current.object_id
+      end
+
+      def filter_arguments(args)
+        @arguments_filter.filter(args)
+      end
+
+      class ActiveSupportArgumentsFilter
+        def initialize(parameter_filter)
+          @parameter_filter = parameter_filter
+        end
+
+        def filter(args)
+          args_h = remove_wrappers(args)
+          @parameter_filter.filter(args_h)
+        end
+
+        private
+
+        def remove_wrappers(args)
+          case args
+          when Array
+            args.map { |a| remove_wrappers(a)}
+          when Hash
+            args2 = args.dup
+            args.each do |k, v|
+              args2[k] = remove_wrappers(v)
+            end
+            args2
+          when GraphQL::Schema::InputObject
+            args_h = args.to_h
+            args_h.each do |k, v|
+              args_h[k] = remove_wrappers(v)
+            end
+            args_h
+          else
+            args
+          end
+        end
+      end
+
+      class ArgumentsFilter
+        # From Rails defaults
+        # https://github.com/rails/rails/blob/main/railties/lib/rails/generators/rails/app/templates/config/initializers/filter_parameter_logging.rb.tt#L6-L8
+        SENSITIVE_KEY = /passw|token|crypt|email|_key|salt|certificate|secret|ssn|cvv|cvc|otp/i
+        FILTERED = "[FILTERED]"
+
+        def filter(argument)
+          case argument
+          when GraphQL::Schema::InputObject
+            filter(argument.to_h)
+          when Hash
+            target_h = nil
+            argument.each do |k, v|
+              if (k.is_a?(String) && SENSITIVE_KEY.match?(k)) ||
+                  (k.is_a?(Symbol) && SENSITIVE_KEY.match?(k.name))
+                target_h ||= argument.dup
+                target_h[k] = FILTERED
+              else
+                new_v = filter(v)
+                if !v.equal?(new_v)
+                  target_h ||= argument.dup
+                  target_h[k] = new_v
+                end
+              end
+            end
+            target_h || argument
+          when Array
+            target_arr = nil
+            argument.each_with_index do |inner_v, i|
+              new_v = filter(inner_v)
+              if !inner_v.equal?(new_v)
+                target_arr ||= argument.dup
+                target_arr[i] = new_v
+              end
+            end
+            target_arr || argument
+          else
+            argument
+          end
+        end
       end
 
       def debug_annotation(iid, value_key, value)

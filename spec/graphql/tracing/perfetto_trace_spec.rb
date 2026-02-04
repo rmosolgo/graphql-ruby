@@ -105,6 +105,20 @@ if testing_rails?
         def crash
           raise "Crash the query"
         end
+
+        class SecretInput < GraphQL::Schema::InputObject
+          argument :password, String
+        end
+
+        field :secret_field, String do
+          argument :cipher, String, required: false
+          argument :password, String, required: false
+          argument :input, [[SecretInput]], required: false
+        end
+
+        def secret_field(cipher: nil, password: nil, input: nil)
+          cipher || password || input[0][0][:password]
+        end
       end
 
       query(Query)
@@ -157,6 +171,43 @@ if testing_rails?
 
 
       check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}.json")
+    end
+
+    it "filters params with ActiveSupport" do
+      query_str = 'query getStuff { secretField(cipher: "abcdef") }'
+      res = PerfettoSchema.execute(query_str, validate: false)
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert_includes json, "abcdef"
+      refute_includes json, "FILTERED"
+
+      prev_fp = ActiveSupport.filter_parameters
+      ActiveSupport.filter_parameters = ["cipher"]
+      res = PerfettoSchema.execute(query_str)
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      refute_includes json, "abcdef"
+      assert_includes json, "[FILTERED]"
+
+      ActiveSupport.filter_parameters = ["password"]
+      res = PerfettoSchema.execute('query getStuff { secretField(input: [[{ password: "jklmn" }]]) }')
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      refute json.include?("jklmn"), "Value is removed"
+      assert_includes json, "[FILTERED]"
+    ensure
+      ActiveSupport.filter_parameters = prev_fp
+    end
+
+    it "filters params without ActiveSupport" do
+      query_str = 'query getStuff { secretField(password: "qrstuv") }'
+      res = PerfettoSchema.execute(query_str, context: { detailed_trace_filter: GraphQL::Tracing::PerfettoTrace::ArgumentsFilter.new })
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert_includes json, "[FILTERED]"
+      refute_includes json, "qrstuv"
+
+      query_str = 'query getStuff { secretField(input: [[{ password: "lmnop" }]]) }'
+      res = PerfettoSchema.execute(query_str, context: { detailed_trace_filter: GraphQL::Tracing::PerfettoTrace::ArgumentsFilter.new })
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      refute json.include?("lmnop"), "The password is obscured"
+      assert json.include?("[FILTERED]"), "The replacement string is present"
     end
 
     it "provides an error when google-protobuf isn't available" do
