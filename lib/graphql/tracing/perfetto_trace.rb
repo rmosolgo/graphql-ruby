@@ -270,9 +270,9 @@ module GraphQL
         if @create_debug_annotations
           start_field.track_event = dup_with(start_field.track_event,{
             debug_annotations: [
-                payload_to_debug(nil, object.object, iid: DA_OBJECT_IID, intern_value: true),
-                payload_to_debug(nil, filter_arguments(arguments), iid: DA_ARGUMENTS_IID),
-                payload_to_debug(nil, app_result, iid: DA_RESULT_IID, intern_value: true)
+                payload_to_debug(nil, filter_if_hash(object.object), iid: DA_OBJECT_IID, intern_value: true),
+                payload_to_debug(nil, filter_if_hash(arguments), iid: DA_ARGUMENTS_IID),
+                payload_to_debug(nil, filter_if_hash(app_result), iid: DA_RESULT_IID, intern_value: true)
               ]
             })
         end
@@ -606,8 +606,12 @@ module GraphQL
         Fiber.current.object_id
       end
 
-      def filter_arguments(args)
-        @arguments_filter.filter(args)
+      def filter_if_hash(args)
+        if args.is_a?(Hash)
+          @arguments_filter.filter(args)
+        else
+          args
+        end
       end
 
       class ActiveSupportArgumentsFilter
