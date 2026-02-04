@@ -109,9 +109,9 @@ if testing_rails?
     end
 
     create_table :graphql_detailed_traces, force: true do |t|
-      t.integer :begin_ms
+      t.bigint :begin_ms
       t.float :duration_ms
-      t.text :trace_data
+      t.binary :trace_data
       t.string :operation_name
     end
   end

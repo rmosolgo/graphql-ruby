@@ -34,6 +34,8 @@ class GraphQLGeneratorsDetailedTraceGeneratorTest < Rails::Generators::TestCase
     assert_file "config/routes.rb" do |content|
       assert_includes content, "mount GraphQL::Dashboard, at: \"/graphql/dashboard\", schema: \"DummySchema\""
     end
+
+    assert_file "Gemfile", /google-protobuf/
   end
 
   test "it doesn't duplicate dashboard setup" do

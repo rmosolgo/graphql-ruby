@@ -67,6 +67,9 @@ module Graphql
 
             RUBY
           end
+
+          gem("google-protobuf")
+
         end
       end
     end
