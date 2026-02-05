@@ -93,7 +93,7 @@ module GraphQL
 
         @arguments_filter = if (ctx = query&.context) && (dtf = ctx[:detailed_trace_filter])
           dtf
-        elsif defined?(ActiveSupport)
+        elsif defined?(ActiveSupport::ParameterFilter)
           fp = if defined?(Rails) && Rails.application && (app_config = Rails.application.config.filter_parameters)
             app_config
           elsif ActiveSupport.respond_to?(:filter_parameters)
