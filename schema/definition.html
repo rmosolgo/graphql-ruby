@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.18/">API</a>
+            <a href="/api-doc/2.5.19/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -168,7 +168,7 @@
 <div class="guide-container">
   <p>A GraphQL system is called a <em>schema</em>. The schema contains all the types and fields in the system. The schema executes queries and publishes an <a href="/schema/introspection">introspection system</a>.</p>
 
-<p>Your GraphQL schema is a class that extends <a href="/api-doc/2.5.18/GraphQL/Schema" target="_blank" title="API docs for GraphQL::Schema"><code>GraphQL::Schema</code></a>, for example:</p>
+<p>Your GraphQL schema is a class that extends <a href="/api-doc/2.5.19/GraphQL/Schema" target="_blank" title="API docs for GraphQL::Schema"><code>GraphQL::Schema</code></a>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">max_complexity</span> <span class="mi">400</span>
@@ -197,8 +197,8 @@
 <h2 id="types-in-the-schema">Types in the Schema</h2>
 
 <ul>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#query-class_method" target="_blank" title="API docs for GraphQL::Schema.query"><code>Schema.query</code></a>, <a href="/api-doc/2.5.18/GraphQL/Schema#mutation-class_method" target="_blank" title="API docs for GraphQL::Schema.mutation"><code>Schema.mutation</code></a>, and <a href="/api-doc/2.5.18/GraphQL/Schema#subscription-class_method" target="_blank" title="API docs for GraphQL::Schema.subscription"><code>Schema.subscription</code></a> declare the <a href="https://graphql.org/learn/schema/#the-query-mutation-and-subscription-types">entry-point types</a> of the schema.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#orphan_types-class_method" target="_blank" title="API docs for GraphQL::Schema.orphan_types"><code>Schema.orphan_types</code></a> declares object types which implement <a href="/type_definitions/interfaces">Interfaces</a> but aren’t used as field return types in the schema. For more about this specific scenario, see <a href="/type_definitions/interfaces#orphan-types">Orphan Types</a></li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#query-class_method" target="_blank" title="API docs for GraphQL::Schema.query"><code>Schema.query</code></a>, <a href="/api-doc/2.5.19/GraphQL/Schema#mutation-class_method" target="_blank" title="API docs for GraphQL::Schema.mutation"><code>Schema.mutation</code></a>, and <a href="/api-doc/2.5.19/GraphQL/Schema#subscription-class_method" target="_blank" title="API docs for GraphQL::Schema.subscription"><code>Schema.subscription</code></a> declare the <a href="https://graphql.org/learn/schema/#the-query-mutation-and-subscription-types">entry-point types</a> of the schema.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#orphan_types-class_method" target="_blank" title="API docs for GraphQL::Schema.orphan_types"><code>Schema.orphan_types</code></a> declares object types which implement <a href="/type_definitions/interfaces">Interfaces</a> but aren’t used as field return types in the schema. For more about this specific scenario, see <a href="/type_definitions/interfaces#orphan-types">Orphan Types</a></li>
 </ul>
 
 <h3 id="lazy-loading-types">Lazy-loading types</h3>
@@ -206,7 +206,7 @@
 <p>In development, GraphQL-Ruby can defer loading your type definitions until they’re needed. This requires some configuration to opt in:</p>
 
 <ul>
-  <li>Add <code class="language-plaintext highlighter-rouge">use GraphQL::Schema::Visibility</code> to your schema. (<a href="/api-doc/2.5.18/GraphQL/Schema/Visibility" target="_blank" title="API docs for GraphQL::Schema::Visibility"><code>GraphQL::Schema::Visibility</code></a> supports lazy loading and will be the default in a future GraphQL-Ruby version. See <a href="/authorization/visibility#migration-notes">Migration Notes</a> if you have an existing visibility implementation.)</li>
+  <li>Add <code class="language-plaintext highlighter-rouge">use GraphQL::Schema::Visibility</code> to your schema. (<a href="/api-doc/2.5.19/GraphQL/Schema/Visibility" target="_blank" title="API docs for GraphQL::Schema::Visibility"><code>GraphQL::Schema::Visibility</code></a> supports lazy loading and will be the default in a future GraphQL-Ruby version. See <a href="/authorization/visibility#migration-notes">Migration Notes</a> if you have an existing visibility implementation.)</li>
   <li>
     <p>Move your entry-point type definitions into a block, for example:</p>
 
@@ -244,61 +244,61 @@
 
 <p>To use these features, you must provide some methods for generating UUIDs and fetching objects with them:</p>
 
-<p><a href="/api-doc/2.5.18/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a> is called by GraphQL-Ruby to load objects directly from the database. It’s usually used by the <code class="language-plaintext highlighter-rouge">node(id: ID!): Node</code> field (see <a href="/api-doc/2.5.18/GraphQL/Types/Relay/Node" target="_blank" title="API docs for GraphQL::Types::Relay::Node"><code>GraphQL::Types::Relay::Node</code></a>), Argument <a href="/mutations/mutation_classes#auto-loading-arguments">loads:</a>, or the <a href="/object_cache/overview">ObjectCache</a>. It receives a unique ID and must return the object for that ID, or <code class="language-plaintext highlighter-rouge">nil</code> if the object isn’t found (or if it should be hidden from the current user).</p>
+<p><a href="/api-doc/2.5.19/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a> is called by GraphQL-Ruby to load objects directly from the database. It’s usually used by the <code class="language-plaintext highlighter-rouge">node(id: ID!): Node</code> field (see <a href="/api-doc/2.5.19/GraphQL/Types/Relay/Node" target="_blank" title="API docs for GraphQL::Types::Relay::Node"><code>GraphQL::Types::Relay::Node</code></a>), Argument <a href="/mutations/mutation_classes#auto-loading-arguments">loads:</a>, or the <a href="/object_cache/overview">ObjectCache</a>. It receives a unique ID and must return the object for that ID, or <code class="language-plaintext highlighter-rouge">nil</code> if the object isn’t found (or if it should be hidden from the current user).</p>
 
-<p><a href="/api-doc/2.5.18/GraphQL/Schema#id_from_object-class_method" target="_blank" title="API docs for GraphQL::Schema.id_from_object"><code>Schema.id_from_object</code></a> is used to implement <code class="language-plaintext highlighter-rouge">Node.id</code>. It should return a unique ID for the given object. This ID will later be sent to <code class="language-plaintext highlighter-rouge">object_from_id</code> to refetch the object.</p>
+<p><a href="/api-doc/2.5.19/GraphQL/Schema#id_from_object-class_method" target="_blank" title="API docs for GraphQL::Schema.id_from_object"><code>Schema.id_from_object</code></a> is used to implement <code class="language-plaintext highlighter-rouge">Node.id</code>. It should return a unique ID for the given object. This ID will later be sent to <code class="language-plaintext highlighter-rouge">object_from_id</code> to refetch the object.</p>
 
-<p>Additionally, <a href="/api-doc/2.5.18/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a> is called by GraphQL-Ruby to get the runtime Object type for fields that return return <a href="/type_definitions/interfaces">interface</a> or <a href="/type_definitions/unions">union</a> types.</p>
+<p>Additionally, <a href="/api-doc/2.5.19/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a> is called by GraphQL-Ruby to get the runtime Object type for fields that return return <a href="/type_definitions/interfaces">interface</a> or <a href="/type_definitions/unions">union</a> types.</p>
 
 <h2 id="error-handling">Error Handling</h2>
 
 <ul>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#type_error-class_method" target="_blank" title="API docs for GraphQL::Schema.type_error"><code>Schema.type_error</code></a> handles type errors at runtime, read more in the <a href="/errors/type_errors">Type errors guide</a>.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#rescue_from-class_method" target="_blank" title="API docs for GraphQL::Schema.rescue_from"><code>Schema.rescue_from</code></a> defines error handlers for application errors. See the <a href="/errors/error_handling">error handling guide</a> for more.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#parse_error-class_method" target="_blank" title="API docs for GraphQL::Schema.parse_error"><code>Schema.parse_error</code></a> and <a href="/api-doc/2.5.18/GraphQL/Schema#query_stack_error-class_method" target="_blank" title="API docs for GraphQL::Schema.query_stack_error"><code>Schema.query_stack_error</code></a> provide hooks for reporting errors to your bug tracker.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#type_error-class_method" target="_blank" title="API docs for GraphQL::Schema.type_error"><code>Schema.type_error</code></a> handles type errors at runtime, read more in the <a href="/errors/type_errors">Type errors guide</a>.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#rescue_from-class_method" target="_blank" title="API docs for GraphQL::Schema.rescue_from"><code>Schema.rescue_from</code></a> defines error handlers for application errors. See the <a href="/errors/error_handling">error handling guide</a> for more.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#parse_error-class_method" target="_blank" title="API docs for GraphQL::Schema.parse_error"><code>Schema.parse_error</code></a> and <a href="/api-doc/2.5.19/GraphQL/Schema#query_stack_error-class_method" target="_blank" title="API docs for GraphQL::Schema.query_stack_error"><code>Schema.query_stack_error</code></a> provide hooks for reporting errors to your bug tracker.</li>
 </ul>
 
 <h2 id="default-limits">Default Limits</h2>
 
 <ul>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#max_depth-class_method" target="_blank" title="API docs for GraphQL::Schema.max_depth"><code>Schema.max_depth</code></a> and <a href="/api-doc/2.5.18/GraphQL/Schema#max_complexity-class_method" target="_blank" title="API docs for GraphQL::Schema.max_complexity"><code>Schema.max_complexity</code></a> apply some limits to incoming queries. See <a href="/queries/complexity_and_depth">Complexity and Depth</a> for more.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#default_max_page_size-class_method" target="_blank" title="API docs for GraphQL::Schema.default_max_page_size"><code>Schema.default_max_page_size</code></a> applies limits to <a href="/pagination/overview">connection fields</a>.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#validate_timeout-class_method" target="_blank" title="API docs for GraphQL::Schema.validate_timeout"><code>Schema.validate_timeout</code></a>, <a href="/api-doc/2.5.18/GraphQL/Schema#validate_max_errors-class_method" target="_blank" title="API docs for GraphQL::Schema.validate_max_errors"><code>Schema.validate_max_errors</code></a> and <a href="/api-doc/2.5.18/GraphQL/Schema#max_query_string_tokens-class_method" target="_blank" title="API docs for GraphQL::Schema.max_query_string_tokens"><code>Schema.max_query_string_tokens</code></a> all apply limits to query execution. See <a href="/queries/timeout">Timeout</a> for more.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#max_depth-class_method" target="_blank" title="API docs for GraphQL::Schema.max_depth"><code>Schema.max_depth</code></a> and <a href="/api-doc/2.5.19/GraphQL/Schema#max_complexity-class_method" target="_blank" title="API docs for GraphQL::Schema.max_complexity"><code>Schema.max_complexity</code></a> apply some limits to incoming queries. See <a href="/queries/complexity_and_depth">Complexity and Depth</a> for more.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#default_max_page_size-class_method" target="_blank" title="API docs for GraphQL::Schema.default_max_page_size"><code>Schema.default_max_page_size</code></a> applies limits to <a href="/pagination/overview">connection fields</a>.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#validate_timeout-class_method" target="_blank" title="API docs for GraphQL::Schema.validate_timeout"><code>Schema.validate_timeout</code></a>, <a href="/api-doc/2.5.19/GraphQL/Schema#validate_max_errors-class_method" target="_blank" title="API docs for GraphQL::Schema.validate_max_errors"><code>Schema.validate_max_errors</code></a> and <a href="/api-doc/2.5.19/GraphQL/Schema#max_query_string_tokens-class_method" target="_blank" title="API docs for GraphQL::Schema.max_query_string_tokens"><code>Schema.max_query_string_tokens</code></a> all apply limits to query execution. See <a href="/queries/timeout">Timeout</a> for more.</li>
 </ul>
 
 <h2 id="introspection">Introspection</h2>
 
 <ul>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#extra_types-class_method" target="_blank" title="API docs for GraphQL::Schema.extra_types"><code>Schema.extra_types</code></a> declares types which should be printed in the SDL and returned in introspection queries, but aren’t otherwise used in the schema.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#introspection-class_method" target="_blank" title="API docs for GraphQL::Schema.introspection"><code>Schema.introspection</code></a> can attach a <a href="/schema/introspection">custom introspection system</a> to the schema.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#extra_types-class_method" target="_blank" title="API docs for GraphQL::Schema.extra_types"><code>Schema.extra_types</code></a> declares types which should be printed in the SDL and returned in introspection queries, but aren’t otherwise used in the schema.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#introspection-class_method" target="_blank" title="API docs for GraphQL::Schema.introspection"><code>Schema.introspection</code></a> can attach a <a href="/schema/introspection">custom introspection system</a> to the schema.</li>
 </ul>
 
 <h2 id="authorization">Authorization</h2>
 
 <ul>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> and <a href="/api-doc/2.5.18/GraphQL/Schema#unauthorized_field-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_field"><code>Schema.unauthorized_field</code></a> are called when <a href="/authorization/authorization">authorization hooks</a> return <code class="language-plaintext highlighter-rouge">false</code> during query execution.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> and <a href="/api-doc/2.5.19/GraphQL/Schema#unauthorized_field-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_field"><code>Schema.unauthorized_field</code></a> are called when <a href="/authorization/authorization">authorization hooks</a> return <code class="language-plaintext highlighter-rouge">false</code> during query execution.</li>
 </ul>
 
 <h2 id="execution-configuration">Execution Configuration</h2>
 
 <ul>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#trace_with-class_method" target="_blank" title="API docs for GraphQL::Schema.trace_with"><code>Schema.trace_with</code></a> attaches tracer modules. See <a href="/queries/tracing">Tracing</a> for more.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#query_analyzer-class_method" target="_blank" title="API docs for GraphQL::Schema.query_analyzer"><code>Schema.query_analyzer</code></a> and Schema.multiplex_analyzer accept processors for ahead-of-time query analysis, see <a href="/queries/ast_analysis">Analysis</a> for more.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#default_logger-class_method" target="_blank" title="API docs for GraphQL::Schema.default_logger"><code>Schema.default_logger</code></a> configures a logger for runtime. See <a href="/queries/logging">Logging</a>.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#context_class-class_method" target="_blank" title="API docs for GraphQL::Schema.context_class"><code>Schema.context_class</code></a> and <a href="/api-doc/2.5.18/GraphQL/Schema#query_class-class_method" target="_blank" title="API docs for GraphQL::Schema.query_class"><code>Schema.query_class</code></a> attach custom subclasses to your schema to use during execution.</li>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#lazy_resolve-class_method" target="_blank" title="API docs for GraphQL::Schema.lazy_resolve"><code>Schema.lazy_resolve</code></a> registers classes with <a href="/schema/lazy_execution">lazy execution</a>.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#trace_with-class_method" target="_blank" title="API docs for GraphQL::Schema.trace_with"><code>Schema.trace_with</code></a> attaches tracer modules. See <a href="/queries/tracing">Tracing</a> for more.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#query_analyzer-class_method" target="_blank" title="API docs for GraphQL::Schema.query_analyzer"><code>Schema.query_analyzer</code></a> and Schema.multiplex_analyzer accept processors for ahead-of-time query analysis, see <a href="/queries/ast_analysis">Analysis</a> for more.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#default_logger-class_method" target="_blank" title="API docs for GraphQL::Schema.default_logger"><code>Schema.default_logger</code></a> configures a logger for runtime. See <a href="/queries/logging">Logging</a>.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#context_class-class_method" target="_blank" title="API docs for GraphQL::Schema.context_class"><code>Schema.context_class</code></a> and <a href="/api-doc/2.5.19/GraphQL/Schema#query_class-class_method" target="_blank" title="API docs for GraphQL::Schema.query_class"><code>Schema.query_class</code></a> attach custom subclasses to your schema to use during execution.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#lazy_resolve-class_method" target="_blank" title="API docs for GraphQL::Schema.lazy_resolve"><code>Schema.lazy_resolve</code></a> registers classes with <a href="/schema/lazy_execution">lazy execution</a>.</li>
 </ul>
 
 <h2 id="plugins">Plugins</h2>
 
 <ul>
-  <li><a href="/api-doc/2.5.18/GraphQL/Schema#use-class_method" target="_blank" title="API docs for GraphQL::Schema.use"><code>Schema.use</code></a> adds plugins to your schema. For example, <a href="/api-doc/2.5.18/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> and <a href="/api-doc/2.5.18/GraphQL/Schema/Visibility" target="_blank" title="API docs for GraphQL::Schema::Visibility"><code>GraphQL::Schema::Visibility</code></a> are installed this way.</li>
+  <li><a href="/api-doc/2.5.19/GraphQL/Schema#use-class_method" target="_blank" title="API docs for GraphQL::Schema.use"><code>Schema.use</code></a> adds plugins to your schema. For example, <a href="/api-doc/2.5.19/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> and <a href="/api-doc/2.5.19/GraphQL/Schema/Visibility" target="_blank" title="API docs for GraphQL::Schema::Visibility"><code>GraphQL::Schema::Visibility</code></a> are installed this way.</li>
 </ul>
 
 <h2 id="production-considerations">Production Considerations</h2>
 
 <ul>
-  <li><strong>Parser caching</strong>: if your application parses GraphQL <em>files</em> (queries or schema definition), it may benefit from enabling <a href="/api-doc/2.5.18/GraphQL/Language/Cache" target="_blank" title="API docs for GraphQL::Language::Cache"><code>GraphQL::Language::Cache</code></a>.</li>
+  <li><strong>Parser caching</strong>: if your application parses GraphQL <em>files</em> (queries or schema definition), it may benefit from enabling <a href="/api-doc/2.5.19/GraphQL/Language/Cache" target="_blank" title="API docs for GraphQL::Language::Cache"><code>GraphQL::Language::Cache</code></a>.</li>
   <li>
     <p><strong>Eager loading the library</strong>: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be eager loaded instead, using <code class="language-plaintext highlighter-rouge">GraphQL.eager_load!</code>.</p>
 
@@ -309,7 +309,7 @@
       <li>Other frameworks: call <code class="language-plaintext highlighter-rouge">GraphQL.eager_load!</code> when your application is booting in production mode.</li>
     </ul>
 
-    <p>See <a href="/api-doc/2.5.18/GraphQL/Autoload#eager_load!-instance_method" target="_blank" title="API docs for GraphQL::Autoload#eager_load!"><code>GraphQL::Autoload#eager_load!</code></a> for more details.</p>
+    <p>See <a href="/api-doc/2.5.19/GraphQL/Autoload#eager_load!-instance_method" target="_blank" title="API docs for GraphQL::Autoload#eager_load!"><code>GraphQL::Autoload#eager_load!</code></a> for more details.</p>
   </li>
 </ul>
 
