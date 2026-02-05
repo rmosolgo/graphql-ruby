@@ -185,28 +185,63 @@ if testing_rails?
       check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}.json")
     end
 
-    it "filters params with ActiveSupport" do
+    it "filters params with Rails.application.config.filter_parameters" do
       query_str = 'query getStuff { secretField(cipher: "abcdef") { greeting } }'
-      res = PerfettoSchema.execute(query_str, validate: false)
+      res = PerfettoSchema.execute(query_str)
       json = res.context.query.current_trace.write(file: nil, debug_json: true)
       assert trace_includes?(json, "abcdef")
       refute trace_includes?(json, "FILTERED")
 
-      prev_fp = ActiveSupport.filter_parameters
-      ActiveSupport.filter_parameters = ["cipher"]
+      if Rails.application.present?
+        prev_fp = Rails.application.config.filter_parameters
+        Rails.application.config.filter_parameters = ["ciph"]
+      else
+        Rails.application = OpenStruct.new(config: OpenStruct.new(filter_parameters: ["ciph"]))
+      end
       res = PerfettoSchema.execute(query_str)
       json = res.context.query.current_trace.write(file: nil, debug_json: true)
       refute trace_includes?(json, "abcdef")
-      assert trace_includes?(json, "[FILTERED]")
-
-      ActiveSupport.filter_parameters = ["password"]
-      res = PerfettoSchema.execute('query getStuff { secretField(input: [[{ password: "jklmn" }]]) { greeting } }')
-      json = res.context.query.current_trace.write(file: nil, debug_json: true)
-      assert trace_includes?(json, "password"), "Name is retained"
-      refute trace_includes?(json, "jklmn"), "Value is removed"
-      assert_includes json, "[FILTERED]"
+      assert trace_includes?(json, "FILTERED")
     ensure
-      ActiveSupport.filter_parameters = prev_fp
+      if prev_fp
+        Rails.application.config.filter_parameters = prev_fp
+      else
+        Rails.application = nil
+      end
+    end
+
+    it "filters params with ActiveSupport" do
+      query_str = 'query getStuff { secretField(cipher: "abcdef") { greeting } }'
+      res = PerfettoSchema.execute(query_str)
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert trace_includes?(json, "abcdef")
+      refute trace_includes?(json, "FILTERED")
+
+      query_str = 'query getStuff { secretField(cipher: "abcdef") { greeting } }'
+      res = PerfettoSchema.execute(query_str)
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert trace_includes?(json, "abcdef")
+      refute trace_includes?(json, "FILTERED")
+
+      if ActiveSupport.respond_to?(:filter_parameters=)
+        begin
+          prev_fp = ActiveSupport.filter_parameters
+          ActiveSupport.filter_parameters = ["cipher"]
+          res = PerfettoSchema.execute(query_str)
+          json = res.context.query.current_trace.write(file: nil, debug_json: true)
+          refute trace_includes?(json, "abcdef")
+          assert trace_includes?(json, "[FILTERED]")
+
+          ActiveSupport.filter_parameters = ["password"]
+          res = PerfettoSchema.execute('query getStuff { secretField(input: [[{ password: "jklmn" }]]) { greeting } }')
+          json = res.context.query.current_trace.write(file: nil, debug_json: true)
+          assert trace_includes?(json, "password"), "Name is retained"
+          refute trace_includes?(json, "jklmn"), "Value is removed"
+          assert_includes json, "[FILTERED]"
+        ensure
+          ActiveSupport.filter_parameters = prev_fp
+        end
+      end
     end
 
     it "filters params without ActiveSupport" do
