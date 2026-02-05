@@ -91,6 +91,21 @@ module GraphQL
           ctx_debug
         end
 
+        @arguments_filter = if (ctx = query&.context) && (dtf = ctx[:detailed_trace_filter])
+          dtf
+        elsif defined?(ActiveSupport::ParameterFilter)
+          fp = if defined?(Rails) && Rails.application && (app_config = Rails.application.config.filter_parameters).present? && !app_config.empty?
+            app_config
+          elsif ActiveSupport.respond_to?(:filter_parameters)
+            ActiveSupport.filter_parameters
+          else
+            EmptyObjects::EMPTY_ARRAY
+          end
+          ActiveSupport::ParameterFilter.new(fp, mask: ArgumentsFilter::FILTERED)
+        else
+          ArgumentsFilter.new
+        end
+
         Fiber[:graphql_flow_stack] = nil
         @sequence_id = object_id
         @pid = Process.pid
@@ -590,6 +605,22 @@ module GraphQL
         Fiber.current.object_id
       end
 
+      class ArgumentsFilter
+        # From Rails defaults
+        # https://github.com/rails/rails/blob/main/railties/lib/rails/generators/rails/app/templates/config/initializers/filter_parameter_logging.rb.tt#L6-L8
+        SENSITIVE_KEY = /passw|token|crypt|email|_key|salt|certificate|secret|ssn|cvv|cvc|otp/i
+        FILTERED = "[FILTERED]"
+
+        def filter_param(key, value)
+          if (key.is_a?(String) && SENSITIVE_KEY.match?(key)) ||
+                  (key.is_a?(Symbol) && SENSITIVE_KEY.match?(key.name))
+            FILTERED
+          else
+            value
+          end
+        end
+      end
+
       def debug_annotation(iid, value_key, value)
         if iid
           DebugAnnotation.new(name_iid: iid, value_key => value)
@@ -634,7 +665,22 @@ module GraphQL
         when Array
           debug_annotation(iid, :array_values, v.each_with_index.map { |v2, idx| payload_to_debug((k ? "#{k}.#{idx}" : String(idx)), v2, intern_value: intern_value) }.compact)
         when Hash
-          debug_annotation(iid, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2, intern_value: intern_value) }.compact)
+          debug_v = v.map { |k2, v2|
+            debug_k = case k2
+            when String
+              k2
+            when Symbol
+              k2.name
+            else
+              String(k2)
+            end
+            filtered_v2 = @arguments_filter.filter_param(debug_k, v2)
+            payload_to_debug(debug_k, filtered_v2, intern_value: intern_value)
+          }
+          debug_v.compact!
+          debug_annotation(iid, :dict_entries, debug_v)
+        when GraphQL::Schema::InputObject
+          payload_to_debug(k, v.to_h, iid: iid, intern_value: intern_value)
         else
           class_name_iid = @interned_da_string_values[v.class.name]
           da = [

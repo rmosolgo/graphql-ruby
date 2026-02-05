@@ -46,7 +46,7 @@ module GraphQL
             begin_ms: begin_ms,
             operation_name: operation_name,
             duration_ms: duration_ms,
-            trace_data: Base64.encode64(trace_data),
+            trace_data: trace_data,
           )
           if @limit
             @model_class
@@ -64,7 +64,7 @@ module GraphQL
             begin_ms: gdt.begin_ms,
             operation_name: gdt.operation_name,
             duration_ms: gdt.duration_ms,
-            trace_data: Base64.decode64(gdt.trace_data)
+            trace_data: gdt.trace_data
           )
 
         end

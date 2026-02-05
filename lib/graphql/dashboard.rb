@@ -120,7 +120,7 @@ module Graphql
     end
 
     class StaticsController < ApplicationController
-      skip_after_action :verify_same_origin_request
+      skip_forgery_protection
       # Use an explicit list of files to avoid any chance of reading other files from disk
       STATICS = {}
 
