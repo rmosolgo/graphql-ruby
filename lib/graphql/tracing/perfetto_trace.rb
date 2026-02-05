@@ -101,8 +101,7 @@ module GraphQL
           else
             []
           end
-          as_param_filter = ActiveSupport::ParameterFilter.new(fp, mask: ArgumentsFilter::FILTERED)
-          ActiveSupportArgumentsFilter.new(as_param_filter)
+          ActiveSupport::ParameterFilter.new(fp, mask: ArgumentsFilter::FILTERED)
         else
           ArgumentsFilter.new
         end
@@ -270,9 +269,9 @@ module GraphQL
         if @create_debug_annotations
           start_field.track_event = dup_with(start_field.track_event,{
             debug_annotations: [
-                payload_to_debug(nil, filter_if_hash(object.object), iid: DA_OBJECT_IID, intern_value: true),
-                payload_to_debug(nil, filter_if_hash(arguments), iid: DA_ARGUMENTS_IID),
-                payload_to_debug(nil, filter_if_hash(app_result), iid: DA_RESULT_IID, intern_value: true)
+                payload_to_debug(nil, object.object, iid: DA_OBJECT_IID, intern_value: true),
+                payload_to_debug(nil, arguments, iid: DA_ARGUMENTS_IID),
+                payload_to_debug(nil, app_result, iid: DA_RESULT_IID, intern_value: true)
               ]
             })
         end
@@ -606,86 +605,18 @@ module GraphQL
         Fiber.current.object_id
       end
 
-      def filter_if_hash(args)
-        if args.is_a?(Hash)
-          @arguments_filter.filter(args)
-        else
-          args
-        end
-      end
-
-      class ActiveSupportArgumentsFilter
-        def initialize(parameter_filter)
-          @parameter_filter = parameter_filter
-        end
-
-        def filter(args)
-          args_h = remove_wrappers(args)
-          @parameter_filter.filter(args_h)
-        end
-
-        private
-
-        def remove_wrappers(args)
-          case args
-          when Array
-            args.map { |a| remove_wrappers(a)}
-          when Hash
-            args2 = args.dup
-            args.each do |k, v|
-              args2[k] = remove_wrappers(v)
-            end
-            args2
-          when GraphQL::Schema::InputObject
-            args_h = args.to_h
-            args_h.each do |k, v|
-              args_h[k] = remove_wrappers(v)
-            end
-            args_h
-          else
-            args
-          end
-        end
-      end
-
       class ArgumentsFilter
         # From Rails defaults
         # https://github.com/rails/rails/blob/main/railties/lib/rails/generators/rails/app/templates/config/initializers/filter_parameter_logging.rb.tt#L6-L8
         SENSITIVE_KEY = /passw|token|crypt|email|_key|salt|certificate|secret|ssn|cvv|cvc|otp/i
         FILTERED = "[FILTERED]"
 
-        def filter(argument)
-          case argument
-          when GraphQL::Schema::InputObject
-            filter(argument.to_h)
-          when Hash
-            target_h = nil
-            argument.each do |k, v|
-              if (k.is_a?(String) && SENSITIVE_KEY.match?(k)) ||
-                  (k.is_a?(Symbol) && SENSITIVE_KEY.match?(k.name))
-                target_h ||= argument.dup
-                target_h[k] = FILTERED
-              else
-                new_v = filter(v)
-                if !v.equal?(new_v)
-                  target_h ||= argument.dup
-                  target_h[k] = new_v
-                end
-              end
-            end
-            target_h || argument
-          when Array
-            target_arr = nil
-            argument.each_with_index do |inner_v, i|
-              new_v = filter(inner_v)
-              if !inner_v.equal?(new_v)
-                target_arr ||= argument.dup
-                target_arr[i] = new_v
-              end
-            end
-            target_arr || argument
+        def filter_param(key, value)
+          if (key.is_a?(String) && SENSITIVE_KEY.match?(key)) ||
+                  (key.is_a?(Symbol) && SENSITIVE_KEY.match?(key.name))
+            FILTERED
           else
-            argument
+            value
           end
         end
       end
@@ -743,10 +674,13 @@ module GraphQL
             else
               String(k2)
             end
-            payload_to_debug(debug_k, v2, intern_value: intern_value)
+            filtered_v2 = @arguments_filter.filter_param(debug_k, v2)
+            payload_to_debug(debug_k, filtered_v2, intern_value: intern_value)
           }
           debug_v.compact!
           debug_annotation(iid, :dict_entries, debug_v)
+        when GraphQL::Schema::InputObject
+          payload_to_debug(k, v.to_h, iid: iid, intern_value: intern_value)
         else
           class_name_iid = @interned_da_string_values[v.class.name]
           da = [
