@@ -6,6 +6,11 @@ if testing_rails?
   describe GraphQL::Tracing::PerfettoTrace do
     include PerfettoSnapshot
 
+    def trace_includes?(json_str, test_str)
+      json_str.include?(Base64.encode64(test_str).strip) ||
+        json_str.include?(test_str)
+    end
+
     class PerfettoSchema < GraphQL::Schema
       class BaseObject < GraphQL::Schema::Object
       end
@@ -46,7 +51,7 @@ if testing_rails?
         end
 
         def user
-          dataload_record(::User, object.user_id)
+          dataload_record(::User, object[:user_id])
         end
       end
 
@@ -57,7 +62,7 @@ if testing_rails?
         field :author, "PerfettoSchema::Author"
         field :other_book, Book
         def reviews
-          object.reviews.limit(2)
+          object.reviews.limit(2).map { |r| { stars: r.stars, user_id: r.user } }
         end
 
         def average_review
@@ -104,6 +109,27 @@ if testing_rails?
         field :crash, Int
         def crash
           raise "Crash the query"
+        end
+
+        class SecretInput < GraphQL::Schema::InputObject
+          argument :password, String
+        end
+
+        class SecretThing < GraphQL::Schema::Object
+          field :greeting, String
+        end
+        field :secret_field, SecretThing do
+          argument :cipher, String, required: false
+          argument :password, String, required: false
+          argument :input, [[SecretInput]], required: false
+        end
+
+        def secret_field(cipher: nil, password: nil, input: nil)
+          {
+            greeting: "Hello!",
+            cipher: cipher || "FALLBACK_CIPHER",
+            password: password || (input ? input[0][0][:password] : "FALLBACK_PASSWORD"),
+          }
         end
       end
 
@@ -157,6 +183,81 @@ if testing_rails?
 
 
       check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}.json")
+    end
+
+    it "filters params with Rails.application.config.filter_parameters" do
+      query_str = 'query getStuff { secretField(cipher: "abcdef") { greeting } }'
+      res = PerfettoSchema.execute(query_str)
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert trace_includes?(json, "abcdef")
+      refute trace_includes?(json, "FILTERED")
+
+      if Rails.application.present?
+        prev_fp = Rails.application.config.filter_parameters
+        Rails.application.config.filter_parameters = ["ciph"]
+      else
+        Rails.application = OpenStruct.new(config: OpenStruct.new(filter_parameters: ["ciph"]))
+      end
+      res = PerfettoSchema.execute(query_str)
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      refute trace_includes?(json, "abcdef")
+      assert trace_includes?(json, "FILTERED")
+    ensure
+      if prev_fp
+        Rails.application.config.filter_parameters = prev_fp
+      else
+        Rails.application = nil
+      end
+    end
+
+    it "filters params with ActiveSupport" do
+      query_str = 'query getStuff { secretField(cipher: "abcdef") { greeting } }'
+      res = PerfettoSchema.execute(query_str)
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert trace_includes?(json, "abcdef")
+      refute trace_includes?(json, "FILTERED")
+
+      query_str = 'query getStuff { secretField(cipher: "abcdef") { greeting } }'
+      res = PerfettoSchema.execute(query_str)
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert trace_includes?(json, "abcdef")
+      refute trace_includes?(json, "FILTERED")
+
+      if ActiveSupport.respond_to?(:filter_parameters=)
+        begin
+          prev_fp = ActiveSupport.filter_parameters
+          ActiveSupport.filter_parameters = ["cipher"]
+          res = PerfettoSchema.execute(query_str)
+          json = res.context.query.current_trace.write(file: nil, debug_json: true)
+          refute trace_includes?(json, "abcdef")
+          assert trace_includes?(json, "[FILTERED]")
+
+          ActiveSupport.filter_parameters = ["password"]
+          res = PerfettoSchema.execute('query getStuff { secretField(input: [[{ password: "jklmn" }]]) { greeting } }')
+          json = res.context.query.current_trace.write(file: nil, debug_json: true)
+          assert trace_includes?(json, "password"), "Name is retained"
+          refute trace_includes?(json, "jklmn"), "Value is removed"
+          assert_includes json, "[FILTERED]"
+        ensure
+          ActiveSupport.filter_parameters = prev_fp
+        end
+      end
+    end
+
+    it "filters params without ActiveSupport" do
+      query_str = 'query getStuff { secretField(password: "qrstuv") { greeting } }'
+      res = PerfettoSchema.execute(query_str, context: { detailed_trace_filter: GraphQL::Tracing::PerfettoTrace::ArgumentsFilter.new })
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert trace_includes?(json, "FILTERED"), "The replacement string is present"
+      assert trace_includes?(json, "FALLBACK_CIPHER"), "Unfiltered values are present"
+      refute trace_includes?(json, "qrstuv"), "The password is obscured"
+
+      query_str = 'query getStuff { secretField(input: [[{ password: "lmnop" }]]) { greeting } }'
+      res = PerfettoSchema.execute(query_str, context: { detailed_trace_filter: GraphQL::Tracing::PerfettoTrace::ArgumentsFilter.new })
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert trace_includes?(json, "password"), "Name is retained"
+      refute trace_includes?(json, "lmnop"), "The password is obscured"
+      assert trace_includes?(json, "[FILTERED]"), "The replacement string is present"
     end
 
     it "provides an error when google-protobuf isn't available" do
