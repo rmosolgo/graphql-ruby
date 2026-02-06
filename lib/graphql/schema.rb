@@ -1329,10 +1329,11 @@ module GraphQL
       def type_error(type_error, context)
         case type_error
         when GraphQL::InvalidNullError
-          execution_error = GraphQL::ExecutionError.new(type_error.message, ast_node: type_error.ast_node)
-          execution_error.path = context[:current_path]
+          execution_error = GraphQL::ExecutionError.new(type_error.message, ast_nodes: type_error.ast_nodes)
+          execution_error.path = type_error.path || context[:current_path]
 
           context.errors << execution_error
+          execution_error
         when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
           raise type_error
         when GraphQL::IntegerDecodingError
@@ -1352,6 +1353,24 @@ module GraphQL
 
       def lazy_resolve(lazy_class, value_method)
         lazy_methods.set(lazy_class, value_method)
+      end
+
+      def uses_raw_value?
+        !!@uses_raw_value
+      end
+
+      def uses_raw_value(new_val)
+        @uses_raw_value = new_val
+      end
+
+      def resolves_lazies?
+        lazy_method_count = 0
+        lazy_methods.each do |k, v|
+          if !v.nil?
+            lazy_method_count += 1
+          end
+        end
+        lazy_method_count > 2
       end
 
       def instrument(instrument_step, instrumenter, options = {})

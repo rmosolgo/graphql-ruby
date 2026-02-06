@@ -2,33 +2,42 @@
 require "spec_helper"
 
 describe GraphQL::Schema::IntrospectionSystem do
+
+  def execute_query(...)
+    if TESTING_BATCHING
+      Jazz::Schema.execute_batching(...)
+    else
+      Jazz::Schema.execute(...)
+    end
+  end
+
   describe "custom introspection" do
     it "serves custom fields on types" do
-      res = Jazz::Schema.execute("{ __schema { isJazzy } }")
+      res = execute_query("{ __schema { isJazzy } }")
       assert_equal true, res["data"]["__schema"]["isJazzy"]
     end
 
     it "serves overridden fields on types" do
-      res = Jazz::Schema.execute(%|{ __type(name: "Ensemble") { name } }|)
+      res = execute_query(%|{ __type(name: "Ensemble") { name } }|)
       assert_equal "ENSEMBLE", res["data"]["__type"]["name"]
     end
 
     it "serves custom entry points" do
-      res = Jazz::Schema.execute("{ __classname }", root_value: Set.new)
+      res = execute_query("{ __classname }", root_value: Set.new)
       assert_equal "Set", res["data"]["__classname"]
     end
 
     it "calls authorization methods of those types" do
-      res = Jazz::Schema.execute(%|{ __type(name: "Ensemble") { name } }|)
+      res = execute_query(%|{ __type(name: "Ensemble") { name } }|)
       assert_equal "ENSEMBLE", res["data"]["__type"]["name"]
 
-      unauth_res = Jazz::Schema.execute(%|{ __type(name: "Ensemble") { name } }|, context: { cant_introspect: true })
+      unauth_res = execute_query(%|{ __type(name: "Ensemble") { name } }|, context: { cant_introspect: true, batching_authorizes: true})
       assert_nil unauth_res["data"].fetch("__type")
       assert_equal ["You're not allowed to introspect here"], unauth_res["errors"].map { |e| e["message"] }
     end
 
     it "serves custom dynamic fields" do
-      res = Jazz::Schema.execute("{ nowPlaying { __typename __typenameLength __astNodeClass } }")
+      res = execute_query("{ nowPlaying { __typename __typenameLength __astNodeClass } }", context: { batching_authorizes: true })
       assert_equal "Ensemble", res["data"]["nowPlaying"]["__typename"]
       assert_equal 8, res["data"]["nowPlaying"]["__typenameLength"]
       assert_equal "GraphQL::Language::Nodes::Field", res["data"]["nowPlaying"]["__astNodeClass"]
@@ -46,7 +55,7 @@ describe GraphQL::Schema::IntrospectionSystem do
     end
 
     it "runs the introspection query" do
-      res = Jazz::Schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+      res = execute_query(GraphQL::Introspection::INTROSPECTION_QUERY)
       assert res
       query_type = res["data"]["__schema"]["types"].find { |t| t["name"] == "QUERY" }
       ensembles_field = query_type["fields"].find { |f| f["name"] == "ensembles" }
@@ -55,7 +64,7 @@ describe GraphQL::Schema::IntrospectionSystem do
 
     it "doesn't include invisible union types based on context" do
       context = { hide_ensemble: true }
-      res = Jazz::Schema.execute('{ __type(name: "PerformingAct") { possibleTypes { name } } }', context: context)
+      res = execute_query('{ __type(name: "PerformingAct") { possibleTypes { name } } }', context: context)
 
       assert_equal 1, res["data"]["__type"]["possibleTypes"].length
       assert_equal "MUSICIAN", res["data"]["__type"]["possibleTypes"].first["name"]
@@ -63,68 +72,68 @@ describe GraphQL::Schema::IntrospectionSystem do
 
     it "does not include hidden interfaces by membership based on context" do
       context = { private: false }
-      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
+      res = execute_query('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
 
       assert res["data"]["__type"]["interfaces"].none? { |i| i["name"] == "PRIVATENAMEENTITY" }
     end
 
     it "includes hidden interfaces by membership based on the context" do
       context = { private: true }
-      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
+      res = execute_query('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
 
       assert res["data"]["__type"]["interfaces"].any? { |i| i["name"] == "PRIVATENAMEENTITY" }
     end
 
     it "does not include hidden interfaces by membership based on context" do
       context = { private: false }
-      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
+      res = execute_query('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
 
       assert res["data"]["__type"]["interfaces"].none? { |i| i["name"] == "INVISIBLENAMEENTITY" }
     end
 
     it "includes hidden interfaces by membership based on the context" do
       context = { private: true }
-      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
+      res = execute_query('{ __type(name: "Ensemble") { interfaces { name } } }', context: context)
 
       assert res["data"]["__type"]["interfaces"].any? { |i| i["name"] == "INVISIBLENAMEENTITY" }
     end
 
     it "does not include fields from hidden interfaces by membership based on the context" do
       context = { private: false }
-      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
+      res = execute_query('{ __type(name: "Ensemble") { fields { name } } }', context: context)
 
       assert res["data"]["__type"]["fields"].none? { |i| i["name"] == "privateName" }
     end
 
     it "includes fields from interfaces by membership based on the context" do
       context = { private: true }
-      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
+      res = execute_query('{ __type(name: "Ensemble") { fields { name } } }', context: context)
       assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "privateName" }
     end
 
     it "does not include fields from hidden interfaces based on the context" do
       context = { private: false }
-      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
+      res = execute_query('{ __type(name: "Ensemble") { fields { name } } }', context: context)
 
       assert res["data"]["__type"]["fields"].none? { |i| i["name"] == "invisibleName" }
     end
 
     it "includes fields from interfaces based on the context" do
       context = { private: true }
-      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
+      res = execute_query('{ __type(name: "Ensemble") { fields { name } } }', context: context)
       assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "invisibleName" }
     end
 
     it "includes fields that are defined locally on the object, even when the interface's implementation is private" do
       context = { private: false }
-      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
+      res = execute_query('{ __type(name: "Ensemble") { fields { name } } }', context: context)
       assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "overriddenName" }
     end
 
     it "includes extra types" do
-      res = Jazz::Schema.execute('{ __type(name: "BlogPost") { name } }')
+      res = execute_query('{ __type(name: "BlogPost") { name } }')
       assert_equal "BLOGPOST", res["data"]["__type"]["name"]
-      res2 = Jazz::Schema.execute("{ __schema { types { name } } }")
+      res2 = execute_query("{ __schema { types { name } } }")
       names = res2["data"]["__schema"]["types"].map { |t| t["name"] }
       assert_includes names, "BLOGPOST"
     end

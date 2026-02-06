@@ -917,6 +917,14 @@ module Jazz
     extra_types BlogPost
     use GraphQL::Dataloader
     use GraphQL::Schema::Warden if ADD_WARDEN
+
+
+    def self.resolves_lazies?
+      # This is a shim for GraphQL::Execution::Batching
+      # it uses this method to determine whether to check if it should check `.lazy?`
+      # TODO Better would be opting in with some `use ...` configuration
+      true
+    end
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema

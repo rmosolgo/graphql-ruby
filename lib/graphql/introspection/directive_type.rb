@@ -12,7 +12,7 @@ module GraphQL
       field :name, String, null: false, method: :graphql_name
       field :description, String
       field :locations, [GraphQL::Schema::LateBoundType.new("__DirectiveLocation")], null: false, scope: false
-      field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false, scope: false do
+      field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false, scope: false, resolve_each: :resolve_args do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
       field :on_operation, Boolean, null: false, deprecation_reason: "Use `locations`.", method: :on_operation?
@@ -21,10 +21,14 @@ module GraphQL
 
       field :is_repeatable, Boolean, method: :repeatable?
 
-      def args(include_deprecated:)
-        args = @context.types.arguments(@object)
+      def self.resolve_args(object, context, include_deprecated:)
+        args = context.types.arguments(object)
         args = args.reject(&:deprecation_reason) unless include_deprecated
         args
+      end
+
+      def args(include_deprecated:)
+        self.class.resolve_args(object, context, include_deprecated: include_deprecated)
       end
     end
   end

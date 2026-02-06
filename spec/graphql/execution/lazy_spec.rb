@@ -4,6 +4,10 @@ require "spec_helper"
 describe GraphQL::Execution::Lazy do
   include LazyHelpers
 
+  before do
+    LazyHelpers::SumAll.all.clear
+  end
+
   describe "resolving" do
     it "calls value handlers" do
       res = run_query('{  int(value: 2, plus: 1) }')

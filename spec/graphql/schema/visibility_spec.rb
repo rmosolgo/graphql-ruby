@@ -70,7 +70,11 @@ describe GraphQL::Schema::Visibility do
   end
 
   def exec_query(...)
-    VisSchema.execute(...)
+    if TESTING_BATCHING
+      VisSchema.execute_batching(...)
+    else
+      VisSchema.execute(...)
+    end
   end
 
   describe "top-level schema caches" do

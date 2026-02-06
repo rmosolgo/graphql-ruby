@@ -46,13 +46,15 @@ module GraphQL
       end
 
       # @return [Object] The application object this field is being resolved on
-      attr_reader :object
+      attr_accessor :object
 
       # @return [GraphQL::Query::Context]
       attr_reader :context
 
       # @return [GraphQL::Schema::Field]
       attr_reader :field
+
+      attr_writer :prepared_arguments
 
       def arguments
         @prepared_arguments || raise("Arguments have not been prepared yet, still waiting for #load_arguments to resolve. (Call `.arguments` later in the code.)")

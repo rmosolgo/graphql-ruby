@@ -5,7 +5,15 @@ module GraphQL
   # and the field will resolve to `nil`.
   class ExecutionError < GraphQL::Error
     # @return [GraphQL::Language::Nodes::Field] the field where the error occurred
-    attr_accessor :ast_node
+    def ast_node
+      ast_nodes.first
+    end
+
+    def ast_node=(new_node)
+      @ast_nodes = [new_node]
+    end
+
+    attr_accessor :ast_nodes
 
     # @return [String] an array describing the JSON-path into the execution
     # response which corresponds to this error.
@@ -21,8 +29,8 @@ module GraphQL
     # under the `extensions` key.
     attr_accessor :extensions
 
-    def initialize(message, ast_node: nil, options: nil, extensions: nil)
-      @ast_node = ast_node
+    def initialize(message, ast_node: nil, ast_nodes: nil, options: nil, extensions: nil)
+      @ast_nodes = ast_nodes || [ast_node]
       @options = options
       @extensions = extensions
       super(message)
@@ -34,12 +42,7 @@ module GraphQL
         "message" => message,
       }
       if ast_node
-        hash["locations"] = [
-          {
-            "line" => ast_node.line,
-            "column" => ast_node.col,
-          }
-        ]
+        hash["locations"] = @ast_nodes.map { |a| { "line" => a.line, "column" => a.col } }
       end
       if path
         hash["path"] = path

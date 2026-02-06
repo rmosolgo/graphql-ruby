@@ -167,7 +167,11 @@ module ConnectionAssertions
   def self.included(child_module)
     child_module.class_exec do
       def exec_query(query_str, variables)
-        schema.execute(query_str, variables: variables)
+        if TESTING_BATCHING
+          schema.execute_batching(query_str, variables: variables)
+        else
+          schema.execute(query_str, variables: variables)
+        end
       end
 
       def get_page_info(result, page_info_field)

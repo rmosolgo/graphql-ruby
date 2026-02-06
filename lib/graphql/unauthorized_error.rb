@@ -19,11 +19,14 @@ module GraphQL
         raise ArgumentError, "#{self.class.name} requires either a message or keywords"
       end
 
+      @path = nil
       @object = object
       @type = type
       @context = context
       message ||= "An instance of #{object.class} failed #{type.graphql_name}'s authorization check"
       super(message)
     end
+
+    attr_accessor :path
   end
 end

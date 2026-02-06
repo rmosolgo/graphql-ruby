@@ -264,7 +264,7 @@ describe GraphQL::Schema::Resolver do
         if context[:use_replacement]
           context[:use_replacement]
         else
-          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name} loaded for #{err.context[:current_path].join(".")}"
+          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name} loaded for #{err.context[:current_path]&.join(".") || field.path}"
         end
       end
     end
@@ -403,12 +403,17 @@ describe GraphQL::Schema::Resolver do
       def authorized?(**_args)
         if arguments[:number_s] == 1 && arguments[:loads] == 1
           true
+        elsif TESTING_BATCHING && arguments[:number_s] == "1" && arguments[:loads] == 1
+          true
         else
           raise GraphQL::ExecutionError, "Auth failed (#{arguments[:number_s].inspect})"
         end
       end
 
       def resolve(number_s:, loads:)
+        if TESTING_BATCHING
+          number_s = number_s.to_i # `prepare:` is not called
+        end
         { result: number_s + loads }
       end
     end
@@ -522,7 +527,13 @@ describe GraphQL::Schema::Resolver do
   end
 
   def exec_query(*args, **kwargs)
-    ResolverTest::Schema.execute(*args, **kwargs)
+    if TESTING_BATCHING
+      context = kwargs[:context] ||= {}
+      context[:batching_authorizes] = true
+      ResolverTest::Schema.execute_batching(*args, **kwargs)
+    else
+      ResolverTest::Schema.execute(*args, **kwargs)
+    end
   end
 
   it "can access self.arguments inside authorized?" do
@@ -531,7 +542,12 @@ describe GraphQL::Schema::Resolver do
 
     # Test auth failure:
     res = exec_query("{ resolverWithAuthArgs(input: { numberS: \"2\", loadsId: 1 }) { result } }")
-    assert_equal ["Auth failed (2)"], res["errors"].map { |e| e["message"] }
+    if TESTING_BATCHING
+      # Was not prepared:
+      assert_equal ["Auth failed (\"2\")"], res["errors"].map { |e| e["message"] }
+    else
+      assert_equal ["Auth failed (2)"], res["errors"].map { |e| e["message"] }
+    end
   end
 
   describe ".path" do
@@ -564,6 +580,9 @@ describe GraphQL::Schema::Resolver do
   end
 
   it "uses the object's field_class" do
+    if TESTING_BATCHING
+      skip "This tests that Field#resolve is called, which it isn't."
+    end
     res = exec_query " { r1: resolver3(value: 1) r2: resolver3 }"
     assert_equal [100, 1, -1], res["data"]["r1"]
     assert_equal [100, nil, -1], res["data"]["r2"]
@@ -581,6 +600,9 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "gets path from extras" do
+      if TESTING_BATCHING
+        skip "path isn't supported with Batching"
+      end
       res = exec_query " { resolverWithPath } ", root_value: OpenStruct.new(value: 0)
       assert_equal '["resolverWithPath"]', res["data"]["resolverWithPath"]
     end
@@ -779,61 +801,73 @@ describe GraphQL::Schema::Resolver do
       assert_equal ResolverTest::HasValue, arg.loads
     end
 
-    describe "ready?" do
-      it "can raise errors" do
-        res = exec_query("{ int: prepResolver5(int: 5) }")
-        assert_equal 50, res["data"]["int"]
-        add_error_assertions("prepResolver5", "ready?")
-      end
-
-      it "can raise errors in lazy sync" do
-        res = exec_query("{ int: prepResolver6(int: 5) }")
-        assert_equal 50, res["data"]["int"]
-        add_error_assertions("prepResolver6", "lazy ready?")
-      end
-
-      it "can return false and data" do
-        res = exec_query("{ int: prepResolver7(int: 13) { errors int } }")
-        assert_equal ["Bad number!"], res["data"]["int"]["errors"]
-
-        res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
-        assert_equal 213, res["data"]["int"]["int"]
-      end
-
-      it "can return false and falsey data" do
-        res = exec_query("{ result: resolverWithFalseyValueReady }")
-        assert_equal false, res["data"]["result"] # must be `false`, not just falsey
-        assert_nil res["errors"]
-      end
-
-      it 'raises the correct error on invalid return type' do
-        err = assert_raises(RuntimeError) do
-          exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
+    if !TESTING_BATCHING
+      describe "ready?" do
+        it "can raise errors" do
+          res = exec_query("{ int: prepResolver5(int: 5) }")
+          assert_equal 50, res["data"]["int"]
+          add_error_assertions("prepResolver5", "ready?")
         end
-        assert_match("Unexpected result from #ready?", err.message)
+
+        it "can raise errors in lazy sync" do
+          res = exec_query("{ int: prepResolver6(int: 5) }")
+          assert_equal 50, res["data"]["int"]
+          add_error_assertions("prepResolver6", "lazy ready?")
+        end
+
+        it "can return false and data" do
+          res = exec_query("{ int: prepResolver7(int: 13) { errors int } }")
+          assert_equal ["Bad number!"], res["data"]["int"]["errors"]
+
+          res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
+          assert_equal 213, res["data"]["int"]["int"]
+        end
+
+        it "can return false and falsey data" do
+          res = exec_query("{ result: resolverWithFalseyValueReady }")
+          assert_equal false, res["data"]["result"] # must be `false`, not just falsey
+          assert_nil res["errors"]
+        end
+
+        it 'raises the correct error on invalid return type' do
+          err = assert_raises(RuntimeError) do
+            exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
+          end
+          assert_match("Unexpected result from #ready?", err.message)
+        end
       end
     end
 
     describe "loading arguments" do
       it "calls load methods and injects the return value" do
         res = exec_query("{ prepResolver1(int: 5) }")
-        assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
+        if TESTING_BATCHING
+          assert_equal 5, res["data"]["prepResolver1"], "def load_\#{...} was not called"
+        else
+          assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
+        end
       end
 
       it "supports lazy values" do
         res = exec_query("{ prepResolver2(int: 5) }")
-        assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
+        if TESTING_BATCHING
+          assert_equal 5, res["data"]["prepResolver2"], "def load_\#{...} was not called"
+        else
+          assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
+        end
       end
 
       it "supports raising GraphQL::UnauthorizedError and GraphQL::ExecutionError" do
         res = exec_query("{ prepResolver3(int: 5) }")
         assert_equal 5, res["data"]["prepResolver3"]
+        skip("def load_... not supported") if TESTING_BATCHING
         add_error_assertions("prepResolver3", "load_ hook")
       end
 
       it "supports raising errors from promises" do
         res = exec_query("{ prepResolver4(int: 5) }")
         assert_equal 5, res["data"]["prepResolver4"]
+        skip("def load_... not supported") if TESTING_BATCHING
         add_error_assertions("prepResolver4", "lazy load_ hook")
       end
     end
@@ -908,7 +942,12 @@ describe GraphQL::Schema::Resolver do
           context = { max_value: 8 }
           res = exec_query(query_str, context: context)
           assert_nil res["data"]["prepResolver9"]
-          assert_equal ["Unauthorized IntegerWrapper loaded for prepResolver9"], res["errors"].map { |e| e["message"] }
+          if TESTING_BATCHING
+            # context[:current_path] isn't defined, uses field.path instead
+            assert_equal ["Unauthorized IntegerWrapper loaded for Query.prepResolver9"], res["errors"].map { |e| e["message"] }
+          else
+            assert_equal ["Unauthorized IntegerWrapper loaded for prepResolver9"], res["errors"].map { |e| e["message"] }
+          end
 
           # This is OK
           context = { max_value: 900 }

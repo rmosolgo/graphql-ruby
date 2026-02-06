@@ -194,6 +194,10 @@ module LazyHelpers
   end
 
   def run_query(query_str, **rest)
-    LazySchema.execute(query_str, **rest)
+    if TESTING_BATCHING
+      LazySchema.execute_batching(query_str, **rest)
+    else
+      LazySchema.execute(query_str, **rest)
+    end
   end
 end
