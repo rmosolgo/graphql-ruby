@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require_relative "./installable"
 module Graphql
   class Dashboard < Rails::Engine
     module Subscriptions
@@ -6,7 +7,7 @@ module Graphql
         include Installable
 
         def feature_installed?
-          schema_class.subscriptions.is_a?(GraphQL::Pro::Subscriptions)
+          defined?(GraphQL::Pro::Subscriptions) && schema_class.subscriptions.is_a?(GraphQL::Pro::Subscriptions)
         end
 
         INSTALLABLE_COMPONENT_HEADER_HTML = "GraphQL-Pro Subscriptions aren't installed on this schema yet.".html_safe
