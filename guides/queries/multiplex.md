@@ -8,7 +8,7 @@ desc: Run multiple queries concurrently
 index: 10
 ---
 
-Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/)). You can execute them concurrently with {{ "Schema#multiplex" | api_doc }}.
+Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/)). You can execute them concurrently with {{ "Schema.multiplex" | api_doc }}.
 
 Multiplex runs have their own context, analyzers and instrumentation.
 
@@ -41,7 +41,7 @@ queries = [
 ]
 ```
 
-Then, pass them to `Schema#multiplex`:
+Then, pass them to `Schema.multiplex`:
 
 ```ruby
 results = MySchema.multiplex(queries)
