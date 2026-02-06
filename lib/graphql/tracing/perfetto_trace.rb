@@ -682,7 +682,7 @@ module GraphQL
         when GraphQL::Schema::InputObject
           payload_to_debug(k, v.to_h, iid: iid, intern_value: intern_value)
         else
-          class_name_iid = @interned_da_string_values[v.class.name]
+          class_name_iid = @interned_da_string_values[(v.class.name || "(anonymous)")]
           da = [
             debug_annotation(DA_DEBUG_INSPECT_CLASS_IID, :string_value_iid, class_name_iid),
           ]
