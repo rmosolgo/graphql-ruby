@@ -39,6 +39,10 @@ module Graphql
     autoload :ApplicationController, "graphql/dashboard/application_controller"
     autoload :LandingsController, "graphql/dashboard/landings_controller"
     autoload :StaticsController, "graphql/dashboard/statics_controller"
+    autoload :DetailedTraces, "graphql/dashboard/detailed_traces"
+    autoload :Subscriptions, "graphql/dashboard/subscriptions"
+    autoload :OperationStore, "graphql/dashboard/operation_store"
+    autoload :Limiters, "graphql/dashboard/limiters"
 
     routes do
       root "landings#show"
@@ -82,20 +86,11 @@ module Graphql
         resources :subscriptions, only: [:show], constraints: { id: /[a-zA-Z0-9\-]+/ }
         post "/subscriptions/clear_all", to: "subscriptions#clear_all", as: :clear_all
       end
-
-      ApplicationController.include(Dashboard.routes.url_helpers)
     end
   end
 end
-
-require 'graphql/dashboard/detailed_traces'
-require 'graphql/dashboard/limiters'
-require 'graphql/dashboard/operation_store'
-require 'graphql/dashboard/subscriptions'
 
 # Rails expects the engine to be called `Graphql::Dashboard`,
 # but `GraphQL::Dashboard` is consistent with this gem's naming.
 # So define both constants to refer to the same class.
 GraphQL::Dashboard = Graphql::Dashboard
-
-ActiveSupport.run_load_hooks(:graphql_dashboard_application_controller, GraphQL::Dashboard::ApplicationController)

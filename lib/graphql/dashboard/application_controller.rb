@@ -37,3 +37,5 @@ module Graphql
     end
   end
 end
+
+ActiveSupport.run_load_hooks(:graphql_dashboard_application_controller, GraphQL::Dashboard::ApplicationController)
