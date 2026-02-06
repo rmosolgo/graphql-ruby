@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+require "graphql/migrate_execution"
+require "optparse"
+
+doctor_options = {}
+parser = OptionParser.new
+parser.on("-p", "--preview", "Preview migration strategies")
+parser.parse!(into: doctor_options)
+filename = ARGV.shift || raise(ArgumentError, "graphql-execution-doctor require a filename or path as a first argument, please pass one.")
+
+doctor = GraphQL::MigrateExecution.new(filename, **doctor_options)
+doctor.run
