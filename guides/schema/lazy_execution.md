@@ -11,7 +11,7 @@ index: 4
 With lazy execution, you can optimize access to external services (such as databases) by making batched calls. Building a lazy loader has three steps:
 
 - Define a lazy-loading class with _one_ method for loading & returning a value
-- Connect it to your schema with {{ "GraphQL::Schema#lazy_resolve" | api_doc }}
+- Connect it to your schema with {{ "GraphQL::Schema.lazy_resolve" | api_doc }}
 - In `resolve` methods, return instances of the lazy-loading class
 
 ## Example: Batched Find

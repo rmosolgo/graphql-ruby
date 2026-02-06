@@ -3,7 +3,9 @@
   <head>
     <title>Dummy</title>
     <%= csrf_meta_tags %>
-    <%= javascript_include_tag 'application' %>
+    <%=
+      javascript_include_tag 'application', host: "" # work around config.asset_host which is set to test dashboard
+    %>
   </head>
 
   <body>

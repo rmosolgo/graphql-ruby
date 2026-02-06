@@ -107,6 +107,13 @@ if testing_rails?
       t.integer :points, null: false
       t.decimal :rating, null: false
     end
+
+    create_table :graphql_detailed_traces, force: true do |t|
+      t.bigint :begin_ms
+      t.float :duration_ms
+      t.binary :trace_data
+      t.string :operation_name
+    end
   end
 
   class Food < ActiveRecord::Base
