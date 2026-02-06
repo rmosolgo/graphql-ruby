@@ -26,7 +26,7 @@ allow_listed_constants = [
 ]
 
 puts
-if autoloaded_constants.reject! { _1.first.in?(allow_listed_constants) }.any?
+if !autoloaded_constants.reject! { _1.first.in?(allow_listed_constants) }.nil?
   puts
   puts "ERROR: Autoloaded constants were referenced during during boot."
   puts
