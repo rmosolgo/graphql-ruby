@@ -118,6 +118,7 @@ if testing_rails?
         class SecretThing < GraphQL::Schema::Object
           field :greeting, String
         end
+
         field :secret_field, SecretThing do
           argument :cipher, String, required: false
           argument :password, String, required: false
@@ -128,6 +129,7 @@ if testing_rails?
           {
             greeting: "Hello!",
             cipher: cipher || "FALLBACK_CIPHER",
+            anon: Class.new.new,
             password: password || (input ? input[0][0][:password] : "FALLBACK_PASSWORD"),
           }
         end
@@ -183,6 +185,13 @@ if testing_rails?
 
 
       check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}.json")
+    end
+
+    it "replaces nil class name with (anonymous)" do
+      query_str = 'query getStuff { secretField { greeting } }'
+      res = PerfettoSchema.execute(query_str)
+      json = res.context.query.current_trace.write(file: nil, debug_json: true)
+      assert trace_includes?(json, "(anonymous)")
     end
 
     it "filters params with Rails.application.config.filter_parameters" do
