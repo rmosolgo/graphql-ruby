@@ -150,6 +150,9 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
       expected_plugins = [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions]
+      if TESTING_BATCHING
+        expected_plugins.unshift(GraphQL::Execution::Batching)
+      end
       if GraphQL::Schema.use_visibility_profile?
         expected_plugins.unshift(GraphQL::Schema::Visibility)
       end
