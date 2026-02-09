@@ -76,6 +76,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
       expected_plugins = [
         (GraphQL::Schema.use_visibility_profile? ? GraphQL::Schema::Visibility : nil),
+        (TESTING_BATCHING ? GraphQL::Execution::Batching : nil),
         GraphQL::Backtrace,
         GraphQL::Subscriptions::ActionCableSubscriptions
       ].compact
