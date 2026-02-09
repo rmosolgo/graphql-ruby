@@ -43,6 +43,7 @@ class ErrorResultFormatterTest < Minitest::Test
 
   def exec_test(schema_str, query_str, data)
     schema = GraphQL::Schema.from_definition(schema_str, default_resolve: DefaultResolve)
+    schema.use(GraphQL::Execution::Batching)
     schema.execute_batching(query_str, root_value: data)
   end
 
