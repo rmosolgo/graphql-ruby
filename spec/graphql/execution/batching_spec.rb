@@ -54,6 +54,8 @@ describe "Batching Execution" do
       def self.resolve_plant_count(objects, context)
         objects.species.length.to_f # let it be coerced to int
       end
+
+      field :first_species_name, String, dig: [:species, 0, :name]
     end
 
     class Thing < GraphQL::Schema::Union
@@ -229,6 +231,20 @@ describe "Batching Execution" do
       "c4" => {"name" => "Cucumber"}
     } }
     assert_equal expected_result, result
+  end
+
+  it "runs dig" do
+    result = run_next("{ families { firstSpeciesName } }")
+    expected_result = {
+      "data" => {
+        "families" => [
+          {"firstSpeciesName" => "Snow Pea"},
+          {"firstSpeciesName" => "Tomato"},
+          {"firstSpeciesName" => "Cucumber"}
+        ]
+      }
+    }
+    assert_graphql_equal(expected_result, result)
   end
 
   it "does scalar coercion" do
