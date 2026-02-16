@@ -103,4 +103,38 @@ NotImplemented (1):
     TXT
     assert_equal(expected_msg, message)
   end
+
+
+  it "analyzes dataloader usage" do
+    path = "spec/graphql/migrate_execution/fixtures/dataload.rb"
+    source = File.read(path)
+    message = GraphQL::MigrateExecution::Analyze.new(OpenStruct.new, path, source).run
+    expected_msg = <<~TXT.chomp
+Found 6 field definitions:
+
+DataloaderAssociation (1):
+  These fields can use a `dataload_association:` option.
+
+  - Something.dataload_assoc   (:type_instance_method -> :dataload_assoc) @ spec/graphql/migrate_execution/fixtures/dataload.rb:6
+
+DataloadAll (2):
+  These fields can use a `dataload:` option.
+
+  - Something.dataload_object_1   (:type_instance_method -> :dataload_object_1) @ spec/graphql/migrate_execution/fixtures/dataload.rb:12
+  - Something.dataload_object_2   (:type_instance_method -> :dataload_object_2) @ spec/graphql/migrate_execution/fixtures/dataload.rb:18
+
+DataloaderBatch (2):
+  These fields can be rewritten to dataload in a `resolve_batch:` method.
+
+  - Something.dataload_rec     (:type_instance_method -> :dataload_rec) @ spec/graphql/migrate_execution/fixtures/dataload.rb:24
+  - Something.dataload_rec_2   (:type_instance_method -> :dataload_rec_2) @ spec/graphql/migrate_execution/fixtures/dataload.rb:30
+
+DataloaderManual (1):
+  These fields use Dataloader in a way that can't be automatically migrated. You'll have to migrate them manually.
+  If you have a lot of these, consider opening up an issue on GraphQL-Ruby -- maybe we can find a way to programmatically support them.
+
+  - Something.dataload_complicated   (:type_instance_method -> :dataload_complicated) @ spec/graphql/migrate_execution/fixtures/dataload.rb:36
+    TXT
+    assert_equal(expected_msg, message)
+  end
 end

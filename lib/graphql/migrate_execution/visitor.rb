@@ -77,13 +77,19 @@ module GraphQL
         elsif @current_resolver_method
           if node.receiver.nil? || node.receiver.is_a?(Prism::SelfNode)
             @current_resolver_method.self_sends.add(node.name)
-            if node.name == :object
+            case node.name
+            when :object
               @current_resolver_method.calls_object = true
-            elsif node.name == :context
+            when :context
               @current_resolver_method.calls_context = true
-            elsif node.name == :class
+            when :class
               @current_resolver_method.calls_class = true
             end
+          end
+
+          case node.name
+          when :dataloader, :dataload, :dataload_association, :dataload_record, :dataload_all
+            @current_resolver_method.calls_dataloader = true
           end
         end
         super
@@ -97,6 +103,20 @@ module GraphQL
         if node.receiver.nil?
           td = @type_definition_stack.last
           @current_resolver_method = td.resolver_method(node.name, node)
+        end
+
+        body = node.body.body
+        if body.length == 1 && (call_node = body.first).is_a?(Prism::CallNode)
+          case call_node.name
+          when :load, :request, :load_all, :request_all
+            if (call_node2 = call_node.receiver).is_a?(Prism::CallNode) && call_node2.name == :with
+              @current_resolver_method.dataloader_call = true
+            end
+          when :dataload_record, :dataload_association, :dataload
+            @current_resolver_method.dataloader_call = true
+          else
+            # not a single dataloader call
+          end
         end
         super
       ensure

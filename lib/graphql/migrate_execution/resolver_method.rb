@@ -15,11 +15,15 @@ module GraphQL
         @calls_object = false
         @calls_context = false
         @calls_class = false
+        @calls_dataloader = false
+        @dataloader_call = false
       end
 
       attr_reader :name, :node, :parameter_names, :self_sends
 
-      attr_accessor :calls_object, :calls_context, :calls_class # TODO dataloader, others?
+      attr_accessor :calls_object, :calls_context, :calls_class, :calls_dataloader
+
+      attr_accessor :dataloader_call
 
       def source
         node.location.slice_lines
@@ -33,10 +37,11 @@ module GraphQL
         if @calls_object
           calls_to_self.delete(:object)
         end
-        # These will be migrated to context:
+
         calls_to_self.delete(:dataloader)
         calls_to_self.delete(:dataload_association)
         calls_to_self.delete(:dataload_record)
+        calls_to_self.delete(:dataload)
 
         # Global-ish methods:
         calls_to_self.delete(:raise)
@@ -45,7 +50,23 @@ module GraphQL
         calls_to_self -= @parameter_names
 
         if calls_to_self.empty?
-          if calls_object
+          if calls_dataloader
+            if !dataloader_call
+              return DataloaderManual
+            end
+
+            call_node = node.body.body.first
+            case call_node.name
+            when :load, :request, :dataload
+              DataloadAll
+            when :load_all, :request_all, :dataload_record
+              DataloaderBatch
+            when :dataload_association
+              DataloaderAssociation
+            else
+              DataloaderManual
+            end
+          elsif calls_object
             ResolveEach
           else
             ResolveStatic
