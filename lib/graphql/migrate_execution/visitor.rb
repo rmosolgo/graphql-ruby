@@ -2,16 +2,13 @@
 module GraphQL
   class MigrateExecution
     class Visitor < Prism::Visitor
-      def initialize(source)
+      def initialize(source, type_definitions)
         @source = source
-        @new_source = source.dup
-        @type_definitions = Hash.new { |h, k| h[k] = TypeDefinition.new(k) }
+        @type_definitions = type_definitions
         @type_definition_stack = []
         @current_field_definition = nil
         @current_resolver_method = nil
       end
-
-      attr_reader :new_source, :type_definitions
 
       def visit_class_node(node)
         if node.superclass
@@ -39,19 +36,26 @@ module GraphQL
             if assoc.key.is_a?(Prism::SymbolNode)
               case assoc.key.unescaped
               when "hash_key"
-                @current_field_definition.resolve_mode = :hash_key
+                @current_field_definition.resolve_mode ||= :hash_key
                 @current_field_definition.hash_key = get_keyword_value(assoc.value)
               when "resolver"
-                @current_field_definition.resolve_mode = :resolver
+                @current_field_definition.resolve_mode ||= :resolver
                 @current_field_definition.resolver = get_keyword_value(assoc.value)
               when "method"
-                @current_field_definition.resolve_mode = :object_direct_method
+                @current_field_definition.resolve_mode ||= :object_direct_method
                 @current_field_definition.object_direct_method = get_keyword_value(assoc.value)
               when "resolver_method"
-                @current_field_definition.resolve_mode = :type_instance_method
+                @current_field_definition.resolve_mode ||= :type_instance_method
                 @current_field_definition.type_instance_method = get_keyword_value(assoc.value)
+              when "dig"
+                @current_field_definition.resolve_mode ||= :dig
+                @current_field_definition.dig = get_keyword_value(assoc.value)
+              when "resolve_each", "resolve_static", "resolve_batch"
+                # These should override any other keywords that are discovered
+                @current_field_definition.resolve_mode = :already_migrated
+                @current_field_definition.already_migrated = { assoc.key.unescaped.to_sym => get_keyword_value(assoc.value) }
               else
-                # fallback_value, dig, connection, extensions, extras
+                # fallback_value,  connection, extensions, extras, resolver, mutation, subscription
                 @current_field_definition.unknown_options << assoc.key.unescaped
               end
             end
@@ -62,15 +66,13 @@ module GraphQL
 
       def visit_call_node(node)
         if node.receiver.nil? && node.name == :field
-          begin
-            first_arg = node.arguments.arguments.first # rubocop:disable Development/ContextIsPassedCop
-            if first_arg.is_a?(Prism::SymbolNode)
-              field_name = first_arg.unescaped
-              td = @type_definition_stack.last
-              @current_field_definition = td.field_definition(field_name, node)
-            else
-              puts "Skipping unrecognized field definition: #{node.inspect}"
-            end
+          first_arg = node.arguments.arguments.first # rubocop:disable Development/ContextIsPassedCop
+          if first_arg.is_a?(Prism::SymbolNode)
+            field_name = first_arg.unescaped
+            td = @type_definition_stack.last
+            @current_field_definition = td.field_definition(field_name, node)
+          else
+            warn "GraphQL-Ruby warning: Skipping unrecognized field definition: #{node.inspect}"
           end
         elsif @current_resolver_method
           if node.receiver.nil? || node.receiver.is_a?(Prism::SelfNode)
@@ -78,7 +80,9 @@ module GraphQL
             if node.name == :object
               @current_resolver_method.calls_object = true
             elsif node.name == :context
-              @current_resolver_method.calls_object = true
+              @current_resolver_method.calls_context = true
+            elsif node.name == :class
+              @current_resolver_method.calls_class = true
             end
           end
         end
@@ -115,9 +119,13 @@ module GraphQL
         when Prism::FalseNode
           false
         when Prism::ConstantReadNode
-          value_node.name
+          value_node.name.name
+        when Prism::ConstantPathNode
+          "#{get_keyword_value(value_node.parent)}::#{value_node.name}"
         when Prism::CallNode
           :DYNAMIC_CALL_NODE
+        when Prism::ArrayNode
+          value_node.elements.map { |n| get_keyword_value(n) }
         else
           # nil, constants, `self` ...?
           raise ArgumentError, "GraphQL-MigrateExecution can't parse this keyword argument yet, but it could. Please open an issue on GraphQL-Ruby with this error message (node class: #{value_node.class})\n\n#{value_node.inspect}"

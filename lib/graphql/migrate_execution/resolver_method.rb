@@ -14,11 +14,16 @@ module GraphQL
         @self_sends = Set.new
         @calls_object = false
         @calls_context = false
+        @calls_class = false
       end
 
       attr_reader :name, :node, :parameter_names, :self_sends
 
-      attr_accessor :calls_object, :calls_context # TODO dataloader, others?
+      attr_accessor :calls_object, :calls_context, :calls_class # TODO dataloader, others?
+
+      def source
+        node.location.slice_lines
+      end
 
       def migration_strategy
         calls_to_self = self_sends.to_a
@@ -41,18 +46,13 @@ module GraphQL
 
         if calls_to_self.empty?
           if calls_object
-            :RESOLVE_EACH
+            ResolveEach
           else
-            :STATIC_RESOLVE
+            ResolveStatic
           end
         else
-          :TODO
+          NotImplemented
         end
-      end
-      private
-
-      def calls_to_self
-
       end
     end
   end
