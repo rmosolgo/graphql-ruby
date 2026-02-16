@@ -83,7 +83,7 @@ describe GraphQL::Testing::Helpers do
 
     class AuthorizedObject < GraphQL::Schema::Object
       def self.authorized?(object, context)
-        context.dataloader.with(BillSource).load(object)[:amount] > 5
+        context.dataload(BillSource, object)[:amount] > 5
       end
 
       field :id, ID

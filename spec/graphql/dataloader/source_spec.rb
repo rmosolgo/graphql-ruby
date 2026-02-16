@@ -87,7 +87,7 @@ describe GraphQL::Dataloader::Source do
       end
 
       def thing(id:)
-        context.dataloader.with(ThingSource).load(id)
+        context.dataload(ThingSource, id)
       end
     end
     query(Query)
