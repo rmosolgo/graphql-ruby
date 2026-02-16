@@ -44,5 +44,18 @@ if testing_rails?
       assert_equal 9, example.dataload(PlusSource, 4)
       assert_equal 5, example.dataload(PlusSource, 5)
     end
+
+    it_dataloads "calls any source with dataload_all" do |d|
+      example = DataloaderExample.new(d)
+      r1 = d.with(PlusSource).request(3)
+      assert_equal [8, 8], example.dataload_all(PlusSource, [4,1])
+
+      r2 = d.with(PlusSource).request(5)
+      # 3 was previously loaded above, it gets a value from the cache:
+      assert_equal [8, 7], example.dataload_all(PlusSource, [3, 2])
+
+      assert_equal 8, r1.load
+      assert_equal 7, r2.load
+    end
   end
 end
