@@ -2,7 +2,8 @@
 module GraphQL
   class MigrateExecution
     class Action
-      def initialize(path, source)
+      def initialize(migration, path, source)
+        @migration = migration
         @path = path
         @source = source
         @type_definitions = Hash.new { |h, k| h[k] = TypeDefinition.new(k) }

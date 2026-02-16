@@ -19,13 +19,16 @@ require "graphql/migrate_execution/not_implemented"
 
 module GraphQL
   class MigrateExecution
-    def initialize(filepath)
+    def initialize(filepath, skip_description: false)
       @filepath = filepath
+      @skip_description = skip_description
     end
+
+    attr_reader :skip_description
 
     def run
       source = File.read(@filepath)
-      file_migrate = Analyze.new(@filepath, source)
+      file_migrate = Analyze.new(self, @filepath, source)
       puts file_migrate.run
     end
   end

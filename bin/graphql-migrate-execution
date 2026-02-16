@@ -5,7 +5,7 @@ require "optparse"
 
 doctor_options = {}
 parser = OptionParser.new
-parser.on("-p", "--preview", "Preview migration strategies")
+parser.on("--skip-description", "Don't print migration strategy descriptions")
 parser.parse!(into: doctor_options)
 filename = ARGV.shift || begin
   warn "graphql-migrate-execution requires a filename or path as a first argument, please pass one."

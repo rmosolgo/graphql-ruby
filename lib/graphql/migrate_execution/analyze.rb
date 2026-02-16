@@ -6,8 +6,11 @@ module GraphQL
         super
         message = "Found #{@total_field_definitions} field definitions:".dup
 
-        @field_definitions_by_strategy.each do |strategy, definitions|
-          message << "\n\n#{strategy.name.split("::").last} (#{definitions.size}):"
+        @field_definitions_by_strategy.each do |strategy_class, definitions|
+          message << "\n\n#{strategy_class.name.split("::").last} (#{definitions.size}):"
+          if !@migration.skip_description
+            message << "\n#{strategy_class::DESCRIPTION.split("\n").map { |l| l.length > 0 ? "  #{l}" : l }.join("\n")}\n"
+          end
           max_path = definitions.map { |f| f.path.size }.max + 2
           definitions.each do |field_defn|
             name = field_defn.path.ljust(max_path)
