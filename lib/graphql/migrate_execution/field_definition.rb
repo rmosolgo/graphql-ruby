@@ -90,7 +90,7 @@ module GraphQL
       end
 
       def check_for_resolver_method
-        if resolve_mode.nil? && (rm = resolver_method)
+        if resolve_mode.nil? && (resolver_method)
           @resolve_mode = :type_instance_method
           @type_instance_method = @name
         end
