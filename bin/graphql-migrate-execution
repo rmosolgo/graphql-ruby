@@ -9,7 +9,7 @@ parser.on("-p", "--preview", "Preview migration strategies")
 parser.parse!(into: doctor_options)
 filename = ARGV.shift || begin
   warn "graphql-migrate-execution requires a filename or path as a first argument, please pass one."
-  exit 0
+  exit 1
 end
 
 doctor = GraphQL::MigrateExecution.new(filename, **doctor_options)
