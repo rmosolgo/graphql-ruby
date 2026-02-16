@@ -5,6 +5,7 @@ search: true
 section: Execution
 title: New Execution Module
 desc: Background on GraphQL-Ruby's new execution approach
+published: false
 index: 1
 ---
 
@@ -36,7 +37,7 @@ The downside is that many of GraphQL-Ruby's "bonus features" -- beyond the behav
 
 Batching execution is enabled with two steps:
 
-- Require the code (it's loaded by default): `require "graphql/execution/batching"`
+- Require the code (it's not loaded by default): `require "graphql/execution/batching"`
 - Call `MySchema.execute_batching(...)` instead of `MySchema.execute(...)`. It takes the same arguments.
 
 See compatibility notes for getting queries to run properly.
