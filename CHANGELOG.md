@@ -1300,6 +1300,76 @@ Oops, this version was accidentally released to RubyGems as "2.10.0". I yanked i
 - __None, ideally.__ If you have an application that ran without warnings on v1.13, you should be able to update to 2.0.0 without a hitch. If this isn't the case, please [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md&title=[2.0%20update]%20describe%20your%20problem) and let me know what happened! I plan to maintain 1.13 for a while in order to ensure a smooth transition.
 - But, many legacy code components were removed, so if there are any more references to those, there will be name errors! See #3729 for a list of removed components.
 
+# 1.13.25 (24 March 2025)
+
+The commits in this version have not been classified (breaking/non-breaking) yet. Contributions welcome.
+
+```
+e2fcb243de Robe..olgo 2025-03-24 07:07:00 -0400  (HEAD, tag: v1.13.25, upstream/1.13.x) 1.13.25
+818ec08c7f Robe..olgo 2025-03-24 07:05:18 -0400  Merge pull request #5294 from rmosolgo/1.13.x-connection-limit-fix
+db151a9566 Rong..Teng 2022-06-17 11:17:56 +0800  Fix RelationConnections when relation already has limit
+```
+
+# 1.13.24 (12 March 2025)
+
+The commits in this version have not been classified (breaking/non-breaking) yet. Contributions welcome.
+
+```
+887193770b Robe..olgo 2025-03-12 14:09:30 -0400  (HEAD, tag: v1.13.24) 1.13.24
+6eca16b9fa Robe..olgo 2025-03-12 14:00:35 -0400  Merge commit from fork
+54d98a621c Robe..olgo 2025-03-05 15:57:56 -0500  1.13.24
+f8067d1e0e Robe..olgo 2025-03-03 12:50:19 -0500  Fix method generation
+82c759dcd6 Robe..olgo 2025-03-03 12:39:08 -0500  Disable development NoEvalCop for load-time eval calls
+8cb0d836de Robe..olgo 2025-03-03 12:13:26 -0500  Update benchmark to use input objects and measure retained memory
+493cfa3795 Robe..olgo 2025-03-03 12:08:49 -0500  Add a cop to catch _eval usage, update all block calls to use _exec instead
+adff18a6d4 Robe..olgo 2025-03-03 11:44:17 -0500  Apply NameValidator to fields and arguments
+```
+
+# 1.13.23 (5 April 2024)
+
+The commits in this version have not been classified (breaking/non-breaking) yet. Contributions welcome.
+
+```
+ce315de152 Robe..olgo 2024-04-05 11:35:28 -0400  (HEAD, tag: v1.13.23) 1.13.23
+72c2a216fc Robe..olgo 2024-04-05 11:35:06 -0400  Merge pull request #4901 from rmosolgo/require-ostruct
+88146f41e2 Robe..olgo 2024-04-05 11:21:46 -0400  require ostruct which was previously required by rake
+```
+
+# 1.13.22 (28 February 2024)
+
+The commits in this version have not been classified (breaking/non-breaking) yet. Contributions welcome.
+
+```
+3e972eec6a Robe..olgo 2024-02-28 11:16:54 -0500  (HEAD, tag: v1.13.22) 1.13.22
+d4152d1f84 Robe..olgo 2024-02-28 11:15:44 -0500  Merge pull request #4860 from maxprokopiev/backport-for-ruby34
+f2d6ec7806 Jean..sier 2024-02-16 10:32:01 +0100  Fix compatibility with Ruby 3.4-dev
+```
+
+# 1.13.21 (25 January 2024)
+
+The commits in this version have not been classified (breaking/non-breaking) yet. Contributions welcome.
+
+```
+fa2ec24944 Robe..olgo 2024-01-25 12:31:30 -0500  (HEAD, tag: v1.13.21) 1.13.21
+08a6d2f44d Robe..olgo 2024-01-25 12:30:04 -0500  Update test for new ruby
+fd200cc442 Robe..olgo 2024-01-25 12:29:22 -0500  Merge pull request #4788 from TonyCTHsu/tonycthsu/backport-datadog-span-type-to-1.13.x
+f4e0beb1db Tony Hsu   2024-01-23 12:43:23 +0100  Deprecate tracer option
+32d3e51173 Tony Hsu   2024-01-23 12:23:28 +0100  Update docuement
+286a691579 Tony Hsu   2024-01-23 11:48:35 +0100  Remove constant reference, fallback service name and simply analytic logic
+f56771b077 Tony Hsu   2024-01-16 11:42:46 +0100  Remove `span-type`  method call on SpanOperation
+```
+
+# 1.13.20 (20 October 2023)
+
+The commits in this version have not been classified (breaking/non-breaking) yet. Contributions welcome.
+
+```
+e91d9980ab Robe..olgo 2023-10-20 11:28:31 -0400  (HEAD, tag: v1.13.20) 1.13.20
+0f022d56fa Robe..olgo 2023-10-20 11:28:11 -0400  Merge pull request #4676 from rmosolgo/fix-warden-get-field-1.13
+05e8a89c33 Robe..olgo 2023-10-20 11:26:02 -0400  Add third dummy argument to Schema#get_field
+814a39ae2a Robe..olgo 2023-10-20 11:18:22 -0400  Fix Warden#get_field in 1.13.x
+```
+
 # 1.13.19 (2 February 2023)
 
 ### Bug fixes
