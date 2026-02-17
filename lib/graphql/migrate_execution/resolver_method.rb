@@ -58,7 +58,7 @@ module GraphQL
             call_node = node.body.body.first
             case call_node.name
             when :load, :request, :dataload
-              DataloadAll
+              DataloaderAll
             when :load_all, :request_all, :dataload_record
               DataloaderBatch
             when :dataload_association

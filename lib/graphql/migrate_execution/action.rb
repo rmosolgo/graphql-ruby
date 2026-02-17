@@ -11,6 +11,8 @@ module GraphQL
         @total_field_definitions = 0
       end
 
+      attr_reader :type_definitions
+
       def run
         parse_result = Prism.parse(@source, filepath: @path)
         visitor = Visitor.new(@source, @type_definitions)

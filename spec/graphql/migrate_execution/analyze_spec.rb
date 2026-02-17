@@ -117,7 +117,7 @@ DataloaderAssociation (1):
 
   - Something.dataload_assoc   (:type_instance_method -> :dataload_assoc) @ spec/graphql/migrate_execution/fixtures/dataload.rb:6
 
-DataloadAll (2):
+DataloaderAll (2):
   These fields can use a `dataload:` option.
 
   - Something.dataload_object_1   (:type_instance_method -> :dataload_object_1) @ spec/graphql/migrate_execution/fixtures/dataload.rb:12
