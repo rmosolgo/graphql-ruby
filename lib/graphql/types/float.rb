@@ -9,8 +9,19 @@ module GraphQL
         value.is_a?(Numeric) ? value.to_f : nil
       end
 
-      def self.coerce_result(value, _ctx)
-        value.to_f
+      def self.coerce_result(value, ctx)
+        coerced_value = Float(value, exception: false)
+
+        if coerced_value.nil? || !coerced_value.finite?
+          error = GraphQL::ScalarCoercionError.new(
+            "Float cannot represent non numeric value: #{value.inspect}",
+            value: value,
+            context: ctx
+          )
+          ctx.schema.type_error(error, ctx)
+        else
+          coerced_value
+        end
       end
 
       default_scalar true

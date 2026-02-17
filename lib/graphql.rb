@@ -93,6 +93,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   autoload :AnalysisError, "graphql/analysis_error"
   autoload :CoercionError, "graphql/coercion_error"
   autoload :InvalidNameError, "graphql/invalid_name_error"
+  autoload :ScalarCoercionError, "graphql/scalar_coercion_error"
   autoload :IntegerDecodingError, "graphql/integer_decoding_error"
   autoload :IntegerEncodingError, "graphql/integer_encoding_error"
   autoload :StringEncodingError, "graphql/string_encoding_error"
