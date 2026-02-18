@@ -963,24 +963,24 @@ describe GraphQL::Dataloader do
 
         it "batches calls in .authorized?" do
           query_str = "{ r1: recipe(id: 5) { name } r2: recipe(id: 6) { name } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           exec_query(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
 
           query_str = "{ recipes { name } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           exec_query(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
 
           query_str = "{ recipesById(ids: [5, 6]) { name } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           exec_query(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
         end
 
         it "batches nested object calls in .authorized? after using lazy_resolve" do
           query_str = "{ cookbooks { featuredRecipe { name } } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           result = exec_query(query_str, context: context)
           assert_equal ["Cornbread", "Grits"], result["data"]["cookbooks"].map { |c| c["featuredRecipe"]["name"] }
           refute result.key?("errors")

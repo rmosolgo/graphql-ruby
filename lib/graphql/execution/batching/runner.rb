@@ -6,24 +6,20 @@ module GraphQL
         def initialize(multiplex)
           @multiplex = multiplex
           @schema = multiplex.schema
-          @context = multiplex.context
           @steps_queue = []
           @runtime_types_at_result = {}.compare_by_identity
           @static_types_at_result = {}.compare_by_identity
           @selected_operation = nil
-          @dataloader = @context[:dataloader] ||= @schema.dataloader_class.new
+          @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
-          @authorizes = !!@context[:batching_authorizes]
           @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
         end
-
-        attr_reader :authorizes, :query
 
         def add_step(step)
           @dataloader.append_job(step)
         end
 
-        attr_reader :steps_queue, :schema, :context, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies
+        attr_reader :steps_queue, :schema, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies
 
         def execute
           Fiber[:__graphql_current_multiplex] = @multiplex

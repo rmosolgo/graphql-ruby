@@ -528,8 +528,6 @@ describe GraphQL::Schema::Resolver do
 
   def exec_query(*args, **kwargs)
     if TESTING_BATCHING
-      context = kwargs[:context] ||= {}
-      context[:batching_authorizes] = true
       ResolverTest::Schema.execute_batching(*args, **kwargs)
     else
       ResolverTest::Schema.execute(*args, **kwargs)
