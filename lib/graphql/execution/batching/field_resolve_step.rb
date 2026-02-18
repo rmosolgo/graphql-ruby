@@ -8,8 +8,6 @@ module GraphQL
           @key = key
           @parent_type = parent_type
           @ast_node = @ast_nodes = nil
-          @objects = nil
-          @results = nil
           @runner = runner
           @field_definition = nil
           @field_results = nil
@@ -21,8 +19,6 @@ module GraphQL
           @static_type = nil
           @next_selections = nil
         end
-
-        attr_writer :objects, :results
 
         attr_reader :ast_node, :key, :parent_type, :selections_step, :runner, :field_definition
 
@@ -46,7 +42,7 @@ module GraphQL
         end
 
         def coerce_arguments(argument_owner, ast_arguments_or_hash)
-          arg_defns = argument_owner.arguments(@runner.context)
+          arg_defns = argument_owner.arguments(@selections_step.query.context)
           if arg_defns.empty?
             return EmptyObjects::EMPTY_HASH
           end
@@ -84,10 +80,11 @@ module GraphQL
           end
 
           if arg_value.is_a?(Language::Nodes::VariableIdentifier)
-            arg_value = if @runner.variables.key?(arg_value.name)
-              @runner.variables[arg_value.name]
-            elsif @runner.variables.key?(arg_value.name.to_sym)
-              @runner.variables[arg_value.name.to_sym]
+            vars = @selections_step.query.variables
+            arg_value = if vars.key?(arg_value.name)
+              vars[arg_value.name]
+            elsif vars.key?(arg_value.name.to_sym)
+              vars[arg_value.name.to_sym]
             end
           elsif arg_value.is_a?(Language::Nodes::NullValue)
             arg_value = nil
@@ -106,7 +103,7 @@ module GraphQL
               arg_value.map { |v| coerce_argument_value(inner_t, v) }
             end
           elsif arg_t.kind.leaf?
-            arg_t.coerce_input(arg_value, @runner.context)
+            arg_t.coerce_input(arg_value, @selections_step.query.context)
           elsif arg_t.kind.input_object?
             coerce_arguments(arg_t, arg_value)
           else
@@ -147,17 +144,17 @@ module GraphQL
 
         def execute_field
           field_name = @ast_node.name
-          @field_definition = @runner.query.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
-
+          @field_definition = @selections_step.query.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
+          objects = @selections_step.objects
           if field_name == "__typename"
-            @field_results = Array.new(@objects.size, @parent_type.graphql_name)
+            @field_results = Array.new(objects.size, @parent_type.graphql_name)
             build_results
             return
           end
 
           arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
 
-          @field_results = @field_definition.resolve_batch(self, @objects, @runner.context, arguments)
+          @field_results = @field_definition.resolve_batch(self, objects, @selections_step.query.context, arguments)
 
           if @runner.resolves_lazies # TODO extract this
             lazies = false
@@ -207,8 +204,9 @@ module GraphQL
 
             is_list = return_type.list?
             is_non_null = return_type.non_null?
+            results = @selections_step.results
             @field_results.each_with_index do |result, i|
-              result_h = @results[i]
+              result_h = results[i]
               build_graphql_result(result_h, @key, result, return_type, is_non_null, is_list, false)
             end
             @enqueued_authorization = true
@@ -219,22 +217,24 @@ module GraphQL
               # Do nothing -- it will enqueue itself later
             end
           else
+            results = @selections_step.results
+            ctx = @selections_step.query.context
             @field_results.each_with_index do |result, i|
-              result_h = @results[i]
+              result_h = results[i]
               result_h[@key] = if result.nil?
                 if return_type.non_null?
-                  @runner.add_non_null_error(@parent_type, @field_definition, ast_nodes, false, path)
+                  add_non_null_error(false)
                 else
                   nil
                 end
               elsif result.is_a?(GraphQL::Error)
                 result.path = path
                 result.ast_nodes = ast_nodes
-                @runner.context.add_error(result)
+                ctx.add_error(result)
                 result
               else
                 # TODO `nil`s in [T!] types aren't handled
-                return_type.coerce_result(result, @runner.context)
+                return_type.coerce_result(result, ctx)
               end
             end
           end
@@ -248,12 +248,14 @@ module GraphQL
               next_objects_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
               next_results_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
 
+              ctx = nil
               @all_next_objects.each_with_index do |next_object, i|
                 result = @all_next_results[i]
                 if (object_type = @runner.runtime_types_at_result[result])
                   # OK
                 else
-                  object_type, _unused_new_value = @runner.schema.resolve_type(@static_type, next_object, @runner.context)
+                  ctx ||= @selections_step.query.context
+                  object_type, _unused_new_value = @runner.schema.resolve_type(@static_type, next_object, ctx)
                 end
                 next_objects_by_type[object_type] << next_object
                 next_results_by_type[object_type] << result
@@ -267,6 +269,7 @@ module GraphQL
                   objects: next_objects,
                   results: next_results_by_type[obj_type],
                   runner: @runner,
+                  query: @selections_step.query,
                 ))
               end
             else
@@ -277,6 +280,7 @@ module GraphQL
                 objects: @all_next_objects,
                 results: @all_next_results,
                 runner: @runner,
+                query: @selections_step.query,
               ))
             end
           end
@@ -289,19 +293,24 @@ module GraphQL
           end
         end
 
+        def add_non_null_error(is_from_array)
+          err = InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path)
+          @runner.schema.type_error(err, @selections_step.query.context)
+        end
+
         private
 
         def build_graphql_result(graphql_result, key, field_result, return_type, is_nn, is_list, is_from_array) # rubocop:disable Metrics/ParameterLists
           if field_result.nil?
             if is_nn
-              graphql_result[key] = @runner.add_non_null_error(@parent_type, @field_definition, ast_nodes, is_from_array, path)
+              graphql_result[key] = add_non_null_error(is_from_array)
             else
               graphql_result[key] = nil
             end
           elsif field_result.is_a?(GraphQL::Error)
             field_result.path = path
             field_result.ast_nodes = ast_nodes
-            @runner.context.add_error(field_result)
+            @selections_step.query.context.add_error(field_result)
             graphql_result[key] = field_result
           elsif is_list
             if is_nn
@@ -314,7 +323,7 @@ module GraphQL
             field_result.each_with_index do |inner_f_r, i|
               build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
             end
-          elsif @runner.authorizes
+          elsif @runner.resolves_lazies # Handle possible lazy resolve_type response
             @pending_authorize_steps_count += 1
             @runner.add_step(Batching::PrepareObjectStep.new(
               static_type: @static_type,

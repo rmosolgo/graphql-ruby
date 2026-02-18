@@ -31,7 +31,11 @@ module GraphQL
         def call
           case @next_step
           when :resolve_type
-            @resolved_type, _ignored_value = @static_type.kind.abstract? ? @runner.schema.resolve_type(@static_type, @object, @runner.context) : @static_type
+            if @static_type.kind.abstract?
+              @resolved_type, _ignored_value = @runner.schema.resolve_type(@static_type, @object, @field_resolve_step.selections_step.query.context)
+            else
+              @resolved_type = @static_type
+            end
             if @runner.resolves_lazies && @runner.schema.lazy?(@resolved_type)
               @next_step = :authorize
               @runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
@@ -48,7 +52,7 @@ module GraphQL
         end
 
         def authorize
-          @authorized_value = @resolved_type.authorized?(@object, @runner.context)
+          @authorized_value = @resolved_type.authorized?(@object, @field_resolve_step.selections_step.query.context)
           if @runner.resolves_lazies && @runner.schema.lazy?(@authorized_value)
             @runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
             @next_step = :create_result
@@ -58,7 +62,7 @@ module GraphQL
         rescue GraphQL::Error => err
           err.path = @field_resolve_step.path
           err.ast_nodes = @field_resolve_step.ast_nodes
-          @runner.context.errors << err
+          @field_resolve_step.selections_step.query.context.errors << err
           @graphql_result[@key] = err
         end
 
@@ -71,7 +75,7 @@ module GraphQL
             @runner.runtime_types_at_result[next_result_h] = @resolved_type
             @runner.static_types_at_result[next_result_h] = @static_type
           elsif @is_non_null
-            @graphql_result[@key] = @runner.add_non_null_error(@field_resolve_step.parent_type, @field_resolve_step.field_definition, @field_resolve_step.ast_nodes, @is_from_array, @field_resolve_step.path)
+            @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
           else
             @graphql_result[@key] = nil
           end

@@ -31,13 +31,13 @@ describe GraphQL::Schema::IntrospectionSystem do
       res = execute_query(%|{ __type(name: "Ensemble") { name } }|)
       assert_equal "ENSEMBLE", res["data"]["__type"]["name"]
 
-      unauth_res = execute_query(%|{ __type(name: "Ensemble") { name } }|, context: { cant_introspect: true, batching_authorizes: true})
+      unauth_res = execute_query(%|{ __type(name: "Ensemble") { name } }|, context: { cant_introspect: true })
       assert_nil unauth_res["data"].fetch("__type")
       assert_equal ["You're not allowed to introspect here"], unauth_res["errors"].map { |e| e["message"] }
     end
 
     it "serves custom dynamic fields" do
-      res = execute_query("{ nowPlaying { __typename __typenameLength __astNodeClass } }", context: { batching_authorizes: true })
+      res = execute_query("{ nowPlaying { __typename __typenameLength __astNodeClass } }")
       assert_equal "Ensemble", res["data"]["nowPlaying"]["__typename"]
       assert_equal 8, res["data"]["nowPlaying"]["__typenameLength"]
       assert_equal "GraphQL::Language::Nodes::Field", res["data"]["nowPlaying"]["__astNodeClass"]
