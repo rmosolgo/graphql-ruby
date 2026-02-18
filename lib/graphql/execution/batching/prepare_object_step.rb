@@ -2,7 +2,7 @@
 module GraphQL
   module Execution
     module Batching
-      class AuthorizeStep
+      class PrepareObjectStep
         def initialize(static_type:, object:, runner:, graphql_result:, key:, is_non_null:, field_resolve_step:, next_objects:, next_results:, is_from_array:)
           @static_type = static_type
           @object = object

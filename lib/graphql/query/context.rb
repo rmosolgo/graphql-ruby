@@ -29,6 +29,7 @@ module GraphQL
       end
 
       extend Forwardable
+      include Schema::Member::HasDataloader
 
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
       attr_reader :errors
