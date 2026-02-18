@@ -32,18 +32,24 @@ else
   USING_C_PARSER = false
 end
 
-if ENV["GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES"]
+if ENV["GRAPHQL_FUTURE"]
   puts "Opting into GraphQL.reject_numbers_followed_by_names"
   GraphQL.reject_numbers_followed_by_names = true
   puts "Opting into GraphQL::Schema::Visibility::Profile"
   GraphQL::Schema.use(GraphQL::Schema::Visibility, migration_errors: true)
   ADD_WARDEN = false
+  TESTING_BATCHING = true
+  puts "Opting into Execution::Batching"
+  require "graphql/execution/batching"
+  GraphQL::Schema.use(GraphQL::Execution::Batching)
+  GraphQL::Schema::Field.prepend(GraphQL::Execution::Batching::FieldCompatibility)
 else
   ADD_WARDEN = true
+  TESTING_BATCHING = false
 end
 
 # C methods aren't fair game in non-main Ractors
-RUN_RACTOR_TESTS = defined?(::Ractor) && !USING_C_PARSER
+RUN_RACTOR_TESTS = (defined?(::Ractor) && !USING_C_PARSER && !ENV["TEST"])
 
 require "rake"
 require "graphql/rake_task"

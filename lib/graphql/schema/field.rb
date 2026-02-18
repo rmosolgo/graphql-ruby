@@ -192,6 +192,9 @@ module GraphQL
       # @param resolver_method [Symbol] The method on the type to call to resolve this field (defaults to `name`)
       # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
       # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
+      # @param resolve_static [Symbol, nil] Used by {Schema.execute_batching} to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
+      # @param resolve_batch [Symbol, nil] Used by {Schema.execute_batching} map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
+      # @param resolve_each [Symbol, nil] Used by {Schema.execute_batching} to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
       # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
       # @param default_page_size [Integer, nil] For connections, the default number of items to return from this field, or `nil` to return unlimited results.
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
@@ -214,7 +217,7 @@ module GraphQL
       # @param relay_nodes_field [Boolean] (Private, used by GraphQL-Ruby)
       # @param extras [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] Extra arguments to be injected into the resolver for this field
       # @param definition_block [Proc] an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new {Field}.
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, resolve_static: nil, resolve_each: nil, resolve_batch: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -262,6 +265,27 @@ module GraphQL
         @method_str = -method_name.to_s
         @method_sym = method_name.to_sym
         @resolver_method = (resolver_method || name_s).to_sym
+
+        if resolve_static
+          @batch_mode = :resolve_static
+          @batch_mode_key = resolve_static == true ? @method_sym : resolve_static
+        elsif resolve_batch
+          @batch_mode = :resolve_batch
+          @batch_mode_key = resolve_batch == true ? @method_sym : resolve_batch
+        elsif resolve_each
+          @batch_mode = :resolve_each
+          @batch_mode_key = resolve_each == true ? @method_sym : resolve_each
+        elsif hash_key
+          @batch_mode = :hash_key
+          @batch_mode_key = hash_key
+        elsif dig
+          @batch_mode = :dig
+          @batch_mode_key = dig
+        else
+          @batch_mode = :direct_send
+          @batch_mode_key = @method_sym
+        end
+
         @complexity = complexity
         @dynamic_introspection = dynamic_introspection
         @return_type_expr = type
@@ -329,6 +353,50 @@ module GraphQL
         if @definition_block.nil?
           self.extensions.each(&:after_define_apply)
           @call_after_define = true
+        end
+      end
+
+      # Called by {Execution::Batching} to resolve this field for each of `objects`
+      # @param field_resolve_step [Execution::Batching::FieldResolveStep] an internal metadata object from execution code
+      # @param objects [Array<Object>] Objects returned from previously-executed fields
+      # @param context [GraphQL::Query::Context]
+      # @param args_hash [Hash<Symbol => Object>] Ruby-style arguments for this field
+      # @return [Array<Object>] One field result for each of `objects`; must have the same length as `objects`
+      # @see #initialize Use `resolve_static:`, `resolve_batch:`, `resolve_each:`, `hash_key:`, or `method:`
+      # @api private
+      def resolve_batch(field_resolve_step, objects, context, args_hash)
+        case @batch_mode
+        when :resolve_batch
+          if args_hash.empty?
+            @owner.public_send(@batch_mode_key, objects, context)
+          else
+            @owner.public_send(@batch_mode_key, objects, context, **args_hash)
+          end
+        when :resolve_static
+          result = if args_hash.empty?
+            @owner.public_send(@batch_mode_key, context)
+          else
+            @owner.public_send(@batch_mode_key, context, **args_hash)
+          end
+          Array.new(objects.size, result)
+        when :resolve_each
+          if args_hash.empty?
+            objects.map { |o| @owner.public_send(@batch_mode_key, o, context) }
+          else
+            objects.map { |o| @owner.public_send(@batch_mode_key, o, context, **args_hash) }
+          end
+        when :hash_key
+          objects.map { |o| o[@batch_mode_key] }
+        when :direct_send
+          if args_hash.empty?
+            objects.map { |o| o.public_send(@batch_mode_key) }
+          else
+            objects.map { |o| o.public_send(@batch_mode_key, **args_hash) }
+          end
+        when :dig
+          objects.map { |o| o.dig(*@batch_mode_key) }
+        else
+          raise "Batching execution for #{path} not implemented; provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
         end
       end
 

@@ -10,17 +10,23 @@ module GraphQL
     attr_reader :field
 
     # @return [GraphQL::Language::Nodes::Field] the field where the error occurred
-    attr_reader :ast_node
+    def ast_node
+      @ast_nodes.first
+    end
+
+    attr_reader :ast_nodes
 
     # @return [Boolean] indicates an array result caused the error
     attr_reader :is_from_array
 
-    def initialize(parent_type, field, ast_node, is_from_array: false)
+    attr_accessor :path
+
+    def initialize(parent_type, field, ast_node_or_nodes, is_from_array: false, path: nil)
       @parent_type = parent_type
       @field = field
-      @ast_node = ast_node
+      @ast_nodes = Array(ast_node_or_nodes)
       @is_from_array = is_from_array
-
+      @path = path
       # For List elements, identify the non-null error is for an
       # element and the required element type so it's not ambiguous
       # whether it was caused by a null instead of the list or a

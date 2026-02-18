@@ -9,6 +9,10 @@ module GraphQL
           child_class.field(**field_options, &field_block)
         end
 
+        def get_relay_node(id:)
+          context.schema.object_from_id(id, context)
+        end
+
         class << self
           def field_options
             {
@@ -17,6 +21,7 @@ module GraphQL
               null: true,
               description: "Fetches an object given its ID.",
               relay_node_field: true,
+              resolver_method: :get_relay_node
             }
           end
 
@@ -24,14 +29,6 @@ module GraphQL
             Proc.new {
               argument :id, "ID!",
                 description: "ID of the object."
-
-              def resolve(obj, args, ctx)
-                ctx.schema.object_from_id(args[:id], ctx)
-              end
-
-              def resolve_field(obj, args, ctx)
-                resolve(obj, args, ctx)
-              end
             }
           end
         end
