@@ -1233,17 +1233,17 @@ describe GraphQL::Dataloader do
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 7 : 10), FiberCounting.last_spawn_fiber_count)
-            assert_last_max_fiber_count((TESTING_BATCHING ? 7 : 9), "No limit works as expected")
+            assert_equal((TESTING_BATCHING ? 9 : 10), FiberCounting.last_spawn_fiber_count)
+            assert_last_max_fiber_count((TESTING_BATCHING ? 8 : 9), "No limit works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 8 : 12), FiberCounting.last_spawn_fiber_count)
+            assert_equal((TESTING_BATCHING ? 10 : 12), FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(4, "Limit of 4 works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 7 : 8), FiberCounting.last_spawn_fiber_count)
+            assert_equal(8, FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(6, "Limit of 6 works as expected")
           end
 

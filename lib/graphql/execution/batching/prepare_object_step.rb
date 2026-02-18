@@ -32,7 +32,7 @@ module GraphQL
           case @next_step
           when :resolve_type
             if @static_type.kind.abstract?
-              @resolved_type, _ignored_value = @runner.schema.resolve_type(@static_type, @object, @runner.context)
+              @resolved_type, _ignored_value = @runner.schema.resolve_type(@static_type, @object, @field_resolve_step.selections_step.query.context)
             else
               @resolved_type = @static_type
             end
@@ -52,7 +52,7 @@ module GraphQL
         end
 
         def authorize
-          @authorized_value = @resolved_type.authorized?(@object, @runner.context)
+          @authorized_value = @resolved_type.authorized?(@object, @field_resolve_step.selections_step.query.context)
           if @runner.resolves_lazies && @runner.schema.lazy?(@authorized_value)
             @runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
             @next_step = :create_result
@@ -62,7 +62,7 @@ module GraphQL
         rescue GraphQL::Error => err
           err.path = @field_resolve_step.path
           err.ast_nodes = @field_resolve_step.ast_nodes
-          @runner.context.errors << err
+          @field_resolve_step.selections_step.query.context.errors << err
           @graphql_result[@key] = err
         end
 
