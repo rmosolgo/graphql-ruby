@@ -54,7 +54,7 @@ There integrations for GraphQL-Ruby with several other monitoring systems:
 - [Datadog](https://www.datadoghq.com): See {{ "Tracing::DataDogTrace" | api_doc }}.
 - [NewRelic](https://newrelic.com/): See {{ "Tracing::NewRelicTrace" | api_doc }}.
 - [Prometheus](https://prometheus.io): See {{ "Tracing::PrometheusTrace" | api_doc }}.
-- [Scout APM](https://scoutapp.com/): See {{ "Tracing::ScoutTrace" | api_doc }}.
+- [Scout APM](https://www.scoutapm.com/): See {{ "Tracing::ScoutTrace" | api_doc }}.
 - [Sentry](https://sentry.io): See {{ "Tracing::SentryTrace" | api_doc }}.
 - [Skylight](https://www.skylight.io):  either enable the [GraphQL probe](https://www.skylight.io/support/getting-more-from-skylight#graphql) or use {{ "Tracing::ActiveSupportNotificationsTrace" | api_doc }}.
 - Statsd: See {{ "Tracing::StatsdTrace" | api_doc }}.

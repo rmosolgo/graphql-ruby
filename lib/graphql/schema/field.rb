@@ -278,6 +278,9 @@ module GraphQL
         elsif hash_key
           @batch_mode = :hash_key
           @batch_mode_key = hash_key
+        elsif dig
+          @batch_mode = :dig
+          @batch_mode_key = dig
         else
           @batch_mode = :direct_send
           @batch_mode_key = @method_sym
@@ -390,6 +393,8 @@ module GraphQL
           else
             objects.map { |o| o.public_send(@batch_mode_key, **args_hash) }
           end
+        when :dig
+          objects.map { |o| o.dig(*@batch_mode_key) }
         else
           raise "Batching execution for #{path} not implemented; provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
         end
