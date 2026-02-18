@@ -323,7 +323,7 @@ module GraphQL
             field_result.each_with_index do |inner_f_r, i|
               build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
             end
-          elsif @runner.authorizes
+          elsif @runner.authorizes || @runner.resolves_lazies # Handle possible lazy resolve_type response
             @pending_authorize_steps_count += 1
             @runner.add_step(Batching::PrepareObjectStep.new(
               static_type: @static_type,

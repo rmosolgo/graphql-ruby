@@ -31,7 +31,11 @@ module GraphQL
         def call
           case @next_step
           when :resolve_type
-            @resolved_type, _ignored_value = @static_type.kind.abstract? ? @runner.schema.resolve_type(@static_type, @object, @runner.context) : @static_type
+            if @static_type.kind.abstract?
+              @resolved_type, _ignored_value = @runner.schema.resolve_type(@static_type, @object, @runner.context)
+            else
+              @resolved_type = @static_type
+            end
             if @runner.resolves_lazies && @runner.schema.lazy?(@resolved_type)
               @next_step = :authorize
               @runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
