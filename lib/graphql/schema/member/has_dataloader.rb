@@ -34,6 +34,7 @@ module GraphQL
         # @param find_by_value [Object] Usually an `id`, might be another value if `find_by:` is also provided
         # @param find_by [Symbol, String] A column name to look the record up by. (Defaults to the model's primary key.)
         # @return [ActiveRecord::Base, nil]
+        #
         # @example Finding a record by ID
         #   dataload_record(Post, 5) # Like `Post.find(5)`, but dataloaded
         # @example Finding a record by another attribute
