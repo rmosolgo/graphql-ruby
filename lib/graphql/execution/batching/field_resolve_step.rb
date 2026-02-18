@@ -316,7 +316,7 @@ module GraphQL
             end
           elsif @runner.authorizes
             @pending_authorize_steps_count += 1
-            @runner.add_step(Batching::AuthorizeStep.new(
+            @runner.add_step(Batching::PrepareObjectStep.new(
               static_type: @static_type,
               object: field_result,
               runner: @runner,
