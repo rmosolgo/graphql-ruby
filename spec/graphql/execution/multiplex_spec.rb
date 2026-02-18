@@ -3,7 +3,11 @@ require "spec_helper"
 
 describe GraphQL::Execution::Multiplex do
   def multiplex(*a, **kw)
-    LazyHelpers::LazySchema.multiplex(*a, **kw)
+    if TESTING_BATCHING
+      LazyHelpers::LazySchema.multiplex_batching(*a, **kw)
+    else
+      LazyHelpers::LazySchema.multiplex(*a, **kw)
+    end
   end
 
   let(:q1) { <<-GRAPHQL
@@ -113,11 +117,21 @@ describe GraphQL::Execution::Multiplex do
           "data"=>{"runtimeError"=>nil},
         },
         {
-          "errors"=>[{
-            "message"=>"Cannot return null for non-nullable field LazySum.nestedSum",
-            "path"=>["invalidNestedNull", "nullableNestedSum", "nestedSum"],
-            "locations"=>[{"line"=>5, "column"=>11}],
-          }],
+          "errors"=>[
+            {
+              "message"=>"Cannot return null for non-nullable field LazySum.nestedSum",
+              "path"=>["invalidNestedNull", "nullableNestedSum", "nestedSum"],
+              "locations"=>[{"line"=>5, "column"=>11}],
+            },
+            (
+              TESTING_BATCHING ? {
+                # TODO: maybe batching can be made to *not* run this field
+                "message" => "Cannot return null for non-nullable field LazySum.nestedSum",
+                "locations" => [{"line" => 9, "column" => 11}],
+                "path" => ["invalidNestedNull", "nullableNestedSum", "ns2"]
+              } : nil
+            )
+          ].compact,
           "data"=>{"invalidNestedNull"=>{"value" => 2,"nullableNestedSum" => nil}},
         },
         {
