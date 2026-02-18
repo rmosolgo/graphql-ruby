@@ -133,8 +133,8 @@ describe "Batching Execution" do
   end
 
 
-  def run_next(query_str, root_object: nil, variables: {})
-    NextExecutionSchema.execute_batching(query_str, context: {}, variables: variables, root_value: root_object)
+  def run_next(query_str, root_value: nil, variables: {})
+    NextExecutionSchema.execute_batching(query_str, context: {}, variables: variables, root_value: root_value)
   end
 
   before do
@@ -168,7 +168,7 @@ describe "Batching Execution" do
     fragment NameableInfo on Nameable {
       name
     }
-    ", root_object: "Abc", variables: { "name" => "Tomato" })
+    ", root_value: "Abc", variables: { "name" => "Tomato" })
     expected_result = {
       "data" => {
         "str" => "String",

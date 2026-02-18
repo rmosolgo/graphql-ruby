@@ -3,21 +3,22 @@ module GraphQL
   module Execution
     module Batching
       class SelectionsStep
-        def initialize(parent_type:, selections:, objects:, results:, runner:, path:)
+        def initialize(parent_type:, selections:, objects:, results:, runner:, query:, path:)
           @path = path
           @parent_type = parent_type
           @selections = selections
           @runner = runner
           @objects = objects
           @results = results
+          @query = query
           @graphql_objects = nil
         end
 
-        attr_reader :path
+        attr_reader :path, :query, :objects, :results
 
         def graphql_objects
           @graphql_objects ||= @objects.map do |obj|
-            @parent_type.scoped_new(obj, @runner.context)
+            @parent_type.scoped_new(obj, @query.context)
           end
         end
 
@@ -27,8 +28,6 @@ module GraphQL
           @runner.gather_selections(@parent_type, @selections, self, prototype_result, into: grouped_selections)
           @results.each { |r| r.replace(prototype_result) }
           grouped_selections.each_value do |frs|
-            frs.objects = @objects
-            frs.results = @results
             @runner.add_step(frs)
           end
         end

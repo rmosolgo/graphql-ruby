@@ -3,20 +3,14 @@ module GraphQL
   module Execution
     module Batching
       class Runner
-        def initialize(query)
-          @query = query
-          @schema = query.schema
-          @document = query.document
-          @context = query.context
-          @variables = query.variables
-          @root_object = query.root_value
-          @path = []
+        def initialize(multiplex)
+          @multiplex = multiplex
+          @schema = multiplex.schema
+          @context = multiplex.context
           @steps_queue = []
-          @data = {}
           @runtime_types_at_result = {}.compare_by_identity
           @static_types_at_result = {}.compare_by_identity
           @selected_operation = nil
-          @root_type = nil
           @dataloader = @context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
           @authorizes = !!@context[:batching_authorizes]
@@ -32,78 +26,96 @@ module GraphQL
         attr_reader :steps_queue, :schema, :context, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies
 
         def execute
-          if query.validate && !query.valid?
-            return {
-              "errors" => query.static_errors.map(&:to_h)
-            }
-          end
+          Fiber[:__graphql_current_multiplex] = @multiplex
+          isolated_steps = []
+          queries = @multiplex.queries
+          results = []
 
-          @selected_operation = @document.definitions.first # TODO select named operation
-          isolated_steps = case @selected_operation.operation_type
-          when nil, "query"
-            [
-              SelectionsStep.new(
-                parent_type: @root_type = @schema.query,
-                selections: @selected_operation.selections,
-                objects: [@root_object],
-                results: [@data],
-                path: EmptyObjects::EMPTY_ARRAY,
-                runner: self,
-              )
-            ]
-          when "mutation"
-            fields = {}
-            gather_selections(@schema.mutation, @selected_operation.selections, nil, {}, into: fields)
-            fields.each_value.map do |field_resolve_step|
-              SelectionsStep.new(
-                parent_type: @root_type = @schema.mutation,
-                selections: field_resolve_step.ast_nodes || Array(field_resolve_step.ast_node),
-                objects: [@root_object],
-                results: [@data],
-                path: EmptyObjects::EMPTY_ARRAY,
-                runner: self,
-              )
+          queries.each do |query|
+            if query.validate && !query.valid?
+              results << {
+                "errors" => query.static_errors.map(&:to_h)
+              }
+              next
             end
-          when "subscription"
-            raise ArgumentError, "TODO implement subscriptions"
-          else
-            raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
-          end
 
-          @static_types_at_result[@data] = @root_type
-          @runtime_types_at_result[@data] = @root_type
+            selected_operation = query.document.definitions.first # TODO select named operation
+            data = {}
+            results << { "data" => data }
+            case selected_operation.operation_type
+            when nil, "query"
+              isolated_steps << SelectionsStep.new(
+                parent_type: root_type = @schema.query,
+                selections: selected_operation.selections,
+                objects: [query.root_value],
+                results: [data],
+                path: EmptyObjects::EMPTY_ARRAY,
+                runner: self,
+                query: query,
+              )
+            when "mutation"
+              fields = {}
+              root_type = @schema.mutation
+              # TODO fix this smell with `OpenStruct` duck-typing a selection step.
+              # Inject something better?
+              # Or refactor to include some Query-level runtime structure?
+              gather_selections(root_type, selected_operation.selections, OpenStruct.new(query: query), {}, into: fields)
+              fields.each_value do |field_resolve_step|
+                isolated_steps << SelectionsStep.new(
+                  parent_type: root_type,
+                  selections: field_resolve_step.ast_nodes || Array(field_resolve_step.ast_node),
+                  objects: [query.root_value],
+                  results: [data],
+                  path: EmptyObjects::EMPTY_ARRAY,
+                  runner: self,
+                  query: query,
+                )
+              end
+            when "subscription"
+              raise ArgumentError, "TODO implement subscriptions"
+            else
+              raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
+            end
+
+            @static_types_at_result[data] = root_type
+            @runtime_types_at_result[data] = root_type
+          end
 
           while (next_isolated_step = isolated_steps.shift)
             add_step(next_isolated_step)
             @dataloader.run
           end
 
-          result = if @context.errors.empty?
-            {
-              "data" => @data
-            }
-          else
-            data = propagate_errors(@data, @context.errors)
-            errors = []
-            @context.errors.each do |err|
-              if err.respond_to?(:to_h)
-                errors << err.to_h
+          queries.each_with_index.map do |query, idx|
+            result = results[idx]
+            fin_result = if query.context.errors.empty?
+              result
+            else
+              data = result["data"]
+              data = propagate_errors(data, query)
+              errors = []
+              query.context.errors.each do |err|
+                if err.respond_to?(:to_h)
+                  errors << err.to_h
+                end
               end
+              res_h = {}
+              if !errors.empty?
+                res_h["errors"] = errors
+              end
+              res_h["data"] = data
+              res_h
             end
-            res_h = {}
-            if !errors.empty?
-              res_h["errors"] = errors
-            end
-            res_h["data"] = data
-            res_h
-          end
 
-          GraphQL::Query::Result.new(query: @query, values: result)
+            GraphQL::Query::Result.new(query: query, values: fin_result)
+          end
+        ensure
+          Fiber[:__graphql_current_multiplex] = nil
         end
 
         def gather_selections(type_defn, ast_selections, selections_step, prototype_result, into:)
           ast_selections.each do |ast_selection|
-            next if !directives_include?(ast_selection)
+            next if !directives_include?(selections_step.query, ast_selection)
             case ast_selection
             when GraphQL::Language::Nodes::Field
               key = ast_selection.alias || ast_selection.name
@@ -120,13 +132,13 @@ module GraphQL
               step.append_selection(ast_selection)
             when GraphQL::Language::Nodes::InlineFragment
               type_condition = ast_selection.type&.name
-              if type_condition.nil? || type_condition_applies?(type_defn, type_condition)
+              if type_condition.nil? || type_condition_applies?(selections_step.query.context, type_defn, type_condition)
                 gather_selections(type_defn, ast_selection.selections, selections_step, prototype_result, into: into)
               end
             when GraphQL::Language::Nodes::FragmentSpread
-              fragment_definition = @document.definitions.find { |defn| defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
+              fragment_definition = selections_step.query.document.definitions.find { |defn| defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
               type_condition = fragment_definition.type.name
-              if type_condition_applies?(type_defn, type_condition)
+              if type_condition_applies?(selections_step.query.context, type_defn, type_condition)
                 gather_selections(type_defn, fragment_definition.selections, selections_step, prototype_result, into: into)
               end
             else
@@ -135,19 +147,24 @@ module GraphQL
           end
         end
 
-        def add_non_null_error(type, field, ast_node_or_nodes, is_from_array, path)
-          err = InvalidNullError.new(type, field, ast_node_or_nodes, is_from_array: is_from_array, path: path)
-          @schema.type_error(err, @context)
-        end
-
         private
 
-        def propagate_errors(data, errors)
-          paths_to_check = errors.map(&:path)
-          check_object_result(data, @root_type, @selected_operation.selections, [], [], paths_to_check)
+        def propagate_errors(data, query)
+          paths_to_check = query.context.errors.map(&:path)
+          # TODO dry with above?
+          selected_operation = query.document.definitions.first # TODO pick a selected operation
+          root_type = case selected_operation.operation_type
+          when nil, "query"
+            query.schema.query
+          when "mutation"
+            query.schema.mutation
+          when "subscription"
+            raise "Not implemented yet, TODO"
+          end
+          check_object_result(query, data, root_type, selected_operation.selections, [], [], paths_to_check)
         end
 
-        def check_object_result(result_h, static_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+        def check_object_result(query, result_h, static_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
           current_path_len = current_exec_path.length
           ast_selections.each do |ast_selection|
             case ast_selection
@@ -158,7 +175,7 @@ module GraphQL
                 current_result_path << key
                 if paths_to_check.any? { |path_to_check| path_to_check[current_path_len] == key }
                   result_value = result_h[key]
-                  field_defn = @context.types.field(static_type, ast_selection.name)
+                  field_defn = query.context.types.field(static_type, ast_selection.name)
                   result_type = field_defn.type
                   if (result_type_non_null = result_type.non_null?)
                     result_type = result_type.of_type
@@ -169,11 +186,11 @@ module GraphQL
                     nil
                   else
                     if result_type.list?
-                      check_list_result(result_value, result_type.of_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
+                      check_list_result(query, result_value, result_type.of_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
                     elsif result_type.kind.leaf?
                       result_value
                     else
-                      check_object_result(result_value, result_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
+                      check_object_result(query, result_value, result_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
                     end
                   end
 
@@ -189,14 +206,14 @@ module GraphQL
               end
             when Language::Nodes::InlineFragment
               static_type_at_result = @static_types_at_result[result_h]
-              if static_type_at_result && type_condition_applies?(static_type_at_result, ast_selection.type.name)
-                result_h = check_object_result(result_h, static_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
+              if static_type_at_result && type_condition_applies?(query.context, static_type_at_result, ast_selection.type.name)
+                result_h = check_object_result(query, result_h, static_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
               end
             when Language::Nodes::FragmentSpread
-              fragment_defn = @document.definitions.find { |defn| defn.is_a?(Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
+              fragment_defn = query.document.definitions.find { |defn| defn.is_a?(Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
               static_type_at_result = @static_types_at_result[result_h]
-              if static_type_at_result && type_condition_applies?(static_type_at_result, fragment_defn.type.name)
-                result_h = check_object_result(result_h, static_type, fragment_defn.selections, current_exec_path, current_result_path, paths_to_check)
+              if static_type_at_result && type_condition_applies?(query.context, static_type_at_result, fragment_defn.type.name)
+                result_h = check_object_result(query, result_h, static_type, fragment_defn.selections, current_exec_path, current_result_path, paths_to_check)
               end
             end
           end
@@ -204,7 +221,7 @@ module GraphQL
           result_h
         end
 
-        def check_list_result(result_arr, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+        def check_list_result(query, result_arr, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
           inner_type_non_null = false
           if inner_type.non_null?
             inner_type_non_null = true
@@ -218,11 +235,11 @@ module GraphQL
               result_item.path = current_result_path.dup
               nil
             elsif inner_type.list?
-              check_list_result(result_item, inner_type.of_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+              check_list_result(query, result_item, inner_type.of_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
             elsif inner_type.kind.leaf?
               result_item
             else
-              check_object_result(result_item, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+              check_object_result(query, result_item, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
             end
 
             if new_result.nil? && inner_type_non_null
@@ -242,24 +259,24 @@ module GraphQL
           end
         end
 
-        def dir_arg_value(arg_node)
+        def dir_arg_value(query, arg_node)
           if arg_node.value.is_a?(Language::Nodes::VariableIdentifier)
             var_key = arg_node.value.name
-            if @variables.key?(var_key)
-              @variables[var_key]
+            if query.variables.key?(var_key)
+              query.variables[var_key]
             else
-              @variables[var_key.to_sym]
+              query.variables[var_key.to_sym]
             end
           else
             arg_node.value
           end
         end
-        def directives_include?(ast_selection)
+        def directives_include?(query, ast_selection)
           if ast_selection.directives.any? { |dir_node|
                 if dir_node.name == "skip"
-                  dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(arg_node) == true } # rubocop:disable Development/ContextIsPassedCop
+                  dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(query, arg_node) == true } # rubocop:disable Development/ContextIsPassedCop
                 elsif dir_node.name == "include"
-                  dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(arg_node) == false } # rubocop:disable Development/ContextIsPassedCop
+                  dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(query, arg_node) == false } # rubocop:disable Development/ContextIsPassedCop
                 end
               }
             false
@@ -268,13 +285,13 @@ module GraphQL
           end
         end
 
-        def type_condition_applies?(concrete_type, type_name)
+        def type_condition_applies?(context, concrete_type, type_name)
           if type_name == concrete_type.graphql_name
             true
           else
-            abs_t = @schema.get_type(type_name, @context)
-            p_types = @schema.possible_types(abs_t, @context)
-            c_p_types = @schema.possible_types(concrete_type, @context)
+            abs_t = @schema.get_type(type_name, context)
+            p_types = @schema.possible_types(abs_t, context)
+            c_p_types = @schema.possible_types(concrete_type, context)
             p_types.any? { |t| c_p_types.include?(t) }
           end
         end
