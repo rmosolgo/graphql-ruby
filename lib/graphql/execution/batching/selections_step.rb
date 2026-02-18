@@ -25,7 +25,7 @@ module GraphQL
         def call
           grouped_selections = {}
           prototype_result = @results.first
-          @runner.gather_selections(@parent_type, @selections, self, prototype_result, into: grouped_selections)
+          @runner.gather_selections(@parent_type, @selections, self, self.query, prototype_result, into: grouped_selections)
           @results.each { |r| r.replace(prototype_result) }
           grouped_selections.each_value do |frs|
             @runner.add_step(frs)
