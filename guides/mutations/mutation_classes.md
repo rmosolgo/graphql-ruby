@@ -118,7 +118,7 @@ class Mutations::AddStar < Mutations::BaseMutation
 end
 ```
 
-By specifying that the `post_id` argument loads a `Types::Post` object type, a `Post` object will be loaded via {% internal_link "`Schema#object_from_id`", "/schema/definition.html#object-identification-hooks" %} with the provided `post_id`.
+By specifying that the `post_id` argument loads a `Types::Post` object type, a `Post` object will be loaded via {% internal_link "`Schema#object_from_id`", "/schema/definition.html#object-identification" %} with the provided `post_id`.
 
 All arguments that end in `_id` and use the `loads:` method will have their `_id` suffix removed. For example, the mutation resolver above receives a `post` argument which contains the loaded object, instead of a `post_id` argument.
 
