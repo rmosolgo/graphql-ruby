@@ -13,13 +13,14 @@ module GraphQL
           @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
           @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
+          @authorizes = {}.compare_by_identity
         end
 
         def add_step(step)
           @dataloader.append_job(step)
         end
 
-        attr_reader :steps_queue, :schema, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies
+        attr_reader :steps_queue, :schema, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies, :authorizes
 
         def execute
           Fiber[:__graphql_current_multiplex] = @multiplex
@@ -47,13 +48,49 @@ module GraphQL
 
               selected_operation = query.document.definitions.first # TODO select named operation
               data = {}
+
+              root_type = case selected_operation.operation_type
+              when nil, "query"
+                @schema.query
+              when "mutation"
+                @schema.mutation
+              when "subscription"
+                @schema.subscription
+              else
+                raise ArgumentError, "Unknown operation type: #{selected_operation.operation_type.inspect}"
+              end
+
+              auth_check = schema.sync_lazy(root_type.authorized?(query.root_value, query.context))
+              root_value = if auth_check
+                query.root_value
+              else
+                begin
+                  auth_err = GraphQL::UnauthorizedError.new(object: query.root_value, type: root_type, context: query.context)
+                  new_val = schema.unauthorized_object(auth_err)
+                  if new_val
+                    auth_check = true
+                  end
+                  new_val
+                rescue GraphQL::ExecutionError => ex_err
+                  # The old runtime didn't add path and ast_nodes to this
+                  query.context.add_error(ex_err)
+                  nil
+                end
+              end
+
+              if !auth_check
+                results << {}
+                next
+              end
+
               results << { "data" => data }
+
               case selected_operation.operation_type
               when nil, "query"
                 isolated_steps[0] << SelectionsStep.new(
-                  parent_type: root_type = @schema.query,
+                  parent_type: root_type,
                   selections: selected_operation.selections,
-                  objects: [query.root_value],
+                  objects: [root_value],
                   results: [data],
                   path: EmptyObjects::EMPTY_ARRAY,
                   runner: self,
@@ -61,13 +98,12 @@ module GraphQL
                 )
               when "mutation"
                 fields = {}
-                root_type = @schema.mutation
                 gather_selections(root_type, selected_operation.selections, nil, query, {}, into: fields)
                 fields.each_value do |field_resolve_step|
                   isolated_steps << [SelectionsStep.new(
                     parent_type: root_type,
                     selections: field_resolve_step.ast_nodes || Array(field_resolve_step.ast_node),
-                    objects: [query.root_value],
+                    objects: [root_value],
                     results: [data],
                     path: EmptyObjects::EMPTY_ARRAY,
                     runner: self,
@@ -165,7 +201,9 @@ module GraphQL
 
         def propagate_errors(data, query)
           paths_to_check = query.context.errors.map(&:path)
+          paths_to_check.compact! # root-level auth errors currently come without a path
           # TODO dry with above?
+          # This is also where a query-level "Step" would be used?
           selected_operation = query.document.definitions.first # TODO pick a selected operation
           root_type = case selected_operation.operation_type
           when nil, "query"
@@ -194,7 +232,6 @@ module GraphQL
                   if (result_type_non_null = result_type.non_null?)
                     result_type = result_type.of_type
                   end
-
                   new_result_value = if result_value.is_a?(GraphQL::Error)
                     result_value.path = current_result_path.dup
                     nil

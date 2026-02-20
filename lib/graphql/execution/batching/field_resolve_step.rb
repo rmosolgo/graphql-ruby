@@ -10,6 +10,7 @@ module GraphQL
           @ast_node = @ast_nodes = nil
           @runner = runner
           @field_definition = nil
+          @arguments = nil
           @field_results = nil
           @path = nil
           @enqueued_authorization = false
@@ -18,9 +19,10 @@ module GraphQL
           @all_next_results = nil
           @static_type = nil
           @next_selections = nil
+          @object_is_authorized = nil
         end
 
-        attr_reader :ast_node, :key, :parent_type, :selections_step, :runner, :field_definition
+        attr_reader :ast_node, :key, :parent_type, :selections_step, :runner, :field_definition, :object_is_authorized, :arguments
 
         def path
           @path ||= [*@selections_step.path, @key].freeze
@@ -103,7 +105,16 @@ module GraphQL
               arg_value.map { |v| coerce_argument_value(inner_t, v) }
             end
           elsif arg_t.kind.leaf?
-            arg_t.coerce_input(arg_value, @selections_step.query.context)
+            begin
+              ctx = @selections_step.query.context
+              arg_t.coerce_input(arg_value, ctx)
+            rescue GraphQL::UnauthorizedEnumValueError => enum_err
+              begin
+                @runner.schema.unauthorized_object(enum_err)
+              rescue GraphQL::ExecutionError => ex_err
+                ex_err
+              end
+            end
           elsif arg_t.kind.input_object?
             coerce_arguments(arg_t, arg_value)
           else
@@ -124,11 +135,9 @@ module GraphQL
           else
             @runner.schema.sync_lazy(lazy)
           end
-        rescue GraphQL::UnauthorizedError => err
-          @runner.schema.unauthorized_object(err)
+        rescue GraphQL::UnauthorizedError => auth_err
+          @runner.schema.unauthorized_object(auth_err)
         rescue GraphQL::ExecutionError => err
-          err.path = path
-          err.ast_nodes = ast_nodes
           err
         end
 
@@ -142,19 +151,51 @@ module GraphQL
           end
         end
 
+        def add_graphql_error(err)
+          err.path = path
+          err.ast_nodes = ast_nodes
+          @selections_step.query.context.add_error(err)
+          err
+        end
+
+        module AlwaysAuthorized
+          def self.[](_key)
+            true
+          end
+        end
+
         def execute_field
           field_name = @ast_node.name
           @field_definition = @selections_step.query.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
           objects = @selections_step.objects
           if field_name == "__typename"
+            # TODO handle custom introspection
             @field_results = Array.new(objects.size, @parent_type.graphql_name)
+            @object_is_authorized = AlwaysAuthorized
             build_results
             return
           end
 
-          arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
+          @arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
 
-          @field_results = @field_definition.resolve_batch(self, objects, @selections_step.query.context, arguments)
+
+          ctx = @selections_step.query.context
+
+          if (@runner.authorizes.fetch(@field_definition) { @runner.authorizes[@field_definition] = @field_definition.authorizes?(ctx) })
+            authorized_objects = []
+            @object_is_authorized = objects.map { |o|
+              is_authed = @field_definition.authorized?(o, @arguments, ctx)
+              if is_authed
+                authorized_objects << o
+              end
+              is_authed
+            }
+          else
+            authorized_objects = objects
+            @object_is_authorized = AlwaysAuthorized
+          end
+
+          @field_results = @field_definition.resolve_batch(self, authorized_objects, ctx, @arguments)
 
           if @runner.resolves_lazies # TODO extract this
             lazies = false
@@ -205,8 +246,14 @@ module GraphQL
             is_list = return_type.list?
             is_non_null = return_type.non_null?
             results = @selections_step.results
-            @field_results.each_with_index do |result, i|
-              result_h = results[i]
+            field_result_idx = 0
+            results.each_with_index do |result_h, i|
+              if @object_is_authorized[i]
+                result = @field_results[field_result_idx]
+                field_result_idx += 1
+              else
+                result = nil
+              end
               build_graphql_result(result_h, @key, result, return_type, is_non_null, is_list, false)
             end
             @enqueued_authorization = true
@@ -219,22 +266,25 @@ module GraphQL
           else
             results = @selections_step.results
             ctx = @selections_step.query.context
-            @field_results.each_with_index do |result, i|
-              result_h = results[i]
-              result_h[@key] = if result.nil?
+            field_result_idx = 0
+            results.each_with_index do |result_h, i|
+              if @object_is_authorized[i]
+                field_result = @field_results[field_result_idx]
+                field_result_idx += 1
+              else
+                field_result = nil
+              end
+              result_h[@key] = if field_result.nil?
                 if return_type.non_null?
                   add_non_null_error(false)
                 else
                   nil
                 end
-              elsif result.is_a?(GraphQL::Error)
-                result.path = path
-                result.ast_nodes = ast_nodes
-                ctx.add_error(result)
-                result
+              elsif field_result.is_a?(GraphQL::Error)
+                add_graphql_error(field_result)
               else
                 # TODO `nil`s in [T!] types aren't handled
-                return_type.coerce_result(result, ctx)
+                return_type.coerce_result(field_result, ctx)
               end
             end
           end
@@ -308,10 +358,7 @@ module GraphQL
               graphql_result[key] = nil
             end
           elsif field_result.is_a?(GraphQL::Error)
-            field_result.path = path
-            field_result.ast_nodes = ast_nodes
-            @selections_step.query.context.add_error(field_result)
-            graphql_result[key] = field_result
+            graphql_result[key] = add_graphql_error(field_result)
           elsif is_list
             if is_nn
               return_type = return_type.of_type

@@ -384,7 +384,11 @@ describe "GraphQL::Authorization" do
   end
 
   def auth_execute(*args, **kwargs)
-    AuthTest::Schema.execute(*args, **kwargs)
+    if TESTING_BATCHING
+      AuthTest::Schema.execute_batching(*args, **kwargs)
+    else
+      AuthTest::Schema.execute(*args, **kwargs)
+    end
   end
 
   describe "applying the visible? method" do
@@ -528,7 +532,13 @@ describe "GraphQL::Authorization" do
         GRAPHQL
       end
 
-      assert_equal "`Query.landscapeFeature` returned `\"STREAM\"` at `landscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`).", err.message
+      # This switches on `context[:current_path]` which isn't implemented by Batching (yet?)
+      expected_message = if TESTING_BATCHING
+        "`\"STREAM\"` was returned for `LandscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
+      else
+        "`Query.landscapeFeature` returned `\"STREAM\"` at `landscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
+      end
+      assert_equal expected_message, err.message
     end
 
     it "works in introspection" do
@@ -741,23 +751,6 @@ describe "GraphQL::Authorization" do
       unauthorized_res = auth_execute(query, context: { unauthorized_relay: true })
       conn = unauthorized_res["data"].fetch("unauthorizedConnection")
       assert_equal "RelayObjectConnection", conn.fetch("__typename")
-      # This is tricky: the previous behavior was to replace the _whole_
-      # list with `nil`. This was due to an implementation detail:
-      # The list field's return value (an array of integers) was wrapped
-      # _before_ returning, and during this wrapping, a cascading error
-      # caused the entire field to be nilled out.
-      #
-      # In the interpreter, each list item is contained and the error doesn't propagate
-      # up to the whole list.
-      #
-      # Originally, I thought that this was a _feature_ that obscured list entries.
-      # But really, look at the test below: you don't get this "feature" if
-      # you use `edges { node }`, so it can't be relied on in any way.
-      #
-      # All that to say, in the interpreter, `nodes` and `edges { node }` behave
-      # the same.
-      #
-      # TODO revisit the docs for this.
       failed_nodes_value = [nil]
       assert_equal failed_nodes_value, conn.fetch("nodes")
       assert_equal [{"node" => nil, "__typename" => "RelayObjectEdge"}], conn.fetch("edges")

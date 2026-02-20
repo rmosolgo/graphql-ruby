@@ -3,7 +3,7 @@ module GraphQL
   # If a field's resolve function returns a {ExecutionError},
   # the error will be inserted into the response's `"errors"` key
   # and the field will resolve to `nil`.
-  class ExecutionError < GraphQL::Error
+  class ExecutionError < GraphQL::RuntimeError
     # @return [GraphQL::Language::Nodes::Field] the field where the error occurred
     def ast_node
       ast_nodes.first

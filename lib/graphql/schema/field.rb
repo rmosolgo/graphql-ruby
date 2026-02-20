@@ -693,6 +693,13 @@ module GraphQL
         end
       end
 
+      def authorizes?(context)
+        method(:authorized?).owner != GraphQL::Schema::Field || (
+          (args = context.types.arguments(self)) &&
+            (args.any? { |a| a.authorizes?(context) })
+        )
+      end
+
       def authorized?(object, args, context)
         if @resolver_class
           # The resolver _instance_ will check itself during `resolve()`

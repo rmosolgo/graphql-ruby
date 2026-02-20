@@ -14,6 +14,7 @@ module GraphQL
           @graphql_result = graphql_result
           @resolved_type = nil
           @authorized_value = nil
+          @authorization_error = nil
           @key = key
           @next_step = :resolve_type
           @is_from_array = is_from_array
@@ -52,7 +53,13 @@ module GraphQL
         end
 
         def authorize
-          @authorized_value = @resolved_type.authorized?(@object, @field_resolve_step.selections_step.query.context)
+          ctx = @field_resolve_step.selections_step.query.context
+          begin
+            @authorized_value = @resolved_type.authorized?(@object, ctx)
+          rescue GraphQL::UnauthorizedError => auth_err
+            @authorization_error = auth_err
+          end
+
           if @runner.resolves_lazies && @runner.schema.lazy?(@authorized_value)
             @runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
             @next_step = :create_result
@@ -60,13 +67,34 @@ module GraphQL
             create_result
           end
         rescue GraphQL::Error => err
-          err.path = @field_resolve_step.path
-          err.ast_nodes = @field_resolve_step.ast_nodes
-          @field_resolve_step.selections_step.query.context.errors << err
-          @graphql_result[@key] = err
+          @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
         end
 
         def create_result
+          if !@authorized_value
+            @authorization_error ||= GraphQL::UnauthorizedError.new(object: @object, type: @resolved_type, context: @field_resolve_step.selections_step.query.context)
+          end
+
+          if @authorization_error
+            begin
+              new_obj = @runner.schema.unauthorized_object(@authorization_error)
+              if new_obj
+                @authorized_value = true
+                @object = new_obj
+              elsif @is_non_null
+                @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
+              else
+                @graphql_result[@key] = @field_resolve_step.add_graphql_error(@authorization_error)
+              end
+            rescue GraphQL::Error => err
+              if @is_non_null
+                @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
+              else
+                @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+              end
+            end
+          end
+
           if @authorized_value
             next_result_h = {}
             @next_results << next_result_h
@@ -74,10 +102,6 @@ module GraphQL
             @graphql_result[@key] = next_result_h
             @runner.runtime_types_at_result[next_result_h] = @resolved_type
             @runner.static_types_at_result[next_result_h] = @static_type
-          elsif @is_non_null
-            @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
-          else
-            @graphql_result[@key] = nil
           end
 
           @field_resolve_step.authorized_finished

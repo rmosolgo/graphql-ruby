@@ -68,18 +68,22 @@ module GraphQL
           end
 
           if @owner.method_defined?(@resolver_method)
-            frs.selections_step.graphql_objects.map do |obj_inst|
-              if dynamic_introspection
-                obj_inst = @owner.wrap(obj_inst, context)
-              end
-              with_extensions(obj_inst, kwargs, context) do |obj, ruby_kwargs|
-                if ruby_kwargs.empty?
-                  obj.public_send(@resolver_method)
-                else
-                  obj.public_send(@resolver_method, **ruby_kwargs)
+            results = []
+            frs.selections_step.graphql_objects.each_with_index do |obj_inst, idx|
+              if frs.object_is_authorized[idx]
+                if dynamic_introspection
+                  obj_inst = @owner.wrap(obj_inst, context)
+                end
+                results << with_extensions(obj_inst, kwargs, context) do |obj, ruby_kwargs|
+                  if ruby_kwargs.empty?
+                    obj.public_send(@resolver_method)
+                  else
+                    obj.public_send(@resolver_method, **ruby_kwargs)
+                  end
                 end
               end
             end
+            results
           elsif @resolver_class
             objects.map do |o|
               resolver_inst_kwargs = kwargs.dup
@@ -106,17 +110,13 @@ module GraphQL
                   new_return_value
                 end
               end
-            rescue GraphQL::Error => err
-              err.path = frs.path
-              context.errors << err
-              nil
+            rescue RuntimeError => err
+              err
             rescue StandardError => stderr
               begin
                 context.query.handle_or_reraise(stderr)
               rescue GraphQL::ExecutionError => ex_err
-                ex_err.path = frs.path
-                context.errors << ex_err
-                nil
+                ex_err
               end
             end
           elsif objects.first.is_a?(Hash)
@@ -128,15 +128,19 @@ module GraphQL
             if extensions.empty?
               objects.map { |o| o.public_send(@method_sym)}
             else
-              frs.selections_step.graphql_objects.map do |obj_inst|
-                with_extensions(obj_inst, EmptyObjects::EMPTY_HASH, context) do |obj, arguments|
-                  if arguments.empty?
-                    obj.object.public_send(@method_sym)
-                  else
-                    obj.object.public_send(@method_sym, **arguments)
+              results = []
+              frs.selections_step.graphql_objects.each_with_index do |obj_inst, idx|
+                if frs.object_is_authorized[idx]
+                  results << with_extensions(obj_inst, EmptyObjects::EMPTY_HASH, context) do |obj, arguments|
+                    if arguments.empty?
+                      obj.object.public_send(@method_sym)
+                    else
+                      obj.object.public_send(@method_sym, **arguments)
+                    end
                   end
                 end
               end
+              results
             end
           end
         end
