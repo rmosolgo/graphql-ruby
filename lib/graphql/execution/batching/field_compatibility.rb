@@ -110,12 +110,8 @@ module GraphQL
                   new_return_value
                 end
               end
-            rescue GraphQL::Error => err
-              if err.respond_to?(:path=) # TODO sort out error hierarchy so I can match these without a respond_to check
-                err
-              else
-                raise
-              end
+            rescue RuntimeError => err
+              err
             rescue StandardError => stderr
               begin
                 context.query.handle_or_reraise(stderr)

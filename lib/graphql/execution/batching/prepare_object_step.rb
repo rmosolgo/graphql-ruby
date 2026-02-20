@@ -81,11 +81,17 @@ module GraphQL
               if new_obj
                 @authorized_value = true
                 @object = new_obj
+              elsif @is_non_null
+                @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
               else
-                @graphql_result[@key] = @authorization_error
+                @graphql_result[@key] = @field_resolve_step.add_graphql_error(@authorization_error)
               end
             rescue GraphQL::Error => err
-              @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+              if @is_non_null
+                @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
+              else
+                @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+              end
             end
           end
 

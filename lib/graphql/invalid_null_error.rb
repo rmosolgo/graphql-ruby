@@ -2,7 +2,7 @@
 module GraphQL
   # Raised automatically when a field's resolve function returns `nil`
   # for a non-null field.
-  class InvalidNullError < GraphQL::Error
+  class InvalidNullError < GraphQL::RuntimeError
     # @return [GraphQL::BaseType] The owner of {#field}
     attr_reader :parent_type
 
