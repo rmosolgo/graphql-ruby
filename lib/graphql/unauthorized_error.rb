@@ -23,10 +23,11 @@ module GraphQL
       @object = object
       @type = type
       @context = context
+      @ast_nodes = nil
       message ||= "An instance of #{object.class} failed #{type.graphql_name}'s authorization check"
       super(message)
     end
 
-    attr_accessor :path
+    attr_accessor :path, :ast_nodes
   end
 end
