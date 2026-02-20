@@ -1325,27 +1325,6 @@ describe GraphQL::Dataloader do
 
       include DataloaderAssertions
     end
-
-    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
-      describe "nonblocking: true with libev" do
-        require "libev_scheduler"
-        def make_schema_from(schema)
-          Class.new(schema) do
-            use GraphQL::Dataloader, nonblocking: true
-          end
-        end
-
-        before do
-          Fiber.set_scheduler(Libev::Scheduler.new)
-        end
-
-        after do
-          Fiber.set_scheduler(nil)
-        end
-
-        include DataloaderAssertions
-      end
-    end
   end
 
   describe "example from #3314" do
