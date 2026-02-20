@@ -57,7 +57,7 @@ end
 
 Now, when any non-`admin` user tries to run the mutation, it won't run. Instead, they'll get an error in the response.
 
-Additionally, `#ready?` may return `false, { ... }` to return {% internal_link "errors as data", "/mutations/mutation_errors" %}:
+Additionally, `#ready?` may return `false, { ... }` to return {% internal_link "errors as data", "/mutations/mutation_errors.html#errors-as-data" %}:
 
 ```ruby
 def ready?
@@ -133,7 +133,7 @@ When `#authorized?` returns `false` (or something falsey), the mutation will be 
 
 #### Adding errors
 
-To add errors as data (as described in {% internal_link "Mutation errors", "/mutations/mutation_errors" %}), return a value _along with_ `false`, for example:
+To add errors as data (as described in {% internal_link "Mutation errors", "/mutations/mutation_errors.html#errors-as-data" %}), return a value _along with_ `false`, for example:
 
 ```ruby
 def authorized?(employee:)
