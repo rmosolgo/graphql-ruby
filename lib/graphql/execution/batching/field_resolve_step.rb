@@ -158,6 +158,12 @@ module GraphQL
           err
         end
 
+        module AlwaysAuthorized
+          def self.[](_key)
+            true
+          end
+        end
+
         def execute_field
           field_name = @ast_node.name
           @field_definition = @selections_step.query.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
@@ -165,7 +171,7 @@ module GraphQL
           if field_name == "__typename"
             # TODO handle custom introspection
             @field_results = Array.new(objects.size, @parent_type.graphql_name)
-            @object_is_authorized = Array.new(objects.size, true) # Some constant for always true here?
+            @object_is_authorized = AlwaysAuthorized
             build_results
             return
           end
@@ -173,15 +179,23 @@ module GraphQL
           @arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
 
 
-          authorized_objects = []
-          @object_is_authorized = objects.map { |o|
-            is_authed = @field_definition.authorized?(o, @arguments, @selections_step.query.context)
-            if is_authed
-              authorized_objects << o
-            end
-            is_authed
-          }
-          @field_results = @field_definition.resolve_batch(self, authorized_objects, @selections_step.query.context, @arguments)
+          ctx = @selections_step.query.context
+
+          if (@runner.authorizes.fetch(@field_definition) { @runner.authorizes[@field_definition] = @field_definition.authorizes?(ctx) })
+            authorized_objects = []
+            @object_is_authorized = objects.map { |o|
+              is_authed = @field_definition.authorized?(o, @arguments, ctx)
+              if is_authed
+                authorized_objects << o
+              end
+              is_authed
+            }
+          else
+            authorized_objects = objects
+            @object_is_authorized = AlwaysAuthorized
+          end
+
+          @field_results = @field_definition.resolve_batch(self, authorized_objects, ctx, @arguments)
 
           if @runner.resolves_lazies # TODO extract this
             lazies = false
@@ -258,7 +272,7 @@ module GraphQL
                 field_result = @field_results[field_result_idx]
                 field_result_idx += 1
               else
-                result = nil
+                field_result = nil
               end
               result_h[@key] = if field_result.nil?
                 if return_type.non_null?

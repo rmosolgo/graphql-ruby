@@ -13,13 +13,14 @@ module GraphQL
           @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
           @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
+          @authorizes = {}.compare_by_identity
         end
 
         def add_step(step)
           @dataloader.append_job(step)
         end
 
-        attr_reader :steps_queue, :schema, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies
+        attr_reader :steps_queue, :schema, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies, :authorizes
 
         def execute
           Fiber[:__graphql_current_multiplex] = @multiplex
