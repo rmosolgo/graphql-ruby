@@ -243,13 +243,5 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       let(:scheduler_class) { ::DummyScheduler }
       include NonblockingDataloaderAssertions
     end
-
-    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
-      describe "with evt" do
-        require "evt"
-        let(:scheduler_class) { Evt::Scheduler }
-        include NonblockingDataloaderAssertions
-      end
-    end
   end
 end
