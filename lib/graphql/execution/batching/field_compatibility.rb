@@ -112,7 +112,7 @@ module GraphQL
               end
             rescue GraphQL::Error => err
               if err.respond_to?(:path=) # TODO sort out error hierarchy so I can match these without a respond_to check
-                frs.add_graphql_error(err)
+                err
               else
                 raise
               end
@@ -120,7 +120,7 @@ module GraphQL
               begin
                 context.query.handle_or_reraise(stderr)
               rescue GraphQL::ExecutionError => ex_err
-                frs.add_graphql_error(ex_err)
+                ex_err
               end
             end
           elsif objects.first.is_a?(Hash)

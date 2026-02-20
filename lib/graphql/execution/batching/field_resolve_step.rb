@@ -138,7 +138,7 @@ module GraphQL
         rescue GraphQL::UnauthorizedError => auth_err
           @runner.schema.unauthorized_object(auth_err)
         rescue GraphQL::ExecutionError => err
-          add_graphql_error(err)
+          err
         end
 
         def call
