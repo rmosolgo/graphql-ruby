@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.19/GraphQL/ExecutionError">
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.20/GraphQL/ExecutionError">
   </head>
   <body>
-    <p>Class: GraphQL::ExecutionError &lt; GraphQL::Error
+    <p>Class: GraphQL::ExecutionError &lt; GraphQL::RuntimeError
 If a field’s resolve function returns a ExecutionError, the error
 will be inserted into the response’s <code class="language-plaintext highlighter-rouge">"errors"</code> key and the field
 will resolve to <code class="language-plaintext highlighter-rouge">nil</code>. 
@@ -13,7 +13,7 @@ AnalysisError, CoercionError, LoadApplicationObjectFailedError,
 Query::OperationNameMissingError, Query::VariableValidationError,
 Schema::Timeout::TimeoutError, Schema::Validator::ValidationFailedError
 Instance methods:
-initialize, to_h</p>
+ast_node, ast_node=, initialize, to_h</p>
 
 
   </body>
