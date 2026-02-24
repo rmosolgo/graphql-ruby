@@ -14,13 +14,37 @@ module GraphQL
           @resolves_lazies = @schema.resolves_lazies?
           @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
           @authorizes = {}.compare_by_identity
+
+        end
+
+        def resolve_type(type, object, query)
+          query.current_trace.begin_resolve_type(@static_type, object, query.context)
+          resolved_type, _ignored_new_value = query.resolve_type(type, object)
+          query.current_trace.end_resolve_type(@static_type, object, query.context, resolved_type)
+          resolved_type
+        end
+
+        def runtime_type_at(result)
+          @runtime_types_at_result[result]
+        end
+
+        def set_runtime_type_at(result, object_type)
+          @runtime_types_at_result[result] = object_type
+        end
+
+        def static_type_at(result)
+          @static_types_at_result[result]
+        end
+
+        def set_static_type_at(result, type_definition)
+          @static_types_at_result[result] = type_definition
         end
 
         def add_step(step)
           @dataloader.append_job(step)
         end
 
-        attr_reader :steps_queue, :schema, :variables, :static_types_at_result, :runtime_types_at_result, :dataloader, :resolves_lazies, :authorizes
+        attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes
 
         def execute
           Fiber[:__graphql_current_multiplex] = @multiplex
@@ -122,8 +146,8 @@ module GraphQL
                 raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
               end
 
-              @static_types_at_result[data] = root_type
-              @runtime_types_at_result[data] = root_type
+              set_static_type_at(data, root_type)
+              set_runtime_type_at(data, root_type)
 
               # TODO This is stupid but makes multiplex_spec.rb pass
               trace.execute_query(query: query) do
@@ -262,13 +286,13 @@ module GraphQL
                 current_result_path.pop
               end
             when Language::Nodes::InlineFragment
-              static_type_at_result = @static_types_at_result[result_h]
+              static_type_at_result = static_type_at(result_h)
               if static_type_at_result && type_condition_applies?(query.context, static_type_at_result, ast_selection.type.name)
                 result_h = check_object_result(query, result_h, static_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
               end
             when Language::Nodes::FragmentSpread
               fragment_defn = query.document.definitions.find { |defn| defn.is_a?(Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
-              static_type_at_result = @static_types_at_result[result_h]
+              static_type_at_result = static_type_at(result_h)
               if static_type_at_result && type_condition_applies?(query.context, static_type_at_result, fragment_defn.type.name)
                 result_h = check_object_result(query, result_h, static_type, fragment_defn.selections, current_exec_path, current_result_path, paths_to_check)
               end

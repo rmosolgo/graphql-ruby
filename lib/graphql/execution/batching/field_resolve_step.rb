@@ -306,15 +306,11 @@ module GraphQL
               ctx = nil
               @all_next_objects.each_with_index do |next_object, i|
                 result = @all_next_results[i]
-                if (object_type = @runner.runtime_types_at_result[result])
+                if (object_type = @runner.runtime_type_at(result))
                   # OK
                 else
-                  ctx ||= @selections_step.query.context
-                  ctx.query.current_trace.begin_resolve_type(@static_type, next_object, ctx)
-                  # Lazy resolve_type is supported in PrepareObjectStep currently, see .resolves_lazies check below
-                  object_type, _unused_new_value = @runner.schema.resolve_type(@static_type, next_object, ctx)
-                  ctx.query.current_trace.end_resolve_type(@static_type, next_object, ctx, object_type)
-                  @runner.runtime_types_at_result[result] = object_type
+                  object_type = @runner.resolve_type(@static_type, next_object, @selections_step.query)
+                  @runner.set_runtime_type_at(result, object_type)
                 end
                 next_objects_by_type[object_type] << next_object
                 next_results_by_type[object_type] << result
@@ -379,11 +375,11 @@ module GraphQL
             field_result.each_with_index do |inner_f_r, i|
               build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
             end
-          elsif @runner.resolves_lazies || (@static_type.kind.object? && @static_type.authorizes?(@selections_step.query.context)) || (
-                (ctx = @selections_step.query.context) &&
-                (runtime_type, _ignored_new_value = @runner.runtime_types_at_result[graphql_result] ||= @runner.schema.resolve_type(@static_type, field_result, ctx)) &&
-                runtime_type.authorizes?(ctx)
-              )
+          elsif @runner.resolves_lazies || (@static_type.kind.object? ? @static_type.authorizes?(@selections_step.query.context) : (
+                (runtime_type = @runner.runtime_type_at(graphql_result) || (
+                  ((runtime_type = @runner.resolve_type(@static_type, field_result, @selections_step.query)) && @runner.set_runtime_type_at(graphql_result, runtime_type))
+                )) && runtime_type.authorizes?(@selections_step.query.context)
+              ))
             @pending_authorize_steps_count += 1
             @runner.add_step(Batching::PrepareObjectStep.new(
               static_type: @static_type,
@@ -401,7 +397,7 @@ module GraphQL
             next_result_h = {}
             @all_next_results << next_result_h
             @all_next_objects << field_result
-            @runner.static_types_at_result[next_result_h] = @static_type
+            @runner.set_static_type_at(next_result_h, @static_type)
             graphql_result[key] = next_result_h
           end
         end
