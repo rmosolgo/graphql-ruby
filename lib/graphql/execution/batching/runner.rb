@@ -3,20 +3,22 @@ module GraphQL
   module Execution
     module Batching
       class Runner
-        def initialize(multiplex)
+        def initialize(multiplex, authorization:)
           @multiplex = multiplex
           @schema = multiplex.schema
           @steps_queue = []
-          @runtime_types_at_result = {}.compare_by_identity
-          @static_types_at_result = {}.compare_by_identity
-          @authorizes_cache = Hash.new do |h, query_context|
-            h[query_context] = {}.compare_by_identity
-          end.compare_by_identity
+          @runtime_type_at = {}.compare_by_identity
+          @static_type_at = {}.compare_by_identity
           @selected_operation = nil
           @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
           @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
-
+          @authorization = authorization
+          if @authorization
+            @authorizes_cache = Hash.new do |h, query_context|
+              h[query_context] = {}.compare_by_identity
+            end.compare_by_identity
+          end
         end
 
         def resolve_type(type, object, query)
@@ -26,32 +28,21 @@ module GraphQL
           resolved_type
         end
 
-        def runtime_type_at(result)
-          @runtime_types_at_result[result]
-        end
-
-        def set_runtime_type_at(result, object_type)
-          @runtime_types_at_result[result] = object_type
-        end
-
-        def static_type_at(result)
-          @static_types_at_result[result]
-        end
-
-        def set_static_type_at(result, type_definition)
-          @static_types_at_result[result] = type_definition
-        end
-
         def authorizes?(graphql_definition, query_context)
           auth_cache = @authorizes_cache[query_context]
-          auth_cache.fetch(graphql_definition) { auth_cache[graphql_definition] = graphql_definition.authorizes?(query_context) }
+          case (auth_res = auth_cache[graphql_definition])
+          when nil
+            auth_cache[graphql_definition] = graphql_definition.authorizes?(query_context)
+          else
+            auth_res
+          end
         end
 
         def add_step(step)
           @dataloader.append_job(step)
         end
 
-        attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes
+        attr_reader :authorization, :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at
 
         def execute
           Fiber[:__graphql_current_multiplex] = @multiplex
@@ -64,9 +55,11 @@ module GraphQL
           end
 
           trace.execute_multiplex(multiplex: @multiplex) do
-            trace.begin_analyze_multiplex(@multiplex, multiplex_analyzers)
-            @schema.analysis_engine.analyze_multiplex(@multiplex, multiplex_analyzers)
-            trace.end_analyze_multiplex(@multiplex, multiplex_analyzers)
+            if !multiplex_analyzers.empty?
+              trace.begin_analyze_multiplex(@multiplex, multiplex_analyzers)
+              @schema.analysis_engine.analyze_multiplex(@multiplex, multiplex_analyzers)
+              trace.end_analyze_multiplex(@multiplex, multiplex_analyzers)
+            end
 
             results = []
             queries.each do |query|
@@ -91,7 +84,7 @@ module GraphQL
                 raise ArgumentError, "Unknown operation type: #{selected_operation.operation_type.inspect}"
               end
 
-              if authorizes?(root_type, query.context)
+              if self.authorization && authorizes?(root_type, query.context)
                 query.current_trace.begin_authorized(root_type, query.root_value, query.context)
                 auth_check = schema.sync_lazy(root_type.authorized?(query.root_value, query.context))
                 query.current_trace.end_authorized(root_type, query.root_value, query.context, auth_check)
@@ -153,8 +146,7 @@ module GraphQL
                 raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
               end
 
-              set_static_type_at(data, root_type)
-              set_runtime_type_at(data, root_type)
+              @static_type_at[data] = root_type
 
               # TODO This is stupid but makes multiplex_spec.rb pass
               trace.execute_query(query: query) do
@@ -293,13 +285,13 @@ module GraphQL
                 current_result_path.pop
               end
             when Language::Nodes::InlineFragment
-              static_type_at_result = static_type_at(result_h)
+              static_type_at_result = @static_type_at[result_h]
               if static_type_at_result && type_condition_applies?(query.context, static_type_at_result, ast_selection.type.name)
                 result_h = check_object_result(query, result_h, static_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
               end
             when Language::Nodes::FragmentSpread
               fragment_defn = query.document.definitions.find { |defn| defn.is_a?(Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
-              static_type_at_result = static_type_at(result_h)
+              static_type_at_result = @static_type_at[result_h]
               if static_type_at_result && type_condition_applies?(query.context, static_type_at_result, fragment_defn.type.name)
                 result_h = check_object_result(query, result_h, static_type, fragment_defn.selections, current_exec_path, current_result_path, paths_to_check)
               end

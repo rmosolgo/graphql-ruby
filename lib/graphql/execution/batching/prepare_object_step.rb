@@ -111,8 +111,8 @@ module GraphQL
             @next_results << next_result_h
             @next_objects << @object
             @graphql_result[@key] = next_result_h
-            @runner.set_runtime_type_at(next_result_h, @resolved_type)
-            @runner.set_static_type_at(next_result_h, @static_type)
+            @runner.runtime_type_at[next_result_h] = @resolved_type
+            @runner.static_type_at[next_result_h] = @static_type
           end
 
           @field_resolve_step.authorized_finished

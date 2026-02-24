@@ -38,8 +38,10 @@ module GraphQL
         end
       end
 
-      def self.use(schema)
+      def self.use(schema, authorization: true)
         schema.extend(SchemaExtension)
+        schema.singleton_class.attr_accessor(:batching_options)
+        schema.batching_options = { authorization: authorization }
       end
 
       def self.run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
@@ -54,7 +56,7 @@ module GraphQL
           end
         end
         multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
-        runner = Runner.new(multiplex)
+        runner = Runner.new(multiplex, **schema.batching_options)
         runner.execute
       end
     end

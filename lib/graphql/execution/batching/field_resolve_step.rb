@@ -184,7 +184,7 @@ module GraphQL
 
           ctx = @selections_step.query.context
 
-          if @runner.authorizes?(@field_definition, ctx)
+          if @runner.authorization && @runner.authorizes?(@field_definition, ctx)
             authorized_objects = []
             @object_is_authorized = objects.map { |o|
               is_authed = @field_definition.authorized?(o, @arguments, ctx)
@@ -252,13 +252,17 @@ module GraphQL
             is_non_null = return_type.non_null?
             results = @selections_step.results
             field_result_idx = 0
-            results.each_with_index do |result_h, i|
+            i = 0
+            s = results.size
+            while i < s do
+              result_h = results[i]
               if @object_is_authorized[i]
                 result = @field_results[field_result_idx]
                 field_result_idx += 1
               else
                 result = nil
               end
+              i += 1
               build_graphql_result(result_h, @key, result, return_type, is_non_null, is_list, false)
             end
             @enqueued_authorization = true
@@ -272,13 +276,17 @@ module GraphQL
             results = @selections_step.results
             ctx = @selections_step.query.context
             field_result_idx = 0
-            results.each_with_index do |result_h, i|
+            i = 0
+            s = results.size
+            while i < s do
+              result_h = results[i]
               if @object_is_authorized[i]
                 field_result = @field_results[field_result_idx]
                 field_result_idx += 1
               else
                 field_result = nil
               end
+              i += 1
               result_h[@key] = if field_result.nil?
                 if return_type.non_null?
                   add_non_null_error(false)
@@ -305,11 +313,11 @@ module GraphQL
 
               @all_next_objects.each_with_index do |next_object, i|
                 result = @all_next_results[i]
-                if (object_type = @runner.runtime_type_at(result))
+                if (object_type = @runner.runtime_type_at[result])
                   # OK
                 else
                   object_type = @runner.resolve_type(@static_type, next_object, @selections_step.query)
-                  @runner.set_runtime_type_at(result, object_type)
+                  @runner.runtime_type_at[result] = object_type
                 end
                 next_objects_by_type[object_type] << next_object
                 next_results_by_type[object_type] << result
@@ -371,14 +379,17 @@ module GraphQL
             inner_type_nn = inner_type.non_null?
             inner_type_l = inner_type.list?
             list_result = graphql_result[key] = []
-            field_result.each_with_index do |inner_f_r, i|
+            i = 0
+            s = field_result.size
+            while i < s
+              inner_f_r = field_result[i]
               build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
+              i += 1
             end
-          elsif @runner.resolves_lazies || (@static_type.kind.object? ? @runner.authorizes?(@static_type, @selections_step.query.context) : (
-                (runtime_type = (@runner.runtime_type_at(graphql_result) ||
-                  (@runner.set_runtime_type_at(graphql_result, @runner.resolve_type(@static_type, field_result, @selections_step.query)))
-                )) && @runner.authorizes?(runtime_type, @selections_step.query.context)
-              ))
+          elsif @runner.resolves_lazies || (@runner.authorization && (@static_type.kind.object? ? @runner.authorizes?(@static_type, @selections_step.query.context) : (
+                (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))
+                ) && @runner.authorizes?(runtime_type, @selections_step.query.context)
+              )))
             @pending_authorize_steps_count += 1
             @runner.add_step(Batching::PrepareObjectStep.new(
               static_type: @static_type,
@@ -396,7 +407,7 @@ module GraphQL
             next_result_h = {}
             @all_next_results << next_result_h
             @all_next_objects << field_result
-            @runner.set_static_type_at(next_result_h, @static_type)
+            @runner.static_type_at[next_result_h] = @static_type
             graphql_result[key] = next_result_h
           end
         end
