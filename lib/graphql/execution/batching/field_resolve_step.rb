@@ -311,6 +311,7 @@ module GraphQL
                 else
                   ctx ||= @selections_step.query.context
                   ctx.query.current_trace.begin_resolve_type(@static_type, next_object, ctx)
+                  # Lazy resolve_type is supported in PrepareObjectStep currently, see .resolves_lazies check below
                   object_type, _unused_new_value = @runner.schema.resolve_type(@static_type, next_object, ctx)
                   ctx.query.current_trace.end_resolve_type(@static_type, next_object, ctx, object_type)
                   @runner.runtime_types_at_result[result] = object_type
@@ -378,7 +379,11 @@ module GraphQL
             field_result.each_with_index do |inner_f_r, i|
               build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
             end
-          elsif @runner.resolves_lazies || @runner.runtime_types_at_result[graphql_result].authorizes?(@selections_step.query.context) # Handle possible lazy resolve_type response
+          elsif @runner.resolves_lazies || (@static_type.kind.object? && @static_type.authorizes?(@selections_step.query.context)) || (
+                (ctx = @selections_step.query.context) &&
+                (runtime_type, _ignored_new_value = @runner.runtime_types_at_result[graphql_result] ||= @runner.schema.resolve_type(@static_type, field_result, ctx)) &&
+                runtime_type.authorizes?(ctx)
+              )
             @pending_authorize_steps_count += 1
             @runner.add_step(Batching::PrepareObjectStep.new(
               static_type: @static_type,

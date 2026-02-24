@@ -233,18 +233,21 @@ One schema can run _both_ legacy execution and batching execution. This enable a
 
 Performance improvements in batching execution come at the cost of removing support for many "nice-to-have" features in GraphQL-Ruby by default. Those features are addressed here.
 
-### Query Analyzers, including complexity ❌
+### Query Analyzers, including complexity 🌕
 
-TODO: these are not hooked up at all yet.
+Support is identical; this runs before execution using the exact same code.
 
-### Authorization, Scoping ❌
+TODO: accessing loaded arguments inside analzyers may turn out to be slightly different; it still calls legacy code.
 
-TODO: requires a clunky opt-in. This should be made to enable at schema-level, and it should have a future-compatible happy path.
+### Authorization, Scoping 🌕
 
-- [ ] Objects
-- [ ] Fields
-- [ ] Arguments
-- [ ] Resolvers
+Full compatibility, but the internal code which determines _when_ it should be called is still slow and clunky.
+
+- [x] Objects
+- [x] Fields
+- [x] Arguments
+- [x] Resolvers
+- [ ] TODO: improve detection/opt in for this feature
 
 ### Visibility, including Changesets ✅
 
@@ -254,9 +257,13 @@ Visibility works exactly as before; both runtime modules call the same method to
 
 Dataloader _works_ but batching behavior is different in some cases. TODO document those cases, consider better future compatibility.
 
-### Tracing ❌
+### Tracing ✅
 
-TODO: not added at all
+Fully supported, but some legacy hooks are _not_ called. Implement the new hooks instead (existing runtime already calls these new hooks). Not called are:
+
+- `execute_field`, `execute_field_lazy`: use `begin_execute_field`, `end_execute_field` instead. (These may be called multiple times when Dataloader pauses or a GraphQL-Batch promise is returned)
+- `execute_query`, `execute_query_lazy`: use `execute_multiplex` for a top-level hook instead. (Single queries are always executed in a multiplex of size = 1.)
+- `resolve_type`, `authorized`: use `{begin,end}_resolve_type` and `{begin,end}_authorized` instead. (May be called multiple times for Dataloader etc.)
 
 ### Lazy resolution (GraphQL-Batch) 🌕
 
