@@ -184,7 +184,7 @@ module GraphQL
 
           ctx = @selections_step.query.context
 
-          if (@runner.authorizes.fetch(@field_definition) { @runner.authorizes[@field_definition] = @field_definition.authorizes?(ctx) })
+          if @runner.authorizes?(@field_definition, ctx)
             authorized_objects = []
             @object_is_authorized = objects.map { |o|
               is_authed = @field_definition.authorized?(o, @arguments, ctx)
@@ -303,7 +303,6 @@ module GraphQL
               next_objects_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
               next_results_by_type = Hash.new { |h, obj_t| h[obj_t] = [] }.compare_by_identity
 
-              ctx = nil
               @all_next_objects.each_with_index do |next_object, i|
                 result = @all_next_results[i]
                 if (object_type = @runner.runtime_type_at(result))
@@ -375,10 +374,10 @@ module GraphQL
             field_result.each_with_index do |inner_f_r, i|
               build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
             end
-          elsif @runner.resolves_lazies || (@static_type.kind.object? ? @static_type.authorizes?(@selections_step.query.context) : (
-                (runtime_type = @runner.runtime_type_at(graphql_result) || (
-                  ((runtime_type = @runner.resolve_type(@static_type, field_result, @selections_step.query)) && @runner.set_runtime_type_at(graphql_result, runtime_type))
-                )) && runtime_type.authorizes?(@selections_step.query.context)
+          elsif @runner.resolves_lazies || (@static_type.kind.object? ? @runner.authorizes?(@static_type, @selections_step.query.context) : (
+                (runtime_type = (@runner.runtime_type_at(graphql_result) ||
+                  (@runner.set_runtime_type_at(graphql_result, @runner.resolve_type(@static_type, field_result, @selections_step.query)))
+                )) && @runner.authorizes?(runtime_type, @selections_step.query.context)
               ))
             @pending_authorize_steps_count += 1
             @runner.add_step(Batching::PrepareObjectStep.new(

@@ -9,11 +9,13 @@ module GraphQL
           @steps_queue = []
           @runtime_types_at_result = {}.compare_by_identity
           @static_types_at_result = {}.compare_by_identity
+          @authorizes_cache = Hash.new do |h, query_context|
+            h[query_context] = {}.compare_by_identity
+          end.compare_by_identity
           @selected_operation = nil
           @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
           @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
-          @authorizes = {}.compare_by_identity
 
         end
 
@@ -38,6 +40,11 @@ module GraphQL
 
         def set_static_type_at(result, type_definition)
           @static_types_at_result[result] = type_definition
+        end
+
+        def authorizes?(graphql_definition, query_context)
+          auth_cache = @authorizes_cache[query_context]
+          auth_cache.fetch(graphql_definition) { auth_cache[graphql_definition] = graphql_definition.authorizes?(query_context) }
         end
 
         def add_step(step)
@@ -84,7 +91,7 @@ module GraphQL
                 raise ArgumentError, "Unknown operation type: #{selected_operation.operation_type.inspect}"
               end
 
-              if root_type.authorizes?(query.context)
+              if authorizes?(root_type, query.context)
                 query.current_trace.begin_authorized(root_type, query.root_value, query.context)
                 auth_check = schema.sync_lazy(root_type.authorized?(query.root_value, query.context))
                 query.current_trace.end_authorized(root_type, query.root_value, query.context, auth_check)
