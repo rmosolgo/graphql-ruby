@@ -4,6 +4,7 @@ module GraphQL
     class Argument
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
+      include GraphQL::Schema::Member::HasAuthorization
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
       include GraphQL::Schema::Member::HasValidators

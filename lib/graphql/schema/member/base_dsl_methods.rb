@@ -130,10 +130,6 @@ module GraphQL
           true
         end
 
-        def authorizes?(context)
-          true # TODO
-        end
-
         def default_relay
           false
         end

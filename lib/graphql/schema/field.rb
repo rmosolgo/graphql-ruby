@@ -8,6 +8,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasArguments::FieldConfigured
       include GraphQL::Schema::Member::HasAstNode
+      include GraphQL::Schema::Member::HasAuthorization
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasValidators
       extend GraphQL::Schema::FindInheritedValue

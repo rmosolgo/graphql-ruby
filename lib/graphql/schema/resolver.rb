@@ -23,6 +23,7 @@ module GraphQL
       # Really we only need description & comment from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
+      extend GraphQL::Schema::Member::HasAuthorization
       extend GraphQL::Schema::Member::HasValidators
       include Schema::Member::HasPath
       extend Schema::Member::HasPath
