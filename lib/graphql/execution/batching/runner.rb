@@ -55,11 +55,9 @@ module GraphQL
           end
 
           trace.execute_multiplex(multiplex: @multiplex) do
-            if !multiplex_analyzers.empty?
-              trace.begin_analyze_multiplex(@multiplex, multiplex_analyzers)
-              @schema.analysis_engine.analyze_multiplex(@multiplex, multiplex_analyzers)
-              trace.end_analyze_multiplex(@multiplex, multiplex_analyzers)
-            end
+            trace.begin_analyze_multiplex(@multiplex, multiplex_analyzers)
+            @schema.analysis_engine.analyze_multiplex(@multiplex, multiplex_analyzers)
+            trace.end_analyze_multiplex(@multiplex, multiplex_analyzers)
 
             results = []
             queries.each do |query|

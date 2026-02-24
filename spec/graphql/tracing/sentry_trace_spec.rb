@@ -4,12 +4,14 @@ require "spec_helper"
 describe GraphQL::Tracing::SentryTrace do
   module SentryTraceTest
     class Thing < GraphQL::Schema::Object
+      def self.authorized?(_o, _c); true; end
       field :str, String
       def str; "blah"; end
     end
 
     class Query < GraphQL::Schema::Object
       field :int, Integer, null: false
+      def self.authorized?(_o, _c); true; end
 
       def int
         1

@@ -19,6 +19,7 @@ describe GraphQL::Tracing::DataDogTrace do
 
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
+      def self.authorized?(obj, ctx); true; end
 
       field :int, Integer, null: false
 

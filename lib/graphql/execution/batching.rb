@@ -36,11 +36,16 @@ module GraphQL
         def multiplex_batching(query_options, context: {}, max_complexity: self.max_complexity)
           Batching.run_all(self, query_options, context: context, max_complexity: max_complexity)
         end
+
+        def batching_options
+          @batching_options || find_inherited_value(:batching_options, EmptyObjects::EMPTY_HASH)
+        end
+
+        attr_writer :batching_options
       end
 
       def self.use(schema, authorization: true)
         schema.extend(SchemaExtension)
-        schema.singleton_class.attr_accessor(:batching_options)
         schema.batching_options = { authorization: authorization }
       end
 

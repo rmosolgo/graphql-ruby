@@ -20,9 +20,11 @@ if testing_rails?
 
       class Thing < GraphQL::Schema::Object
         implements Nameable
+        def self.authorized?(_o, _c); true; end
       end
 
       class Query < GraphQL::Schema::Object
+        def self.authorized?(_o, _c); true; end
         field :nameable, Nameable do
           argument :id, ID, loads: Thing, as: :thing
         end
@@ -69,6 +71,7 @@ if testing_rails?
         (TESTING_BATCHING ? "execute_field.graphql" : nil), # `loads:` happens during field execution in this case
         "dataloader_source.graphql",
         "execute_field.graphql",
+        (TESTING_BATCHING ? "resolve_type.graphql" : nil), # `loads:`-related?
         "resolve_type.graphql",
         "authorized.graphql",
         "execute_field.graphql",
