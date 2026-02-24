@@ -19,6 +19,7 @@ describe GraphQL::Tracing::DataDogTrace do
 
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
+      def self.authorized?(obj, ctx); true; end
 
       field :int, Integer, null: false
 
@@ -65,13 +66,21 @@ describe GraphQL::Tracing::DataDogTrace do
     Datadog.clear_all
   end
 
+  def exec_query(query_str, context: {}, schema: DataDogTraceTest::TestSchema)
+    if TESTING_BATCHING
+      schema.execute_batching(query_str, context: context)
+    else
+      schema.execute(query_str, context: context)
+    end
+  end
+
   it "falls back to a :tracing_fallback_transaction_name when provided" do
-    DataDogTraceTest::TestSchema.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
+    exec_query("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
     assert_equal ["Abcd"], Datadog::SPAN_RESOURCE_NAMES
   end
 
   it "does not use the :tracing_fallback_transaction_name if an operation name is present" do
-    DataDogTraceTest::TestSchema.execute(
+    exec_query(
       "query Ab { int }",
       context: { tracing_fallback_transaction_name: "Cd" }
     )
@@ -79,18 +88,18 @@ describe GraphQL::Tracing::DataDogTrace do
   end
 
   it "does not set resource if no value can be derived" do
-    DataDogTraceTest::TestSchema.execute("{ int }")
+    exec_query("{ int }")
     assert_equal [], Datadog::SPAN_RESOURCE_NAMES
   end
 
   it "sets component and operation tags" do
-    DataDogTraceTest::TestSchema.execute("{ int }")
+    exec_query("{ int }")
     assert_includes Datadog::SPAN_TAGS, ['component', 'graphql']
     assert_includes Datadog::SPAN_TAGS, ['operation', 'execute']
   end
 
   it "works with dataloader" do
-    DataDogTraceTest::TestSchema.execute("{ str }")
+    exec_query("{ str }")
     expected_keys = [
       "execute.graphql",
       (USING_C_PARSER ? "lex.graphql" : nil),
@@ -104,7 +113,7 @@ describe GraphQL::Tracing::DataDogTrace do
   end
 
   it "sets custom tags" do
-    DataDogTraceTest::CustomTracerTestSchema.execute("{ thing { str } }")
+    exec_query("{ thing { str } }", schema: DataDogTraceTest::CustomTracerTestSchema)
     expected_custom_tags = [
       (USING_C_PARSER ? ["custom:lex", "String"] : nil),
       ["custom:parse", "String"],
