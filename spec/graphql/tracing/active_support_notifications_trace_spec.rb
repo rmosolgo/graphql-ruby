@@ -51,8 +51,13 @@ if testing_rails?
       callback = lambda { |name, started, finished, unique_id, payload|
         events << [name, payload]
       }
+      query_str = "{ nameable(id: 1) { name } }"
       ActiveSupport::Notifications.subscribed(callback) do
-        AsnSchema.execute("{ nameable(id: 1) { name } }")
+        if TESTING_BATCHING
+          AsnSchema.execute_batching(query_str)
+        else
+          AsnSchema.execute(query_str)
+        end
       end
 
       expected_names = [
@@ -61,6 +66,7 @@ if testing_rails?
         "validate.graphql",
         "analyze.graphql",
         "authorized.graphql",
+        (TESTING_BATCHING ? "execute_field.graphql" : nil), # `loads:` happens during field execution in this case
         "dataloader_source.graphql",
         "execute_field.graphql",
         "resolve_type.graphql",

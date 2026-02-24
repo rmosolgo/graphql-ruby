@@ -60,27 +60,33 @@ module GraphQL
                 raise ArgumentError, "Unknown operation type: #{selected_operation.operation_type.inspect}"
               end
 
-              auth_check = schema.sync_lazy(root_type.authorized?(query.root_value, query.context))
-              root_value = if auth_check
-                query.root_value
-              else
-                begin
-                  auth_err = GraphQL::UnauthorizedError.new(object: query.root_value, type: root_type, context: query.context)
-                  new_val = schema.unauthorized_object(auth_err)
-                  if new_val
-                    auth_check = true
+              if root_type.authorizes?(query.context)
+                query.current_trace.begin_authorized(root_type, query.root_value, query.context)
+                auth_check = schema.sync_lazy(root_type.authorized?(query.root_value, query.context))
+                query.current_trace.end_authorized(root_type, query.root_value, query.context, auth_check)
+                root_value = if auth_check
+                  query.root_value
+                else
+                  begin
+                    auth_err = GraphQL::UnauthorizedError.new(object: query.root_value, type: root_type, context: query.context)
+                    new_val = schema.unauthorized_object(auth_err)
+                    if new_val
+                      auth_check = true
+                    end
+                    new_val
+                  rescue GraphQL::ExecutionError => ex_err
+                    # The old runtime didn't add path and ast_nodes to this
+                    query.context.add_error(ex_err)
+                    nil
                   end
-                  new_val
-                rescue GraphQL::ExecutionError => ex_err
-                  # The old runtime didn't add path and ast_nodes to this
-                  query.context.add_error(ex_err)
-                  nil
                 end
-              end
 
-              if !auth_check
-                results << {}
-                next
+                if !auth_check
+                  results << {}
+                  next
+                end
+              else
+                root_value = query.root_value
               end
 
               results << { "data" => data }

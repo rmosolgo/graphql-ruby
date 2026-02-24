@@ -22,9 +22,15 @@ module GraphQL
 
         def value
           if @authorized_value
+            query = @field_resolve_step.selections_step.query
+            query.current_trace.begin_authorized(@resolved_type, @object, query.context)
             @authorized_value = @field_resolve_step.sync(@authorized_value)
+            query.current_trace.end_authorized(@resolved_type, @object, query.context, @authorized_value)
           elsif @resolved_type
+            ctx = @field_resolve_step.selections_step.query.context
+            ctx.query.current_trace.begin_resolve_type(@static_type, @object, ctx)
             @resolved_type, _ignored_value = @field_resolve_step.sync(@resolved_type)
+            ctx.query.current_trace.end_resolve_type(@static_type, @object, ctx, @resolved_type)
           end
           @runner.add_step(self)
         end
@@ -33,7 +39,10 @@ module GraphQL
           case @next_step
           when :resolve_type
             if @static_type.kind.abstract?
-              @resolved_type, _ignored_value = @runner.schema.resolve_type(@static_type, @object, @field_resolve_step.selections_step.query.context)
+              ctx = @field_resolve_step.selections_step.query.context
+              ctx.query.current_trace.begin_resolve_type(@static_type, @object, ctx)
+              @resolved_type, _ignored_value = @runner.schema.resolve_type(@static_type, @object, ctx)
+              ctx.query.current_trace.end_resolve_type(@static_type, @object, ctx, @resolved_type)
             else
               @resolved_type = @static_type
             end
@@ -53,9 +62,11 @@ module GraphQL
         end
 
         def authorize
-          ctx = @field_resolve_step.selections_step.query.context
+          query = @field_resolve_step.selections_step.query
           begin
-            @authorized_value = @resolved_type.authorized?(@object, ctx)
+            query.current_trace.begin_authorized(@resolved_type, @object, query.context)
+            @authorized_value = @resolved_type.authorized?(@object, query.context)
+            query.current_trace.end_authorized(@resolve_type, @object, query.context, @authorized_value)
           rescue GraphQL::UnauthorizedError => auth_err
             @authorization_error = auth_err
           end

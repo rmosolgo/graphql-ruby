@@ -124,7 +124,10 @@ module GraphQL
 
         # Implement that Lazy API
         def value
+          query = @selections_step.query
+          query.current_trace.begin_execute_field(@field_definition, @arguments, @field_results, query)
           @field_results = sync(@field_results)
+          query.current_trace.end_execute_field(@field_definition, @arguments, @field_results, query, @field_results)
           @runner.add_step(self)
           true
         end
@@ -195,7 +198,9 @@ module GraphQL
             @object_is_authorized = AlwaysAuthorized
           end
 
+          ctx.query.current_trace.begin_execute_field(@field_definition, @arguments, authorized_objects, ctx.query)
           @field_results = @field_definition.resolve_batch(self, authorized_objects, ctx, @arguments)
+          ctx.query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, ctx.query, @field_results)
 
           if @runner.resolves_lazies # TODO extract this
             lazies = false
@@ -305,7 +310,10 @@ module GraphQL
                   # OK
                 else
                   ctx ||= @selections_step.query.context
+                  ctx.query.current_trace.begin_resolve_type(@static_type, next_object, ctx)
                   object_type, _unused_new_value = @runner.schema.resolve_type(@static_type, next_object, ctx)
+                  ctx.query.current_trace.end_resolve_type(@static_type, next_object, ctx, object_type)
+                  @runner.runtime_types_at_result[result] = object_type
                 end
                 next_objects_by_type[object_type] << next_object
                 next_results_by_type[object_type] << result
@@ -370,7 +378,7 @@ module GraphQL
             field_result.each_with_index do |inner_f_r, i|
               build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
             end
-          elsif @runner.resolves_lazies # Handle possible lazy resolve_type response
+          elsif @runner.resolves_lazies || @runner.runtime_types_at_result[graphql_result].authorizes?(@selections_step.query.context) # Handle possible lazy resolve_type response
             @pending_authorize_steps_count += 1
             @runner.add_step(Batching::PrepareObjectStep.new(
               static_type: @static_type,
