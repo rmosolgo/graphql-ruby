@@ -29,6 +29,7 @@ linter:
 
   exclude:
     - '**/*.html'
+    - 'vendor/**/*'
 
   # # Exit with error code when diagnostics of this severity or higher are present
   # # Valid values: error (default), warning, info, hint
