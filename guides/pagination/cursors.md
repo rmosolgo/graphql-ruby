@@ -39,4 +39,4 @@ end
 
 Now, all connections will use URL-safe base-64 encoding.
 
-From a connection instance, the `cursor_encoders` methods are available via {{ "GraphQL::Pagination::Connection#encode" | api_doc }} and {{ "GraphQL::Pagination::Connection#decode" | api_doc }}
+From a connection instance, the `cursor_encoder` methods are available via [GraphQL::Pagination::Connection](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/pagination/connection.rb) `#encode` and `#decode`
