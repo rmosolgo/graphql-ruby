@@ -1937,4 +1937,33 @@ type ReachableType implements Node {
 
     assert GraphQL::Schema.from_definition(sdl).to_definition
   end
+
+  it "lets you add extras after definition" do
+    schema_definition = <<~GRAPHQL
+      type Query {
+        testField: String!
+      }
+    GRAPHQL
+
+    lookahead = nil
+    resolver_implementation = {
+      "Query" => {
+        "testField" => lambda do |object, args, context|
+          lookahead = args[:lookahead]
+          "test value"
+        end
+      }
+    }
+
+    schema = GraphQL::Schema.from_definition(
+      schema_definition,
+      default_resolve: resolver_implementation
+    )
+
+    schema.query.fields["testField"].extras([:lookahead])
+
+    result = schema.execute("{ testField }")
+    assert_equal "test value", result["data"]["testField"]
+    assert_instance_of GraphQL::Execution::Lookahead, lookahead
+  end
 end
