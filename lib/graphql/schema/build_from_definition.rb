@@ -519,35 +519,22 @@ module GraphQL
 
             # Don't do this for interfaces
             if default_resolve
-              define_field_resolve_method(owner, resolve_method_name, field_definition.name, field_definition.arguments.empty?)
+              define_field_resolve_method(owner, resolve_method_name, field_definition.name)
             end
           end
         end
 
-        def define_field_resolve_method(owner, method_name, field_name, empty_arguments)
-          if empty_arguments
-            owner.define_method(method_name) {
-              field_instance = context.types.field(owner, field_name)
-              context.schema.definition_default_resolve.call(self.class, field_instance, object, EmptyObjects::EMPTY_HASH, context)
-            }
-            owner.define_singleton_method(method_name) { |objects, context|
-              field_instance = context.types.field(owner, field_name)
-              objects.map do |object|
-                context.schema.definition_default_resolve.call(self, field_instance, object, EmptyObjects::EMPTY_HASH, context)
-              end
-            }
-          else
-            owner.define_method(method_name) { |**args|
-              field_instance = context.types.field(owner, field_name)
-              context.schema.definition_default_resolve.call(self.class, field_instance, object, args, context)
-            }
-            owner.define_singleton_method(method_name) { |objects, context, **args|
-              field_instance = context.types.field(owner, field_name)
-              objects.map do |object|
-                context.schema.definition_default_resolve.call(self, field_instance, object, args, context)
-              end
-            }
-          end
+        def define_field_resolve_method(owner, method_name, field_name)
+          owner.define_method(method_name) { |**args|
+            field_instance = context.types.field(owner, field_name)
+            context.schema.definition_default_resolve.call(self.class, field_instance, object, args, context)
+          }
+          owner.define_singleton_method(method_name) { |objects, context, **args|
+            field_instance = context.types.field(owner, field_name)
+            objects.map do |object|
+              context.schema.definition_default_resolve.call(self, field_instance, object, args, context)
+            end
+          }
         end
 
         def build_resolve_type(lookup_hash, directives, missing_type_handler)
