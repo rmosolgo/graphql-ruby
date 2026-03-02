@@ -73,7 +73,7 @@ maxmemory-policy noeviction
 appendonly yes
 ```
 
-Otherwise, Redis will drop data that doesn't fit in memory (read more in ["Redis persistence"](https://redis.io/topics/persistence)).
+Otherwise, Redis will drop data that doesn't fit in memory (read more in ["Redis persistence"](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)).
 
 If you're already using Redis in your application, see ["Storing Data in Redis"](https://www.mikeperham.com/2015/09/24/storing-data-with-redis/) for options to isolate data and tune your configuration.
 
@@ -156,7 +156,7 @@ if result.subscription?
 end
 ```
 
-Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
+Read more here: ["Using CORS"](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS).
 
 ### Payload Compression
 
