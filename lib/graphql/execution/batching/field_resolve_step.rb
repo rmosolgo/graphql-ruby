@@ -275,7 +275,7 @@ module GraphQL
           memos = @extended&.memos || EmptyObjects::EMPTY_HASH
           @field_definition.extensions.each_with_index do |ext, idx|
             memo = memos[idx]
-            @field_results = ext.after_resolve(object: @extended.object, arguments: @extended.arguments, context: ctx, value: @field_results, memo: memo)
+            @field_results = ext.after_resolve(object: @extended.object, arguments: @extended.arguments, context: ctx, value: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
           end
 
           return_type = @field_definition.type
