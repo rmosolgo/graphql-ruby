@@ -3,7 +3,7 @@ module GraphQL
   module Introspection
     class EntryPoints < Introspection::BaseObject
       field :__schema, GraphQL::Schema::LateBoundType.new("__Schema"), "This GraphQL schema", null: false, dynamic_introspection: true, resolve_static: :__schema
-      field :__type, GraphQL::Schema::LateBoundType.new("__Type"), "A type in the GraphQL system", dynamic_introspection: true do
+      field :__type, GraphQL::Schema::LateBoundType.new("__Type"), "A type in the GraphQL system", dynamic_introspection: true, resolve_static: :__type do
         argument :name, String
       end
 
@@ -19,6 +19,10 @@ module GraphQL
       end
 
       def __type(name:)
+        self.class.__type(context, name: name)
+      end
+
+      def self.__type(context, name:)
         if context.types.reachable_type?(name) && (type = context.types.type(name))
           type
         elsif (type = context.schema.extra_types.find { |t| t.graphql_name == name })

@@ -231,7 +231,14 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
-    class IntegerWrapper < GraphQL::Schema::Object
+    class BaseObject < GraphQL::Schema::Object
+      class BaseField < GraphQL::Schema::Field
+        include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+      end
+      field_class(BaseField)
+    end
+
+    class IntegerWrapper < BaseObject
       implements HasValue
       field :value, Integer, null: false, method: :itself
 
@@ -360,8 +367,8 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver12 < GraphQL::Schema::Mutation
       argument :int1, Integer
       argument :int2, Integer
-      field :error_messages, [String]
-      field :value, Integer
+      field :error_messages, [String], hash_key: :error_messages
+      field :value, Integer, hash_key: :value
       def authorized?(int1:, int2:)
         if int1 + int2 > context[:max_int]
           return false, { error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] }
@@ -383,7 +390,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver14 < GraphQL::Schema::RelayClassicMutation
-      field :number, Integer, null: false
+      field :number, Integer, null: false, hash_key: :number
 
       def authorized?
         true
@@ -398,7 +405,7 @@ describe GraphQL::Schema::Resolver do
       argument :number_s, String, prepare: ->(v, ctx) { v.to_i }
       argument :loads_id, ID, loads: IntegerWrapper
 
-      field :result, Integer, null: false
+      field :result, Integer, null: false, hash_key: :result
 
       def authorized?(**_args)
         if arguments[:number_s] == 1 && arguments[:loads] == 1
@@ -422,7 +429,7 @@ describe GraphQL::Schema::Resolver do
       argument :label_id, ID, required: false, loads: HasValue
       argument :label_ids, [ID], required: false, loads: HasValue
 
-      field :inputs, String, null: false
+      field :inputs, String, null: false, hash_key: :inputs
 
       def resolve(**inputs)
         {
@@ -443,14 +450,14 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
-    class Mutation < GraphQL::Schema::Object
+    class Mutation < BaseObject
       field :mutation_with_nullable_loads_argument, mutation: MutationWithNullableLoadsArgument
       field :mutation_with_required_loads_argument, mutation: MutationWithRequiredLoadsArgument
       field :resolver_with_invalid_ready, resolver: ResolverWithInvalidReady
     end
 
-    class Query < GraphQL::Schema::Object
-      class CustomField < GraphQL::Schema::Field
+    class Query < BaseObject
+      class CustomField < BaseField
         def resolve_field(*args)
           value = super
           if @name == "resolver3"
@@ -507,6 +514,7 @@ describe GraphQL::Schema::Resolver do
       mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
+      use GraphQL::Execution::Batching if TESTING_BATCHING
 
       def self.object_from_id(id, ctx)
         if id == "invalid"

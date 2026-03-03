@@ -143,6 +143,7 @@ if RUBY_VERSION >= "3.2.0"
 
       query(Query)
       use GraphQL::Dataloader::AsyncDataloader
+      use GraphQL::Execution::Batching if TESTING_BATCHING
     end
 
     module AsyncDataloaderAssertions

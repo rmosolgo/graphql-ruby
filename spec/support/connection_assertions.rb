@@ -53,7 +53,15 @@ module ConnectionAssertions
       self.connection_class = connection_class
       self.total_count_connection_class = total_count_connection_class
 
-      item = Class.new(GraphQL::Schema::Object) do
+      base_field = Class.new(GraphQL::Schema::Field) do
+        include GraphQL::Execution::Batching::FieldCompatibility if TESTING_BATCHING
+      end
+
+      base_object = Class.new(GraphQL::Schema::Object) do
+        field_class(base_field)
+      end
+
+      item = Class.new(base_object) do
         graphql_name "Item"
         field :name, String, null: false
       end
@@ -94,7 +102,7 @@ module ConnectionAssertions
         edge_type custom_item_edge
       end
 
-      query = Class.new(GraphQL::Schema::Object) do
+      query = Class.new(base_object) do
         graphql_name "Query"
         field :items, item.connection_type, null: false do
           argument :max_page_size_override, Integer, required: false
@@ -161,6 +169,9 @@ module ConnectionAssertions
       end
 
       query(query)
+      if TESTING_BATCHING
+        use GraphQL::Execution::Batching
+      end
     end
   end
 

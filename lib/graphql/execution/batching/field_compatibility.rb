@@ -49,23 +49,6 @@ module GraphQL
               return maybe_err
             end
           end
-          if extras.include?(:lookahead)
-            if kwargs.frozen?
-              kwargs = kwargs.dup
-            end
-            kwargs[:lookahead] = Execution::Lookahead.new(
-              query: context.query,
-              ast_nodes: frs.ast_nodes || Array(frs.ast_node),
-              field: self,
-            )
-          end
-
-          if extras.include?(:ast_node)
-            if kwargs.frozen?
-              kwargs = kwargs.dup
-            end
-            kwargs[:ast_node] = frs.ast_node
-          end
 
           if @owner.method_defined?(@resolver_method)
             results = []

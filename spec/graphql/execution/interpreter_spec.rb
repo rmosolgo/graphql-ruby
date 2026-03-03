@@ -18,7 +18,20 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Expansion < GraphQL::Schema::Object
+    class BaseField < GraphQL::Schema::Field
+      include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+    end
+
+    class BaseObject < GraphQL::Schema::Object
+      field_class(BaseField)
+    end
+
+    module BaseInterface
+      include GraphQL::Schema::Interface
+      field_class(BaseField)
+    end
+
+    class Expansion < BaseObject
       field :sym, String, null: false
       field :lazy_sym, String, null: false
       field :name, String, null: false
@@ -46,7 +59,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Card < GraphQL::Schema::Object
+    class Card < BaseObject
       field :name, String, null: false
       field :colors, "[InterpreterTest::Color]", null: false
       field :expansion, Expansion, null: false
@@ -78,7 +91,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class FieldCounter < GraphQL::Schema::Object
+    class FieldCounter < BaseObject
       implements GraphQL::Types::Relay::Node
 
       field :field_counter, FieldCounter, null: false
@@ -139,7 +152,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Query < GraphQL::Schema::Object
+    class Query < BaseObject
       # Try a root-level authorized hook that returns a lazy value
       def self.authorized?(obj, ctx)
         Box.new(value: true)
@@ -218,7 +231,7 @@ describe GraphQL::Execution::Interpreter do
       include GraphQL::Types::Relay::HasNodeField
       include GraphQL::Types::Relay::HasNodesField
 
-      class NestedQueryResult < GraphQL::Schema::Object
+      class NestedQueryResult < BaseObject
         field :result, String
         field :current_path, [String]
       end
@@ -236,7 +249,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Counter < GraphQL::Schema::Object
+    class Counter < BaseObject
       field :value, Integer, null: false
 
       def value
@@ -273,7 +286,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Mutation < GraphQL::Schema::Object
+    class Mutation < BaseObject
       field :increment_counter, Counter, null: false
 
       def increment_counter
@@ -292,6 +305,7 @@ describe GraphQL::Execution::Interpreter do
       lazy_resolve(Box, :value)
       uses_raw_value(true)
       use GraphQL::Schema::AlwaysVisible
+      use(GraphQL::Execution::Batching) if TESTING_BATCHING
 
       def self.object_from_id(id, ctx)
         OpenStruct.new(id: id)

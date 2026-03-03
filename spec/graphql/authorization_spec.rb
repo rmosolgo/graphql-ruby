@@ -32,6 +32,8 @@ describe "GraphQL::Authorization" do
 
     class BaseField < GraphQL::Schema::Field
       argument_class BaseArgument
+      include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+
       def visible?(context)
         super && (context[:hide] ? @name != "hidden" : true)
       end
@@ -351,6 +353,7 @@ describe "GraphQL::Authorization" do
       mutation(Mutation)
       directive(Nothing)
       use GraphQL::Schema::Warden if ADD_WARDEN
+      use GraphQL::Execution::Batching if TESTING_BATCHING
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)

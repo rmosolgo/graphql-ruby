@@ -3,13 +3,20 @@ require "spec_helper"
 
 describe GraphQL::Tracing::SentryTrace do
   module SentryTraceTest
-    class Thing < GraphQL::Schema::Object
+    class BaseObject < GraphQL::Schema::Object
+      class BaseField < GraphQL::Schema::Field
+        include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+      end
+      field_class(BaseField)
+    end
+
+    class Thing < BaseObject
       def self.authorized?(_o, _c); true; end
       field :str, String
       def str; "blah"; end
     end
 
-    class Query < GraphQL::Schema::Object
+    class Query < BaseObject
       field :int, Integer, null: false
       def self.authorized?(_o, _c); true; end
 
@@ -32,11 +39,13 @@ describe GraphQL::Tracing::SentryTrace do
       end
       trace_with OtherTrace
       trace_with GraphQL::Tracing::SentryTrace
+      use GraphQL::Execution::Batching if TESTING_BATCHING
     end
 
     class SchemaWithTransactionName < GraphQL::Schema
       query(Query)
       trace_with(GraphQL::Tracing::SentryTrace, set_transaction_name: true)
+      use GraphQL::Execution::Batching if TESTING_BATCHING
     end
   end
 

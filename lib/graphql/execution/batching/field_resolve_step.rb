@@ -168,8 +168,9 @@ module GraphQL
         end
 
         def execute_field
+          query = @selections_step.query
           field_name = @ast_node.name
-          @field_definition = @selections_step.query.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
+          @field_definition = query.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
           objects = @selections_step.objects
           if field_name == "__typename"
             # TODO handle custom introspection
@@ -179,10 +180,33 @@ module GraphQL
             return
           end
 
+          if @field_definition.dynamic_introspection
+            objects = @selections_step.graphql_objects
+          end
+
           @arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
+          @field_definition.extras.each do |extra|
+            case extra
+            when :lookahead
+              if @arguments.frozen?
+                @arguments = @arguments.dup
+              end
+              @arguments[:lookahead] = Execution::Lookahead.new(
+                query: query,
+                ast_nodes: ast_nodes,
+                field: @field_definition,
+              )
+            when :ast_node
+              if @arguments.frozen?
+                @arguments = @arguments.dup
+              end
+              @arguments[:ast_node] = ast_node
+            else
+              raise ArgumentError, "This extra isn't supported yet: #{extra.inspect}. Open an issue on GraphQL-Ruby to add compatibility for it."
+            end
+          end
 
-
-          ctx = @selections_step.query.context
+          ctx = query.context
 
           if @runner.authorization && @runner.authorizes?(@field_definition, ctx)
             authorized_objects = []
@@ -198,12 +222,13 @@ module GraphQL
             @object_is_authorized = AlwaysAuthorized
           end
 
-          ctx.query.current_trace.begin_execute_field(@field_definition, @arguments, authorized_objects, ctx.query)
+          query.current_trace.begin_execute_field(@field_definition, @arguments, authorized_objects, query)
           @field_results = @field_definition.resolve_batch(self, authorized_objects, ctx, @arguments)
-          ctx.query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, ctx.query, @field_results)
+          query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
 
           if @runner.resolves_lazies # TODO extract this
             lazies = false
+            # TODO add a per-query cache of `.lazy?`
             @field_results.each do |field_result|
               if @runner.schema.lazy?(field_result)
                 lazies = true

@@ -49,7 +49,14 @@ module LazyHelpers
     end
   end
 
-  class LazySum < GraphQL::Schema::Object
+  class BaseObject < GraphQL::Schema::Object
+    class BaseField < GraphQL::Schema::Field
+      include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+    end
+    field_class(BaseField)
+  end
+
+  class LazySum < BaseObject
     field :value, Integer
     def value
       if object == MAGIC_NUMBER_THAT_RAISES_ERROR
@@ -85,7 +92,7 @@ module LazyHelpers
     alias :nullable_nested_sum :nested_sum
   end
 
-  class LazyQuery < GraphQL::Schema::Object
+  class LazyQuery < BaseObject
     field :int, Integer, null: false do
       argument :value, Integer
       argument :plus, Integer, required: false, default_value: 0
@@ -182,6 +189,7 @@ module LazyHelpers
     lazy_resolve(SumAll, :value)
     trace_with(SumAllInstrumentation2)
     trace_with(SumAllInstrumentation)
+    use(GraphQL::Execution::Batching) if TESTING_BATCHING
 
     def self.sync_lazy(lazy)
       if lazy.is_a?(SumAll) && lazy.own_value > 1000

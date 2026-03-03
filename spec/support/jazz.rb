@@ -55,6 +55,7 @@ module Jazz
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
     argument_class BaseArgument
+    include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
     attr_reader :upcase
 
     def initialize(*args, **options, &block)
@@ -839,6 +840,7 @@ module Jazz
 
   module Introspection
     class TypeType < GraphQL::Introspection::TypeType
+
       def self.authorized?(_obj, ctx)
         if ctx[:cant_introspect]
           raise GraphQL::ExecutionError, "You're not allowed to introspect here"
@@ -847,7 +849,13 @@ module Jazz
         end
       end
 
+      field :name, String, resolve_each: :graphql_type_name
+
       def name
+        self.class.graphql_type_name(object, context)
+      end
+
+      def self.graphql_type_name(object, context)
         n = object.graphql_name
         n && n.upcase
       end
@@ -876,23 +884,35 @@ module Jazz
     end
 
     class DynamicFields < GraphQL::Introspection::DynamicFields
-      field :__typename_length, Int, null: false
-      field :__ast_node_class, String, null: false, extras: [:ast_node]
+      field :__typename_length, Int, null: false, resolve_each: true
+      field :__ast_node_class, String, null: false, extras: [:ast_node], resolve_static: true
 
       def __typename_length
-        __typename.length
+        self.class.__typename_length(object, context)
+      end
+
+      def self.__typename_length(object, context)
+        __typename(object, context).length
       end
 
       def __ast_node_class(ast_node:)
+        self.class.__ast_node_class(context, ast_node: ast_node)
+      end
+
+      def self.__ast_node_class(context, ast_node:)
         ast_node.class.name
       end
     end
 
     class EntryPoints < GraphQL::Introspection::EntryPoints
-      field :__classname, String, "The Ruby class name of the root object", null: false
+      field :__classname, String, "The Ruby class name of the root object", null: false, resolve_each: :__classname
 
       def __classname
-        object.object.class.name
+        self.class.__classname(object, context)
+      end
+
+      def self.__classname(object, context)
+        object.object.class.name # TODO don't pass instances here
       end
     end
   end
@@ -917,6 +937,7 @@ module Jazz
     extra_types BlogPost
     use GraphQL::Dataloader
     use GraphQL::Schema::Warden if ADD_WARDEN
+    use GraphQL::Execution::Batching if TESTING_BATCHING
 
 
     def self.resolves_lazies?

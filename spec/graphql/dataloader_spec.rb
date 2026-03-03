@@ -137,8 +137,21 @@ describe GraphQL::Dataloader do
       end
     end
 
-    module Ingredient
+    class BaseField < GraphQL::Schema::Field
+      include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+    end
+
+    class BaseObject < GraphQL::Schema::Object
+      field_class(BaseField)
+    end
+
+    module BaseInterface
       include GraphQL::Schema::Interface
+      field_class(BaseField)
+    end
+
+    module Ingredient
+      include BaseInterface
       field :name, String, null: false
       field :id, ID, null: false
 
@@ -149,19 +162,19 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Grain < GraphQL::Schema::Object
+    class Grain < BaseObject
       implements Ingredient
     end
 
-    class LeaveningAgent < GraphQL::Schema::Object
+    class LeaveningAgent < BaseObject
       implements Ingredient
     end
 
-    class Dairy < GraphQL::Schema::Object
+    class Dairy < BaseObject
       implements Ingredient
     end
 
-    class Recipe < GraphQL::Schema::Object
+    class Recipe < BaseObject
       def self.authorized?(obj, ctx)
         ctx.dataloader.with(AuthorizedSource, ctx[:batched_calls_counter]).load(obj)
       end
@@ -188,7 +201,7 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Cookbook < GraphQL::Schema::Object
+    class Cookbook < BaseObject
       field :featured_recipe, Recipe
 
       def self.all_featured_recipe(objects, context)
@@ -200,7 +213,7 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Query < GraphQL::Schema::Object
+    class Query < BaseObject
       field :recipes, [Recipe], null: false, resolve_static: true
 
       def self.recipes(context)
@@ -456,7 +469,7 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Mutation < GraphQL::Schema::Object
+    class Mutation < BaseObject
       field :mutation_1, mutation: Mutation1
       field :mutation_2, mutation: Mutation2
       field :mutation_3, mutation: Mutation3
@@ -484,6 +497,7 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
+    use GraphQL::Execution::Batching if TESTING_BATCHING
     lazy_resolve Proc, :call
 
     class FieldTestError < StandardError; end
@@ -579,6 +593,7 @@ describe GraphQL::Dataloader do
 
     query(Query)
     use GraphQL::Dataloader
+    use GraphQL::Execution::Batching if TESTING_BATCHING
   end
 
   module DataloaderAssertions
