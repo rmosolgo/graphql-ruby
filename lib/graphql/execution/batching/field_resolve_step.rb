@@ -152,6 +152,13 @@ module GraphQL
           else
             execute_field
           end
+        rescue StandardError => err
+          if @field_definition && !err.message.start_with?("Resolving ")
+            # TODO remove this check ^^^^^^ when NullDataloader isn't recursive
+            raise err, "Resolving #{@field_definition.path}: #{err.message}", err.backtrace
+          else
+            raise
+          end
         end
 
         def add_graphql_error(err)
@@ -223,7 +230,15 @@ module GraphQL
           end
 
           query.current_trace.begin_execute_field(@field_definition, @arguments, authorized_objects, query)
-          @field_results = @field_definition.resolve_batch(self, authorized_objects, ctx, @arguments)
+          # TODO optimize this away when not needed
+          @extended = GraphQL::Schema::Field::ExtendedState.new(@arguments, authorized_objects)
+          @field_results = @field_definition.run_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
+            if (added_extras = @extended.added_extras)
+              args = args.dup
+              added_extras.each { |e| args.delete(e) }
+            end
+            @field_definition.resolve_batch(self, objs, ctx, args)
+          end
           query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
 
           if @runner.resolves_lazies # TODO extract this
@@ -256,6 +271,13 @@ module GraphQL
         end
 
         def build_results
+          ctx = @selections_step.query.context
+
+          @field_definition.extensions.each_with_index do |ext, idx|
+            memo = @extended.memos[idx]
+            @field_results = ext.after_resolve(object: @extended.object, arguments: @extended.arguments, context: ctx, value: @field_results, memo: memo)
+          end
+
           return_type = @field_definition.type
           return_result_type = return_type.unwrap
 
@@ -299,7 +321,6 @@ module GraphQL
             end
           else
             results = @selections_step.results
-            ctx = @selections_step.query.context
             field_result_idx = 0
             i = 0
             s = results.size

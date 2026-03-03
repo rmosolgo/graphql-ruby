@@ -56,7 +56,14 @@ module GraphQL
               value
             else
               context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
-              context.schema.connections.wrap(field, object.object, value, original_arguments, context)
+              if object.is_a?(GraphQL::Schema::Object)
+                context.schema.connections.wrap(field, object.object, value, original_arguments, context)
+              else # Execution::Batching
+                value.map.each_with_index do |collection, idx|
+                  parent_obj = object[idx]
+                  context.schema.connections.wrap(field, parent_obj, collection, original_arguments, context)
+                end
+              end
             end
           end
         end

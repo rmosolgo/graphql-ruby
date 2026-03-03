@@ -955,6 +955,8 @@ ERR
         end
       end
 
+      public
+
       def run_extensions_before_resolve(obj, args, ctx, extended, idx: 0)
         extension = @extensions[idx]
         if extension
@@ -977,6 +979,8 @@ ERR
           yield(obj, args)
         end
       end
+
+      private
 
       def apply_own_complexity_to(child_complexity, query, nodes)
         case (own_complexity = complexity)
