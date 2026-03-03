@@ -12,18 +12,25 @@ if testing_rails?
 
       module Nameable
         include GraphQL::Schema::Interface
-        field :name, String
+        field :name, String, hash_key: :name
         def self.resolve_type(...)
           Thing
         end
       end
 
-      class Thing < GraphQL::Schema::Object
+      class BaseObject < GraphQL::Schema::Object
+        class BaseField < GraphQL::Schema::Field
+          include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+        end
+        field_class(BaseField)
+      end
+
+      class Thing < BaseObject
         implements Nameable
         def self.authorized?(_o, _c); true; end
       end
 
-      class Query < GraphQL::Schema::Object
+      class Query < BaseObject
         def self.authorized?(_o, _c); true; end
         field :nameable, Nameable do
           argument :id, ID, loads: Thing, as: :thing
@@ -37,6 +44,7 @@ if testing_rails?
       query(Query)
       trace_with GraphQL::Tracing::ActiveSupportNotificationsTrace
       use GraphQL::Dataloader
+      use GraphQL::Execution::Batching
       orphan_types(Thing)
 
       def self.object_from_id(id, ctx)

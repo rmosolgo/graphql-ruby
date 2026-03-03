@@ -11,13 +11,20 @@ describe GraphQL::Tracing::DataDogTrace do
       attr_reader :value
     end
 
-    class Thing < GraphQL::Schema::Object
+    class BaseObject < GraphQL::Schema::Object
+      class BaseField < GraphQL::Schema::Field
+        include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+      end
+      field_class(BaseField)
+    end
+
+    class Thing < BaseObject
       field :str, String
 
       def str; Box.new("blah"); end
     end
 
-    class Query < GraphQL::Schema::Object
+    class Query < BaseObject
       include GraphQL::Types::Relay::HasNodeField
       def self.authorized?(obj, ctx); true; end
 
@@ -47,6 +54,7 @@ describe GraphQL::Tracing::DataDogTrace do
       use GraphQL::Dataloader
       trace_with(GraphQL::Tracing::DataDogTrace)
       lazy_resolve(Box, :value)
+      use GraphQL::Execution::Batching if TESTING_BATCHING
     end
 
     class CustomTracerTestSchema < GraphQL::Schema
@@ -59,6 +67,7 @@ describe GraphQL::Tracing::DataDogTrace do
       query(Query)
       trace_with(CustomDataDogTracing)
       lazy_resolve(Box, :value)
+      use GraphQL::Execution::Batching if TESTING_BATCHING
     end
   end
 
