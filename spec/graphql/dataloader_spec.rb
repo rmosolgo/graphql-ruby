@@ -1147,16 +1147,22 @@ describe GraphQL::Dataloader do
           err = assert_raises GraphQL::Error do
             exec_query("{ testError }")
           end
-
-          assert_equal "Field error", err.message
+          expected_message = "Field error"
+          if TESTING_BATCHING
+            expected_message = "Resolving Query.testError: #{expected_message}"
+          end
+          assert_equal expected_message, err.message
         end
 
         it "raises errors from sources" do
           err = assert_raises GraphQL::Error do
             exec_query("{ testError(source: true) }")
           end
-
-          assert_equal "Source error on: [1]", err.message
+          expected_message = "Source error on: [1]"
+          if TESTING_BATCHING
+            expected_message = "Resolving Query.testError: #{expected_message}"
+          end
+          assert_equal expected_message, err.message
         end
 
         it "works with very very large queries" do

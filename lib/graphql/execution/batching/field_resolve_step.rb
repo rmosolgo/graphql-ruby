@@ -272,9 +272,9 @@ module GraphQL
 
         def build_results
           ctx = @selections_step.query.context
-
+          memos = @extended&.memos || EmptyObjects::EMPTY_HASH
           @field_definition.extensions.each_with_index do |ext, idx|
-            memo = @extended.memos[idx]
+            memo = memos[idx]
             @field_results = ext.after_resolve(object: @extended.object, arguments: @extended.arguments, context: ctx, value: @field_results, memo: memo)
           end
 
