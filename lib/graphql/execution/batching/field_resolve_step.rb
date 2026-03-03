@@ -20,6 +20,7 @@ module GraphQL
           @static_type = nil
           @next_selections = nil
           @object_is_authorized = nil
+          @finish_extension_idx = nil # TODO don't initialize this, not often used?
         end
 
         attr_reader :ast_node, :key, :parent_type, :selections_step, :runner, :field_definition, :object_is_authorized, :arguments
@@ -147,6 +148,8 @@ module GraphQL
         def call
           if @enqueued_authorization && @pending_authorize_steps_count == 0
             enqueue_next_steps
+          elsif @finish_extension_idx
+            finish_extensions
           elsif @field_results
             build_results
           else
@@ -240,9 +243,18 @@ module GraphQL
             @field_definition.resolve_batch(self, objs, ctx, args)
           end
           query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
+          @finish_extension_idx = 0
 
+          if any_lazy_results?
+            @runner.dataloader.lazy_at_depth(path.size, self)
+          else
+            finish_extensions
+          end
+        end
+
+        def any_lazy_results?
+          lazies = false
           if @runner.resolves_lazies # TODO extract this
-            lazies = false
             # TODO add a per-query cache of `.lazy?`
             @field_results.each do |field_result|
               if @runner.schema.lazy?(field_result)
@@ -259,25 +271,28 @@ module GraphQL
                 end
               end
             end
-
-            if lazies
-              @runner.dataloader.lazy_at_depth(path.size, self)
-            else
-              build_results
-            end
-          else
-            build_results
           end
+          lazies
+        end
+
+        def finish_extensions
+          ctx = @selections_step.query.context
+          memos = @extended.memos || EmptyObjects::EMPTY_HASH
+          while ext = @field_definition.extensions[@finish_extension_idx]
+            memo = memos[@finish_extension_idx]
+            @field_results = ext.after_resolve(object: @extended.object, arguments: @extended.arguments, context: ctx, value: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
+            @finish_extension_idx += 1
+            if any_lazy_results?
+              @runner.dataloader.lazy_at_depth(path.size, self)
+              return
+            end
+          end
+
+          @finish_extension_idx = nil
+          build_results
         end
 
         def build_results
-          ctx = @selections_step.query.context
-          memos = @extended&.memos || EmptyObjects::EMPTY_HASH
-          @field_definition.extensions.each_with_index do |ext, idx|
-            memo = memos[idx]
-            @field_results = ext.after_resolve(object: @extended.object, arguments: @extended.arguments, context: ctx, value: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
-          end
-
           return_type = @field_definition.type
           return_result_type = return_type.unwrap
 
@@ -320,6 +335,7 @@ module GraphQL
               # Do nothing -- it will enqueue itself later
             end
           else
+            ctx = @selections_step.query.context
             results = @selections_step.results
             field_result_idx = 0
             i = 0
