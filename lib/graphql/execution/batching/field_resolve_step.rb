@@ -20,7 +20,7 @@ module GraphQL
           @static_type = nil
           @next_selections = nil
           @object_is_authorized = nil
-          @finish_extension_idx = nil # TODO don't initialize this, not often used?
+          @finish_extension_idx = nil
           @was_scoped = nil
         end
 
@@ -240,22 +240,29 @@ module GraphQL
           end
 
           query.current_trace.begin_execute_field(@field_definition, @arguments, authorized_objects, query)
-          # TODO optimize this away when not needed
-          @extended = GraphQL::Schema::Field::ExtendedState.new(@arguments, authorized_objects)
-          @field_results = @field_definition.run_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
-            if (added_extras = @extended.added_extras)
-              args = args.dup
-              added_extras.each { |e| args.delete(e) }
+          has_extensions = @field_definition.extensions.size > 0
+          if has_extensions
+            @extended = GraphQL::Schema::Field::ExtendedState.new(@arguments, authorized_objects)
+            @field_results = @field_definition.run_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
+              if (added_extras = @extended.added_extras)
+                args = args.dup
+                added_extras.each { |e| args.delete(e) }
+              end
+              @field_definition.resolve_batch(self, objs, ctx, args)
             end
-            @field_definition.resolve_batch(self, objs, ctx, args)
+            @finish_extension_idx = 0
+          else
+            @field_results = @field_definition.resolve_batch(self, authorized_objects, ctx, @arguments)
           end
+
           query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
-          @finish_extension_idx = 0
 
           if any_lazy_results?
             @runner.dataloader.lazy_at_depth(path.size, self)
-          else
+          elsif has_extensions
             finish_extensions
+          else
+            build_results
           end
         end
 

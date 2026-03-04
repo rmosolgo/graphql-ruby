@@ -5,19 +5,23 @@ describe GraphQL::Schema::FieldExtension do
   module FilterTestSchema
     class DoubleFilter < GraphQL::Schema::FieldExtension
       def after_resolve(object:, value:, arguments:, context:, memo:)
-        value * 2
+        object.is_a?(Array) ? value.map { |v| v * 2 } : value * 2
       end
     end
 
     class PowerOfFilter < GraphQL::Schema::FieldExtension
       def after_resolve(object:, value:, arguments:, context:, memo:)
-        value**options.fetch(:power, 2)
+        object.is_a?(Array) ? value.map {|v| v**options.fetch(:power,2)} : value**options.fetch(:power, 2)
       end
     end
 
     class MultiplyByOption < GraphQL::Schema::FieldExtension
       def after_resolve(object:, value:, arguments:, context:, memo:)
-        value * options[:factor]
+        if object.is_a?(Array)
+          value.map { |v| v * options[:factor] }
+        else
+          value * options[:factor]
+        end
       end
     end
 
@@ -32,7 +36,7 @@ describe GraphQL::Schema::FieldExtension do
       end
 
       def after_resolve(object:, value:, arguments:, context:, memo:)
-        value * memo
+        object.is_a?(Array) ? value.map { |v| v * memo } : value * memo
       end
     end
 
@@ -45,7 +49,8 @@ describe GraphQL::Schema::FieldExtension do
       # This method's return value is passed along
       def resolve(object:, arguments:, context:)
         factor = arguments[:factor]
-        yield(object, arguments) * factor
+        result = yield(object, arguments)
+        object.is_a?(Array) ? result.map { |r| r * factor } : result * factor
       end
     end
 
@@ -61,7 +66,8 @@ describe GraphQL::Schema::FieldExtension do
       end
 
       def after_resolve(object:, value:, arguments:, context:, memo:)
-        value * memo[:original_arguments][:factor]
+        f = memo[:original_arguments][:factor]
+        object.is_a?(Array) ? value.map { |v| v * f } : value * f
       end
     end
 
@@ -79,18 +85,18 @@ describe GraphQL::Schema::FieldExtension do
     end
 
     class ShortcutsResolve < GraphQL::Schema::FieldExtension
-      def resolve(**_args)
-        options[:shortcut_value]
+      def resolve(object:, **_args)
+        object.is_a?(Array) ? Array.new(object.size, options[:shortcut_value]) : options[:shortcut_value]
       end
     end
 
     class ObjectClassExtension < GraphQL::Schema::FieldExtension
       def resolve(object:, **_args)
-        object.class.name
+        object.is_a?(Array) ? object.map { |o| o.class.name } : object.class.name
       end
 
       def after_resolve(value:, object:, **_args)
-        [object.class.name, value]
+        object.is_a?(Array) ? object.map.with_index { |o, i| [o.class.name, value[i]] } : [object.class.name, value]
       end
     end
 
@@ -107,6 +113,10 @@ describe GraphQL::Schema::FieldExtension do
     end
 
     class BaseObject < GraphQL::Schema::Object
+      class BaseField < GraphQL::Schema::Field
+        include GraphQL::Execution::Batching::FieldCompatibility if TESTING_BATCHING
+      end
+      field_class(BaseField)
     end
 
     class Query < BaseObject
@@ -172,17 +182,26 @@ describe GraphQL::Schema::FieldExtension do
 
     class Schema < GraphQL::Schema
       query(Query)
+      use GraphQL::Execution::Batching if TESTING_BATCHING
     end
   end
 
   def exec_query(query_str, **kwargs)
-    FilterTestSchema::Schema.execute(query_str, **kwargs)
+    if TESTING_BATCHING
+      FilterTestSchema::Schema.execute_batching(query_str, **kwargs)
+    else
+      FilterTestSchema::Schema.execute(query_str, **kwargs)
+    end
   end
 
   describe "object" do
     it "is the schema type object" do
-      res = exec_query("{ objectClassTest }")
-      assert_equal ["FilterTestSchema::Query", "FilterTestSchema::Query"], res["data"]["objectClassTest"]
+      res = exec_query("{ objectClassTest }", root_value: Object.new)
+      if TESTING_BATCHING
+        assert_equal ["Object", "Object"], res["data"]["objectClassTest"]
+      else
+        assert_equal ["FilterTestSchema::Query", "FilterTestSchema::Query"], res["data"]["objectClassTest"]
+      end
     end
   end
 

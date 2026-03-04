@@ -233,29 +233,25 @@ One schema can run _both_ legacy execution and batching execution. This enable a
 
 Performance improvements in batching execution come at the cost of removing support for many "nice-to-have" features in GraphQL-Ruby by default. Those features are addressed here.
 
-### Query Analyzers, including complexity 🌕
+### Query Analyzers, including complexity ✅
 
 Support is identical; this runs before execution using the exact same code.
 
 TODO: accessing loaded arguments inside analzyers may turn out to be slightly different; it still calls legacy code.
 
-### Authorization, Scoping 🌕
+### Authorization, Scoping ✅
 
-Full compatibility, but the internal code which determines _when_ it should be called is still slow and clunky.
-
-- [x] Objects
-- [x] Fields
-- [x] Arguments
-- [x] Resolvers
-- [ ] TODO: improve detection/opt in for this feature
+Full compatibility. `def (self.)authorized?` and `def self.scope_items` will be called as needed during execution.
 
 ### Visibility, including Changesets ✅
 
-Visibility works exactly as before; both runtime modules call the same method to get type information from the schema.
+Visibility works exactly as before; both runtime modules call the same methods to get type information from the schema.
 
-### Dataloader 🌕
+### Dataloader ✅
 
-Dataloader _works_ but batching behavior is different in some cases. TODO document those cases, consider better future compatibility.
+Dataloader runs with new execution, but batching
+
+TODO document those cases, consider better future compatibility.
 
 ### Tracing ✅
 
@@ -279,7 +275,7 @@ TODO: not supported yet because the new runtime module doesn't actually product 
 
 This depends on `current_path` so isn't possible yet.
 
-### Caching ❌
+### ObjectCache ❌
 
 Actually this probably works but I haven't tested it.
 
@@ -307,9 +303,9 @@ Maybe this will be possible to support but with `objects` instead of `object` gi
 
 This should be supported somehow; legacy support is present now
 
-### Field `extras:`, including `lookahead` ❌
+### Field `extras:`, including `lookahead` ✅
 
-TODO support here is possible but not implemented. Legacy support is implemented but should be extracted to an opt-in thing.
+`:ast_node` and `:lookahead` are already implemented. Others are possible -- please raise an issue if you need one. `extras: [:current_path]` is not possible.
 
 ### `raw_value` ❌
 
