@@ -198,11 +198,11 @@ module ConnectionAssertions
 
   def self.included(child_module)
     child_module.class_exec do
-      def exec_query(query_str, variables)
+      def exec_query(query_str, root_value: nil, **variables)
         if TESTING_BATCHING
-          schema.execute_batching(query_str, variables: variables)
+          schema.execute_batching(query_str, root_value: root_value, variables: variables)
         else
-          schema.execute(query_str, variables: variables)
+          schema.execute(query_str, root_value: root_value, variables: variables)
         end
       end
 
@@ -350,7 +350,7 @@ module ConnectionAssertions
         end
 
         it "applies default_page_size to first when first and last are unspecified" do
-          res = exec_query(query_str, {})
+          res = exec_query(query_str)
           # Neither first nor last was provided, so default_page_size was applied.
           assert_names(["Avocado", "Beet", "Cucumber", "Dill"], res)
           assert_equal true, get_page_info(res, "hasNextPage")
@@ -380,14 +380,14 @@ module ConnectionAssertions
             }
           GRAPHQL
 
-          res = exec_query(query_str, {})
+          res = exec_query(query_str)
           assert_equal 10, res["data"]["unboundedItems"]["nodes"].size
         end
       end
 
       describe "customizing" do
         it "serves custom fields" do
-          res = schema.execute <<-GRAPHQL, root_value: :something
+          res = exec_query <<-GRAPHQL, root_value: :something
           {
             items: customItems(first: 3) {
               nodes {
@@ -418,7 +418,7 @@ module ConnectionAssertions
 
         it "uses custom ::Edge classes" do
           skip "Not supported" if schema.connection_class.nil?
-          res = schema.execute <<-GRAPHQL, root_value: :something
+          res = exec_query <<-GRAPHQL, root_value: :something
           {
             items: customItemsWithCustomEdge(first: 3) {
               nodes {
@@ -442,7 +442,7 @@ module ConnectionAssertions
 
         it "applies local max-page-size settings" do
           # Smaller default:
-          res = schema.execute <<-GRAPHQL
+          res = exec_query <<-GRAPHQL
           {
             items(first: 10, maxPageSizeOverride: 3) {
               nodes {
@@ -460,7 +460,7 @@ module ConnectionAssertions
           assert_names(["Avocado", "Beet", "Cucumber"], res)
 
           # Larger than the default:
-          res = schema.execute <<-GRAPHQL
+          res = exec_query <<-GRAPHQL
           {
             items(first: 10, maxPageSizeOverride: 7) {
               nodes {
@@ -478,7 +478,7 @@ module ConnectionAssertions
           assert_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel", "Ginger"], res)
 
           # Unlimited
-          res = schema.execute <<-GRAPHQL
+          res = exec_query <<-GRAPHQL
           {
             items(first: 100, maxPageSizeOverride: null) {
               nodes {
@@ -496,7 +496,7 @@ module ConnectionAssertions
         end
 
         it "applies a field-level max-page-size configuration" do
-          res = schema.execute <<-GRAPHQL
+          res = exec_query <<-GRAPHQL
           {
             items: limitedItems(first: 10) {
               nodes {

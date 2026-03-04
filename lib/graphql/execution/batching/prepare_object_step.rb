@@ -62,6 +62,12 @@ module GraphQL
         end
 
         def authorize
+          if @field_resolve_step.was_scoped && !@resolved_type.reauthorize_scoped_objects
+            @authorized_value = @object
+            create_result
+            return
+          end
+
           query = @field_resolve_step.selections_step.query
           begin
             query.current_trace.begin_authorized(@resolved_type, @object, query.context)

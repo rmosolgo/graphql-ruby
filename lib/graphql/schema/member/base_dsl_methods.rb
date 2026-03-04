@@ -130,7 +130,7 @@ module GraphQL
           true
         end
 
-        def default_relay
+        def default_relay?
           false
         end
 

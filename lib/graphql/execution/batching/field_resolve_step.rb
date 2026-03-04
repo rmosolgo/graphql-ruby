@@ -21,9 +21,11 @@ module GraphQL
           @next_selections = nil
           @object_is_authorized = nil
           @finish_extension_idx = nil # TODO don't initialize this, not often used?
+          @was_scoped = nil
         end
 
-        attr_reader :ast_node, :key, :parent_type, :selections_step, :runner, :field_definition, :object_is_authorized, :arguments
+        attr_reader :ast_node, :key, :parent_type, :selections_step, :runner,
+          :field_definition, :object_is_authorized, :arguments, :was_scoped
 
         def path
           @path ||= [*@selections_step.path, @key].freeze
@@ -191,6 +193,7 @@ module GraphQL
           end
 
           if @field_definition.dynamic_introspection
+            # TODO break this backwards compat somehow?
             objects = @selections_step.graphql_objects
           end
 
@@ -212,7 +215,7 @@ module GraphQL
               end
               @arguments[:ast_node] = ast_node
             else
-              raise ArgumentError, "This extra isn't supported yet: #{extra.inspect}. Open an issue on GraphQL-Ruby to add compatibility for it."
+              raise ArgumentError, "This `extra` isn't supported yet: #{extra.inspect}. Open an issue on GraphQL-Ruby to add compatibility for it."
             end
           end
 
@@ -230,6 +233,10 @@ module GraphQL
           else
             authorized_objects = objects
             @object_is_authorized = AlwaysAuthorized
+          end
+
+          if @parent_type.default_relay? && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
+            @was_scoped = true
           end
 
           query.current_trace.begin_execute_field(@field_definition, @arguments, authorized_objects, query)
@@ -279,8 +286,32 @@ module GraphQL
           ctx = @selections_step.query.context
           memos = @extended.memos || EmptyObjects::EMPTY_HASH
           while ext = @field_definition.extensions[@finish_extension_idx]
-            memo = memos[@finish_extension_idx]
-            @field_results = ext.after_resolve(object: @extended.object, arguments: @extended.arguments, context: ctx, value: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
+            # These two are hardcoded here because of how they need to interact with runtime metadata.
+            # It would probably be better
+            case ext
+            when Schema::Field::ConnectionExtension
+              conns = ctx.schema.connections
+              @field_results = @field_results.map.each_with_index do |value, idx|
+                object = @extended.object[idx]
+                conn = conns.populate_connection(@field_definition, object, value, @arguments, ctx)
+                if conn
+                  conn.was_authorized_by_scope_items = @was_scoped
+                end
+                conn
+              end
+            when Schema::Field::ScopeExtension
+              if @was_scoped.nil?
+                if (rt = @field_definition.type.unwrap).respond_to?(:scope_items)
+                  @was_scoped = true
+                  @field_results = @field_results.map { |v| v.nil? ? v : rt.scope_items(v, ctx) }
+                else
+                  @was_scoped = false
+                end
+              end
+            else
+              memo = memos[@finish_extension_idx]
+              @field_results = ext.after_resolve(object: @extended.object, arguments: @extended.arguments, context: ctx, value: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
+            end
             @finish_extension_idx += 1
             if any_lazy_results?
               @runner.dataloader.lazy_at_depth(path.size, self)
