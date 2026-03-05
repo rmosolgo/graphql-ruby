@@ -57,12 +57,10 @@ module GraphQL
                 if dynamic_introspection
                   obj_inst = @owner.wrap(obj_inst, context)
                 end
-                results << with_extensions(obj_inst, kwargs, context) do |obj, ruby_kwargs|
-                  if ruby_kwargs.empty?
-                    obj.public_send(@resolver_method)
-                  else
-                    obj.public_send(@resolver_method, **ruby_kwargs)
-                  end
+                results << if kwargs.empty?
+                  obj_inst.public_send(@resolver_method)
+                else
+                  obj_inst.public_send(@resolver_method, **kwargs)
                 end
               end
             end
@@ -75,23 +73,20 @@ module GraphQL
               if maybe_err
                 next maybe_err
               end
-              resolver_inst_kwargs = if @resolver_class < Schema::HasSingleInputArgument
+              ruby_kwargs = if @resolver_class < Schema::HasSingleInputArgument
                 resolver_inst_kwargs[:input]
               else
                 resolver_inst_kwargs
               end
-              with_extensions(o, resolver_inst_kwargs, context) do |obj, ruby_kwargs|
-                resolver_inst.object = obj
-                resolver_inst.prepared_arguments = ruby_kwargs
-                is_authed, new_return_value = resolver_inst.authorized?(**ruby_kwargs)
-                if frs.runner.resolves_lazies && frs.runner.schema.lazy?(is_authed)
-                  is_authed, new_return_value = frs.runner.schema.sync_lazy(is_authed)
-                end
-                if is_authed
-                  resolver_inst.call_resolve(ruby_kwargs)
-                else
-                  new_return_value
-                end
+              resolver_inst.prepared_arguments = ruby_kwargs
+              is_authed, new_return_value = resolver_inst.authorized?(**ruby_kwargs)
+              if frs.runner.resolves_lazies && frs.runner.schema.lazy?(is_authed)
+                is_authed, new_return_value = frs.runner.schema.sync_lazy(is_authed)
+              end
+              if is_authed
+                resolver_inst.call_resolve(ruby_kwargs)
+              else
+                new_return_value
               end
             rescue RuntimeError => err
               err
@@ -107,24 +102,7 @@ module GraphQL
           elsif objects.first.is_a?(Interpreter::RawValue)
             objects
           else
-            # need to use connection extension if present, and extensions expect object type instances
-            if extensions.empty?
-              objects.map { |o| o.public_send(@method_sym)}
-            else
-              results = []
-              frs.selections_step.graphql_objects.each_with_index do |obj_inst, idx|
-                if frs.object_is_authorized[idx]
-                  results << with_extensions(obj_inst, EmptyObjects::EMPTY_HASH, context) do |obj, arguments|
-                    if arguments.empty?
-                      obj.object.public_send(@method_sym)
-                    else
-                      obj.object.public_send(@method_sym, **arguments)
-                    end
-                  end
-                end
-              end
-              results
-            end
+            objects.map { |o| o.public_send(@method_sym)}
           end
         end
       end

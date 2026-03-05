@@ -4,6 +4,10 @@ require "spec_helper"
 describe GraphQL::Schema::Member::Scoped do
   class ScopeSchema < GraphQL::Schema
     class BaseObject < GraphQL::Schema::Object
+      class BaseField < GraphQL::Schema::Field
+        include GraphQL::Execution::Batching::FieldCompatibility if TESTING_BATCHING
+      end
+      field_class BaseField
     end
 
     class Item < BaseObject
@@ -31,7 +35,7 @@ describe GraphQL::Schema::Member::Scoped do
         if ctx[:allow_unscoped]
           true
         else
-          raise "This should never be called (#{ctx[:current_path]}, #{ctx[:current_field].path})"
+          raise "This should never be called (#{ctx[:current_path]}, #{ctx[:current_field]&.path})"
         end
       end
 
@@ -121,6 +125,15 @@ describe GraphQL::Schema::Member::Scoped do
 
     query(Query)
     lazy_resolve(Proc, :call)
+    use(GraphQL::Execution::Batching) if TESTING_BATCHING
+  end
+
+  def exec_query(...)
+    if TESTING_BATCHING
+      ScopeSchema.execute_batching(...)
+    else
+      ScopeSchema.execute(...)
+    end
   end
 
   describe ".scope_items(items, ctx)" do
@@ -132,7 +145,7 @@ describe GraphQL::Schema::Member::Scoped do
         }
       }
       "
-      res = ScopeSchema.execute(query_str, context: ctx)
+      res = exec_query(query_str, context: ctx)
       res["data"][field_name].map { |i| i["name"] }
     end
 
@@ -154,7 +167,7 @@ describe GraphQL::Schema::Member::Scoped do
         }
       }
       "
-      res = ScopeSchema.execute(query_str)
+      res = exec_query(query_str)
       refute res.key?("errors")
       assert_nil res.fetch("data").fetch("nilItems")
     end
@@ -175,7 +188,7 @@ describe GraphQL::Schema::Member::Scoped do
         }
       }
       "
-      res = ScopeSchema.execute(query_str, context: {english: true})
+      res = exec_query(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
       assert_equal ["Paperclip"], names
       assert_equal 1, res.context[:scope_calls]
@@ -189,7 +202,7 @@ describe GraphQL::Schema::Member::Scoped do
         }
       }
       "
-      res = ScopeSchema.execute(query_str, context: {english: true})
+      res = exec_query(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["nodes"].map { |e| e["name"] }
       assert_equal ["Paperclip"], names
       assert_equal 1, res.context[:scope_calls]
@@ -208,7 +221,7 @@ describe GraphQL::Schema::Member::Scoped do
         }
       }
       "
-      res = ScopeSchema.execute(query_str, context: ctx)
+      res = exec_query(query_str, context: ctx)
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
       assert_equal ["Trombone", "Paperclip"], names
       assert_equal true, ctx[:proc_called]
@@ -229,7 +242,7 @@ describe GraphQL::Schema::Member::Scoped do
         }
       }
       "
-      res = ScopeSchema.execute(query_str, context: { french: true })
+      res = exec_query(query_str, context: { french: true })
       names = res["data"]["lazyItemsConnection"]["edges"].map { |e| e["node"]["name"] }
       assert_equal ["Trombone"], names
       names2 = res["data"]["lazyItems"].map { |e| e["name"] }
@@ -238,7 +251,7 @@ describe GraphQL::Schema::Member::Scoped do
 
     it "doesn't shortcut authorization when `reauthorize_scoped_objects(true)`" do
       query_str = "{ reauthorizeItems { name } }"
-      res = ScopeSchema.execute(query_str, context: { french: true })
+      res = exec_query(query_str, context: { french: true })
       assert_equal 1, res["data"]["reauthorizeItems"].length
       assert_equal 1, res.context[:scope_calls]
       assert res.context[:was_authorized]
@@ -257,7 +270,7 @@ describe GraphQL::Schema::Member::Scoped do
         }
       }
       "
-      res = ScopeSchema.execute(query_str, context: {first_letter: "T"})
+      res = exec_query(query_str, context: {first_letter: "T"})
       things = res["data"]["things"]
       assert_equal [{ "name" => "Trombone" }, {"designation" => "Turbine"}], things
     end
@@ -301,6 +314,11 @@ describe GraphQL::Schema::Member::Scoped do
   describe "skipping authorization on scoped lists" do
     class SkipAuthSchema < GraphQL::Schema
       class Book < GraphQL::Schema::Object
+        class BaseField < GraphQL::Schema::Field
+          include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+        end
+        field_class(BaseField)
+
         def self.authorized?(obj, ctx)
           ctx[:auth_log] << [:authorized?, obj[:title]]
           true
@@ -323,31 +341,48 @@ describe GraphQL::Schema::Member::Scoped do
       end
 
       class Query < GraphQL::Schema::Object
-        field :book, Book
+        field :book, Book, resolve_static: true
 
         def book
+          self.class.book(context)
+        end
+
+        def self.book(_context)
           { title: "Nonsense Omnibus"}
         end
 
-        field :books, [Book]
+        field :books, [Book], resolve_static: true
 
         def books
+          self.class.books(context)
+        end
+
+        def self.books(_context)
           [{ title: "Jayber Crow" }, { title: "Hannah Coulter" }]
         end
 
-        field :skip_authorization_books, [SkipAuthorizationBook], resolver_method: :books
+        field :skip_authorization_books, [SkipAuthorizationBook], resolver_method: :books, resolve_static: :books
 
-        field :reauthorized_books, [ReauthorizedBook], resolver_method: :books
+        field :reauthorized_books, [ReauthorizedBook], resolver_method: :books, resolve_static: :books
 
-        field :skip_authorization_books_connection, SkipAuthorizationBook.connection_type, resolver_method: :books
+        field :skip_authorization_books_connection, SkipAuthorizationBook.connection_type, resolver_method: :books, resolve_static: :books
       end
 
       query(Query)
+      use(GraphQL::Execution::Batching) if TESTING_BATCHING
+    end
+
+    def exec_skip_auth(...)
+      if TESTING_BATCHING
+        SkipAuthSchema.execute_batching(...)
+      else
+        SkipAuthSchema.execute(...)
+      end
     end
 
     it "runs both authorizations by default" do
       log = []
-      SkipAuthSchema.execute("{ book { title } books { title } }", context: { auth_log: log })
+      exec_skip_auth("{ book { title } books { title } }", context: { auth_log: log })
       expected_log = [
         [:authorized?, "Nonsense Omnibus"],
         [:scope_items, ["Jayber Crow", "Hannah Coulter"]],
@@ -359,13 +394,13 @@ describe GraphQL::Schema::Member::Scoped do
 
     it "skips self.authorized? when configured" do
       log = []
-      SkipAuthSchema.execute("{ skipAuthorizationBooks { title } }", context: { auth_log: log })
+      exec_skip_auth("{ skipAuthorizationBooks { title } }", context: { auth_log: log })
       assert_equal [[:scope_items, ["Jayber Crow", "Hannah Coulter"]]], log
     end
 
     it "can be re-enabled in subclasses" do
       log = []
-      SkipAuthSchema.execute("{ reauthorizedBooks { title } }", context: { auth_log: log })
+      exec_skip_auth("{ reauthorizedBooks { title } }", context: { auth_log: log })
       expected_log = [
         [:scope_items, ["Jayber Crow", "Hannah Coulter"]],
         [:authorized?, "Jayber Crow"],
@@ -377,7 +412,7 @@ describe GraphQL::Schema::Member::Scoped do
 
     it "skips auth in connections" do
       log = []
-      SkipAuthSchema.execute("{ skipAuthorizationBooksConnection(first: 10) { nodes { title } } }", context: { auth_log: log })
+      exec_skip_auth("{ skipAuthorizationBooksConnection(first: 10) { nodes { title } } }", context: { auth_log: log })
       assert_equal [[:scope_items, ["Jayber Crow", "Hannah Coulter"]]], log
     end
   end

@@ -537,7 +537,7 @@ describe "GraphQL::Authorization" do
 
       # This switches on `context[:current_path]` which isn't implemented by Batching (yet?)
       expected_message = if TESTING_BATCHING
-        "`\"STREAM\"` was returned for `LandscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
+        "Resolving Query.landscapeFeature: `\"STREAM\"` was returned for `LandscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
       else
         "`Query.landscapeFeature` returned `\"STREAM\"` at `landscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
       end

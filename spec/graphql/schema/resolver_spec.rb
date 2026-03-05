@@ -94,6 +94,11 @@ describe GraphQL::Schema::Resolver do
         name = yield(object, arguments)
         "#{options[:greeting]}, #{name}!"
       end
+
+      def resolve_batching(objects:, arguments:, **rest)
+        names = yield(objects, arguments)
+        names.map { |n| "#{options[:greeting]}, #{n}!" }
+      end
     end
 
     class ResolverWithExtension < BaseResolver

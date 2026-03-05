@@ -94,6 +94,8 @@ module GraphQL
         @was_authorized_by_scope_items = detect_was_authorized_by_scope_items
       end
 
+      attr_writer :was_authorized_by_scope_items
+
       def was_authorized_by_scope_items?
         @was_authorized_by_scope_items
       end

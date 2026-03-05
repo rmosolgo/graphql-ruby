@@ -20,9 +20,12 @@ module GraphQL
           @static_type = nil
           @next_selections = nil
           @object_is_authorized = nil
+          @finish_extension_idx = nil
+          @was_scoped = nil
         end
 
-        attr_reader :ast_node, :key, :parent_type, :selections_step, :runner, :field_definition, :object_is_authorized, :arguments
+        attr_reader :ast_node, :key, :parent_type, :selections_step, :runner,
+          :field_definition, :object_is_authorized, :arguments, :was_scoped
 
         def path
           @path ||= [*@selections_step.path, @key].freeze
@@ -147,10 +150,19 @@ module GraphQL
         def call
           if @enqueued_authorization && @pending_authorize_steps_count == 0
             enqueue_next_steps
+          elsif @finish_extension_idx
+            finish_extensions
           elsif @field_results
             build_results
           else
             execute_field
+          end
+        rescue StandardError => err
+          if @field_definition && !err.message.start_with?("Resolving ")
+            # TODO remove this check ^^^^^^ when NullDataloader isn't recursive
+            raise err, "Resolving #{@field_definition.path}: #{err.message}", err.backtrace
+          else
+            raise
           end
         end
 
@@ -181,6 +193,7 @@ module GraphQL
           end
 
           if @field_definition.dynamic_introspection
+            # TODO break this backwards compat somehow?
             objects = @selections_step.graphql_objects
           end
 
@@ -202,7 +215,7 @@ module GraphQL
               end
               @arguments[:ast_node] = ast_node
             else
-              raise ArgumentError, "This extra isn't supported yet: #{extra.inspect}. Open an issue on GraphQL-Ruby to add compatibility for it."
+              raise ArgumentError, "This `extra` isn't supported yet: #{extra.inspect}. Open an issue on GraphQL-Ruby to add compatibility for it."
             end
           end
 
@@ -222,12 +235,40 @@ module GraphQL
             @object_is_authorized = AlwaysAuthorized
           end
 
+          if @parent_type.default_relay? && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
+            @was_scoped = true
+          end
+
           query.current_trace.begin_execute_field(@field_definition, @arguments, authorized_objects, query)
-          @field_results = @field_definition.resolve_batch(self, authorized_objects, ctx, @arguments)
+          has_extensions = @field_definition.extensions.size > 0
+          if has_extensions
+            @extended = GraphQL::Schema::Field::ExtendedState.new(@arguments, authorized_objects)
+            @field_results = @field_definition.run_batching_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
+              if (added_extras = @extended.added_extras)
+                args = args.dup
+                added_extras.each { |e| args.delete(e) }
+              end
+              @field_definition.resolve_batch(self, objs, ctx, args)
+            end
+            @finish_extension_idx = 0
+          else
+            @field_results = @field_definition.resolve_batch(self, authorized_objects, ctx, @arguments)
+          end
+
           query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
 
+          if any_lazy_results?
+            @runner.dataloader.lazy_at_depth(path.size, self)
+          elsif has_extensions
+            finish_extensions
+          else
+            build_results
+          end
+        end
+
+        def any_lazy_results?
+          lazies = false
           if @runner.resolves_lazies # TODO extract this
-            lazies = false
             # TODO add a per-query cache of `.lazy?`
             @field_results.each do |field_result|
               if @runner.schema.lazy?(field_result)
@@ -244,15 +285,49 @@ module GraphQL
                 end
               end
             end
-
-            if lazies
-              @runner.dataloader.lazy_at_depth(path.size, self)
-            else
-              build_results
-            end
-          else
-            build_results
           end
+          lazies
+        end
+
+        def finish_extensions
+          ctx = @selections_step.query.context
+          memos = @extended.memos || EmptyObjects::EMPTY_HASH
+          while ext = @field_definition.extensions[@finish_extension_idx]
+            # These two are hardcoded here because of how they need to interact with runtime metadata.
+            # It would probably be better
+            case ext
+            when Schema::Field::ConnectionExtension
+              conns = ctx.schema.connections
+              @field_results = @field_results.map.each_with_index do |value, idx|
+                object = @extended.object[idx]
+                conn = conns.populate_connection(@field_definition, object, value, @arguments, ctx)
+                if conn
+                  conn.was_authorized_by_scope_items = @was_scoped
+                end
+                conn
+              end
+            when Schema::Field::ScopeExtension
+              if @was_scoped.nil?
+                if (rt = @field_definition.type.unwrap).respond_to?(:scope_items)
+                  @was_scoped = true
+                  @field_results = @field_results.map { |v| v.nil? ? v : rt.scope_items(v, ctx) }
+                else
+                  @was_scoped = false
+                end
+              end
+            else
+              memo = memos[@finish_extension_idx]
+              @field_results = ext.after_resolve_batching(objects: @extended.object, arguments: @extended.arguments, context: ctx, values: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
+            end
+            @finish_extension_idx += 1
+            if any_lazy_results?
+              @runner.dataloader.lazy_at_depth(path.size, self)
+              return
+            end
+          end
+
+          @finish_extension_idx = nil
+          build_results
         end
 
         def build_results
@@ -298,8 +373,8 @@ module GraphQL
               # Do nothing -- it will enqueue itself later
             end
           else
-            results = @selections_step.results
             ctx = @selections_step.query.context
+            results = @selections_step.results
             field_result_idx = 0
             i = 0
             s = results.size
