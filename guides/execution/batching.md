@@ -269,7 +269,9 @@ Right now, lazy result from `resolve_type` is tied up in authorization compat sh
 
 ### `current_path` ❌
 
-TODO: not supported yet because the new runtime module doesn't actually product `current_path` while it's running. I think it's possible to support it though.
+This is not supported because the new runtime doesn't actually produce `current_path`.
+
+It is theoretically possible to support this but it will be a ton of work. If you use this for core runtime functions, please share your use case in a GitHub issue and we can investigate future options.
 
 ### `@defer` and `@stream` ❌
 
@@ -295,9 +297,14 @@ Possible but not implemented. Legacy support is implemented I believe.
 
 Partial support is possible, `obj` will not be given to `validates:` anymore maybe?
 
-### Field Extensions ❌
+### Field Extensions ✅
 
-Maybe this will be possible to support but with `objects` instead of `object` given to the hook. Change the hook name to `resolve_batch`?
+Field extensions _are_ called, but it uses new methods:
+
+- `def resolve_batching(objects:, arguments:, context:, &block)` receives `objects:` instead of `object:` and should yield them to the given block to continue execution
+- `def after_resolve_batching(objects:, arguments:, context:, values:, memo:)` receives `objects:, values:, ...` instead of `object:, value:, ...` and should return an Array of results (isntead of a single result value).
+
+Because of their close integration with the runtime, `ConnectionExtension` and `ScopeExtension` don't actually use `after_resolve_batching`. Instead, support is hard-coded inside the runtime. This might be a smell that field extensions aren't worth supporting.
 
 ### Resolver classes (including Mutations and Subscriptions) ❌
 
@@ -319,13 +326,9 @@ TODO: support is possible here but not tested
 - raising GraphQL::ExecutionError
 - Schema class error handling hooks
 
-### Connection fields ❌
+### Connection fields ✅
 
-TODO -- make this better.
-
-Currently, argument definitions _are_ added to the field when a connection type is used as a return type.
-
-But arguments are not automatically hidden from the resolver and Connection wrappers are not automatically applied. Should they be?
+Connection arguments are automatically handled and connection wrapper objects are automatically applied to arrays and relations.
 
 ### Custom Introspection ✅
 
