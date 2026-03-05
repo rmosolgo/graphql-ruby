@@ -957,6 +957,31 @@ ERR
 
       public
 
+      def run_batching_extensions_before_resolve(objs, args, ctx, extended, idx: 0, &block)
+        extension = @extensions[idx]
+        if extension
+          extension.resolve_batching(objects: objs, arguments: args, context: ctx) do |extended_objs, extended_args, memo|
+            if memo
+              memos = extended.memos ||= {}
+              memos[idx] = memo
+            end
+
+            if (extras = extension.added_extras)
+              ae = extended.added_extras ||= []
+              ae.concat(extras)
+            end
+
+            extended.object = extended_objs
+            extended.arguments = extended_args
+            run_batching_extensions_before_resolve(extended_objs, extended_args, ctx, extended, idx: idx + 1, &block)
+          end
+        else
+          yield(objs, args)
+        end
+      end
+
+      private
+
       def run_extensions_before_resolve(obj, args, ctx, extended, idx: 0)
         extension = @extensions[idx]
         if extension
@@ -979,8 +1004,6 @@ ERR
           yield(obj, args)
         end
       end
-
-      private
 
       def apply_own_complexity_to(child_complexity, query, nodes)
         case (own_complexity = complexity)

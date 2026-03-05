@@ -134,6 +134,24 @@ module GraphQL
         yield(object, arguments, nil)
       end
 
+      # Called before batch-resolving {#field}. It should either:
+      #
+      # - `yield` values to continue execution; OR
+      # - return something else to shortcut field execution.
+      #
+      # Whatever this method returns will be used for execution.
+      #
+      # @param objects [Array<Object>] The objects the field is being resolved on
+      # @param arguments [Hash] Ruby keyword arguments for resolving this field
+      # @param context [Query::Context] the context for this query
+      # @yieldparam objects [Array<Object>] The objects to continue resolving the field on. Length must be the same as passed-in `objects:`
+      # @yieldparam arguments [Hash] The keyword arguments to continue resolving with
+      # @yieldparam memo [Object] Any extension-specific value which will be passed to {#after_resolve} later
+      # @return [Array<Object>] The return value for this field, length matching passed-in `objects:`.
+      def resolve_batching(objects:, arguments:, context:)
+        yield(objects, arguments, nil)
+      end
+
       # Called after {#field} was resolved, and after any lazy values (like `Promise`s) were synced,
       # but before the value was added to the GraphQL response.
       #
@@ -147,6 +165,21 @@ module GraphQL
       # @return [Object] The return value for this field.
       def after_resolve(object:, arguments:, context:, value:, memo:)
         value
+      end
+
+      # Called after {#field} was batch-resolved, and after any lazy values (like `Promise`s) were synced,
+      # but before the value was added to the GraphQL response.
+      #
+      # Whatever this hook returns will be used as the return value.
+      #
+      # @param objects [Array<Object>] The objects the field is being resolved on
+      # @param arguments [Hash] Ruby keyword arguments for resolving this field
+      # @param context [Query::Context] the context for this query
+      # @param values [Array<Object>] Whatever the field returned, one for each of `objects`
+      # @param memo [Object] The third value yielded by {#resolve}, or `nil` if there wasn't one
+      # @return [Array<Object>] The return values for this field, length matching `objects:`.
+      def after_resolve_batching(objects:, arguments:, context:, values:, memo:)
+        values
       end
     end
   end

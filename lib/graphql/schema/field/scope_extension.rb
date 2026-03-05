@@ -28,6 +28,10 @@ module GraphQL
             value
           end
         end
+
+        def after_resolve_batching(**kwargs)
+          raise "This should never be called -- it's hardcoded in execution instead."
+        end
       end
     end
   end

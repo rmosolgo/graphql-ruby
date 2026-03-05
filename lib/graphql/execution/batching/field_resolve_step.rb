@@ -243,7 +243,7 @@ module GraphQL
           has_extensions = @field_definition.extensions.size > 0
           if has_extensions
             @extended = GraphQL::Schema::Field::ExtendedState.new(@arguments, authorized_objects)
-            @field_results = @field_definition.run_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
+            @field_results = @field_definition.run_batching_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
               if (added_extras = @extended.added_extras)
                 args = args.dup
                 added_extras.each { |e| args.delete(e) }
@@ -317,7 +317,7 @@ module GraphQL
               end
             else
               memo = memos[@finish_extension_idx]
-              @field_results = ext.after_resolve(object: @extended.object, arguments: @extended.arguments, context: ctx, value: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
+              @field_results = ext.after_resolve_batching(objects: @extended.object, arguments: @extended.arguments, context: ctx, values: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
             end
             @finish_extension_idx += 1
             if any_lazy_results?

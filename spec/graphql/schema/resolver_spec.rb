@@ -91,13 +91,13 @@ describe GraphQL::Schema::Resolver do
 
     class GreetingExtension < GraphQL::Schema::FieldExtension
       def resolve(object:, arguments:, **rest)
-        if object.is_a?(GraphQL::Schema::Object)
-          name = yield(object, arguments)
-          "#{options[:greeting]}, #{name}!"
-        else
-          names = yield(object, arguments)
-          names.map { |n| "#{options[:greeting]}, #{n}!" }
-        end
+        name = yield(object, arguments)
+        "#{options[:greeting]}, #{name}!"
+      end
+
+      def resolve_batching(objects:, arguments:, **rest)
+        names = yield(objects, arguments)
+        names.map { |n| "#{options[:greeting]}, #{n}!" }
       end
     end
 

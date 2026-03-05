@@ -21,11 +21,24 @@ module GraphQL
           yield(object, next_args, arguments)
         end
 
+        def resolve_batching(objects:, arguments:, context:)
+          next_args = arguments.dup
+          next_args.delete(:first)
+          next_args.delete(:last)
+          next_args.delete(:before)
+          next_args.delete(:after)
+          yield(objects, next_args, arguments)
+        end
+
         def after_resolve(value:, object:, arguments:, context:, memo:)
           original_arguments = memo
           context.query.after_lazy(value) do |resolved_value|
             context.schema.connections.populate_connection(field, object.object, resolved_value, original_arguments, context)
           end
+        end
+
+        def after_resolve_batching(**kwargs)
+          raise "This should never be called -- it's hardcoded in execution instead."
         end
       end
     end
