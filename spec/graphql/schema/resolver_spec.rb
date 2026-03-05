@@ -446,7 +446,7 @@ describe GraphQL::Schema::Resolver do
     class MutationWithRequiredLoadsArgument < GraphQL::Schema::Mutation
       argument :label_id, ID, loads: HasValue
 
-      field :inputs, String, null: false
+      field :inputs, String, null: false, hash_key: :inputs
 
       def resolve(**inputs)
         {

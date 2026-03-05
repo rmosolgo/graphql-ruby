@@ -46,6 +46,8 @@ module GraphQL
         @prepared_arguments = nil
       end
 
+      attr_accessor :exec_result, :exec_index, :resolvers_step
+
       # @return [Object] The application object this field is being resolved on
       attr_accessor :object
 
@@ -56,6 +58,32 @@ module GraphQL
       attr_reader :field
 
       attr_writer :prepared_arguments
+
+      def call
+        if self.class < Schema::HasSingleInputArgument
+          @prepared_arguments = @prepared_arguments[:input]
+        end
+        is_authed, new_return_value = authorized?(**@prepared_arguments)
+        if (runner = @resolvers_step.field_resolve_step.runner).resolves_lazies && runner.schema.lazy?(is_authed)
+          is_authed, new_return_value = runner.schema.sync_lazy(is_authed)
+        end
+
+        result = if is_authed
+          call_resolve(@prepared_arguments)
+        else
+          new_return_value
+        end
+
+        exec_result[exec_index] = result
+      rescue RuntimeError => err
+        exec_result[exec_index] = err
+      rescue StandardError => stderr
+        exec_result[exec_index] = begin
+          context.query.handle_or_reraise(stderr)
+        rescue GraphQL::ExecutionError => ex_err
+          ex_err
+        end
+      end
 
       def arguments
         @prepared_arguments || raise("Arguments have not been prepared yet, still waiting for #load_arguments to resolve. (Call `.arguments` later in the code.)")
