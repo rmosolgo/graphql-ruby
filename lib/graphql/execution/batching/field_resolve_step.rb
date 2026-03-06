@@ -14,7 +14,6 @@ module GraphQL
           @field_results = nil
           @path = nil
           @enqueued_authorization = false
-          @pending_authorize_steps_count = 0
           @all_next_objects = nil
           @all_next_results = nil
           @static_type = nil
@@ -22,10 +21,13 @@ module GraphQL
           @object_is_authorized = nil
           @finish_extension_idx = nil
           @was_scoped = nil
+          @pending_steps = nil
         end
 
         attr_reader :ast_node, :key, :parent_type, :selections_step, :runner,
-          :field_definition, :object_is_authorized, :arguments, :was_scoped
+          :field_definition, :object_is_authorized, :was_scoped, :field_results
+
+        attr_accessor :pending_steps, :arguments
 
         def path
           @path ||= [*@selections_step.path, @key].freeze
@@ -58,54 +60,65 @@ module GraphQL
               arg_defn = arg_defns.each_value.find { |a|
                 a.keyword == key || a.graphql_name == (key_s ||= String(key))
               }
-              arg_value = coerce_argument_value(arg_defn.type, value)
-              args_hash[arg_defn.keyword] = arg_value
+              maybe_err = coerce_argument_value(args_hash, arg_defn, value)
+              if maybe_err
+                return maybe_err
+              end
             end
           else
             ast_arguments_or_hash.each { |arg_node|
               arg_defn = arg_defns[arg_node.name]
-              arg_value = coerce_argument_value(arg_defn.type, arg_node.value)
-              arg_key = arg_defn.keyword
-              args_hash[arg_key] = arg_value
+              maybe_err = coerce_argument_value(args_hash, arg_defn, arg_node.value)
+              if maybe_err
+                return maybe_err
+              end
             }
           end
-
+          # TODO refactor the loop above into this one
           arg_defns.each do |arg_graphql_name, arg_defn|
             if arg_defn.default_value? && !args_hash.key?(arg_defn.keyword)
-              args_hash[arg_defn.keyword] = arg_defn.default_value
+              maybe_err = coerce_argument_value(args_hash, arg_defn, arg_defn.default_value)
+              if maybe_err
+                return maybe_err
+              end
             end
           end
 
           args_hash
         end
 
-        def coerce_argument_value(arg_t, arg_value)
+        def coerce_argument_value(arguments, arg_defn, arg_value, target_keyword: arg_defn.keyword, as_type: nil)
+          arg_t = as_type || arg_defn.type
           if arg_t.non_null?
             arg_t = arg_t.of_type
           end
 
-          if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+          arg_value = if arg_value.is_a?(Language::Nodes::VariableIdentifier)
             vars = @selections_step.query.variables
-            arg_value = if vars.key?(arg_value.name)
+            if vars.key?(arg_value.name)
               vars[arg_value.name]
             elsif vars.key?(arg_value.name.to_sym)
               vars[arg_value.name.to_sym]
             end
           elsif arg_value.is_a?(Language::Nodes::NullValue)
-            arg_value = nil
+            nil
           elsif arg_value.is_a?(Language::Nodes::Enum)
-            arg_value = arg_value.name
+            arg_value.name
           elsif arg_value.is_a?(Language::Nodes::InputObject)
-            arg_value = arg_value.arguments # rubocop:disable Development/ContextIsPassedCop
+            arg_value.arguments # rubocop:disable Development/ContextIsPassedCop
+          else
+            arg_value
           end
 
-          if arg_t.list?
+          arg_value = if arg_t.list?
             if arg_value.nil?
               arg_value
             else
               arg_value = Array(arg_value)
               inner_t = arg_t.of_type
-              arg_value.map { |v| coerce_argument_value(inner_t, v) }
+              result = Array.new(arg_value.size)
+              arg_value.each_with_index { |v, i| coerce_argument_value(result, arg_defn, v, target_keyword: i, as_type: inner_t) }
+              result
             end
           elsif arg_t.kind.leaf?
             begin
@@ -123,6 +136,46 @@ module GraphQL
           else
             raise "Unsupported argument value: #{arg_t.to_type_signature} / #{arg_value.class} (#{arg_value.inspect})"
           end
+
+          if arg_defn.loads && as_type.nil? && !arg_value.nil?
+            # This is for legacy compat:
+            load_receiver = if (r = @field_definition.resolver)
+              r.new(field: @field_definition, context: @selections_step.query.context, object: nil)
+            else
+              @field_definition
+            end
+            @pending_steps ||= []
+            if arg_t.list?
+              results = Array.new(arg_value.size, nil)
+              arguments[arg_defn.keyword] = results
+              arg_value.each_with_index do |inner_v, idx|
+                loads_step = LoadArgumentStep.new(
+                  field_resolve_step: self,
+                  load_receiver: load_receiver,
+                  argument_value: inner_v,
+                  argument_definition: arg_defn,
+                  arguments: results,
+                  argument_key: idx,
+                )
+                @pending_steps.push(loads_step)
+                @runner.add_step(loads_step)
+              end
+            else
+              loads_step = LoadArgumentStep.new(
+                field_resolve_step: self,
+                load_receiver: load_receiver,
+                argument_value: arg_value,
+                argument_definition: arg_defn,
+                arguments: arguments,
+                argument_key: arg_defn.keyword,
+              )
+              @pending_steps.push(loads_step)
+              @runner.add_step(loads_step)
+            end
+          else
+            arguments[target_keyword] = arg_value
+          end
+          nil
         end
 
         # Implement that Lazy API
@@ -145,17 +198,25 @@ module GraphQL
           @runner.schema.unauthorized_object(auth_err)
         rescue GraphQL::ExecutionError => err
           err
+        rescue StandardError => stderr
+          begin
+            @selections_step.query.handle_or_reraise(stderr)
+          rescue GraphQL::ExecutionError => ex_err
+            ex_err
+          end
         end
 
         def call
-          if @enqueued_authorization && @pending_authorize_steps_count == 0
+          if @enqueued_authorization
             enqueue_next_steps
           elsif @finish_extension_idx
             finish_extensions
           elsif @field_results
             build_results
-          else
+          elsif @arguments
             execute_field
+          else
+            build_arguments
           end
         rescue StandardError => err
           if @field_definition && !err.message.start_with?("Resolving ")
@@ -179,25 +240,38 @@ module GraphQL
           end
         end
 
-        def execute_field
+        def build_arguments
           query = @selections_step.query
           field_name = @ast_node.name
           @field_definition = query.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
-          objects = @selections_step.objects
           if field_name == "__typename"
             # TODO handle custom introspection
-            @field_results = Array.new(objects.size, @parent_type.graphql_name)
+            @field_results = Array.new(@selections_step.objects.size, @parent_type.graphql_name)
             @object_is_authorized = AlwaysAuthorized
             build_results
             return
           end
 
-          if @field_definition.dynamic_introspection
-            # TODO break this backwards compat somehow?
-            objects = @selections_step.graphql_objects
+          arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
+          @arguments ||= arguments # may have already been set to an error
+
+          if @pending_steps.nil? || @pending_steps.size == 0
+            execute_field
+          end
+        end
+
+        def execute_field
+          objects = @selections_step.objects
+          # TODO not as good because only one error?
+          if @arguments.is_a?(GraphQL::Error)
+            @field_results = Array.new(objects.size, @arguments)
+            @object_is_authorized = AlwaysAuthorized
+            build_results
+            return
           end
 
-          @arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
+          query = @selections_step.query
+
           @field_definition.extras.each do |extra|
             case extra
             when :lookahead
@@ -219,8 +293,12 @@ module GraphQL
             end
           end
 
-          ctx = query.context
+          if @field_definition.dynamic_introspection
+            # TODO break this backwards compat somehow?
+            objects = @selections_step.graphql_objects
+          end
 
+          ctx = query.context
           if @runner.authorization && @runner.authorizes?(@field_definition, ctx)
             authorized_objects = []
             @object_is_authorized = objects.map { |o|
@@ -230,6 +308,9 @@ module GraphQL
               end
               is_authed
             }
+            if authorized_objects.size == 0
+              return
+            end
           else
             authorized_objects = objects
             @object_is_authorized = AlwaysAuthorized
@@ -367,7 +448,7 @@ module GraphQL
             end
             @enqueued_authorization = true
 
-            if @pending_authorize_steps_count == 0
+            if @pending_steps.nil? || @pending_steps.size == 0
               enqueue_next_steps
             else
               # Do nothing -- it will enqueue itself later
@@ -448,9 +529,9 @@ module GraphQL
           end
         end
 
-        def authorized_finished
-          remaining = @pending_authorize_steps_count -= 1
-          if @enqueued_authorization && remaining == 0
+        def authorized_finished(step)
+          @pending_steps.delete(step)
+          if @enqueued_authorization && @pending_steps.size == 0
             @runner.add_step(self)
           end
         end
@@ -490,8 +571,7 @@ module GraphQL
                 (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))
                 ) && @runner.authorizes?(runtime_type, @selections_step.query.context)
               )))
-            @pending_authorize_steps_count += 1
-            @runner.add_step(Batching::PrepareObjectStep.new(
+            obj_step = Batching::PrepareObjectStep.new(
               static_type: @static_type,
               object: field_result,
               runner: @runner,
@@ -502,7 +582,10 @@ module GraphQL
               is_non_null: is_nn,
               key: key,
               is_from_array: is_from_array,
-            ))
+            )
+            ps = @pending_steps ||= []
+            ps << obj_step
+            @runner.add_step(obj_step)
           else
             next_result_h = {}
             @all_next_results << next_result_h

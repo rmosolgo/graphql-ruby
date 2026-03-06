@@ -446,7 +446,7 @@ describe GraphQL::Schema::Resolver do
     class MutationWithRequiredLoadsArgument < GraphQL::Schema::Mutation
       argument :label_id, ID, loads: HasValue
 
-      field :inputs, String, null: false
+      field :inputs, String, null: false, hash_key: :inputs
 
       def resolve(**inputs)
         {
@@ -1028,7 +1028,6 @@ describe GraphQL::Schema::Resolver do
 
       it "returns an error when nullable argument is provided an invalid value" do
         res = exec_query('mutation { mutationWithNullableLoadsArgument(labelId: "invalid") { inputs } }')
-
         assert res["errors"]
         assert_equal 'No object found for `labelId: "invalid"`', res["errors"][0]["message"]
       end

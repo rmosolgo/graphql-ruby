@@ -287,7 +287,7 @@ describe GraphQL::Dataloader do
       end
 
       def self.recipes_by_id(context, recipes:)
-        context.dataloader.with(DataObject).load_all(recipes)
+        recipes
       end
 
       def recipes_by_id(recipes:)
@@ -338,8 +338,6 @@ describe GraphQL::Dataloader do
       end
 
       def self.common_ingredients_with_load(objects, context, recipe_1:, recipe_2:)
-        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([recipe_1, recipe_2])
-
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         results = context.dataloader.with(DataObject).load_all(common_ids)
         Array.new(objects.size, results)
@@ -367,7 +365,8 @@ describe GraphQL::Dataloader do
       end
 
       def self.common_ingredients_from_input_object(objects, context, input:)
-        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([input[:recipe_1], input[:recipe_2]])
+        recipe_1 = input[:recipe_1]
+        recipe_2 = input[:recipe_2]
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         results = context.dataloader.with(DataObject).load_all(common_ids)
         Array.new(objects.size, results)
@@ -1254,12 +1253,12 @@ describe GraphQL::Dataloader do
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 9 : 10), FiberCounting.last_spawn_fiber_count)
-            assert_last_max_fiber_count((TESTING_BATCHING ? 8 : 9), "No limit works as expected")
+            assert_equal(10, FiberCounting.last_spawn_fiber_count)
+            assert_last_max_fiber_count((TESTING_BATCHING ? 9 : 9), "No limit works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 10 : 12), FiberCounting.last_spawn_fiber_count)
+            assert_equal((TESTING_BATCHING ? 11 : 12), FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(4, "Limit of 4 works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })

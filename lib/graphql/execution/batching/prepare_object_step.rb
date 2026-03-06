@@ -121,7 +121,7 @@ module GraphQL
             @runner.static_type_at[next_result_h] = @static_type
           end
 
-          @field_resolve_step.authorized_finished
+          @field_resolve_step.authorized_finished(self)
         end
       end
     end

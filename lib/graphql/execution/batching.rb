@@ -2,6 +2,7 @@
 require "graphql/execution/batching/prepare_object_step"
 require "graphql/execution/batching/field_compatibility"
 require "graphql/execution/batching/field_resolve_step"
+require "graphql/execution/batching/load_argument_step"
 require "graphql/execution/batching/runner"
 require "graphql/execution/batching/selections_step"
 module GraphQL
