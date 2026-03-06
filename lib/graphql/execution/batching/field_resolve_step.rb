@@ -137,10 +137,16 @@ module GraphQL
             raise "Unsupported argument value: #{arg_t.to_type_signature} / #{arg_value.class} (#{arg_value.inspect})"
           end
 
-          arg_value = begin
-            arg_defn.prepare_value(nil, arg_value, context: ctx)
-          rescue StandardError => err
-            @runner.schema.handle_or_reraise(ctx, err)
+          if as_type.nil? # only on root arguments, not list elements
+            arg_value = begin
+              begin
+                arg_defn.prepare_value(nil, arg_value, context: ctx)
+              rescue StandardError => err
+                @runner.schema.handle_or_reraise(ctx, err)
+              end
+            rescue GraphQL::ExecutionError => exec_err
+              exec_err
+            end
           end
 
           if arg_defn.loads && as_type.nil? && !arg_value.nil?
