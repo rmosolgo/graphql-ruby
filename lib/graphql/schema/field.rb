@@ -402,7 +402,7 @@ module GraphQL
         when :resolver_class
           results = Array.new(objects.size, nil)
           ps = field_resolve_step.pending_steps ||= []
-          objects.map.with_index do |o, idx|
+          objects.each_with_index do |o, idx|
             resolver_inst = @resolver_class.new(object: o, context: context, field: self)
             ps << resolver_inst
             resolver_inst.field_resolve_step = field_resolve_step

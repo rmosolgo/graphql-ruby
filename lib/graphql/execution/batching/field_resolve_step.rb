@@ -182,6 +182,9 @@ module GraphQL
         # Implement that Lazy API
         def value
           if @pending_steps
+            if @pending_steps.size == 0
+              raise "Invariant: Waiting on empty list of pending steps. This is a bug in GraphQL-Ruby, please report this error along with query details on GitHub"
+            end
             @runner.dataloader.lazy_at_depth(path.size, self)
           else
             query = @selections_step.query
@@ -315,6 +318,9 @@ module GraphQL
               end
               is_authed
             }
+            if authorized_objects.size == 0
+              return
+            end
           else
             authorized_objects = objects
             @object_is_authorized = AlwaysAuthorized
