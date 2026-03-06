@@ -281,6 +281,10 @@ This depends on `current_path` so isn't possible yet.
 
 Actually this probably works but I haven't tested it.
 
+## Custom Directives
+
+Not supported yet. This will need some new kind of integration.
+
 ### Argument `as:` ✅
 
 `as:` is applied: arguments are passed into Ruby methods by their `as:` names instead of their GraphQL names.
