@@ -1028,7 +1028,6 @@ describe GraphQL::Schema::Resolver do
 
       it "returns an error when nullable argument is provided an invalid value" do
         res = exec_query('mutation { mutationWithNullableLoadsArgument(labelId: "invalid") { inputs } }')
-
         assert res["errors"]
         assert_equal 'No object found for `labelId: "invalid"`', res["errors"][0]["message"]
       end

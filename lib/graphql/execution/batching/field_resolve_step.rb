@@ -26,9 +26,9 @@ module GraphQL
         end
 
         attr_reader :ast_node, :key, :parent_type, :selections_step, :runner,
-          :field_definition, :object_is_authorized, :arguments, :was_scoped
+          :field_definition, :object_is_authorized, :was_scoped
 
-        attr_accessor :pending_steps
+        attr_accessor :pending_steps, :arguments
 
         def path
           @path ||= [*@selections_step.path, @key].freeze
@@ -139,10 +139,40 @@ module GraphQL
           end
 
           if arg_defn.loads && as_type.nil? && !arg_value.nil?
-            loads_step = LoadArgumentStep.new(field_resolve_step: self, argument_definition: arg_defn, arguments: arguments, argument_type: arg_t)
-            @runner.add_step(loads_step)
-            ps = @pending_steps ||= []
-            ps.push(loads_step)
+            # This is for legacy compat:
+            load_receiver = if (r = @field_definition.resolver)
+              r.new(field: @field_definition, context: @selections_step.query.context, object: nil)
+            else
+              @field_definition
+            end
+            @pending_steps ||= []
+            if arg_t.list?
+              results = Array.new(arg_value.size, nil)
+              arguments[arg_defn.keyword] = results
+              arg_value.each_with_index do |inner_v, idx|
+                loads_step = LoadArgumentStep.new(
+                  field_resolve_step: self,
+                  load_receiver: load_receiver,
+                  argument_value: inner_v,
+                  argument_definition: arg_defn,
+                  arguments: results,
+                  argument_key: idx,
+                )
+                @pending_steps.push(loads_step)
+                @runner.add_step(loads_step)
+              end
+            else
+              loads_step = LoadArgumentStep.new(
+                field_resolve_step: self,
+                load_receiver: load_receiver,
+                argument_value: arg_value,
+                argument_definition: arg_defn,
+                arguments: arguments,
+                argument_key: arg_defn.keyword,
+              )
+              @pending_steps.push(loads_step)
+              @runner.add_step(loads_step)
+            end
           else
             arguments[target_keyword] = arg_value
           end
@@ -173,6 +203,12 @@ module GraphQL
           @runner.schema.unauthorized_object(auth_err)
         rescue GraphQL::ExecutionError => err
           err
+        rescue StandardError => stderr
+          begin
+            @selections_step.query.handle_or_reraise(stderr)
+          rescue GraphQL::ExecutionError => ex_err
+            ex_err
+          end
         end
 
         def call
@@ -221,24 +257,27 @@ module GraphQL
             return
           end
 
-          # TODO Split somewhere here so that this step can wait for arguments
-          # Then resume later -- this will require some instance state, eg `@arguments`
-          # to be accumulated during those other steps
-          arguments_or_error = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
-          if arguments_or_error.is_a?(GraphQL::Error)
-            @field_results = Array.new(objects.size, arguments_or_error)
-            @object_is_authorized = AlwaysAuthorized
-            build_results
-            return
+          arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
+          @arguments ||= arguments # may have already been set to an error
+
+          if @pending_steps
+            @runner.dataloader.lazy_at_depth(path.size, self)
           else
-            @arguments = arguments_or_error
             execute_field
           end
         end
 
         def execute_field
-          query = @selections_step.query
           objects = @selections_step.objects
+          # TODO not as good because only one error?
+          if @arguments.is_a?(GraphQL::Error)
+            @field_results = Array.new(objects.size, @arguments)
+            @object_is_authorized = AlwaysAuthorized
+            build_results
+            return
+          end
+
+          query = @selections_step.query
 
           @field_definition.extras.each do |extra|
             case extra
@@ -303,7 +342,7 @@ module GraphQL
 
           query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
 
-          if any_lazy_results? || @resolver_instances
+          if any_lazy_results? || @pending_steps
             @runner.dataloader.lazy_at_depth(path.size, self)
           elsif has_extensions
             finish_extensions
