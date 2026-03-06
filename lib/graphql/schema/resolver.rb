@@ -46,7 +46,7 @@ module GraphQL
         @prepared_arguments = nil
       end
 
-      attr_accessor :exec_result, :exec_index, :resolvers_step
+      attr_accessor :exec_result, :exec_index, :field_resolve_step
 
       # @return [Object] The application object this field is being resolved on
       attr_accessor :object
@@ -63,8 +63,12 @@ module GraphQL
         if self.class < Schema::HasSingleInputArgument
           @prepared_arguments = @prepared_arguments[:input]
         end
+        q = context.query
+        trace_objs = [object]
+        q.current_trace.begin_execute_field(field, @prepared_arguments, trace_objs, q)
         is_authed, new_return_value = authorized?(**@prepared_arguments)
-        if (runner = @resolvers_step.field_resolve_step.runner).resolves_lazies && runner.schema.lazy?(is_authed)
+
+        if (runner = @field_resolve_step.runner).resolves_lazies && runner.schema.lazy?(is_authed)
           is_authed, new_return_value = runner.schema.sync_lazy(is_authed)
         end
 
@@ -73,6 +77,8 @@ module GraphQL
         else
           new_return_value
         end
+        q = context.query
+        q.current_trace.end_execute_field(field, @prepared_arguments, trace_objs, q, [result])
 
         exec_result[exec_index] = result
       rescue RuntimeError => err
@@ -82,6 +88,12 @@ module GraphQL
           context.query.handle_or_reraise(stderr)
         rescue GraphQL::ExecutionError => ex_err
           ex_err
+        end
+      ensure
+        ri = field_resolve_step.resolver_instances
+        ri.delete(self)
+        if ri.size == 0
+          field_resolve_step.resolver_instances = nil
         end
       end
 

@@ -22,10 +22,13 @@ module GraphQL
           @object_is_authorized = nil
           @finish_extension_idx = nil
           @was_scoped = nil
+          @resolver_instances = nil
         end
 
         attr_reader :ast_node, :key, :parent_type, :selections_step, :runner,
           :field_definition, :object_is_authorized, :arguments, :was_scoped
+
+        attr_accessor :resolver_instances
 
         def path
           @path ||= [*@selections_step.path, @key].freeze
@@ -178,11 +181,15 @@ module GraphQL
 
         # Implement that Lazy API
         def value
-          query = @selections_step.query
-          query.current_trace.begin_execute_field(@field_definition, @arguments, @field_results, query)
-          @field_results = sync(@field_results)
-          query.current_trace.end_execute_field(@field_definition, @arguments, @field_results, query, @field_results)
-          @runner.add_step(self)
+          if @resolver_instances
+            @runner.dataloader.lazy_at_depth(path.size, self)
+          else
+            query = @selections_step.query
+            query.current_trace.begin_execute_field(@field_definition, @arguments, @field_results, query)
+            @field_results = sync(@field_results)
+            query.current_trace.end_execute_field(@field_definition, @arguments, @field_results, query, @field_results)
+            @runner.add_step(self)
+          end
           true
         end
 
@@ -316,7 +323,7 @@ module GraphQL
 
           query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
 
-          if any_lazy_results?
+          if any_lazy_results? || @resolver_instances
             @runner.dataloader.lazy_at_depth(path.size, self)
           elsif has_extensions
             finish_extensions

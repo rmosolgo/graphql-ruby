@@ -401,14 +401,15 @@ module GraphQL
           objects.map { |o| o.dig(*@batch_mode_key) }
         when :resolver_class
           results = Array.new(objects.size, nil)
-          resolvers = objects.map.with_index do |o, idx|
+          field_resolve_step.resolver_instances = objects.map.with_index do |o, idx|
             resolver_inst = @resolver_class.new(object: o, context: context, field: self)
+            resolver_inst.field_resolve_step = field_resolve_step
             resolver_inst.prepared_arguments = args_hash
             resolver_inst.exec_result = results
             resolver_inst.exec_index = idx
+            field_resolve_step.runner.add_step(resolver_inst)
             resolver_inst
           end
-          field_resolve_step.runner.add_step(Execution::Batching::ResolversStep.new(field_resolve_step: field_resolve_step, resolvers: resolvers))
           results
         else
           raise "Batching execution for #{path} not implemented (batch_mode: #{@batch_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
