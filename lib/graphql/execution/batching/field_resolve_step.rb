@@ -252,7 +252,8 @@ module GraphQL
 
           arguments_or_error = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
           if arguments_or_error.is_a?(GraphQL::Error)
-            @field_results = Array.new(authorized_objects.size, arguments_or_error)
+            @field_results = Array.new(objects.size, arguments_or_error)
+            @object_is_authorized = AlwaysAuthorized
             build_results
             return
           else
