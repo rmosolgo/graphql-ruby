@@ -10,7 +10,7 @@ index: 4
 
 _Scoping_ is a complementary consideration to authorization. Rather than checking "can this user see this thing?", scoping takes a list of items filters it to the subset which is appropriate for the current viewer and context.
 
-For similar features, see [Pundit scopes](https://github.com/varvet/pundit#scopes) and [Cancan's `.accessible_by`](https://github.com/cancancommunity/cancancan/wiki/Fetching-Records).
+For similar features, see [Pundit scopes](https://github.com/varvet/pundit#scopes) and [Cancan's `.accessible_by`](https://github.com/CanCanCommunity/cancancan/blob/develop/docs/fetching_records.md).
 
 ## `scope:` option
 
