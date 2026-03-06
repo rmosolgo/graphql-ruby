@@ -289,7 +289,9 @@ Not supported yet. This will need some new kind of integration.
 
 `as:` is applied: arguments are passed into Ruby methods by their `as:` names instead of their GraphQL names.
 
-### Argument `loads:` ❌
+### Argument `loads:` ✅
+
+- Custom `def load_...` methods are _not_ called.
 
 TODO: supporting this will be possible with some opt-in code. Legacy support is also implemented but not documented
 

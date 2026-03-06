@@ -415,17 +415,12 @@ describe GraphQL::Schema::Resolver do
       def authorized?(**_args)
         if arguments[:number_s] == 1 && arguments[:loads] == 1
           true
-        elsif TESTING_BATCHING && arguments[:number_s] == "1" && arguments[:loads] == 1
-          true
         else
           raise GraphQL::ExecutionError, "Auth failed (#{arguments[:number_s].inspect})"
         end
       end
 
       def resolve(number_s:, loads:)
-        if TESTING_BATCHING
-          number_s = number_s.to_i # `prepare:` is not called
-        end
         { result: number_s + loads }
       end
     end
@@ -553,12 +548,7 @@ describe GraphQL::Schema::Resolver do
 
     # Test auth failure:
     res = exec_query("{ resolverWithAuthArgs(input: { numberS: \"2\", loadsId: 1 }) { result } }")
-    if TESTING_BATCHING
-      # Was not prepared:
-      assert_equal ["Auth failed (\"2\")"], res["errors"].map { |e| e["message"] }
-    else
-      assert_equal ["Auth failed (2)"], res["errors"].map { |e| e["message"] }
-    end
+    assert_equal ["Auth failed (2)"], res["errors"].map { |e| e["message"] }
   end
 
   describe ".path" do
