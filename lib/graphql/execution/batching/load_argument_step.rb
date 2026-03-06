@@ -50,8 +50,8 @@ module GraphQL
 
           field_pending_steps = @field_resolve_step.pending_steps
           field_pending_steps.delete(self)
-          if field_pending_steps.size == 0
-            @field_resolve_step.pending_steps = nil
+          if @field_resolve_step.arguments && field_pending_steps.size == 0 # rubocop:disable Development/ContextIsPassedCop
+            @field_resolve_step.runner.add_step(@field_resolve_step)
           end
         end
       end

@@ -78,7 +78,6 @@ if testing_rails?
         "authorized.graphql",
         "dataloader_source.graphql",
         "execute_field.graphql",
-        (TESTING_BATCHING ? "execute_field.graphql" : nil), # `loads:` happens during field execution in this case
         (TESTING_BATCHING ? "resolve_type.graphql" : nil), # `loads:`-related?
         "resolve_type.graphql",
         "authorized.graphql",

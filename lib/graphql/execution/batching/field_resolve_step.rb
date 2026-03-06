@@ -14,7 +14,6 @@ module GraphQL
           @field_results = nil
           @path = nil
           @enqueued_authorization = false
-          @pending_authorize_steps_count = 0
           @all_next_objects = nil
           @all_next_results = nil
           @static_type = nil
@@ -26,7 +25,7 @@ module GraphQL
         end
 
         attr_reader :ast_node, :key, :parent_type, :selections_step, :runner,
-          :field_definition, :object_is_authorized, :was_scoped
+          :field_definition, :object_is_authorized, :was_scoped, :field_results
 
         attr_accessor :pending_steps, :arguments
 
@@ -181,18 +180,11 @@ module GraphQL
 
         # Implement that Lazy API
         def value
-          if @pending_steps
-            if @pending_steps.size == 0
-              raise "Invariant: Waiting on empty list of pending steps. This is a bug in GraphQL-Ruby, please report this error along with query details on GitHub"
-            end
-            @runner.dataloader.lazy_at_depth(path.size, self)
-          else
-            query = @selections_step.query
-            query.current_trace.begin_execute_field(@field_definition, @arguments, @field_results, query)
-            @field_results = sync(@field_results)
-            query.current_trace.end_execute_field(@field_definition, @arguments, @field_results, query, @field_results)
-            @runner.add_step(self)
-          end
+          query = @selections_step.query
+          query.current_trace.begin_execute_field(@field_definition, @arguments, @field_results, query)
+          @field_results = sync(@field_results)
+          query.current_trace.end_execute_field(@field_definition, @arguments, @field_results, query, @field_results)
+          @runner.add_step(self)
           true
         end
 
@@ -215,7 +207,7 @@ module GraphQL
         end
 
         def call
-          if @enqueued_authorization && @pending_authorize_steps_count == 0
+          if @enqueued_authorization
             enqueue_next_steps
           elsif @finish_extension_idx
             finish_extensions
@@ -263,9 +255,7 @@ module GraphQL
           arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
           @arguments ||= arguments # may have already been set to an error
 
-          if @pending_steps
-            @runner.dataloader.lazy_at_depth(path.size, self)
-          else
+          if @pending_steps.nil? || @pending_steps.size == 0
             execute_field
           end
         end
@@ -348,7 +338,7 @@ module GraphQL
 
           query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
 
-          if any_lazy_results? || @pending_steps
+          if any_lazy_results?
             @runner.dataloader.lazy_at_depth(path.size, self)
           elsif has_extensions
             finish_extensions
@@ -458,7 +448,7 @@ module GraphQL
             end
             @enqueued_authorization = true
 
-            if @pending_authorize_steps_count == 0
+            if @pending_steps.nil? || @pending_steps.size == 0
               enqueue_next_steps
             else
               # Do nothing -- it will enqueue itself later
@@ -539,9 +529,9 @@ module GraphQL
           end
         end
 
-        def authorized_finished
-          remaining = @pending_authorize_steps_count -= 1
-          if @enqueued_authorization && remaining == 0
+        def authorized_finished(step)
+          @pending_steps.delete(step)
+          if @enqueued_authorization && @pending_steps.size == 0
             @runner.add_step(self)
           end
         end
@@ -581,8 +571,7 @@ module GraphQL
                 (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))
                 ) && @runner.authorizes?(runtime_type, @selections_step.query.context)
               )))
-            @pending_authorize_steps_count += 1
-            @runner.add_step(Batching::PrepareObjectStep.new(
+            obj_step = Batching::PrepareObjectStep.new(
               static_type: @static_type,
               object: field_result,
               runner: @runner,
@@ -593,7 +582,10 @@ module GraphQL
               is_non_null: is_nn,
               key: key,
               is_from_array: is_from_array,
-            ))
+            )
+            ps = @pending_steps ||= []
+            ps << obj_step
+            @runner.add_step(obj_step)
           else
             next_result_h = {}
             @all_next_results << next_result_h
