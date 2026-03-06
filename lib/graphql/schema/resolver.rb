@@ -90,10 +90,10 @@ module GraphQL
           ex_err
         end
       ensure
-        ri = field_resolve_step.resolver_instances
-        ri.delete(self)
-        if ri.size == 0
-          field_resolve_step.resolver_instances = nil
+        field_pending_steps = field_resolve_step.pending_steps
+        field_pending_steps.delete(self)
+        if field_pending_steps.size == 0
+          field_resolve_step.field_pending_steps = nil
         end
       end
 
