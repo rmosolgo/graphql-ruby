@@ -110,6 +110,7 @@ module GraphQL
             arg_value
           end
 
+          ctx = @selections_step.query.context
           arg_value = if arg_t.list?
             if arg_value.nil?
               arg_value
@@ -122,7 +123,6 @@ module GraphQL
             end
           elsif arg_t.kind.leaf?
             begin
-              ctx = @selections_step.query.context
               arg_t.coerce_input(arg_value, ctx)
             rescue GraphQL::UnauthorizedEnumValueError => enum_err
               begin
@@ -135,6 +135,12 @@ module GraphQL
             coerce_arguments(arg_t, arg_value)
           else
             raise "Unsupported argument value: #{arg_t.to_type_signature} / #{arg_value.class} (#{arg_value.inspect})"
+          end
+
+          arg_value = begin
+            arg_defn.prepare_value(nil, arg_value, context: ctx)
+          rescue StandardError => err
+            @runner.schema.handle_or_reraise(ctx, err)
           end
 
           if arg_defn.loads && as_type.nil? && !arg_value.nil?
