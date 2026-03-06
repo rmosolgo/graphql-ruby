@@ -250,20 +250,6 @@ module GraphQL
 
           ctx = query.context
 
-          if @runner.authorization && @runner.authorizes?(@field_definition, ctx)
-            authorized_objects = []
-            @object_is_authorized = objects.map { |o|
-              is_authed = @field_definition.authorized?(o, @arguments, ctx)
-              if is_authed
-                authorized_objects << o
-              end
-              is_authed
-            }
-          else
-            authorized_objects = objects
-            @object_is_authorized = AlwaysAuthorized
-          end
-
           arguments_or_error = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
           if arguments_or_error.is_a?(GraphQL::Error)
             @field_results = Array.new(authorized_objects.size, arguments_or_error)
@@ -291,6 +277,20 @@ module GraphQL
             else
               raise ArgumentError, "This `extra` isn't supported yet: #{extra.inspect}. Open an issue on GraphQL-Ruby to add compatibility for it."
             end
+          end
+
+          if @runner.authorization && @runner.authorizes?(@field_definition, ctx)
+            authorized_objects = []
+            @object_is_authorized = objects.map { |o|
+              is_authed = @field_definition.authorized?(o, @arguments, ctx)
+              if is_authed
+                authorized_objects << o
+              end
+              is_authed
+            }
+          else
+            authorized_objects = objects
+            @object_is_authorized = AlwaysAuthorized
           end
 
           if @parent_type.default_relay? && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
