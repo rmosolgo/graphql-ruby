@@ -4,7 +4,6 @@ require "spec_helper"
 describe GraphQL::Schema::Visibility do
   class VisSchema < GraphQL::Schema
     class BaseField < GraphQL::Schema::Field
-      # include GraphQL::Execution::Next::FieldCompatibility if TESTING_EXEC_NEXT
       def initialize(*args, admin_only: false, **kwargs, &block)
         super(*args, **kwargs, &block)
         @admin_only = admin_only
@@ -32,9 +31,9 @@ describe GraphQL::Schema::Visibility do
     end
 
     class Product < BaseObject
-      field :name, String
-      field :price, Integer
-      field :cost_of_goods_sold, Integer, admin_only: true
+      field :name, String, hash_key: :name
+      field :price, Integer, hash_key: :price
+      field :cost_of_goods_sold, Integer, admin_only: true, hash_key: :cost_of_goods_sold
     end
 
     class Widget < BaseObject
@@ -48,7 +47,7 @@ describe GraphQL::Schema::Visibility do
     end
 
     class Query < BaseObject
-      field :products, [Product]
+      field :products, [Product], resolve_legacy_instance_method: true
       field :widget, Widget do
         argument :type, WidgetKind
       end
