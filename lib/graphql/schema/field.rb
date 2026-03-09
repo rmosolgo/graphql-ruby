@@ -364,74 +364,8 @@ module GraphQL
         end
       end
 
-      # Called by {Execution::Next} to resolve this field for each of `objects`
-      # @param field_resolve_step [Execution::Next::FieldResolveStep] an internal metadata object from execution code
-      # @param objects [Array<Object>] Objects returned from previously-executed fields
-      # @param context [GraphQL::Query::Context]
-      # @param args_hash [Hash<Symbol => Object>] Ruby-style arguments for this field
-      # @return [Array<Object>] One field result for each of `objects`; must have the same length as `objects`
-      # @see #initialize Use `resolve_static:`, `resolve_batch:`, `resolve_each:`, `hash_key:`, or `method:`
       # @api private
-      def resolve_batch(field_resolve_step, objects, context, args_hash)
-        case @execution_next_mode
-        when :resolve_batch
-          if args_hash.empty?
-            @owner.public_send(@execution_next_mode_key, objects, context)
-          else
-            @owner.public_send(@execution_next_mode_key, objects, context, **args_hash)
-          end
-        when :resolve_static
-          result = if args_hash.empty?
-            @owner.public_send(@execution_next_mode_key, context)
-          else
-            @owner.public_send(@execution_next_mode_key, context, **args_hash)
-          end
-          Array.new(objects.size, result)
-        when :resolve_each
-          if args_hash.empty?
-            objects.map { |o| @owner.public_send(@execution_next_mode_key, o, context) }
-          else
-            objects.map { |o| @owner.public_send(@execution_next_mode_key, o, context, **args_hash) }
-          end
-        when :hash_key
-          objects.map { |o| o[@execution_next_mode_key] }
-        when :direct_send
-          if args_hash.empty?
-            objects.map { |o| o.public_send(@execution_next_mode_key) }
-          else
-            objects.map { |o| o.public_send(@execution_next_mode_key, **args_hash) }
-          end
-        when :dig
-          objects.map { |o| o.dig(*@execution_next_mode_key) }
-        when :resolver_class
-          results = Array.new(objects.size, nil)
-          ps = field_resolve_step.pending_steps ||= []
-          objects.each_with_index do |o, idx|
-            resolver_inst = @resolver_class.new(object: o, context: context, field: self)
-            ps << resolver_inst
-            resolver_inst.field_resolve_step = field_resolve_step
-            resolver_inst.prepared_arguments = args_hash
-            resolver_inst.exec_result = results
-            resolver_inst.exec_index = idx
-            field_resolve_step.runner.add_step(resolver_inst)
-            resolver_inst
-          end
-          results
-        when :resolve_legacy_instance_method
-          field_resolve_step.selections_step.graphql_objects.map do |obj_inst|
-            if dynamic_introspection
-              obj_inst = @owner.wrap(obj_inst, context)
-            end
-            if args_hash.empty?
-              obj_inst.public_send(@execution_next_mode_key)
-            else
-              obj_inst.public_send(@execution_next_mode_key, **args_hash)
-            end
-          end
-        else
-          raise "Batching execution for #{path} not implemented (execution_next_mode: #{@execution_next_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
-        end
-      end
+      attr_reader :execution_next_mode_key, :execution_next_mode
 
       # Calls the definition block, if one was given.
       # This is deferred so that references to the return type

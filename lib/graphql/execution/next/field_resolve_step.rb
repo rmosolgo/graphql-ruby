@@ -347,11 +347,11 @@ module GraphQL
                 args = args.dup
                 added_extras.each { |e| args.delete(e) }
               end
-              @field_definition.resolve_batch(self, objs, ctx, args)
+              resolve_batch(objs, ctx, args)
             end
             @finish_extension_idx = 0
           else
-            @field_results = @field_definition.resolve_batch(self, authorized_objects, ctx, @arguments)
+            @field_results = resolve_batch(authorized_objects, ctx, @arguments)
           end
 
           query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
@@ -611,6 +611,68 @@ module GraphQL
             graphql_result[key] = next_result_h
           end
         end
+
+        def resolve_batch(objects, context, args_hash)
+          case @field_definition.execution_next_mode
+          when :resolve_batch
+            if args_hash.empty?
+              @parent_type.public_send(@field_definition.execution_next_mode_key, objects, context)
+            else
+              @parent_type.public_send(@field_definition.execution_next_mode_key, objects, context, **args_hash)
+            end
+          when :resolve_static
+            result = if args_hash.empty?
+              @parent_type.public_send(@field_definition.execution_next_mode_key, context)
+            else
+              @parent_type.public_send(@field_definition.execution_next_mode_key, context, **args_hash)
+            end
+            Array.new(objects.size, result)
+          when :resolve_each
+            if args_hash.empty?
+              objects.map { |o| @parent_type.public_send(@field_definition.execution_next_mode_key, o, context) }
+            else
+              objects.map { |o| @parent_type.public_send(@field_definition.execution_next_mode_key, o, context, **args_hash) }
+            end
+          when :hash_key
+            objects.map { |o| o[@field_definition.execution_next_mode_key] }
+          when :direct_send
+            if args_hash.empty?
+              objects.map { |o| o.public_send(@field_definition.execution_next_mode_key) }
+            else
+              objects.map { |o| o.public_send(@field_definition.execution_next_mode_key, **args_hash) }
+            end
+          when :dig
+            objects.map { |o| o.dig(*@field_definition.execution_next_mode_key) }
+          when :resolver_class
+            results = Array.new(objects.size, nil)
+            ps = @pending_steps ||= []
+            objects.each_with_index do |o, idx|
+              resolver_inst = @field_definition.resolver.new(object: o, context: context, field: @field_definition)
+              ps << resolver_inst
+              resolver_inst.field_resolve_step = self
+              resolver_inst.prepared_arguments = args_hash
+              resolver_inst.exec_result = results
+              resolver_inst.exec_index = idx
+              @runner.add_step(resolver_inst)
+              resolver_inst
+            end
+            results
+          when :resolve_legacy_instance_method
+            @selections_step.graphql_objects.map do |obj_inst|
+              if @field_definition.dynamic_introspection
+                obj_inst = object_type.wrap(obj_inst, context)
+              end
+              if args_hash.empty?
+                obj_inst.public_send(@field_definition.execution_next_mode_key)
+              else
+                obj_inst.public_send(@field_definition.execution_next_mode_key, **args_hash)
+              end
+            end
+          else
+            raise "Batching execution for #{path} not implemented (execution_next_mode: #{@execution_next_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
+          end
+        end
+
       end
 
       class RawValueFieldResolveStep < FieldResolveStep
