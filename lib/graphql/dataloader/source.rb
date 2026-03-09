@@ -170,7 +170,7 @@ module GraphQL
       # @param batch_args [Array<Object>]
       # @param batch_kwargs [Hash]
       # @return [Object]
-      def self.execution_next_key_for(*batch_args, **batch_kwargs)
+      def self.batch_key_for(*batch_args, **batch_kwargs)
         [*batch_args, **batch_kwargs]
       end
 

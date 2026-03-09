@@ -75,9 +75,9 @@ describe GraphQL::Dataloader do
     end
 
     class SlowDataObject < GraphQL::Dataloader::Source
-      def initialize(execution_next_key)
+      def initialize(batch_key)
         # This is just so that I can force different instances in test
-        @execution_next_key = execution_next_key
+        @batch_key = batch_key
       end
 
       def fetch(keys)
@@ -91,12 +91,12 @@ describe GraphQL::Dataloader do
     end
 
     class CustomBatchKeySource < GraphQL::Dataloader::Source
-      def initialize(execution_next_key)
-        @execution_next_key = execution_next_key
+      def initialize(batch_key)
+        @batch_key = batch_key
       end
 
-      def self.execution_next_key_for(execution_next_key)
-        Database.log << [:execution_next_key_for, execution_next_key]
+      def self.batch_key_for(batch_key)
+        Database.log << [:batch_key_for, batch_key]
         # Ignore it altogether
         :all_the_same
       end
@@ -372,13 +372,13 @@ describe GraphQL::Dataloader do
         Array.new(objects.size, results)
       end
 
-      field :ingredient_with_custom_execution_next_key, Ingredient do
+      field :ingredient_with_custom_batch_key, Ingredient do
         argument :id, ID
-        argument :execution_next_key, String
+        argument :batch_key, String
       end
 
-      def ingredient_with_custom_execution_next_key(id:, execution_next_key:)
-        dataloader.with(CustomBatchKeySource, execution_next_key).load(id)
+      def ingredient_with_custom_batch_key(id:, batch_key:)
+        dataloader.with(CustomBatchKeySource, batch_key).load(id)
       end
 
       field :recursive_ingredient_name, String do
@@ -404,7 +404,7 @@ describe GraphQL::Dataloader do
 
       class LookaheadInput < GraphQL::Schema::InputObject
         argument :id, ID
-        argument :execution_next_key, String
+        argument :batch_key, String
       end
 
       field :lookahead_ingredient, Ingredient, extras: [:lookahead] do
@@ -413,7 +413,7 @@ describe GraphQL::Dataloader do
 
       def lookahead_ingredient(input:, lookahead:)
         lookahead.arguments # forces a dataloader.run_isolated call
-        dataloader.with(CustomBatchKeySource, input[:execution_next_key]).load(input[:id])
+        dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
       end
 
       field :cookbooks, [Cookbook]
@@ -1103,7 +1103,7 @@ describe GraphQL::Dataloader do
           assert_equal "Wheat", result["data"]["recursiveIngredientName"]
         end
 
-        it "uses .execution_next_key_for in source classes" do
+        it "uses .batch_key_for in source classes" do
           query_str = <<-GRAPHQL
           {
             i1: ingredientWithCustomBatchKey(id: 1, batchKey: "abc") { name }
@@ -1117,9 +1117,9 @@ describe GraphQL::Dataloader do
           assert_graphql_equal expected_data, res["data"]
           expected_log = [
             # Each batch key is given to the source class:
-            [:execution_next_key_for, "abc"],
-            [:execution_next_key_for, "def"],
-            [:execution_next_key_for, "ghi"],
+            [:batch_key_for, "abc"],
+            [:batch_key_for, "def"],
+            [:batch_key_for, "ghi"],
             # But since they return the same value,
             # all keys are fetched in the same call:
             [:mget, ["1", "2", "3"]]

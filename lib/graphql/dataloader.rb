@@ -110,8 +110,8 @@ module GraphQL
     #   and cached for the lifetime of this {Multiplex}.
     if RUBY_VERSION < "3" || RUBY_ENGINE != "ruby" # truffle-ruby wasn't doing well with the implementation below
       def with(source_class, *batch_args)
-        execution_next_key = source_class.execution_next_key_for(*batch_args)
-        @source_cache[source_class][execution_next_key] ||= begin
+        batch_key = source_class.batch_key_for(*batch_args)
+        @source_cache[source_class][batch_key] ||= begin
           source = source_class.new(*batch_args)
           source.setup(self)
           source
@@ -119,8 +119,8 @@ module GraphQL
       end
     else
       def with(source_class, *batch_args, **batch_kwargs)
-        execution_next_key = source_class.execution_next_key_for(*batch_args, **batch_kwargs)
-        @source_cache[source_class][execution_next_key] ||= begin
+        batch_key = source_class.batch_key_for(*batch_args, **batch_kwargs)
+        @source_cache[source_class][batch_key] ||= begin
           source = source_class.new(*batch_args, **batch_kwargs)
           source.setup(self)
           source
