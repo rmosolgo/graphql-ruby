@@ -21,7 +21,7 @@ module GraphQL
         def call
           context = @field_resolve_step.selections_step.query.context
           @loaded_value = @load_receiver.load_and_authorize_application_object(@argument_definition, @argument_value, context)
-          if (runner = @field_resolve_step.runner).resolves_lazies && runner.schema.lazy?(@loaded_value)
+          if (runner = @field_resolve_step.runner).resolves_lazies && runner.lazy?(@loaded_value)
             runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
           else
             assign_value

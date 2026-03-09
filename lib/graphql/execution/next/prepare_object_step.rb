@@ -46,7 +46,7 @@ module GraphQL
             else
               @resolved_type = @static_type
             end
-            if @runner.resolves_lazies && @runner.schema.lazy?(@resolved_type)
+            if @runner.resolves_lazies && @runner.lazy?(@resolved_type)
               @next_step = :authorize
               @runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
             else
@@ -77,7 +77,7 @@ module GraphQL
             @authorization_error = auth_err
           end
 
-          if @runner.resolves_lazies && @runner.schema.lazy?(@authorized_value)
+          if @runner.resolves_lazies && @runner.lazy?(@authorized_value)
             @runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
             @next_step = :create_result
           else

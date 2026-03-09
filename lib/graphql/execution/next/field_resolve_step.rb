@@ -368,14 +368,13 @@ module GraphQL
         def any_lazy_results?
           lazies = false
           if @runner.resolves_lazies # TODO extract this
-            # TODO add a per-query cache of `.lazy?`
             @field_results.each do |field_result|
-              if @runner.schema.lazy?(field_result)
+              if @runner.lazy?(field_result)
                 lazies = true
                 break
               elsif field_result.is_a?(Array)
                 field_result.each do |inner_fr|
-                  if @runner.schema.lazy?(inner_fr)
+                  if @runner.lazy?(inner_fr)
                     break lazies = true
                   end
                 end
