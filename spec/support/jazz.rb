@@ -55,7 +55,7 @@ module Jazz
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
     argument_class BaseArgument
-    include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
+    # include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     attr_reader :upcase
 
     def initialize(*args, **options, &block)

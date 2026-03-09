@@ -19,7 +19,7 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class BaseField < GraphQL::Schema::Field
-      include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
+      # include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     end
 
     class BaseObject < GraphQL::Schema::Object

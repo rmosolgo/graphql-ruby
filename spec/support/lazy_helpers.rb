@@ -51,7 +51,7 @@ module LazyHelpers
 
   class BaseObject < GraphQL::Schema::Object
     class BaseField < GraphQL::Schema::Field
-      include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
+      # include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     end
     field_class(BaseField)
   end

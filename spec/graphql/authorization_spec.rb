@@ -32,7 +32,6 @@ describe "GraphQL::Authorization" do
 
     class BaseField < GraphQL::Schema::Field
       argument_class BaseArgument
-      include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
 
       def visible?(context)
         super && (context[:hide] ? @name != "hidden" : true)
@@ -194,7 +193,7 @@ describe "GraphQL::Authorization" do
     # but if its replacement value is used, it gives `replaced => true`
     class Replaceable
       def replacement
-        { replaced: true }
+        OpenStruct.new(replaced: true)
       end
 
       def replaced
@@ -224,7 +223,7 @@ describe "GraphQL::Authorization" do
 
       field :hidden, Integer, null: false
       field :unauthorized, Integer, method: :itself
-      field :int2, Integer do
+      field :int2, Integer, resolve_legacy_instance_method: true do
         argument :int, Integer, required: false
         argument :hidden, Integer, required: false
         argument :unauthorized, Integer, required: false
@@ -234,7 +233,7 @@ describe "GraphQL::Authorization" do
         args[:unauthorized] || 1
       end
 
-      field :landscape_feature, LandscapeFeature, null: false do
+      field :landscape_feature, LandscapeFeature, resolve_legacy_instance_method: true, null: false do
         argument :string, String, required: false
         argument :enum, LandscapeFeature, required: false
       end
@@ -243,7 +242,7 @@ describe "GraphQL::Authorization" do
         string || enum
       end
 
-      field :landscape_features, [LandscapeFeature], null: false do
+      field :landscape_features, [LandscapeFeature], null: false, resolve_legacy_instance_method: true do
         argument :strings, [String], required: false
         argument :enums, [LandscapeFeature], required: false
       end
@@ -253,15 +252,15 @@ describe "GraphQL::Authorization" do
       end
 
       def empty_array; []; end
-      field :hidden_object, HiddenObject, null: false, resolver_method: :itself
-      field :hidden_interface, HiddenInterface, null: false, resolver_method: :itself
-      field :hidden_default_interface, HiddenDefaultInterface, null: false, resolver_method: :itself
-      field :hidden_connection, RelayObject.connection_type, null: :false, resolver_method: :empty_array
-      field :hidden_edge, RelayObject.edge_type, null: :false, resolver_method: :edge_object
+      field :hidden_object, HiddenObject, null: false, resolver_method: :itself, resolve_legacy_instance_method: :itself
+      field :hidden_interface, HiddenInterface, null: false, resolver_method: :itself, resolve_legacy_instance_method: :itself
+      field :hidden_default_interface, HiddenDefaultInterface, null: false, resolver_method: :itself, resolve_legacy_instance_method: :itself
+      field :hidden_connection, RelayObject.connection_type, null: :false, resolver_method: :empty_array, resolve_legacy_instance_method: :empty_array
+      field :hidden_edge, RelayObject.edge_type, null: :false, resolver_method: :edge_object, resolve_legacy_instance_method: :edge_object
 
-      field :unauthorized_object, UnauthorizedObject, resolver_method: :itself
-      field :unauthorized_connection, RelayObject.connection_type, null: false, resolver_method: :array_with_item
-      field :unauthorized_edge, RelayObject.edge_type, null: false, resolver_method: :edge_object
+      field :unauthorized_object, UnauthorizedObject, resolver_method: :itself, resolve_legacy_instance_method: :itself
+      field :unauthorized_connection, RelayObject.connection_type, null: false, resolver_method: :array_with_item, resolve_legacy_instance_method: :array_with_item
+      field :unauthorized_edge, RelayObject.edge_type, null: false, resolver_method: :edge_object, resolve_legacy_instance_method: :edge_object
 
       def edge_object
         OpenStruct.new(node: 100)
@@ -271,45 +270,45 @@ describe "GraphQL::Authorization" do
         [1]
       end
 
-      field :unauthorized_lazy_box, UnauthorizedBox do
+      field :unauthorized_lazy_box, UnauthorizedBox, resolve_legacy_instance_method: true do
         argument :value, String
       end
       def unauthorized_lazy_box(value:)
         # Make it extra nested, just for good measure.
         Box.new(value: Box.new(value: value))
       end
-      field :unauthorized_list_items, [UnauthorizedObject]
+      field :unauthorized_list_items, [UnauthorizedObject], resolve_legacy_instance_method: true
       def unauthorized_list_items
         [self, self]
       end
 
-      field :unauthorized_lazy_check_box, UnauthorizedCheckBox, resolver_method: :unauthorized_lazy_box do
+      field :unauthorized_lazy_check_box, UnauthorizedCheckBox, resolver_method: :unauthorized_lazy_box, resolve_legacy_instance_method: :unauthorized_lazy_box do
         argument :value, String
       end
 
-      field :unauthorized_interface, UnauthorizedInterface, resolver_method: :unauthorized_lazy_box do
+      field :unauthorized_interface, UnauthorizedInterface, resolver_method: :unauthorized_lazy_box, resolve_legacy_instance_method: :unauthorized_lazy_box do
         argument :value, String
       end
 
-      field :unauthorized_lazy_list_interface, [UnauthorizedInterface, null: true]
+      field :unauthorized_lazy_list_interface, [UnauthorizedInterface, null: true], resolve_legacy_instance_method: true
 
       def unauthorized_lazy_list_interface
         ["z", Box.new(value: Box.new(value: "z2")), "a", Box.new(value: "a")]
       end
 
-      field :integers, IntegerObjectConnection, null: false
+      field :integers, IntegerObjectConnection, null: false, resolve_legacy_instance_method: true
 
       def integers
         [1,2,3]
       end
 
-      field :lazy_integers, IntegerObjectConnection, null: false
+      field :lazy_integers, IntegerObjectConnection, null: false, resolve_legacy_instance_method: true
 
       def lazy_integers
         Box.new(value: Box.new(value: [1,2,3]))
       end
 
-      field :replaced_object, ReplacedObject, null: false
+      field :replaced_object, ReplacedObject, null: false, resolve_legacy_instance_method: true
       def replaced_object
         Replaceable.new
       end

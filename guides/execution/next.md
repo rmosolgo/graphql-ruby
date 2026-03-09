@@ -123,7 +123,6 @@ The new runtime engine supports several field resolution configurations out of t
 
     (Under the hood, GraphQL-Ruby calls `Array.new(objects.size, static_result)`)
 
-
 ### `true` shorthand
 
 There is also a `true` shorthand: when one of the `resolve_...:` configurations is passed as `true` (ie, `resolve_batch: true`, `resolve_each: true`, or `resolve_static: true`), then the Symbol field name is used as the class method. For example:
