@@ -1,0 +1,2873 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Execution::Next::FieldResolveStep
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Execution::Next::FieldResolveStep";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (F)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Execution.html" title="GraphQL::Execution (module)">Execution</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Next.html" title="GraphQL::Execution::Next (module)">Next</a></span></span>
+     &raquo; 
+    <span class="title">FieldResolveStep</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Execution::Next::FieldResolveStep
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Execution::Next::FieldResolveStep</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/execution/next/field_resolve_step.rb</dd>
+  </dl>
+  
+</div>
+
+<div id="subclasses">
+  <h2>Direct Known Subclasses</h2>
+  <p class="children"><span class='object_link'><a href="RawValueFieldResolveStep.html" title="GraphQL::Execution::Next::RawValueFieldResolveStep (class)">RawValueFieldResolveStep</a></span></p>
+</div>
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="FieldResolveStep/AlwaysAuthorized.html" title="GraphQL::Execution::Next::FieldResolveStep::AlwaysAuthorized (module)">AlwaysAuthorized</a></span>
+    
+  
+    
+  
+</p>
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#arguments-instance_method" title="#arguments (instance method)">#<strong>arguments</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute arguments.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#ast_node-instance_method" title="#ast_node (instance method)">#<strong>ast_node</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute ast_node.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#field_definition-instance_method" title="#field_definition (instance method)">#<strong>field_definition</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute field_definition.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#field_results-instance_method" title="#field_results (instance method)">#<strong>field_results</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute field_results.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#key-instance_method" title="#key (instance method)">#<strong>key</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute key.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#object_is_authorized-instance_method" title="#object_is_authorized (instance method)">#<strong>object_is_authorized</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute object_is_authorized.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parent_type-instance_method" title="#parent_type (instance method)">#<strong>parent_type</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute parent_type.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pending_steps-instance_method" title="#pending_steps (instance method)">#<strong>pending_steps</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute pending_steps.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#runner-instance_method" title="#runner (instance method)">#<strong>runner</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute runner.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#selections_step-instance_method" title="#selections_step (instance method)">#<strong>selections_step</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute selections_step.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#was_scoped-instance_method" title="#was_scoped (instance method)">#<strong>was_scoped</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute was_scoped.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_graphql_error-instance_method" title="#add_graphql_error (instance method)">#<strong>add_graphql_error</strong>(err)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_non_null_error-instance_method" title="#add_non_null_error (instance method)">#<strong>add_non_null_error</strong>(is_from_array)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#any_lazy_results%3F-instance_method" title="#any_lazy_results? (instance method)">#<strong>any_lazy_results?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#append_selection-instance_method" title="#append_selection (instance method)">#<strong>append_selection</strong>(ast_node)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#ast_nodes-instance_method" title="#ast_nodes (instance method)">#<strong>ast_nodes</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#authorized_finished-instance_method" title="#authorized_finished (instance method)">#<strong>authorized_finished</strong>(step)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_arguments-instance_method" title="#build_arguments (instance method)">#<strong>build_arguments</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#build_results-instance_method" title="#build_results (instance method)">#<strong>build_results</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#call-instance_method" title="#call (instance method)">#<strong>call</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce_argument_value-instance_method" title="#coerce_argument_value (instance method)">#<strong>coerce_argument_value</strong>(arguments, arg_defn, arg_value, target_keyword: arg_defn.keyword, as_type: nil)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#coerce_arguments-instance_method" title="#coerce_arguments (instance method)">#<strong>coerce_arguments</strong>(argument_owner, ast_arguments_or_hash)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#enqueue_next_steps-instance_method" title="#enqueue_next_steps (instance method)">#<strong>enqueue_next_steps</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute_field-instance_method" title="#execute_field (instance method)">#<strong>execute_field</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#finish_extensions-instance_method" title="#finish_extensions (instance method)">#<strong>finish_extensions</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(parent_type:, runner:, key:, selections_step:)  &#x21d2; FieldResolveStep </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of FieldResolveStep.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#path-instance_method" title="#path (instance method)">#<strong>path</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#sync-instance_method" title="#sync (instance method)">#<strong>sync</strong>(lazy)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#value-instance_method" title="#value (instance method)">#<strong>value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Implement that Lazy API.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(parent_type:, runner:, key:, selections_step:)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Execution::Next::FieldResolveStep (class)">FieldResolveStep</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of FieldResolveStep.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 6</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>parent_type:</span><span class='comma'>,</span> <span class='label'>runner:</span><span class='comma'>,</span> <span class='label'>key:</span><span class='comma'>,</span> <span class='label'>selections_step:</span><span class='rparen'>)</span>
+  <span class='ivar'>@selections_step</span> <span class='op'>=</span> <span class='id identifier rubyid_selections_step'>selections_step</span>
+  <span class='ivar'>@key</span> <span class='op'>=</span> <span class='id identifier rubyid_key'>key</span>
+  <span class='ivar'>@parent_type</span> <span class='op'>=</span> <span class='id identifier rubyid_parent_type'>parent_type</span>
+  <span class='ivar'>@ast_node</span> <span class='op'>=</span> <span class='ivar'>@ast_nodes</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@runner</span> <span class='op'>=</span> <span class='id identifier rubyid_runner'>runner</span>
+  <span class='ivar'>@field_definition</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@arguments</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@path</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@enqueued_authorization</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='ivar'>@all_next_objects</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@all_next_results</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@static_type</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@next_selections</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@object_is_authorized</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@finish_extension_idx</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@was_scoped</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@pending_steps</span> <span class='op'>=</span> <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="arguments=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="arguments-instance_method">
+  
+    #<strong>arguments</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute arguments.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 30</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_arguments'>arguments</span>
+  <span class='ivar'>@arguments</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="ast_node-instance_method">
+  
+    #<strong>ast_node</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute ast_node.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_ast_node'>ast_node</span>
+  <span class='ivar'>@ast_node</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="field_definition-instance_method">
+  
+    #<strong>field_definition</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute field_definition.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_field_definition'>field_definition</span>
+  <span class='ivar'>@field_definition</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="field_results-instance_method">
+  
+    #<strong>field_results</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute field_results.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_field_results'>field_results</span>
+  <span class='ivar'>@field_results</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="key-instance_method">
+  
+    #<strong>key</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute key.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_key'>key</span>
+  <span class='ivar'>@key</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="object_is_authorized-instance_method">
+  
+    #<strong>object_is_authorized</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute object_is_authorized.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_object_is_authorized'>object_is_authorized</span>
+  <span class='ivar'>@object_is_authorized</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="parent_type-instance_method">
+  
+    #<strong>parent_type</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute parent_type.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_parent_type'>parent_type</span>
+  <span class='ivar'>@parent_type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="pending_steps=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="pending_steps-instance_method">
+  
+    #<strong>pending_steps</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute pending_steps.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+30
+31
+32</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 30</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_pending_steps'>pending_steps</span>
+  <span class='ivar'>@pending_steps</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="runner-instance_method">
+  
+    #<strong>runner</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute runner.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_runner'>runner</span>
+  <span class='ivar'>@runner</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="selections_step-instance_method">
+  
+    #<strong>selections_step</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute selections_step.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_selections_step'>selections_step</span>
+  <span class='ivar'>@selections_step</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="was_scoped-instance_method">
+  
+    #<strong>was_scoped</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute was_scoped.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 27</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_was_scoped'>was_scoped</span>
+  <span class='ivar'>@was_scoped</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="add_graphql_error-instance_method">
+  
+    #<strong>add_graphql_error</strong>(err)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+238
+239
+240
+241
+242
+243</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 238</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_graphql_error'>add_graphql_error</span><span class='lparen'>(</span><span class='id identifier rubyid_err'>err</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_err'>err</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span> <span class='op'>=</span> <span class='id identifier rubyid_path'>path</span>
+  <span class='id identifier rubyid_err'>err</span><span class='period'>.</span><span class='id identifier rubyid_ast_nodes'>ast_nodes</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_nodes'>ast_nodes</span>
+  <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_add_error'>add_error</span><span class='lparen'>(</span><span class='id identifier rubyid_err'>err</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_err'>err</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="add_non_null_error-instance_method">
+  
+    #<strong>add_non_null_error</strong>(is_from_array)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+556
+557
+558
+559</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 556</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_non_null_error'>add_non_null_error</span><span class='lparen'>(</span><span class='id identifier rubyid_is_from_array'>is_from_array</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_err'>err</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../InvalidNullError.html" title="GraphQL::InvalidNullError (class)">InvalidNullError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../../InvalidNullError.html#initialize-instance_method" title="GraphQL::InvalidNullError#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='ivar'>@parent_type</span><span class='comma'>,</span> <span class='ivar'>@field_definition</span><span class='comma'>,</span> <span class='id identifier rubyid_ast_nodes'>ast_nodes</span><span class='comma'>,</span> <span class='label'>is_from_array:</span> <span class='id identifier rubyid_is_from_array'>is_from_array</span><span class='comma'>,</span> <span class='label'>path:</span> <span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span>
+  <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_type_error'>type_error</span><span class='lparen'>(</span><span class='id identifier rubyid_err'>err</span><span class='comma'>,</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="any_lazy_results?-instance_method">
+  
+    #<strong>any_lazy_results?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 368</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_any_lazy_results?'>any_lazy_results?</span>
+  <span class='id identifier rubyid_lazies'>lazies</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='kw'>if</span> <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_resolves_lazies'>resolves_lazies</span> <span class='comment'># TODO extract this
+</span>    <span class='ivar'>@field_results</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_field_result'>field_result</span><span class='op'>|</span>
+      <span class='kw'>if</span> <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_lazy?'>lazy?</span><span class='lparen'>(</span><span class='id identifier rubyid_field_result'>field_result</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_lazies'>lazies</span> <span class='op'>=</span> <span class='kw'>true</span>
+        <span class='kw'>break</span>
+      <span class='kw'>elsif</span> <span class='id identifier rubyid_field_result'>field_result</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_field_result'>field_result</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_inner_fr'>inner_fr</span><span class='op'>|</span>
+          <span class='kw'>if</span> <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_lazy?'>lazy?</span><span class='lparen'>(</span><span class='id identifier rubyid_inner_fr'>inner_fr</span><span class='rparen'>)</span>
+            <span class='kw'>break</span> <span class='id identifier rubyid_lazies'>lazies</span> <span class='op'>=</span> <span class='kw'>true</span>
+          <span class='kw'>end</span>
+        <span class='kw'>end</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_lazies'>lazies</span>
+          <span class='kw'>break</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_lazies'>lazies</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="append_selection-instance_method">
+  
+    #<strong>append_selection</strong>(ast_node)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_append_selection'>append_selection</span><span class='lparen'>(</span><span class='id identifier rubyid_ast_node'>ast_node</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@ast_node</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='ivar'>@ast_node</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_node'>ast_node</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@ast_nodes</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='ivar'>@ast_nodes</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='ivar'>@ast_node</span><span class='comma'>,</span> <span class='id identifier rubyid_ast_node'>ast_node</span><span class='rbracket'>]</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@ast_nodes</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_ast_node'>ast_node</span>
+  <span class='kw'>end</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="ast_nodes-instance_method">
+  
+    #<strong>ast_nodes</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+36
+37
+38</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 36</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_ast_nodes'>ast_nodes</span>
+  <span class='ivar'>@ast_nodes</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='ivar'>@ast_node</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="authorized_finished-instance_method">
+  
+    #<strong>authorized_finished</strong>(step)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+549
+550
+551
+552
+553
+554</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 549</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_authorized_finished'>authorized_finished</span><span class='lparen'>(</span><span class='id identifier rubyid_step'>step</span><span class='rparen'>)</span>
+  <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='id identifier rubyid_step'>step</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='ivar'>@enqueued_authorization</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>==</span> <span class='int'>0</span>
+    <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_add_step'>add_step</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_arguments-instance_method">
+  
+    #<strong>build_arguments</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 251</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_arguments'>build_arguments</span>
+  <span class='id identifier rubyid_query'>query</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span>
+  <span class='id identifier rubyid_field_name'>field_name</span> <span class='op'>=</span> <span class='ivar'>@ast_node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+  <span class='ivar'>@field_definition</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_get_field'>get_field</span><span class='lparen'>(</span><span class='ivar'>@parent_type</span><span class='comma'>,</span> <span class='id identifier rubyid_field_name'>field_name</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Invariant: no field found for </span><span class='embexpr_beg'>#{</span><span class='ivar'>@parent_type</span><span class='period'>.</span><span class='id identifier rubyid_to_type_signature'>to_type_signature</span><span class='embexpr_end'>}</span><span class='tstring_content'>.</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_field_name'>field_name</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>__typename</span><span class='tstring_end'>&quot;</span></span>
+    <span class='comment'># TODO handle custom introspection
+</span>    <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_objects'>objects</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='ivar'>@parent_type</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span><span class='rparen'>)</span>
+    <span class='ivar'>@object_is_authorized</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="FieldResolveStep/AlwaysAuthorized.html" title="GraphQL::Execution::Next::FieldResolveStep::AlwaysAuthorized (module)">AlwaysAuthorized</a></span></span>
+    <span class='id identifier rubyid_build_results'>build_results</span>
+    <span class='kw'>return</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_arguments'>arguments</span> <span class='op'>=</span> <span class='id identifier rubyid_coerce_arguments'>coerce_arguments</span><span class='lparen'>(</span><span class='ivar'>@field_definition</span><span class='comma'>,</span> <span class='ivar'>@ast_node</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='rparen'>)</span> <span class='comment'># rubocop:disable Development/ContextIsPassedCop
+</span>  <span class='ivar'>@arguments</span> <span class='op'>||=</span> <span class='id identifier rubyid_arguments'>arguments</span> <span class='comment'># may have already been set to an error
+</span>
+  <span class='kw'>if</span> <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>==</span> <span class='int'>0</span>
+    <span class='id identifier rubyid_execute_field'>execute_field</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="build_results-instance_method">
+  
+    #<strong>build_results</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 431</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_build_results'>build_results</span>
+  <span class='id identifier rubyid_return_type'>return_type</span> <span class='op'>=</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span>
+  <span class='id identifier rubyid_return_result_type'>return_result_type</span> <span class='op'>=</span> <span class='id identifier rubyid_return_type'>return_type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_return_result_type'>return_result_type</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_composite?'>composite?</span>
+    <span class='ivar'>@static_type</span> <span class='op'>=</span> <span class='id identifier rubyid_return_result_type'>return_result_type</span>
+    <span class='kw'>if</span> <span class='ivar'>@ast_nodes</span>
+      <span class='ivar'>@next_selections</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+      <span class='ivar'>@ast_nodes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_ast_node'>ast_node</span><span class='op'>|</span>
+        <span class='ivar'>@next_selections</span><span class='period'>.</span><span class='id identifier rubyid_concat'>concat</span><span class='lparen'>(</span><span class='id identifier rubyid_ast_node'>ast_node</span><span class='period'>.</span><span class='id identifier rubyid_selections'>selections</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='ivar'>@next_selections</span> <span class='op'>=</span> <span class='ivar'>@ast_node</span><span class='period'>.</span><span class='id identifier rubyid_selections'>selections</span>
+    <span class='kw'>end</span>
+
+    <span class='ivar'>@all_next_objects</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='ivar'>@all_next_results</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+
+    <span class='id identifier rubyid_is_list'>is_list</span> <span class='op'>=</span> <span class='id identifier rubyid_return_type'>return_type</span><span class='period'>.</span><span class='id identifier rubyid_list?'>list?</span>
+    <span class='id identifier rubyid_is_non_null'>is_non_null</span> <span class='op'>=</span> <span class='id identifier rubyid_return_type'>return_type</span><span class='period'>.</span><span class='id identifier rubyid_non_null?'>non_null?</span>
+    <span class='id identifier rubyid_results'>results</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_results'>results</span>
+    <span class='id identifier rubyid_field_result_idx'>field_result_idx</span> <span class='op'>=</span> <span class='int'>0</span>
+    <span class='id identifier rubyid_i'>i</span> <span class='op'>=</span> <span class='int'>0</span>
+    <span class='id identifier rubyid_s'>s</span> <span class='op'>=</span> <span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span>
+    <span class='kw'>while</span> <span class='id identifier rubyid_i'>i</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_s'>s</span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_result_h'>result_h</span> <span class='op'>=</span> <span class='id identifier rubyid_results'>results</span><span class='lbracket'>[</span><span class='id identifier rubyid_i'>i</span><span class='rbracket'>]</span>
+      <span class='kw'>if</span> <span class='ivar'>@object_is_authorized</span><span class='lbracket'>[</span><span class='id identifier rubyid_i'>i</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='ivar'>@field_results</span><span class='lbracket'>[</span><span class='id identifier rubyid_field_result_idx'>field_result_idx</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_field_result_idx'>field_result_idx</span> <span class='op'>+=</span> <span class='int'>1</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='kw'>nil</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_i'>i</span> <span class='op'>+=</span> <span class='int'>1</span>
+      <span class='id identifier rubyid_build_graphql_result'>build_graphql_result</span><span class='lparen'>(</span><span class='id identifier rubyid_result_h'>result_h</span><span class='comma'>,</span> <span class='ivar'>@key</span><span class='comma'>,</span> <span class='id identifier rubyid_result'>result</span><span class='comma'>,</span> <span class='id identifier rubyid_return_type'>return_type</span><span class='comma'>,</span> <span class='id identifier rubyid_is_non_null'>is_non_null</span><span class='comma'>,</span> <span class='id identifier rubyid_is_list'>is_list</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@enqueued_authorization</span> <span class='op'>=</span> <span class='kw'>true</span>
+
+    <span class='kw'>if</span> <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>==</span> <span class='int'>0</span>
+      <span class='id identifier rubyid_enqueue_next_steps'>enqueue_next_steps</span>
+    <span class='kw'>else</span>
+      <span class='comment'># Do nothing -- it will enqueue itself later
+</span>    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_ctx'>ctx</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span>
+    <span class='id identifier rubyid_results'>results</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_results'>results</span>
+    <span class='id identifier rubyid_field_result_idx'>field_result_idx</span> <span class='op'>=</span> <span class='int'>0</span>
+    <span class='id identifier rubyid_i'>i</span> <span class='op'>=</span> <span class='int'>0</span>
+    <span class='id identifier rubyid_s'>s</span> <span class='op'>=</span> <span class='id identifier rubyid_results'>results</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span>
+    <span class='kw'>while</span> <span class='id identifier rubyid_i'>i</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_s'>s</span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_result_h'>result_h</span> <span class='op'>=</span> <span class='id identifier rubyid_results'>results</span><span class='lbracket'>[</span><span class='id identifier rubyid_i'>i</span><span class='rbracket'>]</span>
+      <span class='kw'>if</span> <span class='ivar'>@object_is_authorized</span><span class='lbracket'>[</span><span class='id identifier rubyid_i'>i</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_field_result'>field_result</span> <span class='op'>=</span> <span class='ivar'>@field_results</span><span class='lbracket'>[</span><span class='id identifier rubyid_field_result_idx'>field_result_idx</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_field_result_idx'>field_result_idx</span> <span class='op'>+=</span> <span class='int'>1</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_field_result'>field_result</span> <span class='op'>=</span> <span class='kw'>nil</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_i'>i</span> <span class='op'>+=</span> <span class='int'>1</span>
+      <span class='id identifier rubyid_result_h'>result_h</span><span class='lbracket'>[</span><span class='ivar'>@key</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_field_result'>field_result</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_return_type'>return_type</span><span class='period'>.</span><span class='id identifier rubyid_non_null?'>non_null?</span>
+          <span class='id identifier rubyid_add_non_null_error'>add_non_null_error</span><span class='lparen'>(</span><span class='kw'>false</span><span class='rparen'>)</span>
+        <span class='kw'>else</span>
+          <span class='kw'>nil</span>
+        <span class='kw'>end</span>
+      <span class='kw'>elsif</span> <span class='id identifier rubyid_field_result'>field_result</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Error.html" title="GraphQL::Error (class)">Error</a></span></span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_add_graphql_error'>add_graphql_error</span><span class='lparen'>(</span><span class='id identifier rubyid_field_result'>field_result</span><span class='rparen'>)</span>
+      <span class='kw'>else</span>
+        <span class='comment'># TODO `nil`s in [T!] types aren&#39;t handled
+</span>        <span class='id identifier rubyid_return_type'>return_type</span><span class='period'>.</span><span class='id identifier rubyid_coerce_result'>coerce_result</span><span class='lparen'>(</span><span class='id identifier rubyid_field_result'>field_result</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="call-instance_method">
+  
+    #<strong>call</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 217</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_call'>call</span>
+  <span class='kw'>if</span> <span class='ivar'>@enqueued_authorization</span>
+    <span class='id identifier rubyid_enqueue_next_steps'>enqueue_next_steps</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@finish_extension_idx</span>
+    <span class='id identifier rubyid_finish_extensions'>finish_extensions</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@field_results</span>
+    <span class='id identifier rubyid_build_results'>build_results</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@arguments</span>
+    <span class='id identifier rubyid_execute_field'>execute_field</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_build_arguments'>build_arguments</span>
+  <span class='kw'>end</span>
+<span class='kw'>rescue</span> <span class='const'>StandardError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_err'>err</span>
+  <span class='kw'>if</span> <span class='ivar'>@field_definition</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_err'>err</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_start_with?'>start_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Resolving </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='comment'># TODO remove this check ^^^^^^ when NullDataloader isn&#39;t recursive
+</span>    <span class='id identifier rubyid_raise'>raise</span> <span class='id identifier rubyid_err'>err</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Resolving </span><span class='embexpr_beg'>#{</span><span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_err'>err</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_err'>err</span><span class='period'>.</span><span class='id identifier rubyid_backtrace'>backtrace</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="coerce_argument_value-instance_method">
+  
+    #<strong>coerce_argument_value</strong>(arguments, arg_defn, arg_value, target_keyword: arg_defn.keyword, as_type: nil)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 81</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce_argument_value'>coerce_argument_value</span><span class='lparen'>(</span><span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='comma'>,</span> <span class='label'>target_keyword:</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span> <span class='label'>as_type:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_arg_t'>arg_t</span> <span class='op'>=</span> <span class='id identifier rubyid_as_type'>as_type</span> <span class='op'>||</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_non_null?'>non_null?</span>
+    <span class='id identifier rubyid_arg_t'>arg_t</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_arg_value'>arg_value</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Language/Nodes/VariableIdentifier.html" title="GraphQL::Language::Nodes::VariableIdentifier (class)">VariableIdentifier</a></span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_vars'>vars</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_variables'>variables</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_vars'>vars</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_vars'>vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span>
+    <span class='kw'>elsif</span> <span class='id identifier rubyid_vars'>vars</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_vars'>vars</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rbracket'>]</span>
+    <span class='kw'>else</span>
+      <span class='kw'>return</span> <span class='comment'># not present
+</span>    <span class='kw'>end</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Language/Nodes/NullValue.html" title="GraphQL::Language::Nodes::NullValue (class)">NullValue</a></span></span><span class='rparen'>)</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Language/Nodes/Enum.html" title="GraphQL::Language::Nodes::Enum (class)">Enum</a></span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Language/Nodes.html" title="GraphQL::Language::Nodes (module)">Nodes</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Language/Nodes/InputObject.html" title="GraphQL::Language::Nodes::InputObject (class)">InputObject</a></span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span> <span class='comment'># rubocop:disable Development/ContextIsPassedCop
+</span>  <span class='kw'>else</span>
+    <span class='id identifier rubyid_arg_value'>arg_value</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_ctx'>ctx</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span>
+  <span class='id identifier rubyid_arg_value'>arg_value</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_list?'>list?</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+      <span class='id identifier rubyid_arg_value'>arg_value</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_arg_value'>arg_value</span> <span class='op'>=</span> <span class='const'>Array</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_inner_t'>inner_t</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_of_type'>of_type</span>
+      <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='id identifier rubyid_i'>i</span><span class='op'>|</span> <span class='id identifier rubyid_coerce_argument_value'>coerce_argument_value</span><span class='lparen'>(</span><span class='id identifier rubyid_result'>result</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='comma'>,</span> <span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='label'>target_keyword:</span> <span class='id identifier rubyid_i'>i</span><span class='comma'>,</span> <span class='label'>as_type:</span> <span class='id identifier rubyid_inner_t'>inner_t</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+      <span class='id identifier rubyid_result'>result</span>
+    <span class='kw'>end</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_leaf?'>leaf?</span>
+    <span class='kw'>begin</span>
+      <span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_coerce_input'>coerce_input</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+    <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../UnauthorizedEnumValueError.html" title="GraphQL::UnauthorizedEnumValueError (class)">UnauthorizedEnumValueError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_enum_err'>enum_err</span>
+      <span class='kw'>begin</span>
+        <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_unauthorized_object'>unauthorized_object</span><span class='lparen'>(</span><span class='id identifier rubyid_enum_err'>enum_err</span><span class='rparen'>)</span>
+      <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../ExecutionError.html" title="GraphQL::ExecutionError (class)">ExecutionError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_ex_err'>ex_err</span>
+        <span class='id identifier rubyid_ex_err'>ex_err</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_input_object?'>input_object?</span>
+    <span class='id identifier rubyid_input_obj_args'>input_obj_args</span> <span class='op'>=</span> <span class='id identifier rubyid_coerce_arguments'>coerce_arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_t'>arg_t</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>ruby_kwargs:</span> <span class='id identifier rubyid_input_obj_args'>input_obj_args</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='label'>defaults_used:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unsupported argument value: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_to_type_signature'>to_type_signature</span><span class='embexpr_end'>}</span><span class='tstring_content'> / </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'> (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_as_type'>as_type</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='comment'># only on root arguments, not list elements
+</span>    <span class='id identifier rubyid_arg_value'>arg_value</span> <span class='op'>=</span> <span class='kw'>begin</span>
+      <span class='kw'>begin</span>
+        <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_prepare_value'>prepare_value</span><span class='lparen'>(</span><span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+      <span class='kw'>rescue</span> <span class='const'>StandardError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_err'>err</span>
+        <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_handle_or_reraise'>handle_or_reraise</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='id identifier rubyid_err'>err</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../ExecutionError.html" title="GraphQL::ExecutionError (class)">ExecutionError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_exec_err'>exec_err</span>
+      <span class='id identifier rubyid_exec_err'>exec_err</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Error.html" title="GraphQL::Error (class)">Error</a></span></span><span class='rparen'>)</span>
+    <span class='ivar'>@arguments</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_value'>arg_value</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_loads'>loads</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_as_type'>as_type</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='comment'># This is for legacy compat:
+</span>    <span class='id identifier rubyid_load_receiver'>load_receiver</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_r'>r</span> <span class='op'>=</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_resolver'>resolver</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_r'>r</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>field:</span> <span class='ivar'>@field_definition</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='label'>object:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='ivar'>@field_definition</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@pending_steps</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_arg_t'>arg_t</span><span class='period'>.</span><span class='id identifier rubyid_list?'>list?</span>
+      <span class='id identifier rubyid_results'>results</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_arguments'>arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_keyword'>keyword</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_results'>results</span>
+      <span class='id identifier rubyid_arg_value'>arg_value</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_inner_v'>inner_v</span><span class='comma'>,</span> <span class='id identifier rubyid_idx'>idx</span><span class='op'>|</span>
+        <span class='id identifier rubyid_loads_step'>loads_step</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="LoadArgumentStep.html" title="GraphQL::Execution::Next::LoadArgumentStep (class)">LoadArgumentStep</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="LoadArgumentStep.html#initialize-instance_method" title="GraphQL::Execution::Next::LoadArgumentStep#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+          <span class='label'>field_resolve_step:</span> <span class='kw'>self</span><span class='comma'>,</span>
+          <span class='label'>load_receiver:</span> <span class='id identifier rubyid_load_receiver'>load_receiver</span><span class='comma'>,</span>
+          <span class='label'>argument_value:</span> <span class='id identifier rubyid_inner_v'>inner_v</span><span class='comma'>,</span>
+          <span class='label'>argument_definition:</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='comma'>,</span>
+          <span class='label'>arguments:</span> <span class='id identifier rubyid_results'>results</span><span class='comma'>,</span>
+          <span class='label'>argument_key:</span> <span class='id identifier rubyid_idx'>idx</span><span class='comma'>,</span>
+        <span class='rparen'>)</span>
+        <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_loads_step'>loads_step</span><span class='rparen'>)</span>
+        <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_add_step'>add_step</span><span class='lparen'>(</span><span class='id identifier rubyid_loads_step'>loads_step</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_loads_step'>loads_step</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="LoadArgumentStep.html" title="GraphQL::Execution::Next::LoadArgumentStep (class)">LoadArgumentStep</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="LoadArgumentStep.html#initialize-instance_method" title="GraphQL::Execution::Next::LoadArgumentStep#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+        <span class='label'>field_resolve_step:</span> <span class='kw'>self</span><span class='comma'>,</span>
+        <span class='label'>load_receiver:</span> <span class='id identifier rubyid_load_receiver'>load_receiver</span><span class='comma'>,</span>
+        <span class='label'>argument_value:</span> <span class='id identifier rubyid_arg_value'>arg_value</span><span class='comma'>,</span>
+        <span class='label'>argument_definition:</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='comma'>,</span>
+        <span class='label'>arguments:</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span>
+        <span class='label'>argument_key:</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_keyword'>keyword</span><span class='comma'>,</span>
+      <span class='rparen'>)</span>
+      <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_loads_step'>loads_step</span><span class='rparen'>)</span>
+      <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_add_step'>add_step</span><span class='lparen'>(</span><span class='id identifier rubyid_loads_step'>loads_step</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_arguments'>arguments</span><span class='lbracket'>[</span><span class='id identifier rubyid_target_keyword'>target_keyword</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_value'>arg_value</span>
+  <span class='kw'>end</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="coerce_arguments-instance_method">
+  
+    #<strong>coerce_arguments</strong>(argument_owner, ast_arguments_or_hash)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 51</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_coerce_arguments'>coerce_arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_argument_owner'>argument_owner</span><span class='comma'>,</span> <span class='id identifier rubyid_ast_arguments_or_hash'>ast_arguments_or_hash</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_arg_defns'>arg_defns</span> <span class='op'>=</span> <span class='id identifier rubyid_argument_owner'>argument_owner</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_arg_defns'>arg_defns</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="../../EmptyObjects.html" title="GraphQL::EmptyObjects (module)">EmptyObjects</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../EmptyObjects.html#EMPTY_HASH-constant" title="GraphQL::EmptyObjects::EMPTY_HASH (constant)">EMPTY_HASH</a></span></span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_args_hash'>args_hash</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_ast_arguments_or_hash'>ast_arguments_or_hash</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_ast_arguments_or_hash'>ast_arguments_or_hash</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='op'>|</span>
+      <span class='id identifier rubyid_key_s'>key_s</span> <span class='op'>=</span> <span class='kw'>nil</span>
+      <span class='id identifier rubyid_arg_defn'>arg_defn</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_defns'>arg_defns</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_a'>a</span><span class='op'>|</span>
+        <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_keyword'>keyword</span> <span class='op'>==</span> <span class='id identifier rubyid_key'>key</span> <span class='op'>||</span> <span class='id identifier rubyid_a'>a</span><span class='period'>.</span><span class='id identifier rubyid_graphql_name'>graphql_name</span> <span class='op'>==</span> <span class='lparen'>(</span><span class='id identifier rubyid_key_s'>key_s</span> <span class='op'>||=</span> <span class='const'>String</span><span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span><span class='rparen'>)</span><span class='rparen'>)</span>
+      <span class='rbrace'>}</span>
+      <span class='id identifier rubyid_coerce_argument_value'>coerce_argument_value</span><span class='lparen'>(</span><span class='id identifier rubyid_args_hash'>args_hash</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_ast_arguments_or_hash'>ast_arguments_or_hash</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_arg_node'>arg_node</span><span class='op'>|</span>
+      <span class='id identifier rubyid_arg_defn'>arg_defn</span> <span class='op'>=</span> <span class='id identifier rubyid_arg_defns'>arg_defns</span><span class='lbracket'>[</span><span class='id identifier rubyid_arg_node'>arg_node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_coerce_argument_value'>coerce_argument_value</span><span class='lparen'>(</span><span class='id identifier rubyid_args_hash'>args_hash</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_node'>arg_node</span><span class='period'>.</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+    <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+  <span class='comment'># TODO refactor the loop above into this one
+</span>  <span class='id identifier rubyid_arg_defns'>arg_defns</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_arg_graphql_name'>arg_graphql_name</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_default_value?'>default_value?</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_args_hash'>args_hash</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_keyword'>keyword</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_coerce_argument_value'>coerce_argument_value</span><span class='lparen'>(</span><span class='id identifier rubyid_args_hash'>args_hash</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='comma'>,</span> <span class='id identifier rubyid_arg_defn'>arg_defn</span><span class='period'>.</span><span class='id identifier rubyid_default_value'>default_value</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_args_hash'>args_hash</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="enqueue_next_steps-instance_method">
+  
+    #<strong>enqueue_next_steps</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 504</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_enqueue_next_steps'>enqueue_next_steps</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='ivar'>@all_next_results</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='ivar'>@all_next_objects</span><span class='period'>.</span><span class='id identifier rubyid_compact!'>compact!</span>
+
+    <span class='kw'>if</span> <span class='ivar'>@static_type</span><span class='period'>.</span><span class='id identifier rubyid_kind'>kind</span><span class='period'>.</span><span class='id identifier rubyid_abstract?'>abstract?</span>
+      <span class='id identifier rubyid_next_objects_by_type'>next_objects_by_type</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_obj_t'>obj_t</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_obj_t'>obj_t</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+      <span class='id identifier rubyid_next_results_by_type'>next_results_by_type</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_obj_t'>obj_t</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_obj_t'>obj_t</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+
+      <span class='ivar'>@all_next_objects</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_next_object'>next_object</span><span class='comma'>,</span> <span class='id identifier rubyid_i'>i</span><span class='op'>|</span>
+        <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='ivar'>@all_next_results</span><span class='lbracket'>[</span><span class='id identifier rubyid_i'>i</span><span class='rbracket'>]</span>
+        <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_object_type'>object_type</span> <span class='op'>=</span> <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_runtime_type_at'>runtime_type_at</span><span class='lbracket'>[</span><span class='id identifier rubyid_result'>result</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+          <span class='comment'># OK
+</span>        <span class='kw'>else</span>
+          <span class='id identifier rubyid_object_type'>object_type</span> <span class='op'>=</span> <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_resolve_type'>resolve_type</span><span class='lparen'>(</span><span class='ivar'>@static_type</span><span class='comma'>,</span> <span class='id identifier rubyid_next_object'>next_object</span><span class='comma'>,</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span>
+          <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_runtime_type_at'>runtime_type_at</span><span class='lbracket'>[</span><span class='id identifier rubyid_result'>result</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_object_type'>object_type</span>
+        <span class='kw'>end</span>
+        <span class='id identifier rubyid_next_objects_by_type'>next_objects_by_type</span><span class='lbracket'>[</span><span class='id identifier rubyid_object_type'>object_type</span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_next_object'>next_object</span>
+        <span class='id identifier rubyid_next_results_by_type'>next_results_by_type</span><span class='lbracket'>[</span><span class='id identifier rubyid_object_type'>object_type</span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_result'>result</span>
+      <span class='kw'>end</span>
+
+      <span class='id identifier rubyid_next_objects_by_type'>next_objects_by_type</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='comma'>,</span> <span class='id identifier rubyid_next_objects'>next_objects</span><span class='op'>|</span>
+        <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_add_step'>add_step</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="SelectionsStep.html" title="GraphQL::Execution::Next::SelectionsStep (class)">SelectionsStep</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="SelectionsStep.html#initialize-instance_method" title="GraphQL::Execution::Next::SelectionsStep#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+          <span class='label'>path:</span> <span class='id identifier rubyid_path'>path</span><span class='comma'>,</span>
+          <span class='label'>parent_type:</span> <span class='id identifier rubyid_obj_type'>obj_type</span><span class='comma'>,</span>
+          <span class='label'>selections:</span> <span class='ivar'>@next_selections</span><span class='comma'>,</span>
+          <span class='label'>objects:</span> <span class='id identifier rubyid_next_objects'>next_objects</span><span class='comma'>,</span>
+          <span class='label'>results:</span> <span class='id identifier rubyid_next_results_by_type'>next_results_by_type</span><span class='lbracket'>[</span><span class='id identifier rubyid_obj_type'>obj_type</span><span class='rbracket'>]</span><span class='comma'>,</span>
+          <span class='label'>runner:</span> <span class='ivar'>@runner</span><span class='comma'>,</span>
+          <span class='label'>query:</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span>
+        <span class='rparen'>)</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_add_step'>add_step</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="SelectionsStep.html" title="GraphQL::Execution::Next::SelectionsStep (class)">SelectionsStep</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="SelectionsStep.html#initialize-instance_method" title="GraphQL::Execution::Next::SelectionsStep#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+        <span class='label'>path:</span> <span class='id identifier rubyid_path'>path</span><span class='comma'>,</span>
+        <span class='label'>parent_type:</span> <span class='ivar'>@static_type</span><span class='comma'>,</span>
+        <span class='label'>selections:</span> <span class='ivar'>@next_selections</span><span class='comma'>,</span>
+        <span class='label'>objects:</span> <span class='ivar'>@all_next_objects</span><span class='comma'>,</span>
+        <span class='label'>results:</span> <span class='ivar'>@all_next_results</span><span class='comma'>,</span>
+        <span class='label'>runner:</span> <span class='ivar'>@runner</span><span class='comma'>,</span>
+        <span class='label'>query:</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='comma'>,</span>
+      <span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="execute_field-instance_method">
+  
+    #<strong>execute_field</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 271</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute_field'>execute_field</span>
+  <span class='id identifier rubyid_objects'>objects</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_objects'>objects</span>
+  <span class='comment'># TODO not as good because only one error?
+</span>  <span class='kw'>if</span> <span class='ivar'>@arguments</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Error.html" title="GraphQL::Error (class)">Error</a></span></span><span class='rparen'>)</span>
+    <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_objects'>objects</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='rparen'>)</span>
+    <span class='ivar'>@object_is_authorized</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="FieldResolveStep/AlwaysAuthorized.html" title="GraphQL::Execution::Next::FieldResolveStep::AlwaysAuthorized (module)">AlwaysAuthorized</a></span></span>
+    <span class='id identifier rubyid_build_results'>build_results</span>
+    <span class='kw'>return</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_query'>query</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span>
+  <span class='id identifier rubyid_ctx'>ctx</span> <span class='op'>=</span> <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span> <span class='op'>=</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_validators'>validators</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span>  <span class='comment'># rubocop:disable Development/NoneWithoutBlockCop
+</span>    <span class='kw'>begin</span>
+      <span class='const'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema/Validator.html" title="GraphQL::Schema::Validator (class)">Validator</a></span></span><span class='period'>.</span><span class='id identifier rubyid_validate!'><span class='object_link'><a href="../../Schema/Validator.html#validate!-class_method" title="GraphQL::Schema::Validator.validate! (method)">validate!</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='rparen'>)</span>
+    <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../RuntimeError.html" title="GraphQL::RuntimeError (class)">RuntimeError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_err'>err</span>
+      <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_objects'>objects</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='id identifier rubyid_err'>err</span><span class='rparen'>)</span>
+      <span class='ivar'>@object_is_authorized</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="FieldResolveStep/AlwaysAuthorized.html" title="GraphQL::Execution::Next::FieldResolveStep::AlwaysAuthorized (module)">AlwaysAuthorized</a></span></span>
+      <span class='id identifier rubyid_build_results'>build_results</span>
+      <span class='kw'>return</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_extras'>extras</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_extra'>extra</span><span class='op'>|</span>
+    <span class='kw'>case</span> <span class='id identifier rubyid_extra'>extra</span>
+    <span class='kw'>when</span> <span class='symbol'>:lookahead</span>
+      <span class='kw'>if</span> <span class='ivar'>@arguments</span><span class='period'>.</span><span class='id identifier rubyid_frozen?'>frozen?</span>
+        <span class='ivar'>@arguments</span> <span class='op'>=</span> <span class='ivar'>@arguments</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+      <span class='kw'>end</span>
+      <span class='ivar'>@arguments</span><span class='lbracket'>[</span><span class='symbol'>:lookahead</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Execution.html" title="GraphQL::Execution (module)">Execution</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Lookahead.html" title="GraphQL::Execution::Lookahead (class)">Lookahead</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../Lookahead.html#initialize-instance_method" title="GraphQL::Execution::Lookahead#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+        <span class='label'>query:</span> <span class='id identifier rubyid_query'>query</span><span class='comma'>,</span>
+        <span class='label'>ast_nodes:</span> <span class='id identifier rubyid_ast_nodes'>ast_nodes</span><span class='comma'>,</span>
+        <span class='label'>field:</span> <span class='ivar'>@field_definition</span><span class='comma'>,</span>
+      <span class='rparen'>)</span>
+    <span class='kw'>when</span> <span class='symbol'>:ast_node</span>
+      <span class='kw'>if</span> <span class='ivar'>@arguments</span><span class='period'>.</span><span class='id identifier rubyid_frozen?'>frozen?</span>
+        <span class='ivar'>@arguments</span> <span class='op'>=</span> <span class='ivar'>@arguments</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+      <span class='kw'>end</span>
+      <span class='ivar'>@arguments</span><span class='lbracket'>[</span><span class='symbol'>:ast_node</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_ast_node'>ast_node</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>This `extra` isn&#39;t supported yet: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_extra'>extra</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>. Open an issue on GraphQL-Ruby to add compatibility for it.</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_dynamic_introspection'>dynamic_introspection</span>
+    <span class='comment'># TODO break this backwards compat somehow?
+</span>    <span class='id identifier rubyid_objects'>objects</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_graphql_objects'>graphql_objects</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_authorization'>authorization</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_authorizes?'>authorizes?</span><span class='lparen'>(</span><span class='ivar'>@field_definition</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_authorized_objects'>authorized_objects</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='ivar'>@object_is_authorized</span> <span class='op'>=</span> <span class='id identifier rubyid_objects'>objects</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_o'>o</span><span class='op'>|</span>
+      <span class='id identifier rubyid_is_authed'>is_authed</span> <span class='op'>=</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_authorized?'>authorized?</span><span class='lparen'>(</span><span class='id identifier rubyid_o'>o</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_is_authed'>is_authed</span>
+        <span class='id identifier rubyid_authorized_objects'>authorized_objects</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_o'>o</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_is_authed'>is_authed</span>
+    <span class='rbrace'>}</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_authorized_objects'>authorized_objects</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>==</span> <span class='int'>0</span>
+      <span class='kw'>return</span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_authorized_objects'>authorized_objects</span> <span class='op'>=</span> <span class='id identifier rubyid_objects'>objects</span>
+    <span class='ivar'>@object_is_authorized</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="FieldResolveStep/AlwaysAuthorized.html" title="GraphQL::Execution::Next::FieldResolveStep::AlwaysAuthorized (module)">AlwaysAuthorized</a></span></span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='ivar'>@parent_type</span><span class='period'>.</span><span class='id identifier rubyid_default_relay?'>default_relay?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_authorized_objects'>authorized_objects</span><span class='period'>.</span><span class='id identifier rubyid_all?'>all?</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_o'>o</span><span class='op'>|</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:was_authorized_by_scope_items?</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_o'>o</span><span class='period'>.</span><span class='id identifier rubyid_was_authorized_by_scope_items?'>was_authorized_by_scope_items?</span> <span class='rbrace'>}</span>
+    <span class='ivar'>@was_scoped</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_current_trace'>current_trace</span><span class='period'>.</span><span class='id identifier rubyid_begin_execute_field'>begin_execute_field</span><span class='lparen'>(</span><span class='ivar'>@field_definition</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_authorized_objects'>authorized_objects</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_has_extensions'>has_extensions</span> <span class='op'>=</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_extensions'>extensions</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_has_extensions'>has_extensions</span>
+    <span class='ivar'>@extended</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema/Field.html" title="GraphQL::Schema::Field (class)">Field</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema/Field/ExtendedState.html" title="GraphQL::Schema::Field::ExtendedState (class)">ExtendedState</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../../Schema/Field/ExtendedState.html#initialize-instance_method" title="GraphQL::Schema::Field::ExtendedState#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='ivar'>@arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_authorized_objects'>authorized_objects</span><span class='rparen'>)</span>
+    <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_run_next_extensions_before_resolve'>run_next_extensions_before_resolve</span><span class='lparen'>(</span><span class='id identifier rubyid_authorized_objects'>authorized_objects</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='ivar'>@extended</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_objs'>objs</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='op'>|</span>
+      <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_added_extras'>added_extras</span> <span class='op'>=</span> <span class='ivar'>@extended</span><span class='period'>.</span><span class='id identifier rubyid_added_extras'>added_extras</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_args'>args</span> <span class='op'>=</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+        <span class='id identifier rubyid_added_extras'>added_extras</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_e'>e</span><span class='op'>|</span> <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='id identifier rubyid_e'>e</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_resolve_batch'>resolve_batch</span><span class='lparen'>(</span><span class='id identifier rubyid_objs'>objs</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@finish_extension_idx</span> <span class='op'>=</span> <span class='int'>0</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='id identifier rubyid_resolve_batch'>resolve_batch</span><span class='lparen'>(</span><span class='id identifier rubyid_authorized_objects'>authorized_objects</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_current_trace'>current_trace</span><span class='period'>.</span><span class='id identifier rubyid_end_execute_field'>end_execute_field</span><span class='lparen'>(</span><span class='ivar'>@field_definition</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_authorized_objects'>authorized_objects</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='ivar'>@field_results</span><span class='rparen'>)</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_any_lazy_results?'>any_lazy_results?</span>
+    <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_lazy_at_depth'>lazy_at_depth</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_has_extensions'>has_extensions</span>
+    <span class='id identifier rubyid_finish_extensions'>finish_extensions</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='ivar'>@pending_steps</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_build_results'>build_results</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="finish_extensions-instance_method">
+  
+    #<strong>finish_extensions</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 390</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_finish_extensions'>finish_extensions</span>
+  <span class='id identifier rubyid_ctx'>ctx</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span>
+  <span class='id identifier rubyid_memos'>memos</span> <span class='op'>=</span> <span class='ivar'>@extended</span><span class='period'>.</span><span class='id identifier rubyid_memos'>memos</span> <span class='op'>||</span> <span class='const'><span class='object_link'><a href="../../EmptyObjects.html" title="GraphQL::EmptyObjects (module)">EmptyObjects</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../EmptyObjects.html#EMPTY_HASH-constant" title="GraphQL::EmptyObjects::EMPTY_HASH (constant)">EMPTY_HASH</a></span></span>
+  <span class='kw'>while</span> <span class='id identifier rubyid_ext'>ext</span> <span class='op'>=</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_extensions'>extensions</span><span class='lbracket'>[</span><span class='ivar'>@finish_extension_idx</span><span class='rbracket'>]</span>
+    <span class='comment'># These two are hardcoded here because of how they need to interact with runtime metadata.
+</span>    <span class='comment'># It would probably be better
+</span>    <span class='kw'>case</span> <span class='id identifier rubyid_ext'>ext</span>
+    <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema/Field.html" title="GraphQL::Schema::Field (class)">Field</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema/Field/ConnectionExtension.html" title="GraphQL::Schema::Field::ConnectionExtension (class)">ConnectionExtension</a></span></span>
+      <span class='id identifier rubyid_conns'>conns</span> <span class='op'>=</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_connections'>connections</span>
+      <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='ivar'>@field_results</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='period'>.</span><span class='id identifier rubyid_each_with_index'>each_with_index</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='id identifier rubyid_idx'>idx</span><span class='op'>|</span>
+        <span class='id identifier rubyid_object'>object</span> <span class='op'>=</span> <span class='ivar'>@extended</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span><span class='lbracket'>[</span><span class='id identifier rubyid_idx'>idx</span><span class='rbracket'>]</span>
+        <span class='id identifier rubyid_conn'>conn</span> <span class='op'>=</span> <span class='id identifier rubyid_conns'>conns</span><span class='period'>.</span><span class='id identifier rubyid_populate_connection'>populate_connection</span><span class='lparen'>(</span><span class='ivar'>@field_definition</span><span class='comma'>,</span> <span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_conn'>conn</span>
+          <span class='id identifier rubyid_conn'>conn</span><span class='period'>.</span><span class='id identifier rubyid_was_authorized_by_scope_items'>was_authorized_by_scope_items</span> <span class='op'>=</span> <span class='ivar'>@was_scoped</span>
+        <span class='kw'>end</span>
+        <span class='id identifier rubyid_conn'>conn</span>
+      <span class='kw'>end</span>
+    <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema/Field.html" title="GraphQL::Schema::Field (class)">Field</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Schema/Field/ScopeExtension.html" title="GraphQL::Schema::Field::ScopeExtension (class)">ScopeExtension</a></span></span>
+      <span class='kw'>if</span> <span class='ivar'>@was_scoped</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+        <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_rt'>rt</span> <span class='op'>=</span> <span class='ivar'>@field_definition</span><span class='period'>.</span><span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_unwrap'>unwrap</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:scope_items</span><span class='rparen'>)</span>
+          <span class='ivar'>@was_scoped</span> <span class='op'>=</span> <span class='kw'>true</span>
+          <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='ivar'>@field_results</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>?</span> <span class='id identifier rubyid_v'>v</span> <span class='op'>:</span> <span class='id identifier rubyid_rt'>rt</span><span class='period'>.</span><span class='id identifier rubyid_scope_items'>scope_items</span><span class='lparen'>(</span><span class='id identifier rubyid_v'>v</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+        <span class='kw'>else</span>
+          <span class='ivar'>@was_scoped</span> <span class='op'>=</span> <span class='kw'>false</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_memo'>memo</span> <span class='op'>=</span> <span class='id identifier rubyid_memos'>memos</span><span class='lbracket'>[</span><span class='ivar'>@finish_extension_idx</span><span class='rbracket'>]</span>
+      <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='id identifier rubyid_ext'>ext</span><span class='period'>.</span><span class='id identifier rubyid_after_resolve_next'>after_resolve_next</span><span class='lparen'>(</span><span class='label'>objects:</span> <span class='ivar'>@extended</span><span class='period'>.</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='label'>arguments:</span> <span class='ivar'>@extended</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='comma'>,</span> <span class='label'>context:</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='comma'>,</span> <span class='label'>values:</span> <span class='ivar'>@field_results</span><span class='comma'>,</span> <span class='label'>memo:</span> <span class='id identifier rubyid_memo'>memo</span><span class='rparen'>)</span> <span class='comment'># rubocop:disable Development/ContextIsPassedCop
+</span>    <span class='kw'>end</span>
+    <span class='ivar'>@finish_extension_idx</span> <span class='op'>+=</span> <span class='int'>1</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_any_lazy_results?'>any_lazy_results?</span>
+      <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_dataloader'>dataloader</span><span class='period'>.</span><span class='id identifier rubyid_lazy_at_depth'>lazy_at_depth</span><span class='lparen'>(</span><span class='id identifier rubyid_path'>path</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='kw'>self</span><span class='rparen'>)</span>
+      <span class='kw'>return</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@finish_extension_idx</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_build_results'>build_results</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="path-instance_method">
+  
+    #<strong>path</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+32
+33
+34</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 32</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_path'>path</span>
+  <span class='ivar'>@path</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='op'>*</span><span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span><span class='comma'>,</span> <span class='ivar'>@key</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="sync-instance_method">
+  
+    #<strong>sync</strong>(lazy)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 199</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_sync'>sync</span><span class='lparen'>(</span><span class='id identifier rubyid_lazy'>lazy</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_lazy'>lazy</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_lazy'>lazy</span><span class='period'>.</span><span class='id identifier rubyid_map!'>map!</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_l'>l</span><span class='op'>|</span> <span class='id identifier rubyid_sync'>sync</span><span class='lparen'>(</span><span class='id identifier rubyid_l'>l</span><span class='rparen'>)</span><span class='rbrace'>}</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_sync_lazy'>sync_lazy</span><span class='lparen'>(</span><span class='id identifier rubyid_lazy'>lazy</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../UnauthorizedError.html" title="GraphQL::UnauthorizedError (class)">UnauthorizedError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_auth_err'>auth_err</span>
+  <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_unauthorized_object'>unauthorized_object</span><span class='lparen'>(</span><span class='id identifier rubyid_auth_err'>auth_err</span><span class='rparen'>)</span>
+<span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../ExecutionError.html" title="GraphQL::ExecutionError (class)">ExecutionError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_err'>err</span>
+  <span class='id identifier rubyid_err'>err</span>
+<span class='kw'>rescue</span> <span class='const'>StandardError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_stderr'>stderr</span>
+  <span class='kw'>begin</span>
+    <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_handle_or_reraise'>handle_or_reraise</span><span class='lparen'>(</span><span class='id identifier rubyid_stderr'>stderr</span><span class='rparen'>)</span>
+  <span class='kw'>rescue</span> <span class='const'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../../ExecutionError.html" title="GraphQL::ExecutionError (class)">ExecutionError</a></span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_ex_err'>ex_err</span>
+    <span class='id identifier rubyid_ex_err'>ex_err</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="value-instance_method">
+  
+    #<strong>value</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Implement that Lazy API</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+190
+191
+192
+193
+194
+195
+196
+197</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/next/field_resolve_step.rb', line 190</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_value'>value</span>
+  <span class='id identifier rubyid_query'>query</span> <span class='op'>=</span> <span class='ivar'>@selections_step</span><span class='period'>.</span><span class='id identifier rubyid_query'>query</span>
+  <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_current_trace'>current_trace</span><span class='period'>.</span><span class='id identifier rubyid_begin_execute_field'>begin_execute_field</span><span class='lparen'>(</span><span class='ivar'>@field_definition</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='comma'>,</span> <span class='ivar'>@field_results</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='rparen'>)</span>
+  <span class='ivar'>@field_results</span> <span class='op'>=</span> <span class='id identifier rubyid_sync'>sync</span><span class='lparen'>(</span><span class='ivar'>@field_results</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_query'>query</span><span class='period'>.</span><span class='id identifier rubyid_current_trace'>current_trace</span><span class='period'>.</span><span class='id identifier rubyid_end_execute_field'>end_execute_field</span><span class='lparen'>(</span><span class='ivar'>@field_definition</span><span class='comma'>,</span> <span class='ivar'>@arguments</span><span class='comma'>,</span> <span class='ivar'>@field_results</span><span class='comma'>,</span> <span class='id identifier rubyid_query'>query</span><span class='comma'>,</span> <span class='ivar'>@field_results</span><span class='rparen'>)</span>
+  <span class='ivar'>@runner</span><span class='period'>.</span><span class='id identifier rubyid_add_step'>add_step</span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon Mar  9 20:33:33 2026 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.38 (ruby-3.2.10).
+</div>
+
+    </div>
+  </body>
+</html>
