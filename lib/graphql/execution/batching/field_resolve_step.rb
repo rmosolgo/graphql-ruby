@@ -60,27 +60,18 @@ module GraphQL
               arg_defn = arg_defns.each_value.find { |a|
                 a.keyword == key || a.graphql_name == (key_s ||= String(key))
               }
-              maybe_err = coerce_argument_value(args_hash, arg_defn, value)
-              if maybe_err
-                return maybe_err
-              end
+              coerce_argument_value(args_hash, arg_defn, value)
             end
           else
             ast_arguments_or_hash.each { |arg_node|
               arg_defn = arg_defns[arg_node.name]
-              maybe_err = coerce_argument_value(args_hash, arg_defn, arg_node.value)
-              if maybe_err
-                return maybe_err
-              end
+              coerce_argument_value(args_hash, arg_defn, arg_node.value)
             }
           end
           # TODO refactor the loop above into this one
           arg_defns.each do |arg_graphql_name, arg_defn|
             if arg_defn.default_value? && !args_hash.key?(arg_defn.keyword)
-              maybe_err = coerce_argument_value(args_hash, arg_defn, arg_defn.default_value)
-              if maybe_err
-                return maybe_err
-              end
+              coerce_argument_value(args_hash, arg_defn, arg_defn.default_value)
             end
           end
 
@@ -99,6 +90,8 @@ module GraphQL
               vars[arg_value.name]
             elsif vars.key?(arg_value.name.to_sym)
               vars[arg_value.name.to_sym]
+            else
+              return # not present
             end
           elsif arg_value.is_a?(Language::Nodes::NullValue)
             nil
@@ -132,7 +125,8 @@ module GraphQL
               end
             end
           elsif arg_t.kind.input_object?
-            coerce_arguments(arg_t, arg_value)
+            input_obj_args = coerce_arguments(arg_t, arg_value)
+            arg_t.new(nil, ruby_kwargs: input_obj_args, context: @selections_step.query.context, defaults_used: nil)
           else
             raise "Unsupported argument value: #{arg_t.to_type_signature} / #{arg_value.class} (#{arg_value.inspect})"
           end
@@ -149,7 +143,9 @@ module GraphQL
             end
           end
 
-          if arg_defn.loads && as_type.nil? && !arg_value.nil?
+          if arg_value.is_a?(GraphQL::Error)
+            @arguments = arg_value
+          elsif arg_defn.loads && as_type.nil? && !arg_value.nil?
             # This is for legacy compat:
             load_receiver = if (r = @field_definition.resolver)
               r.new(field: @field_definition, context: @selections_step.query.context, object: nil)
@@ -283,6 +279,17 @@ module GraphQL
           end
 
           query = @selections_step.query
+          ctx = query.context
+          if (v = @field_definition.validators).any?  # rubocop:disable Development/NoneWithoutBlockCop
+            begin
+              Schema::Validator.validate!(v, nil, ctx, @arguments)
+            rescue GraphQL::RuntimeError => err
+              @field_results = Array.new(objects.size, err)
+              @object_is_authorized = AlwaysAuthorized
+              build_results
+              return
+            end
+          end
 
           @field_definition.extras.each do |extra|
             case extra
@@ -310,7 +317,6 @@ module GraphQL
             objects = @selections_step.graphql_objects
           end
 
-          ctx = query.context
           if @runner.authorization && @runner.authorizes?(@field_definition, ctx)
             authorized_objects = []
             @object_is_authorized = objects.map { |o|

@@ -119,7 +119,15 @@ module ValidatorHelpers
     if TESTING_BATCHING
       schema.use(GraphQL::Execution::Batching)
     end
-    schema
+    @current_schema = schema
+  end
+
+  def exec_query(...)
+    if TESTING_BATCHING
+      @current_schema.execute_batching(...)
+    else
+      @current_schema.execute(...)
+    end
   end
 
   module ClassMethods
