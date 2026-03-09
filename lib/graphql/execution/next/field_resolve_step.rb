@@ -613,25 +613,26 @@ module GraphQL
         end
 
         def resolve_batch(objects, context, args_hash)
+          method_receiver = @field_definition.dynamic_introspection ? @field_definition.owner : @parent_type
           case @field_definition.execution_next_mode
           when :resolve_batch
             if args_hash.empty?
-              @parent_type.public_send(@field_definition.execution_next_mode_key, objects, context)
+              method_receiver.public_send(@field_definition.execution_next_mode_key, objects, context)
             else
-              @parent_type.public_send(@field_definition.execution_next_mode_key, objects, context, **args_hash)
+              method_receiver.public_send(@field_definition.execution_next_mode_key, objects, context, **args_hash)
             end
           when :resolve_static
             result = if args_hash.empty?
-              @parent_type.public_send(@field_definition.execution_next_mode_key, context)
+              method_receiver.public_send(@field_definition.execution_next_mode_key, context)
             else
-              @parent_type.public_send(@field_definition.execution_next_mode_key, context, **args_hash)
+              method_receiver.public_send(@field_definition.execution_next_mode_key, context, **args_hash)
             end
             Array.new(objects.size, result)
           when :resolve_each
             if args_hash.empty?
-              objects.map { |o| @parent_type.public_send(@field_definition.execution_next_mode_key, o, context) }
+              objects.map { |o| method_receiver.public_send(@field_definition.execution_next_mode_key, o, context) }
             else
-              objects.map { |o| @parent_type.public_send(@field_definition.execution_next_mode_key, o, context, **args_hash) }
+              objects.map { |o| method_receiver.public_send(@field_definition.execution_next_mode_key, o, context, **args_hash) }
             end
           when :hash_key
             objects.map { |o| o[@field_definition.execution_next_mode_key] }
@@ -660,7 +661,7 @@ module GraphQL
           when :resolve_legacy_instance_method
             @selections_step.graphql_objects.map do |obj_inst|
               if @field_definition.dynamic_introspection
-                obj_inst = object_type.wrap(obj_inst, context)
+                obj_inst = @owner.wrap(obj_inst, context)
               end
               if args_hash.empty?
                 obj_inst.public_send(@field_definition.execution_next_mode_key)
