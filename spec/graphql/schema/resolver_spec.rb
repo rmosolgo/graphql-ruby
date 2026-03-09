@@ -89,15 +89,31 @@ describe GraphQL::Schema::Resolver do
     class Resolver8 < Resolver7
     end
 
+    module HasValue
+      include GraphQL::Schema::Interface
+      field :value, Integer, null: false
+      def self.resolve_type(obj, ctx)
+        LazyBlock.new {
+          if obj.is_a?(Integer)
+            IntegerWrapper
+          elsif obj == :resolve_type_as_wrong_type
+            GraphQL::Types::String
+          else
+            raise "Unexpected: #{obj.inspect}"
+          end
+        }
+      end
+    end
+
     class GreetingExtension < GraphQL::Schema::FieldExtension
-      def resolve(object:, arguments:, **rest)
-        name = yield(object, arguments)
-        "#{options[:greeting]}, #{name}!"
+      default_argument(:multiplier, Integer, required: false, default_value: 1, loads: HasValue)
+
+      def after_resolve(object:, arguments:, value:, **rest)
+        "#{options[:greeting]}, #{value}#{"!" * arguments[:multiplier]}"
       end
 
-      def resolve_next(objects:, arguments:, **rest)
-        names = yield(objects, arguments)
-        names.map { |n| "#{options[:greeting]}, #{n}!" }
+      def after_resolve_next(objects:, arguments:, values:, **rest)
+        values.map { |n| "#{options[:greeting]}, #{n}#{"!" * arguments[:multiplier]}" }
       end
     end
 
@@ -106,8 +122,12 @@ describe GraphQL::Schema::Resolver do
 
       extension GreetingExtension, greeting: "Hi"
 
-      def resolve
-        "Robert"
+      def resolve(multiplier:)
+        Array.new(multiplier, "Robert").join(" ")
+      end
+
+      def object_from_id(_type, n, ctx)
+        ctx[:loaded_multiplier] || n
       end
     end
 
@@ -217,22 +237,6 @@ describe GraphQL::Schema::Resolver do
 
       def resolve(int:)
         { int: int }
-      end
-    end
-
-    module HasValue
-      include GraphQL::Schema::Interface
-      field :value, Integer, null: false
-      def self.resolve_type(obj, ctx)
-        LazyBlock.new {
-          if obj.is_a?(Integer)
-            IntegerWrapper
-          elsif obj == :resolve_type_as_wrong_type
-            GraphQL::Types::String
-          else
-            raise "Unexpected: #{obj.inspect}"
-          end
-        }
       end
     end
 
@@ -1043,6 +1047,16 @@ describe GraphQL::Schema::Resolver do
       it "uses extension to build response" do
         res = exec_query " { resolverWithExtension } "
         assert_equal "Hi, Robert!", res["data"]["resolverWithExtension"]
+
+        res = exec_query " { resolverWithExtension } ", context: { loaded_multiplier: 3 }
+        expected_greeting = if TESTING_EXEC_NEXT
+          # In this case, `load...` is applied before the resolver is actually called,
+          # so the extension sees the modified argument value.
+          "Hi, Robert Robert Robert!!!"
+        else
+          "Hi, Robert Robert Robert!"
+        end
+        assert_equal expected_greeting, res["data"]["resolverWithExtension"]
       end
 
       it "inherits extensions" do

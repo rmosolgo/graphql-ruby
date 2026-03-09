@@ -40,7 +40,10 @@ module GraphQL
         @field = field
         # Since this hash is constantly rebuilt, cache it for this call
         @arguments_by_keyword = {}
-        context.types.arguments(self.class).each do |arg|
+        # @field includes any extension-added arguments, but isn't available if the Resolver is directly initialized in user code (boo hiss).
+        # Use `self.class` when it's a RelayClassicMutation whose arguments actually exist on a generated `input: ...` object
+        arg_owner = self.is_a?(HasSingleInputArgument) ? self.class : (@field || self.class)
+        context.types.arguments(arg_owner).each do |arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
         @prepared_arguments = nil
