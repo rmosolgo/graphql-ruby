@@ -360,7 +360,7 @@ module GraphQL
             @runner.dataloader.lazy_at_depth(path.size, self)
           elsif has_extensions
             finish_extensions
-          else
+          elsif @pending_steps.nil? || @pending_steps.empty?
             build_results
           end
         end
