@@ -44,88 +44,125 @@ See {% internal_link "compatibility notes", "/execution/migration#compatibility-
 
 ## Field configurations
 
-The new runtime engine supports several field resolution configurations out of the box:
+The new runtime engine supports several field resolution configurations out of the box.
 
-- __Method calls__: fields that call `object.#{field_name}`. This is the default, and the method name can be overridden with `method: ...`:
+### Method calls (default, `method:`)
 
-    ```ruby
-    field :title, String # calls object.title
-    field :title, String, method: :get_title_somehow # calls object.get_title_somehow
-    ```
-- __Hash keys__: fields that call `object[hash_key]`, configured with `hash_key: ...`.
+Fields that call `object.#{field_name}`. This is the default, and the method name can be overridden with `method: ...`:
 
+```ruby
+field :title, String # calls object.title
+field :title, String, method: :get_title_somehow # calls object.get_title_somehow
+```
 
-    ```ruby
-    field :title, String, hash_key: :title # calls object[:title]
-    field :title, String, hash_key: "title" # calls object["title"]
-    ```
+### Hash keys (`hash_key:`)
 
-    (Note: new execution doesn't "fall back" to hash key lookups, and it doesn't try strings when Symbols are given. The existing runtime engine does that...)
+Fields that call `object[hash_key]`, configured with `hash_key: ...`.
 
-- __Batch resolvers__: fields that use a _class method_ to map parent objects to field results, configured with `resolve_batch:`:
+```ruby
+field :title, String, hash_key: :title # calls object[:title]
+field :title, String, hash_key: "title" # calls object["title"]
+```
 
-    ```ruby
-    field :title, String, resolve_batch: :titles do
-      argument :language, Types::Language, required: false, default_value: "EN"
+(Note: new execution doesn't "fall back" to hash key lookups, and it doesn't try strings when Symbols are given. The existing runtime engine does that...)
+
+### Per-object (`resolve_each:`)
+
+These fields use a _class method_ to produce a result for each parent object, configured with `resolve_each:`.
+
+```ruby
+field :title, String, resolve_each: :title do
+  argument :language, Types::Language, required: false, default_value: "EN"
+end
+
+def self.title(object, context, language:)
+  # Assuming this makes no database lookups or other external service calls:
+  object.localization.get(:title, language:)
+end
+```
+
+Under the hood, GraphQL-Ruby calls `objects.map { ... }`, calling this class method.
+
+‼️ __Don't use this__ if your logic calls external services or databases (including with Dataloader). If you do, your I/O will be sequential instead of batched. Use `resolve_batch:` or `resolve_static:` instead, see below.
+
+### Global (`resolve_static:`)
+
+Fields that use a _class method_ to produce a single result shared by all objects, configured with `resolve_static:`. The method does _not_ receive any `object`, only `context`:
+
+```ruby
+field :posts_count, Integer, resolve_static: :count_all_posts do
+  argument :include_unpublished, Boolean, required: false, default_value: false
+end
+
+def self.count_all_posts(context, include_unpublished:)
+  posts = Post.all
+  if !include_unpublished
+    posts = posts.published
+  end
+  posts.count
+end
+```
+
+Under the hood, GraphQL-Ruby calls `Array.new(objects.size, static_result)`.
+
+### Batch resolvers (`resolve_batch:`)
+
+This is a high-performance option for when you need to do I/O to generate results. By working with a batch of objects, you can greatly reduce the framework overhead in preparing a result.
+
+These fields use a _class method_ to map parent objects to field results, configured with `resolve_batch:`:
+
+  ```ruby
+  field :title, String, resolve_batch: :titles do
+    argument :language, Types::Language, required: false, default_value: "EN"
+  end
+
+  def self.titles(objects, context, language:)
+    # This is equivalent to plain `field :title, ...`, but for example:
+    objects.map { |obj| obj.title(language:) }
+  end
+  ```
+
+  This is especially useful when batching Dataloader calls:
+
+  ```ruby
+  class Types::Comment < BaseObject
+    field :post, Types::Post, resolve_batch: :posts
+
+    # Use `.load_all(ids)` to fetch all in a single round-trip
+    def self.posts(objects, context)
+      # TODO: add a shorthand for this in GraphQL-Ruby
+      context.dataloader
+        .with(GraphQL::Dataloader::ActiveRecordSource)
+        .load_all(objects.map(&:post_id))
     end
+  end
+  ```
 
-    def self.titles(objects, context, language:)
-      # This is equivalent to plain `field :title, ...`, but for example:
-      objects.map { |obj| obj.title(language:) }
-    end
-    ```
+### Legacy instance methods
 
-    This is especially useful when batching Dataloader calls:
+`resolve_legacy_instance_method:`
 
-    ```ruby
-    class Types::Comment < BaseObject
-      field :post, Types::Post, resolve_batch: :posts
+There is _partial_ support for instance methods on Object type classes, for now. It will be deprecated and removed soon.
 
-      # Use `.load_all(ids)` to fetch all in a single round-trip
-      def self.posts(objects, context)
-        # TODO: add a shorthand for this in GraphQL-Ruby
-        context.dataloader
-          .with(GraphQL::Dataloader::ActiveRecordSource)
-          .load_all(objects.map(&:post_id))
-      end
-    end
-    ```
+‼️ Don't use legacy instance methods with Dataloader. It will be sequential, not batched. ‼️
 
-- __Each resolvers__: fields that use a _class method_ to produce a result for each parent object, configured with `resolve_each:`. This is similar to `resolve_batch:`, except you never receive the whole list of `objects`:
+```ruby
+field :title, String, resolve_legacy_instance_method: true do
+  argument :language, Types::Language, required: false, default_value: "EN"
+end
 
-    ```ruby
-    field :title, String, resolve_each: :title do
-      argument :language, Types::Language, required: false, default_value: "EN"
-    end
+def title(language:)
+  # Assuming this makes no database lookups or other external service calls:
+  object.localization.get(:title, language:)
+end
+```
 
-    def self.title(object, context, language:)
-      object.title(language:)
-    end
-    ```
+Under the hood, GraphQL-Ruby calls `objects.map { ... }`, calling this instance method.
 
-    (Under the hood, GraphQL-Ruby calls `objects.map { ... }`, calling this class method.)
-
-- __Static resolvers__: fields that use a _class method_ to produce a single result shared by all objects, configured with `resolve_static:`. The method does _not_ receive any `object`, only `context`:
-
-    ```ruby
-    field :posts_count, Integer, resolve_static: :count_all_posts do
-      argument :include_unpublished, Boolean, required: false, default_value: false
-    end
-
-    def self.count_all_posts(context, include_unpublished:)
-      posts = Post.all
-      if !include_unpublished
-        posts = posts.published
-      end
-      posts.count
-    end
-    ```
-
-    (Under the hood, GraphQL-Ruby calls `Array.new(objects.size, static_result)`)
 
 ### `true` shorthand
 
-There is also a `true` shorthand: when one of the `resolve_...:` configurations is passed as `true` (ie, `resolve_batch: true`, `resolve_each: true`, or `resolve_static: true`), then the Symbol field name is used as the class method. For example:
+There is also a `true` shorthand: when one of the `resolve_...:` configurations is passed as `true` (ie, `resolve_batch: true`, `resolve_each: true`, `resolve_static: true`, or `resolve_legacy_instance_method: true`), then the Symbol field name is used as the class method. For example:
 
 ```ruby
 field :posts_count, Integer, resolve_static: true
@@ -134,6 +171,7 @@ def self.posts_count(context)
   Post.all.count
 end
 ```
+
 
 ## Migration
 
