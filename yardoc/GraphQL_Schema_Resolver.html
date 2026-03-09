@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.20/GraphQL/Schema/Resolver">
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.5.21/GraphQL/Schema/Resolver">
   </head>
   <body>
     <p>Class: GraphQL::Schema::Resolver &lt; Object
@@ -32,6 +32,7 @@ GraphQL::Schema::Member::GraphQLTypeNames
 Extended by:
 GraphQL::Schema::Member::BaseDSLMethods,
 GraphQL::Schema::Member::HasArguments,
+GraphQL::Schema::Member::HasAuthorization,
 GraphQL::Schema::Member::HasValidators,
 GraphQL::Schema::Member::HasPath,
 GraphQL::Schema::Member::HasDirectives,
@@ -44,7 +45,7 @@ has_default_page_size?, has_max_page_size?, inherited,
 max_page_size, null, resolve_method, resolver_method, type,
 type_expr
 Instance methods:
-arguments, authorize_arguments, authorized?, call_resolve,
+arguments, authorize_arguments, authorized?, call, call_resolve,
 get_argument, initialize, load_arguments, ready?, resolve,
 resolve_with_support, unauthorized_object</li>
 </ul>

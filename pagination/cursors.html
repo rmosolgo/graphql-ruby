@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.20/">API</a>
+            <a href="/api-doc/2.5.21/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -83,6 +83,8 @@
         <option  data-target="/schema/definition.html">Schema</option>
       
         <option  data-target="/queries/executing_queries.html">Queries</option>
+      
+        <option  data-target="/execution/next.html">Execution</option>
       
         <option  data-target="/type_definitions/objects.html">Type Definitions</option>
       
@@ -183,7 +185,7 @@
 
 <p>Now, all connections will use URL-safe base-64 encoding.</p>
 
-<p>From a connection instance, the <code class="language-plaintext highlighter-rouge">cursor_encoders</code> methods are available via <a href="/api-doc/2.5.20/GraphQL/Pagination/Connection#encode-instance_method" target="_blank" title="API docs for GraphQL::Pagination::Connection#encode"><code>GraphQL::Pagination::Connection#encode</code></a> and <a href="/api-doc/2.5.20/GraphQL/Pagination/Connection#decode-instance_method" target="_blank" title="API docs for GraphQL::Pagination::Connection#decode"><code>GraphQL::Pagination::Connection#decode</code></a></p>
+<p>From a connection instance, the <code class="language-plaintext highlighter-rouge">cursor_encoder</code> methods are available via <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/pagination/connection.rb">GraphQL::Pagination::Connection</a> <code class="language-plaintext highlighter-rouge">#encode</code> and <code class="language-plaintext highlighter-rouge">#decode</code></p>
 
 </div>
 <p class="guide-footer">

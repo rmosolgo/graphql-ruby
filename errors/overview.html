@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.20/">API</a>
+            <a href="/api-doc/2.5.21/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -83,6 +83,8 @@
         <option  data-target="/schema/definition.html">Schema</option>
       
         <option  data-target="/queries/executing_queries.html">Queries</option>
+      
+        <option  data-target="/execution/next.html">Execution</option>
       
         <option  data-target="/type_definitions/objects.html">Type Definitions</option>
       
@@ -170,7 +172,7 @@
 
 <p>The validation rules are part of the GraphQL specification and built into GraphQL-Ruby, so there’s not really a way to customize this behavior, except to pass <code class="language-plaintext highlighter-rouge">validate: false</code> when executing a query, which skips validation altogether.</p>
 
-<p>You can configure your schema to stop validating after a certain number of errors by setting <a href="/api-doc/2.5.20/GraphQL/Schema#validate_max_errors-class_method" target="_blank" title="API docs for GraphQL::Schema.validate_max_errors"><code>Schema.validate_max_errors</code></a>. Also, you can add a timeout to this step with <a href="/api-doc/2.5.20/GraphQL/Schema#validate_timeout-class_method" target="_blank" title="API docs for GraphQL::Schema.validate_timeout"><code>Schema.validate_timeout</code></a>.</p>
+<p>You can configure your schema to stop validating after a certain number of errors by setting <a href="/api-doc/2.5.21/GraphQL/Schema#validate_max_errors-class_method" target="_blank" title="API docs for GraphQL::Schema.validate_max_errors"><code>Schema.validate_max_errors</code></a>. Also, you can add a timeout to this step with <a href="/api-doc/2.5.21/GraphQL/Schema#validate_timeout-class_method" target="_blank" title="API docs for GraphQL::Schema.validate_timeout"><code>Schema.validate_timeout</code></a>.</p>
 
 <h2 id="analysis-errors">Analysis Errors</h2>
 
@@ -207,7 +209,7 @@
 
 <p>When you want end users (human beings) to read error messages, you can express errors <em>in the schema</em>, using normal GraphQL fields and types. In this approach, errors are strongly-typed data, queryable in the schema, like any other application data.</p>
 
-<p>For more about this approach, see <a href="/mutations/mutation_errors">Mutation Errors</a></p>
+<p>For more about this approach, see <a href="/mutations/mutation_errors.html#errors-as-data">Mutation Errors</a></p>
 
 </div>
 <p class="guide-footer">

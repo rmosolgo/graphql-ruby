@@ -1,0 +1,492 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Migrating to Execution::Next</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo">
+          </a>
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.5.21/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+              autocomplete="off"
+            >
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container  fullwidth ">
+      <ul class="breadcrumb">
+  <li><a href="/guides">Guides</a></li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/schema/definition.html">Schema</option>
+      
+        <option  data-target="/queries/executing_queries.html">Queries</option>
+      
+        <option  selected data-target="/execution/next.html">Execution</option>
+      
+        <option  data-target="/type_definitions/objects.html">Type Definitions</option>
+      
+        <option  data-target="/authorization/overview.html">Authorization</option>
+      
+        <option  data-target="/fields/introduction.html">Fields</option>
+      
+        <option  data-target="/mutations/mutation_root.html">Mutations</option>
+      
+        <option  data-target="/errors/overview.html">Errors</option>
+      
+        <option  data-target="/pagination/overview.html">Pagination</option>
+      
+        <option  data-target="/relay/range_add.html">Relay</option>
+      
+        <option  data-target="/dataloader/overview.html">Dataloader</option>
+      
+        <option  data-target="/subscriptions/overview.html">Subscriptions</option>
+      
+        <option  data-target="/pro/home.html">GraphQL Pro</option>
+      
+        <option  data-target="/operation_store/overview.html">GraphQL Pro - OperationStore</option>
+      
+        <option  data-target="/defer/overview.html">GraphQL Pro - Defer</option>
+      
+        <option  data-target="/limiters/overview.html">GraphQL Enterprise - Rate Limiters</option>
+      
+        <option  data-target="/object_cache/overview.html">GraphQL Enterprise - Object Cache</option>
+      
+        <option  data-target="/changesets/overview.html">GraphQL Enterprise - Changesets</option>
+      
+        <option  data-target="/javascript_client/overview.html">JavaScript Client</option>
+      
+        <option  data-target="/language_tools/visitor.html">Language Tools</option>
+      
+        <option  data-target="/testing/overview.html">Testing</option>
+      
+        <option  data-target="/development.html">Other</option>
+      
+    </select>
+  </li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/execution/next.html">New Execution Module</option>
+      
+        <option  selected data-target="/execution/migration.html">Migrating to Execution::Next</option>
+      
+    </select>
+  </li>
+</ul>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> or
+      subscribe to the <a href="https://buttondown.email/graphql-ruby">newsletter</a> for updates.
+    </p>
+  </div>
+
+
+
+<h1 class="guide-header">Migrating to Execution::Next</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ol class='contents-list'><li class='contents-entry'><a href='#migration-philosophy'>Migration Philosophy
+</a></li><li class='contents-entry'><a href='#coming-soon-migration-and-clean-up-script'>COMING SOON: Migration and Clean-Up Script
+</a></li><li class='contents-entry'><a href='#production-considerations'>Production Considerations
+</a><ol class='contents-list'><li class='contents-entry'><a href='#feature-flags'>Feature Flags
+</a></li><li class='contents-entry'><a href='#experiments'>Experiments
+</a></li></ol></li><li class='contents-entry'><a href='#combining-feature-flags-and-experiments'>Combining feature flags and experiments
+</a></li><li class='contents-entry'><a href='#compatibility-notes'>Compatibility Notes
+</a><ol class='contents-list'><li class='contents-entry'><a href='#implicit-field-resolution'>Implicit Field Resolution
+</a></li><li class='contents-entry'><a href='#query-analyzers-including-complexity'>Query Analyzers, including complexity 🌕
+</a></li><li class='contents-entry'><a href='#authorization-scoping'>Authorization, Scoping
+</a></li><li class='contents-entry'><a href='#visibility-including-changesets'>Visibility, including Changesets
+</a></li><li class='contents-entry'><a href='#dataloader'>Dataloader
+</a></li><li class='contents-entry'><a href='#tracing'>Tracing
+</a></li><li class='contents-entry'><a href='#lazy-resolution-graphql-batch'>Lazy resolution (GraphQL-Batch)
+</a></li><li class='contents-entry'><a href='#current_path'><code>current_path</code> ❌
+</a></li><li class='contents-entry'><a href='#defer-and-stream'><code>@defer</code> and <code>@stream</code> ❌
+</a></li><li class='contents-entry'><a href='#objectcache'>ObjectCache ❌
+</a></li><li class='contents-entry'><a href='#custom-directives'>Custom Directives ❌
+</a></li><li class='contents-entry'><a href='#as'><code>as:</code>
+</a></li><li class='contents-entry'><a href='#loads'><code>loads:</code>
+</a></li><li class='contents-entry'><a href='#prepare'><code>prepare:</code>
+</a></li><li class='contents-entry'><a href='#validates'><code>validates:</code> ❌
+</a></li><li class='contents-entry'><a href='#field-extensions'>Field Extensions
+</a></li><li class='contents-entry'><a href='#resolver-classes-including-mutations-and-subscriptions'>Resolver classes (including Mutations and Subscriptions)
+</a></li><li class='contents-entry'><a href='#field-extras-including-lookahead'>Field <code>extras:</code>, including <code>lookahead</code>
+</a></li><li class='contents-entry'><a href='#raw_value'><code>raw_value</code> 🟡
+</a></li><li class='contents-entry'><a href='#errors-and-rescue_from'>Errors and <code>rescue_from</code> 🟡
+</a></li><li class='contents-entry'><a href='#connection-fields'>Connection fields
+</a></li><li class='contents-entry'><a href='#custom-introspection'>Custom Introspection
+</a></li><li class='contents-entry'><a href='#multiplex'>Multiplex
+</a></li></ol></li></ol>
+</div>
+</div>
+<div class="guide-container">
+  <p>This guide includes tips for migrating your schema configuration and production traffic to the new engine.</p>
+
+<h2 id="migration-philosophy">Migration Philosophy</h2>
+
+<p><code class="language-plaintext highlighter-rouge">Execution::Next</code> is designed to run alongside the previous engine so that the same schema can run queries <em>both</em> ways. This supports an incremental migration and live toggling in production.</p>
+
+<p>First, update your schema to include the necessary <a href="/execution/next#field-configurations">field configurations</a>. If you implement new class methods in your Object type classes, you can also migrate instance methods to call “up” to those class methods, preserving a single source of truth:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:unpublished_posts</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">],</span> <span class="ss">resolve_each: </span><span class="kp">true</span>
+
+<span class="c1"># Support batching:</span>
+<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">unpublished_posts</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+  <span class="n">object</span><span class="p">.</span><span class="nf">posts</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">published: </span><span class="kp">false</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at DESC"</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="c1"># Support legacy in a DRY way by calling the class method:</span>
+<span class="k">def</span> <span class="nf">unpublished_posts</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">unpublished_posts</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Test your new configurations in CI by running a new build which calls <code class="language-plaintext highlighter-rouge">execution_next</code> instead of <code class="language-plaintext highlighter-rouge">execution</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># test_helpers.rb</span>
+<span class="k">def</span> <span class="nf">run_graphql</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+  <span class="k">if</span> <span class="no">ENV</span><span class="p">[</span><span class="s2">"GRAPHQL_EXECUTION_NEXT"</span><span class="p">]</span>
+    <span class="no">MyAppSchema</span><span class="p">.</span><span class="nf">execute_next</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+  <span class="k">else</span>
+    <span class="no">MyAppSchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Adopting a feature flag system (described below) can also make this easier.</p>
+
+<p>When all tests pass on <code class="language-plaintext highlighter-rouge">.execute_next</code>, you’re ready to try it out in production.</p>
+
+<h2 id="coming-soon-migration-and-clean-up-script">COMING SOON: Migration and Clean-Up Script</h2>
+
+<p>Migrating field implementations can be automated in many cases. A script to analyze and execute these cases is in the works: <a href="https://github.com/rmosolgo/graphql-ruby/pull/5531">Pull Request</a>. This script will also be able to clean up unused instance methods when the migration is complete.</p>
+
+<h2 id="production-considerations">Production Considerations</h2>
+
+<p>There are two categories of problems when migrating:</p>
+
+<ul>
+  <li>Some schema misconfigurations may only be detected at runtime.</li>
+  <li>The engine may have bugs. (It’s brand-new code trying to emulate 10 years of incremental development!)</li>
+</ul>
+
+<p>When migrating, these possibilities should be considered from three different angles. Using the new engine may…</p>
+
+<ul>
+  <li>…raise errors in new ways.</li>
+  <li>…return a different result than the old engine.</li>
+  <li>…perform worse than the old engine, especially because of different database access patterns.</li>
+</ul>
+
+<p>To mitigate these possibilities, use dynamic release tools in production like feature flags and experiments.</p>
+
+<h3 id="feature-flags">Feature Flags</h3>
+
+<p>You should use a feature flagging system so that you can shift traffic between old and new runtime engines without redeploying. A good feature-flagging system supports percentage-based flags, so that you can send 1% of traffic to new code while the other 99% uses existing code. After it runs without issues, you can increase the percentage. Or, if you discover issues in production (errors or performance), you can turn it back to 0% while you troubleshoot the problem.</p>
+
+<p>For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
+<span class="n">exec_method</span> <span class="o">=</span> <span class="n">use_graphql_next?</span> <span class="p">?</span> <span class="ss">:execute_next</span> <span class="p">:</span> <span class="ss">:execute</span>
+<span class="n">result</span> <span class="o">=</span> <span class="no">MyAppSchema</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="n">exec_method</span><span class="p">,</span> <span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="o">...</span> <span class="p">},</span> <span class="ss">variables: </span><span class="p">{</span> <span class="o">...</span> <span class="p">})</span>
+<span class="n">render</span> <span class="ss">json: </span><span class="n">result</span>
+</code></pre></div></div>
+
+<p><a href="https://github.com/flippercloud/flipper">Flipper</a> is a great gem for feature flags. You could also roll your own or pick a third-party service.</p>
+
+<p><strong>Before</strong> using <code class="language-plaintext highlighter-rouge">.execute_next</code> to produce results for production traffic, you might want to run an experiment as described below.</p>
+
+<h3 id="experiments">Experiments</h3>
+
+<p>While the two runtime engines <em>should</em> return identical responses, it’s possible that <code class="language-plaintext highlighter-rouge">.execute_next</code> will return a different result than <code class="language-plaintext highlighter-rouge">.execute</code> due to gem bugs or schema misconfigurations. You can check for this using an “experiment” system in your application which runs <em>both</em> execution engines and compares the result (for <strong>queries only</strong>!).</p>
+
+<p>You’ll want to use feature flagging to run the experiment on a subset of traffic, since it comes with performance overhead.</p>
+
+<p>Here’s some example code for a setup like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
+<span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Use a dynamic flag, eg Flipper. This should always be true in development and test.</span>
+<span class="k">if</span> <span class="n">use_graphql_next_experiment?</span>
+  <span class="k">if</span> <span class="o">!</span><span class="n">query_string</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s2">"mutation"</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">query_string</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s2">"subscription"</span><span class="p">)</span> <span class="c1"># easy way of checking for queries, could possibly have false negatives</span>
+    <span class="n">batched_result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute_next</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">batched_result</span><span class="p">.</span><span class="nf">to_h</span> <span class="o">!=</span> <span class="n">result</span><span class="p">.</span><span class="nf">to_h</span>
+      <span class="c1"># Log this mismatch somehow here, avoiding potential PII/passwords:</span>
+      <span class="no">BugTracker</span><span class="p">.</span><span class="nf">report</span> <span class="o">&lt;&lt;~</span><span class="no">TXT</span><span class="sh">
+        A GraphQL query returned a non-identical response. Sanitized query string:
+
+        </span><span class="si">#{</span><span class="n">result</span><span class="p">.</span><span class="nf">query</span><span class="p">.</span><span class="nf">sanitized_query_string</span><span class="si">}</span><span class="sh">
+
+        User: </span><span class="si">#{</span><span class="n">current_user</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="sh">
+        # Other context info here...
+</span><span class="no">      TXT</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>See <a href="https://github.com/github/scientist">Scientist</a> for a full-blown production experimentation system.</p>
+
+<h2 id="combining-feature-flags-and-experiments">Combining feature flags and experiments</h2>
+
+<p>A fully-managed rollout would include two flags:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">use_graphql_next_experiment?</code>: when true, build an <code class="language-plaintext highlighter-rouge">.execute_next</code> response and compare it to the <code class="language-plaintext highlighter-rouge">.execute</code> response. But <em>always</em> return the <code class="language-plaintext highlighter-rouge">.execute</code> response.</li>
+  <li><code class="language-plaintext highlighter-rouge">use_graphql_next?</code>: when true, use <code class="language-plaintext highlighter-rouge">.execute_next</code> and don’t call <code class="language-plaintext highlighter-rouge">.execute</code> at all</li>
+</ul>
+
+<p>This gives you full control over how production traffic is executed without needing to redeploy. You can always turn them down to 0% to get the current behavior.</p>
+
+<p>Here’s some example code:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="n">use_graphql_next?</span> <span class="c1"># again, use a dynamic feature flag</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute_next</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">else</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">use_graphql_next_experiment?</span>
+    <span class="c1"># Continue running the comparison experiment</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">render</span> <span class="ss">json: </span><span class="n">result</span><span class="p">.</span><span class="nf">to_h</span>
+</code></pre></div></div>
+
+<h2 id="compatibility-notes">Compatibility Notes</h2>
+
+<p>Performance improvements in batching execution come at the cost of removing support for many “nice-to-have” features in GraphQL-Ruby by default. Those features are addressed here.</p>
+
+<h3 id="implicit-field-resolution">Implicit Field Resolution</h3>
+
+<p>The <em>default</em>, <em>implicit</em> field resolution behavior has changed. Previously, when a field didn’t have a specified method or hash key, GraphQL-Ruby would try a combination of <code class="language-plaintext highlighter-rouge">object.public_send(...)</code> and <code class="language-plaintext highlighter-rouge">object[...]</code> to resolve it. In <code class="language-plaintext highlighter-rouge">Execution::Next</code>, GraphQL-Ruby tries <code class="language-plaintext highlighter-rouge">object.public_send(field_sym)</code> unless another configuration is provided. This removes a lot of overhead from field execution.</p>
+
+<p>Consider a field like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span>
+</code></pre></div></div>
+
+<p>Previously, GraphQL-Ruby would check <code class="language-plaintext highlighter-rouge">type_object.respond_to?(:title)</code>, <code class="language-plaintext highlighter-rouge">object.respond_to?(:title)</code>, <code class="language-plaintext highlighter-rouge">object.is_a?(Hash)</code>. <code class="language-plaintext highlighter-rouge">object.key?(:title)</code> and <code class="language-plaintext highlighter-rouge">object.key?("title")</code>.</p>
+
+<p>Now, GraphQL-Ruby simply calls <code class="language-plaintext highlighter-rouge">object.title</code> and allows the <code class="language-plaintext highlighter-rouge">NoMethodError</code> to bubble up if one is raised.</p>
+
+<h3 id="query-analyzers-including-complexity-">Query Analyzers, including complexity 🌕</h3>
+
+<p>Support is identical; this runs before execution using the exact same code.</p>
+
+<p>TODO: accessing loaded arguments inside analyzers may turn out to be slightly different; it still calls legacy code.</p>
+
+<h3 id="authorization-scoping">Authorization, Scoping</h3>
+
+<p>Full compatibility. <code class="language-plaintext highlighter-rouge">def (self.)authorized?</code> and <code class="language-plaintext highlighter-rouge">def self.scope_items</code> will be called as needed during execution.</p>
+
+<h3 id="visibility-including-changesets">Visibility, including Changesets</h3>
+
+<p>Visibility works exactly as before; both runtime modules call the same methods to get type information from the schema.</p>
+
+<h3 id="dataloader">Dataloader</h3>
+
+<p>Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use <a href="/api-doc/2.5.21/GraphQL/Schema/Member/HasDataloader#dataload_all-instance_method" target="_blank" title="API docs for GraphQL::Schema::Member::HasDataloader#dataload_all"><code>Schema::Member::HasDataloader#dataload_all</code></a> instead of <code class="language-plaintext highlighter-rouge">.dataload</code>.</p>
+
+<h3 id="tracing">Tracing</h3>
+
+<p>Fully supported, but some legacy hooks are <em>not</em> called. Implement the new hooks instead (existing runtime already calls these new hooks). Not called are:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">execute_field</code>, <code class="language-plaintext highlighter-rouge">execute_field_lazy</code>: use <code class="language-plaintext highlighter-rouge">begin_execute_field</code>, <code class="language-plaintext highlighter-rouge">end_execute_field</code> instead. (These may be called multiple times when Dataloader pauses or a GraphQL-Batch promise is returned)</li>
+  <li><code class="language-plaintext highlighter-rouge">execute_query</code>, <code class="language-plaintext highlighter-rouge">execute_query_lazy</code>: use <code class="language-plaintext highlighter-rouge">execute_multiplex</code> for a top-level hook instead. (Single queries are always executed in a multiplex of size = 1.)</li>
+  <li><code class="language-plaintext highlighter-rouge">resolve_type</code>, <code class="language-plaintext highlighter-rouge">authorized</code>: use <code class="language-plaintext highlighter-rouge">{begin,end}_resolve_type</code> and <code class="language-plaintext highlighter-rouge">{begin,end}_authorized</code> instead. (May be called multiple times for Dataloader etc.)</li>
+</ul>
+
+<h3 id="lazy-resolution-graphql-batch">Lazy resolution (GraphQL-Batch)</h3>
+
+<p>Lazy resolution runs in the new execution (GraphQL-Batch is supported). When migrating to class methods, you may need to update your library method calls to work on a set of inputs rather than a single input.</p>
+
+<h3 id="current_path-"><code class="language-plaintext highlighter-rouge">current_path</code> ❌</h3>
+
+<p>This is not supported because the new runtime doesn’t actually produce <code class="language-plaintext highlighter-rouge">current_path</code>.</p>
+
+<p>It is theoretically possible to support this but it will be a ton of work. If you use this for core runtime functions, please share your use case in a GitHub issue and we can investigate future options.</p>
+
+<h3 id="defer-and-stream-"><code class="language-plaintext highlighter-rouge">@defer</code> and <code class="language-plaintext highlighter-rouge">@stream</code> ❌</h3>
+
+<p>This depends on <code class="language-plaintext highlighter-rouge">current_path</code> so isn’t possible yet.</p>
+
+<h3 id="objectcache-">ObjectCache ❌</h3>
+
+<p>Actually this probably works but I haven’t tested it.</p>
+
+<h3 id="custom-directives-">Custom Directives ❌</h3>
+
+<p>Not supported yet. This will need some new kind of integration.</p>
+
+<h3 id="as"><code class="language-plaintext highlighter-rouge">as:</code></h3>
+
+<p><code class="language-plaintext highlighter-rouge">as:</code> is applied: arguments are passed into Ruby methods by their <code class="language-plaintext highlighter-rouge">as:</code> names instead of their GraphQL names.</p>
+
+<h3 id="loads"><code class="language-plaintext highlighter-rouge">loads:</code></h3>
+
+<p><code class="language-plaintext highlighter-rouge">loads:</code> is handled as previously, <strong>except</strong> that custom <code class="language-plaintext highlighter-rouge">def load_...</code> methods are <em>not</em> called.</p>
+
+<h3 id="prepare"><code class="language-plaintext highlighter-rouge">prepare:</code></h3>
+
+<p>These methods/procs are called.</p>
+
+<h3 id="validates-"><code class="language-plaintext highlighter-rouge">validates:</code> ❌</h3>
+
+<p>Built-in validators are supported. Custom validators will always receive <code class="language-plaintext highlighter-rouge">nil</code> as the <code class="language-plaintext highlighter-rouge">object</code>. (<code class="language-plaintext highlighter-rouge">object</code> is no longer available; this API will probably change before this is fully released.)</p>
+
+<h3 id="field-extensions">Field Extensions</h3>
+
+<p>Field extensions <em>are</em> called, but it uses new methods:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">def resolve_batching(objects:, arguments:, context:, &amp;block)</code> receives <code class="language-plaintext highlighter-rouge">objects:</code> instead of <code class="language-plaintext highlighter-rouge">object:</code> and should yield them to the given block to continue execution</li>
+  <li><code class="language-plaintext highlighter-rouge">def after_resolve_batching(objects:, arguments:, context:, values:, memo:)</code> receives <code class="language-plaintext highlighter-rouge">objects:, values:, ...</code> instead of <code class="language-plaintext highlighter-rouge">object:, value:, ...</code> and should return an Array of results (isntead of a single result value).</li>
+</ul>
+
+<p>Because of their close integration with the runtime, <code class="language-plaintext highlighter-rouge">ConnectionExtension</code> and <code class="language-plaintext highlighter-rouge">ScopeExtension</code> don’t actually use <code class="language-plaintext highlighter-rouge">after_resolve_batching</code>. Instead, support is hard-coded inside the runtime. This might be a smell that field extensions aren’t worth supporting.</p>
+
+<h3 id="resolver-classes-including-mutations-and-subscriptions">Resolver classes (including Mutations and Subscriptions)</h3>
+
+<p>Resolver classes are called.</p>
+
+<h3 id="field-extras-including-lookahead">Field <code class="language-plaintext highlighter-rouge">extras:</code>, including <code class="language-plaintext highlighter-rouge">lookahead</code></h3>
+
+<p><code class="language-plaintext highlighter-rouge">:ast_node</code> and <code class="language-plaintext highlighter-rouge">:lookahead</code> are already implemented. Others are possible – please raise an issue if you need one. <code class="language-plaintext highlighter-rouge">extras: [:current_path]</code> is not possible.</p>
+
+<h3 id="raw_value-"><code class="language-plaintext highlighter-rouge">raw_value</code> 🟡</h3>
+
+<p>Supported but requires a manual opt-in at schema level. Support for this will probably get better somehow in a future version.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">uses_raw_value</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span> <span class="c1"># TODO This configuration will be improved in a future GraphQL-Ruby version</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Next</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="errors-and-rescue_from-">Errors and <code class="language-plaintext highlighter-rouge">rescue_from</code> 🟡</h3>
+
+<p>Support is mostly in place here but not thoroughly tested</p>
+
+<ul>
+  <li>rescue_from handlers</li>
+  <li>raising GraphQL::ExecutionError</li>
+  <li>Schema class error handling hooks</li>
+</ul>
+
+<h3 id="connection-fields">Connection fields</h3>
+
+<p>Connection arguments are automatically handled and connection wrapper objects are automatically applied to arrays and relations.</p>
+
+<h3 id="custom-introspection">Custom Introspection</h3>
+
+<p>This <em>works</em> but if you want custom authorization or any lazy values, see notes about that compatibility.</p>
+
+<h3 id="multiplex">Multiplex</h3>
+
+<p>To use the new engine to run a multiplex, use <code class="language-plaintext highlighter-rouge">MyAppSchema.multiplex_next(...)</code> with the same arguments.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/execution/migration.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Migrating to Execution::Next">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+  function navigateToSelected(selectElement) {
+    var nextPage = selectElement.selectedOptions[0].dataset["target"]
+    document.location = nextPage
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
+  </body>
+</html>
