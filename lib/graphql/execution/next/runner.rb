@@ -12,6 +12,7 @@ module GraphQL
           @selected_operation = nil
           @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
+          @lazy_cache = resolves_lazies ? {}.compare_by_identity : nil
           @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
           @authorization = authorization
           if @authorization
@@ -222,6 +223,15 @@ module GraphQL
               raise ArgumentError, "Unsupported graphql selection node: #{ast_selection.class} (#{ast_selection.inspect})"
             end
           end
+        end
+
+        def lazy?(object)
+          obj_class = object.class
+          is_lazy = @lazy_cache[obj_class]
+          if is_lazy.nil?
+            is_lazy = @lazy_cache[obj_class] = @schema.lazy?(object)
+          end
+          is_lazy
         end
 
         private

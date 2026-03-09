@@ -193,9 +193,10 @@ module GraphQL
       # @param resolver_method [Symbol] The method on the type to call to resolve this field (defaults to `name`)
       # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
       # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
-      # @param resolve_static [Symbol, nil] Used by {Schema.execute_next} to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
-      # @param resolve_batch [Symbol, nil] Used by {Schema.execute_next} map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
-      # @param resolve_each [Symbol, nil] Used by {Schema.execute_next} to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
+      # @param resolve_static [Symbol, true, nil] Used by {Schema.execute_next} to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
+      # @param resolve_batch [Symbol, true, nil] Used by {Schema.execute_next} map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
+      # @param resolve_each [Symbol, true, nil] Used by {Schema.execute_next} to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
+      # @param resolve_legacy_instance_method [Symbol, true, nil] Used by {Schema.execute_next} to get a value value for each item. Calls an instance method on the object type class.
       # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
       # @param default_page_size [Integer, nil] For connections, the default number of items to return from this field, or `nil` to return unlimited results.
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
@@ -218,7 +219,7 @@ module GraphQL
       # @param relay_nodes_field [Boolean] (Private, used by GraphQL-Ruby)
       # @param extras [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] Extra arguments to be injected into the resolver for this field
       # @param definition_block [Proc] an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new {Field}.
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, resolve_static: nil, resolve_each: nil, resolve_batch: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, resolve_legacy_instance_method: nil, resolve_static: nil, resolve_each: nil, resolve_batch: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -285,6 +286,9 @@ module GraphQL
         elsif resolver_class
           @execution_next_mode = :resolver_class
           @execution_next_mode_key = resolver_class
+        elsif resolve_legacy_instance_method
+          @execution_next_mode = :resolve_legacy_instance_method
+          @execution_next_mode_key = resolve_legacy_instance_method == true ? @method_sym : resolve_legacy_instance_method
         else
           @execution_next_mode = :direct_send
           @execution_next_mode_key = @method_sym
@@ -360,63 +364,8 @@ module GraphQL
         end
       end
 
-      # Called by {Execution::Next} to resolve this field for each of `objects`
-      # @param field_resolve_step [Execution::Next::FieldResolveStep] an internal metadata object from execution code
-      # @param objects [Array<Object>] Objects returned from previously-executed fields
-      # @param context [GraphQL::Query::Context]
-      # @param args_hash [Hash<Symbol => Object>] Ruby-style arguments for this field
-      # @return [Array<Object>] One field result for each of `objects`; must have the same length as `objects`
-      # @see #initialize Use `resolve_static:`, `resolve_batch:`, `resolve_each:`, `hash_key:`, or `method:`
       # @api private
-      def resolve_batch(field_resolve_step, objects, context, args_hash)
-        case @execution_next_mode
-        when :resolve_batch
-          if args_hash.empty?
-            @owner.public_send(@execution_next_mode_key, objects, context)
-          else
-            @owner.public_send(@execution_next_mode_key, objects, context, **args_hash)
-          end
-        when :resolve_static
-          result = if args_hash.empty?
-            @owner.public_send(@execution_next_mode_key, context)
-          else
-            @owner.public_send(@execution_next_mode_key, context, **args_hash)
-          end
-          Array.new(objects.size, result)
-        when :resolve_each
-          if args_hash.empty?
-            objects.map { |o| @owner.public_send(@execution_next_mode_key, o, context) }
-          else
-            objects.map { |o| @owner.public_send(@execution_next_mode_key, o, context, **args_hash) }
-          end
-        when :hash_key
-          objects.map { |o| o[@execution_next_mode_key] }
-        when :direct_send
-          if args_hash.empty?
-            objects.map { |o| o.public_send(@execution_next_mode_key) }
-          else
-            objects.map { |o| o.public_send(@execution_next_mode_key, **args_hash) }
-          end
-        when :dig
-          objects.map { |o| o.dig(*@execution_next_mode_key) }
-        when :resolver_class
-          results = Array.new(objects.size, nil)
-          ps = field_resolve_step.pending_steps ||= []
-          objects.each_with_index do |o, idx|
-            resolver_inst = @resolver_class.new(object: o, context: context, field: self)
-            ps << resolver_inst
-            resolver_inst.field_resolve_step = field_resolve_step
-            resolver_inst.prepared_arguments = args_hash
-            resolver_inst.exec_result = results
-            resolver_inst.exec_index = idx
-            field_resolve_step.runner.add_step(resolver_inst)
-            resolver_inst
-          end
-          results
-        else
-          raise "Batching execution for #{path} not implemented (execution_next_mode: #{@execution_next_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
-        end
-      end
+      attr_reader :execution_next_mode_key, :execution_next_mode
 
       # Calls the definition block, if one was given.
       # This is deferred so that references to the return type

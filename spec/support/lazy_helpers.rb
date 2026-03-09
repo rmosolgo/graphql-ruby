@@ -51,13 +51,12 @@ module LazyHelpers
 
   class BaseObject < GraphQL::Schema::Object
     class BaseField < GraphQL::Schema::Field
-      include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     end
     field_class(BaseField)
   end
 
   class LazySum < BaseObject
-    field :value, Integer
+    field :value, Integer, resolve_legacy_instance_method: true
     def value
       if object == MAGIC_NUMBER_THAT_RAISES_ERROR
         nil
@@ -74,7 +73,7 @@ module LazyHelpers
       end
     end
 
-    field :nested_sum, LazySum, null: false do
+    field :nested_sum, LazySum, null: false, resolve_legacy_instance_method: true do
       argument :value, Integer
     end
 
@@ -86,14 +85,14 @@ module LazyHelpers
       end
     end
 
-    field :nullable_nested_sum, LazySum do
+    field :nullable_nested_sum, LazySum, resolve_legacy_instance_method: true do
       argument :value, Integer
     end
     alias :nullable_nested_sum :nested_sum
   end
 
   class LazyQuery < BaseObject
-    field :int, Integer, null: false do
+    field :int, Integer, null: false, resolve_legacy_instance_method: true do
       argument :value, Integer
       argument :plus, Integer, required: false, default_value: 0
     end
@@ -101,7 +100,7 @@ module LazyHelpers
       Wrapper.new(value + plus)
     end
 
-    field :nested_sum, LazySum, null: false do
+    field :nested_sum, LazySum, null: false, resolve_legacy_instance_method: true do
       argument :value, Integer
     end
 
@@ -109,7 +108,7 @@ module LazyHelpers
       SumAll.new(value)
     end
 
-    field :nullable_nested_sum, LazySum do
+    field :nullable_nested_sum, LazySum, resolve_legacy_instance_method: true do
       argument :value, Integer
     end
 
@@ -123,7 +122,7 @@ module LazyHelpers
       end
     end
 
-    field :list_sum, [LazySum, null: true] do
+    field :list_sum, [LazySum, null: true], resolve_legacy_instance_method: true do
       argument :values, [Integer]
     end
     def list_sum(values:)

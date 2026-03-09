@@ -5,7 +5,6 @@ describe GraphQL::Schema::Member::Scoped do
   class ScopeSchema < GraphQL::Schema
     class BaseObject < GraphQL::Schema::Object
       class BaseField < GraphQL::Schema::Field
-        include GraphQL::Execution::Next::FieldCompatibility if TESTING_EXEC_NEXT
       end
       field_class BaseField
     end
@@ -86,21 +85,21 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     class Query < BaseObject
-      field :items, [Item], null: false
+      field :items, [Item], null: false, resolve_legacy_instance_method: true
       field :unscoped_items, [Item], null: false,
         scope: false,
-        resolver_method: :items
+        resolver_method: :items, resolve_legacy_instance_method: :items
 
-      field :nil_items, [Item]
+      field :nil_items, [Item], resolve_legacy_instance_method: true
       def nil_items
         nil
       end
 
       field :french_items, [FrenchItem], null: false,
-        resolver_method: :items
+        resolver_method: :items, resolve_legacy_instance_method: :items
 
       field :items_connection, Item.connection_type, null: false,
-          resolver_method: :items
+          resolver_method: :items, resolve_legacy_instance_method: :items
 
       def items
         [
@@ -109,15 +108,15 @@ describe GraphQL::Schema::Member::Scoped do
         ]
       end
 
-      field :reauthorize_items, [ReauthorizeItem], resolver_method: :items
+      field :reauthorize_items, [ReauthorizeItem], resolver_method: :items, resolve_legacy_instance_method: :items
 
-      field :things, [Thing], null: false
+      field :things, [Thing], null: false, resolve_legacy_instance_method: true
       def things
         items + [OpenStruct.new(name: "Turbine")]
       end
 
-      field :lazy_items, [Item], null: false
-      field :lazy_items_connection, Item.connection_type, null: false, resolver_method: :lazy_items
+      field :lazy_items, [Item], null: false, resolve_legacy_instance_method: true
+      field :lazy_items_connection, Item.connection_type, null: false, resolver_method: :lazy_items, resolve_legacy_instance_method: :lazy_items
       def lazy_items
         ->() { items }
       end
@@ -315,7 +314,6 @@ describe GraphQL::Schema::Member::Scoped do
     class SkipAuthSchema < GraphQL::Schema
       class Book < GraphQL::Schema::Object
         class BaseField < GraphQL::Schema::Field
-          include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
         end
         field_class(BaseField)
 
@@ -329,7 +327,7 @@ describe GraphQL::Schema::Member::Scoped do
           list.dup # Skipping authorized objects requires a new object to be returned
         end
 
-        field :title, String
+        field :title, String, hash_key: :title
       end
 
       class SkipAuthorizationBook < Book

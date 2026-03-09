@@ -32,7 +32,6 @@ module ValidatorHelpers
     end
 
     base_field = Class.new(GraphQL::Schema::Field) do
-      include GraphQL::Execution::Next::FieldCompatibility
       argument_class(base_argument)
     end
 
@@ -72,7 +71,7 @@ module ValidatorHelpers
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
       field_class(base_field)
-      field :validated, arg_type do
+      field :validated, arg_type, resolve_legacy_instance_method: true do
         argument :value, arg_type, required: false, validates: validates_config
       end
 
@@ -80,7 +79,7 @@ module ValidatorHelpers
         value
       end
 
-      field :multi_validated, arg_type, validates: validates_config do
+      field :multi_validated, arg_type, validates: validates_config, resolve_legacy_instance_method: true do
         argument :a, arg_type, required: false
         argument :b, arg_type, required: false
         argument :c, arg_type, required: false
@@ -92,7 +91,7 @@ module ValidatorHelpers
         a + b + c
       end
 
-      field :validated_input, arg_type do
+      field :validated_input, arg_type, resolve_legacy_instance_method: true do
         argument :input, validated_input
       end
 
@@ -102,7 +101,7 @@ module ValidatorHelpers
 
       field :validated_resolver, resolver: validated_resolver
       field :validated_arg_resolver, resolver: validated_arg_resolver
-      field :list, [self], null: false
+      field :list, [self], null: false, resolve_legacy_instance_method: true
 
       def list
         [:a, :b, :c]

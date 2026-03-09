@@ -5,26 +5,25 @@ describe GraphQL::Tracing::SentryTrace do
   module SentryTraceTest
     class BaseObject < GraphQL::Schema::Object
       class BaseField < GraphQL::Schema::Field
-        include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
       end
       field_class(BaseField)
     end
 
     class Thing < BaseObject
       def self.authorized?(_o, _c); true; end
-      field :str, String
+      field :str, String, resolve_legacy_instance_method: true
       def str; "blah"; end
     end
 
     class Query < BaseObject
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_legacy_instance_method: true
       def self.authorized?(_o, _c); true; end
 
       def int
         1
       end
 
-      field :thing, Thing
+      field :thing, Thing, resolve_legacy_instance_method: true
       def thing; :thing; end
     end
 

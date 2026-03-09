@@ -145,6 +145,20 @@ render json: result.to_h
 
 Performance improvements in batching execution come at the cost of removing support for many "nice-to-have" features in GraphQL-Ruby by default. Those features are addressed here.
 
+### Implicit Field Resolution
+
+The _default_, _implicit_ field resolution behavior has changed. Previously, when a field didn't have a specified method or hash key, GraphQL-Ruby would try a combination of `object.public_send(...)` and `object[...]` to resolve it. In `Execution::Next`, GraphQL-Ruby tries `object.public_send(field_sym)` unless another configuration is provided. This removes a lot of overhead from field execution.
+
+Consider a field like this:
+
+```ruby
+field :title, String
+```
+
+Previously, GraphQL-Ruby would check `type_object.respond_to?(:title)`, `object.respond_to?(:title)`, `object.is_a?(Hash)`. `object.key?(:title)` and `object.key?("title")`.
+
+Now, GraphQL-Ruby simply calls `object.title` and allows the `NoMethodError` to bubble up if one is raised.
+
 ### Query Analyzers, including complexity 🌕
 
 Support is identical; this runs before execution using the exact same code.
