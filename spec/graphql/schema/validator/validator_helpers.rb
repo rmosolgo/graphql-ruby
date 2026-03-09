@@ -32,7 +32,7 @@ module ValidatorHelpers
     end
 
     base_field = Class.new(GraphQL::Schema::Field) do
-      include GraphQL::Execution::Next::FieldCompatibility
+      # include GraphQL::Execution::Next::FieldCompatibility
       argument_class(base_argument)
     end
 
