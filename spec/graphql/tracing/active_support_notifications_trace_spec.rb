@@ -20,7 +20,6 @@ if testing_rails?
 
       class BaseObject < GraphQL::Schema::Object
         class BaseField < GraphQL::Schema::Field
-          # include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
         end
         field_class(BaseField)
       end
@@ -32,7 +31,7 @@ if testing_rails?
 
       class Query < BaseObject
         def self.authorized?(_o, _c); true; end
-        field :nameable, Nameable do
+        field :nameable, Nameable, resolve_legacy_instance_method: true do
           argument :id, ID, loads: Thing, as: :thing
         end
 

@@ -13,13 +13,12 @@ describe GraphQL::Tracing::DataDogTrace do
 
     class BaseObject < GraphQL::Schema::Object
       class BaseField < GraphQL::Schema::Field
-        # include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
       end
       field_class(BaseField)
     end
 
     class Thing < BaseObject
-      field :str, String
+      field :str, String, resolve_legacy_instance_method: true
 
       def str; Box.new("blah"); end
     end
@@ -28,16 +27,16 @@ describe GraphQL::Tracing::DataDogTrace do
       include GraphQL::Types::Relay::HasNodeField
       def self.authorized?(obj, ctx); true; end
 
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_legacy_instance_method: true
 
       def int
         1
       end
 
-      field :thing, Thing
+      field :thing, Thing, resolve_legacy_instance_method: true
       def thing; :thing; end
 
-      field :str, String
+      field :str, String, resolve_legacy_instance_method: true
       def str
         dataloader.with(EchoSource).load("hello")
       end

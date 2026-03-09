@@ -55,7 +55,6 @@ module Jazz
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
     argument_class BaseArgument
-    # include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     attr_reader :upcase
 
     def initialize(*args, **options, &block)
@@ -131,6 +130,7 @@ module Jazz
       type: ID,
       null: false,
       description: "A unique identifier for this object",
+      resolve_legacy_instance_method: true
     )
     upcased_field :upcased_id, ID, null: false, resolver_method: :id # upcase: true added by helper
 
@@ -177,7 +177,7 @@ module Jazz
 
     type_membership_class PrivateMembership
 
-    field :private_name, String, null: false
+    field :private_name, String, null: false, resolve_legacy_instance_method: true
 
     def private_name
       "private name"
@@ -198,7 +198,7 @@ module Jazz
   # test field inheritance
   class ObjectWithUpcasedName < BaseObject
     # Test extra arguments:
-    field :upcase_name, String, null: false, upcase: true
+    field :upcase_name, String, null: false, upcase: true, resolve_legacy_instance_method: true
 
     def upcase_name
       object.name # upcase is applied by the superclass
@@ -222,7 +222,7 @@ module Jazz
     field :formed_at, String, hash_key: "formedAtDate"
 
     # This overrides the visibility from PrivateNameEntity
-    field :overridden_name, String, null: false
+    field :overridden_name, String, null: false, resolve_legacy_instance_method: true
 
     def overridden_name
       @object.name.sub("Robert Glasper", "ROBERT GLASPER")
@@ -254,7 +254,7 @@ module Jazz
     implements NamedEntity
     implements GloballyIdentifiableType
 
-    field :upcased_id, ID, null: false
+    field :upcased_id, ID, null: false, resolve_legacy_instance_method: true
 
     def upcased_id
       GloballyIdentifiableType.to_id(object).upcase
@@ -283,7 +283,7 @@ module Jazz
     end
     field :favorite_key, Key
     # Test lists with nullable members:
-    field :inspect_context, [String, null: true], null: false
+    field :inspect_context, [String, null: true], null: false, resolve_legacy_instance_method: true
     field :add_error, String, null: false, extras: [:execution_errors]
 
     def inspect_context
@@ -302,7 +302,7 @@ module Jazz
   end
 
   class StylishMusician < Musician
-    field :sunglasses_type, String, null: false
+    field :sunglasses_type, String, null: false, resolve_legacy_instance_method: true
 
     def sunglasses_type
       "cool 😎"
@@ -384,33 +384,33 @@ module Jazz
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
-    field :find, GloballyIdentifiableType do
+    field :find, GloballyIdentifiableType, resolve_legacy_instance_method: true do
       argument :id, ID
     end
-    field :instruments, [InstrumentType], null: false do
+    field :instruments, [InstrumentType], null: false, resolve_legacy_instance_method: true do
       argument :family, Family, required: false
     end
-    field :inspect_input, [String], null: false do
+    field :inspect_input, [String], null: false, resolve_legacy_instance_method: true do
       argument :input, InspectableInput, custom: :ok
     end
-    field :inspect_key, InspectableKey, null: false do
+    field :inspect_key, InspectableKey, null: false, resolve_legacy_instance_method: true do
       argument :key, Key
     end
-    field :now_playing, PerformingAct, null: false
+    field :now_playing, PerformingAct, null: false, resolve_legacy_instance_method: true
 
     def now_playing; Models.data["Ensemble"].first; end
 
     # For asserting that the *resolver* object is initialized once:
     # `method_conflict_warning: false` tells graphql-ruby that exposing Object#object_id was intentional
     field :object_id, String, null: false, method_conflict_warning: false
-    field :inspect_context, [String], null: false
-    field :hashy_ensemble, Ensemble, null: false
+    field :inspect_context, [String], null: false, resolve_legacy_instance_method: true
+    field :hashy_ensemble, Ensemble, null: false, resolve_legacy_instance_method: true
 
-    field :echo_json, GraphQL::Types::JSON, null: false do
+    field :echo_json, GraphQL::Types::JSON, null: false, resolve_legacy_instance_method: true do
       argument :input, GraphQL::Types::JSON
     end
 
-    field :echo_first_json, GraphQL::Types::JSON, null: false do
+    field :echo_first_json, GraphQL::Types::JSON, null: false, resolve_legacy_instance_method: true do
       argument :input, [GraphQL::Types::JSON]
     end
 
@@ -500,8 +500,8 @@ module Jazz
       input.first
     end
 
-    field :hash_by_string, HashKeyTest, null: false
-    field :hash_by_sym, HashKeyTest, null: false
+    field :hash_by_string, HashKeyTest, null: false, resolve_legacy_instance_method: true
+    field :hash_by_sym, HashKeyTest, null: false, resolve_legacy_instance_method: true
 
     def hash_by_string
       {"falsey" => false}
@@ -511,13 +511,13 @@ module Jazz
       {falsey: false}
     end
 
-    field :named_entities, [NamedEntity, null: true], null: false
+    field :named_entities, [NamedEntity, null: true], null: false, resolve_legacy_instance_method: true
 
     def named_entities
       [Models.data["Ensemble"].first, nil]
     end
 
-    field :default_value_test, String, null: false do
+    field :default_value_test, String, null: false, resolve_legacy_instance_method: true do
       argument :arg_with_default, InspectableInput, required: false, default_value: { string_value: "S" }
     end
 
@@ -532,7 +532,7 @@ module Jazz
     field :complex_hash_key, String, null: false, hash_key: :'foo bar/fizz-buzz'
 
 
-    field :nullable_ensemble, Ensemble do
+    field :nullable_ensemble, Ensemble, resolve_legacy_instance_method: true do
       argument :ensemble_id, ID, required: false, loads: Ensemble
     end
 
@@ -810,7 +810,7 @@ module Jazz
       ens
     end
 
-    field :prepare_input, Integer, null: false do
+    field :prepare_input, Integer, null: false, resolve_legacy_instance_method: true do
       argument :input, Integer, prepare: :square, as: :squared_input
     end
 
