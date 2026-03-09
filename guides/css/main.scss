@@ -9,8 +9,8 @@ $brand-color-light:  #ed8090;
 $brand-color-extralight:  #f9e8ee;
 $dark-theme-brand-color-extralight:  #262324;
 
-$experimental-background: #fff7cf;
-$experimental-color: hsla(50, 100%, 32%, 0.15);
+$experimental-color: #fff7cf;
+$experimental-background: hsla(50, 100%, 32%, 0.15);
 
 $pro-color: #406db5;
 $pro-background: hsla(217, 100%, 29%, 0.15);
@@ -315,6 +315,7 @@ a:hover, a:hover code {
   }
   a {
     color: $color;
+    text-decoration: underline;
     &:hover {
       background-color: $color;
       color: $background-color;

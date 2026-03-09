@@ -138,7 +138,7 @@ describe GraphQL::Dataloader do
     end
 
     class BaseField < GraphQL::Schema::Field
-      include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+      include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     end
 
     class BaseObject < GraphQL::Schema::Object
@@ -496,7 +496,7 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Batching if TESTING_BATCHING
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     lazy_resolve Proc, :call
 
     class FieldTestError < StandardError; end
@@ -592,7 +592,7 @@ describe GraphQL::Dataloader do
 
     query(Query)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Batching if TESTING_BATCHING
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
   end
 
   module DataloaderAssertions
@@ -648,8 +648,8 @@ describe GraphQL::Dataloader do
         let(:parts_schema) { make_schema_from(PartsSchema) }
 
         def exec_query(query_string, schema: self.schema, context: nil, variables: nil)
-          if TESTING_BATCHING
-            schema.execute_batching(query_string, context: context, variables: variables)
+          if TESTING_EXEC_NEXT
+            schema.execute_next(query_string, context: context, variables: variables)
           else
             schema.execute(query_string, context: context, variables: variables)
           end
@@ -1147,7 +1147,7 @@ describe GraphQL::Dataloader do
             exec_query("{ testError }")
           end
           expected_message = "Field error"
-          if TESTING_BATCHING
+          if TESTING_EXEC_NEXT
             expected_message = "Resolving Query.testError: #{expected_message}"
           end
           assert_equal expected_message, err.message
@@ -1158,7 +1158,7 @@ describe GraphQL::Dataloader do
             exec_query("{ testError(source: true) }")
           end
           expected_message = "Source error on: [1]"
-          if TESTING_BATCHING
+          if TESTING_EXEC_NEXT
             expected_message = "Resolving Query.testError: #{expected_message}"
           end
           assert_equal expected_message, err.message
@@ -1254,11 +1254,11 @@ describe GraphQL::Dataloader do
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
             assert_equal(10, FiberCounting.last_spawn_fiber_count)
-            assert_last_max_fiber_count((TESTING_BATCHING ? 9 : 9), "No limit works as expected")
+            assert_last_max_fiber_count((TESTING_EXEC_NEXT ? 9 : 9), "No limit works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 11 : 12), FiberCounting.last_spawn_fiber_count)
+            assert_equal((TESTING_EXEC_NEXT ? 11 : 12), FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(4, "Limit of 4 works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })

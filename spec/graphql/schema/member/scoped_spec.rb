@@ -5,7 +5,7 @@ describe GraphQL::Schema::Member::Scoped do
   class ScopeSchema < GraphQL::Schema
     class BaseObject < GraphQL::Schema::Object
       class BaseField < GraphQL::Schema::Field
-        include GraphQL::Execution::Batching::FieldCompatibility if TESTING_BATCHING
+        include GraphQL::Execution::Next::FieldCompatibility if TESTING_EXEC_NEXT
       end
       field_class BaseField
     end
@@ -125,12 +125,12 @@ describe GraphQL::Schema::Member::Scoped do
 
     query(Query)
     lazy_resolve(Proc, :call)
-    use(GraphQL::Execution::Batching) if TESTING_BATCHING
+    use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
   end
 
   def exec_query(...)
-    if TESTING_BATCHING
-      ScopeSchema.execute_batching(...)
+    if TESTING_EXEC_NEXT
+      ScopeSchema.execute_next(...)
     else
       ScopeSchema.execute(...)
     end
@@ -315,7 +315,7 @@ describe GraphQL::Schema::Member::Scoped do
     class SkipAuthSchema < GraphQL::Schema
       class Book < GraphQL::Schema::Object
         class BaseField < GraphQL::Schema::Field
-          include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+          include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
         end
         field_class(BaseField)
 
@@ -369,12 +369,12 @@ describe GraphQL::Schema::Member::Scoped do
       end
 
       query(Query)
-      use(GraphQL::Execution::Batching) if TESTING_BATCHING
+      use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
     end
 
     def exec_skip_auth(...)
-      if TESTING_BATCHING
-        SkipAuthSchema.execute_batching(...)
+      if TESTING_EXEC_NEXT
+        SkipAuthSchema.execute_next(...)
       else
         SkipAuthSchema.execute(...)
       end

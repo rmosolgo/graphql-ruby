@@ -193,9 +193,9 @@ module GraphQL
       # @param resolver_method [Symbol] The method on the type to call to resolve this field (defaults to `name`)
       # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
       # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
-      # @param resolve_static [Symbol, nil] Used by {Schema.execute_batching} to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
-      # @param resolve_batch [Symbol, nil] Used by {Schema.execute_batching} map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
-      # @param resolve_each [Symbol, nil] Used by {Schema.execute_batching} to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
+      # @param resolve_static [Symbol, nil] Used by {Schema.execute_next} to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
+      # @param resolve_batch [Symbol, nil] Used by {Schema.execute_next} map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
+      # @param resolve_each [Symbol, nil] Used by {Schema.execute_next} to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
       # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
       # @param default_page_size [Integer, nil] For connections, the default number of items to return from this field, or `nil` to return unlimited results.
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
@@ -268,26 +268,26 @@ module GraphQL
         @resolver_method = (resolver_method || name_s).to_sym
 
         if resolve_static
-          @batch_mode = :resolve_static
-          @batch_mode_key = resolve_static == true ? @method_sym : resolve_static
+          @execution_next_mode = :resolve_static
+          @execution_next_mode_key = resolve_static == true ? @method_sym : resolve_static
         elsif resolve_batch
-          @batch_mode = :resolve_batch
-          @batch_mode_key = resolve_batch == true ? @method_sym : resolve_batch
+          @execution_next_mode = :resolve_batch
+          @execution_next_mode_key = resolve_batch == true ? @method_sym : resolve_batch
         elsif resolve_each
-          @batch_mode = :resolve_each
-          @batch_mode_key = resolve_each == true ? @method_sym : resolve_each
+          @execution_next_mode = :resolve_each
+          @execution_next_mode_key = resolve_each == true ? @method_sym : resolve_each
         elsif hash_key
-          @batch_mode = :hash_key
-          @batch_mode_key = hash_key
+          @execution_next_mode = :hash_key
+          @execution_next_mode_key = hash_key
         elsif dig
-          @batch_mode = :dig
-          @batch_mode_key = dig
+          @execution_next_mode = :dig
+          @execution_next_mode_key = dig
         elsif resolver_class
-          @batch_mode = :resolver_class
-          @batch_mode_key = resolver_class
+          @execution_next_mode = :resolver_class
+          @execution_next_mode_key = resolver_class
         else
-          @batch_mode = :direct_send
-          @batch_mode_key = @method_sym
+          @execution_next_mode = :direct_send
+          @execution_next_mode_key = @method_sym
         end
 
         @complexity = complexity
@@ -360,8 +360,8 @@ module GraphQL
         end
       end
 
-      # Called by {Execution::Batching} to resolve this field for each of `objects`
-      # @param field_resolve_step [Execution::Batching::FieldResolveStep] an internal metadata object from execution code
+      # Called by {Execution::Next} to resolve this field for each of `objects`
+      # @param field_resolve_step [Execution::Next::FieldResolveStep] an internal metadata object from execution code
       # @param objects [Array<Object>] Objects returned from previously-executed fields
       # @param context [GraphQL::Query::Context]
       # @param args_hash [Hash<Symbol => Object>] Ruby-style arguments for this field
@@ -369,36 +369,36 @@ module GraphQL
       # @see #initialize Use `resolve_static:`, `resolve_batch:`, `resolve_each:`, `hash_key:`, or `method:`
       # @api private
       def resolve_batch(field_resolve_step, objects, context, args_hash)
-        case @batch_mode
+        case @execution_next_mode
         when :resolve_batch
           if args_hash.empty?
-            @owner.public_send(@batch_mode_key, objects, context)
+            @owner.public_send(@execution_next_mode_key, objects, context)
           else
-            @owner.public_send(@batch_mode_key, objects, context, **args_hash)
+            @owner.public_send(@execution_next_mode_key, objects, context, **args_hash)
           end
         when :resolve_static
           result = if args_hash.empty?
-            @owner.public_send(@batch_mode_key, context)
+            @owner.public_send(@execution_next_mode_key, context)
           else
-            @owner.public_send(@batch_mode_key, context, **args_hash)
+            @owner.public_send(@execution_next_mode_key, context, **args_hash)
           end
           Array.new(objects.size, result)
         when :resolve_each
           if args_hash.empty?
-            objects.map { |o| @owner.public_send(@batch_mode_key, o, context) }
+            objects.map { |o| @owner.public_send(@execution_next_mode_key, o, context) }
           else
-            objects.map { |o| @owner.public_send(@batch_mode_key, o, context, **args_hash) }
+            objects.map { |o| @owner.public_send(@execution_next_mode_key, o, context, **args_hash) }
           end
         when :hash_key
-          objects.map { |o| o[@batch_mode_key] }
+          objects.map { |o| o[@execution_next_mode_key] }
         when :direct_send
           if args_hash.empty?
-            objects.map { |o| o.public_send(@batch_mode_key) }
+            objects.map { |o| o.public_send(@execution_next_mode_key) }
           else
-            objects.map { |o| o.public_send(@batch_mode_key, **args_hash) }
+            objects.map { |o| o.public_send(@execution_next_mode_key, **args_hash) }
           end
         when :dig
-          objects.map { |o| o.dig(*@batch_mode_key) }
+          objects.map { |o| o.dig(*@execution_next_mode_key) }
         when :resolver_class
           results = Array.new(objects.size, nil)
           ps = field_resolve_step.pending_steps ||= []
@@ -414,7 +414,7 @@ module GraphQL
           end
           results
         else
-          raise "Batching execution for #{path} not implemented (batch_mode: #{@batch_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
+          raise "Batching execution for #{path} not implemented (execution_next_mode: #{@execution_next_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
         end
       end
 
@@ -974,10 +974,10 @@ ERR
 
       public
 
-      def run_batching_extensions_before_resolve(objs, args, ctx, extended, idx: 0, &block)
+      def run_next_extensions_before_resolve(objs, args, ctx, extended, idx: 0, &block)
         extension = @extensions[idx]
         if extension
-          extension.resolve_batching(objects: objs, arguments: args, context: ctx) do |extended_objs, extended_args, memo|
+          extension.resolve_next(objects: objs, arguments: args, context: ctx) do |extended_objs, extended_args, memo|
             if memo
               memos = extended.memos ||= {}
               memos[idx] = memo
@@ -990,7 +990,7 @@ ERR
 
             extended.object = extended_objs
             extended.arguments = extended_args
-            run_batching_extensions_before_resolve(extended_objs, extended_args, ctx, extended, idx: idx + 1, &block)
+            run_next_extensions_before_resolve(extended_objs, extended_args, ctx, extended, idx: idx + 1, &block)
           end
         else
           yield(objs, args)

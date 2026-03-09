@@ -32,7 +32,7 @@ describe "GraphQL::Authorization" do
 
     class BaseField < GraphQL::Schema::Field
       argument_class BaseArgument
-      include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+      include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
 
       def visible?(context)
         super && (context[:hide] ? @name != "hidden" : true)
@@ -353,7 +353,7 @@ describe "GraphQL::Authorization" do
       mutation(Mutation)
       directive(Nothing)
       use GraphQL::Schema::Warden if ADD_WARDEN
-      use GraphQL::Execution::Batching if TESTING_BATCHING
+      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
@@ -387,8 +387,8 @@ describe "GraphQL::Authorization" do
   end
 
   def auth_execute(*args, **kwargs)
-    if TESTING_BATCHING
-      AuthTest::Schema.execute_batching(*args, **kwargs)
+    if TESTING_EXEC_NEXT
+      AuthTest::Schema.execute_next(*args, **kwargs)
     else
       AuthTest::Schema.execute(*args, **kwargs)
     end
@@ -536,7 +536,7 @@ describe "GraphQL::Authorization" do
       end
 
       # This switches on `context[:current_path]` which isn't implemented by Batching (yet?)
-      expected_message = if TESTING_BATCHING
+      expected_message = if TESTING_EXEC_NEXT
         "Resolving Query.landscapeFeature: `\"STREAM\"` was returned for `LandscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
       else
         "`Query.landscapeFeature` returned `\"STREAM\"` at `landscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."

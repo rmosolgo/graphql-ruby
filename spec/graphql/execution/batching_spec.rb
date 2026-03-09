@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
-require "graphql/execution/batching"
-describe "Batching Execution" do
+
+describe "Next Execution" do
   class NextExecutionSchema < GraphQL::Schema
     CLEAN_DATA = [
       OpenStruct.new(name: "Legumes", grows_in: ["SPRING", "🌻", "FALL"], species: [OpenStruct.new(name: "Snow Pea")]),
@@ -121,7 +121,7 @@ describe "Batching Execution" do
 
     query(Query)
     mutation(Mutation)
-    use GraphQL::Execution::Batching
+    use GraphQL::Execution::Next
 
     def self.resolve_type(abs_type, obj, ctx)
       if obj.respond_to?(:grows_in)
@@ -134,7 +134,7 @@ describe "Batching Execution" do
 
 
   def run_next(query_str, root_value: nil, variables: {})
-    NextExecutionSchema.execute_batching(query_str, context: {}, variables: variables, root_value: root_value)
+    NextExecutionSchema.execute_next(query_str, context: {}, variables: variables, root_value: root_value)
   end
 
   before do

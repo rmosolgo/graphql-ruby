@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 module GraphQL
   module Execution
-    module Batching
+    module Next
       module FieldCompatibility
         def resolve_batch(frs, objects, context, kwargs)
-          if @batch_mode && !:direct_send.equal?(@batch_mode)
+          if @execution_next_mode && !:direct_send.equal?(@execution_next_mode)
             return super
           end
 

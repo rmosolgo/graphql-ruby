@@ -1,15 +1,15 @@
 # frozen_string_literal: true
-require "graphql/execution/batching/prepare_object_step"
-require "graphql/execution/batching/field_compatibility"
-require "graphql/execution/batching/field_resolve_step"
-require "graphql/execution/batching/load_argument_step"
-require "graphql/execution/batching/runner"
-require "graphql/execution/batching/selections_step"
+require "graphql/execution/next/prepare_object_step"
+require "graphql/execution/next/field_compatibility"
+require "graphql/execution/next/field_resolve_step"
+require "graphql/execution/next/load_argument_step"
+require "graphql/execution/next/runner"
+require "graphql/execution/next/selections_step"
 module GraphQL
   module Execution
-    module Batching
+    module Next
       module SchemaExtension
-        def execute_batching(query_str = nil, context: nil, document: nil, variables: nil, root_value: nil, validate: true, visibility_profile: nil)
+        def execute_next(query_str = nil, context: nil, document: nil, variables: nil, root_value: nil, validate: true, visibility_profile: nil)
           multiplex_context = if context
             {
               backtrace: context[:backtrace],
@@ -30,24 +30,24 @@ module GraphQL
             root_value: root_value,
             visibility_profile: visibility_profile,
           }
-          m_results = multiplex_batching([query_opts], context: multiplex_context, max_complexity: nil)
+          m_results = multiplex_next([query_opts], context: multiplex_context, max_complexity: nil)
           m_results[0]
         end
 
-        def multiplex_batching(query_options, context: {}, max_complexity: self.max_complexity)
-          Batching.run_all(self, query_options, context: context, max_complexity: max_complexity)
+        def multiplex_next(query_options, context: {}, max_complexity: self.max_complexity)
+          Next.run_all(self, query_options, context: context, max_complexity: max_complexity)
         end
 
-        def batching_options
-          @batching_options || find_inherited_value(:batching_options, EmptyObjects::EMPTY_HASH)
+        def execution_next_options
+          @execution_next_options || find_inherited_value(:execution_next_options, EmptyObjects::EMPTY_HASH)
         end
 
-        attr_writer :batching_options
+        attr_writer :execution_next_options
       end
 
       def self.use(schema, authorization: true)
         schema.extend(SchemaExtension)
-        schema.batching_options = { authorization: authorization }
+        schema.execution_next_options = { authorization: authorization }
       end
 
       def self.run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
@@ -62,7 +62,7 @@ module GraphQL
           end
         end
         multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
-        runner = Runner.new(multiplex, **schema.batching_options)
+        runner = Runner.new(multiplex, **schema.execution_next_options)
         runner.execute
       end
     end

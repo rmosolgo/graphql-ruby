@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Execution
-    module Batching
+    module Next
       class FieldResolveStep
         def initialize(parent_type:, runner:, key:, selections_step:)
           @selections_step = selections_step
@@ -342,7 +342,7 @@ module GraphQL
           has_extensions = @field_definition.extensions.size > 0
           if has_extensions
             @extended = GraphQL::Schema::Field::ExtendedState.new(@arguments, authorized_objects)
-            @field_results = @field_definition.run_batching_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
+            @field_results = @field_definition.run_next_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
               if (added_extras = @extended.added_extras)
                 args = args.dup
                 added_extras.each { |e| args.delete(e) }
@@ -416,7 +416,7 @@ module GraphQL
               end
             else
               memo = memos[@finish_extension_idx]
-              @field_results = ext.after_resolve_batching(objects: @extended.object, arguments: @extended.arguments, context: ctx, values: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
+              @field_results = ext.after_resolve_next(objects: @extended.object, arguments: @extended.arguments, context: ctx, values: @field_results, memo: memo) # rubocop:disable Development/ContextIsPassedCop
             end
             @finish_extension_idx += 1
             if any_lazy_results?
@@ -589,7 +589,7 @@ module GraphQL
                 (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))
                 ) && @runner.authorizes?(runtime_type, @selections_step.query.context)
               )))
-            obj_step = Batching::PrepareObjectStep.new(
+            obj_step = PrepareObjectStep.new(
               static_type: @static_type,
               object: field_result,
               runner: @runner,

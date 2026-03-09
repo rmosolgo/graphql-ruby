@@ -22,6 +22,14 @@ module GraphQL
 
         # A shortcut method for loading many keys from a source.
         # Identical to `dataloader.with(source_class, *source_args).load_all(load_keys)`
+        #
+        # @example
+        #   field :score, Integer, resolve_batch: true
+        #
+        #   def self.score(posts)
+        #     dataload_all(PostScoreSource, posts.map(&:id))
+        #   end
+        #
         # @param source_class [Class<GraphQL::Dataloader::Source>]
         # @param source_args [Array<Object>] Any extra parameters defined in `source_class`'s `initialize` method
         # @param load_keys [Array<Object>] The keys to look up using `def fetch`

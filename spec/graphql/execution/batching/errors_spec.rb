@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "spec_helper"
-require "graphql/execution/batching"
 
 class ErrorResultFormatterTest < Minitest::Test
   class HashKeyResolver
@@ -43,8 +42,8 @@ class ErrorResultFormatterTest < Minitest::Test
 
   def exec_test(schema_str, query_str, data)
     schema = GraphQL::Schema.from_definition(schema_str, default_resolve: DefaultResolve)
-    schema.use(GraphQL::Execution::Batching)
-    schema.execute_batching(query_str, root_value: data)
+    schema.use(GraphQL::Execution::Next)
+    schema.execute_next(query_str, root_value: data)
   end
 
   def test_basic_object_structure

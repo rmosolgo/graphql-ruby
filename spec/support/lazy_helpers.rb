@@ -51,7 +51,7 @@ module LazyHelpers
 
   class BaseObject < GraphQL::Schema::Object
     class BaseField < GraphQL::Schema::Field
-      include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+      include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     end
     field_class(BaseField)
   end
@@ -189,7 +189,7 @@ module LazyHelpers
     lazy_resolve(SumAll, :value)
     trace_with(SumAllInstrumentation2)
     trace_with(SumAllInstrumentation)
-    use(GraphQL::Execution::Batching) if TESTING_BATCHING
+    use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
 
     def self.sync_lazy(lazy)
       if lazy.is_a?(SumAll) && lazy.own_value > 1000
@@ -202,8 +202,8 @@ module LazyHelpers
   end
 
   def run_query(query_str, **rest)
-    if TESTING_BATCHING
-      LazySchema.execute_batching(query_str, **rest)
+    if TESTING_EXEC_NEXT
+      LazySchema.execute_next(query_str, **rest)
     else
       LazySchema.execute(query_str, **rest)
     end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Execution
-    module Batching
+    module Next
       class SelectionsStep
         def initialize(parent_type:, selections:, objects:, results:, runner:, query:, path:)
           @path = path

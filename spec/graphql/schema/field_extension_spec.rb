@@ -8,7 +8,7 @@ describe GraphQL::Schema::FieldExtension do
         value * 2
       end
 
-      def after_resolve_batching(objects:, values:, arguments:, context:, memo:)
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
         values.map { |v| v * 2 }
       end
     end
@@ -18,7 +18,7 @@ describe GraphQL::Schema::FieldExtension do
         value**options.fetch(:power, 2)
       end
 
-      def after_resolve_batching(objects:, values:, arguments:, context:, memo:)
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
         values.map { |v| v**options.fetch(:power,2) }
       end
     end
@@ -28,7 +28,7 @@ describe GraphQL::Schema::FieldExtension do
         value * options[:factor]
       end
 
-      def after_resolve_batching(objects:, values:, arguments:, context:, memo:)
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
         values.map { |v| v * options[:factor] }
       end
     end
@@ -43,7 +43,7 @@ describe GraphQL::Schema::FieldExtension do
         yield(object, arguments, factor)
       end
 
-      def resolve_batching(objects:, arguments:, context:)
+      def resolve_next(objects:, arguments:, context:)
         factor = arguments[:factor]
         yield(objects, arguments, factor)
       end
@@ -52,7 +52,7 @@ describe GraphQL::Schema::FieldExtension do
         value * memo
       end
 
-      def after_resolve_batching(objects:, values:, arguments:, context:, memo:)
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
         values.map { |v| v * memo }
       end
     end
@@ -70,7 +70,7 @@ describe GraphQL::Schema::FieldExtension do
         result * factor
       end
 
-      def resolve_batching(objects:, arguments:, context:)
+      def resolve_next(objects:, arguments:, context:)
         results = yield(objects, arguments)
         factor = arguments[:factor]
         results.map { |r| r * factor }
@@ -88,7 +88,7 @@ describe GraphQL::Schema::FieldExtension do
         yield(object, new_arguments, { original_arguments: arguments})
       end
 
-      def resolve_batching(objects:, arguments:, context:)
+      def resolve_next(objects:, arguments:, context:)
         new_arguments = arguments.dup
         new_arguments.delete(:factor)
         yield(objects, new_arguments, { original_arguments: arguments})
@@ -99,7 +99,7 @@ describe GraphQL::Schema::FieldExtension do
         value * f
       end
 
-      def after_resolve_batching(objects:, values:, arguments:, context:, memo:)
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
         f = memo[:original_arguments][:factor]
         values.map { |v| v * f }
       end
@@ -112,7 +112,7 @@ describe GraphQL::Schema::FieldExtension do
         yield(object, new_args)
       end
 
-      def resolve_batching(objects:, arguments:, **_rest)
+      def resolve_next(objects:, arguments:, **_rest)
         new_args = arguments.dup
         new_args[:extended] = true
         yield(objects, new_args)
@@ -123,7 +123,7 @@ describe GraphQL::Schema::FieldExtension do
         value
       end
 
-      def after_resolve_batching(objects:, values:, arguments:, context:, memo:)
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
         context[:extended_args] = arguments[:extended]
         values
       end
@@ -134,7 +134,7 @@ describe GraphQL::Schema::FieldExtension do
         options[:shortcut_value]
       end
 
-      def resolve_batching(objects:, **args)
+      def resolve_next(objects:, **args)
         Array.new(objects.size, options[:shortcut_value])
       end
     end
@@ -144,7 +144,7 @@ describe GraphQL::Schema::FieldExtension do
         object.class.name
       end
 
-      def resolve_batching(objects:, **_args)
+      def resolve_next(objects:, **_args)
         objects.map { |o| o.class.name }
       end
 
@@ -152,7 +152,7 @@ describe GraphQL::Schema::FieldExtension do
         [object.class.name, value]
       end
 
-      def after_resolve_batching(objects:, values:, **_args)
+      def after_resolve_next(objects:, values:, **_args)
         objects.map.with_index { |o, i| [o.class.name, values[i]] }
       end
     end
@@ -167,7 +167,7 @@ describe GraphQL::Schema::FieldExtension do
           1
         end
 
-        def resolve_batching(**_args)
+        def resolve_next(**_args)
           1
         end
       end
@@ -175,7 +175,7 @@ describe GraphQL::Schema::FieldExtension do
 
     class BaseObject < GraphQL::Schema::Object
       class BaseField < GraphQL::Schema::Field
-        include GraphQL::Execution::Batching::FieldCompatibility if TESTING_BATCHING
+        include GraphQL::Execution::Next::FieldCompatibility if TESTING_EXEC_NEXT
       end
       field_class(BaseField)
     end
@@ -243,13 +243,13 @@ describe GraphQL::Schema::FieldExtension do
 
     class Schema < GraphQL::Schema
       query(Query)
-      use GraphQL::Execution::Batching if TESTING_BATCHING
+      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     end
   end
 
   def exec_query(query_str, **kwargs)
-    if TESTING_BATCHING
-      FilterTestSchema::Schema.execute_batching(query_str, **kwargs)
+    if TESTING_EXEC_NEXT
+      FilterTestSchema::Schema.execute_next(query_str, **kwargs)
     else
       FilterTestSchema::Schema.execute(query_str, **kwargs)
     end
@@ -258,7 +258,7 @@ describe GraphQL::Schema::FieldExtension do
   describe "object" do
     it "is the schema type object" do
       res = exec_query("{ objectClassTest }", root_value: Object.new)
-      if TESTING_BATCHING
+      if TESTING_EXEC_NEXT
         assert_equal ["Object", "Object"], res["data"]["objectClassTest"]
       else
         assert_equal ["FilterTestSchema::Query", "FilterTestSchema::Query"], res["data"]["objectClassTest"]

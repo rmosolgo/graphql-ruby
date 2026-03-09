@@ -95,7 +95,7 @@ describe GraphQL::Schema::Resolver do
         "#{options[:greeting]}, #{name}!"
       end
 
-      def resolve_batching(objects:, arguments:, **rest)
+      def resolve_next(objects:, arguments:, **rest)
         names = yield(objects, arguments)
         names.map { |n| "#{options[:greeting]}, #{n}!" }
       end
@@ -238,7 +238,7 @@ describe GraphQL::Schema::Resolver do
 
     class BaseObject < GraphQL::Schema::Object
       class BaseField < GraphQL::Schema::Field
-        include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+        include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
       end
       field_class(BaseField)
     end
@@ -514,7 +514,7 @@ describe GraphQL::Schema::Resolver do
       mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
-      use GraphQL::Execution::Batching if TESTING_BATCHING
+      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
 
       def self.object_from_id(id, ctx)
         if id == "invalid"
@@ -535,8 +535,8 @@ describe GraphQL::Schema::Resolver do
   end
 
   def exec_query(*args, **kwargs)
-    if TESTING_BATCHING
-      ResolverTest::Schema.execute_batching(*args, **kwargs)
+    if TESTING_EXEC_NEXT
+      ResolverTest::Schema.execute_next(*args, **kwargs)
     else
       ResolverTest::Schema.execute(*args, **kwargs)
     end
@@ -581,7 +581,7 @@ describe GraphQL::Schema::Resolver do
   end
 
   it "uses the object's field_class" do
-    if TESTING_BATCHING
+    if TESTING_EXEC_NEXT
       skip "This tests that Field#resolve is called, which it isn't."
     end
     res = exec_query " { r1: resolver3(value: 1) r2: resolver3 }"
@@ -601,7 +601,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "gets path from extras" do
-      if TESTING_BATCHING
+      if TESTING_EXEC_NEXT
         skip "path isn't supported with Batching"
       end
       res = exec_query " { resolverWithPath } ", root_value: OpenStruct.new(value: 0)
@@ -802,7 +802,7 @@ describe GraphQL::Schema::Resolver do
       assert_equal ResolverTest::HasValue, arg.loads
     end
 
-    if !TESTING_BATCHING
+    if !TESTING_EXEC_NEXT
       describe "ready?" do
         it "can raise errors" do
           res = exec_query("{ int: prepResolver5(int: 5) }")
@@ -842,7 +842,7 @@ describe GraphQL::Schema::Resolver do
     describe "loading arguments" do
       it "calls load methods and injects the return value" do
         res = exec_query("{ prepResolver1(int: 5) }")
-        if TESTING_BATCHING
+        if TESTING_EXEC_NEXT
           assert_equal 5, res["data"]["prepResolver1"], "def load_\#{...} was not called"
         else
           assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
@@ -851,7 +851,7 @@ describe GraphQL::Schema::Resolver do
 
       it "supports lazy values" do
         res = exec_query("{ prepResolver2(int: 5) }")
-        if TESTING_BATCHING
+        if TESTING_EXEC_NEXT
           assert_equal 5, res["data"]["prepResolver2"], "def load_\#{...} was not called"
         else
           assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
@@ -861,14 +861,14 @@ describe GraphQL::Schema::Resolver do
       it "supports raising GraphQL::UnauthorizedError and GraphQL::ExecutionError" do
         res = exec_query("{ prepResolver3(int: 5) }")
         assert_equal 5, res["data"]["prepResolver3"]
-        skip("def load_... not supported") if TESTING_BATCHING
+        skip("def load_... not supported") if TESTING_EXEC_NEXT
         add_error_assertions("prepResolver3", "load_ hook")
       end
 
       it "supports raising errors from promises" do
         res = exec_query("{ prepResolver4(int: 5) }")
         assert_equal 5, res["data"]["prepResolver4"]
-        skip("def load_... not supported") if TESTING_BATCHING
+        skip("def load_... not supported") if TESTING_EXEC_NEXT
         add_error_assertions("prepResolver4", "lazy load_ hook")
       end
     end
@@ -943,7 +943,7 @@ describe GraphQL::Schema::Resolver do
           context = { max_value: 8 }
           res = exec_query(query_str, context: context)
           assert_nil res["data"]["prepResolver9"]
-          if TESTING_BATCHING
+          if TESTING_EXEC_NEXT
             # context[:current_path] isn't defined, uses field.path instead
             assert_equal ["Unauthorized IntegerWrapper loaded for Query.prepResolver9"], res["errors"].map { |e| e["message"] }
           else

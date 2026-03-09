@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Execution
-    module Batching
+    module Next
       class LoadArgumentStep
         def initialize(field_resolve_step:, arguments:, load_receiver:, argument_value:, argument_definition:, argument_key:)
           @field_resolve_step = field_resolve_step

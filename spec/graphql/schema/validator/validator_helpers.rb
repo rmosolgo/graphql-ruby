@@ -32,7 +32,7 @@ module ValidatorHelpers
     end
 
     base_field = Class.new(GraphQL::Schema::Field) do
-      include GraphQL::Execution::Batching::FieldCompatibility
+      include GraphQL::Execution::Next::FieldCompatibility
       argument_class(base_argument)
     end
 
@@ -116,15 +116,15 @@ module ValidatorHelpers
       schema.use(GraphQL::Schema::Visibility)
     end
 
-    if TESTING_BATCHING
-      schema.use(GraphQL::Execution::Batching)
+    if TESTING_EXEC_NEXT
+      schema.use(GraphQL::Execution::Next)
     end
     @current_schema = schema
   end
 
   def exec_query(...)
-    if TESTING_BATCHING
-      @current_schema.execute_batching(...)
+    if TESTING_EXEC_NEXT
+      @current_schema.execute_next(...)
     else
       @current_schema.execute(...)
     end
@@ -137,8 +137,8 @@ module ValidatorHelpers
         it "#{name}#{validator_name} on #{field_type} works with #{expectation[:config]}" do
           schema = build_schema(field_type, { validator_name => expectation[:config] })
           expectation[:cases].each do |test_case|
-            result = if TESTING_BATCHING
-              schema.execute_batching(test_case[:query], variables: test_case[:variables])
+            result = if TESTING_EXEC_NEXT
+              schema.execute_next(test_case[:query], variables: test_case[:variables])
             else
               schema.execute(test_case[:query], variables: test_case[:variables])
             end
