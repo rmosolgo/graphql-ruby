@@ -233,27 +233,27 @@ One schema can run _both_ legacy execution and batching execution. This enable a
 
 Performance improvements in batching execution come at the cost of removing support for many "nice-to-have" features in GraphQL-Ruby by default. Those features are addressed here.
 
-### Query Analyzers, including complexity ✅
+### Query Analyzers, including complexity
 
 Support is identical; this runs before execution using the exact same code.
 
 TODO: accessing loaded arguments inside analzyers may turn out to be slightly different; it still calls legacy code.
 
-### Authorization, Scoping ✅
+### Authorization, Scoping
 
 Full compatibility. `def (self.)authorized?` and `def self.scope_items` will be called as needed during execution.
 
-### Visibility, including Changesets ✅
+### Visibility, including Changesets
 
 Visibility works exactly as before; both runtime modules call the same methods to get type information from the schema.
 
-### Dataloader ✅
+### Dataloader 🌕
 
-Dataloader runs with new execution, but batching
+Dataloader runs with new execution, but batching is different in some cases
 
 TODO document those cases, consider better future compatibility.
 
-### Tracing ✅
+### Tracing
 
 Fully supported, but some legacy hooks are _not_ called. Implement the new hooks instead (existing runtime already calls these new hooks). Not called are:
 
@@ -281,27 +281,27 @@ This depends on `current_path` so isn't possible yet.
 
 Actually this probably works but I haven't tested it.
 
-## Custom Directives
+## Custom Directives ❌
 
 Not supported yet. This will need some new kind of integration.
 
-### Argument `as:` ✅
+### Argument `as:`
 
 `as:` is applied: arguments are passed into Ruby methods by their `as:` names instead of their GraphQL names.
 
-### Argument `loads:` ❌
+### Argument `loads:`
 
-TODO: supporting this will be possible with some opt-in code. Legacy support is also implemented but not documented
+`loads:` is handled as previously, __except__ that custom `def load_...` methods are _not_ called.
 
-### Argument `prepare:` ❌
+### Argument `prepare:`
 
-Possible but not implemented. Legacy support is implemented I believe.
+These methods/procs are called.
 
 ### Argument `validates:` ❌
 
-Partial support is possible, `obj` will not be given to `validates:` anymore maybe?
+Built-in validators are supported. Custom validators will always receive `nil` as the `object`. (`object` is no longer available; this API will probably change before this is fully released.)
 
-### Field Extensions ✅
+### Field Extensions
 
 Field extensions _are_ called, but it uses new methods:
 
@@ -310,11 +310,11 @@ Field extensions _are_ called, but it uses new methods:
 
 Because of their close integration with the runtime, `ConnectionExtension` and `ScopeExtension` don't actually use `after_resolve_batching`. Instead, support is hard-coded inside the runtime. This might be a smell that field extensions aren't worth supporting.
 
-### Resolver classes (including Mutations and Subscriptions) ❌
+### Resolver classes (including Mutations and Subscriptions)
 
-This should be supported somehow; legacy support is present now
+Resolver classes are called.
 
-### Field `extras:`, including `lookahead` ✅
+### Field `extras:`, including `lookahead`
 
 `:ast_node` and `:lookahead` are already implemented. Others are possible -- please raise an issue if you need one. `extras: [:current_path]` is not possible.
 
@@ -324,16 +324,16 @@ Supported but requires a manual opt-in at schema level. TODO: clean up the opt-i
 
 ### Errors and `rescue_from` ❌
 
-TODO: support is possible here but not tested
+TODO: support is mostly in place here but not thoroughly tested
 
 - rescue_from handlers
 - raising GraphQL::ExecutionError
 - Schema class error handling hooks
 
-### Connection fields ✅
+### Connection fields
 
 Connection arguments are automatically handled and connection wrapper objects are automatically applied to arrays and relations.
 
-### Custom Introspection ✅
+### Custom Introspection
 
 This _works_ but if you want custom authorization or any lazy values, see notes about that compatibility.

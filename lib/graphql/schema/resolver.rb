@@ -73,6 +73,7 @@ module GraphQL
         end
 
         result = if is_authed
+          Schema::Validator.validate!(self.class.validators, object, context, @prepared_arguments, as: @field)
           call_resolve(@prepared_arguments)
         else
           new_return_value
