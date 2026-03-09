@@ -19,7 +19,6 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class BaseField < GraphQL::Schema::Field
-      # include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     end
 
     class BaseObject < GraphQL::Schema::Object
@@ -33,9 +32,9 @@ describe GraphQL::Execution::Interpreter do
 
     class Expansion < BaseObject
       field :sym, String, null: false
-      field :lazy_sym, String, null: false
+      field :lazy_sym, String, null: false, resolve_legacy_instance_method: true
       field :name, String, null: false
-      field :cards, ["InterpreterTest::Card"], null: false
+      field :cards, ["InterpreterTest::Card"], null: false, resolve_legacy_instance_method: true
 
       def self.authorized?(expansion, ctx)
         if expansion.sym == "NOPE"
@@ -53,7 +52,7 @@ describe GraphQL::Execution::Interpreter do
         Box.new(value: object.sym)
       end
 
-      field :always_cached_value, Integer, null: false
+      field :always_cached_value, Integer, null: false, resolve_legacy_instance_method: true
       def always_cached_value
         raise "should never be called"
       end
@@ -62,13 +61,13 @@ describe GraphQL::Execution::Interpreter do
     class Card < BaseObject
       field :name, String, null: false
       field :colors, "[InterpreterTest::Color]", null: false
-      field :expansion, Expansion, null: false
+      field :expansion, Expansion, null: false, resolve_legacy_instance_method: true
 
       def expansion
         Query::EXPANSIONS.find { |e| e.sym == @object.expansion_sym }
       end
 
-      field :parent_class_name, String, null: false, extras: [:parent]
+      field :parent_class_name, String, null: false, extras: [:parent], resolve_legacy_instance_method: true
 
       def parent_class_name(parent:)
         parent.class.name
@@ -94,10 +93,10 @@ describe GraphQL::Execution::Interpreter do
     class FieldCounter < BaseObject
       implements GraphQL::Types::Relay::Node
 
-      field :field_counter, FieldCounter, null: false
+      field :field_counter, FieldCounter, null: false, resolve_legacy_instance_method: true
       def field_counter; self.class.generate_tag(context); end
 
-      field :calls, Integer, null: false do
+      field :calls, Integer, null: false, resolve_legacy_instance_method: true do
         argument :expected, Integer
       end
 
@@ -158,7 +157,7 @@ describe GraphQL::Execution::Interpreter do
         Box.new(value: true)
       end
 
-      field :card, Card do
+      field :card, Card, resolve_legacy_instance_method: true do
         argument :name, String
       end
 
@@ -166,7 +165,7 @@ describe GraphQL::Execution::Interpreter do
         Box.new(value: CARDS.find { |c| c.name == name })
       end
 
-      field :expansion, Expansion do
+      field :expansion, Expansion, resolve_legacy_instance_method: true do
         argument :sym, String
       end
 
@@ -174,19 +173,19 @@ describe GraphQL::Execution::Interpreter do
         EXPANSIONS.find { |e| e.sym == sym }
       end
 
-      field :expansion_raw, Expansion, null: false
+      field :expansion_raw, Expansion, null: false, resolve_legacy_instance_method: true
 
       def expansion_raw
         raw_value(sym: "RAW", name: "Raw expansion", always_cached_value: 42)
       end
 
-      field :expansion_mixed, [Expansion], null: false
+      field :expansion_mixed, [Expansion], null: false, resolve_legacy_instance_method: true
 
       def expansion_mixed
         expansions + [expansion_raw]
       end
 
-      field :expansions, [Expansion], null: false
+      field :expansions, [Expansion], null: false, resolve_legacy_instance_method: true
       def expansions
         EXPANSIONS
       end
@@ -206,7 +205,7 @@ describe GraphQL::Execution::Interpreter do
         ExpansionData.new(name: nil, sym: "NOPE"),
       ]
 
-      field :find, [Entity], null: false do
+      field :find, [Entity], null: false, resolve_legacy_instance_method: true do
         argument :id, [ID]
       end
 
@@ -217,7 +216,7 @@ describe GraphQL::Execution::Interpreter do
         end
       end
 
-      field :find_many, [Entity, null: true], null: false do
+      field :find_many, [Entity, null: true], null: false, resolve_legacy_instance_method: true do
         argument :ids, [ID]
       end
 
@@ -225,7 +224,7 @@ describe GraphQL::Execution::Interpreter do
         find(id: ids).map { |e| Box.new(value: e) }
       end
 
-      field :field_counter, FieldCounter, null: false
+      field :field_counter, FieldCounter, null: false, resolve_legacy_instance_method: true
       def field_counter; FieldCounter.generate_tag(context) ; end
 
       include GraphQL::Types::Relay::HasNodeField
@@ -236,7 +235,7 @@ describe GraphQL::Execution::Interpreter do
         field :current_path, [String]
       end
 
-      field :nested_query, NestedQueryResult do
+      field :nested_query, NestedQueryResult, resolve_legacy_instance_method: true do
         argument :query, String
       end
 
@@ -250,44 +249,38 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class Counter < BaseObject
-      field :value, Integer, null: false
+      field :value, Integer, null: false, resolve_each: true
 
-      def value
-        counter.value
+      def self.value(object, context)
+        object[:counter].value
       end
 
-      field :lazy_value, Integer, null: false
+      def value
+        self.class.value(object, context)
+      end
+
+      field :lazy_value, Integer, null: false, resolve_legacy_instance_method: true
 
       def lazy_value
-        Box.new { counter.value }
+        Box.new { object[:counter].value }
       end
 
       field :incremented_value, Integer, hash_key: :incremented_value
 
-      field :increment, Counter, null: false
+      field :increment, Counter, null: false, resolve_legacy_instance_method: true
 
       def increment
+        counter = object[:counter]
         v = counter.value += 1
         {
           counter: counter,
           incremented_value: v,
         }
       end
-
-
-      private
-
-      def counter
-        if object.is_a?(Hash) && object.key?(:counter)
-          object[:counter]
-        else
-          object
-        end
-      end
     end
 
     class Mutation < BaseObject
-      field :increment_counter, Counter, null: false
+      field :increment_counter, Counter, null: false, resolve_legacy_instance_method: true
 
       def increment_counter
         counter = context[:counter]
