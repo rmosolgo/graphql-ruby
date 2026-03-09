@@ -2,6 +2,7 @@
 require "graphql"
 ADD_WARDEN = false
 TESTING_EXEC_NEXT = !!ENV["GRAPHQL_FUTURE"]
+TESTING_METHOD = !!ENV["TEST_METHOD"]
 require "jazz"
 require "benchmark/ips"
 require "stackprof"
@@ -269,33 +270,49 @@ module GraphQLBenchmark
     schema = ProfileLargeResult::Schema
     schema.use(GraphQL::Dataloader)
     document = ProfileLargeResult::ALL_FIELDS
-    Benchmark.ips do |x|
-      x.config(time: 5)
-      x.report("exec #{ProfileLargeResult::DATA.size} objects") {
-        schema.execute(document: document)
-      }
-      x.report("exec_next #{ProfileLargeResult::DATA.size} objects") {
-        schema.execute_next(document: document)
-      }
-    end
+    method_document = ProfileLargeResult::ALL_METHOD_FIELDS
+
     r1 = schema.execute_next(document: document)
     r2 = schema.execute(document: document)
     if r1 != r2
-      raise "Result mismatch:\n\n#{r1.inspect}\n\n#{r2.inspect}"
+      raise "Legacy vs next mismatch"
     end
 
+    r3 = schema.execute_next(document: method_document)
+    if r1 != r3
+      raise "Method vs non-method mismatch"
+    end
+    Benchmark.ips do |x|
+      x.config(time: 5)
+      x.report("exec ") {
+        schema.execute(document: document)
+      }
+      x.report("exec method") {
+        schema.execute(document: method_document)
+      }
+      x.report("exec_next") {
+        schema.execute_next(document: document)
+      }
+      x.report("exec_next method") {
+        schema.execute_next(document: method_document)
+      }
+      x.compare!
+    end
+
+
     exec_method = TESTING_EXEC_NEXT ? :execute_next : :execute
+    exec_doc = TESTING_METHOD ? method_document : document
     result = StackProf.run(mode: :wall, interval: 1) do
-      schema.public_send(exec_method, document: document)
+      schema.public_send(exec_method, document: exec_doc)
     end
     StackProf::Report.new(result).print_text
 
     StackProf.run(mode: :wall, interval: 1, out: "tmp/stackprof.dump") do
-      schema.public_send(exec_method, document: document)
+      schema.public_send(exec_method, document: exec_doc)
     end
 
     report = MemoryProfiler.report do
-      schema.public_send(exec_method, document: document)
+      schema.public_send(exec_method, document: exec_doc)
     end
 
     report.pretty_print
@@ -408,59 +425,101 @@ module GraphQLBenchmark
     class ExampleExtension < GraphQL::Schema::FieldExtension
     end
 
-    class FooType < GraphQL::Schema::Object
-      implements Baz
-      field :id, ID, null: false, extensions: [ExampleExtension], hash_key: :id
-      field :int1, Integer, null: false, extensions: [ExampleExtension], hash_key: :int1
-      field :int2, Integer, null: false, extensions: [ExampleExtension], hash_key: :int2
-      field :string1, String, null: false, hash_key: :string1 do
-        argument :arg1, String, required: false
-        argument :arg2, String, required: false
-        argument :arg3, String, required: false
-        argument :arg4, String, required: false
-      end
+    def self.generate_foo_type(name, config_key)
+      Class.new(GraphQL::Schema::Object) do
+        graphql_name(name)
+        implements Baz
+        field :id, GraphQL::Types::ID, null: false, extensions: [ExampleExtension], config_key => :id
+        def id
+          object[:id]
+        end
 
-      field :string2, String, null: false, hash_key: :string2 do
-        argument :arg1, String, required: false
-        argument :arg2, String, required: false
-        argument :arg3, String, required: false
-        argument :arg4, String, required: false
-      end
+        field :int1, Integer, null: false, extensions: [ExampleExtension], config_key => :int1
 
-      field :boolean1, Boolean, null: false, hash_key: :boolean1 do
-        argument :arg1, String, required: false
-        argument :arg2, String, required: false
-        argument :arg3, String, required: false
-        argument :arg4, String, required: false
-      end
-      field :boolean2, Boolean, null: false, hash_key: :boolean2 do
-        argument :arg1, String, required: false
-        argument :arg2, String, required: false
-        argument :arg3, String, required: false
-        argument :arg4, String, required: false
-      end
+        def int1
+          object[:int1]
+        end
 
-      field :foos, [FooType], null: false, description: "Return a list of Foo objects", resolve_legacy_instance_method: true do
-        argument :first, Integer, default_value: DATA_SIZE
-      end
+        field :int2, Integer, null: false, extensions: [ExampleExtension], config_key => :int2
 
-      def foos(first:)
-        DATA.first(first)
-      end
+        def int2
+          object[:int2]
+        end
 
-      field :foo, FooType, resolve_legacy_instance_method: true
-      def foo
-        DATA.sample
+        field :string1, String, null: false, config_key => :string1 do
+          argument :arg1, String, required: false
+          argument :arg2, String, required: false
+          argument :arg3, String, required: false
+          argument :arg4, String, required: false
+        end
+
+        def string1(...)
+          object[:string1]
+        end
+
+        field :string2, String, null: false, config_key => :string2 do
+          argument :arg1, String, required: false
+          argument :arg2, String, required: false
+          argument :arg3, String, required: false
+          argument :arg4, String, required: false
+        end
+
+        def string2(...)
+          object[:string2]
+        end
+
+        field :boolean1, GraphQL::Types::Boolean, null: false, config_key => :boolean1 do
+          argument :arg1, String, required: false
+          argument :arg2, String, required: false
+          argument :arg3, String, required: false
+          argument :arg4, String, required: false
+        end
+
+        def boolean1(...)
+          object[:boolean1]
+        end
+
+        field :boolean2, GraphQL::Types::Boolean, null: false, config_key => :boolean2 do
+          argument :arg1, String, required: false
+          argument :arg2, String, required: false
+          argument :arg3, String, required: false
+          argument :arg4, String, required: false
+        end
+
+        def boolean2(...)
+          object[:boolean2]
+        end
+
+        field :foos, [self], null: false, description: "Return a list of Foo objects", resolve_legacy_instance_method: true do
+          argument :first, Integer, default_value: DATA_SIZE
+        end
+
+        def foos(first:)
+          DATA.first(first)
+        end
+
+        field :foo, self, resolve_legacy_instance_method: true
+        def foo
+          DATA.sample
+        end
       end
     end
+
+    FooType = generate_foo_type("Foo", :hash_key)
+    FooMethodType = generate_foo_type("MethodFoo", :resolve_legacy_instance_method)
 
     class QueryType < GraphQL::Schema::Object
       description "Query root of the system"
       field :foos, [FooType], null: false, description: "Return a list of Foo objects", resolve_legacy_instance_method: true do
         argument :first, Integer, default_value: DATA_SIZE
       end
+
       def foos(first:)
         DATA.first(first)
+      end
+
+      field :method_foos, [FooMethodType], null: false, resolver_method: :foos, resolve_legacy_instance_method: :foos do
+        argument :first, Integer, default_value: DATA_SIZE
       end
     end
 
@@ -476,6 +535,23 @@ module GraphQLBenchmark
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL
       query($skip: Boolean = false) {
         foos {
+          id @skip(if: $skip)
+          int1
+          int2
+          string1
+          string2
+          boolean1
+          boolean2
+          stringArray
+          intArray
+          booleanArray
+        }
+      }
+    GRAPHQL
+
+    ALL_METHOD_FIELDS = GraphQL.parse <<-GRAPHQL
+      query($skip: Boolean = false) {
+        foos: methodFoos {
           id @skip(if: $skip)
           int1
           int2
