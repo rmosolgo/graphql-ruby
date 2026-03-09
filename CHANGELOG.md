@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 2.5.21
+
+### New features
+
+- Continue building `Execution::Next` #5553 #5562 #5563 #5566 #5569 #5570 #5571
+
+### Bug fixes
+
+- `Schema.from_definition`: fix field calls when all arguments come from extras #5557
+
 # 2.5.20 (23 Feb 2026)
 
 - `DetailedTrace`: Handle inspecting instances of anonymous classes #5530
