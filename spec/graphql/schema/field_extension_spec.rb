@@ -175,41 +175,40 @@ describe GraphQL::Schema::FieldExtension do
 
     class BaseObject < GraphQL::Schema::Object
       class BaseField < GraphQL::Schema::Field
-        # include GraphQL::Execution::Next::FieldCompatibility if TESTING_EXEC_NEXT
       end
       field_class(BaseField)
     end
 
     class Query < BaseObject
-      field :doubled, Integer, null: false, resolver_method: :pass_thru do
+      field :doubled, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru do
         extension(DoubleFilter)
         argument :input, Integer
       end
 
-      field :square, Integer, null: false, resolver_method: :pass_thru, extensions: [PowerOfFilter] do
+      field :square, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru, extensions: [PowerOfFilter] do
         argument :input, Integer
       end
 
-      field :cube, Integer, null: false, resolver_method: :pass_thru do
+      field :cube, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru do
         extension(PowerOfFilter, power: 3)
         argument :input, Integer
       end
 
-      field :tripled_by_option, Integer, null: false, resolver_method: :pass_thru do
+      field :tripled_by_option, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru do
         extension(MultiplyByOption, factor: 3)
         argument :input, Integer
       end
 
-      field :tripled_by_option2, Integer, null: false, resolver_method: :pass_thru,
+      field :tripled_by_option2, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru,
         extensions: [{ MultiplyByOption => { factor: 3 } }] do
           argument :input, Integer
         end
 
-      field :multiply_input, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgument] do
+      field :multiply_input, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru, extensions: [MultiplyByArgument] do
         argument :input, Integer
       end
 
-      field :multiply_input2, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgumentUsingResolve] do
+      field :multiply_input2, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru, extensions: [MultiplyByArgumentUsingResolve] do
         argument :input, Integer
       end
 
@@ -217,7 +216,7 @@ describe GraphQL::Schema::FieldExtension do
         input # return it as-is, it will be modified by extensions
       end
 
-      field :multiply_input3, Integer, null: false, resolver_method: :pass_thru_without_splat, extensions: [MultiplyByArgumentUsingAfterResolve] do
+      field :multiply_input3, Integer, null: false, resolver_method: :pass_thru_without_splat, resolve_legacy_instance_method: :pass_thru_without_splat, extensions: [MultiplyByArgumentUsingAfterResolve] do
         argument :input, Integer
       end
 
@@ -226,7 +225,7 @@ describe GraphQL::Schema::FieldExtension do
         input
       end
 
-      field :multiple_extensions, Integer, null: false, resolver_method: :pass_thru,
+      field :multiple_extensions, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru,
         extensions: [DoubleFilter, { MultiplyByOption => { factor: 3 } }] do
           argument :input, Integer
         end
