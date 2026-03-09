@@ -138,7 +138,6 @@ describe GraphQL::Dataloader do
     end
 
     class BaseField < GraphQL::Schema::Field
-      # include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     end
 
     class BaseObject < GraphQL::Schema::Object
@@ -152,10 +151,10 @@ describe GraphQL::Dataloader do
 
     module Ingredient
       include BaseInterface
-      field :name, String, null: false
-      field :id, ID, null: false
+      field :name, String, null: false, hash_key: :name
+      field :id, ID, null: false, hash_key: :id
 
-      field :name_by_scoped_context, String
+      field :name_by_scoped_context, String, resolve_legacy_instance_method: true
 
       def name_by_scoped_context
         context[:ingredient_name]
@@ -179,7 +178,7 @@ describe GraphQL::Dataloader do
         ctx.dataloader.with(AuthorizedSource, ctx[:batched_calls_counter]).load(obj)
       end
 
-      field :name, String, null: false
+      field :name, String, null: false, hash_key: :name
       field :ingredients, [Ingredient], null: false, resolve_batch: true
 
       def self.ingredients(objects, context)
@@ -193,7 +192,7 @@ describe GraphQL::Dataloader do
         ingredients
       end
 
-      field :slow_ingredients, [Ingredient], null: false
+      field :slow_ingredients, [Ingredient], null: false, resolve_legacy_instance_method: true
 
       def slow_ingredients
         # Use `object[:id]` here to force two different instances of the loader in the test
@@ -202,11 +201,7 @@ describe GraphQL::Dataloader do
     end
 
     class Cookbook < BaseObject
-      field :featured_recipe, Recipe
-
-      def self.all_featured_recipe(objects, context)
-        objects.map { |o| Database.mget([o[:featured_recipe]]).first }
-      end
+      field :featured_recipe, Recipe, resolve_legacy_instance_method: true
 
       def featured_recipe
         -> { Database.mget([object[:featured_recipe]]).first }
@@ -224,7 +219,7 @@ describe GraphQL::Dataloader do
         self.class.recipes(context)
       end
 
-      field :ingredient, Ingredient do
+      field :ingredient, Ingredient, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -232,7 +227,7 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load(id)
       end
 
-      field :ingredient_by_name, Ingredient do
+      field :ingredient_by_name, Ingredient, resolve_legacy_instance_method: true do
         argument :name, String
       end
 
@@ -242,7 +237,7 @@ describe GraphQL::Dataloader do
         ing
       end
 
-      field :nested_ingredient, Ingredient do
+      field :nested_ingredient, Ingredient, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -250,7 +245,7 @@ describe GraphQL::Dataloader do
         dataloader.with(NestedDataObject).load(id)
       end
 
-      field :slow_recipe, Recipe do
+      field :slow_recipe, Recipe, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -258,7 +253,7 @@ describe GraphQL::Dataloader do
         dataloader.with(SlowDataObject, id).load(id)
       end
 
-      field :recipe, Recipe do
+      field :recipe, Recipe, resolve_legacy_instance_method: true do
         argument :id, ID, loads: Recipe, as: :recipe
       end
 
@@ -266,7 +261,7 @@ describe GraphQL::Dataloader do
         recipe
       end
 
-      field :recipe_by_id_using_load, Recipe do
+      field :recipe_by_id_using_load, Recipe, resolve_legacy_instance_method: true do
         argument :id, ID, required: false
       end
 
@@ -274,7 +269,7 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load(id)
       end
 
-      field :recipes_by_id_using_load_all, [Recipe] do
+      field :recipes_by_id_using_load_all, [Recipe], resolve_legacy_instance_method: true do
         argument :ids, [ID, null: true]
       end
 
@@ -294,7 +289,7 @@ describe GraphQL::Dataloader do
         recipes
       end
 
-      field :key_ingredient, Ingredient do
+      field :key_ingredient, Ingredient, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -307,7 +302,7 @@ describe GraphQL::Dataloader do
         argument :ingredient_number, Int
       end
 
-      field :recipe_ingredient, Ingredient do
+      field :recipe_ingredient, Ingredient, resolve_legacy_instance_method: true do
         argument :recipe, RecipeIngredientInput
       end
 
@@ -318,7 +313,7 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load(ingredient_id)
       end
 
-      field :common_ingredients, [Ingredient] do
+      field :common_ingredients, [Ingredient], resolve_legacy_instance_method: true do
         argument :recipe_1_id, ID
         argument :recipe_2_id, ID
       end
@@ -344,8 +339,7 @@ describe GraphQL::Dataloader do
       end
 
       def common_ingredients_with_load(recipe_1:, recipe_2:)
-        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
-        dataloader.with(DataObject).load_all(common_ids)
+        self.class.common_ingredients_with_load([object], context, recipe_1: recipe_1, recipe_2: recipe_2).first
       end
 
       field :common_ingredients_from_input_object, [Ingredient], null: false, resolve_batch: true do
@@ -357,11 +351,7 @@ describe GraphQL::Dataloader do
       end
 
       def common_ingredients_from_input_object(input:)
-        recipe_1 = input[:recipe_1]
-        recipe_2 = input[:recipe_2]
-
-        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
-        dataloader.with(DataObject).load_all(common_ids)
+        self.class.common_ingredients_from_input_object([object], context, input: input).first
       end
 
       def self.common_ingredients_from_input_object(objects, context, input:)
@@ -372,7 +362,7 @@ describe GraphQL::Dataloader do
         Array.new(objects.size, results)
       end
 
-      field :ingredient_with_custom_batch_key, Ingredient do
+      field :ingredient_with_custom_batch_key, Ingredient, resolve_legacy_instance_method: true do
         argument :id, ID
         argument :batch_key, String
       end
@@ -381,7 +371,7 @@ describe GraphQL::Dataloader do
         dataloader.with(CustomBatchKeySource, batch_key).load(id)
       end
 
-      field :recursive_ingredient_name, String do
+      field :recursive_ingredient_name, String, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -390,7 +380,7 @@ describe GraphQL::Dataloader do
         res["data"]["ingredient"]["name"]
       end
 
-      field :test_error, String do
+      field :test_error, String, resolve_legacy_instance_method: true do
         argument :source, Boolean, required: false, default_value: false
       end
 
@@ -407,7 +397,7 @@ describe GraphQL::Dataloader do
         argument :batch_key, String
       end
 
-      field :lookahead_ingredient, Ingredient, extras: [:lookahead] do
+      field :lookahead_ingredient, Ingredient, extras: [:lookahead], resolve_legacy_instance_method: true do
         argument :input, LookaheadInput
       end
 
@@ -416,7 +406,7 @@ describe GraphQL::Dataloader do
         dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
       end
 
-      field :cookbooks, [Cookbook]
+      field :cookbooks, [Cookbook], resolve_legacy_instance_method: true
 
       def cookbooks
         [
@@ -432,7 +422,7 @@ describe GraphQL::Dataloader do
       argument :argument_1, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-      field :value, String
+      field :value, String, hash_key: :value
       def resolve(argument_1:)
         { value: argument_1 }
       end
@@ -442,7 +432,7 @@ describe GraphQL::Dataloader do
       argument :argument_2, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-      field :value, String
+      field :value, String, hash_key: :value
       def resolve(argument_2:)
         { value: argument_2 }
       end
@@ -472,7 +462,7 @@ describe GraphQL::Dataloader do
       field :mutation_1, mutation: Mutation1
       field :mutation_2, mutation: Mutation2
       field :mutation_3, mutation: Mutation3
-      field :set_cache, String do
+      field :set_cache, String, resolve_legacy_instance_method: true do
         argument :input, String
       end
 
