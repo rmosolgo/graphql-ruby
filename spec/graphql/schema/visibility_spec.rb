@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::Visibility do
   class VisSchema < GraphQL::Schema
     class BaseField < GraphQL::Schema::Field
-      include GraphQL::Execution::Batching::FieldCompatibility if TESTING_BATCHING
+      include GraphQL::Execution::Next::FieldCompatibility if TESTING_EXEC_NEXT
       def initialize(*args, admin_only: false, **kwargs, &block)
         super(*args, **kwargs, &block)
         @admin_only = admin_only
@@ -60,7 +60,7 @@ describe GraphQL::Schema::Visibility do
 
     query(Query)
     use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
-    use GraphQL::Execution::Batching if TESTING_BATCHING
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
   end
 
   class DynVisSchema < VisSchema
@@ -72,8 +72,8 @@ describe GraphQL::Schema::Visibility do
   end
 
   def exec_query(...)
-    if TESTING_BATCHING
-      VisSchema.execute_batching(...)
+    if TESTING_EXEC_NEXT
+      VisSchema.execute_next(...)
     else
       VisSchema.execute(...)
     end

@@ -19,7 +19,7 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class BaseField < GraphQL::Schema::Field
-      include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+      include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     end
 
     class BaseObject < GraphQL::Schema::Object
@@ -305,7 +305,7 @@ describe GraphQL::Execution::Interpreter do
       lazy_resolve(Box, :value)
       uses_raw_value(true)
       use GraphQL::Schema::AlwaysVisible
-      use(GraphQL::Execution::Batching) if TESTING_BATCHING
+      use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
 
       def self.object_from_id(id, ctx)
         OpenStruct.new(id: id)
@@ -351,8 +351,8 @@ describe GraphQL::Execution::Interpreter do
   end
 
   def exec_query(query_str, context: nil, variables: nil)
-    if TESTING_BATCHING
-      InterpreterTest::Schema.execute_batching(query_str, context: context, variables: variables)
+    if TESTING_EXEC_NEXT
+      InterpreterTest::Schema.execute_next(query_str, context: context, variables: variables)
     else
       InterpreterTest::Schema.execute(query_str, context: context, variables: variables)
     end
@@ -408,7 +408,7 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "runs a nested query and maintains proper state" do
-    if TESTING_BATCHING
+    if TESTING_EXEC_NEXT
       skip "Haven't figure out if/how to implement context[:current_path]"
     end
     query_str = "query($queryStr: String!) { nestedQuery(query: $queryStr) { result currentPath } }"
@@ -471,8 +471,8 @@ describe GraphQL::Execution::Interpreter do
 
   describe "runtime info in context" do
     it "is available" do
-      if TESTING_BATCHING
-        skip "Doesn't exist with Execution::Batching"
+      if TESTING_EXEC_NEXT
+        skip "Doesn't exist with Execution::Next"
       end
       res = exec_query <<-GRAPHQL
       {
@@ -902,7 +902,7 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "supports extras: [:parent]" do
-    if TESTING_BATCHING
+    if TESTING_EXEC_NEXT
       skip "Not possible in batching"
     end
     query_str = <<-GRAPHQL

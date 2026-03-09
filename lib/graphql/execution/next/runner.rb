@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Execution
-    module Batching
+    module Next
       class Runner
         def initialize(multiplex, authorization:)
           @multiplex = multiplex

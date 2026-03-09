@@ -148,7 +148,7 @@ module GraphQL
       # @yieldparam arguments [Hash] The keyword arguments to continue resolving with
       # @yieldparam memo [Object] Any extension-specific value which will be passed to {#after_resolve} later
       # @return [Array<Object>] The return value for this field, length matching passed-in `objects:`.
-      def resolve_batching(objects:, arguments:, context:)
+      def resolve_next(objects:, arguments:, context:)
         yield(objects, arguments, nil)
       end
 
@@ -178,7 +178,7 @@ module GraphQL
       # @param values [Array<Object>] Whatever the field returned, one for each of `objects`
       # @param memo [Object] The third value yielded by {#resolve}, or `nil` if there wasn't one
       # @return [Array<Object>] The return values for this field, length matching `objects:`.
-      def after_resolve_batching(objects:, arguments:, context:, values:, memo:)
+      def after_resolve_next(objects:, arguments:, context:, values:, memo:)
         values
       end
     end

@@ -21,7 +21,7 @@ module GraphQL
           yield(object, next_args, arguments)
         end
 
-        def resolve_batching(objects:, arguments:, context:)
+        def resolve_next(objects:, arguments:, context:)
           next_args = arguments.dup
           next_args.delete(:first)
           next_args.delete(:last)
@@ -37,7 +37,7 @@ module GraphQL
           end
         end
 
-        def after_resolve_batching(**kwargs)
+        def after_resolve_next(**kwargs)
           raise "This should never be called -- it's hardcoded in execution instead."
         end
       end

@@ -190,8 +190,8 @@ module ConnectionAssertions
       end
 
       query(query)
-      if TESTING_BATCHING
-        use GraphQL::Execution::Batching
+      if TESTING_EXEC_NEXT
+        use GraphQL::Execution::Next
       end
     end
   end
@@ -199,8 +199,8 @@ module ConnectionAssertions
   def self.included(child_module)
     child_module.class_exec do
       def exec_query(query_str, root_value: nil, **variables)
-        if TESTING_BATCHING
-          schema.execute_batching(query_str, root_value: root_value, variables: variables)
+        if TESTING_EXEC_NEXT
+          schema.execute_next(query_str, root_value: root_value, variables: variables)
         else
           schema.execute(query_str, root_value: root_value, variables: variables)
         end

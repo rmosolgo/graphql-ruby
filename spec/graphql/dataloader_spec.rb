@@ -75,9 +75,9 @@ describe GraphQL::Dataloader do
     end
 
     class SlowDataObject < GraphQL::Dataloader::Source
-      def initialize(batch_key)
+      def initialize(execution_next_key)
         # This is just so that I can force different instances in test
-        @batch_key = batch_key
+        @execution_next_key = execution_next_key
       end
 
       def fetch(keys)
@@ -91,12 +91,12 @@ describe GraphQL::Dataloader do
     end
 
     class CustomBatchKeySource < GraphQL::Dataloader::Source
-      def initialize(batch_key)
-        @batch_key = batch_key
+      def initialize(execution_next_key)
+        @execution_next_key = execution_next_key
       end
 
-      def self.batch_key_for(batch_key)
-        Database.log << [:batch_key_for, batch_key]
+      def self.execution_next_key_for(execution_next_key)
+        Database.log << [:execution_next_key_for, execution_next_key]
         # Ignore it altogether
         :all_the_same
       end
@@ -138,7 +138,7 @@ describe GraphQL::Dataloader do
     end
 
     class BaseField < GraphQL::Schema::Field
-      include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+      include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     end
 
     class BaseObject < GraphQL::Schema::Object
@@ -372,13 +372,13 @@ describe GraphQL::Dataloader do
         Array.new(objects.size, results)
       end
 
-      field :ingredient_with_custom_batch_key, Ingredient do
+      field :ingredient_with_custom_execution_next_key, Ingredient do
         argument :id, ID
-        argument :batch_key, String
+        argument :execution_next_key, String
       end
 
-      def ingredient_with_custom_batch_key(id:, batch_key:)
-        dataloader.with(CustomBatchKeySource, batch_key).load(id)
+      def ingredient_with_custom_execution_next_key(id:, execution_next_key:)
+        dataloader.with(CustomBatchKeySource, execution_next_key).load(id)
       end
 
       field :recursive_ingredient_name, String do
@@ -404,7 +404,7 @@ describe GraphQL::Dataloader do
 
       class LookaheadInput < GraphQL::Schema::InputObject
         argument :id, ID
-        argument :batch_key, String
+        argument :execution_next_key, String
       end
 
       field :lookahead_ingredient, Ingredient, extras: [:lookahead] do
@@ -413,7 +413,7 @@ describe GraphQL::Dataloader do
 
       def lookahead_ingredient(input:, lookahead:)
         lookahead.arguments # forces a dataloader.run_isolated call
-        dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
+        dataloader.with(CustomBatchKeySource, input[:execution_next_key]).load(input[:id])
       end
 
       field :cookbooks, [Cookbook]
@@ -496,7 +496,7 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Batching if TESTING_BATCHING
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     lazy_resolve Proc, :call
 
     class FieldTestError < StandardError; end
@@ -592,7 +592,7 @@ describe GraphQL::Dataloader do
 
     query(Query)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Batching if TESTING_BATCHING
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
   end
 
   module DataloaderAssertions
@@ -648,8 +648,8 @@ describe GraphQL::Dataloader do
         let(:parts_schema) { make_schema_from(PartsSchema) }
 
         def exec_query(query_string, schema: self.schema, context: nil, variables: nil)
-          if TESTING_BATCHING
-            schema.execute_batching(query_string, context: context, variables: variables)
+          if TESTING_EXEC_NEXT
+            schema.execute_next(query_string, context: context, variables: variables)
           else
             schema.execute(query_string, context: context, variables: variables)
           end
@@ -1103,7 +1103,7 @@ describe GraphQL::Dataloader do
           assert_equal "Wheat", result["data"]["recursiveIngredientName"]
         end
 
-        it "uses .batch_key_for in source classes" do
+        it "uses .execution_next_key_for in source classes" do
           query_str = <<-GRAPHQL
           {
             i1: ingredientWithCustomBatchKey(id: 1, batchKey: "abc") { name }
@@ -1117,9 +1117,9 @@ describe GraphQL::Dataloader do
           assert_graphql_equal expected_data, res["data"]
           expected_log = [
             # Each batch key is given to the source class:
-            [:batch_key_for, "abc"],
-            [:batch_key_for, "def"],
-            [:batch_key_for, "ghi"],
+            [:execution_next_key_for, "abc"],
+            [:execution_next_key_for, "def"],
+            [:execution_next_key_for, "ghi"],
             # But since they return the same value,
             # all keys are fetched in the same call:
             [:mget, ["1", "2", "3"]]
@@ -1147,7 +1147,7 @@ describe GraphQL::Dataloader do
             exec_query("{ testError }")
           end
           expected_message = "Field error"
-          if TESTING_BATCHING
+          if TESTING_EXEC_NEXT
             expected_message = "Resolving Query.testError: #{expected_message}"
           end
           assert_equal expected_message, err.message
@@ -1158,7 +1158,7 @@ describe GraphQL::Dataloader do
             exec_query("{ testError(source: true) }")
           end
           expected_message = "Source error on: [1]"
-          if TESTING_BATCHING
+          if TESTING_EXEC_NEXT
             expected_message = "Resolving Query.testError: #{expected_message}"
           end
           assert_equal expected_message, err.message
@@ -1254,11 +1254,11 @@ describe GraphQL::Dataloader do
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
             assert_equal(10, FiberCounting.last_spawn_fiber_count)
-            assert_last_max_fiber_count((TESTING_BATCHING ? 9 : 9), "No limit works as expected")
+            assert_last_max_fiber_count((TESTING_EXEC_NEXT ? 9 : 9), "No limit works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 11 : 12), FiberCounting.last_spawn_fiber_count)
+            assert_equal((TESTING_EXEC_NEXT ? 11 : 12), FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(4, "Limit of 4 works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })

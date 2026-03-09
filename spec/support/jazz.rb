@@ -55,7 +55,7 @@ module Jazz
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
     argument_class BaseArgument
-    include(GraphQL::Execution::Batching::FieldCompatibility) if TESTING_BATCHING
+    include(GraphQL::Execution::Next::FieldCompatibility) if TESTING_EXEC_NEXT
     attr_reader :upcase
 
     def initialize(*args, **options, &block)
@@ -937,11 +937,11 @@ module Jazz
     extra_types BlogPost
     use GraphQL::Dataloader
     use GraphQL::Schema::Warden if ADD_WARDEN
-    use GraphQL::Execution::Batching if TESTING_BATCHING
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
 
 
     def self.resolves_lazies?
-      # This is a shim for GraphQL::Execution::Batching
+      # This is a shim for GraphQL::Execution::Next
       # it uses this method to determine whether to check if it should check `.lazy?`
       # TODO Better would be opting in with some `use ...` configuration
       true

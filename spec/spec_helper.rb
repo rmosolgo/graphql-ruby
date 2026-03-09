@@ -38,12 +38,10 @@ if ENV["GRAPHQL_FUTURE"]
   puts "Opting into GraphQL::Schema::Visibility::Profile"
   GraphQL::Schema.use(GraphQL::Schema::Visibility, migration_errors: true)
   ADD_WARDEN = false
-  TESTING_BATCHING = true
-  puts "Loading Execution::Batching"
-  require "graphql/execution/batching"
+  TESTING_EXEC_NEXT = true
 else
   ADD_WARDEN = true
-  TESTING_BATCHING = false
+  TESTING_EXEC_NEXT = false
 end
 
 # C methods aren't fair game in non-main Ractors

@@ -3,8 +3,8 @@ require "spec_helper"
 
 describe GraphQL::Execution::Multiplex do
   def multiplex(*a, **kw)
-    if TESTING_BATCHING
-      LazyHelpers::LazySchema.multiplex_batching(*a, **kw)
+    if TESTING_EXEC_NEXT
+      LazyHelpers::LazySchema.multiplex_next(*a, **kw)
     else
       LazyHelpers::LazySchema.multiplex(*a, **kw)
     end
@@ -124,7 +124,7 @@ describe GraphQL::Execution::Multiplex do
               "locations"=>[{"line"=>5, "column"=>11}],
             },
             (
-              TESTING_BATCHING ? {
+              TESTING_EXEC_NEXT ? {
                 # TODO: maybe batching can be made to *not* run this field
                 "message" => "Cannot return null for non-nullable field LazySum.nestedSum",
                 "locations" => [{"line" => 9, "column" => 11}],
