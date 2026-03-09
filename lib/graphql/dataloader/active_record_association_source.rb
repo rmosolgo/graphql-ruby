@@ -12,7 +12,7 @@ module GraphQL
         @scope = scope
       end
 
-      def self.execution_next_key_for(association, scope = nil)
+      def self.batch_key_for(association, scope = nil)
         if scope
           [association, scope.to_sql]
         else
