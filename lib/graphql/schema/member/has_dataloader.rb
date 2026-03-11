@@ -56,6 +56,16 @@ module GraphQL
           source.load(find_by_value)
         end
 
+        # @see dataload_record Like `dataload_record`, but accepts an Array of `find_by_values`
+        def dataload_all_records(model, find_by_values, find_by: nil)
+          source = if find_by
+            dataloader.with(Dataloader::ActiveRecordSource, model, find_by: find_by)
+          else
+            dataloader.with(Dataloader::ActiveRecordSource, model)
+          end
+          source.load_all(find_by_values)
+        end
+
         # Look up an associated record using a Rails association (via {Dataloader::ActiveRecordAssociationSource})
         # @param association_name [Symbol] A `belongs_to` or `has_one` association. (If a `has_many` association is named here, it will be selected without pagination.)
         # @param record [ActiveRecord::Base] The object that the association belongs to.
@@ -72,6 +82,16 @@ module GraphQL
             dataloader.with(Dataloader::ActiveRecordAssociationSource, association_name)
           end
           source.load(record)
+        end
+
+        # @see dataload_association Like `dataload_assocation` but accepts an Array of records (required param)
+        def dataload_all_associations(records, association_name, scope: nil)
+          source = if scope
+            dataloader.with(Dataloader::ActiveRecordAssociationSource, association_name, scope)
+          else
+            dataloader.with(Dataloader::ActiveRecordAssociationSource, association_name)
+          end
+          source.load_all(records)
         end
       end
     end

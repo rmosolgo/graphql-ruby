@@ -644,6 +644,27 @@ module GraphQL
             end
           when :dig
             objects.map { |o| o.dig(*@field_definition.execution_next_mode_key) }
+          when :dataload
+            if (k = @field_definition.execution_next_mode_key).is_a?(Class)
+              context.dataload_all(k, objects)
+            elsif (source_class = k[:with])
+              if (batch_args = k[:by])
+                context.dataload_all(source_class, *batch_args, objects)
+              else
+                context.dataload_all(source_class, objects)
+              end
+            elsif (model = k[:model])
+              value_method = k[:using]
+              values = objects.map(&value_method)
+              context.dataload_all_records(model, values, find_by: k[:find_by])
+            elsif (assoc = k[:association])
+              if assoc == true
+                assoc = @field_definition.original_name
+              end
+              context.dataload_all_associations(objects, assoc, scope: k[:scope])
+            else
+              raise ArgumentError, "Unexpected `dataload: ...` configuration: #{k.inspect}"
+            end
           when :resolver_class
             results = Array.new(objects.size, nil)
             ps = @pending_steps ||= []

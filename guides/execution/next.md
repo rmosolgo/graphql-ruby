@@ -111,32 +111,75 @@ This is a high-performance option for when you need to do I/O to generate result
 
 These fields use a _class method_ to map parent objects to field results, configured with `resolve_batch:`:
 
-  ```ruby
-  field :title, String, resolve_batch: :titles do
-    argument :language, Types::Language, required: false, default_value: "EN"
+```ruby
+field :title, String, resolve_batch: :titles do
+  argument :language, Types::Language, required: false, default_value: "EN"
+end
+
+def self.titles(objects, context, language:)
+  # This is equivalent to plain `field :title, ...`, but for example:
+  objects.map { |obj| obj.title(language:) }
+end
+```
+
+This is especially useful when batching Dataloader calls:
+
+```ruby
+class Types::Comment < BaseObject
+  field :author_rating, Integer, resolve_batch: true
+
+  def self.author_rating(objects, context)
+    authors = context.dataload_all_records(objects, :author)
+    context.dataload_all(Sources::AuthorRating, authors)
   end
+end
+```
 
-  def self.titles(objects, context, language:)
-    # This is equivalent to plain `field :title, ...`, but for example:
-    objects.map { |obj| obj.title(language:) }
-  end
-  ```
+### Dataloader
 
-  This is especially useful when batching Dataloader calls:
+`Execution::Next` supports field configuration shorthands for common dataloader usage. Under the hood, these make sure data fetching is batched and cached.
 
-  ```ruby
-  class Types::Comment < BaseObject
-    field :post, Types::Post, resolve_batch: :posts
+#### Sources
 
-    # Use `.load_all(ids)` to fetch all in a single round-trip
-    def self.posts(objects, context)
-      # TODO: add a shorthand for this in GraphQL-Ruby
-      context.dataloader
-        .with(GraphQL::Dataloader::ActiveRecordSource)
-        .load_all(objects.map(&:post_id))
-    end
-  end
-  ```
+Use a custom dataloader source from your application:
+
+```ruby
+class Types::CommentType
+  # Equivalent to `dataload(Sources::CommentRating, object)`
+  field :rating, Integer, dataload: Sources::CommentRating
+
+  # `using:`: A method to call to get a value to pass to dataloader
+  # `by: [...]`: An array of arguments to pass on to dataloader
+  #
+  # Equivalent to `dataload(Sources::ReadingDuration, :comment, object.body)
+  field :reading_duration, Integer, dataload: { with: Sources::ReadingDuration, using: :body, by: [:comment] }
+```
+
+#### Rails Associations
+
+Load ActiveRecord associations using {{ "GraphQL::Dataloader::ActiveRecordAssociationSource" | api_doc }}:
+
+```ruby
+class Types::CommentType < Types::BaseObject
+  # Equivalent to `dataload_association(:post)`
+  field :post, Types::Post, dataload: { association: true }
+  # Equivalent to `dataload_association(:user)
+  field :author, Types::Post, dataload: { association: :user }
+end
+```
+
+#### Rails Records
+
+Load ActiveRecord associations using {{ "GraphQL::Dataloader::ActiveRecordSource" | api_doc }}.
+
+```ruby
+class Types::SearchResult < Types::BaseObject
+  # Equivalent to `dataload_record(Post, object.post_id)`
+  field :post, Types::Post, dataload: { model: Post, using: :post_id }
+  # Equivalent to `dataload_record(User, object.created_by_handle, find_by: :handle)`
+  field :author, Types::User, dataload: { model: User, using: :created_by_handle, find_by: :handle }
+end
+```
 
 ### Legacy instance methods
 
