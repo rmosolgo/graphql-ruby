@@ -161,7 +161,11 @@
 </a></li><li class='contents-entry'><a href='#per-object-resolve_each'>Per-object (<code>resolve_each:</code>)
 </a></li><li class='contents-entry'><a href='#global-resolve_static'>Global (<code>resolve_static:</code>)
 </a></li><li class='contents-entry'><a href='#batch-resolvers-resolve_batch'>Batch resolvers (<code>resolve_batch:</code>)
-</a></li><li class='contents-entry'><a href='#legacy-instance-methods'>Legacy instance methods
+</a></li><li class='contents-entry'><a href='#dataloader'>Dataloader
+</a><ol class='contents-list'><li class='contents-entry'><a href='#sources'>Sources
+</a></li><li class='contents-entry'><a href='#rails-associations'>Rails Associations
+</a></li><li class='contents-entry'><a href='#rails-records'>Rails Records
+</a></li></ol></li><li class='contents-entry'><a href='#legacy-instance-methods'>Legacy instance methods
 </a></li><li class='contents-entry'><a href='#true-shorthand'><code>true</code> shorthand
 </a></li></ol></li><li class='contents-entry'><a href='#migration'>Migration
 </a></li></ol>
@@ -270,29 +274,69 @@
 
 <p>These fields use a <em>class method</em> to map parent objects to field results, configured with <code class="language-plaintext highlighter-rouge">resolve_batch:</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">resolve_batch: :titles</span> <span class="k">do</span>
-    <span class="n">argument</span> <span class="ss">:language</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Language</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default_value: </span><span class="s2">"EN"</span>
-  <span class="k">end</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">resolve_batch: :titles</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:language</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Language</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default_value: </span><span class="s2">"EN"</span>
+<span class="k">end</span>
 
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">titles</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">language</span><span class="p">:)</span>
-    <span class="c1"># This is equivalent to plain `field :title, ...`, but for example:</span>
-    <span class="n">objects</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">obj</span><span class="o">|</span> <span class="n">obj</span><span class="p">.</span><span class="nf">title</span><span class="p">(</span><span class="n">language</span><span class="p">:)</span> <span class="p">}</span>
-  <span class="k">end</span>
+<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">titles</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">language</span><span class="p">:)</span>
+  <span class="c1"># This is equivalent to plain `field :title, ...`, but for example:</span>
+  <span class="n">objects</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">obj</span><span class="o">|</span> <span class="n">obj</span><span class="p">.</span><span class="nf">title</span><span class="p">(</span><span class="n">language</span><span class="p">:)</span> <span class="p">}</span>
+<span class="k">end</span>
 </code></pre></div></div>
 
 <p>This is especially useful when batching Dataloader calls:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">class</span> <span class="nc">Types::Comment</span> <span class="o">&lt;</span> <span class="no">BaseObject</span>
-    <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">resolve_batch: :posts</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Comment</span> <span class="o">&lt;</span> <span class="no">BaseObject</span>
+  <span class="n">field</span> <span class="ss">:author_rating</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">resolve_batch: </span><span class="kp">true</span>
 
-    <span class="c1"># Use `.load_all(ids)` to fetch all in a single round-trip</span>
-    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">posts</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
-      <span class="c1"># TODO: add a shorthand for this in GraphQL-Ruby</span>
-      <span class="n">context</span><span class="p">.</span><span class="nf">dataloader</span>
-        <span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="o">::</span><span class="no">ActiveRecordSource</span><span class="p">)</span>
-        <span class="p">.</span><span class="nf">load_all</span><span class="p">(</span><span class="n">objects</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:post_id</span><span class="p">))</span>
-    <span class="k">end</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">author_rating</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="n">authors</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="nf">dataload_all_records</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="ss">:author</span><span class="p">)</span>
+    <span class="n">context</span><span class="p">.</span><span class="nf">dataload_all</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">AuthorRating</span><span class="p">,</span> <span class="n">authors</span><span class="p">)</span>
   <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="dataloader">Dataloader</h3>
+
+<p><code class="language-plaintext highlighter-rouge">Execution::Next</code> supports field configuration shorthands for common dataloader usage. Under the hood, these make sure data fetching is batched and cached.</p>
+
+<h4 id="sources">Sources</h4>
+
+<p>Use a custom dataloader source from your application:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::CommentType</span>
+  <span class="c1"># Equivalent to `dataload(Sources::CommentRating, object)`</span>
+  <span class="n">field</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">dataload: </span><span class="no">Sources</span><span class="o">::</span><span class="no">CommentRating</span>
+
+  <span class="c1"># `using:`: A method to call to get a value to pass to dataloader</span>
+  <span class="c1"># `by: [...]`: An array of arguments to pass on to dataloader</span>
+  <span class="c1">#</span>
+  <span class="c1"># Equivalent to `dataload(Sources::ReadingDuration, :comment, object.body)</span>
+  <span class="n">field</span> <span class="ss">:reading_duration</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">with: </span><span class="no">Sources</span><span class="o">::</span><span class="no">ReadingDuration</span><span class="p">,</span> <span class="ss">using: :body</span><span class="p">,</span> <span class="ss">by: </span><span class="p">[</span><span class="ss">:comment</span><span class="p">]</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="rails-associations">Rails Associations</h4>
+
+<p>Load ActiveRecord associations using <a href="/api-doc/2.5.21/GraphQL/Dataloader/ActiveRecordAssociationSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordAssociationSource"><code>GraphQL::Dataloader::ActiveRecordAssociationSource</code></a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::CommentType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Equivalent to `dataload_association(:post)`</span>
+  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">association: </span><span class="kp">true</span> <span class="p">}</span>
+  <span class="c1"># Equivalent to `dataload_association(:user)</span>
+  <span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">association: :user</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h4 id="rails-records">Rails Records</h4>
+
+<p>Load ActiveRecord associations using <a href="/api-doc/2.5.21/GraphQL/Dataloader/ActiveRecordSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordSource"><code>GraphQL::Dataloader::ActiveRecordSource</code></a>.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::SearchResult</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Equivalent to `dataload_record(Post, object.post_id)`</span>
+  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">model: </span><span class="no">Post</span><span class="p">,</span> <span class="ss">using: :post_id</span> <span class="p">}</span>
+  <span class="c1"># Equivalent to `dataload_record(User, object.created_by_handle, find_by: :handle)`</span>
+  <span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">model: </span><span class="no">User</span><span class="p">,</span> <span class="ss">using: :created_by_handle</span><span class="p">,</span> <span class="ss">find_by: :handle</span> <span class="p">}</span>
+<span class="k">end</span>
 </code></pre></div></div>
 
 <h3 id="legacy-instance-methods">Legacy instance methods</h3>
