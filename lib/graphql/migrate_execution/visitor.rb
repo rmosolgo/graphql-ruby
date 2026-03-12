@@ -139,7 +139,7 @@ module GraphQL
         when Prism::FalseNode
           false
         when Prism::ConstantReadNode
-          value_node.name.name
+          value_node.name.to_s
         when Prism::ConstantPathNode
           "#{get_keyword_value(value_node.parent)}::#{value_node.name}"
         when Prism::CallNode
