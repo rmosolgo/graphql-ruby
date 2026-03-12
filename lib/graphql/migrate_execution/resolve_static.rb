@@ -5,7 +5,7 @@ module GraphQL
       DESCRIPTION = "These can be converted with `resolve_static:`. Dataloader was not detected in these resolver methods."
 
       def add_future(field_definition, new_source)
-        inject_field_keyword(new_source, field_definition, :resolve_static)
+        inject_resolve_keyword(new_source, field_definition, :resolve_static)
         replace_resolver_method(new_source, field_definition, "context")
       end
 

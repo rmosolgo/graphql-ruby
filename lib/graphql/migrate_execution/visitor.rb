@@ -123,7 +123,6 @@ module GraphQL
         @current_resolver_method = nil
       end
 
-
       private
 
       def get_keyword_value(value_node)
@@ -138,14 +137,57 @@ module GraphQL
           true
         when Prism::FalseNode
           false
-        when Prism::ConstantReadNode
-          value_node.name.to_s
-        when Prism::ConstantPathNode
-          "#{get_keyword_value(value_node.parent)}::#{value_node.name}"
+        when Prism::ConstantPathNode, Prism::ConstantReadNode
+          value_node.full_name
         when Prism::CallNode
           :DYNAMIC_CALL_NODE
         when Prism::ArrayNode
           value_node.elements.map { |n| get_keyword_value(n) }
+        when Prism::NilNode
+          "nil"
+        else
+          # nil, constants, `self` ...?
+          raise ArgumentError, "GraphQL-MigrateExecution can't parse this keyword argument yet, but it could. Please open an issue on GraphQL-Ruby with this error message (node class: #{value_node.class})\n\n#{value_node.inspect}"
+        end
+      end
+
+      def self.constant_node?(node)
+        case node
+        when Prism::ConstantPathNode,
+              Prism::ConstantReadNode,
+              Prism::StringNode,
+              Prism::SymbolNode,
+              Prism::IntegerNode,
+              Prism::FloatNode,
+              Prism::TrueNode,
+              Prism::FalseNode,
+              Prism::NilNode
+          true
+        when Prism::ArrayNode
+          node.elements.all? { |n| constant_node?(n) }
+        else
+          false
+        end
+      end
+
+      def self.source_for_constant_node(value_node)
+        case value_node
+        when Prism::SymbolNode
+          ":#{value_node.unescaped}"
+        when Prism::StringNode
+          value_node.unescaped.inspect
+        when Prism::IntegerNode, Prism::FloatNode
+          value_node.value.inspect
+        when Prism::TrueNode
+          "true"
+        when Prism::FalseNode
+          "false"
+        when Prism::ConstantPathNode, Prism::ConstantReadNode
+          value_node.full_name
+        when Prism::ArrayNode
+          value_node.elements.map { |n| get_keyword_value(n) }
+        when Prism::NilNode
+          "nil"
         else
           # nil, constants, `self` ...?
           raise ArgumentError, "GraphQL-MigrateExecution can't parse this keyword argument yet, but it could. Please open an issue on GraphQL-Ruby with this error message (node class: #{value_node.class})\n\n#{value_node.inspect}"

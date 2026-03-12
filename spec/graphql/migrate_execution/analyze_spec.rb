@@ -112,13 +112,13 @@ NotImplemented (1):
     expected_msg = <<~TXT.chomp
 Found 6 field definitions:
 
-DataloaderAssociation (1):
-  These fields can use a `dataload_association:` option.
+DataloaderShorthand (1):
+  These fields can use a `dataload: ...` configuration.
 
   - Something.dataload_assoc   (:type_instance_method -> :dataload_assoc) @ spec/graphql/migrate_execution/fixtures/dataload.rb:6
 
 DataloaderAll (2):
-  These fields can use a `dataload:` option.
+  These fields can be migrated to a `.load_all` call.
 
   - Something.dataload_object_1   (:type_instance_method -> :dataload_object_1) @ spec/graphql/migrate_execution/fixtures/dataload.rb:12
   - Something.dataload_object_2   (:type_instance_method -> :dataload_object_2) @ spec/graphql/migrate_execution/fixtures/dataload.rb:18

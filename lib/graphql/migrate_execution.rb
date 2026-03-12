@@ -17,9 +17,9 @@ require "graphql/migrate_execution/resolve_each"
 require "graphql/migrate_execution/resolve_static"
 require "graphql/migrate_execution/not_implemented"
 require "graphql/migrate_execution/dataloader_all"
-require "graphql/migrate_execution/dataloader_association"
 require "graphql/migrate_execution/dataloader_batch"
 require "graphql/migrate_execution/dataloader_manual"
+require "graphql/migrate_execution/dataloader_shorthand"
 
 require "graphql/migrate_execution/not_implemented"
 

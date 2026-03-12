@@ -4,11 +4,11 @@ module GraphQL
   class MigrateExecution
     class DataloaderAll < Strategy
       DESCRIPTION = <<~DESC
-      These fields can use a `dataload:` option.
+      These fields can be migrated to a `.load_all` call.
       DESC
 
       def add_future(field_definition, new_source)
-        inject_field_keyword(new_source, field_definition, :resolve_batch)
+        inject_resolve_keyword(new_source, field_definition, :resolve_batch)
         def_node = field_definition.resolver_method.node
         call_node = def_node.body.body.first
         case call_node.name

@@ -10,16 +10,21 @@ module GraphQL
 
       private
 
-      def inject_field_keyword(new_source, field_definition, keyword)
+      def inject_resolve_keyword(new_source, field_definition, keyword)
+        value = field_definition.future_resolve_shorthand.inspect
+        inject_field_keyword(new_source, field_definition, keyword, value)
+      end
+
+      def inject_field_keyword(new_source, field_definition, keyword, value)
         field_definition_source = field_definition.source
-        value = field_definition.future_resolve_shorthand
         new_definition_source = if field_definition_source[/ [a-z_]+:/] # Does it already have keywords?
-          field_definition_source.sub(/field(.*) ([a-z_]+:.*)$/, "field\\1 #{keyword}: #{value.inspect}, \\2")
+          field_definition_source.sub(/field(.*) ([a-z_]+:.*)$/, "field\\1 #{keyword}: #{value}, \\2")
         else
-          field_definition_source + ", #{keyword}: #{value.inspect}"
+          field_definition_source + ", #{keyword}: #{value}"
         end
         new_source.sub!(field_definition_source, new_definition_source)
       end
+
 
       def remove_field_keyword(new_source, field_definition, keyword)
         field_definition_source = field_definition.source
