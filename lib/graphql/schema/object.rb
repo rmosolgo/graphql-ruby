@@ -5,6 +5,7 @@ require "graphql/query/null_context"
 module GraphQL
   class Schema
     class Object < GraphQL::Schema::Member
+      extend GraphQL::Schema::Member::HasAuthorization
       extend GraphQL::Schema::Member::HasFields
       extend GraphQL::Schema::Member::HasInterfaces
       include Member::HasDataloader

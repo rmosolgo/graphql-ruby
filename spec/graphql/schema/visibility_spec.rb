@@ -31,9 +31,9 @@ describe GraphQL::Schema::Visibility do
     end
 
     class Product < BaseObject
-      field :name, String
-      field :price, Integer
-      field :cost_of_goods_sold, Integer, admin_only: true
+      field :name, String, hash_key: :name
+      field :price, Integer, hash_key: :price
+      field :cost_of_goods_sold, Integer, admin_only: true, hash_key: :cost_of_goods_sold
     end
 
     class Widget < BaseObject
@@ -47,7 +47,7 @@ describe GraphQL::Schema::Visibility do
     end
 
     class Query < BaseObject
-      field :products, [Product]
+      field :products, [Product], resolve_legacy_instance_method: true
       field :widget, Widget do
         argument :type, WidgetKind
       end
@@ -59,6 +59,7 @@ describe GraphQL::Schema::Visibility do
 
     query(Query)
     use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
   end
 
   class DynVisSchema < VisSchema
@@ -70,8 +71,8 @@ describe GraphQL::Schema::Visibility do
   end
 
   def exec_query(...)
-    if TESTING_BATCHING
-      VisSchema.execute_batching(...)
+    if TESTING_EXEC_NEXT
+      VisSchema.execute_next(...)
     else
       VisSchema.execute(...)
     end

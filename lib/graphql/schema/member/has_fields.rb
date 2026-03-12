@@ -19,10 +19,11 @@ module GraphQL
         # @option kwargs [Symbol] :method The method to call on the underlying object to resolve this field (defaults to `name`)
         # @option kwargs [String, Symbol] :hash_key The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
         # @option kwargs [Array<String, Symbol>] :dig The nested hash keys to lookup on the underlying hash to resolve this field using dig
-        # @option kwargs [Symbol] :resolver_method The method on the type to call to resolve this field (defaults to `name`)
-        # @option kwargs [Symbol] :resolve_static Used by {Schema.execute_batching} to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
-        # @option kwargs [Symbol] :resolve_batch Used by {Schema.execute_batching} map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
-        # @option kwargs [Symbol] :resolve_each Used by {Schema.execute_batching} to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
+        # @option kwargs [Symbol, true] :resolver_method The method on the type to call to resolve this field (defaults to `name`)
+        # @option kwargs [Symbol, true] :resolve_static Used by {Schema.execute_next} to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
+        # @option kwargs [Symbol, true] :resolve_batch Used by {Schema.execute_next} map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
+        # @option kwargs [Symbol, true] :resolve_each Used by {Schema.execute_next} to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
+        # @option kwargs [Symbol, true] :resolve_legacy_instance_method Used by {Schema.execute_next} to get a value value for each item. Calls an instance method on the object type class.
         # @option kwargs [Boolean] :connection `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
         # @option kwargs [Class] :connection_extension The extension to add, to implement connections. If `nil`, no extension is added.
         # @option kwargs [Integer, nil] :max_page_size For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
@@ -47,6 +48,7 @@ module GraphQL
         # @option kwargs [Boolean] :dynamic_introspection (Private, used by GraphQL-Ruby)
         # @option kwargs [Boolean] :relay_node_field (Private, used by GraphQL-Ruby)
         # @option kwargs [Boolean] :relay_nodes_field (Private, used by GraphQL-Ruby)
+        # @option kwargs [Class, Hash] :dataload Shorthand for dataloader lookups
         # @option kwargs [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] :extras Extra arguments to be injected into the resolver for this field
         # @param kwargs [Hash] Keywords for defining the field. Any not documented here will be passed to your base field class where they must be handled.
         # @param definition_block [Proc] an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new {Field}.

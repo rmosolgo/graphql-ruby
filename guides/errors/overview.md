@@ -62,4 +62,4 @@ For example, Rails will probably return a generic `500` page.
 
 When you want end users (human beings) to read error messages, you can express errors _in the schema_, using normal GraphQL fields and types. In this approach, errors are strongly-typed data, queryable in the schema, like any other application data.
 
-For more about this approach, see {% internal_link "Mutation Errors", "/mutations/mutation_errors" %}
+For more about this approach, see {% internal_link "Mutation Errors", "/mutations/mutation_errors.html#errors-as-data" %}

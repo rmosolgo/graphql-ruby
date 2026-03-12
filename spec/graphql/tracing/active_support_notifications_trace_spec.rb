@@ -12,18 +12,26 @@ if testing_rails?
 
       module Nameable
         include GraphQL::Schema::Interface
-        field :name, String
+        field :name, String, hash_key: :name
         def self.resolve_type(...)
           Thing
         end
       end
 
-      class Thing < GraphQL::Schema::Object
-        implements Nameable
+      class BaseObject < GraphQL::Schema::Object
+        class BaseField < GraphQL::Schema::Field
+        end
+        field_class(BaseField)
       end
 
-      class Query < GraphQL::Schema::Object
-        field :nameable, Nameable do
+      class Thing < BaseObject
+        implements Nameable
+        def self.authorized?(_o, _c); true; end
+      end
+
+      class Query < BaseObject
+        def self.authorized?(_o, _c); true; end
+        field :nameable, Nameable, resolve_legacy_instance_method: true do
           argument :id, ID, loads: Thing, as: :thing
         end
 
@@ -35,6 +43,7 @@ if testing_rails?
       query(Query)
       trace_with GraphQL::Tracing::ActiveSupportNotificationsTrace
       use GraphQL::Dataloader
+      use GraphQL::Execution::Next
       orphan_types(Thing)
 
       def self.object_from_id(id, ctx)
@@ -51,8 +60,13 @@ if testing_rails?
       callback = lambda { |name, started, finished, unique_id, payload|
         events << [name, payload]
       }
+      query_str = "{ nameable(id: 1) { name } }"
       ActiveSupport::Notifications.subscribed(callback) do
-        AsnSchema.execute("{ nameable(id: 1) { name } }")
+        if TESTING_EXEC_NEXT
+          AsnSchema.execute_next(query_str)
+        else
+          AsnSchema.execute(query_str)
+        end
       end
 
       expected_names = [
@@ -63,6 +77,7 @@ if testing_rails?
         "authorized.graphql",
         "dataloader_source.graphql",
         "execute_field.graphql",
+        (TESTING_EXEC_NEXT ? "resolve_type.graphql" : nil), # `loads:`-related?
         "resolve_type.graphql",
         "authorized.graphql",
         "execute_field.graphql",

@@ -82,7 +82,7 @@ maxmemory-policy noeviction
 appendonly yes
 ```
 
-Otherwise, Redis will drop data that doesn't fit in memory (read more in ["Redis persistence"](https://redis.io/topics/persistence)).
+Otherwise, Redis will drop data that doesn't fit in memory (read more in ["Redis persistence"](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)).
 
 If you're already using Redis in your application, see ["Storing Data in Redis"](https://www.mikeperham.com/2015/09/24/storing-data-with-redis/) for options to isolate data and tune your configuration.
 
@@ -120,7 +120,7 @@ There are also two configurations for managing persistence:
 
 ### Connection Pool
 
-For better performance reading and writing to Redis, you can pass a `connection_pool:` instead of `redis:`, using the [`connection_pool` gem]():
+For better performance reading and writing to Redis, you can pass a `connection_pool:` instead of `redis:`, using the [`connection_pool` gem](https://github.com/mperham/connection_pool):
 
 ```ruby
   use GraphQL::Pro::AblySubscriptions,
@@ -161,7 +161,7 @@ if result.subscription?
 end
 ```
 
-Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
+Read more here: ["Using CORS"](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS).
 
 ## Webhook configuration
 
@@ -169,7 +169,7 @@ Your server needs to receive webhooks from Ably when clients disconnect. This ke
 
 ### Server
 
-*Note: if you're setting up in a development environment you should follow the [Developing with webhooks](#Developing-with-webhooks) section first*
+*Note: if you're setting up in a development environment you should follow the [Developing with webhooks](#developing-with-webhooks) section first*
 
 Mount the Rack app for handling webhooks from Ably. For example, on Rails:
 

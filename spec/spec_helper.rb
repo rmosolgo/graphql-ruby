@@ -38,18 +38,14 @@ if ENV["GRAPHQL_FUTURE"]
   puts "Opting into GraphQL::Schema::Visibility::Profile"
   GraphQL::Schema.use(GraphQL::Schema::Visibility, migration_errors: true)
   ADD_WARDEN = false
-  TESTING_BATCHING = true
-  puts "Opting into Execution::Batching"
-  require "graphql/execution/batching"
-  GraphQL::Schema.use(GraphQL::Execution::Batching)
-  GraphQL::Schema::Field.prepend(GraphQL::Execution::Batching::FieldCompatibility)
+  TESTING_EXEC_NEXT = true
 else
   ADD_WARDEN = true
-  TESTING_BATCHING = false
+  TESTING_EXEC_NEXT = false
 end
 
 # C methods aren't fair game in non-main Ractors
-RUN_RACTOR_TESTS = (defined?(::Ractor) && !USING_C_PARSER && !ENV["TEST"])
+RUN_RACTOR_TESTS = (defined?(::Ractor) && !USING_C_PARSER && (ENV["TEST"].nil? || ENV["TEST"].include?("ractor_shareable")))
 
 require "rake"
 require "graphql/rake_task"

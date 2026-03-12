@@ -191,7 +191,7 @@ module GraphQL
         if refresh
           @top_level_profile = nil
         end
-        @top_level_profile ||= @schema.visibility_profile_class.new(context: Query::NullContext.instance, schema: @schema, visibility: self)
+        @top_level_profile ||= @schema.visibility_profile_class.new(context: @schema.null_context, schema: @schema, visibility: self)
       end
 
       private

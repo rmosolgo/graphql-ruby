@@ -4,7 +4,7 @@ module GraphQL
   # It's passed to {Schema.unauthorized_object}.
   #
   # Alternatively, custom code in `authorized?` may raise this error. It will be routed the same way.
-  class UnauthorizedError < GraphQL::Error
+  class UnauthorizedError < GraphQL::RuntimeError
     # @return [Object] the application object that failed the authorization check
     attr_reader :object
 
@@ -23,10 +23,11 @@ module GraphQL
       @object = object
       @type = type
       @context = context
+      @ast_nodes = nil
       message ||= "An instance of #{object.class} failed #{type.graphql_name}'s authorization check"
       super(message)
     end
 
-    attr_accessor :path
+    attr_accessor :path, :ast_nodes
   end
 end

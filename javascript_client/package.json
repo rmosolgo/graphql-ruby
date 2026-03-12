@@ -38,7 +38,7 @@
     "prepublishOnly": "tsc"
   },
   "dependencies": {
-    "glob": "^10.5.0",
+    "glob": "^13.0.6",
     "minimist": "^1.2.0"
   },
   "peerDependencies": {

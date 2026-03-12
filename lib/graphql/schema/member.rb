@@ -2,6 +2,7 @@
 require 'graphql/schema/member/base_dsl_methods'
 require 'graphql/schema/member/graphql_type_names'
 require 'graphql/schema/member/has_ast_node'
+require 'graphql/schema/member/has_authorization'
 require 'graphql/schema/member/has_dataloader'
 require 'graphql/schema/member/has_directives'
 require 'graphql/schema/member/has_deprecation_reason'
@@ -31,6 +32,10 @@ module GraphQL
       extend HasPath
       extend HasAstNode
       extend HasDirectives
+
+      def self.authorizes?(_ctx)
+        false
+      end
     end
   end
 end

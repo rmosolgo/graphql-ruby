@@ -7,10 +7,17 @@ module GraphQL
       module HasNodesField
         def self.included(child_class)
           child_class.field(**field_options, &field_block)
+          child_class.extend(ExecutionMethods)
+        end
+
+        module ExecutionMethods
+          def get_relay_nodes(context, ids:)
+            ids.map { |id| context.schema.object_from_id(id, context) }
+          end
         end
 
         def get_relay_nodes(ids:)
-          ids.map { |id| context.schema.object_from_id(id, context) }
+          self.class.get_relay_nodes(context, ids: ids)
         end
 
         class << self
@@ -21,7 +28,8 @@ module GraphQL
               null: false,
               description: "Fetches a list of objects given a list of IDs.",
               relay_nodes_field: true,
-              resolver_method: :get_relay_nodes
+              resolver_method: :get_relay_nodes,
+              resolve_static: :get_relay_nodes
             }
           end
 

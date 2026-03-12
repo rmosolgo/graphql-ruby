@@ -83,6 +83,38 @@ module GraphQL
         end
       end
 
+      def populate_connection(field, object, value, original_arguments, context)
+        if value.is_a? GraphQL::ExecutionError
+          # This isn't even going to work because context doesn't have ast_node anymore
+          context.add_error(value)
+          nil
+        elsif value.nil?
+          nil
+        elsif value.is_a?(GraphQL::Pagination::Connection)
+          # update the connection with some things that may not have been provided
+          value.context ||= context
+          value.parent ||= object
+          value.first_value ||= original_arguments[:first]
+          value.after_value ||= original_arguments[:after]
+          value.last_value ||= original_arguments[:last]
+          value.before_value ||= original_arguments[:before]
+          value.arguments ||= original_arguments # rubocop:disable Development/ContextIsPassedCop -- unrelated .arguments method
+          value.field ||= field
+          if field.has_max_page_size? && !value.has_max_page_size_override?
+            value.max_page_size = field.max_page_size
+          end
+          if field.has_default_page_size? && !value.has_default_page_size_override?
+            value.default_page_size = field.default_page_size
+          end
+          if (custom_t = context.schema.connections.edge_class_for_field(field))
+            value.edge_class = custom_t
+          end
+          value
+        else
+          context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
+          context.schema.connections.wrap(field, object, value, original_arguments, context)
+        end
+      end
       # use an override if there is one
       # @api private
       def edge_class_for_field(field)

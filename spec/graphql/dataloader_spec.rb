@@ -137,36 +137,48 @@ describe GraphQL::Dataloader do
       end
     end
 
-    module Ingredient
-      include GraphQL::Schema::Interface
-      field :name, String, null: false
-      field :id, ID, null: false
+    class BaseField < GraphQL::Schema::Field
+    end
 
-      field :name_by_scoped_context, String
+    class BaseObject < GraphQL::Schema::Object
+      field_class(BaseField)
+    end
+
+    module BaseInterface
+      include GraphQL::Schema::Interface
+      field_class(BaseField)
+    end
+
+    module Ingredient
+      include BaseInterface
+      field :name, String, null: false, hash_key: :name
+      field :id, ID, null: false, hash_key: :id
+
+      field :name_by_scoped_context, String, resolve_legacy_instance_method: true
 
       def name_by_scoped_context
         context[:ingredient_name]
       end
     end
 
-    class Grain < GraphQL::Schema::Object
+    class Grain < BaseObject
       implements Ingredient
     end
 
-    class LeaveningAgent < GraphQL::Schema::Object
+    class LeaveningAgent < BaseObject
       implements Ingredient
     end
 
-    class Dairy < GraphQL::Schema::Object
+    class Dairy < BaseObject
       implements Ingredient
     end
 
-    class Recipe < GraphQL::Schema::Object
+    class Recipe < BaseObject
       def self.authorized?(obj, ctx)
         ctx.dataloader.with(AuthorizedSource, ctx[:batched_calls_counter]).load(obj)
       end
 
-      field :name, String, null: false
+      field :name, String, null: false, hash_key: :name
       field :ingredients, [Ingredient], null: false, resolve_batch: true
 
       def self.ingredients(objects, context)
@@ -180,7 +192,7 @@ describe GraphQL::Dataloader do
         ingredients
       end
 
-      field :slow_ingredients, [Ingredient], null: false
+      field :slow_ingredients, [Ingredient], null: false, resolve_legacy_instance_method: true
 
       def slow_ingredients
         # Use `object[:id]` here to force two different instances of the loader in the test
@@ -188,19 +200,15 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Cookbook < GraphQL::Schema::Object
-      field :featured_recipe, Recipe
-
-      def self.all_featured_recipe(objects, context)
-        objects.map { |o| Database.mget([o[:featured_recipe]]).first }
-      end
+    class Cookbook < BaseObject
+      field :featured_recipe, Recipe, resolve_legacy_instance_method: true
 
       def featured_recipe
         -> { Database.mget([object[:featured_recipe]]).first }
       end
     end
 
-    class Query < GraphQL::Schema::Object
+    class Query < BaseObject
       field :recipes, [Recipe], null: false, resolve_static: true
 
       def self.recipes(context)
@@ -211,7 +219,7 @@ describe GraphQL::Dataloader do
         self.class.recipes(context)
       end
 
-      field :ingredient, Ingredient do
+      field :ingredient, Ingredient, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -219,7 +227,7 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load(id)
       end
 
-      field :ingredient_by_name, Ingredient do
+      field :ingredient_by_name, Ingredient, resolve_legacy_instance_method: true do
         argument :name, String
       end
 
@@ -229,7 +237,7 @@ describe GraphQL::Dataloader do
         ing
       end
 
-      field :nested_ingredient, Ingredient do
+      field :nested_ingredient, Ingredient, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -237,7 +245,7 @@ describe GraphQL::Dataloader do
         dataloader.with(NestedDataObject).load(id)
       end
 
-      field :slow_recipe, Recipe do
+      field :slow_recipe, Recipe, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -245,7 +253,7 @@ describe GraphQL::Dataloader do
         dataloader.with(SlowDataObject, id).load(id)
       end
 
-      field :recipe, Recipe do
+      field :recipe, Recipe, resolve_legacy_instance_method: true do
         argument :id, ID, loads: Recipe, as: :recipe
       end
 
@@ -253,7 +261,7 @@ describe GraphQL::Dataloader do
         recipe
       end
 
-      field :recipe_by_id_using_load, Recipe do
+      field :recipe_by_id_using_load, Recipe, resolve_legacy_instance_method: true do
         argument :id, ID, required: false
       end
 
@@ -261,7 +269,7 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load(id)
       end
 
-      field :recipes_by_id_using_load_all, [Recipe] do
+      field :recipes_by_id_using_load_all, [Recipe], resolve_legacy_instance_method: true do
         argument :ids, [ID, null: true]
       end
 
@@ -274,14 +282,14 @@ describe GraphQL::Dataloader do
       end
 
       def self.recipes_by_id(context, recipes:)
-        context.dataloader.with(DataObject).load_all(recipes)
+        recipes
       end
 
       def recipes_by_id(recipes:)
         recipes
       end
 
-      field :key_ingredient, Ingredient do
+      field :key_ingredient, Ingredient, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -294,7 +302,7 @@ describe GraphQL::Dataloader do
         argument :ingredient_number, Int
       end
 
-      field :recipe_ingredient, Ingredient do
+      field :recipe_ingredient, Ingredient, resolve_legacy_instance_method: true do
         argument :recipe, RecipeIngredientInput
       end
 
@@ -305,7 +313,7 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load(ingredient_id)
       end
 
-      field :common_ingredients, [Ingredient] do
+      field :common_ingredients, [Ingredient], resolve_legacy_instance_method: true do
         argument :recipe_1_id, ID
         argument :recipe_2_id, ID
       end
@@ -325,16 +333,13 @@ describe GraphQL::Dataloader do
       end
 
       def self.common_ingredients_with_load(objects, context, recipe_1:, recipe_2:)
-        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([recipe_1, recipe_2])
-
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         results = context.dataloader.with(DataObject).load_all(common_ids)
         Array.new(objects.size, results)
       end
 
       def common_ingredients_with_load(recipe_1:, recipe_2:)
-        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
-        dataloader.with(DataObject).load_all(common_ids)
+        self.class.common_ingredients_with_load([object], context, recipe_1: recipe_1, recipe_2: recipe_2).first
       end
 
       field :common_ingredients_from_input_object, [Ingredient], null: false, resolve_batch: true do
@@ -346,21 +351,18 @@ describe GraphQL::Dataloader do
       end
 
       def common_ingredients_from_input_object(input:)
-        recipe_1 = input[:recipe_1]
-        recipe_2 = input[:recipe_2]
-
-        common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
-        dataloader.with(DataObject).load_all(common_ids)
+        self.class.common_ingredients_from_input_object([object], context, input: input).first
       end
 
       def self.common_ingredients_from_input_object(objects, context, input:)
-        recipe_1, recipe_2 = context.dataloader.with(DataObject).load_all([input[:recipe_1], input[:recipe_2]])
+        recipe_1 = input[:recipe_1]
+        recipe_2 = input[:recipe_2]
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         results = context.dataloader.with(DataObject).load_all(common_ids)
         Array.new(objects.size, results)
       end
 
-      field :ingredient_with_custom_batch_key, Ingredient do
+      field :ingredient_with_custom_batch_key, Ingredient, resolve_legacy_instance_method: true do
         argument :id, ID
         argument :batch_key, String
       end
@@ -369,7 +371,7 @@ describe GraphQL::Dataloader do
         dataloader.with(CustomBatchKeySource, batch_key).load(id)
       end
 
-      field :recursive_ingredient_name, String do
+      field :recursive_ingredient_name, String, resolve_legacy_instance_method: true do
         argument :id, ID
       end
 
@@ -378,7 +380,7 @@ describe GraphQL::Dataloader do
         res["data"]["ingredient"]["name"]
       end
 
-      field :test_error, String do
+      field :test_error, String, resolve_legacy_instance_method: true do
         argument :source, Boolean, required: false, default_value: false
       end
 
@@ -395,7 +397,7 @@ describe GraphQL::Dataloader do
         argument :batch_key, String
       end
 
-      field :lookahead_ingredient, Ingredient, extras: [:lookahead] do
+      field :lookahead_ingredient, Ingredient, extras: [:lookahead], resolve_legacy_instance_method: true do
         argument :input, LookaheadInput
       end
 
@@ -404,7 +406,7 @@ describe GraphQL::Dataloader do
         dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
       end
 
-      field :cookbooks, [Cookbook]
+      field :cookbooks, [Cookbook], resolve_legacy_instance_method: true
 
       def cookbooks
         [
@@ -420,7 +422,7 @@ describe GraphQL::Dataloader do
       argument :argument_1, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-      field :value, String
+      field :value, String, hash_key: :value
       def resolve(argument_1:)
         { value: argument_1 }
       end
@@ -430,7 +432,7 @@ describe GraphQL::Dataloader do
       argument :argument_2, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-      field :value, String
+      field :value, String, hash_key: :value
       def resolve(argument_2:)
         { value: argument_2 }
       end
@@ -456,11 +458,11 @@ describe GraphQL::Dataloader do
       end
     end
 
-    class Mutation < GraphQL::Schema::Object
+    class Mutation < BaseObject
       field :mutation_1, mutation: Mutation1
       field :mutation_2, mutation: Mutation2
       field :mutation_3, mutation: Mutation3
-      field :set_cache, String do
+      field :set_cache, String, resolve_legacy_instance_method: true do
         argument :input, String
       end
 
@@ -484,6 +486,7 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     lazy_resolve Proc, :call
 
     class FieldTestError < StandardError; end
@@ -579,6 +582,7 @@ describe GraphQL::Dataloader do
 
     query(Query)
     use GraphQL::Dataloader
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
   end
 
   module DataloaderAssertions
@@ -634,8 +638,8 @@ describe GraphQL::Dataloader do
         let(:parts_schema) { make_schema_from(PartsSchema) }
 
         def exec_query(query_string, schema: self.schema, context: nil, variables: nil)
-          if TESTING_BATCHING
-            schema.execute_batching(query_string, context: context, variables: variables)
+          if TESTING_EXEC_NEXT
+            schema.execute_next(query_string, context: context, variables: variables)
           else
             schema.execute(query_string, context: context, variables: variables)
           end
@@ -963,24 +967,24 @@ describe GraphQL::Dataloader do
 
         it "batches calls in .authorized?" do
           query_str = "{ r1: recipe(id: 5) { name } r2: recipe(id: 6) { name } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           exec_query(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
 
           query_str = "{ recipes { name } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           exec_query(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
 
           query_str = "{ recipesById(ids: [5, 6]) { name } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           exec_query(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
         end
 
         it "batches nested object calls in .authorized? after using lazy_resolve" do
           query_str = "{ cookbooks { featuredRecipe { name } } }"
-          context = { batched_calls_counter: BatchedCallsCounter.new, batching_authorizes: true }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           result = exec_query(query_str, context: context)
           assert_equal ["Cornbread", "Grits"], result["data"]["cookbooks"].map { |c| c["featuredRecipe"]["name"] }
           refute result.key?("errors")
@@ -1132,16 +1136,22 @@ describe GraphQL::Dataloader do
           err = assert_raises GraphQL::Error do
             exec_query("{ testError }")
           end
-
-          assert_equal "Field error", err.message
+          expected_message = "Field error"
+          if TESTING_EXEC_NEXT
+            expected_message = "Resolving Query.testError: #{expected_message}"
+          end
+          assert_equal expected_message, err.message
         end
 
         it "raises errors from sources" do
           err = assert_raises GraphQL::Error do
             exec_query("{ testError(source: true) }")
           end
-
-          assert_equal "Source error on: [1]", err.message
+          expected_message = "Source error on: [1]"
+          if TESTING_EXEC_NEXT
+            expected_message = "Resolving Query.testError: #{expected_message}"
+          end
+          assert_equal expected_message, err.message
         end
 
         it "works with very very large queries" do
@@ -1233,17 +1243,17 @@ describe GraphQL::Dataloader do
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 7 : 10), FiberCounting.last_spawn_fiber_count)
-            assert_last_max_fiber_count((TESTING_BATCHING ? 7 : 9), "No limit works as expected")
+            assert_equal(10, FiberCounting.last_spawn_fiber_count)
+            assert_last_max_fiber_count((TESTING_EXEC_NEXT ? 9 : 9), "No limit works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 8 : 12), FiberCounting.last_spawn_fiber_count)
+            assert_equal((TESTING_EXEC_NEXT ? 11 : 12), FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(4, "Limit of 4 works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
-            assert_equal((TESTING_BATCHING ? 7 : 8), FiberCounting.last_spawn_fiber_count)
+            assert_equal(8, FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(6, "Limit of 6 works as expected")
           end
 
@@ -1324,27 +1334,6 @@ describe GraphQL::Dataloader do
       end
 
       include DataloaderAssertions
-    end
-
-    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
-      describe "nonblocking: true with libev" do
-        require "libev_scheduler"
-        def make_schema_from(schema)
-          Class.new(schema) do
-            use GraphQL::Dataloader, nonblocking: true
-          end
-        end
-
-        before do
-          Fiber.set_scheduler(Libev::Scheduler.new)
-        end
-
-        after do
-          Fiber.set_scheduler(nil)
-        end
-
-        include DataloaderAssertions
-      end
     end
   end
 

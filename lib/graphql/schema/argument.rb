@@ -4,6 +4,7 @@ module GraphQL
     class Argument
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
+      include GraphQL::Schema::Member::HasAuthorization
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
       include GraphQL::Schema::Member::HasValidators
@@ -162,6 +163,10 @@ module GraphQL
 
       def visible?(context)
         true
+      end
+
+      def authorizes?(_context)
+        self.method(:authorized?).owner != GraphQL::Schema::Argument
       end
 
       def authorized?(obj, value, ctx)

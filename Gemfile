@@ -8,13 +8,7 @@ gem 'stackprof', platform: :ruby
 gem 'pry'
 gem 'pry-stack_explorer', platform: :ruby
 
-if RUBY_VERSION >= "3.0"
-  gem "libev_scheduler"
-  gem "evt"
-end
-
 if RUBY_VERSION >= "3.2.0"
-  gem "minitest-mock"
   gem "async", "~>2.0"
   gem "minitest-mock"
 end
