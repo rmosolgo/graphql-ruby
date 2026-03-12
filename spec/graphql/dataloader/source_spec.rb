@@ -8,6 +8,18 @@ describe GraphQL::Dataloader::Source do
     end
   end
 
+  if testing_rails?
+    describe "with field configuration shorthands" do
+      include VulfpeckSchemaHelpers
+      it "calls the configured source" do
+        skip("Not implemented") unless TESTING_EXEC_NEXT
+        result = exec_query("{ bandsCount albumsCount }")
+        assert_equal 4, result["data"]["bandsCount"]
+        assert_equal 6, result["data"]["albumsCount"]
+      end
+    end
+  end
+
   it "raises an error when it tries too many times to sync" do
     dl = GraphQL::Dataloader.new
     dl.append_job { dl.with(FailsToLoadSource).load(1) }

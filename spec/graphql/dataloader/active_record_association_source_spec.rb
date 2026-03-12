@@ -3,50 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Dataloader::ActiveRecordAssociationSource do
   if testing_rails?
-    class VulfpeckSchema < GraphQL::Schema
-      class Album < GraphQL::Schema::Object
-        field :name, String
-      end
-      class Band < GraphQL::Schema::Object
-        field :albums, [Album] do
-          argument :genre, String, required: false
-          argument :reverse, Boolean, required: false, default_value: false
-          argument :unscoped, Boolean, required: false, default_value: false
-        end
-
-        def albums(genre: nil, reverse:, unscoped:)
-          if unscoped
-            scope = nil
-          else
-            scope = ::Album
-            if genre
-              scope = scope.where(band_genre: genre)
-            end
-
-            scope = if reverse
-              scope.order(name: :desc)
-            else
-              scope.order(:name)
-            end
-          end
-          dataload_association(:albums, scope: scope)
-        end
-      end
-
-      class Query < GraphQL::Schema::Object
-        field :band, Band do
-          argument :name, String
-        end
-
-        def band(name:)
-          ::Band.find_by(name: name)
-        end
-      end
-
-      query(Query)
-      use GraphQL::Dataloader
-    end
-
+    include VulfpeckSchemaHelpers
     it "works with different scopes on the same object at runtime" do
       query_str = <<~GRAPHQL
         {
@@ -67,11 +24,28 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
         }
       GRAPHQL
 
-      result = VulfpeckSchema.execute(query_str)
+      result = exec_query(query_str)
       assert_equal ["Mit Peck", "My First Car"], result["data"]["band"]["allAlbums"].map { |a| a["name"] }
       assert_equal ["Mit Peck", "My First Car"], result["data"]["band"]["unscopedAlbums"].map { |a| a["name"] }
       assert_equal ["My First Car", "Mit Peck"], result["data"]["band"]["reverseAlbums"].map { |a| a["name"] }
       assert_equal [], result["data"]["band"]["countryAlbums"]
+    end
+
+    it "works with field shorthands" do
+      skip("NOT IMPLEMENTED") unless TESTING_EXEC_NEXT
+      result = exec_query <<-GRAPHQL
+        {
+          band(name: "Vulfpeck") {
+            allAlbums {
+              name
+              band { name }
+            }
+          }
+        }
+      GRAPHQL
+
+      assert_equal ["Mit Peck", "My First Car"], result["data"]["band"]["allAlbums"].map { |a| a["name"] }
+      assert_equal ["Vulfpeck", "Vulfpeck"], result["data"]["band"]["allAlbums"].map { |a| a["band"]["name"] }
     end
 
     it_dataloads "queries for associated records when the association isn't already loaded" do |d|

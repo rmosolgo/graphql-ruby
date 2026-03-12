@@ -26,6 +26,12 @@ if testing_rails?
       assert_equal 4, example.dataload_record(Album, "Homey", find_by: :name).id
     end
 
+    it_dataloads "loads many records with dataload_all_records" do |d|
+      example = DataloaderExample.new(d)
+      assert_equal ["Homey", "Mit Peck"], example.dataload_all_records(Album, [4, 1]).map(&:name)
+      assert_equal [4, 1], example.dataload_all_records(Album, ["Homey", "Mit Peck"], find_by: :name).map(&:id)
+    end
+
     it_dataloads "loads association with dataload_association" do |d|
       album1 = Album.find(1)
       example = DataloaderExample.new(d, album1)
@@ -35,6 +41,17 @@ if testing_rails?
       assert_equal "Chon", example.dataload_association(album, :band).name
       album.reload
       assert_nil example.dataload_association(album, :band, scope: Band.country)
+    end
+
+    it_dataloads "loads association on many objects with dataload_all_associations" do |d|
+      album1 = Album.find(1)
+      album4 = Album.find(4)
+      example = DataloaderExample.new(d, album1)
+
+      assert_equal ["Vulfpeck", "Chon"], example.dataload_all_associations([album1, album4], :band).map(&:name)
+      album1.reload
+      album4.reload
+      assert_equal [nil, nil], example.dataload_all_associations([album1, album4], :band, scope: Band.country)
     end
 
     it_dataloads "calls any source with dataload..." do |d|

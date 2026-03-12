@@ -163,6 +163,80 @@ if testing_rails?
   c.albums.create!(id: 4, name: "Homey")
   c.albums.create!(id: 5, name: "Chon")
   w.albums.create!(id: 6, name: "Summerteeth")
+
+  module VulfpeckSchemaHelpers
+    class VulfpeckSchema < GraphQL::Schema
+      class ModelCountSource < GraphQL::Dataloader::Source
+        def initialize(model)
+          @model = model
+        end
+
+        def fetch(objects)
+          result = @model.count
+          Array.new(objects.size, result)
+        end
+      end
+
+      class Album < GraphQL::Schema::Object
+        field :name, String
+        field :band, "VulfpeckSchemaHelpers::VulfpeckSchema::Band", dataload: { association: true }
+      end
+      class Band < GraphQL::Schema::Object
+        field :name, String
+        field :albums, [Album], resolve_legacy_instance_method: true do
+          argument :genre, String, required: false
+          argument :reverse, Boolean, required: false, default_value: false
+          argument :unscoped, Boolean, required: false, default_value: false
+        end
+
+        def albums(genre: nil, reverse:, unscoped:)
+          if unscoped
+            scope = nil
+          else
+            scope = ::Album
+            if genre
+              scope = scope.where(band_genre: genre)
+            end
+
+            scope = if reverse
+              scope.order(name: :desc)
+            else
+              scope.order(:name)
+            end
+          end
+          dataload_association(:albums, scope: scope)
+        end
+
+        field :all_albums, [Album], dataload: { association: :albums }
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :band, Band, resolve_legacy_instance_method: true do
+          argument :name, String
+        end
+
+        def band(name:)
+          ::Band.find_by(name: name)
+        end
+
+        field :root_band, Band, dataload: { model: ::Band, using: :band_name, find_by: :name }
+        field :bands_count, Integer, dataload: { with: ModelCountSource, by: [::Band]}
+        field :albums_count, Integer, dataload: { with: ModelCountSource, by: [::Album]}
+      end
+
+      query(Query)
+      use GraphQL::Dataloader
+      use GraphQL::Execution::Next
+    end
+
+    def exec_query(...)
+      if TESTING_EXEC_NEXT
+        VulfpeckSchema.execute_next(...)
+      else
+        VulfpeckSchema.execute(...)
+      end
+    end
+  end
   class Author < ActiveRecord::Base
     has_many :books
 
