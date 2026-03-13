@@ -11,7 +11,7 @@ module GraphQL
         fragment_parent = context.object_types[-2]
         fragment_child = context.object_types.last
         if fragment_child
-          validate_fragment_in_scope(fragment_parent, fragment_child, node, context, context.path)
+          validate_fragment_in_scope(fragment_parent, fragment_child, node, context, nil)
         end
         super
       end
@@ -47,12 +47,12 @@ module GraphQL
         parent_types = @types.possible_types(parent_type.unwrap)
         child_types = @types.possible_types(child_type.unwrap)
 
-        if child_types.none? { |c| parent_types.include?(c) }
+        if !parent_types.intersect?(child_types)
           name = node.respond_to?(:name) ? " #{node.name}" : ""
           add_error(GraphQL::StaticValidation::FragmentSpreadsArePossibleError.new(
             "Fragment#{name} on #{child_type.graphql_name} can't be spread inside #{parent_type.graphql_name}",
             nodes: node,
-            path: path,
+            path: path || context.path,
             fragment_name: name.empty? ? "unknown" : name,
             type: child_type.graphql_name,
             parent: parent_type.graphql_name
