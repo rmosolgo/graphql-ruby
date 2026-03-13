@@ -34,7 +34,9 @@ module GraphQL
       end
 
       def on_field(node, _parent)
-        setting_errors { conflicts_within_selection_set(node, type_definition) }
+        if !node.selections.empty?
+          setting_errors { conflicts_within_selection_set(node, type_definition) }
+        end
         super
       end
 
@@ -71,13 +73,13 @@ module GraphQL
       # Collect all fields from selections, expanding fragment spreads inline.
       # Returns a Hash of { response_key => [Field, ...] }
       def collect_fields(selections, owner_type:, parents:)
-        fields = []
+        response_keys = {}
         visited = {}
-        collect_fields_inner(selections, owner_type: owner_type, parents: parents, fields: fields, visited_fragments: visited)
-        fields.group_by { |f| f.node.alias || f.node.name }
+        collect_fields_inner(selections, owner_type: owner_type, parents: parents, response_keys: response_keys, visited_fragments: visited)
+        response_keys
       end
 
-      def collect_fields_inner(selections, owner_type:, parents:, fields:, visited_fragments:)
+      def collect_fields_inner(selections, owner_type:, parents:, response_keys:, visited_fragments:)
         # Collect direct fields and inline fragments first, then expand named fragments.
         # This maintains field ordering compatible with the original algorithm where
         # direct fields are compared before fragment fields.
@@ -86,13 +88,19 @@ module GraphQL
           case sel
           when GraphQL::Language::Nodes::Field
             definition = @types.field(owner_type, sel.name)
-            fields << Field.new(sel, definition, owner_type, parents)
+            key = sel.alias || sel.name
+            field = Field.new(sel, definition, owner_type, parents)
+            if (arr = response_keys[key])
+              arr << field
+            else
+              response_keys[key] = [field]
+            end
           when GraphQL::Language::Nodes::InlineFragment
             frag_type = sel.type ? @types.type(sel.type.name) : owner_type
             if frag_type
               new_parents = parents.dup
               new_parents << frag_type
-              collect_fields_inner(sel.selections, owner_type: frag_type, parents: new_parents, fields: fields, visited_fragments: visited_fragments)
+              collect_fields_inner(sel.selections, owner_type: frag_type, parents: new_parents, response_keys: response_keys, visited_fragments: visited_fragments)
             end
           when GraphQL::Language::Nodes::FragmentSpread
             (deferred_spreads ||= []) << sel
@@ -109,7 +117,7 @@ module GraphQL
             next unless frag_type
             new_parents = parents.dup
             new_parents << frag_type
-            collect_fields_inner(frag.selections, owner_type: frag_type, parents: new_parents, fields: fields, visited_fragments: visited_fragments)
+            collect_fields_inner(frag.selections, owner_type: frag_type, parents: new_parents, response_keys: response_keys, visited_fragments: visited_fragments)
           end
         end
       end
