@@ -5,7 +5,6 @@ module GraphQL
       def initialize(document, context)
         @path = []
         @object_types = []
-        @directives = []
         @current_field_definition = nil
         @argument_definitions = []
         @current_directive_definition = nil
