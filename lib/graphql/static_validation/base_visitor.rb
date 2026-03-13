@@ -6,7 +6,8 @@ module GraphQL
         @path = []
         @object_types = []
         @current_field_definition = nil
-        @argument_definitions = []
+        @current_argument_definition = nil
+        @parent_argument_definition = nil
         @current_directive_definition = nil
         @context = context
         @types = context.query.types
@@ -109,7 +110,7 @@ module GraphQL
         end
 
         def on_argument(node, parent)
-          argument_defn = if (arg = @argument_definitions.last)
+          argument_defn = if (arg = @current_argument_definition)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
               @types.argument(arg_type, node.name)
@@ -124,10 +125,13 @@ module GraphQL
             nil
           end
 
-          @argument_definitions.push(argument_defn)
+          prev_parent = @parent_argument_definition
+          @parent_argument_definition = @current_argument_definition
+          @current_argument_definition = argument_defn
           @path.push(node.name)
           super
-          @argument_definitions.pop
+          @current_argument_definition = @parent_argument_definition
+          @parent_argument_definition = prev_parent
           @path.pop
         end
 
@@ -138,7 +142,7 @@ module GraphQL
         end
 
         def on_input_object(node, parent)
-          arg_defn = @argument_definitions.last
+          arg_defn = @current_argument_definition
           if arg_defn && arg_defn.type.list?
             @path.push(parent.children.index(node))
             super
@@ -170,9 +174,8 @@ module GraphQL
 
         # @return [GraphQL::Argument, nil] The most-recently-entered GraphQL::Argument, if currently inside one
         def argument_definition
-          # Don't get the _last_ one because that's the current one.
-          # Get the second-to-last one, which is the parent of the current one.
-          @argument_definitions[-2]
+          # Return the parent argument definition (not the current one).
+          @parent_argument_definition
         end
 
         private
