@@ -30,11 +30,16 @@ module GraphQL
       end
 
       def on_field_children(new_node)
-        new_node.arguments.each do |arg_node| # rubocop:disable Development/ContextIsPassedCop
-          on_argument(arg_node, new_node)
+        args = new_node.arguments
+        if !args.empty?
+          args.each do |arg_node| # rubocop:disable Development/ContextIsPassedCop
+            on_argument(arg_node, new_node)
+          end
         end
-        visit_directives(new_node)
-        visit_selections(new_node)
+        dirs = new_node.directives
+        visit_directives(new_node) if !dirs.empty?
+        sels = new_node.selections
+        visit_selections(new_node) if !sels.empty?
       end
 
       def visit_directives(new_node)
@@ -59,17 +64,20 @@ module GraphQL
       end
 
       def on_fragment_definition_children(new_node)
-        visit_directives(new_node)
+        visit_directives(new_node) if !new_node.directives.empty?
         visit_selections(new_node)
       end
 
       alias :on_inline_fragment_children :on_fragment_definition_children
 
       def on_operation_definition_children(new_node)
-        new_node.variables.each do |arg_node|
-          on_variable_definition(arg_node, new_node)
+        vars = new_node.variables
+        if !vars.empty?
+          vars.each do |arg_node|
+            on_variable_definition(arg_node, new_node)
+          end
         end
-        visit_directives(new_node)
+        visit_directives(new_node) if !new_node.directives.empty?
         visit_selections(new_node)
       end
 
