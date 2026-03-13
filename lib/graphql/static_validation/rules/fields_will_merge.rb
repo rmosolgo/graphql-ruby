@@ -21,6 +21,7 @@ module GraphQL
       def initialize(*)
         super
         @conflict_count = 0
+        @max_errors = context.max_errors
         # Track which sub-selection node pairs have been compared to prevent
         # infinite recursion with cyclic fragments
         @compared_sub_selections = {}.compare_by_identity
@@ -210,7 +211,7 @@ module GraphQL
       end
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
-        return if @conflict_count >= context.max_errors
+        return if @conflict_count >= @max_errors
         return if field1.definition.nil? || field2.definition.nil?
 
         node1 = field1.node
