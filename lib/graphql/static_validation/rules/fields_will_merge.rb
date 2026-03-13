@@ -190,16 +190,65 @@ module GraphQL
       def find_conflicts_within(response_keys)
         response_keys.each do |key, fields|
           next if fields.size < 2
-          # find conflicts within nodes
-          i = 0
-          while i < fields.size
-            j = i + 1
-            while j < fields.size
-              find_conflict(key, fields[i], fields[j])
-              j += 1
+
+          # Optimization: group fields by a signature (name + definition + arguments).
+          # Fields with the same signature can only conflict on sub-selections,
+          # so we only need to compare one pair within each group.
+          # Fields with different signatures need cross-group comparison.
+          if fields.size > 4
+            groups = fields.group_by { |f| field_signature(f) }
+            unique_groups = groups.values
+
+            if unique_groups.size == 1
+              # All fields are identical in signature — just compare first two
+              # (they share definition, name, args — only sub-selections could differ)
+              group = unique_groups[0]
+              if group[0].node.selections.size > 0 || group[1].node.selections.size > 0
+                find_conflict(key, group[0], group[1])
+              end
+              # If no selections on either, there's nothing that can conflict
+            else
+              # Compare representatives across different groups
+              gi = 0
+              while gi < unique_groups.size
+                gj = gi + 1
+                while gj < unique_groups.size
+                  # Compare one representative from each group
+                  find_conflict(key, unique_groups[gi][0], unique_groups[gj][0])
+                  gj += 1
+                end
+                # Within same group, only check first pair for sub-selection conflicts
+                group = unique_groups[gi]
+                if group.size >= 2 && (group[0].node.selections.size > 0 || group[1].node.selections.size > 0)
+                  find_conflict(key, group[0], group[1])
+                end
+                gi += 1
+              end
             end
-            i += 1
+          else
+            # Small number of fields — original O(n²) is fine
+            i = 0
+            while i < fields.size
+              j = i + 1
+              while j < fields.size
+                find_conflict(key, fields[i], fields[j])
+                j += 1
+              end
+              i += 1
+            end
           end
+        end
+      end
+
+      def field_signature(field)
+        node = field.node
+        defn = field.definition
+        # Build a signature: field name + definition object_id + serialized args
+        args = node.arguments
+        if args.empty?
+          [node.name, defn.object_id]
+        else
+          [node.name, defn.object_id, args.map { |a| [a.name, serialize_arg(a.value)] }]
         end
       end
 

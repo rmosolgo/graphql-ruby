@@ -1,1 +1,2 @@
 {"type":"config","name":"Optimizing graphql-ruby static validation pipeline","metricName":"total_µs","metricUnit":"µs","bestDirection":"lower"}
+{"run":1,"commit":"4434bf5","metric":3118621.6,"metrics":{"introspection_us":481,"abstract_frags_us":242.3,"abstract_frags2_us":377.3,"big_query_us":3823.8,"fields_merge_us":3113697.2},"status":"keep","description":"Baseline: total 3.12s, fields_merge dominates at 3.11s (99.8%)","timestamp":1773418825788,"segment":0}
