@@ -18,8 +18,8 @@ module GraphQL
           # Inline fragment on the same type
           true
         else
-          # Use the already-resolved type from @object_types (pushed by BaseVisitor)
-          type_def = @object_types.last
+          # Use the already-resolved type from @current_object_type (set by BaseVisitor)
+          type_def = @current_object_type
           if type_def.nil? || !type_def.kind.composite?
             add_error(GraphQL::StaticValidation::FragmentsAreOnCompositeTypesError.new(
               "Invalid fragment on type #{node_type.to_query_string} (must be Union, Interface or Object)",

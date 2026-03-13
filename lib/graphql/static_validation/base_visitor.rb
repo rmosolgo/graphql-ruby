@@ -4,7 +4,8 @@ module GraphQL
     class BaseVisitor < GraphQL::Language::StaticVisitor
       def initialize(document, context)
         @path = []
-        @object_types = []
+        @current_object_type = nil
+        @parent_object_type = nil
         @current_field_definition = nil
         @current_argument_definition = nil
         @parent_argument_definition = nil
@@ -19,8 +20,7 @@ module GraphQL
 
       attr_reader :context
 
-      # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
-      attr_reader :object_types
+      attr_reader :current_object_type, :parent_object_type
 
       # @return [Array<String>] The nesting of the current position in the AST
       def path
@@ -57,10 +57,13 @@ module GraphQL
       module ContextMethods
         def on_operation_definition(node, parent)
           object_type = @schema.root_type_for_operation(node.operation_type)
-          @object_types.push(object_type)
+          prev_parent_ot = @parent_object_type
+          @parent_object_type = @current_object_type
+          @current_object_type = object_type
           @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
           super
-          @object_types.pop
+          @current_object_type = @parent_object_type
+          @parent_object_type = prev_parent_ot
           @path.pop
         end
 
@@ -85,19 +88,22 @@ module GraphQL
         end
 
         def on_field(node, parent)
-          parent_type = @object_types.last
+          parent_type = @current_object_type
           field_definition = @types.field(parent_type, node.name)
           prev_field_definition = @current_field_definition
           @current_field_definition = field_definition
+          prev_parent_ot = @parent_object_type
+          @parent_object_type = @current_object_type
           if field_definition
-            @object_types.push(@field_unwrapped_types[field_definition] ||= field_definition.type.unwrap)
+            @current_object_type = @field_unwrapped_types[field_definition] ||= field_definition.type.unwrap
           else
-            @object_types.push(nil)
+            @current_object_type = nil
           end
           @path.push(node.alias || node.name)
           super
           @current_field_definition = prev_field_definition
-          @object_types.pop
+          @current_object_type = @parent_object_type
+          @parent_object_type = prev_parent_ot
           @path.pop
         end
 
@@ -154,12 +160,12 @@ module GraphQL
 
         # @return [GraphQL::BaseType] The current object type
         def type_definition
-          @object_types.last
+          @current_object_type
         end
 
         # @return [GraphQL::BaseType] The type which the current type came from
         def parent_type_definition
-          @object_types[-2]
+          @parent_object_type
         end
 
         # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one
@@ -184,11 +190,14 @@ module GraphQL
           object_type = if node.type
             @types.type(node.type.name)
           else
-            @object_types.last
+            @current_object_type
           end
-          @object_types.push(object_type)
+          prev_parent_ot = @parent_object_type
+          @parent_object_type = @current_object_type
+          @current_object_type = object_type
           yield(node)
-          @object_types.pop
+          @current_object_type = @parent_object_type
+          @parent_object_type = prev_parent_ot
           @path.pop
         end
       end

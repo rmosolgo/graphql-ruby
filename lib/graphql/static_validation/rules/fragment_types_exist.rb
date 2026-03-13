@@ -20,8 +20,8 @@ module GraphQL
         if !fragment_node.type
           true
         else
-          # Use the already-resolved type from @object_types (pushed by BaseVisitor)
-          type = @object_types.last
+          # Use the already-resolved type from @current_object_type (set by BaseVisitor)
+          type = @current_object_type
           if type.nil?
             type_name = fragment_node.type.name
             suggestion = if @schema.did_you_mean

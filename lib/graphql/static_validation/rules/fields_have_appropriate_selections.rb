@@ -7,9 +7,9 @@ module GraphQL
       include GraphQL::StaticValidation::Error::ErrorHelper
 
       def on_field(node, parent)
-        # Use @object_types.last which was already computed by BaseVisitor#on_field
+        # Use @current_object_type which was already computed by BaseVisitor#on_field
         # via field_definition.type.unwrap — avoids redundant unwrap call
-        if validate_field_selections(node, @object_types.last)
+        if validate_field_selections(node, @current_object_type)
           super
         end
       end
