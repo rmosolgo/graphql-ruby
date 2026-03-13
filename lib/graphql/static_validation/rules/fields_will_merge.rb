@@ -39,6 +39,7 @@ module GraphQL
         super
         @conflict_count = 0
         @max_errors = context.max_errors
+        @fragments = context.fragments
         # Track which sub-selection node pairs have been compared to prevent
         # infinite recursion with cyclic fragments
         @compared_sub_selections = {}.compare_by_identity
@@ -140,7 +141,7 @@ module GraphQL
             sel_idx += 1
             next if visited_fragments.key?(sel.name)
             visited_fragments[sel.name] = true
-            frag = context.fragments[sel.name]
+            frag = @fragments[sel.name]
             next unless frag
             frag_type = @types.type(frag.type.name)
             next unless frag_type
@@ -485,8 +486,8 @@ module GraphQL
       end
 
       def types_mutually_exclusive?(type1, type2)
-        possible_right_types = context.types.possible_types(type1)
-        possible_left_types = context.types.possible_types(type2)
+        possible_right_types = @types.possible_types(type1)
+        possible_left_types = @types.possible_types(type2)
         !possible_right_types.intersect?(possible_left_types)
       end
     end

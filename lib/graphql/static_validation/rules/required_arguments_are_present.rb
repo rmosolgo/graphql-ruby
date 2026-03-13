@@ -16,7 +16,8 @@ module GraphQL
       private
 
       def assert_required_args(ast_node, defn)
-        args = @context.query.types.arguments(defn)
+        return unless defn
+        args = @types.arguments(defn)
         return if args.empty?
         # Fast path: if no arguments are required, skip all the work
         required_argument_names = nil

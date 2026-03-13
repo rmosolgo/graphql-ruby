@@ -4,13 +4,13 @@ module GraphQL
     module VariablesAreInputTypes
       def on_variable_definition(node, parent)
         type_name = get_type_name(node.type)
-        type = context.query.types.type(type_name)
+        type = @types.type(type_name)
 
         if type.nil?
           suggestion = if @schema.did_you_mean
             @all_possible_input_type_names ||= begin
               names = []
-              context.types.all_types.each { |(t)|
+              @types.all_types.each { |(t)|
                 if t.kind.input?
                   names << t.graphql_name
                 end
