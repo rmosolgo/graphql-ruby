@@ -19,7 +19,7 @@ module GraphQL
       end
 
       def to_type_signature
-        "[#{@of_type.to_type_signature}]"
+        @type_signature ||= -"[#{@of_type.to_type_signature}]"
       end
 
       # This is for introspection, where it's expected the name will be `null`
