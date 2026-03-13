@@ -6,7 +6,7 @@ module GraphQL
         @path = []
         @object_types = []
         @directives = []
-        @field_definitions = []
+        @current_field_definition = nil
         @argument_definitions = []
         @directive_definitions = []
         @context = context
@@ -87,7 +87,8 @@ module GraphQL
         def on_field(node, parent)
           parent_type = @object_types.last
           field_definition = @types.field(parent_type, node.name)
-          @field_definitions.push(field_definition)
+          prev_field_definition = @current_field_definition
+          @current_field_definition = field_definition
           if field_definition
             @object_types.push(@field_unwrapped_types[field_definition] ||= field_definition.type.unwrap)
           else
@@ -95,7 +96,7 @@ module GraphQL
           end
           @path.push(node.alias || node.name)
           super
-          @field_definitions.pop
+          @current_field_definition = prev_field_definition
           @object_types.pop
           @path.pop
         end
@@ -117,7 +118,7 @@ module GraphQL
             end
           elsif (directive_defn = @directive_definitions.last)
             @types.argument(directive_defn, node.name)
-          elsif (field_defn = @field_definitions.last)
+          elsif (field_defn = @current_field_definition)
             @types.argument(field_defn, node.name)
           else
             nil
@@ -159,7 +160,7 @@ module GraphQL
 
         # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one
         def field_definition
-          @field_definitions.last
+          @current_field_definition
         end
 
         # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one
