@@ -51,13 +51,17 @@ module GraphQL
       end
 
       def on_operation_definition(node, _parent)
-        setting_errors { conflicts_within_selection_set(node, type_definition) }
+        @conflicts = nil
+        conflicts_within_selection_set(node, type_definition)
+        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
         super
       end
 
       def on_field(node, _parent)
         if !node.selections.empty?
-          setting_errors { conflicts_within_selection_set(node, type_definition) }
+          @conflicts = nil
+          conflicts_within_selection_set(node, type_definition)
+          @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
         end
         super
       end
@@ -70,13 +74,6 @@ module GraphQL
             h2[field_name] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: error_type, field_name: field_name)
           end
         end
-      end
-
-      def setting_errors
-        @conflicts = nil
-        yield
-        # don't initialize these if they weren't initialized in the block:
-        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
       end
 
       # Core algorithm: collect ALL fields (expanding fragments inline) into a flat
