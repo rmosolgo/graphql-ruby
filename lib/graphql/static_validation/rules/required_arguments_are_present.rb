@@ -19,7 +19,7 @@ module GraphQL
         args = @context.query.types.arguments(defn)
         return if args.empty?
         present_argument_names = ast_node.arguments.map(&:name)
-        required_argument_names = context.query.types.arguments(defn)
+        required_argument_names = args
           .select { |a| a.type.kind.non_null? && !a.default_value? && context.query.types.argument(defn, a.name) }
           .map!(&:name)
 
