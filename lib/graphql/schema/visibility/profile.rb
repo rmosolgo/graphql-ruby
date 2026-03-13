@@ -56,6 +56,7 @@ module GraphQL
           @loadable_possible_types.default_proc = nil
           @cached_field_result.default_proc = nil
           @cached_field_result.each { |_, h| h.default_proc = nil }
+          @cached_type_result.default_proc = nil
           super
         end
 
@@ -129,6 +130,9 @@ module GraphQL
           @cached_field_result = Hash.new { |h, owner|
             h[owner] = Hash.new { |h2, field_name| h2[field_name] = compute_field(owner, field_name) }
           }.compare_by_identity
+
+          # Cache for type(type_name) — avoids repeated get_type + visibility + referenced? checks
+          @cached_type_result = Hash.new { |h, type_name| h[type_name] = compute_type(type_name) }
         end
 
         def field_on_visible_interface?(field, owner)
@@ -156,6 +160,10 @@ module GraphQL
         end
 
         def type(type_name)
+          @cached_type_result[type_name]
+        end
+
+        def compute_type(type_name)
           t = @visibility.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
           if t
             if t.is_a?(Array)
