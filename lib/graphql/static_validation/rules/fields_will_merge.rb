@@ -16,7 +16,15 @@ module GraphQL
       # we flatten all fragment spreads into a single field map and compare within it.
       NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
-      Field = Struct.new(:node, :definition, :owner_type, :parents)
+      Field = Struct.new(:node, :definition, :owner_type, :parents) do
+        def return_type
+          @return_type ||= definition&.type
+        end
+
+        def unwrapped_return_type
+          @unwrapped_return_type ||= return_type&.unwrap
+        end
+      end
 
       def initialize(*)
         super
@@ -242,8 +250,8 @@ module GraphQL
 
         if !conflicts[:field].key?(response_key) &&
             !field1.definition.equal?(field2.definition) &&
-            (t1 = field1.definition&.type) &&
-            (t2 = field2.definition&.type) &&
+            (t1 = field1.return_type) &&
+            (t2 = field2.return_type) &&
             return_types_conflict?(t1, t2)
 
           return_error = nil
@@ -344,8 +352,8 @@ module GraphQL
           @compared_sub_selections[node1] = inner
         end
 
-        return_type1 = field1.definition.type.unwrap
-        return_type2 = field2.definition.type.unwrap
+        return_type1 = field1.unwrapped_return_type
+        return_type2 = field2.unwrapped_return_type
 
         # Collect all fields (including from fragments) for each sub-selection set
         # Cache by (node, return_type) since this can be called repeatedly for
