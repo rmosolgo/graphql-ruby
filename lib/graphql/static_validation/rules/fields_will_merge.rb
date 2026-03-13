@@ -58,7 +58,7 @@ module GraphQL
       end
 
       def on_field(node, _parent)
-        if !node.selections.empty?
+        if !node.selections.empty? && selections_may_conflict?(node.selections)
           @conflicts = nil
           conflicts_within_selection_set(node, type_definition)
           @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
@@ -67,6 +67,40 @@ module GraphQL
       end
 
       private
+
+      # Quick check: can the direct children of this selection set possibly conflict?
+      # If all direct selections are Fields with unique names and no aliases,
+      # and there are no fragments, then no response key can have >1 field,
+      # so there are no merge conflicts to check at this level.
+      def selections_may_conflict?(selections)
+        i = 0
+        len = selections.size
+        while i < len
+          sel = selections[i]
+          # Fragment spread or inline fragment — needs full check
+          return true unless sel.is_a?(GraphQL::Language::Nodes::Field)
+          # Aliased field — could create duplicate response key
+          return true if sel.alias
+          i += 1
+        end
+        # All are unaliased fields — check for duplicate names
+        # For small sets, O(n²) is cheaper than hash allocation
+        if len <= 8
+          i = 0
+          while i < len
+            j = i + 1
+            name_i = selections[i].name
+            while j < len
+              return true if selections[j].name == name_i
+              j += 1
+            end
+            i += 1
+          end
+          false
+        else
+          true # Assume potential conflicts for larger sets
+        end
+      end
 
       def conflicts
         @conflicts ||= Hash.new do |h, error_type|
