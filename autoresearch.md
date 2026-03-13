@@ -49,12 +49,14 @@ The benchmark runs 5 different validation workloads:
 5. **Caching fields_and_fragments_from_selection** — FAILED, `parents` parameter differs across calls for same node, affects mutually_exclusive? checks. Would need to separate raw field collection from parent tracking.
 
 ## Key Insights (Updated)
-- Benchmark uses visibility profiles (production-like). Warden path matters less.
-- `Visibility::Profile#field` is the costliest single operation (~7% of big_query time) — heavy caching internally but still involves multiple hash lookups + type checks per call
-- `Visibility::Profile#initialize` creates ~12 Hash.new blocks per validation — ~4% overhead per query
-- `Module#ancestors` is expensive and called from `ObjectMethods#get_field` for first-time field lookups
-- The `deferred_spreads` array allocation in collect_fields_inner could be avoided
-- `find_conflicts_within` with large same-key groups still does group_by which allocates
+- Benchmark uses YJIT + visibility profiles + did_you_mean(nil) + allow_legacy_invalid_return_type_conflicts(false) to match production
+- Primary metric now includes large_query (36KB checkout query against 31K-line schema) — most representative
+- `Visibility::Profile#field` is ~9% of large_query time. Profile caches internally, double-caching doesn't help.
+- `Visibility::Profile#initialize` creates ~12 Hash.new per validation (~5%)
+- `collect_fields_inner` is ~7% — Field struct creation + field lookups + parents array copies
+- `FieldsWillMergeError#add_conflict` used expensive `AbstractNode#==` for dedup — fixed with identity check
+- `FragmentTypesExist` was loading ALL types just to build did_you_mean dictionary even when did_you_mean disabled — fixed
+- Small benchmarks (abstract_frags ~550µs) have high variance, not useful for detecting small improvements
 
 ## Key Insights
 - `fields_will_merge` is 99.8% of total time due to O(n²) `find_conflicts_within`

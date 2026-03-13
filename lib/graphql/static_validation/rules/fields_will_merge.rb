@@ -26,6 +26,9 @@ module GraphQL
         @compared_sub_selections = {}.compare_by_identity
         # Cache mutually_exclusive? results for type pairs
         @mutually_exclusive_cache = {}.compare_by_identity
+        # Cache collect_fields results for sub-selection comparison
+        # Keyed by (node, return_type) since parents is always [return_type]
+        @sub_fields_cache = {}.compare_by_identity
       end
 
       def on_operation_definition(node, _parent)
@@ -343,11 +346,26 @@ module GraphQL
         return_type2 = field2.definition.type.unwrap
 
         # Collect all fields (including from fragments) for each sub-selection set
-        response_keys1 = collect_fields(node1.selections, owner_type: return_type1, parents: [return_type1])
-        response_keys2 = collect_fields(node2.selections, owner_type: return_type2, parents: [return_type2])
+        # Cache by (node, return_type) since this can be called repeatedly for
+        # the same sub-selection set from different comparison contexts
+        response_keys1 = cached_sub_fields(node1, return_type1)
+        response_keys2 = cached_sub_fields(node2, return_type2)
 
         # Compare fields between the two sets
         find_conflicts_between(response_keys1, response_keys2, mutually_exclusive: mutually_exclusive)
+      end
+
+      def cached_sub_fields(node, return_type)
+        inner = @sub_fields_cache[node]
+        if inner && inner.key?(return_type)
+          inner[return_type]
+        else
+          result = collect_fields(node.selections, owner_type: return_type, parents: [return_type])
+          inner ||= {}.compare_by_identity
+          inner[return_type] = result
+          @sub_fields_cache[node] = inner
+          result
+        end
       end
 
       def find_conflicts_between(response_keys, response_keys2, mutually_exclusive:)
