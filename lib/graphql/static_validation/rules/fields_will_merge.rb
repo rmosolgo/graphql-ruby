@@ -146,10 +146,13 @@ module GraphQL
             definition = @types.field(owner_type, sel.name)
             key = sel.alias || sel.name
             field = Field.new(sel, definition, owner_type, parents)
-            if (arr = response_keys[key])
-              arr << field
+            existing = response_keys[key]
+            if existing.nil?
+              response_keys[key] = field
+            elsif existing.is_a?(Field)
+              response_keys[key] = [existing, field]
             else
-              response_keys[key] = [field]
+              existing << field
             end
           when GraphQL::Language::Nodes::InlineFragment
             frag_type = sel.type ? @types.type(sel.type.name) : owner_type
@@ -185,7 +188,7 @@ module GraphQL
 
       def find_conflicts_within(response_keys)
         response_keys.each do |key, fields|
-          next if fields.size < 2
+          next unless fields.is_a?(Array)
 
           # Optimization: group fields by a signature (name + definition + arguments).
           # Fields with the same signature can only conflict on sub-selections,
@@ -427,12 +430,20 @@ module GraphQL
         end
       end
 
+      def each_field(fields_or_field)
+        if fields_or_field.is_a?(Field)
+          yield fields_or_field
+        else
+          fields_or_field.each { |f| yield f }
+        end
+      end
+
       def find_conflicts_between(response_keys, response_keys2, mutually_exclusive:)
         response_keys.each do |key, fields|
           fields2 = response_keys2[key]
           if fields2
-            fields.each do |field|
-              fields2.each do |field2|
+            each_field(fields) do |field|
+              each_field(fields2) do |field2|
                 find_conflict(
                   key,
                   field,
