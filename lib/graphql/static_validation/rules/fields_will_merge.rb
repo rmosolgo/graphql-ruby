@@ -196,18 +196,30 @@ module GraphQL
           # so we only need to compare one pair within each group.
           # Fields with different signatures need cross-group comparison.
           if fields.size > 4
-            groups = fields.group_by { |f| field_signature(f) }
-            unique_groups = groups.values
+            # Fast path: check if all fields share the same signature
+            # by comparing each to the first field
+            f0 = fields[0]
+            all_same = true
+            i = 1
+            while i < fields.size
+              unless fields_same_signature?(f0, fields[i])
+                all_same = false
+                break
+              end
+              i += 1
+            end
 
-            if unique_groups.size == 1
+            if all_same
               # All fields are identical in signature — just compare first two
               # (they share definition, name, args — only sub-selections could differ)
-              group = unique_groups[0]
-              if group[0].node.selections.size > 0 || group[1].node.selections.size > 0
-                find_conflict(key, group[0], group[1])
+              if f0.node.selections.size > 0 || fields[1].node.selections.size > 0
+                find_conflict(key, f0, fields[1])
               end
               # If no selections on either, there's nothing that can conflict
             else
+              groups = fields.group_by { |f| field_signature(f) }
+              unique_groups = groups.values
+
               # Compare representatives across different groups
               gi = 0
               while gi < unique_groups.size
@@ -238,6 +250,14 @@ module GraphQL
             end
           end
         end
+      end
+
+      def fields_same_signature?(f1, f2)
+        n1 = f1.node
+        n2 = f2.node
+        f1.definition.equal?(f2.definition) &&
+          n1.name == n2.name &&
+          same_arguments?(n1, n2)
       end
 
       def field_signature(field)
