@@ -27,8 +27,8 @@ BIG_SCHEMA.use(GraphQL::Schema::Visibility)
 # Real-world checkout schema + large query
 CHECKOUT_SCHEMA = GraphQL::Schema.from_definition(File.read("benchmark/checkout_schema.graphql"))
 CHECKOUT_SCHEMA.use(GraphQL::Schema::Visibility)
-# Suppress return type conflict warnings (they spam logger.warn)
 CHECKOUT_SCHEMA.allow_legacy_invalid_return_type_conflicts(false)
+CHECKOUT_SCHEMA.did_you_mean(nil)
 LARGE_QUERY = GraphQL.parse(File.read("benchmark/large_query.graphql"))
 
 ABSTRACT_FRAGMENTS = GraphQL.parse(File.read("benchmark/abstract_fragments.graphql"))
