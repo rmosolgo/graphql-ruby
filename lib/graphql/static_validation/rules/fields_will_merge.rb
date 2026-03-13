@@ -241,6 +241,7 @@ module GraphQL
         end
 
         if !conflicts[:field].key?(response_key) &&
+            !field1.definition.equal?(field2.definition) &&
             (t1 = field1.definition&.type) &&
             (t2 = field2.definition&.type) &&
             return_types_conflict?(t1, t2)
