@@ -52,7 +52,7 @@ module GraphQL
 
       def on_operation_definition(node, _parent)
         @conflicts = nil
-        conflicts_within_selection_set(node, type_definition)
+        conflicts_within_selection_set(node, @current_object_type)
         @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
         super
       end
@@ -60,7 +60,7 @@ module GraphQL
       def on_field(node, _parent)
         if !node.selections.empty? && selections_may_conflict?(node.selections)
           @conflicts = nil
-          conflicts_within_selection_set(node, type_definition)
+          conflicts_within_selection_set(node, @current_object_type)
           @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
         end
         super
