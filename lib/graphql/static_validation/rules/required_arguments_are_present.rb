@@ -2,6 +2,11 @@
 module GraphQL
   module StaticValidation
     module RequiredArgumentsArePresent
+      def initialize(*)
+        super
+        @required_args_cache = {}.compare_by_identity
+      end
+
       def on_field(node, _parent)
         assert_required_args(node, field_definition)
         super
@@ -17,15 +22,23 @@ module GraphQL
 
       def assert_required_args(ast_node, defn)
         return unless defn
-        args = @types.arguments(defn)
-        return if args.empty?
-        # Fast path: if no arguments are required, skip all the work
-        required_argument_names = nil
-        args.each do |a|
-          if a.type.kind.non_null? && !a.default_value? && @types.argument(defn, a.name)
-            (required_argument_names ||= []) << a.graphql_name
+
+        # Cache required argument names per definition to avoid re-iterating arguments
+        if @required_args_cache.key?(defn)
+          required_argument_names = @required_args_cache[defn]
+        else
+          args = @types.arguments(defn)
+          required_argument_names = nil
+          if !args.empty?
+            args.each do |a|
+              if a.type.kind.non_null? && !a.default_value? && @types.argument(defn, a.name)
+                (required_argument_names ||= []) << a.graphql_name
+              end
+            end
           end
+          @required_args_cache[defn] = required_argument_names
         end
+
         return if required_argument_names.nil?
 
         present_argument_names = ast_node.arguments.map(&:name)
