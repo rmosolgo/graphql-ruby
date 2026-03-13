@@ -7,6 +7,7 @@ ruby -c lib/graphql/static_validation/base_visitor.rb > /dev/null 2>&1
 ruby -c lib/graphql/static_validation/validator.rb > /dev/null 2>&1
 
 exec bundle exec ruby -Ispec/support -e '
+RubyVM::YJIT.enable
 ADD_WARDEN = false
 TESTING_EXEC_NEXT = false
 TESTING_METHOD = false
