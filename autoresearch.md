@@ -42,7 +42,19 @@ The benchmark runs 5 different validation workloads:
 - Don't break public API
 
 ## What's Been Tried
-(Nothing yet — baseline run pending)
+1. **Deduplicate fields by signature in find_conflicts_within** — For fields with same response key, group by (name+definition+args) signature. Only compare across groups + one pair within. 143x speedup on pathological 5000-field case.
+2. **Replace Array#& with intersect?** in mutually_exclusive? — avoids allocating intersection array.
+3. **Eliminate redundant field lookups** — FieldsAreDefinedOnType was re-looking up field via types.field() when it was already in @field_definitions.last. RequiredArgumentsArePresent was calling types.arguments() twice.
+4. **Flatten fragment spreads into single field map** (XING article approach) — Instead of 3-phase (fields-within, fields-vs-fragments, fragments-vs-fragments) with exponential recursive fragment cross-comparison, expand all fragment spreads inline into one flat field list. Eliminates find_conflicts_between_fragments/find_conflicts_between_fields_and_fragment entirely. 23% improvement on big_query.
+5. **Caching fields_and_fragments_from_selection** — FAILED, `parents` parameter differs across calls for same node, affects mutually_exclusive? checks. Would need to separate raw field collection from parent tracking.
+
+## Key Insights (Updated)
+- Benchmark uses visibility profiles (production-like). Warden path matters less.
+- `Visibility::Profile#field` is the costliest single operation (~7% of big_query time) — heavy caching internally but still involves multiple hash lookups + type checks per call
+- `Visibility::Profile#initialize` creates ~12 Hash.new blocks per validation — ~4% overhead per query
+- `Module#ancestors` is expensive and called from `ObjectMethods#get_field` for first-time field lookups
+- The `deferred_spreads` array allocation in collect_fields_inner could be avoided
+- `find_conflicts_within` with large same-key groups still does group_by which allocates
 
 ## Key Insights
 - `fields_will_merge` is 99.8% of total time due to O(n²) `find_conflicts_within`
