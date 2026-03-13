@@ -13,6 +13,7 @@ module GraphQL
         @types = context.query.types
         @schema = context.schema
         @inline_fragment_paths = {}
+        @field_unwrapped_types = {}.compare_by_identity
         super(document)
       end
 
@@ -88,7 +89,7 @@ module GraphQL
           field_definition = @types.field(parent_type, node.name)
           @field_definitions.push(field_definition)
           if field_definition
-            @object_types.push(field_definition.type.unwrap)
+            @object_types.push(@field_unwrapped_types[field_definition] ||= field_definition.type.unwrap)
           else
             @object_types.push(nil)
           end
