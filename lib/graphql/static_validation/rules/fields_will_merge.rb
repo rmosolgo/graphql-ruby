@@ -16,9 +16,18 @@ module GraphQL
       # we flatten all fragment spreads into a single field map and compare within it.
       NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
-      Field = Struct.new(:node, :definition, :owner_type, :parents) do
+      class Field
+        attr_reader :node, :definition, :owner_type, :parents
+
+        def initialize(node, definition, owner_type, parents)
+          @node = node
+          @definition = definition
+          @owner_type = owner_type
+          @parents = parents
+        end
+
         def return_type
-          @return_type ||= definition&.type
+          @return_type ||= @definition&.type
         end
 
         def unwrapped_return_type
