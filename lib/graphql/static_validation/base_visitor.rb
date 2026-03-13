@@ -12,6 +12,7 @@ module GraphQL
         @context = context
         @types = context.query.types
         @schema = context.schema
+        @inline_fragment_paths = {}
         super(document)
       end
 
@@ -69,9 +70,15 @@ module GraphQL
           end
         end
 
+        INLINE_FRAGMENT_NO_TYPE = "..."
+
         def on_inline_fragment(node, parent)
           on_fragment_with_type(node) do
-            @path.push("...#{node.type ? " on #{node.type.to_query_string}" : ""}")
+            if node.type
+              @path.push(@inline_fragment_paths[node.type.name] ||= -"... on #{node.type.to_query_string}")
+            else
+              @path.push(INLINE_FRAGMENT_NO_TYPE)
+            end
             super
           end
         end
