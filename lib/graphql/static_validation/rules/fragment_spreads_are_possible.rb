@@ -8,8 +8,8 @@ module GraphQL
       end
 
       def on_inline_fragment(node, parent)
-        fragment_parent = context.object_types[-2]
-        fragment_child = context.object_types.last
+        fragment_parent = @object_types[-2]
+        fragment_child = @object_types.last
         if fragment_child
           validate_fragment_in_scope(fragment_parent, fragment_child, node, context, nil)
         end
@@ -17,7 +17,7 @@ module GraphQL
       end
 
       def on_fragment_spread(node, parent)
-        fragment_parent = context.object_types.last
+        fragment_parent = @object_types.last
         @spreads_to_validate << FragmentSpread.new(node: node, parent_type: fragment_parent, path: context.path)
         super
       end
