@@ -54,6 +54,8 @@ module GraphQL
           @cached_fields.default_proc = nil
           @cached_arguments.default_proc = nil
           @loadable_possible_types.default_proc = nil
+          @cached_field_result.default_proc = nil
+          @cached_field_result.each { |_, h| h.default_proc = nil }
           super
         end
 
@@ -122,6 +124,11 @@ module GraphQL
           end.compare_by_identity
 
           @loadable_possible_types = Hash.new { |h, union_type| h[union_type] = union_type.possible_types }.compare_by_identity
+
+          # Combined cache for field(owner, field_name) — avoids repeated kind check + parent lookup + visibility check
+          @cached_field_result = Hash.new { |h, owner|
+            h[owner] = Hash.new { |h2, field_name| h2[field_name] = compute_field(owner, field_name) }
+          }.compare_by_identity
         end
 
         def field_on_visible_interface?(field, owner)
@@ -174,6 +181,10 @@ module GraphQL
         end
 
         def field(owner, field_name)
+          @cached_field_result[owner][field_name]
+        end
+
+        def compute_field(owner, field_name)
           f = if owner.kind.fields? && (field = @cached_parent_fields[owner][field_name])
             field
           elsif owner == query_root && (entry_point_field = @schema.introspection_system.entry_point(name: field_name))
