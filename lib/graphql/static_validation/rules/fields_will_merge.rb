@@ -127,8 +127,7 @@ module GraphQL
       # Returns a Hash of { response_key => [Field, ...] }
       def collect_fields(selections, owner_type:, parents:)
         response_keys = {}
-        visited = {}
-        collect_fields_inner(selections, owner_type: owner_type, parents: parents, response_keys: response_keys, visited_fragments: visited)
+        collect_fields_inner(selections, owner_type: owner_type, parents: parents, response_keys: response_keys, visited_fragments: nil)
         response_keys
       end
 
@@ -168,6 +167,7 @@ module GraphQL
         end
 
         if deferred_spreads
+          visited_fragments ||= {}
           sel_idx = 0
           sel_len = deferred_spreads.size
           while sel_idx < sel_len
