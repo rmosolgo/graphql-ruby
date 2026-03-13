@@ -8,7 +8,7 @@ module GraphQL
         @directives = []
         @current_field_definition = nil
         @argument_definitions = []
-        @directive_definitions = []
+        @current_directive_definition = nil
         @context = context
         @types = context.query.types
         @schema = context.schema
@@ -103,9 +103,10 @@ module GraphQL
 
         def on_directive(node, parent)
           directive_defn = @context.schema_directives[node.name]
-          @directive_definitions.push(directive_defn)
+          prev_directive_definition = @current_directive_definition
+          @current_directive_definition = directive_defn
           super
-          @directive_definitions.pop
+          @current_directive_definition = prev_directive_definition
         end
 
         def on_argument(node, parent)
@@ -116,7 +117,7 @@ module GraphQL
             else
               nil
             end
-          elsif (directive_defn = @directive_definitions.last)
+          elsif (directive_defn = @current_directive_definition)
             @types.argument(directive_defn, node.name)
           elsif (field_defn = @current_field_definition)
             @types.argument(field_defn, node.name)
@@ -165,7 +166,7 @@ module GraphQL
 
         # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one
         def directive_definition
-          @directive_definitions.last
+          @current_directive_definition
         end
 
         # @return [GraphQL::Argument, nil] The most-recently-entered GraphQL::Argument, if currently inside one
