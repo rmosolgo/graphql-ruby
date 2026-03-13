@@ -69,23 +69,38 @@ module GraphQL
         end
 
         def on_fragment_definition(node, parent)
-          on_fragment_with_type(node) do
-            @path[@path_depth] = "fragment #{node.name}"; @path_depth += 1
-            super
+          object_type = if node.type
+            @types.type(node.type.name)
+          else
+            @current_object_type
           end
+          prev_parent_ot = @parent_object_type
+          @parent_object_type = @current_object_type
+          @current_object_type = object_type
+          @path[@path_depth] = "fragment #{node.name}"; @path_depth += 1
+          super
+          @current_object_type = @parent_object_type
+          @parent_object_type = prev_parent_ot
+          @path_depth -= 1
         end
 
         INLINE_FRAGMENT_NO_TYPE = "..."
 
         def on_inline_fragment(node, parent)
-          on_fragment_with_type(node) do
-            if node.type
-              @path[@path_depth] = @inline_fragment_paths[node.type.name] ||= -"... on #{node.type.to_query_string}"; @path_depth += 1
-            else
-              @path[@path_depth] = INLINE_FRAGMENT_NO_TYPE; @path_depth += 1
-            end
-            super
+          if node.type
+            object_type = @types.type(node.type.name)
+            @path[@path_depth] = @inline_fragment_paths[node.type.name] ||= -"... on #{node.type.to_query_string}"; @path_depth += 1
+          else
+            object_type = @current_object_type
+            @path[@path_depth] = INLINE_FRAGMENT_NO_TYPE; @path_depth += 1
           end
+          prev_parent_ot = @parent_object_type
+          @parent_object_type = @current_object_type
+          @current_object_type = object_type
+          super
+          @current_object_type = @parent_object_type
+          @parent_object_type = prev_parent_ot
+          @path_depth -= 1
         end
 
         def on_field(node, parent)
@@ -187,20 +202,7 @@ module GraphQL
 
         private
 
-        def on_fragment_with_type(node)
-          object_type = if node.type
-            @types.type(node.type.name)
-          else
-            @current_object_type
-          end
-          prev_parent_ot = @parent_object_type
-          @parent_object_type = @current_object_type
-          @current_object_type = object_type
-          yield(node)
-          @current_object_type = @parent_object_type
-          @parent_object_type = prev_parent_ot
-          @path_depth -= 1
-        end
+
       end
 
       private
