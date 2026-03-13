@@ -501,10 +501,11 @@ module GraphQL
 
       def compared_fragments_key(frag1, frag2, exclusive)
         # Cache key to not compare two fragments more than once.
-        # The key includes both fragment names sorted (this way we
-        # avoid computing "A vs B" and "B vs A"). It also includes
-        # "exclusive" since the result may change depending on the parent_type
-        "#{[frag1, frag2].sort.join('-')}-#{exclusive}"
+        # Use a frozen array key to avoid string allocation.
+        if frag1 > frag2
+          frag1, frag2 = frag2, frag1
+        end
+        [frag1, frag2, exclusive]
       end
 
       # Given two list of parents, find out if they are mutually exclusive
@@ -523,9 +524,10 @@ module GraphQL
               false
             else
               # Check if these two scopes have _any_ types in common.
+              # Use intersect? to avoid allocating an intersection array.
               possible_right_types = context.types.possible_types(type1)
               possible_left_types = context.types.possible_types(type2)
-              (possible_right_types & possible_left_types).empty?
+              !possible_right_types.intersect?(possible_left_types)
             end
           end
         else
