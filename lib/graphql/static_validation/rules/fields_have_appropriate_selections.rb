@@ -25,7 +25,7 @@ module GraphQL
 
       def validate_field_selections(ast_node, resolved_type)
         # Fast path: most common case is non-nil, non-leaf type with selections
-        if resolved_type && !resolved_type.kind.leaf? && !ast_node.selections.empty?
+        if !ast_node.selections.empty? && resolved_type && !resolved_type.kind.leaf?
           return true
         end
 
