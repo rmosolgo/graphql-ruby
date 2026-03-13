@@ -1,17 +1,28 @@
 # Autoresearch Ideas
 
 ## Tried and rejected
-- ~~Local field def cache in collect_fields_inner~~ — double-caching over Profile, within noise
-- ~~Replace parents.dup+<< with [*parents, frag_type].freeze~~ — slower due to splat allocation
-- ~~DefinitionDependencies Set→Array~~ — within noise, not worth the risk
-- ~~Cache `referenced?` results per type_defn~~ — within noise, each type only checked once
-- ~~Replace all_references Set with Array~~ — regression, duplicates increase iteration cost
-- ~~Cache final field() result~~ — double-caching over internal hashes
+- Local field def cache in collect_fields_inner — double-caching over Profile
+- Replace parents.dup+<< with [*parents, frag_type].freeze — slower due to splat
+- DefinitionDependencies Set→Array — within noise
+- Cache `referenced?` results per type_defn — within noise
+- Replace all_references Set with Array — regression
+- Defer array allocation for single-field response keys — hurts fields_merge
+- Bulk while-loop conversion — YJIT handles .each blocks well, no clear win
+- Eager return_type in Field struct — pays cost for all fields, no clear win
 
-## Promising but deferred
-- Cache fragment expansion results in collect_fields_inner — same fragment gets re-expanded in find_conflicts_between_sub_selection_sets with fresh visited_fragments each time. Would need to separate "raw fields" from "parents context"
-- Unify the two collect_fields paths (parents:[] from on_field vs parents:[type] from sub_selection) to share cache — failed because mutually_exclusive? depends on parents length, need careful restructuring
-- Visibility::Profile#initialize creates ~12 Hash.new per validation (~5%) — but most of the cost is actually lazy default proc execution, not hash creation. Not easily optimizable.
-- `ObjectMethods#get_field` (6.2% total) calls `ancestors`, `visible_interface_implementation?` — cached per (type, field_name) pair but many distinct pairs in large queries
-- Try moving `conflicts_within_selection_set` AFTER super in on_field — would let visitor resolve field defs first, but collect_fields_inner walks AST directly so wouldn't help
-- Reduce GC pressure (6.2%) by reducing Field struct creation — could use [node, defn, type, parents] arrays but YJIT likely handles Struct well
+## Done (in current branch)
+- Profile#field result cache (owner, field_name) → visible field directly
+- Profile#type result cache (type_name) → visible type directly  
+- Wrapper#unwrap memoization — schema-level, benefits all queries
+- NonNull/List to_type_signature memoization
+- collect_fields_inner while loop
+- Inline push_type
+- Inline fragment path string deduplication
+
+## Still promising
+- Separate "raw field collection" from "parents context" to allow cache sharing between on_field and find_conflicts_between_sub_selection_sets paths (deep refactor)
+- Reduce Field struct allocations — 2619 per validation, biggest single allocator
+- Reduce response_keys array allocations — 879 `[field]` single-element arrays per validation
+- Profile `preload` for named profiles — could pre-warm all caches
+- Lazy path computation — @path push/pop happens for every visitor event but only read on errors
+- `DefinitionDependencies` creates NodeWithPath objects for every fragment spread/definition — could be lazy
