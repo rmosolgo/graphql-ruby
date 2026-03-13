@@ -13,7 +13,7 @@ module GraphQL
       end
 
       def unwrap
-        @of_type.unwrap
+        @unwrapped ||= @of_type.unwrap
       end
 
       def ==(other)
