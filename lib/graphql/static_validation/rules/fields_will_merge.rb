@@ -96,7 +96,10 @@ module GraphQL
         # This maintains field ordering compatible with the original algorithm where
         # direct fields are compared before fragment fields.
         deferred_spreads = nil
-        selections.each do |sel|
+        sel_idx = 0
+        sel_len = selections.size
+        while sel_idx < sel_len
+          sel = selections[sel_idx]
           case sel
           when GraphQL::Language::Nodes::Field
             definition = @types.field(owner_type, sel.name)
@@ -117,10 +120,15 @@ module GraphQL
           when GraphQL::Language::Nodes::FragmentSpread
             (deferred_spreads ||= []) << sel
           end
+          sel_idx += 1
         end
 
         if deferred_spreads
-          deferred_spreads.each do |sel|
+          sel_idx = 0
+          sel_len = deferred_spreads.size
+          while sel_idx < sel_len
+            sel = deferred_spreads[sel_idx]
+            sel_idx += 1
             next if visited_fragments.key?(sel.name)
             visited_fragments[sel.name] = true
             frag = context.fragments[sel.name]
