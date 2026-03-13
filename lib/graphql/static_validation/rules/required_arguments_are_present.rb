@@ -8,7 +8,7 @@ module GraphQL
       end
 
       def on_field(node, _parent)
-        assert_required_args(node, field_definition)
+        assert_required_args(node, @current_field_definition)
         super
       end
 
