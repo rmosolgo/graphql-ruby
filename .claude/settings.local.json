@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ruby benchmark_regexp.rb:*)",
+      "Bash(bundle exec ruby:*)",
+      "Bash(git fetch:*)",
+      "Bash(ruby -e:*)",
+      "Bash(bundle install:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": false
+}
