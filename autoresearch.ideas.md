@@ -10,7 +10,7 @@
 - Bulk while-loop conversion — YJIT handles .each blocks well, no clear win
 - Eager return_type in Field struct — pays cost for all fields, no clear win
 - Memoize Schema::Field#type for resolver_class path — breaks tests (resolver class mutable)
-- Linked list / index-based @path — same or worse performance under YJIT
+- Linked list / index-based @path (before stack→variable refactor) — same perf under YJIT
 - Sentinel-based fetch in required_args_cache — within noise
 - Reuse visited_fragments hash via clear — within noise
 
@@ -23,12 +23,13 @@
 - Replace Field Struct with plain class (1.7x faster init)
 - Use @types/@fragments directly instead of context.types delegation
 - Cache required argument names per field definition
-- Replace @field_definitions/@directive_definitions/@argument_definitions/@object_types stacks with save/restore variables
+- Replace ALL stacks with save/restore variables: @field_definitions, @directive_definitions, @argument_definitions, @object_types
+- Replace @path push/pop with pre-allocated indexed array + depth counter
 - Skip FieldsWillMerge conflict check for provably-safe selections
 - Inline accessor method calls to direct ivar access
+- Inline on_fragment_with_type to eliminate yield/block overhead
 
 ## Still promising
-- **@path optimization** — still push/pop array (~1%), can't easily replace since rules need full path for error reporting
-- **collect_fields_inner** — 12.7%, dominated by Profile#field lookups and Field creation
-- **Reduce double field lookups** — BaseVisitor#on_field and collect_fields_inner both call @types.field() for the same fields. Could pass pre-resolved results through.
-- **GC pressure** — 4.6%, from Field objects, Hash#initialize. Consider pooling.
+- **collect_fields_inner** — 12.7%, dominated by Profile#field lookups (7%) and Field object creation (1.3%). Could reduce Field creation count by lazy-creating only for multi-field response keys, but previous attempt regressed fields_merge.
+- **GC pressure** — 4.6%, from Field objects, response_keys hashes. Consider reducing Hash allocation count.
+- **Reduce Profile#field dispatch** — 7%, currently 2 hash lookups per call (outer by owner, inner by field_name). Could flatten to single hash with composite key.

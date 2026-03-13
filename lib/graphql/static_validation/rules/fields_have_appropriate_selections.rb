@@ -7,8 +7,6 @@ module GraphQL
       include GraphQL::StaticValidation::Error::ErrorHelper
 
       def on_field(node, parent)
-        # Use @current_object_type which was already computed by BaseVisitor#on_field
-        # via field_definition.type.unwrap — avoids redundant unwrap call
         if validate_field_selections(node, @current_object_type)
           super
         end
@@ -24,9 +22,15 @@ module GraphQL
 
 
       def validate_field_selections(ast_node, resolved_type)
-        # Fast path: most common case is non-nil, non-leaf type with selections
-        if !ast_node.selections.empty? && resolved_type && !resolved_type.kind.leaf?
-          return true
+        # Fast paths for the two most common cases:
+        # 1. Leaf type with no selections (scalars, enums) — ~70% of fields
+        # 2. Non-leaf type with selections (objects, interfaces) — ~16% of fields
+        if resolved_type
+          if ast_node.selections.empty?
+            return true if resolved_type.kind.leaf?
+          else
+            return true unless resolved_type.kind.leaf?
+          end
         end
 
         msg = if resolved_type.nil?
