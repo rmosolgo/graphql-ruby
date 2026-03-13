@@ -9,26 +9,26 @@
 - Defer array allocation for single-field response keys — hurts fields_merge
 - Bulk while-loop conversion — YJIT handles .each blocks well, no clear win
 - Eager return_type in Field struct — pays cost for all fields, no clear win
-- Memoize Schema::Field#type for resolver_class path — resolver class can be mutated after field creation; would break tests
-- Linked list for @path — creates MORE allocations than push/pop
-- Index-based @path (fixed array) — same performance as push/pop under YJIT
+- Memoize Schema::Field#type for resolver_class path — breaks tests (resolver class mutable)
+- Linked list / index-based @path — same or worse performance under YJIT
+- Sentinel-based fetch in required_args_cache — within noise
+- Reuse visited_fragments hash via clear — within noise
 
 ## Done (in current branch)
-- Profile#field result cache (owner, field_name) → visible field directly
-- Profile#type result cache (type_name) → visible type directly  
-- Wrapper#unwrap memoization — schema-level, benefits all queries
-- NonNull/List to_type_signature memoization
-- collect_fields_inner while loop
-- Inline push_type
-- Inline fragment path string deduplication
+- FieldsWillMerge rewrite: flattened fragment collection, signature dedup, sub-field caching
+- Profile#field and Profile#type result caches
+- Wrapper#unwrap and to_type_signature memoization
 - Skip empty iteration in visitor (args, directives, selections)
 - Cache field_definition.type.unwrap per Schema::Field in visitor
 - Replace Field Struct with plain class (1.7x faster init)
 - Use @types/@fragments directly instead of context.types delegation
+- Cache required argument names per field definition
+- Replace @field_definitions/@directive_definitions/@argument_definitions/@object_types stacks with save/restore variables
+- Skip FieldsWillMerge conflict check for provably-safe selections
+- Inline accessor method calls to direct ivar access
 
 ## Still promising
-- Separate "raw field collection" from "parents context" to allow cache sharing between on_field and find_conflicts_between_sub_selection_sets paths (deep refactor)
-- Lazy path computation — @path push/pop happens for every visitor event but only read on errors (~3.5% of time across all stacks)
-- Cache the "required arguments" result per field definition (avoid re-iterating args on every field visit)
-- Merge on_field handler chain — currently 6-7 separate on_field methods chained via super; could combine hot-path checks into fewer methods
-- Consider whether `on_field` in FieldsWillMerge can share collect_fields results with operation-level check
+- **@path optimization** — still push/pop array (~1%), can't easily replace since rules need full path for error reporting
+- **collect_fields_inner** — 12.7%, dominated by Profile#field lookups and Field creation
+- **Reduce double field lookups** — BaseVisitor#on_field and collect_fields_inner both call @types.field() for the same fields. Could pass pre-resolved results through.
+- **GC pressure** — 4.6%, from Field objects, Hash#initialize. Consider pooling.

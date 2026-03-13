@@ -3,7 +3,8 @@ module GraphQL
   module StaticValidation
     class BaseVisitor < GraphQL::Language::StaticVisitor
       def initialize(document, context)
-        @path = []
+        @path = Array.new(32) # pre-allocated, indexed by @path_depth
+        @path_depth = 0
         @current_object_type = nil
         @parent_object_type = nil
         @current_field_definition = nil
@@ -24,7 +25,7 @@ module GraphQL
 
       # @return [Array<String>] The nesting of the current position in the AST
       def path
-        @path.dup
+        @path[0, @path_depth]
       end
 
       # Build a class to visit the AST and perform validation,
@@ -60,16 +61,16 @@ module GraphQL
           prev_parent_ot = @parent_object_type
           @parent_object_type = @current_object_type
           @current_object_type = object_type
-          @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
+          @path[@path_depth] = "#{node.operation_type}#{node.name ? " #{node.name}" : ""}"; @path_depth += 1
           super
           @current_object_type = @parent_object_type
           @parent_object_type = prev_parent_ot
-          @path.pop
+          @path_depth -= 1
         end
 
         def on_fragment_definition(node, parent)
           on_fragment_with_type(node) do
-            @path.push("fragment #{node.name}")
+            @path[@path_depth] = "fragment #{node.name}"; @path_depth += 1
             super
           end
         end
@@ -79,9 +80,9 @@ module GraphQL
         def on_inline_fragment(node, parent)
           on_fragment_with_type(node) do
             if node.type
-              @path.push(@inline_fragment_paths[node.type.name] ||= -"... on #{node.type.to_query_string}")
+              @path[@path_depth] = @inline_fragment_paths[node.type.name] ||= -"... on #{node.type.to_query_string}"; @path_depth += 1
             else
-              @path.push(INLINE_FRAGMENT_NO_TYPE)
+              @path[@path_depth] = INLINE_FRAGMENT_NO_TYPE; @path_depth += 1
             end
             super
           end
@@ -99,12 +100,12 @@ module GraphQL
           else
             @current_object_type = nil
           end
-          @path.push(node.alias || node.name)
+          @path[@path_depth] = node.alias || node.name; @path_depth += 1
           super
           @current_field_definition = prev_field_definition
           @current_object_type = @parent_object_type
           @parent_object_type = prev_parent_ot
-          @path.pop
+          @path_depth -= 1
         end
 
         def on_directive(node, parent)
@@ -134,25 +135,25 @@ module GraphQL
           prev_parent = @parent_argument_definition
           @parent_argument_definition = @current_argument_definition
           @current_argument_definition = argument_defn
-          @path.push(node.name)
+          @path[@path_depth] = node.name; @path_depth += 1
           super
           @current_argument_definition = @parent_argument_definition
           @parent_argument_definition = prev_parent
-          @path.pop
+          @path_depth -= 1
         end
 
         def on_fragment_spread(node, parent)
-          @path.push("... #{node.name}")
+          @path[@path_depth] = "... #{node.name}"; @path_depth += 1
           super
-          @path.pop
+          @path_depth -= 1
         end
 
         def on_input_object(node, parent)
           arg_defn = @current_argument_definition
           if arg_defn && arg_defn.type.list?
-            @path.push(parent.children.index(node))
+            @path[@path_depth] = parent.children.index(node); @path_depth += 1
             super
-            @path.pop
+            @path_depth -= 1
           else
             super
           end
@@ -198,7 +199,7 @@ module GraphQL
           yield(node)
           @current_object_type = @parent_object_type
           @parent_object_type = prev_parent_ot
-          @path.pop
+          @path_depth -= 1
         end
       end
 
@@ -208,7 +209,7 @@ module GraphQL
         if @context.too_many_errors?
           throw :too_many_validation_errors
         end
-        error.path ||= (path || @path.dup)
+        error.path ||= (path || @path[0, @path_depth])
         context.errors << error
       end
 
