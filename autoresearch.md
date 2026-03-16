@@ -50,7 +50,7 @@ The benchmark runs 5 different validation workloads:
 
 ## Key Insights (Updated)
 - Benchmark uses YJIT + visibility profiles + did_you_mean(nil) + allow_legacy_invalid_return_type_conflicts(false) to match production
-- Primary metric now includes large_query (36KB checkout query against 31K-line schema) — most representative
+- Primary metric now includes large_query (36KB query against 31K-line schema) — most representative
 - `Visibility::Profile#field` is ~9% of large_query time. Profile caches internally, double-caching doesn't help.
 - `Visibility::Profile#initialize` creates ~12 Hash.new per validation (~5%)
 - `collect_fields_inner` is ~7% — Field struct creation + field lookups + parents array copies
