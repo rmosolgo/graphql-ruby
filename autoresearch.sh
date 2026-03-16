@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# NOTE: benchmark/checkout_schema.graphql and benchmark/large_query.graphql
+# are private files not included in the repo. Provide your own large schema
+# and query files at those paths to run benchmarks.
+
 # Quick syntax check on key files
 ruby -c lib/graphql/static_validation/rules/fields_will_merge.rb > /dev/null 2>&1
 ruby -c lib/graphql/static_validation/base_visitor.rb > /dev/null 2>&1

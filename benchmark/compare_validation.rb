@@ -2,6 +2,9 @@
 # Before/after comparison of static validation performance.
 # Pre-creates Query+Profile objects, measures only validation itself.
 # Run with: bundle exec ruby -Ispec/support benchmark/compare_validation.rb
+#
+# NOTE: Requires private benchmark/checkout_schema.graphql and benchmark/large_query.graphql
+# files not included in the repo.
 
 RubyVM::YJIT.enable
 ADD_WARDEN = false
