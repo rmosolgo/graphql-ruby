@@ -133,8 +133,8 @@ describe "Next Execution" do
   end
 
 
-  def run_next(query_str, root_value: nil, variables: {})
-    NextExecutionSchema.execute_next(query_str, context: {}, variables: variables, root_value: root_value)
+  def run_next(...)
+    NextExecutionSchema.execute_next(...)
   end
 
   before do
@@ -245,6 +245,14 @@ describe "Next Execution" do
       }
     }
     assert_graphql_equal(expected_result, result)
+  end
+
+  it "runs a query by name" do
+    result = run_next <<~GRAPHQL, operation_name: "A"
+    query A { a: __typename }
+    query B { b: __typename }
+    GRAPHQL
+    assert_equal({ "a" => "Query" }, result["data"])
   end
 
   it "does scalar coercion" do
