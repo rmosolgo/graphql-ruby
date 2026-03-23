@@ -89,7 +89,7 @@ For this to work, the base argument class must be {% internal_link "configured w
 
 ## Mutation Authorization
 
-See mutations/mutation_authorization.html#can-this-user-perform-this-action {% internal_link "Mutation Authorization", "/mutations/mutation_authorization.html#can-this-user-perform-this-action" %}) in the Mutation Guides.
+See {% internal_link "Mutation Authorization", "/mutations/mutation_authorization.html#can-this-user-perform-this-action" %} in the Mutation Guides.
 
 ## Enum Value Authorization
 

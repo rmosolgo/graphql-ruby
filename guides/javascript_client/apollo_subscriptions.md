@@ -63,7 +63,7 @@ const client = new ApolloClient({
 
 This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Pusher for future updates.
 
-If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#compressed-payloads" %}, configure a `decompress:` function, too:
+If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#payload-compression" %}, configure a `decompress:` function, too:
 
 ```javascript
 // Add `pako` to the project for gunzipping
@@ -195,7 +195,7 @@ var OperationStoreClient = require("./OperationStoreClient")
 RailsNetworkInterface.use([OperationStoreClient.apolloMiddleware])
 ```
 
-If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#compressed-payloads" %}, configure a `decompress:` function, too:
+If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#payload-compression" %}, configure a `decompress:` function, too:
 
 ```javascript
 // Add `pako` to the project for gunzipping

@@ -206,7 +206,7 @@ describe GraphQL::Query::Context do
           }
         else
           context.scoped_merge!(key => value)
-          context.dataloader.with(PassthroughSource).load(self)
+          context.dataload(PassthroughSource, self)
         end
       end
 
@@ -214,7 +214,7 @@ describe GraphQL::Query::Context do
 
       def int_list
         context.scoped_set!("int_list", "assigned")
-        context.dataloader.with(IntArraySource).load(4)
+        context.dataload(IntArraySource, 4)
       end
 
       field :set_scoped_int, ContextQuery, null: false

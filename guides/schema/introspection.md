@@ -168,7 +168,7 @@ module Introspection
 end
 ```
 
-This class an object type definition, so you can override fields or add new ones here. They'll be available on the root `query` object, but ignored in introspection (just like `__schema` and `__type`).
+This class is an object type definition, so you can override existing fields or add new ones here. They'll be available on the root `query` object, but ignored in introspection (just like `__schema` and `__type`).
 
 ### Dynamic Fields
 

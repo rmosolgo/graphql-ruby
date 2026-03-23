@@ -8,6 +8,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasArguments::FieldConfigured
       include GraphQL::Schema::Member::HasAstNode
+      include GraphQL::Schema::Member::HasAuthorization
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasValidators
       extend GraphQL::Schema::FindInheritedValue
@@ -192,6 +193,11 @@ module GraphQL
       # @param resolver_method [Symbol] The method on the type to call to resolve this field (defaults to `name`)
       # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
       # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
+      # @param resolve_static [Symbol, true, nil] Used by {Schema.execute_next} to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
+      # @param resolve_batch [Symbol, true, nil] Used by {Schema.execute_next} map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
+      # @param resolve_each [Symbol, true, nil] Used by {Schema.execute_next} to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
+      # @param resolve_legacy_instance_method [Symbol, true, nil] Used by {Schema.execute_next} to get a value value for each item. Calls an instance method on the object type class.
+      # @param dataload [Class, Hash] Shorthand for making dataloader calls
       # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
       # @param default_page_size [Integer, nil] For connections, the default number of items to return from this field, or `nil` to return unlimited results.
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
@@ -209,7 +215,12 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @param fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
+      # @param dynamic_introspection [Boolean] (Private, used by GraphQL-Ruby)
+      # @param relay_node_field [Boolean] (Private, used by GraphQL-Ruby)
+      # @param relay_nodes_field [Boolean] (Private, used by GraphQL-Ruby)
+      # @param extras [Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>] Extra arguments to be injected into the resolver for this field
+      # @param definition_block [Proc] an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new {Field}.
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, resolve_legacy_instance_method: nil, resolve_static: nil, resolve_each: nil, resolve_batch: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, dataload: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -257,6 +268,36 @@ module GraphQL
         @method_str = -method_name.to_s
         @method_sym = method_name.to_sym
         @resolver_method = (resolver_method || name_s).to_sym
+
+        if resolve_static
+          @execution_next_mode = :resolve_static
+          @execution_next_mode_key = resolve_static == true ? @method_sym : resolve_static
+        elsif resolve_batch
+          @execution_next_mode = :resolve_batch
+          @execution_next_mode_key = resolve_batch == true ? @method_sym : resolve_batch
+        elsif resolve_each
+          @execution_next_mode = :resolve_each
+          @execution_next_mode_key = resolve_each == true ? @method_sym : resolve_each
+        elsif hash_key
+          @execution_next_mode = :hash_key
+          @execution_next_mode_key = hash_key
+        elsif dig
+          @execution_next_mode = :dig
+          @execution_next_mode_key = dig
+        elsif resolver_class
+          @execution_next_mode = :resolver_class
+          @execution_next_mode_key = resolver_class
+        elsif resolve_legacy_instance_method
+          @execution_next_mode = :resolve_legacy_instance_method
+          @execution_next_mode_key = resolve_legacy_instance_method == true ? @method_sym : resolve_legacy_instance_method
+        elsif dataload
+          @execution_next_mode = :dataload
+          @execution_next_mode_key = dataload
+        else
+          @execution_next_mode = :direct_send
+          @execution_next_mode_key = @method_sym
+        end
+
         @complexity = complexity
         @dynamic_introspection = dynamic_introspection
         @return_type_expr = type
@@ -301,7 +342,7 @@ module GraphQL
 
         @extensions = EMPTY_ARRAY
         @call_after_define = false
-        set_pagination_extensions(connection_extension: connection_extension)
+        set_pagination_extensions(connection_extension: NOT_CONFIGURED.equal?(connection_extension) ? self.class.connection_extension : connection_extension)
         # Do this last so we have as much context as possible when initializing them:
         if !extensions.empty?
           self.extensions(extensions)
@@ -326,6 +367,9 @@ module GraphQL
           @call_after_define = true
         end
       end
+
+      # @api private
+      attr_reader :execution_next_mode_key, :execution_next_mode
 
       # Calls the definition block, if one was given.
       # This is deferred so that references to the return type
@@ -620,6 +664,13 @@ module GraphQL
         end
       end
 
+      def authorizes?(context)
+        method(:authorized?).owner != GraphQL::Schema::Field || (
+          (args = context.types.arguments(self)) &&
+            (args.any? { |a| a.authorizes?(context) })
+        )
+      end
+
       def authorized?(object, args, context)
         if @resolver_class
           # The resolver _instance_ will check itself during `resolve()`
@@ -873,6 +924,33 @@ ERR
           end
         end
       end
+
+      public
+
+      def run_next_extensions_before_resolve(objs, args, ctx, extended, idx: 0, &block)
+        extension = @extensions[idx]
+        if extension
+          extension.resolve_next(objects: objs, arguments: args, context: ctx) do |extended_objs, extended_args, memo|
+            if memo
+              memos = extended.memos ||= {}
+              memos[idx] = memo
+            end
+
+            if (extras = extension.added_extras)
+              ae = extended.added_extras ||= []
+              ae.concat(extras)
+            end
+
+            extended.object = extended_objs
+            extended.arguments = extended_args
+            run_next_extensions_before_resolve(extended_objs, extended_args, ctx, extended, idx: idx + 1, &block)
+          end
+        else
+          yield(objs, args)
+        end
+      end
+
+      private
 
       def run_extensions_before_resolve(obj, args, ctx, extended, idx: 0)
         extension = @extensions[idx]

@@ -8,6 +8,15 @@ class DashboardStaticsControllerTest < ActionDispatch::IntegrationTest
     assert_equal response.headers["Cache-Control"], "max-age=31556952, public"
   end
 
+  def test_it_doesnt_trigger_csrf_failure
+    original_forgery_protection = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
+    get graphql_dashboard.static_path("dashboard.js")
+    assert_equal 200, response.status
+  ensure
+    ActionController::Base.allow_forgery_protection = original_forgery_protection
+  end
+
   def test_it_responds_404_for_others
     get graphql_dashboard.static_path("other.rb")
     assert_equal 404, response.status

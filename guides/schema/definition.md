@@ -40,7 +40,7 @@ For defining GraphQL types, see the guides for those types: {% internal_link "ob
 
 ## Types in the Schema
 
-- {{ "Schema.query" | api_doc }}, {{ "Schema.mutation" | api_doc }}, and {{ "Schema.subscription" | api_doc}} declare the [entry-point types](https://graphql.org/learn/schema/#the-query-and-mutation-types) of the schema.
+- {{ "Schema.query" | api_doc }}, {{ "Schema.mutation" | api_doc }}, and {{ "Schema.subscription" | api_doc}} declare the [entry-point types](https://graphql.org/learn/schema/#the-query-mutation-and-subscription-types) of the schema.
 - {{ "Schema.orphan_types" | api_doc }} declares object types which implement {% internal_link "Interfaces", "/type_definitions/interfaces" %} but aren't used as field return types in the schema. For more about this specific scenario, see {% internal_link "Orphan Types", "/type_definitions/interfaces#orphan-types" %}
 
 ### Lazy-loading types
@@ -120,7 +120,7 @@ Additionally, {{ "Schema.resolve_type" | api_doc }} is called by GraphQL-Ruby to
 
 ## Production Considerations
 
-- __Parser caching__: if your application parses GraphQL _files_ (queries or schema definition), it may benefit from enabling {{ "GraphQL::Parser::Cache" | api_doc }}.
+- __Parser caching__: if your application parses GraphQL _files_ (queries or schema definition), it may benefit from enabling {{ "GraphQL::Language::Cache" | api_doc }}.
 - __Eager loading the library__: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be eager loaded instead, using `GraphQL.eager_load!`.
 
   - Rails: enabled automatically. (ActiveSupport calls `.eager_load!`.)

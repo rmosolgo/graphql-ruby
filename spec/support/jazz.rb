@@ -130,6 +130,7 @@ module Jazz
       type: ID,
       null: false,
       description: "A unique identifier for this object",
+      resolve_legacy_instance_method: true
     )
     upcased_field :upcased_id, ID, null: false, resolver_method: :id # upcase: true added by helper
 
@@ -176,7 +177,7 @@ module Jazz
 
     type_membership_class PrivateMembership
 
-    field :private_name, String, null: false
+    field :private_name, String, null: false, resolve_legacy_instance_method: true
 
     def private_name
       "private name"
@@ -197,7 +198,7 @@ module Jazz
   # test field inheritance
   class ObjectWithUpcasedName < BaseObject
     # Test extra arguments:
-    field :upcase_name, String, null: false, upcase: true
+    field :upcase_name, String, null: false, upcase: true, resolve_legacy_instance_method: true
 
     def upcase_name
       object.name # upcase is applied by the superclass
@@ -221,7 +222,7 @@ module Jazz
     field :formed_at, String, hash_key: "formedAtDate"
 
     # This overrides the visibility from PrivateNameEntity
-    field :overridden_name, String, null: false
+    field :overridden_name, String, null: false, resolve_legacy_instance_method: true
 
     def overridden_name
       @object.name.sub("Robert Glasper", "ROBERT GLASPER")
@@ -253,7 +254,7 @@ module Jazz
     implements NamedEntity
     implements GloballyIdentifiableType
 
-    field :upcased_id, ID, null: false
+    field :upcased_id, ID, null: false, resolve_legacy_instance_method: true
 
     def upcased_id
       GloballyIdentifiableType.to_id(object).upcase
@@ -282,7 +283,7 @@ module Jazz
     end
     field :favorite_key, Key
     # Test lists with nullable members:
-    field :inspect_context, [String, null: true], null: false
+    field :inspect_context, [String, null: true], null: false, resolve_legacy_instance_method: true
     field :add_error, String, null: false, extras: [:execution_errors]
 
     def inspect_context
@@ -301,7 +302,7 @@ module Jazz
   end
 
   class StylishMusician < Musician
-    field :sunglasses_type, String, null: false
+    field :sunglasses_type, String, null: false, resolve_legacy_instance_method: true
 
     def sunglasses_type
       "cool 😎"
@@ -383,33 +384,33 @@ module Jazz
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
-    field :find, GloballyIdentifiableType do
+    field :find, GloballyIdentifiableType, resolve_legacy_instance_method: true do
       argument :id, ID
     end
-    field :instruments, [InstrumentType], null: false do
+    field :instruments, [InstrumentType], null: false, resolve_legacy_instance_method: true do
       argument :family, Family, required: false
     end
-    field :inspect_input, [String], null: false do
+    field :inspect_input, [String], null: false, resolve_legacy_instance_method: true do
       argument :input, InspectableInput, custom: :ok
     end
-    field :inspect_key, InspectableKey, null: false do
+    field :inspect_key, InspectableKey, null: false, resolve_legacy_instance_method: true do
       argument :key, Key
     end
-    field :now_playing, PerformingAct, null: false
+    field :now_playing, PerformingAct, null: false, resolve_legacy_instance_method: true
 
     def now_playing; Models.data["Ensemble"].first; end
 
     # For asserting that the *resolver* object is initialized once:
     # `method_conflict_warning: false` tells graphql-ruby that exposing Object#object_id was intentional
     field :object_id, String, null: false, method_conflict_warning: false
-    field :inspect_context, [String], null: false
-    field :hashy_ensemble, Ensemble, null: false
+    field :inspect_context, [String], null: false, resolve_legacy_instance_method: true
+    field :hashy_ensemble, Ensemble, null: false, resolve_legacy_instance_method: true
 
-    field :echo_json, GraphQL::Types::JSON, null: false do
+    field :echo_json, GraphQL::Types::JSON, null: false, resolve_legacy_instance_method: true do
       argument :input, GraphQL::Types::JSON
     end
 
-    field :echo_first_json, GraphQL::Types::JSON, null: false do
+    field :echo_first_json, GraphQL::Types::JSON, null: false, resolve_legacy_instance_method: true do
       argument :input, [GraphQL::Types::JSON]
     end
 
@@ -499,8 +500,8 @@ module Jazz
       input.first
     end
 
-    field :hash_by_string, HashKeyTest, null: false
-    field :hash_by_sym, HashKeyTest, null: false
+    field :hash_by_string, HashKeyTest, null: false, resolve_legacy_instance_method: true
+    field :hash_by_sym, HashKeyTest, null: false, resolve_legacy_instance_method: true
 
     def hash_by_string
       {"falsey" => false}
@@ -510,13 +511,13 @@ module Jazz
       {falsey: false}
     end
 
-    field :named_entities, [NamedEntity, null: true], null: false
+    field :named_entities, [NamedEntity, null: true], null: false, resolve_legacy_instance_method: true
 
     def named_entities
       [Models.data["Ensemble"].first, nil]
     end
 
-    field :default_value_test, String, null: false do
+    field :default_value_test, String, null: false, resolve_legacy_instance_method: true do
       argument :arg_with_default, InspectableInput, required: false, default_value: { string_value: "S" }
     end
 
@@ -531,7 +532,7 @@ module Jazz
     field :complex_hash_key, String, null: false, hash_key: :'foo bar/fizz-buzz'
 
 
-    field :nullable_ensemble, Ensemble do
+    field :nullable_ensemble, Ensemble, resolve_legacy_instance_method: true do
       argument :ensemble_id, ID, required: false, loads: Ensemble
     end
 
@@ -809,7 +810,7 @@ module Jazz
       ens
     end
 
-    field :prepare_input, Integer, null: false do
+    field :prepare_input, Integer, null: false, resolve_legacy_instance_method: true do
       argument :input, Integer, prepare: :square, as: :squared_input
     end
 
@@ -839,6 +840,7 @@ module Jazz
 
   module Introspection
     class TypeType < GraphQL::Introspection::TypeType
+
       def self.authorized?(_obj, ctx)
         if ctx[:cant_introspect]
           raise GraphQL::ExecutionError, "You're not allowed to introspect here"
@@ -847,7 +849,13 @@ module Jazz
         end
       end
 
+      field :name, String, resolve_each: :graphql_type_name
+
       def name
+        self.class.graphql_type_name(object, context)
+      end
+
+      def self.graphql_type_name(object, context)
         n = object.graphql_name
         n && n.upcase
       end
@@ -876,23 +884,35 @@ module Jazz
     end
 
     class DynamicFields < GraphQL::Introspection::DynamicFields
-      field :__typename_length, Int, null: false
-      field :__ast_node_class, String, null: false, extras: [:ast_node]
+      field :__typename_length, Int, null: false, resolve_each: true
+      field :__ast_node_class, String, null: false, extras: [:ast_node], resolve_static: true
 
       def __typename_length
-        __typename.length
+        self.class.__typename_length(object, context)
+      end
+
+      def self.__typename_length(object, context)
+        __typename(object, context).length
       end
 
       def __ast_node_class(ast_node:)
+        self.class.__ast_node_class(context, ast_node: ast_node)
+      end
+
+      def self.__ast_node_class(context, ast_node:)
         ast_node.class.name
       end
     end
 
     class EntryPoints < GraphQL::Introspection::EntryPoints
-      field :__classname, String, "The Ruby class name of the root object", null: false
+      field :__classname, String, "The Ruby class name of the root object", null: false, resolve_each: :__classname
 
       def __classname
-        object.object.class.name
+        self.class.__classname(object, context)
+      end
+
+      def self.__classname(object, context)
+        object.object.class.name # TODO don't pass instances here
       end
     end
   end
@@ -917,6 +937,15 @@ module Jazz
     extra_types BlogPost
     use GraphQL::Dataloader
     use GraphQL::Schema::Warden if ADD_WARDEN
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
+
+
+    def self.resolves_lazies?
+      # This is a shim for GraphQL::Execution::Next
+      # it uses this method to determine whether to check if it should check `.lazy?`
+      # TODO Better would be opting in with some `use ...` configuration
+      true
+    end
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema

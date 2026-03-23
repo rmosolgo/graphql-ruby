@@ -44,13 +44,23 @@ describe GraphQL::Tracing::DetailedTrace do
     SamplerSchema.detailed_trace.delete_all_traces
   end
 
-  it "raises when no storage is configured" do
-    err = assert_raises ArgumentError do
-      Class.new(GraphQL::Schema) do
+  if testing_rails?
+    it "defaults to ActiveRecord" do
+      schema = Class.new(GraphQL::Schema) do
         use GraphQL::Tracing::DetailedTrace
       end
+
+      assert_instance_of GraphQL::Tracing::DetailedTrace::ActiveRecordBackend, schema.detailed_trace.instance_variable_get(:@storage)
     end
-    assert_equal "Pass `redis: ...` to store traces in Redis for later review", err.message
+  else
+    it "raises when no storage is configured" do
+      err = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema) do
+          use GraphQL::Tracing::DetailedTrace
+        end
+      end
+      assert_equal "To store traces, install ActiveRecord or provide `redis: ...`", err.message
+    end
   end
 
   it "calls detailed_profile? on a Multiplex" do

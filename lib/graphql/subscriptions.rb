@@ -80,7 +80,7 @@ module GraphQL
 
       # Normalize symbol-keyed args to strings, try camelizing them
       # Should this accept a real context somehow?
-      normalized_args = normalize_arguments(normalized_event_name, field, args, GraphQL::Query::NullContext.instance)
+      normalized_args = normalize_arguments(normalized_event_name, field, args, @schema.null_context)
 
       event = Subscriptions::Event.new(
         name: normalized_event_name,

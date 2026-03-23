@@ -8,7 +8,7 @@ desc: Unions are sets of types which may appear in the same place (but don't sha
 index: 5
 ---
 
-A union type is a set of object types which may appear in the same spot. Here's a union, expressed in [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL):
+A union type is a set of object types which may appear in the same spot. Here's a union, expressed in [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#union-types) (SDL):
 
 ```ruby
 union MediaItem = AudioClip | VideoClip | Image | TextSnippet

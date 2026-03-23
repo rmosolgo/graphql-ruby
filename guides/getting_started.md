@@ -72,7 +72,7 @@ end
 
 ### Build a Schema
 
-Before building a schema, you have to define an [entry point to your system, the "query root"](https://graphql.org/learn/schema/#the-query-and-mutation-types):
+Before building a schema, you have to define an [entry point to your system, the "query root"](https://graphql.org/learn/schema/#the-query-mutation-and-subscription-types):
 
 ```ruby
 class QueryType < GraphQL::Schema::Object

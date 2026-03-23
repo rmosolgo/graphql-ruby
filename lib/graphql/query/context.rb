@@ -29,6 +29,7 @@ module GraphQL
       end
 
       extend Forwardable
+      include Schema::Member::HasDataloader
 
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
       attr_reader :errors
@@ -118,8 +119,8 @@ module GraphQL
       # @param error [GraphQL::ExecutionError] an execution error
       # @return [void]
       def add_error(error)
-        if !error.is_a?(ExecutionError)
-          raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+        if !error.is_a?(GraphQL::RuntimeError)
+          raise TypeError, "expected error to be a GraphQL::RuntimeError, but was #{error.class}"
         end
         errors << error
         nil

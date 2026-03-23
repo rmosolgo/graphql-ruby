@@ -244,7 +244,7 @@ However, we cannot naively tally these itemized scores without over-costing the 
 - The `node` scope makes many _possible_ selections on an abstract type, so we need the maximum among concrete possibilities for a fair representation.
 - A `node.metafield` selection path is duplicated across the `HasMetafields` and `Product` selection scopes. This path will only resolve once, so should also only cost once.
 
-To reconcile these possibilities, the [complexity algorithm](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/analysis/ast/query_complexity.rb) breaks the selection down into a tree of types mapped to possible selections, across which lexical selections can be coalesced and deduplicated (pseudocode):
+To reconcile these possibilities, the [complexity algorithm](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/analysis/query_complexity.rb) breaks the selection down into a tree of types mapped to possible selections, across which lexical selections can be coalesced and deduplicated (pseudocode):
 
 ```ruby
 {

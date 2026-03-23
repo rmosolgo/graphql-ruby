@@ -10,6 +10,44 @@
 
 ### Bug fixes
 
+# 2.5.21
+
+### New features
+
+- Continue building `Execution::Next` #5553 #5562 #5563 #5566 #5569 #5570 #5571
+
+### Bug fixes
+
+- `Schema.from_definition`: fix field calls when all arguments come from extras #5557
+
+# 2.5.20 (23 Feb 2026)
+
+- `DetailedTrace`: Handle inspecting instances of anonymous classes #5530
+- `Dashboard`: move controllers to their own files, fix lazy loading #5524
+- `Dataloader`: add `dataload_all` shortcut; add shortcuts to `context` #5540
+- Add experimental new runtime code (not loaded by default) #5509 #5544 #5547
+- Fix `@defer` on inline fragments when fields return Lazy values and Dataloader isn't used #5550
+
+# 2.5.19 (5 Feb 2026)
+
+- `DetailedTrace`: add ActiveRecord backend, generator #5525
+- `DetailedTrace`: improve ActiveRecord backend, filter hashes before logging #5527
+
+# 2.5.18 (22 Jan 2026)
+
+- `GraphQL::Dashboard`: properly require `action_controller` before using it #5510
+- `GraphQL::Dashboard`: don't use `config.asset_host` for Dashboard assets since they're handled by the dashboard itself #5511
+
+# 2.5.17 (21 Jan 2026)
+
+### Bug fixes
+
+- `GraphQL::Dashboard`: fix routes compatibility with Devise #5505
+- `GraphQL::Dashboard`: fix HTML/erb lint issues #5497
+- Parser: improve check for invalid number followed by name #5492 #5492
+- `GraphQL::Field`: optimize boot memory by removing `Field.from_options` #5495
+- `field`, `argument`: improve API documentation for DSL methods #5491
+
 # 2.5.16 (10 Dec 2025)
 
 ### Bug fixes

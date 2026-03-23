@@ -14,7 +14,7 @@ So, you want to hack on GraphQL Ruby! Here are some tips for getting started.
 - [Debug](#debugging-with-pry) with pry
 - [Run the benchmarks](#running-the-benchmarks) to test performance in your environment
 - [Coding guidelines](#coding-guidelines) for working on your contribution
-- Special tools for building the [lexer and parser](#lexer-and-parser)
+- Special tools for building the lexer and parser
 - Building and publishing the [GraphQL Ruby website](#website)
 - [Versioning](#versioning) describes how changes are managed and released
 - [Releasing](#releasing) Gem versions
@@ -116,7 +116,7 @@ BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake test
 
 ## Debugging with Pry
 
-[`pry`](https://pryrepl.org/) is included with GraphQL-Ruby's development setup to help with debugging.
+[`pry`](https://pry.github.io/) is included with GraphQL-Ruby's development setup to help with debugging.
 
 To pause execution in Ruby code, add:
 

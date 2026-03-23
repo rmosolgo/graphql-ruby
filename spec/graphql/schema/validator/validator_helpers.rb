@@ -71,7 +71,7 @@ module ValidatorHelpers
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
       field_class(base_field)
-      field :validated, arg_type do
+      field :validated, arg_type, resolve_legacy_instance_method: true do
         argument :value, arg_type, required: false, validates: validates_config
       end
 
@@ -79,7 +79,7 @@ module ValidatorHelpers
         value
       end
 
-      field :multi_validated, arg_type, validates: validates_config do
+      field :multi_validated, arg_type, validates: validates_config, resolve_legacy_instance_method: true do
         argument :a, arg_type, required: false
         argument :b, arg_type, required: false
         argument :c, arg_type, required: false
@@ -91,7 +91,7 @@ module ValidatorHelpers
         a + b + c
       end
 
-      field :validated_input, arg_type do
+      field :validated_input, arg_type, resolve_legacy_instance_method: true do
         argument :input, validated_input
       end
 
@@ -101,7 +101,7 @@ module ValidatorHelpers
 
       field :validated_resolver, resolver: validated_resolver
       field :validated_arg_resolver, resolver: validated_arg_resolver
-      field :list, [self], null: false
+      field :list, [self], null: false, resolve_legacy_instance_method: true
 
       def list
         [:a, :b, :c]
@@ -114,7 +114,19 @@ module ValidatorHelpers
     else
       schema.use(GraphQL::Schema::Visibility)
     end
-    schema
+
+    if TESTING_EXEC_NEXT
+      schema.use(GraphQL::Execution::Next)
+    end
+    @current_schema = schema
+  end
+
+  def exec_query(...)
+    if TESTING_EXEC_NEXT
+      @current_schema.execute_next(...)
+    else
+      @current_schema.execute(...)
+    end
   end
 
   module ClassMethods
@@ -124,7 +136,11 @@ module ValidatorHelpers
         it "#{name}#{validator_name} on #{field_type} works with #{expectation[:config]}" do
           schema = build_schema(field_type, { validator_name => expectation[:config] })
           expectation[:cases].each do |test_case|
-            result = schema.execute(test_case[:query], variables: test_case[:variables])
+            result = if TESTING_EXEC_NEXT
+              schema.execute_next(test_case[:query], variables: test_case[:variables])
+            else
+              schema.execute(test_case[:query], variables: test_case[:variables])
+            end
             if !result["data"]
               pp result
               refute result["errors"].map { |e| e["message"] }, test_case[:query]

@@ -64,4 +64,4 @@ pp result.context[:object_cache]
 
 If you need to manually clear the cache for a query, pass `context: { refresh_object_cache: true, ... }`. This will cause the `ObjectCache` to remove the already-cached result (if there was one), reassess the query for cache validity, and return a freshly-executed result.
 
-Usually, this shouldn't be necessary; making sure objects update their {% internal_link "cache fingerprints", "/object_cache/schema_setup.html#object-fingerprint" %} will cause entries to expire when they should be re-executed. See also {% internal_link "Schema fingerprint", "/object_cache/schema_setup.html#schema-fingerprint %} for expiring _all_ results in the cache.
+Usually, this shouldn't be necessary; making sure objects update their {% internal_link "cache fingerprints", "/object_cache/schema_setup.html#object-fingerprint" %} will cause entries to expire when they should be re-executed. See also {% internal_link "Schema fingerprint", "/object_cache/schema_setup.html#schema-fingerprint" %} for expiring _all_ results in the cache.

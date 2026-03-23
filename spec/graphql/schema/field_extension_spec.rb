@@ -7,17 +7,29 @@ describe GraphQL::Schema::FieldExtension do
       def after_resolve(object:, value:, arguments:, context:, memo:)
         value * 2
       end
+
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
+        values.map { |v| v * 2 }
+      end
     end
 
     class PowerOfFilter < GraphQL::Schema::FieldExtension
       def after_resolve(object:, value:, arguments:, context:, memo:)
         value**options.fetch(:power, 2)
       end
+
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
+        values.map { |v| v**options.fetch(:power,2) }
+      end
     end
 
     class MultiplyByOption < GraphQL::Schema::FieldExtension
       def after_resolve(object:, value:, arguments:, context:, memo:)
         value * options[:factor]
+      end
+
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
+        values.map { |v| v * options[:factor] }
       end
     end
 
@@ -31,8 +43,17 @@ describe GraphQL::Schema::FieldExtension do
         yield(object, arguments, factor)
       end
 
+      def resolve_next(objects:, arguments:, context:)
+        factor = arguments[:factor]
+        yield(objects, arguments, factor)
+      end
+
       def after_resolve(object:, value:, arguments:, context:, memo:)
         value * memo
+      end
+
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
+        values.map { |v| v * memo }
       end
     end
 
@@ -45,7 +66,14 @@ describe GraphQL::Schema::FieldExtension do
       # This method's return value is passed along
       def resolve(object:, arguments:, context:)
         factor = arguments[:factor]
-        yield(object, arguments) * factor
+        result = yield(object, arguments)
+        result * factor
+      end
+
+      def resolve_next(objects:, arguments:, context:)
+        results = yield(objects, arguments)
+        factor = arguments[:factor]
+        results.map { |r| r * factor }
       end
     end
 
@@ -60,8 +88,20 @@ describe GraphQL::Schema::FieldExtension do
         yield(object, new_arguments, { original_arguments: arguments})
       end
 
+      def resolve_next(objects:, arguments:, context:)
+        new_arguments = arguments.dup
+        new_arguments.delete(:factor)
+        yield(objects, new_arguments, { original_arguments: arguments})
+      end
+
       def after_resolve(object:, value:, arguments:, context:, memo:)
-        value * memo[:original_arguments][:factor]
+        f = memo[:original_arguments][:factor]
+        value * f
+      end
+
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
+        f = memo[:original_arguments][:factor]
+        values.map { |v| v * f }
       end
     end
 
@@ -72,15 +112,30 @@ describe GraphQL::Schema::FieldExtension do
         yield(object, new_args)
       end
 
+      def resolve_next(objects:, arguments:, **_rest)
+        new_args = arguments.dup
+        new_args[:extended] = true
+        yield(objects, new_args)
+      end
+
       def after_resolve(arguments:, context:, value:, **_rest)
         context[:extended_args] = arguments[:extended]
         value
+      end
+
+      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
+        context[:extended_args] = arguments[:extended]
+        values
       end
     end
 
     class ShortcutsResolve < GraphQL::Schema::FieldExtension
       def resolve(**_args)
         options[:shortcut_value]
+      end
+
+      def resolve_next(objects:, **args)
+        Array.new(objects.size, options[:shortcut_value])
       end
     end
 
@@ -89,8 +144,16 @@ describe GraphQL::Schema::FieldExtension do
         object.class.name
       end
 
+      def resolve_next(objects:, **_args)
+        objects.map { |o| o.class.name }
+      end
+
       def after_resolve(value:, object:, **_args)
         [object.class.name, value]
+      end
+
+      def after_resolve_next(objects:, values:, **_args)
+        objects.map.with_index { |o, i| [o.class.name, values[i]] }
       end
     end
 
@@ -103,42 +166,49 @@ describe GraphQL::Schema::FieldExtension do
         def resolve(**_args)
           1
         end
+
+        def resolve_next(**_args)
+          1
+        end
       end
     end
 
     class BaseObject < GraphQL::Schema::Object
+      class BaseField < GraphQL::Schema::Field
+      end
+      field_class(BaseField)
     end
 
     class Query < BaseObject
-      field :doubled, Integer, null: false, resolver_method: :pass_thru do
+      field :doubled, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru do
         extension(DoubleFilter)
         argument :input, Integer
       end
 
-      field :square, Integer, null: false, resolver_method: :pass_thru, extensions: [PowerOfFilter] do
+      field :square, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru, extensions: [PowerOfFilter] do
         argument :input, Integer
       end
 
-      field :cube, Integer, null: false, resolver_method: :pass_thru do
+      field :cube, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru do
         extension(PowerOfFilter, power: 3)
         argument :input, Integer
       end
 
-      field :tripled_by_option, Integer, null: false, resolver_method: :pass_thru do
+      field :tripled_by_option, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru do
         extension(MultiplyByOption, factor: 3)
         argument :input, Integer
       end
 
-      field :tripled_by_option2, Integer, null: false, resolver_method: :pass_thru,
+      field :tripled_by_option2, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru,
         extensions: [{ MultiplyByOption => { factor: 3 } }] do
           argument :input, Integer
         end
 
-      field :multiply_input, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgument] do
+      field :multiply_input, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru, extensions: [MultiplyByArgument] do
         argument :input, Integer
       end
 
-      field :multiply_input2, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgumentUsingResolve] do
+      field :multiply_input2, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru, extensions: [MultiplyByArgumentUsingResolve] do
         argument :input, Integer
       end
 
@@ -146,7 +216,7 @@ describe GraphQL::Schema::FieldExtension do
         input # return it as-is, it will be modified by extensions
       end
 
-      field :multiply_input3, Integer, null: false, resolver_method: :pass_thru_without_splat, extensions: [MultiplyByArgumentUsingAfterResolve] do
+      field :multiply_input3, Integer, null: false, resolver_method: :pass_thru_without_splat, resolve_legacy_instance_method: :pass_thru_without_splat, extensions: [MultiplyByArgumentUsingAfterResolve] do
         argument :input, Integer
       end
 
@@ -155,7 +225,7 @@ describe GraphQL::Schema::FieldExtension do
         input
       end
 
-      field :multiple_extensions, Integer, null: false, resolver_method: :pass_thru,
+      field :multiple_extensions, Integer, null: false, resolver_method: :pass_thru, resolve_legacy_instance_method: :pass_thru,
         extensions: [DoubleFilter, { MultiplyByOption => { factor: 3 } }] do
           argument :input, Integer
         end
@@ -172,17 +242,26 @@ describe GraphQL::Schema::FieldExtension do
 
     class Schema < GraphQL::Schema
       query(Query)
+      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     end
   end
 
   def exec_query(query_str, **kwargs)
-    FilterTestSchema::Schema.execute(query_str, **kwargs)
+    if TESTING_EXEC_NEXT
+      FilterTestSchema::Schema.execute_next(query_str, **kwargs)
+    else
+      FilterTestSchema::Schema.execute(query_str, **kwargs)
+    end
   end
 
   describe "object" do
     it "is the schema type object" do
-      res = exec_query("{ objectClassTest }")
-      assert_equal ["FilterTestSchema::Query", "FilterTestSchema::Query"], res["data"]["objectClassTest"]
+      res = exec_query("{ objectClassTest }", root_value: Object.new)
+      if TESTING_EXEC_NEXT
+        assert_equal ["Object", "Object"], res["data"]["objectClassTest"]
+      else
+        assert_equal ["FilterTestSchema::Query", "FilterTestSchema::Query"], res["data"]["objectClassTest"]
+      end
     end
   end
 

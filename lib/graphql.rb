@@ -21,6 +21,9 @@ module GraphQL
   class Error < StandardError
   end
 
+  class RuntimeError < Error
+  end
+
   # This error is raised when GraphQL-Ruby encounters a situation
   # that it *thought* would never happen. Please report this bug!
   class InvariantError < Error
@@ -126,7 +129,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   autoload :Testing, "graphql/testing"
   autoload :Current, "graphql/current"
   if defined?(::Rails::Engine)
-    autoload :Dashboard, 'graphql/dashboard'
+    # This needs to be defined before Rails runs `add_routing_paths`,
+    # otherwise GraphQL::Dashboard's routes won't have been gathered for loading
+    # when that initializer runs.
+    require 'graphql/dashboard'
   end
 end
 

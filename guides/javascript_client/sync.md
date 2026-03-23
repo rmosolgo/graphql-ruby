@@ -70,7 +70,7 @@ To sync your queries with the server, use the `--path` option to point to your `
 $ graphql-ruby-client sync --path=src/__generated__  --outfile=src/OperationStoreClient.js --url=...
 ```
 
-Then, the generated code may be integrated with Relay's [Network Layer](https://facebook.github.io/relay/docs/network-layer.html):
+Then, the generated code may be integrated with Relay's [Network Layer](https://relay.dev/docs/guides/network-layer/):
 
 ```js
 // ...

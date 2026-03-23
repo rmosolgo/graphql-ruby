@@ -3,6 +3,14 @@ require "spec_helper"
 
 describe GraphQL::Dataloader::ActiveRecordSource do
   if testing_rails?
+    include VulfpeckSchemaHelpers
+    it "works with field config shorthands" do
+      skip("Not implemented") unless TESTING_EXEC_NEXT
+      query_str = "{ rootBand { name } }"
+      assert_equal "Wilco", exec_query(query_str, root_value: OpenStruct.new(band_name: "Wilco"))["data"]["rootBand"]["name"]
+      assert_equal "Chon", exec_query(query_str, root_value: OpenStruct.new(band_name: "Chon"))["data"]["rootBand"]["name"]
+    end
+
     describe "finding by ID" do
       it_dataloads "loads once, then returns from a cache when available" do |d|
         log = with_active_record_log(colorize: false) do

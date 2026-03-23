@@ -512,6 +512,7 @@ module GraphQL
               camelize: false,
               directives: prepare_directives(field_definition, type_resolver),
               resolver_method: resolve_method_name,
+              resolve_batch: resolve_method_name,
             )
 
             builder.build_arguments(schema_field_defn, field_definition.arguments, type_resolver)
@@ -527,6 +528,12 @@ module GraphQL
           owner.define_method(method_name) { |**args|
             field_instance = context.types.field(owner, field_name)
             context.schema.definition_default_resolve.call(self.class, field_instance, object, args, context)
+          }
+          owner.define_singleton_method(method_name) { |objects, context, **args|
+            field_instance = context.types.field(owner, field_name)
+            objects.map do |object|
+              context.schema.definition_default_resolve.call(self, field_instance, object, args, context)
+            end
           }
         end
 

@@ -49,8 +49,14 @@ module LazyHelpers
     end
   end
 
-  class LazySum < GraphQL::Schema::Object
-    field :value, Integer
+  class BaseObject < GraphQL::Schema::Object
+    class BaseField < GraphQL::Schema::Field
+    end
+    field_class(BaseField)
+  end
+
+  class LazySum < BaseObject
+    field :value, Integer, resolve_legacy_instance_method: true
     def value
       if object == MAGIC_NUMBER_THAT_RAISES_ERROR
         nil
@@ -67,7 +73,7 @@ module LazyHelpers
       end
     end
 
-    field :nested_sum, LazySum, null: false do
+    field :nested_sum, LazySum, null: false, resolve_legacy_instance_method: true do
       argument :value, Integer
     end
 
@@ -79,14 +85,14 @@ module LazyHelpers
       end
     end
 
-    field :nullable_nested_sum, LazySum do
+    field :nullable_nested_sum, LazySum, resolve_legacy_instance_method: true do
       argument :value, Integer
     end
     alias :nullable_nested_sum :nested_sum
   end
 
-  class LazyQuery < GraphQL::Schema::Object
-    field :int, Integer, null: false do
+  class LazyQuery < BaseObject
+    field :int, Integer, null: false, resolve_legacy_instance_method: true do
       argument :value, Integer
       argument :plus, Integer, required: false, default_value: 0
     end
@@ -94,7 +100,7 @@ module LazyHelpers
       Wrapper.new(value + plus)
     end
 
-    field :nested_sum, LazySum, null: false do
+    field :nested_sum, LazySum, null: false, resolve_legacy_instance_method: true do
       argument :value, Integer
     end
 
@@ -102,7 +108,7 @@ module LazyHelpers
       SumAll.new(value)
     end
 
-    field :nullable_nested_sum, LazySum do
+    field :nullable_nested_sum, LazySum, resolve_legacy_instance_method: true do
       argument :value, Integer
     end
 
@@ -116,7 +122,7 @@ module LazyHelpers
       end
     end
 
-    field :list_sum, [LazySum, null: true] do
+    field :list_sum, [LazySum, null: true], resolve_legacy_instance_method: true do
       argument :values, [Integer]
     end
     def list_sum(values:)
@@ -182,6 +188,7 @@ module LazyHelpers
     lazy_resolve(SumAll, :value)
     trace_with(SumAllInstrumentation2)
     trace_with(SumAllInstrumentation)
+    use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
 
     def self.sync_lazy(lazy)
       if lazy.is_a?(SumAll) && lazy.own_value > 1000
@@ -194,6 +201,10 @@ module LazyHelpers
   end
 
   def run_query(query_str, **rest)
-    LazySchema.execute(query_str, **rest)
+    if TESTING_EXEC_NEXT
+      LazySchema.execute_next(query_str, **rest)
+    else
+      LazySchema.execute(query_str, **rest)
+    end
   end
 end

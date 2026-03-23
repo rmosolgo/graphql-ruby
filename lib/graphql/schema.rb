@@ -330,10 +330,16 @@ module GraphQL
         find_inherited_value(:plugins, EMPTY_ARRAY) + own_plugins
       end
 
+      attr_writer :null_context
+
+      def null_context
+        @null_context || GraphQL::Query::NullContext.instance
+      end
+
       # Build a map of `{ name => type }` and return it
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
-      def types(context = GraphQL::Query::NullContext.instance)
+      def types(context = null_context)
         if use_visibility_profile?
           types = Visibility::Profile.from_context(context, self)
           return types.all_types_h
@@ -366,7 +372,7 @@ module GraphQL
       # @param context [GraphQL::Query::Context] Used for filtering definitions at query-time
       # @param use_visibility_profile Private, for migration to {Schema::Visibility}
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def get_type(type_name, context = GraphQL::Query::NullContext.instance, use_visibility_profile = use_visibility_profile?)
+      def get_type(type_name, context = null_context, use_visibility_profile = use_visibility_profile?)
         if use_visibility_profile
           profile = Visibility::Profile.from_context(context, self)
           return profile.type(type_name)
@@ -617,7 +623,7 @@ module GraphQL
       # @param use_visibility_profile Private, for migration to {Schema::Visibility}
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
-      def possible_types(type = nil, context = GraphQL::Query::NullContext.instance, use_visibility_profile = use_visibility_profile?)
+      def possible_types(type = nil, context = null_context, use_visibility_profile = use_visibility_profile?)
         if use_visibility_profile
           if type
             return Visibility::Profile.from_context(context, self).possible_types(type)
@@ -701,7 +707,7 @@ module GraphQL
         GraphQL::Schema::TypeExpression.build_type(context.query.types, ast_node)
       end
 
-      def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext.instance, use_visibility_profile = use_visibility_profile?)
+      def get_field(type_or_name, field_name, context = null_context, use_visibility_profile = use_visibility_profile?)
         if use_visibility_profile
           profile = Visibility::Profile.from_context(context, self)
           parent_type = case type_or_name
@@ -738,7 +744,7 @@ module GraphQL
         end
       end
 
-      def get_fields(type, context = GraphQL::Query::NullContext.instance)
+      def get_fields(type, context = null_context)
         type.fields(context)
       end
 
@@ -1228,6 +1234,7 @@ module GraphQL
           vis = self.visibility
           child_class.visibility = vis.dup_for(child_class)
         end
+        child_class.null_context = Query::NullContext.new(schema: child_class)
         super
       end
 
@@ -1329,10 +1336,11 @@ module GraphQL
       def type_error(type_error, context)
         case type_error
         when GraphQL::InvalidNullError
-          execution_error = GraphQL::ExecutionError.new(type_error.message, ast_node: type_error.ast_node)
-          execution_error.path = context[:current_path]
+          execution_error = GraphQL::ExecutionError.new(type_error.message, ast_nodes: type_error.ast_nodes)
+          execution_error.path = type_error.path || context[:current_path]
 
           context.errors << execution_error
+          execution_error
         when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
           raise type_error
         when GraphQL::IntegerDecodingError
@@ -1352,6 +1360,24 @@ module GraphQL
 
       def lazy_resolve(lazy_class, value_method)
         lazy_methods.set(lazy_class, value_method)
+      end
+
+      def uses_raw_value?
+        !!@uses_raw_value
+      end
+
+      def uses_raw_value(new_val)
+        @uses_raw_value = new_val
+      end
+
+      def resolves_lazies?
+        lazy_method_count = 0
+        lazy_methods.each do |k, v|
+          if !v.nil?
+            lazy_method_count += 1
+          end
+        end
+        lazy_method_count > 2
       end
 
       def instrument(instrument_step, instrumenter, options = {})

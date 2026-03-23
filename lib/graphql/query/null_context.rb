@@ -4,7 +4,13 @@ module GraphQL
   class Query
     # This object can be `ctx` in places where there is no query
     class NullContext < Context
-      include Singleton
+      def self.instance
+        @instance ||= self.new
+      end
+
+      def self.instance=(new_inst)
+        @instance = new_inst
+      end
 
       class NullQuery
         def after_lazy(value)
@@ -20,10 +26,10 @@ module GraphQL
       attr_reader :schema, :query, :warden, :dataloader
       def_delegators GraphQL::EmptyObjects::EMPTY_HASH, :[], :fetch, :dig, :key?, :to_h
 
-      def initialize
+      def initialize(schema: NullSchema)
         @query = NullQuery.new
         @dataloader = GraphQL::Dataloader::NullDataloader.new
-        @schema = NullSchema
+        @schema = schema
         @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
         @types = @warden.visibility_profile
         freeze

@@ -8,6 +8,18 @@ describe GraphQL::Dataloader::Source do
     end
   end
 
+  if testing_rails?
+    describe "with field configuration shorthands" do
+      include VulfpeckSchemaHelpers
+      it "calls the configured source" do
+        skip("Not implemented") unless TESTING_EXEC_NEXT
+        result = exec_query("{ bandsCount albumsCount }")
+        assert_equal 4, result["data"]["bandsCount"]
+        assert_equal 6, result["data"]["albumsCount"]
+      end
+    end
+  end
+
   it "raises an error when it tries too many times to sync" do
     dl = GraphQL::Dataloader.new
     dl.append_job { dl.with(FailsToLoadSource).load(1) }
@@ -35,8 +47,8 @@ describe GraphQL::Dataloader::Source do
 
     # The value of this changed in Ruby 3.3.3, see https://bugs.ruby-lang.org/issues/20180
     # In previous versions, it was `[{}]`, but now it's `[]`
-    empty_batch_key = [*[], **{}]
-    source_inst = source_cache_for_source[empty_batch_key]
+    empty_execution_next_key = [*[], **{}]
+    source_inst = source_cache_for_source[empty_execution_next_key]
     assert_instance_of FailsToLoadSource, source_inst, "The cache includes a pending source (#{source_cache_for_source.inspect})"
     assert source_inst.pending?
   end
@@ -87,7 +99,7 @@ describe GraphQL::Dataloader::Source do
       end
 
       def thing(id:)
-        context.dataloader.with(ThingSource).load(id)
+        context.dataload(ThingSource, id)
       end
     end
     query(Query)

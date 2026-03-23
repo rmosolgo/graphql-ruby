@@ -37,13 +37,17 @@ module GraphQL
       end
 
       def run_isolated
-        new_dl = self.class.new
+        # Reuse this instance because execution code may already have a reference to _this_ `dataloader` inside the given block.
+        prev_lazies_at_depth = @lazies_at_depth
+        @lazies_at_depth = @lazies_at_depth.dup.clear
         res = nil
-        new_dl.append_job {
+        append_job {
           res = yield
         }
-        new_dl.run
+        run
         res
+      ensure
+        @lazies_at_depth = prev_lazies_at_depth
       end
 
       def clear_cache; end

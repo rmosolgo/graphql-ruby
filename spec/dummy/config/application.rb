@@ -19,5 +19,6 @@ module Dummy
   class Application < Rails::Application
     # Don't generate system test files.
     config.generators.system_tests = nil
+    config.asset_host = "http://some.cdn"
   end
 end

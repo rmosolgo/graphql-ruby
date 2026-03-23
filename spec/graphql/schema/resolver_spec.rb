@@ -94,6 +94,11 @@ describe GraphQL::Schema::Resolver do
         name = yield(object, arguments)
         "#{options[:greeting]}, #{name}!"
       end
+
+      def resolve_next(objects:, arguments:, **rest)
+        names = yield(objects, arguments)
+        names.map { |n| "#{options[:greeting]}, #{n}!" }
+      end
     end
 
     class ResolverWithExtension < BaseResolver
@@ -231,7 +236,13 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
-    class IntegerWrapper < GraphQL::Schema::Object
+    class BaseObject < GraphQL::Schema::Object
+      class BaseField < GraphQL::Schema::Field
+      end
+      field_class(BaseField)
+    end
+
+    class IntegerWrapper < BaseObject
       implements HasValue
       field :value, Integer, null: false, method: :itself
 
@@ -264,7 +275,7 @@ describe GraphQL::Schema::Resolver do
         if context[:use_replacement]
           context[:use_replacement]
         else
-          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name} loaded for #{err.context[:current_path].join(".")}"
+          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name} loaded for #{err.context[:current_path]&.join(".") || field.path}"
         end
       end
     end
@@ -360,8 +371,8 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver12 < GraphQL::Schema::Mutation
       argument :int1, Integer
       argument :int2, Integer
-      field :error_messages, [String]
-      field :value, Integer
+      field :error_messages, [String], hash_key: :error_messages
+      field :value, Integer, hash_key: :value
       def authorized?(int1:, int2:)
         if int1 + int2 > context[:max_int]
           return false, { error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] }
@@ -383,7 +394,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver14 < GraphQL::Schema::RelayClassicMutation
-      field :number, Integer, null: false
+      field :number, Integer, null: false, hash_key: :number
 
       def authorized?
         true
@@ -398,7 +409,7 @@ describe GraphQL::Schema::Resolver do
       argument :number_s, String, prepare: ->(v, ctx) { v.to_i }
       argument :loads_id, ID, loads: IntegerWrapper
 
-      field :result, Integer, null: false
+      field :result, Integer, null: false, hash_key: :result
 
       def authorized?(**_args)
         if arguments[:number_s] == 1 && arguments[:loads] == 1
@@ -417,7 +428,7 @@ describe GraphQL::Schema::Resolver do
       argument :label_id, ID, required: false, loads: HasValue
       argument :label_ids, [ID], required: false, loads: HasValue
 
-      field :inputs, String, null: false
+      field :inputs, String, null: false, hash_key: :inputs
 
       def resolve(**inputs)
         {
@@ -429,7 +440,7 @@ describe GraphQL::Schema::Resolver do
     class MutationWithRequiredLoadsArgument < GraphQL::Schema::Mutation
       argument :label_id, ID, loads: HasValue
 
-      field :inputs, String, null: false
+      field :inputs, String, null: false, hash_key: :inputs
 
       def resolve(**inputs)
         {
@@ -438,14 +449,14 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
-    class Mutation < GraphQL::Schema::Object
+    class Mutation < BaseObject
       field :mutation_with_nullable_loads_argument, mutation: MutationWithNullableLoadsArgument
       field :mutation_with_required_loads_argument, mutation: MutationWithRequiredLoadsArgument
       field :resolver_with_invalid_ready, resolver: ResolverWithInvalidReady
     end
 
-    class Query < GraphQL::Schema::Object
-      class CustomField < GraphQL::Schema::Field
+    class Query < BaseObject
+      class CustomField < BaseField
         def resolve_field(*args)
           value = super
           if @name == "resolver3"
@@ -502,6 +513,7 @@ describe GraphQL::Schema::Resolver do
       mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
+      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
 
       def self.object_from_id(id, ctx)
         if id == "invalid"
@@ -522,7 +534,11 @@ describe GraphQL::Schema::Resolver do
   end
 
   def exec_query(*args, **kwargs)
-    ResolverTest::Schema.execute(*args, **kwargs)
+    if TESTING_EXEC_NEXT
+      ResolverTest::Schema.execute_next(*args, **kwargs)
+    else
+      ResolverTest::Schema.execute(*args, **kwargs)
+    end
   end
 
   it "can access self.arguments inside authorized?" do
@@ -564,6 +580,9 @@ describe GraphQL::Schema::Resolver do
   end
 
   it "uses the object's field_class" do
+    if TESTING_EXEC_NEXT
+      skip "This tests that Field#resolve is called, which it isn't."
+    end
     res = exec_query " { r1: resolver3(value: 1) r2: resolver3 }"
     assert_equal [100, 1, -1], res["data"]["r1"]
     assert_equal [100, nil, -1], res["data"]["r2"]
@@ -581,6 +600,9 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "gets path from extras" do
+      if TESTING_EXEC_NEXT
+        skip "path isn't supported with Batching"
+      end
       res = exec_query " { resolverWithPath } ", root_value: OpenStruct.new(value: 0)
       assert_equal '["resolverWithPath"]', res["data"]["resolverWithPath"]
     end
@@ -779,61 +801,73 @@ describe GraphQL::Schema::Resolver do
       assert_equal ResolverTest::HasValue, arg.loads
     end
 
-    describe "ready?" do
-      it "can raise errors" do
-        res = exec_query("{ int: prepResolver5(int: 5) }")
-        assert_equal 50, res["data"]["int"]
-        add_error_assertions("prepResolver5", "ready?")
-      end
-
-      it "can raise errors in lazy sync" do
-        res = exec_query("{ int: prepResolver6(int: 5) }")
-        assert_equal 50, res["data"]["int"]
-        add_error_assertions("prepResolver6", "lazy ready?")
-      end
-
-      it "can return false and data" do
-        res = exec_query("{ int: prepResolver7(int: 13) { errors int } }")
-        assert_equal ["Bad number!"], res["data"]["int"]["errors"]
-
-        res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
-        assert_equal 213, res["data"]["int"]["int"]
-      end
-
-      it "can return false and falsey data" do
-        res = exec_query("{ result: resolverWithFalseyValueReady }")
-        assert_equal false, res["data"]["result"] # must be `false`, not just falsey
-        assert_nil res["errors"]
-      end
-
-      it 'raises the correct error on invalid return type' do
-        err = assert_raises(RuntimeError) do
-          exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
+    if !TESTING_EXEC_NEXT
+      describe "ready?" do
+        it "can raise errors" do
+          res = exec_query("{ int: prepResolver5(int: 5) }")
+          assert_equal 50, res["data"]["int"]
+          add_error_assertions("prepResolver5", "ready?")
         end
-        assert_match("Unexpected result from #ready?", err.message)
+
+        it "can raise errors in lazy sync" do
+          res = exec_query("{ int: prepResolver6(int: 5) }")
+          assert_equal 50, res["data"]["int"]
+          add_error_assertions("prepResolver6", "lazy ready?")
+        end
+
+        it "can return false and data" do
+          res = exec_query("{ int: prepResolver7(int: 13) { errors int } }")
+          assert_equal ["Bad number!"], res["data"]["int"]["errors"]
+
+          res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
+          assert_equal 213, res["data"]["int"]["int"]
+        end
+
+        it "can return false and falsey data" do
+          res = exec_query("{ result: resolverWithFalseyValueReady }")
+          assert_equal false, res["data"]["result"] # must be `false`, not just falsey
+          assert_nil res["errors"]
+        end
+
+        it 'raises the correct error on invalid return type' do
+          err = assert_raises(RuntimeError) do
+            exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
+          end
+          assert_match("Unexpected result from #ready?", err.message)
+        end
       end
     end
 
     describe "loading arguments" do
       it "calls load methods and injects the return value" do
         res = exec_query("{ prepResolver1(int: 5) }")
-        assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
+        if TESTING_EXEC_NEXT
+          assert_equal 5, res["data"]["prepResolver1"], "def load_\#{...} was not called"
+        else
+          assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
+        end
       end
 
       it "supports lazy values" do
         res = exec_query("{ prepResolver2(int: 5) }")
-        assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
+        if TESTING_EXEC_NEXT
+          assert_equal 5, res["data"]["prepResolver2"], "def load_\#{...} was not called"
+        else
+          assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
+        end
       end
 
       it "supports raising GraphQL::UnauthorizedError and GraphQL::ExecutionError" do
         res = exec_query("{ prepResolver3(int: 5) }")
         assert_equal 5, res["data"]["prepResolver3"]
+        skip("def load_... not supported") if TESTING_EXEC_NEXT
         add_error_assertions("prepResolver3", "load_ hook")
       end
 
       it "supports raising errors from promises" do
         res = exec_query("{ prepResolver4(int: 5) }")
         assert_equal 5, res["data"]["prepResolver4"]
+        skip("def load_... not supported") if TESTING_EXEC_NEXT
         add_error_assertions("prepResolver4", "lazy load_ hook")
       end
     end
@@ -908,7 +942,12 @@ describe GraphQL::Schema::Resolver do
           context = { max_value: 8 }
           res = exec_query(query_str, context: context)
           assert_nil res["data"]["prepResolver9"]
-          assert_equal ["Unauthorized IntegerWrapper loaded for prepResolver9"], res["errors"].map { |e| e["message"] }
+          if TESTING_EXEC_NEXT
+            # context[:current_path] isn't defined, uses field.path instead
+            assert_equal ["Unauthorized IntegerWrapper loaded for Query.prepResolver9"], res["errors"].map { |e| e["message"] }
+          else
+            assert_equal ["Unauthorized IntegerWrapper loaded for prepResolver9"], res["errors"].map { |e| e["message"] }
+          end
 
           # This is OK
           context = { max_value: 900 }
@@ -978,7 +1017,6 @@ describe GraphQL::Schema::Resolver do
 
       it "returns an error when nullable argument is provided an invalid value" do
         res = exec_query('mutation { mutationWithNullableLoadsArgument(labelId: "invalid") { inputs } }')
-
         assert res["errors"]
         assert_equal 'No object found for `labelId: "invalid"`', res["errors"][0]["message"]
       end

@@ -28,7 +28,7 @@ describe GraphQL::Current do
 
         def name
           context[:current_field] << GraphQL::Current.field.path
-          context.dataloader.with(ThingSource, context).load("thing")
+          context.dataload(ThingSource, context, "thing")
         end
       end
       class Query < GraphQL::Schema::Object
