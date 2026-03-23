@@ -49,7 +49,7 @@ module GraphQL
         end
 
         def coerce_arguments(argument_owner, ast_arguments_or_hash)
-          arg_defns = argument_owner.arguments(@selections_step.query.context)
+          arg_defns = @selections_step.query.types.arguments(argument_owner)
           if arg_defns.empty?
             return EmptyObjects::EMPTY_HASH
           end
@@ -57,19 +57,19 @@ module GraphQL
           if ast_arguments_or_hash.is_a?(Hash)
             ast_arguments_or_hash.each do |key, value|
               key_s = nil
-              arg_defn = arg_defns.each_value.find { |a|
+              arg_defn = arg_defns.find { |a|
                 a.keyword == key || a.graphql_name == (key_s ||= String(key))
               }
               coerce_argument_value(args_hash, arg_defn, value)
             end
           else
             ast_arguments_or_hash.each { |arg_node|
-              arg_defn = arg_defns[arg_node.name]
+              arg_defn = arg_defns.find { |ad| ad.graphql_name == arg_node.name }
               coerce_argument_value(args_hash, arg_defn, arg_node.value)
             }
           end
           # TODO refactor the loop above into this one
-          arg_defns.each do |arg_graphql_name, arg_defn|
+          arg_defns.each do |arg_defn|
             if arg_defn.default_value? && !args_hash.key?(arg_defn.keyword)
               coerce_argument_value(args_hash, arg_defn, arg_defn.default_value)
             end
@@ -252,14 +252,6 @@ module GraphQL
           query = @selections_step.query
           field_name = @ast_node.name
           @field_definition = query.get_field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
-          if field_name == "__typename"
-            # TODO handle custom introspection
-            @field_results = Array.new(@selections_step.objects.size, @parent_type.graphql_name)
-            @object_is_authorized = AlwaysAuthorized
-            build_results
-            return
-          end
-
           arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
           @arguments ||= arguments # may have already been set to an error
 
@@ -689,6 +681,8 @@ module GraphQL
               else
                 obj_inst.public_send(@field_definition.execution_next_mode_key, **args_hash)
               end
+            rescue GraphQL::ExecutionError => exec_err
+              exec_err
             end
           else
             raise "Batching execution for #{path} not implemented (execution_next_mode: #{@execution_next_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
