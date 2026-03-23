@@ -8,7 +8,7 @@ module GraphQL
   module Execution
     module Next
       module SchemaExtension
-        def execute_next(query_str = nil, context: nil, document: nil, variables: nil, root_value: nil, validate: true, visibility_profile: nil)
+        def execute_next(query_str = nil, context: nil, document: nil, operation_name: nil, variables: nil, root_value: nil, validate: true, visibility_profile: nil)
           multiplex_context = if context
             {
               backtrace: context[:backtrace],
@@ -27,6 +27,7 @@ module GraphQL
             validate: validate,
             variables: variables,
             root_value: root_value,
+            operation_name: operation_name,
             visibility_profile: visibility_profile,
           }
           m_results = multiplex_next([query_opts], context: multiplex_context, max_complexity: nil)

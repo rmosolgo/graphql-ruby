@@ -972,8 +972,16 @@ describe GraphQL::Execution::Interpreter do
   end
 
   describe "multiplex queries" do
+    def exec_multiplex(...)
+      if TESTING_EXEC_NEXT
+        InterpreterTest::Schema.multiplex_next(...)
+      else
+        InterpreterTest::Schema.multiplex(...)
+      end
+    end
+
     it "runs multiplex queries" do
-      result = InterpreterTest::Schema.multiplex([
+      result = exec_multiplex([
         {
           query: "query Card($name: String!) { card(name: $name) { colors } }",
           variables: { name: "Dark Confidant" },
