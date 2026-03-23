@@ -40,6 +40,19 @@ module GraphQLBenchmark
         x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
         x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
+      when "validate_profile"
+        profile_schemas = [CARD_SCHEMA, BIG_SCHEMA, FIELDS_WILL_MERGE_SCHEMA].map do |s|
+          ps = Class.new(s)
+          ps.use(GraphQL::Schema::Visibility, profiles: { default: {} })
+          ps.validate(GraphQL.parse("{ __typename }"), context: { visibility_profile: :default })
+          ps
+        end
+        ctx = { visibility_profile: :default }
+        x.report("validate (visibility profile) - introspection ") { profile_schemas[0].validate(DOCUMENT, context: ctx) }
+        x.report("validate (visibility profile) - abstract fragments") { profile_schemas[0].validate(ABSTRACT_FRAGMENTS, context: ctx) }
+        x.report("validate (visibility profile) - abstract fragments 2") { profile_schemas[0].validate(ABSTRACT_FRAGMENTS_2, context: ctx) }
+        x.report("validate (visibility profile) - big query") { profile_schemas[1].validate(BIG_QUERY, context: ctx) }
+        x.report("validate (visibility profile) - fields will merge") { profile_schemas[2].validate(FIELDS_WILL_MERGE_QUERY, context: ctx) }
       when "scan"
         require "graphql/c_parser"
         x.report("scan c - introspection") { GraphQL.scan_with_c(QUERY_STRING) }
