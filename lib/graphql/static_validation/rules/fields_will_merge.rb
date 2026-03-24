@@ -11,7 +11,25 @@ module GraphQL
       # Original Algorithm: https://github.com/graphql/graphql-js/blob/master/src/validation/rules/OverlappingFieldsCanBeMerged.js
       NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
-      Field = Struct.new(:node, :definition, :owner_type, :parents)
+      class Field
+        attr_reader :node, :definition, :owner_type, :parents
+
+        def initialize(node, definition, owner_type, parents)
+          @node = node
+          @definition = definition
+          @owner_type = owner_type
+          @parents = parents
+        end
+
+        def return_type
+          @return_type ||= @definition&.type
+        end
+
+        def unwrapped_return_type
+          @unwrapped_return_type ||= return_type&.unwrap
+        end
+      end
+
       FragmentSpread = Struct.new(:name, :parents)
 
       def initialize(*)
@@ -234,8 +252,9 @@ module GraphQL
         end
 
         if !conflicts[:field].key?(response_key) &&
-            (t1 = field1.definition&.type) &&
-            (t2 = field2.definition&.type) &&
+            !field1.definition.equal?(field2.definition) &&
+            (t1 = field1.return_type) &&
+            (t2 = field2.return_type) &&
             return_types_conflict?(t1, t2)
 
           return_error = nil
@@ -314,8 +333,8 @@ module GraphQL
           field2.definition.nil? ||
           (field1.node.selections.empty? && field2.node.selections.empty?)
 
-        return_type1 = field1.definition.type.unwrap
-        return_type2 = field2.definition.type.unwrap
+        return_type1 = field1.unwrapped_return_type
+        return_type2 = field2.unwrapped_return_type
         parents1 = [return_type1]
         parents2 = [return_type2]
 
