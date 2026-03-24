@@ -28,10 +28,10 @@ module GraphQL
       end
 
       def add_conflict(node, conflict_str)
-        # Can't use `.include?` here because AST nodes implement `#==`
-        # based on string value, not including location. But sometimes,
-        # identical nodes conflict because of their differing return types.
-        if nodes.any? { |n| n == node && n.line == node.line && n.col == node.col }
+        # Check if we already have an error for this exact node.
+        # Use object identity first (fast path), then fall back to
+        # value + location comparison for duplicate AST nodes.
+        if nodes.any? { |n| n.equal?(node) || (n.line == node.line && n.col == node.col && n == node) }
           # already have an error for this node
           return
         end
