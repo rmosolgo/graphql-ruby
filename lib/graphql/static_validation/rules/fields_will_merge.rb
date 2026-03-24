@@ -39,6 +39,7 @@ module GraphQL
         @conflict_count = 0
         @max_errors = context.max_errors
         @fragments = context.fragments
+        @mutually_exclusive_cache = {}.compare_by_identity
       end
 
       def on_operation_definition(node, _parent)
@@ -483,23 +484,40 @@ module GraphQL
         if parents1.empty? || parents2.empty?
           false
         elsif parents1.length == parents2.length
-          parents1.length.times.any? do |i|
+          i = 0
+          len = parents1.length
+          while i < len
             type1 = parents1[i - 1]
             type2 = parents2[i - 1]
-            if type1 == type2
-              # If the types we're comparing are the same type,
-              # then they aren't mutually exclusive
-              false
-            else
-              # Check if these two scopes have _any_ types in common.
-              possible_right_types = @types.possible_types(type1)
-              possible_left_types = @types.possible_types(type2)
-              (possible_right_types & possible_left_types).empty?
+            unless type1.equal?(type2)
+              # Check cache for this type pair
+              inner = @mutually_exclusive_cache[type1]
+              if inner
+                cached = inner[type2]
+                if cached.nil?
+                  cached = types_mutually_exclusive?(type1, type2)
+                  inner[type2] = cached
+                end
+              else
+                cached = types_mutually_exclusive?(type1, type2)
+                inner = {}.compare_by_identity
+                inner[type2] = cached
+                @mutually_exclusive_cache[type1] = inner
+              end
+              return true if cached
             end
+            i += 1
           end
+          false
         else
           true
         end
+      end
+
+      def types_mutually_exclusive?(type1, type2)
+        possible_right_types = @types.possible_types(type1)
+        possible_left_types = @types.possible_types(type2)
+        !possible_right_types.intersect?(possible_left_types)
       end
     end
   end
