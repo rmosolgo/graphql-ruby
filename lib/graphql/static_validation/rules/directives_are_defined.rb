@@ -10,9 +10,12 @@ module GraphQL
         if !@types.directive_exists?(node.name)
           @directives_are_defined_errors_by_name ||= {}
           error = @directives_are_defined_errors_by_name[node.name] ||= begin
-            @directive_names ||= @types.directives.map(&:graphql_name)
+            suggestion = if @schema.did_you_mean
+              @directive_names ||= @types.directives.map(&:graphql_name)
+              context.did_you_mean_suggestion(node.name, @directive_names)
+            end
             err = GraphQL::StaticValidation::DirectivesAreDefinedError.new(
-              "Directive @#{node.name} is not defined#{context.did_you_mean_suggestion(node.name, @directive_names)}",
+              "Directive @#{node.name} is not defined#{suggestion}",
               nodes: [],
               directive: node.name
             )
