@@ -37,15 +37,21 @@ module GraphQL
         @visited_fragments = {}
         @compared_fragments = {}
         @conflict_count = 0
+        @max_errors = context.max_errors
+        @fragments = context.fragments
       end
 
       def on_operation_definition(node, _parent)
-        setting_errors { conflicts_within_selection_set(node, type_definition) }
+        @conflicts = nil
+        conflicts_within_selection_set(node, type_definition)
+        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
         super
       end
 
       def on_field(node, _parent)
-        setting_errors { conflicts_within_selection_set(node, type_definition) }
+        @conflicts = nil
+        conflicts_within_selection_set(node, type_definition)
+        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
         super
       end
 
@@ -57,13 +63,6 @@ module GraphQL
             h2[field_name] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: error_type, field_name: field_name)
           end
         end
-      end
-
-      def setting_errors
-        @conflicts = nil
-        yield
-        # don't initialize these if they weren't initialized in the block:
-        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
       end
 
       def conflicts_within_selection_set(node, parent_type)
@@ -123,13 +122,13 @@ module GraphQL
           @compared_fragments[cache_key] = true
         end
 
-        fragment1 = context.fragments[fragment_name1]
-        fragment2 = context.fragments[fragment_name2]
+        fragment1 = @fragments[fragment_name1]
+        fragment2 = @fragments[fragment_name2]
 
         return if fragment1.nil? || fragment2.nil?
 
-        fragment_type1 = context.query.types.type(fragment1.type.name)
-        fragment_type2 = context.query.types.type(fragment2.type.name)
+        fragment_type1 = @types.type(fragment1.type.name)
+        fragment_type2 = @types.type(fragment2.type.name)
 
         return if fragment_type1.nil? || fragment_type2.nil?
 
@@ -178,7 +177,7 @@ module GraphQL
         return if @visited_fragments.key?(fragment_name)
         @visited_fragments[fragment_name] = true
 
-        fragment = context.fragments[fragment_name]
+        fragment = @fragments[fragment_name]
         return if fragment.nil?
 
         fragment_type = @types.type(fragment.type.name)
@@ -222,7 +221,7 @@ module GraphQL
       end
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
-        return if @conflict_count >= context.max_errors
+        return if @conflict_count >= @max_errors
         return if field1.definition.nil? || field2.definition.nil?
 
         node1 = field1.node
@@ -493,8 +492,8 @@ module GraphQL
               false
             else
               # Check if these two scopes have _any_ types in common.
-              possible_right_types = context.types.possible_types(type1)
-              possible_left_types = context.types.possible_types(type2)
+              possible_right_types = @types.possible_types(type1)
+              possible_left_types = @types.possible_types(type2)
               (possible_right_types & possible_left_types).empty?
             end
           end
