@@ -7,8 +7,7 @@ module GraphQL
       include GraphQL::StaticValidation::Error::ErrorHelper
 
       def on_field(node, parent)
-        field_defn = field_definition
-        if validate_field_selections(node, field_defn.type.unwrap)
+        if validate_field_selections(node, @current_object_type)
           super
         end
       end
