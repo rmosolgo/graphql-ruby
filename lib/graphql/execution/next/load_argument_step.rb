@@ -20,7 +20,11 @@ module GraphQL
 
         def call
           context = @field_resolve_step.selections_step.query.context
-          @loaded_value = @load_receiver.load_and_authorize_application_object(@argument_definition, @argument_value, context)
+          @loaded_value = begin
+            @load_receiver.load_and_authorize_application_object(@argument_definition, @argument_value, context)
+          rescue GraphQL::UnauthorizedError => auth_err
+            context.schema.unauthorized_object(auth_err)
+          end
           if (runner = @field_resolve_step.runner).resolves_lazies && runner.lazy?(@loaded_value)
             runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
           else

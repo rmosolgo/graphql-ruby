@@ -83,7 +83,7 @@ module GraphQL
           else
             create_result
           end
-        rescue GraphQL::Error => err
+        rescue GraphQL::RuntimeError => err
           @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
         end
 

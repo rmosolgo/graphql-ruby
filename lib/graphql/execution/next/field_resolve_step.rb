@@ -255,7 +255,8 @@ module GraphQL
           arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
           @arguments ||= arguments # may have already been set to an error
 
-          if @pending_steps.nil? || @pending_steps.size == 0
+          if (@pending_steps.nil? || @pending_steps.size == 0) &&
+              @field_results.nil? # Make sure this wasn't continue via inline dataloader execution
             execute_field
           end
         end
