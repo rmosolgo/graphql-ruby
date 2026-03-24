@@ -422,8 +422,8 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
     it "fails rule" do
       assert_equal [
-        "Field 'x' has a field conflict: name or nickname?",
-        "Field 'name' has a field conflict: name or nickname?"
+        "Field 'name' has a field conflict: name or nickname?",
+        "Field 'x' has a field conflict: name or nickname?"
       ], error_messages
     end
 
@@ -434,10 +434,10 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         }
 
         it "does not limit the number of errors" do
-          assert_equal(error_messages, [
-            "Field 'x' has a field conflict: name or nickname?",
-            "Field 'name' has a field conflict: name or nickname?"
-          ])
+          assert_equal [
+            "Field 'name' has a field conflict: name or nickname?",
+            "Field 'x' has a field conflict: name or nickname?"
+          ], error_messages
         end
       end
 
@@ -447,9 +447,9 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         }
 
         it "does limit the number of errors" do
-          assert_equal(error_messages, [
-            "Field 'x' has a field conflict: name or nickname?",
-          ])
+          assert_equal [
+            "Field 'name' has a field conflict: name or nickname?"
+          ], error_messages
         end
       end
     end
