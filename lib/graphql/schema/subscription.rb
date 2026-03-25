@@ -15,9 +15,7 @@ module GraphQL
       extend GraphQL::Schema::Resolver::HasPayloadType
       extend GraphQL::Schema::Member::HasFields
       NO_UPDATE = :no_update
-      # The generated payload type is required; If there's no payload,
-      # propagate null.
-      null false
+      null true
 
       # @api private
       def initialize(object:, context:, field:)

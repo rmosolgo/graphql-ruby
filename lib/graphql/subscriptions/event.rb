@@ -41,7 +41,9 @@ module GraphQL
         subscription = field.resolver || GraphQL::Schema::Subscription
         arguments = arguments_without_field_extras(field: field, arguments: arguments)
         normalized_args = stringify_args(field, arguments.to_h, context)
-        subscription.topic_for(arguments: normalized_args, field: field, scope: scope)
+        t = subscription.topic_for(arguments: normalized_args, field: field, scope: scope)
+        p [:topic, t]
+        t
       end
 
       # @return [String] a logical identifier for this event. (Stable when the query is broadcastable.)
@@ -104,6 +106,7 @@ module GraphQL
 
         def stringify_args(arg_owner, args, context)
           arg_owner = arg_owner.respond_to?(:unwrap) ? arg_owner.unwrap : arg_owner # remove list and non-null wrappers
+
           case args
           when Hash
             next_args = {}

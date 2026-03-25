@@ -112,10 +112,16 @@ module GraphQL
                 root_value = query.root_value
               end
 
+              if query.subscription? && !query.subscription_update?
+                subs_namespace = query.context.namespace(:subscriptions)
+                subs_namespace[:events] = []
+                subs_namespace[:subscriptions] = {}
+              end
+
               results << { "data" => data }
 
               case selected_operation.operation_type
-              when nil, "query"
+              when nil, "query", "subscription"
                 isolated_steps[0] << SelectionsStep.new(
                   parent_type: root_type,
                   selections: selected_operation.selections,
@@ -139,8 +145,6 @@ module GraphQL
                     query: query,
                   )]
                 end
-              when "subscription"
-                raise ArgumentError, "TODO implement subscriptions"
               else
                 raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
               end
@@ -165,6 +169,10 @@ module GraphQL
 
             queries.each_with_index.map do |query, idx|
               result = results[idx]
+              if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
+                @schema.subscriptions.write_subscription(query, events)
+              end
+              p [:events, events]
               fin_result = if query.context.errors.empty?
                 result
               else
@@ -241,16 +249,17 @@ module GraphQL
           paths_to_check.compact! # root-level auth errors currently come without a path
           # TODO dry with above?
           # This is also where a query-level "Step" would be used?
-          selected_operation = query.document.definitions.first # TODO pick a selected operation
-          root_type = case selected_operation.operation_type
-          when nil, "query"
-            query.schema.query
-          when "mutation"
-            query.schema.mutation
-          when "subscription"
-            raise "Not implemented yet, TODO"
+          if (selected_operation = query.selected_operation)
+            root_type = case selected_operation.operation_type
+            when nil, "query"
+              query.schema.query
+            when "mutation"
+              query.schema.mutation
+            when "subscription"
+              query.schema.subscription
+            end
+            check_object_result(query, data, root_type, selected_operation.selections, [], [], paths_to_check)
           end
-          check_object_result(query, data, root_type, selected_operation.selections, [], [], paths_to_check)
         end
 
         def check_object_result(query, result_h, static_type, ast_selections, current_exec_path, current_result_path, paths_to_check)

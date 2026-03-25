@@ -112,7 +112,7 @@ module GraphQL
       # Return this value to tell the runtime
       # to exclude this field from the response altogether
       def skip
-        GraphQL::Execution::SKIP
+        self[:__graphql_execute_next] ? nil : GraphQL::Execution::SKIP
       end
 
       # Add error at query-level.

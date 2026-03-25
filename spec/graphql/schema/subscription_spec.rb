@@ -14,13 +14,13 @@ describe GraphQL::Schema::Subscription do
     USERS = {}
 
     class User < GraphQL::Schema::Object
-      field :handle, String, null: false
-      field :private, Boolean, null: false
+      field :handle, String, null: false, hash_key: :handle
+      field :private, Boolean, null: false, hash_key: :private
     end
 
     class Toot < GraphQL::Schema::Object
-      field :handle, String, null: false
-      field :body, String, null: false
+      field :handle, String, null: false, hash_key: :handle
+      field :body, String, null: false, hash_key: :body
 
       def self.visible?(context)
         !context[:legacy_schema]
@@ -28,7 +28,7 @@ describe GraphQL::Schema::Subscription do
     end
 
     class LegacyToot < Toot
-      field :likes_count, Int, null: false
+      field :likes_count, Int, null: false, hash_key: :likes_count
 
       def self.visible?(context)
         !!context[:legacy_schema]
@@ -37,10 +37,14 @@ describe GraphQL::Schema::Subscription do
 
     class Query < GraphQL::Schema::Object
       field :toots, [Toot], null: false
-      field :toots, [LegacyToot], null: false
+      field :toots, [LegacyToot], null: false, resolve_static: true
+
+      def self.toots(context)
+        TOOTS
+      end
 
       def toots
-        TOOTS
+        self.class.toots(context)
       end
     end
 
@@ -50,17 +54,17 @@ describe GraphQL::Schema::Subscription do
     class TootWasTooted < BaseSubscription
       argument :handle, String, loads: User, as: :user, camelize: false
 
-      field :toot, Toot, null: false
-      field :user, User, null: false
+      field :toot, Toot, null: false, hash_key: :toot
+      field :user, User, null: false, hash_key: :user
 
       def self.visible?(context)
         !context[:legacy_schema]
       end
 
       # Can't subscribe to private users
-      def authorized?(user:, path:, query:)
+      def authorized?(user:)
         if user[:private]
-          context[:last_path] = path
+          context[:last_path] = context[:current_path]
           false
         else
           true
@@ -94,7 +98,7 @@ describe GraphQL::Schema::Subscription do
     end
 
     class LegacyTootWasTooted < TootWasTooted
-      field :toot, LegacyToot
+      field :toot, LegacyToot, hash_key: :toot
 
       def self.visible?(context)
         !!context[:legacy_schema]
@@ -103,8 +107,8 @@ describe GraphQL::Schema::Subscription do
 
     class DirectTootWasTooted < BaseSubscription
       subscription_scope :viewer
-      field :toot, Toot, null: false
-      field :user, User, null: false
+      field :toot, Toot, null: false, hash_key: :toot
+      field :user, User, null: false, hash_key: :user
     end
 
     class DirectTootWasTootedWithOptionalScope < DirectTootWasTooted
@@ -115,6 +119,7 @@ describe GraphQL::Schema::Subscription do
     class UsersJoined < BaseSubscription
       class UsersJoinedManualPayload < GraphQL::Schema::Object
         field :users, [User],
+          hash_key: :users,
           description: "Includes newly-created users, or all users on the initial load"
       end
 
@@ -134,12 +139,13 @@ describe GraphQL::Schema::Subscription do
     # to make sure it works without arguments
     class NewUsersJoined < BaseSubscription
       field :users, [User],
+        hash_key: :users,
         description: "Includes newly-created users, or all users on the initial load"
     end
 
     class Subscription < GraphQL::Schema::Object
-      field :toot_was_tooted, subscription: TootWasTooted, extras: [:path, :query]
-      field :toot_was_tooted, subscription: LegacyTootWasTooted, extras: [:path, :query]
+      field :toot_was_tooted, subscription: TootWasTooted
+      field :toot_was_tooted, subscription: LegacyTootWasTooted
       field :direct_toot_was_tooted, subscription: DirectTootWasTooted
       field :direct_toot_was_tooted_with_optional_scope, subscription: DirectTootWasTootedWithOptionalScope
       field :users_joined, subscription: UsersJoined
@@ -147,21 +153,26 @@ describe GraphQL::Schema::Subscription do
     end
 
     class Mutation < GraphQL::Schema::Object
-      field :toot, Toot, null: false do
+      field :toot, Toot, null: false, resolve_static: true do
         argument :body, String
       end
 
-      def toot(body:)
+      def self.toot(context, body:)
         handle = context[:viewer][:handle]
         toot = { handle: handle, body: body }
         TOOTS << toot
         SubscriptionFieldSchema.trigger(:toot_was_tooted, {handle: handle}, toot)
+      end
+
+      def toot(body:)
+        self.class.toot(context, body: body)
       end
     end
 
     query(Query)
     mutation(Mutation)
     subscription(Subscription)
+    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
 
     rescue_from(StandardError) { |err, *rest|
       if err.is_a?(GraphQL::Subscriptions::SubscriptionScopeMissingError)
@@ -233,7 +244,11 @@ describe GraphQL::Schema::Subscription do
   end
 
   def exec_query(*args, **kwargs)
-    SubscriptionFieldSchema.execute(*args, **kwargs)
+    if TESTING_EXEC_NEXT
+      SubscriptionFieldSchema.execute_next(*args, **kwargs)
+    else
+      SubscriptionFieldSchema.execute(*args, **kwargs)
+    end
   end
 
   def in_memory_subscription_count

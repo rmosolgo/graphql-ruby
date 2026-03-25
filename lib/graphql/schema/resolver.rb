@@ -46,7 +46,7 @@ module GraphQL
         @prepared_arguments = nil
       end
 
-      attr_accessor :exec_result, :exec_index, :field_resolve_step
+      attr_accessor :exec_result, :exec_index, :field_resolve_step, :raw_arguments
 
       # @return [Object] The application object this field is being resolved on
       attr_accessor :object
@@ -80,7 +80,11 @@ module GraphQL
         end
         q = context.query
         q.current_trace.end_execute_field(field, @prepared_arguments, trace_objs, q, [result])
-
+        if q.subscription? && @field.owner == context.schema.subscription
+          # TODO unify this -- do it in a single pass
+          @original_arguments = @field_resolve_step.coerce_arguments(@field, @field_resolve_step.ast_node.arguments, false)
+          Subscriptions::DefaultSubscriptionResolveExtension.write_subscription(@field, result, @original_arguments, context)
+        end
         exec_result[exec_index] = result
       rescue RuntimeError => err
         exec_result[exec_index] = err

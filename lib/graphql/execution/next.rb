@@ -52,7 +52,7 @@ module GraphQL
 
       def self.run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
         queries = query_options.map do |opts|
-          case opts
+          query = case opts
           when Hash
             schema.query_class.new(schema, nil, **opts)
           when GraphQL::Query, GraphQL::Query::Partial
@@ -60,6 +60,8 @@ module GraphQL
           else
             raise "Expected Hash or GraphQL::Query, not #{opts.class} (#{opts.inspect})"
           end
+          query.context[:__graphql_execute_next] = true
+          query
         end
         multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
         runner = Runner.new(multiplex, **schema.execution_next_options)

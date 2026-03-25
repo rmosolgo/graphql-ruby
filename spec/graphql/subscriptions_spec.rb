@@ -627,7 +627,7 @@ describe GraphQL::Subscriptions do
         end
 
         describe "building topic string when `prepare:` is given" do
-          it "doesn't apply with a Subscription class" do
+          it "does apply with a Subscription class" do
             query_str = <<-GRAPHQL
               subscription($type: PayloadType = TWO) {
                 eventSubscription(userId: "3", payloadType: $type) { payload { int } }
