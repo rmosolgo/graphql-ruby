@@ -12,7 +12,7 @@ module GraphQL
           return
         end
 
-        if @context.schema.error_bubbling || context.errors.none? { |err| err.path.take(@path.size) == @path }
+        if @context.schema.error_bubbling || context.errors.none? { |err| err.path.take(@path_depth) == @path[0, @path_depth] }
           parent_defn = parent_definition(parent)
 
           if parent_defn && (arg_defn = @types.argument(parent_defn, node.name))

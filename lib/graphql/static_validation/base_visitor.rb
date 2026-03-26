@@ -4,25 +4,26 @@ module GraphQL
     class BaseVisitor < GraphQL::Language::StaticVisitor
       def initialize(document, context)
         @path = []
-        @object_types = []
-        @directives = []
-        @field_definitions = []
-        @argument_definitions = []
-        @directive_definitions = []
+        @path_depth = 0
+        @current_object_type = nil
+        @parent_object_type = nil
+        @current_field_definition = nil
+        @current_argument_definition = nil
+        @parent_argument_definition = nil
+        @current_directive_definition = nil
         @context = context
         @types = context.query.types
         @schema = context.schema
+        @inline_fragment_paths = {}
+        @field_unwrapped_types = {}.compare_by_identity
         super(document)
       end
 
       attr_reader :context
 
-      # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
-      attr_reader :object_types
-
       # @return [Array<String>] The nesting of the current position in the AST
       def path
-        @path.dup
+        @path[0, @path_depth]
       end
 
       # Build a class to visit the AST and perform validation,
@@ -55,86 +56,125 @@ module GraphQL
       module ContextMethods
         def on_operation_definition(node, parent)
           object_type = @schema.root_type_for_operation(node.operation_type)
-          push_type(object_type)
-          @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
+          prev_parent_ot = @parent_object_type
+          @parent_object_type = @current_object_type
+          @current_object_type = object_type
+          @path[@path_depth] = "#{node.operation_type}#{node.name ? " #{node.name}" : ""}"
+          @path_depth += 1
           super
-          @object_types.pop
-          @path.pop
+          @current_object_type = @parent_object_type
+          @parent_object_type = prev_parent_ot
+          @path_depth -= 1
         end
 
         def on_fragment_definition(node, parent)
-          on_fragment_with_type(node) do
-            @path.push("fragment #{node.name}")
-            super
+          object_type = if node.type
+            @types.type(node.type.name)
+          else
+            @current_object_type
           end
+          prev_parent_ot = @parent_object_type
+          @parent_object_type = @current_object_type
+          @current_object_type = object_type
+          @path[@path_depth] = "fragment #{node.name}"
+          @path_depth += 1
+          super
+          @current_object_type = @parent_object_type
+          @parent_object_type = prev_parent_ot
+          @path_depth -= 1
         end
 
+        INLINE_FRAGMENT_NO_TYPE = "..."
+
         def on_inline_fragment(node, parent)
-          on_fragment_with_type(node) do
-            @path.push("...#{node.type ? " on #{node.type.to_query_string}" : ""}")
-            super
+          if node.type
+            object_type = @types.type(node.type.name)
+            @path[@path_depth] = @inline_fragment_paths[node.type.name] ||= -"... on #{node.type.to_query_string}"
+            @path_depth += 1
+          else
+            object_type = @current_object_type
+            @path[@path_depth] = INLINE_FRAGMENT_NO_TYPE
+            @path_depth += 1
           end
+          prev_parent_ot = @parent_object_type
+          @parent_object_type = @current_object_type
+          @current_object_type = object_type
+          super
+          @current_object_type = @parent_object_type
+          @parent_object_type = prev_parent_ot
+          @path_depth -= 1
         end
 
         def on_field(node, parent)
-          parent_type = @object_types.last
+          parent_type = @current_object_type
           field_definition = @types.field(parent_type, node.name)
-          @field_definitions.push(field_definition)
-          if !field_definition.nil?
-            next_object_type = field_definition.type.unwrap
-            push_type(next_object_type)
+          prev_field_definition = @current_field_definition
+          @current_field_definition = field_definition
+          prev_parent_ot = @parent_object_type
+          @parent_object_type = @current_object_type
+          if field_definition
+            @current_object_type = @field_unwrapped_types[field_definition] ||= field_definition.type.unwrap
           else
-            push_type(nil)
+            @current_object_type = nil
           end
-          @path.push(node.alias || node.name)
+          @path[@path_depth] = node.alias || node.name
+          @path_depth += 1
           super
-          @field_definitions.pop
-          @object_types.pop
-          @path.pop
+          @current_field_definition = prev_field_definition
+          @current_object_type = @parent_object_type
+          @parent_object_type = prev_parent_ot
+          @path_depth -= 1
         end
 
         def on_directive(node, parent)
           directive_defn = @context.schema_directives[node.name]
-          @directive_definitions.push(directive_defn)
+          prev_directive_definition = @current_directive_definition
+          @current_directive_definition = directive_defn
           super
-          @directive_definitions.pop
+          @current_directive_definition = prev_directive_definition
         end
 
         def on_argument(node, parent)
-          argument_defn = if (arg = @argument_definitions.last)
+          argument_defn = if (arg = @current_argument_definition)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
               @types.argument(arg_type, node.name)
             else
               nil
             end
-          elsif (directive_defn = @directive_definitions.last)
+          elsif (directive_defn = @current_directive_definition)
             @types.argument(directive_defn, node.name)
-          elsif (field_defn = @field_definitions.last)
+          elsif (field_defn = @current_field_definition)
             @types.argument(field_defn, node.name)
           else
             nil
           end
 
-          @argument_definitions.push(argument_defn)
-          @path.push(node.name)
+          prev_parent = @parent_argument_definition
+          @parent_argument_definition = @current_argument_definition
+          @current_argument_definition = argument_defn
+          @path[@path_depth] = node.name
+          @path_depth += 1
           super
-          @argument_definitions.pop
-          @path.pop
+          @current_argument_definition = @parent_argument_definition
+          @parent_argument_definition = prev_parent
+          @path_depth -= 1
         end
 
         def on_fragment_spread(node, parent)
-          @path.push("... #{node.name}")
+          @path[@path_depth] = "... #{node.name}"
+          @path_depth += 1
           super
-          @path.pop
+          @path_depth -= 1
         end
 
         def on_input_object(node, parent)
-          arg_defn = @argument_definitions.last
+          arg_defn = @current_argument_definition
           if arg_defn && arg_defn.type.list?
-            @path.push(parent.children.index(node))
+            @path[@path_depth] = parent.children.index(node)
+            @path_depth += 1
             super
-            @path.pop
+            @path_depth -= 1
           else
             super
           end
@@ -142,48 +182,32 @@ module GraphQL
 
         # @return [GraphQL::BaseType] The current object type
         def type_definition
-          @object_types.last
+          @current_object_type
         end
 
         # @return [GraphQL::BaseType] The type which the current type came from
         def parent_type_definition
-          @object_types[-2]
+          @parent_object_type
         end
 
         # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one
         def field_definition
-          @field_definitions.last
+          @current_field_definition
         end
 
         # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one
         def directive_definition
-          @directive_definitions.last
+          @current_directive_definition
         end
 
         # @return [GraphQL::Argument, nil] The most-recently-entered GraphQL::Argument, if currently inside one
         def argument_definition
-          # Don't get the _last_ one because that's the current one.
-          # Get the second-to-last one, which is the parent of the current one.
-          @argument_definitions[-2]
+          # Return the parent argument definition (not the current one).
+          @parent_argument_definition
         end
 
         private
 
-        def on_fragment_with_type(node)
-          object_type = if node.type
-            @types.type(node.type.name)
-          else
-            @object_types.last
-          end
-          push_type(object_type)
-          yield(node)
-          @object_types.pop
-          @path.pop
-        end
-
-        def push_type(t)
-          @object_types.push(t)
-        end
       end
 
       private
@@ -192,7 +216,7 @@ module GraphQL
         if @context.too_many_errors?
           throw :too_many_validation_errors
         end
-        error.path ||= (path || @path.dup)
+        error.path ||= (path || @path[0, @path_depth])
         context.errors << error
       end
 
