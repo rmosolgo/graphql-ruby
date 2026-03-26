@@ -215,9 +215,20 @@ module GraphQL
             end
 
             if all_same
-              # All fields are identical in signature — just compare first two
-              if f0.node.selections.size > 0 || fields[1].node.selections.size > 0
-                find_conflict(key, f0, fields[1])
+              # All fields share a signature, so they can only conflict on
+              # sub-selections. Deduplicate by AST node identity — fields from
+              # the same node always have identical sub-selections.
+              unique_nodes = fields.uniq { |f| f.node.object_id }
+              i = 0
+              while i < unique_nodes.size
+                j = i + 1
+                while j < unique_nodes.size
+                  if unique_nodes[i].node.selections.size > 0 || unique_nodes[j].node.selections.size > 0
+                    find_conflict(key, unique_nodes[i], unique_nodes[j])
+                  end
+                  j += 1
+                end
+                i += 1
               end
             else
               groups = fields.group_by { |f| field_signature(f) }
@@ -232,11 +243,22 @@ module GraphQL
                   gj += 1
                 end
 
-                # Within same group, only check first pair for sub-selection conflicts
+                # Within same group, deduplicate by AST node and compare all
+                # pairs for sub-selection conflicts
                 group = unique_groups[gi]
-
-                if group.size >= 2 && (group[0].node.selections.size > 0 || group[1].node.selections.size > 0)
-                  find_conflict(key, group[0], group[1])
+                if group.size >= 2
+                  unique_in_group = group.uniq { |f| f.node.object_id }
+                  ui = 0
+                  while ui < unique_in_group.size
+                    uj = ui + 1
+                    while uj < unique_in_group.size
+                      if unique_in_group[ui].node.selections.size > 0 || unique_in_group[uj].node.selections.size > 0
+                        find_conflict(key, unique_in_group[ui], unique_in_group[uj])
+                      end
+                      uj += 1
+                    end
+                    ui += 1
+                  end
                 end
 
                 gi += 1
