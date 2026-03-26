@@ -454,27 +454,22 @@ module GraphQL
         end
       end
 
-      def each_field(fields_or_field)
-        if fields_or_field.is_a?(Field)
-          yield fields_or_field
-        else
-          fields_or_field.each { |f| yield f }
-        end
-      end
-
       def find_conflicts_between(response_keys, response_keys2, mutually_exclusive:)
         response_keys.each do |key, fields|
           fields2 = response_keys2[key]
-          if fields2
-            each_field(fields) do |field|
-              each_field(fields2) do |field2|
-                find_conflict(
-                  key,
-                  field,
-                  field2,
-                  mutually_exclusive: mutually_exclusive,
-                )
-              end
+          next unless fields2
+
+          fields_arr = fields.is_a?(Field) ? [fields] : fields
+          fields2_arr = fields2.is_a?(Field) ? [fields2] : fields2
+
+          fields_arr.each do |field|
+            fields2_arr.each do |field2|
+              find_conflict(
+                key,
+                field,
+                field2,
+                mutually_exclusive: mutually_exclusive,
+              )
             end
           end
         end
