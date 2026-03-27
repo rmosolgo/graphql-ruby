@@ -41,9 +41,7 @@ module GraphQL
         subscription = field.resolver || GraphQL::Schema::Subscription
         arguments = arguments_without_field_extras(field: field, arguments: arguments)
         normalized_args = stringify_args(field, arguments.to_h, context)
-        t = subscription.topic_for(arguments: normalized_args, field: field, scope: scope)
-        p [:topic, t]
-        t
+        subscription.topic_for(arguments: normalized_args, field: field, scope: scope)
       end
 
       # @return [String] a logical identifier for this event. (Stable when the query is broadcastable.)

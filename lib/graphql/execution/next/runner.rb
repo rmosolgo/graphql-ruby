@@ -172,7 +172,7 @@ module GraphQL
               if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
                 @schema.subscriptions.write_subscription(query, events)
               end
-              p [:events, events]
+
               fin_result = if query.context.errors.empty?
                 result
               else
@@ -278,22 +278,26 @@ module GraphQL
                   if (result_type_non_null = result_type.non_null?)
                     result_type = result_type.of_type
                   end
+
                   new_result_value = if result_value.is_a?(GraphQL::Error)
                     result_value.path = current_result_path.dup
-                    nil
+                    result_value.assign_graphql_result(query, result_h, key)
+                    result_h.key?(key) ? result_h[key] : :unassigned
                   else
                     if result_type.list?
                       check_list_result(query, result_value, result_type.of_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
-                    elsif result_type.kind.leaf?
-                      result_value
-                    else
+                    elsif !result_type.kind.leaf?
                       check_object_result(query, result_value, result_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
+                    else
+                      result_value
                     end
                   end
 
                   if new_result_value.nil? && result_type_non_null
                     return nil
-                  else
+                  elsif :unassigned.equal?(new_result_value)
+                    # Do nothing
+                  elsif !new_result_value.equal?(result_value)
                     result_h[key] = new_result_value
                   end
                 end
@@ -326,24 +330,25 @@ module GraphQL
           end
 
           new_invalid_null = false
-          result_arr.map!.with_index do |result_item, idx|
+          result_arr.each_with_index do |result_item, idx|
             current_result_path << idx
             new_result = if result_item.is_a?(GraphQL::Error)
               result_item.path = current_result_path.dup
-              nil
+              result_item.assign_graphql_result(query, result_arr, idx)
+              result_arr[idx]
             elsif inner_type.list?
               check_list_result(query, result_item, inner_type.of_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
-            elsif inner_type.kind.leaf?
-              result_item
-            else
+            elsif !inner_type.kind.leaf?
               check_object_result(query, result_item, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+            else
+              result_item
             end
 
             if new_result.nil? && inner_type_non_null
               new_invalid_null = true
-              nil
-            else
-              new_result
+              result_arr[idx] = nil
+            elsif !new_result.equal?(result_item)
+              result_arr[idx] = new_result
             end
           ensure
             current_result_path.pop

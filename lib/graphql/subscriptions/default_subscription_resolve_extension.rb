@@ -22,7 +22,6 @@ module GraphQL
       end
 
       def self.write_subscription(field, value, arguments, context)
-        p [field.path, value, arguments]
         if value.is_a?(GraphQL::ExecutionError)
           value
         elsif field.resolver&.method_defined?(:subscription_written?) &&

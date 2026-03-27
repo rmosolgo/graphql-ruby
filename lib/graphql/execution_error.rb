@@ -36,6 +36,10 @@ module GraphQL
       super(message)
     end
 
+    def assign_graphql_result(query, result_data, key)
+      result_data[key] = nil
+    end
+
     # @return [Hash] An entry for the response's "errors" key
     def to_h
       hash = {

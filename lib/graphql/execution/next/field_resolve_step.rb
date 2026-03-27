@@ -79,7 +79,6 @@ module GraphQL
         end
 
         def coerce_argument_value(arguments, arg_defn, arg_value, run_loads, target_keyword: run_loads ? arg_defn.keyword : arg_defn.graphql_name, as_type: nil)
-          p [:coerce, arg_defn.path, arg_value, run_loads, target_keyword]
           arg_t = as_type || arg_defn.type
           if arg_t.non_null?
             arg_t = arg_t.of_type
@@ -110,7 +109,7 @@ module GraphQL
               arg_value = Array(arg_value)
               inner_t = arg_t.of_type
               result = Array.new(arg_value.size)
-              arg_value.each_with_index { |v, i| coerce_argument_value(result, arg_defn, v, target_keyword: i, as_type: inner_t) }
+              arg_value.each_with_index { |v, i| coerce_argument_value(result, arg_defn, v, run_loads, target_keyword: i, as_type: inner_t) }
               result
             end
           elsif arg_t.kind.leaf?
@@ -181,7 +180,6 @@ module GraphQL
               @runner.add_step(loads_step)
             end
           else
-            p [:assign_arg, target_keyword, arg_value]
             arguments[target_keyword] = arg_value
           end
           nil
@@ -237,15 +235,10 @@ module GraphQL
         end
 
         def add_graphql_error(err)
-          if GraphQL::Execution::SKIP.equal?(err)
-            # pass
-            nil
-          else
-            err.path = path
-            err.ast_nodes = ast_nodes
-            @selections_step.query.context.add_error(err)
-            err
-          end
+          err.path = path
+          err.ast_nodes = ast_nodes
+          @selections_step.query.context.add_error(err)
+          err
         end
 
         module AlwaysAuthorized
@@ -269,7 +262,8 @@ module GraphQL
           arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
           @arguments ||= arguments # may have already been set to an error
 
-          if @pending_steps.nil? || @pending_steps.size == 0
+          if (@pending_steps.nil? || @pending_steps.size == 0) &&
+              @field_results.nil? # Make sure the arguments flow didn't already call through
             execute_field
           end
         end

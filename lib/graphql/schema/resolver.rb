@@ -75,6 +75,9 @@ module GraphQL
         result = if is_authed
           Schema::Validator.validate!(self.class.validators, object, context, @prepared_arguments, as: @field)
           call_resolve(@prepared_arguments)
+        elsif new_return_value.nil?
+          err = UnauthorizedFieldError.new(object: object, type: @field_resolve_step.parent_type, context: context, field: @field)
+          context.schema.unauthorized_field(err)
         else
           new_return_value
         end
@@ -200,6 +203,10 @@ module GraphQL
         arg_owner = @field # || self.class
         args = context.types.arguments(arg_owner)
         authorize_arguments(args, inputs)
+      end
+
+      def self.authorizes?(context)
+        self.instance_method(:authorized?).owner != GraphQL::Schema::Resolver
       end
 
       # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.

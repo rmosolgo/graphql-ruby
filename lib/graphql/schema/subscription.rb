@@ -15,7 +15,7 @@ module GraphQL
       extend GraphQL::Schema::Resolver::HasPayloadType
       extend GraphQL::Schema::Member::HasFields
       NO_UPDATE = :no_update
-      null true
+      null false
 
       # @api private
       def initialize(object:, context:, field:)

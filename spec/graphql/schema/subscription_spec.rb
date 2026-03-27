@@ -194,7 +194,8 @@ describe GraphQL::Schema::Subscription do
 
     def self.unauthorized_field(err)
       path = err.context[:last_path]
-      raise GraphQL::ExecutionError, "Can't subscribe to private user (#{path})"
+      p [:raising, err]
+      raise GraphQL::ExecutionError, "Can't subscribe to private user (#{path || "EXEC_NEXT_NO_PATH"})"
     end
 
     class InMemorySubscriptions < GraphQL::Subscriptions
@@ -343,16 +344,16 @@ describe GraphQL::Schema::Subscription do
       GRAPHQL
 
       expected_response = {
-        "data" => nil,
         "errors" => [
           {
             "message"=>"No object found for `handle: \"jack\"`",
             "locations"=>[{"line"=>2, "column"=>9}],
             "path"=>["tootWasTooted"]
           }
-        ]
+        ],
+        "data" => nil,
       }
-      assert_equal(expected_response, res)
+      assert_graphql_equal(expected_response, res)
       assert_equal 0, in_memory_subscription_count
     end
 
@@ -365,16 +366,16 @@ describe GraphQL::Schema::Subscription do
       }
       GRAPHQL
       expected_response = {
-        "data"=>nil,
         "errors"=>[
           {
-            "message"=>"Can't subscribe to private user ([\"tootWasTooted\"])",
+            "message"=>"Can't subscribe to private user (#{TESTING_EXEC_NEXT ? "EXEC_NEXT_NO_PATH" : "[\"tootWasTooted\"]"})",
             "locations"=>[{"line"=>2, "column"=>9}],
             "path"=>["tootWasTooted"]
           },
         ],
+        "data"=>nil,
       }
-      assert_equal(expected_response, res)
+      assert_graphql_equal(expected_response, res)
     end
 
     it "sends no initial response if :no_response is returned, which is the default" do
@@ -611,7 +612,12 @@ describe GraphQL::Schema::Subscription do
           }
         GRAPHQL
       end
-      expected_message = "Subscription.directTootWasTooted (SubscriptionFieldSchema::DirectTootWasTooted) requires a `scope:` value to trigger updates (Set `subscription_scope ..., optional: true` to disable this requirement)"
+      plain_expected_message = "Subscription.directTootWasTooted (SubscriptionFieldSchema::DirectTootWasTooted) requires a `scope:` value to trigger updates (Set `subscription_scope ..., optional: true` to disable this requirement)"
+      expected_message = if TESTING_EXEC_NEXT
+        "Resolving Subscription.directTootWasTooted: #{plain_expected_message}"
+      else
+        plain_expected_message
+      end
       assert_equal expected_message, err.message
       assert_equal 0, in_memory_subscription_count
 
@@ -628,7 +634,7 @@ describe GraphQL::Schema::Subscription do
       err = assert_raises GraphQL::Subscriptions::SubscriptionScopeMissingError do
         SubscriptionFieldSchema.subscriptions.trigger(:direct_toot_was_tooted, {}, obj)
       end
-      assert_equal expected_message, err.message
+      assert_equal plain_expected_message, err.message
     end
 
     it "doesn't require subscription scope if `optional: true`" do
