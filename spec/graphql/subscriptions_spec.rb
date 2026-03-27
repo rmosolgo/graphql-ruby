@@ -228,6 +228,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     max_complexity(InMemoryBackend::MAX_COMPLEXITY)
     complexity_cost_calculation_mode(:future)
     use GraphQL::Schema::Warden if ADD_WARDEN
+    use GraphQL::Execution::Next
   end
 end
 
@@ -287,6 +288,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
   }
   Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }})
   Schema.max_complexity(MAX_COMPLEXITY)
+  Schema.use(GraphQL::Execution::Next)
   Schema.complexity_cost_calculation_mode(:future)
   # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
@@ -303,6 +305,14 @@ class ToParamUser
 end
 
 describe GraphQL::Subscriptions do
+  def exec_query(*args, schema: self.schema, **kwargs)
+    if TESTING_EXEC_NEXT
+      schema.execute_next(*args, **kwargs)
+    else
+      schema.execute(*args, **kwargs)
+    end
+  end
+
   [ClassBasedInMemoryBackend, FromDefinitionInMemoryBackend].each do |in_memory_backend_class|
     describe "using #{in_memory_backend_class}" do
       before do
@@ -311,7 +321,7 @@ describe GraphQL::Subscriptions do
       let(:root_object) {
         OpenStruct.new(
           payload: in_memory_backend_class::SubscriptionPayload.new,
-          )
+        )
       }
 
       let(:schema) { in_memory_backend_class::Schema }
@@ -332,8 +342,8 @@ describe GraphQL::Subscriptions do
           GRAPHQL
 
           # Initial subscriptions
-          res_1 = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
-          res_2 = schema.execute(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
+          res_1 = exec_query(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
+          res_2 = exec_query(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
           empty_response = {}
 
@@ -359,7 +369,7 @@ describe GraphQL::Subscriptions do
       end
 
       it "works with the introspection query" do
-        res = schema.execute("{ __schema { subscriptionType { name } } }")
+        res = exec_query("{ __schema { subscriptionType { name } } }")
         assert_equal "Subscription", res["data"]["__schema"]["subscriptionType"]["name"]
       end
 
@@ -368,14 +378,14 @@ describe GraphQL::Subscriptions do
           query_str = "subscription($channel: Int) { filteredStream(channel: $channel) { message } }"
 
           # Unfiltered:
-          schema.execute(query_str, context: { socket: "1", segment: "A" }, variables: {})
+          exec_query(query_str, context: { socket: "1", segment: "A" }, variables: {})
           # Filtered:
-          schema.execute(query_str, context: { socket: "2", segment: "A" }, variables: { channel: 1 })
-          schema.execute(query_str, context: { socket: "3", segment: "A" }, variables: { channel: 2 })
+          exec_query(query_str, context: { socket: "2", segment: "A" }, variables: { channel: 1 })
+          exec_query(query_str, context: { socket: "3", segment: "A" }, variables: { channel: 2 })
 
           # Another Subscription scope:
-          schema.execute(query_str, context: { socket: "4", segment: "B" }, variables: {})
-          schema.execute(query_str, context: { socket: "5", segment: "B" }, variables: { channel: 1 })
+          exec_query(query_str, context: { socket: "4", segment: "B" }, variables: {})
+          exec_query(query_str, context: { socket: "5", segment: "B" }, variables: { channel: 1 })
 
           schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 1, message: "Message 1"), scope: "A")
           schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 2, message: "Message 2"), scope: "A")
@@ -404,7 +414,7 @@ describe GraphQL::Subscriptions do
 
         it "runs visibility checks when calling .trigger" do
           query_str = "subscription { hiddenEvent { int } }"
-          res_1 = schema.execute(query_str, context: { socket: "1", hidden_event: true }, root_value: root_object)
+          res_1 = exec_query(query_str, context: { socket: "1", hidden_event: true }, root_value: root_object)
           assert_equal({}, res_1["data"])
 
           schema.subscriptions.trigger(:hidden_event, {}, root_object.payload, context: { hidden_event: true })
@@ -428,7 +438,7 @@ describe GraphQL::Subscriptions do
           document = GraphQL.parse(query_str)
 
           # Initial subscriptions
-          response = schema.execute(nil, document: document, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
+          response = exec_query(nil, document: document, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
 
           empty_response = {}
 
@@ -457,7 +467,7 @@ describe GraphQL::Subscriptions do
         }
           GRAPHQL
 
-          res = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
+          res = exec_query(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           assert_equal true, res.key?("errors")
           assert_equal 0, implementation.events.size
           assert_equal 0, implementation.queries.size
@@ -484,7 +494,7 @@ describe GraphQL::Subscriptions do
         }
           GRAPHQL
 
-          schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
           schema.subscriptions.trigger("payload", { "id" => "8"}, root_object.payload)
           assert_equal ["1"], implementation.pushes
         end
@@ -496,7 +506,7 @@ describe GraphQL::Subscriptions do
         }
           GRAPHQL
 
-          schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
           schema.subscriptions.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
           delivery = deliveries["1"].first
           assert_nil delivery.fetch("data")
@@ -510,7 +520,7 @@ describe GraphQL::Subscriptions do
             }
           GRAPHQL
 
-          schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "1" }, variables: { "id" => "8" }, root_value: root_object)
           assert_equal 1, implementation.events.size
           sub_id = implementation.queries.keys.first
           # Mess with the private storage so that `read_subscription` will be nil
@@ -532,13 +542,13 @@ describe GraphQL::Subscriptions do
           GRAPHQL
 
           # Subscribe with explicit `TYPE`
-          schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
           # Subscribe with default `TYPE`
-          schema.execute(query_str, context: { socket: "2" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "2" }, root_value: root_object)
           # Subscribe with non-matching `TYPE`
-          schema.execute(query_str, context: { socket: "3" }, variables: { "type" => "TWO" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "3" }, variables: { "type" => "TWO" }, root_value: root_object)
           # Subscribe with explicit null
-          schema.execute(query_str, context: { socket: "4" }, variables: { "type" => nil }, root_value: root_object)
+          exec_query(query_str, context: { socket: "4" }, variables: { "type" => nil }, root_value: root_object)
 
           # The class-based schema has a "prepare" behavior, so it expects these downcased values in `.trigger`
           if schema == ClassBasedInMemoryBackend::Schema
@@ -579,10 +589,10 @@ describe GraphQL::Subscriptions do
           GRAPHQL
 
           # Subscriptions for user 1
-          schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
-          schema.execute(query_str, context: { socket: "2", me: "1" }, variables: { "type" => "TWO" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "2", me: "1" }, variables: { "type" => "TWO" }, root_value: root_object)
           # Subscription for user 2
-          schema.execute(query_str, context: { socket: "3", me: "2" }, variables: { "type" => "ONE" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "3", me: "2" }, variables: { "type" => "ONE" }, root_value: root_object)
 
           schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: "1")
           schema.subscriptions.trigger("myEvent", { "payloadType" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: "1")
@@ -604,12 +614,12 @@ describe GraphQL::Subscriptions do
             GRAPHQL
 
             # Global ID Backed User
-            schema.execute(query_str, context: { socket: "1", me: GlobalIDUser.new(1) }, variables: { "type" => "ONE" }, root_value: root_object)
-            schema.execute(query_str, context: { socket: "2", me: GlobalIDUser.new(1) }, variables: { "type" => "TWO" }, root_value: root_object)
+            exec_query(query_str, context: { socket: "1", me: GlobalIDUser.new(1) }, variables: { "type" => "ONE" }, root_value: root_object)
+            exec_query(query_str, context: { socket: "2", me: GlobalIDUser.new(1) }, variables: { "type" => "TWO" }, root_value: root_object)
             # ToParam Backed User
-            schema.execute(query_str, context: { socket: "3", me: ToParamUser.new(2) }, variables: { "type" => "ONE" }, root_value: root_object)
+            exec_query(query_str, context: { socket: "3", me: ToParamUser.new(2) }, variables: { "type" => "ONE" }, root_value: root_object)
             # Array of Objects
-            schema.execute(query_str, context: { socket: "4", me: [GlobalIDUser.new(4), ToParamUser.new(5)] }, variables: { "type" => "ONE" }, root_value: root_object)
+            exec_query(query_str, context: { socket: "4", me: [GlobalIDUser.new(4), ToParamUser.new(5)] }, variables: { "type" => "ONE" }, root_value: root_object)
 
             schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, OpenStruct.new(str: "", int: 1), scope: GlobalIDUser.new(1))
             schema.subscriptions.trigger("myEvent", { "payloadType" => "TWO" }, OpenStruct.new(str: "", int: 2), scope: GlobalIDUser.new(1))
@@ -646,13 +656,13 @@ describe GraphQL::Subscriptions do
               }
             GRAPHQL
             # Value from variable
-            schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+            exec_query(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
             # Default value for variable
-            schema.execute(query_str, context: { socket: "1" }, root_value: root_object)
+            exec_query(query_str, context: { socket: "1" }, root_value: root_object)
             # Query string literal value
-            schema.execute(query_str_2, context: { socket: "1" }, root_value: root_object)
+            exec_query(query_str_2, context: { socket: "1" }, root_value: root_object)
             # Schema default value
-            schema.execute(query_str_3, context: { socket: "1" }, root_value: root_object)
+            exec_query(query_str_3, context: { socket: "1" }, root_value: root_object)
 
             # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
             expected_sub_count = if schema == ClassBasedInMemoryBackend::Schema
@@ -693,13 +703,13 @@ describe GraphQL::Subscriptions do
               }
             GRAPHQL
             # Value from variable
-            schema.execute(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+            exec_query(query_str, context: { socket: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
             # Default value for variable
-            schema.execute(query_str, context: { socket: "1" }, root_value: root_object)
+            exec_query(query_str, context: { socket: "1" }, root_value: root_object)
             # Query string literal value
-            schema.execute(query_str_2, context: { socket: "1" }, root_value: root_object)
+            exec_query(query_str_2, context: { socket: "1" }, root_value: root_object)
             # Schema default value
-            schema.execute(query_str_3, context: { socket: "1" }, root_value: root_object)
+            exec_query(query_str_3, context: { socket: "1" }, root_value: root_object)
 
 
             # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
@@ -722,7 +732,7 @@ describe GraphQL::Subscriptions do
 
         describe "errors" do
           it "avoid subscription on resolver error" do
-            res = schema.execute(<<-GRAPHQL, context: { socket: "1" }, variables: { "id" => "100" })
+            res = exec_query(<<-GRAPHQL, context: { socket: "1" }, variables: { "id" => "100" })
           subscription ($id: ID!){
             failedEvent(id: $id) { str, int }
           }
@@ -740,7 +750,7 @@ describe GraphQL::Subscriptions do
           }
             GRAPHQL
 
-            schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+            exec_query(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
             err = assert_raises(RuntimeError) {
               schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, error_payload_class.new, scope: "1")
             }
@@ -755,7 +765,7 @@ describe GraphQL::Subscriptions do
             }
           GRAPHQL
 
-          schema.execute(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
+          exec_query(query_str, context: { socket: "1", me: "1" }, variables: { "type" => "ONE" }, root_value: root_object)
           schema.subscriptions.trigger("myEvent", { "payloadType" => "ONE" }, error_payload_class.new, scope: "1")
           res = deliveries["1"].first
           assert_equal "This is handled", res["errors"][0]["message"]
@@ -817,7 +827,7 @@ describe GraphQL::Subscriptions do
             }
           GRAPHQL
 
-          res = schema.execute(query_str, context: { socket: "1"})
+          res = exec_query(query_str, context: { socket: "1"})
           errs = ["Query has complexity of 7, which exceeds max complexity of 5"]
           assert_equal errs, res["errors"].map { |e| e["message"] }
           assert_equal 0, implementation.events.size
@@ -830,8 +840,8 @@ describe GraphQL::Subscriptions do
   it "can share topics" do
     schema = ClassBasedInMemoryBackend::Schema
     schema.subscriptions.reset
-    schema.execute("subscription { sharedEvent { ok } }", context: { shared_stream: "stream-1", socket: "1" } )
-    schema.execute("subscription { otherSharedEvent { ok __typename } }", context: { shared_stream: "stream-1", socket: "2" } )
+    exec_query("subscription { sharedEvent { ok } }", context: { shared_stream: "stream-1", socket: "1" }, schema: schema )
+    exec_query("subscription { otherSharedEvent { ok __typename } }", context: { shared_stream: "stream-1", socket: "2" }, schema: schema )
 
     schema.subscriptions.trigger(:shared_event, {}, OpenStruct.new(ok: true), scope: "stream-1")
     schema.subscriptions.trigger(:other_shared_event, {}, OpenStruct.new(ok: false), scope: "stream-1")
@@ -891,10 +901,15 @@ describe GraphQL::Subscriptions do
       subscription(Subscription)
       use InMemoryBackend::Subscriptions, extra: nil,
         broadcast: true, default_broadcastable: true
+      use GraphQL::Execution::Next
     end
 
     def exec_query(query_str, **options)
-      BroadcastTrueSchema.execute(query_str, **options)
+      if TESTING_EXEC_NEXT
+        BroadcastTrueSchema.execute_next(query_str, **options)
+      else
+        BroadcastTrueSchema.execute(query_str, **options)
+      end
     end
 
     it "broadcasts when possible" do
@@ -955,6 +970,7 @@ describe GraphQL::Subscriptions do
     subscription(Subscription)
     tracer(ValidationDetectionTracer)
     use InMemoryBackend::Subscriptions, extra: nil, validate_update: false
+    use GraphQL::Execution::Next
   end
 
   class SometimesSkipUpdateValidationSchema < GraphQL::Schema
@@ -968,6 +984,7 @@ describe GraphQL::Subscriptions do
     subscription(SkipUpdateValidationSchema::Subscription)
     tracer(SkipUpdateValidationSchema::ValidationDetectionTracer)
     use(SometimesSkipSubscriptions, extra: nil)
+    use GraphQL::Execution::Next
   end
 
   describe "Skipping validation on updates" do
@@ -976,8 +993,9 @@ describe GraphQL::Subscriptions do
     end
 
     let(:schema) { SkipUpdateValidationSchema }
+
     it "Skips validation when configured" do
-      res = schema.execute("subscription { counter(id: \"1\") { value } }", context: { socket: "1" })
+      res = exec_query("subscription { counter(id: \"1\") { value } }", context: { socket: "1" })
       assert res.context[:was_validated]
       assert_equal({"validate_true" => 1}, schema::COUNTERS)
       schema.subscriptions.trigger(:counter, {id: "1"}, {})
@@ -987,8 +1005,8 @@ describe GraphQL::Subscriptions do
     describe "when the method is overridden" do
       let(:schema) { SometimesSkipUpdateValidationSchema }
       it "calls `validate_update?`" do
-        schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "2" })
-        schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "3", validate_update: true })
+        exec_query("subscription { counter(id: \"3\") { value } }", context: { socket: "2" })
+        exec_query("subscription { counter(id: \"3\") { value } }", context: { socket: "3", validate_update: true })
         assert_equal({"validate_true" => 2}, schema::COUNTERS)
         schema.subscriptions.trigger(:counter, {id: "3"}, {})
         assert_equal({"validate_true" => 3, "validate_false" => 1, "counter_3" => 2}, schema::COUNTERS)
@@ -1054,6 +1072,7 @@ describe GraphQL::Subscriptions do
       class Schema < GraphQL::Schema
         subscription SubscriptionType
         use InMemorySubscriptions
+        use GraphQL::Execution::Next
       end
     end
 
@@ -1071,7 +1090,7 @@ describe GraphQL::Subscriptions do
         }
       GRAPHQL
 
-      schema.execute(query_str, variables: { "myEnum" => "ONE" })
+      exec_query(query_str, variables: { "myEnum" => "ONE" })
 
       schema.subscriptions.trigger(:mySubscription, { "myEnum" => "ONE" }, nil)
 
@@ -1125,6 +1144,7 @@ describe GraphQL::Subscriptions do
       class Schema < GraphQL::Schema
         subscription SubscriptionType
         use InMemoryBackend
+        use GraphQL::Execution::Next
       end
     end
 
@@ -1147,7 +1167,7 @@ describe GraphQL::Subscriptions do
         }
       GRAPHQL
 
-      schema.execute(query_str, variables: { 'input' => { 'innerInput' => nil } })
+      exec_query(query_str, variables: { 'input' => { 'innerInput' => nil } })
 
       schema.subscriptions.trigger(:mySubscription, { 'input' => { 'innerInput' => nil } }, nil)
 
@@ -1164,7 +1184,7 @@ describe GraphQL::Subscriptions do
         }
       GRAPHQL
 
-      schema.execute(query_str, variables: { 'input' => nil })
+      exec_query(query_str, variables: { 'input' => nil })
 
       schema.subscriptions.trigger(:mySubscription, { 'input' => nil }, nil)
 

@@ -54,24 +54,38 @@ module GraphQL
             return EmptyObjects::EMPTY_HASH
           end
           args_hash = {}
+          # TODO somehow DRY these loops?
           if ast_arguments_or_hash.is_a?(Hash)
-            ast_arguments_or_hash.each do |key, value|
-              key_s = nil
-              arg_defn = arg_defns.each_value.find { |a|
-                a.keyword == key || a.graphql_name == (key_s ||= String(key))
-              }
-              coerce_argument_value(args_hash, arg_defn, value, run_loads)
+            arg_defns.each do |arg_graphql_name, arg_defn|
+              given_value = nil
+              was_found = false
+              ast_arguments_or_hash.each do |key, value|
+                if key == arg_defn.keyword || key.to_s == arg_defn.graphql_name
+                  given_value = value
+                  was_found = true
+                  break
+                end
+              end
+              if !was_found && arg_defn.default_value?
+                given_value = arg_defn.default_value
+              end
+              coerce_argument_value(args_hash, arg_defn, given_value, run_loads)
             end
           else
-            ast_arguments_or_hash.each { |arg_node|
-              arg_defn = arg_defns[arg_node.name]
-              coerce_argument_value(args_hash, arg_defn, arg_node.value, run_loads)
-            }
-          end
-          # TODO refactor the loop above into this one
-          arg_defns.each do |arg_graphql_name, arg_defn|
-            if arg_defn.default_value? && !args_hash.key?(arg_defn.keyword)
-              coerce_argument_value(args_hash, arg_defn, arg_defn.default_value, run_loads)
+            arg_defns.each do |arg_graphql_name, arg_defn|
+              given_value = nil
+              was_found = false
+              ast_arguments_or_hash.each do |arg_node|
+                if arg_node.name == arg_defn.graphql_name
+                  given_value = arg_node.value
+                  was_found = true
+                  break
+                end
+              end
+              if !was_found && arg_defn.default_value?
+                given_value = arg_defn.default_value
+              end
+              coerce_argument_value(args_hash, arg_defn, given_value, run_loads)
             end
           end
 
@@ -84,21 +98,21 @@ module GraphQL
             arg_t = arg_t.of_type
           end
 
-          arg_value = if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+          if arg_value.is_a?(Language::Nodes::VariableIdentifier)
             vars = @selections_step.query.variables
-            if vars.key?(arg_value.name)
+            arg_value = if vars.key?(arg_value.name)
               vars[arg_value.name]
             elsif vars.key?(arg_value.name.to_sym)
               vars[arg_value.name.to_sym]
             else
               return # not present
             end
-          elsif arg_value.is_a?(Language::Nodes::NullValue)
-            nil
+          end
+
+          if arg_value.is_a?(Language::Nodes::NullValue)
+            arg_value = nil
           elsif arg_value.is_a?(Language::Nodes::Enum)
-            arg_value.name
-          else
-            arg_value
+            arg_value = arg_value.name
           end
 
           ctx = @selections_step.query.context
