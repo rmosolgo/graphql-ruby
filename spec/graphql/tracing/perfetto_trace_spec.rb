@@ -176,6 +176,9 @@ if testing_rails?
       PerfettoSchema.execute(query_str, variables: { thingId: "Book-#{::Book.first.id}" })
 
       res = PerfettoSchema.execute(query_str, variables: { thingId: "Book-#{::Book.first.id}" })
+      assert_equal 4, res["data"]["authors"].size
+      refute res.key?("errors")
+
       if ENV["DUMP_PERFETTO"]
         res.context.query.current_trace.write(file: "perfetto.dump")
       end
@@ -184,7 +187,7 @@ if testing_rails?
       data = JSON.parse(json)
 
 
-      check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}.json")
+      check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}#{TESTING_EXEC_NEXT ? "-next" : ""}.json")
     end
 
     it "replaces nil class name with (anonymous)" do
