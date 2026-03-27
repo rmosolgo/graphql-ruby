@@ -667,7 +667,7 @@ module GraphQL
       def authorizes?(context)
         method(:authorized?).owner != GraphQL::Schema::Field ||
           ((args = context.types.arguments(self)) && (args.any? { |a| a.authorizes?(context) })) ||
-          (@resolver_class&.authorizes?(context))
+          (@resolver_class&.authorizes?(context)) || false
       end
 
       def authorized?(object, args, context)
