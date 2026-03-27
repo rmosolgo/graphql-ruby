@@ -93,17 +93,10 @@ module GraphQL
               end
             end
 
-            if arg_value.is_a?(Language::Nodes::NullValue)
-              arg_value = nil
-            elsif arg_value.is_a?(Language::Nodes::Enum)
-              arg_value = arg_value.name
-            end
-
             if !was_found && arg_defn.default_value?
               was_found = true
               arg_value = arg_defn.default_value
             end
-
 
             if was_found
               coerce_argument_value(args_hash, arg_defn, arg_value, run_loads)
@@ -117,6 +110,23 @@ module GraphQL
           arg_t = as_type || arg_defn.type
           if arg_t.non_null?
             arg_t = arg_t.of_type
+          end
+
+          if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+            vars = @selections_step.query.variables
+            arg_value = if vars.key?(arg_value.name)
+              vars[arg_value.name]
+            elsif vars.key?(arg_value.name.to_sym)
+              vars[arg_value.name.to_sym]
+            else
+              nil
+            end
+          end
+
+          if arg_value.is_a?(Language::Nodes::NullValue)
+            arg_value = nil
+          elsif arg_value.is_a?(Language::Nodes::Enum)
+            arg_value = arg_value.name
           end
 
           ctx = @selections_step.query.context
