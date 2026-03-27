@@ -22,7 +22,7 @@ module GraphQL
 
         if !has_override_implementation
           if context.query.subscription_update?
-            objects.map(&:object)
+            objects
           else
             objects.map { |o| context.skip }
           end
@@ -48,7 +48,6 @@ module GraphQL
           (subscription_namespace = context.namespace(:subscriptions)) &&
           (subscriptions_by_path = subscription_namespace[:subscriptions])
           (subscription_instance = subscriptions_by_path[context.current_path])
-
           # If it was already written, don't append this event to be written later
           if !subscription_instance.subscription_written?
             events = context.namespace(:subscriptions)[:events]

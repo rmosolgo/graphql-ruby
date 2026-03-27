@@ -197,12 +197,16 @@ class ClassBasedInMemoryBackend < InMemoryBackend
       argument :payload_type, PayloadType, required: false
     end
 
-    field :failed_event, Payload, null: false  do
+    field :failed_event, Payload, null: false, resolve_each: true  do
       argument :id, ID
     end
 
-    def failed_event(id:)
+    def self.failed_event(object, context, id:)
       raise GraphQL::ExecutionError.new("unauthorized")
+    end
+
+    def failed_event(id:)
+      self.class.failed_event(object, context, id: id)
     end
 
     field :filtered_stream, subscription: FilteredStream

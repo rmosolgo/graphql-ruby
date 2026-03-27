@@ -54,38 +54,59 @@ module GraphQL
             return EmptyObjects::EMPTY_HASH
           end
           args_hash = {}
-          # TODO somehow DRY these loops?
-          if ast_arguments_or_hash.is_a?(Hash)
-            arg_defns.each do |arg_graphql_name, arg_defn|
-              given_value = nil
-              was_found = false
+          if ast_arguments_or_hash.nil? # This can happen with `.trigger`
+            return args_hash
+          end
+
+          arg_inputs_are_h = ast_arguments_or_hash.is_a?(Hash)
+
+          arg_defns.each do |arg_graphql_name, arg_defn|
+            arg_value = nil
+            was_found = false
+            if arg_inputs_are_h
               ast_arguments_or_hash.each do |key, value|
                 if key == arg_defn.keyword || key.to_s == arg_defn.graphql_name
-                  given_value = value
+                  arg_value = value
                   was_found = true
                   break
                 end
               end
-              if !was_found && arg_defn.default_value?
-                given_value = arg_defn.default_value
-              end
-              coerce_argument_value(args_hash, arg_defn, given_value, run_loads)
-            end
-          else
-            arg_defns.each do |arg_graphql_name, arg_defn|
-              given_value = nil
-              was_found = false
+            else
               ast_arguments_or_hash.each do |arg_node|
                 if arg_node.name == arg_defn.graphql_name
-                  given_value = arg_node.value
+                  arg_value = arg_node.value
                   was_found = true
                   break
                 end
               end
-              if !was_found && arg_defn.default_value?
-                given_value = arg_defn.default_value
+            end
+
+            if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+              vars = @selections_step.query.variables
+              arg_value = if vars.key?(arg_value.name)
+                vars[arg_value.name]
+              elsif vars.key?(arg_value.name.to_sym)
+                vars[arg_value.name.to_sym]
+              else
+                was_found = false
+                nil
               end
-              coerce_argument_value(args_hash, arg_defn, given_value, run_loads)
+            end
+
+            if arg_value.is_a?(Language::Nodes::NullValue)
+              arg_value = nil
+            elsif arg_value.is_a?(Language::Nodes::Enum)
+              arg_value = arg_value.name
+            end
+
+            if !was_found && arg_defn.default_value?
+              was_found = true
+              arg_value = arg_defn.default_value
+            end
+
+
+            if was_found
+              coerce_argument_value(args_hash, arg_defn, arg_value, run_loads)
             end
           end
 
@@ -96,23 +117,6 @@ module GraphQL
           arg_t = as_type || arg_defn.type
           if arg_t.non_null?
             arg_t = arg_t.of_type
-          end
-
-          if arg_value.is_a?(Language::Nodes::VariableIdentifier)
-            vars = @selections_step.query.variables
-            arg_value = if vars.key?(arg_value.name)
-              vars[arg_value.name]
-            elsif vars.key?(arg_value.name.to_sym)
-              vars[arg_value.name.to_sym]
-            else
-              return # not present
-            end
-          end
-
-          if arg_value.is_a?(Language::Nodes::NullValue)
-            arg_value = nil
-          elsif arg_value.is_a?(Language::Nodes::Enum)
-            arg_value = arg_value.name
           end
 
           ctx = @selections_step.query.context
@@ -638,23 +642,19 @@ module GraphQL
           method_receiver = @field_definition.dynamic_introspection ? @field_definition.owner : @parent_type
           case @field_definition.execution_next_mode
           when :resolve_batch
-            if args_hash.empty?
-              method_receiver.public_send(@field_definition.execution_next_mode_key, objects, context)
-            else
+            begin
               method_receiver.public_send(@field_definition.execution_next_mode_key, objects, context, **args_hash)
+            rescue GraphQL::ExecutionError => exec_err
+              Array.new(objects.size, exec_err)
             end
           when :resolve_static
-            result = if args_hash.empty?
-              method_receiver.public_send(@field_definition.execution_next_mode_key, context)
-            else
-              method_receiver.public_send(@field_definition.execution_next_mode_key, context, **args_hash)
-            end
+            result = method_receiver.public_send(@field_definition.execution_next_mode_key, context, **args_hash)
             Array.new(objects.size, result)
           when :resolve_each
-            if args_hash.empty?
-              objects.map { |o| method_receiver.public_send(@field_definition.execution_next_mode_key, o, context) }
-            else
-              objects.map { |o| method_receiver.public_send(@field_definition.execution_next_mode_key, o, context, **args_hash) }
+            objects.map do |o|
+              method_receiver.public_send(@field_definition.execution_next_mode_key, o, context, **args_hash)
+            rescue GraphQL::ExecutionError => err
+              err
             end
           when :hash_key
             objects.map { |o| o[@field_definition.execution_next_mode_key] }
@@ -716,11 +716,7 @@ module GraphQL
               if @field_definition.dynamic_introspection
                 obj_inst = @owner.wrap(obj_inst, context)
               end
-              if args_hash.empty?
-                obj_inst.public_send(@field_definition.execution_next_mode_key)
-              else
-                obj_inst.public_send(@field_definition.execution_next_mode_key, **args_hash)
-              end
+              obj_inst.public_send(@field_definition.execution_next_mode_key, **args_hash)
             end
           else
             raise "Batching execution for #{path} not implemented (execution_next_mode: #{@execution_next_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"

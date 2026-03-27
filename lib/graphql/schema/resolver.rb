@@ -83,10 +83,11 @@ module GraphQL
         end
         q = context.query
         q.current_trace.end_execute_field(field, @prepared_arguments, trace_objs, q, [result])
-        if q.subscription? && @field.owner == context.schema.subscription
+        if q.subscription? && @field.owner == context.schema.subscription && !@subscription_written
           # TODO unify this -- do it in a single pass
           @original_arguments = @field_resolve_step.coerce_arguments(@field, @field_resolve_step.ast_node.arguments, false)
           Subscriptions::DefaultSubscriptionResolveExtension.write_subscription(@field, result, @original_arguments, context)
+          @subscription_written = true
         end
         exec_result[exec_index] = result
       rescue RuntimeError => err

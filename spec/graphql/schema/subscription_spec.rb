@@ -194,7 +194,6 @@ describe GraphQL::Schema::Subscription do
 
     def self.unauthorized_field(err)
       path = err.context[:last_path]
-      p [:raising, err]
       raise GraphQL::ExecutionError, "Can't subscribe to private user (#{path || "EXEC_NEXT_NO_PATH"})"
     end
 
