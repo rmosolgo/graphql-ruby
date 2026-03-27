@@ -239,6 +239,16 @@ module GraphQL
       query.context.namespace(:subscriptions)[:subscription_broadcastable]
     end
 
+    # Called during execution when a new `subscription ...` operation is received
+    # @param query [GraphQL::Query]
+    # @return [void]
+    def initialize_subscriptions(query)
+      subs_namespace = query.context.namespace(:subscriptions)
+      subs_namespace[:events] = []
+      subs_namespace[:subscriptions] = {}
+      nil
+    end
+
     private
 
     # Recursively normalize `args` as belonging to `arg_owner`:

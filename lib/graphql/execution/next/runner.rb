@@ -112,16 +112,10 @@ module GraphQL
                 root_value = query.root_value
               end
 
-              if query.subscription? && !query.subscription_update?
-                subs_namespace = query.context.namespace(:subscriptions)
-                subs_namespace[:events] = []
-                subs_namespace[:subscriptions] = {}
-              end
-
               results << { "data" => data }
 
               case selected_operation.operation_type
-              when nil, "query", "subscription"
+              when nil, "query"
                 isolated_steps[0] << SelectionsStep.new(
                   parent_type: root_type,
                   selections: selected_operation.selections,
@@ -145,6 +139,19 @@ module GraphQL
                     query: query,
                   )]
                 end
+              when "subscription"
+                if !query.subscription_update?
+                  schema.subscriptions.initialize_subscriptions(query)
+                end
+                isolated_steps[0] << SelectionsStep.new(
+                  parent_type: root_type,
+                  selections: selected_operation.selections,
+                  objects: [root_value],
+                  results: [data],
+                  path: EmptyObjects::EMPTY_ARRAY,
+                  runner: self,
+                  query: query,
+                )
               else
                 raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
               end

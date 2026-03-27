@@ -719,11 +719,7 @@ describe GraphQL::Schema::Subscription do
 
   describe "writing during resolution" do
     class DirectWriteSchema < GraphQL::Schema
-      class WriteCheckSubscriptions
-        def use(schema)
-          schema.subscriptions = self
-        end
-
+      class WriteCheckSubscriptions < GraphQL::Subscriptions
         def write_subscription(query, events)
           query.context[:write_subscription_count] ||= 0
           query.context[:write_subscription_count] += 1
@@ -762,7 +758,7 @@ describe GraphQL::Schema::Subscription do
         field :direct_twice, subscription: DirectWriteTwice
       end
 
-      use WriteCheckSubscriptions.new
+      use WriteCheckSubscriptions
       subscription(Subscription)
     end
 
