@@ -48,9 +48,9 @@ Adopting a feature flag system (described below) can also make this easier.
 
 When all tests pass on `.execute_next`, you're ready to try it out in production.
 
-## COMING SOON: Migration and Clean-Up Script
+## Migration and Clean-Up Script
 
-Migrating field implementations can be automated in many cases. A script to analyze and execute these cases is in the works: [Pull Request](https://github.com/rmosolgo/graphql-ruby/pull/5531). This script will also be able to clean up unused instance methods when the migration is complete.
+`graphql_migrate_execution` is a command-line development tool that can automate many common GraphQL-Ruby field resolver patterns. Check out its docs and try out: https://rmosolgo.github.io/graphql_migrate_execution/
 
 ## Production Considerations
 
@@ -159,7 +159,7 @@ Previously, GraphQL-Ruby would check `type_object.respond_to?(:title)`, `object.
 
 Now, GraphQL-Ruby simply calls `object.title` and allows the `NoMethodError` to bubble up if one is raised.
 
-### Query Analyzers, including complexity 🌕
+### Query Analyzers, including complexity 🟡
 
 Support is identical; this runs before execution using the exact same code.
 
@@ -219,7 +219,7 @@ Not supported yet. This will need some new kind of integration.
 
 These methods/procs are called.
 
-### `validates:` ❌
+### `validates:` 🟡
 
 Built-in validators are supported. Custom validators will always receive `nil` as the `object`. (`object` is no longer available; this API will probably change before this is fully released.)
 
