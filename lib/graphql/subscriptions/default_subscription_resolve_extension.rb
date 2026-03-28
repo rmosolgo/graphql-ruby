@@ -17,10 +17,34 @@ module GraphQL
         end
       end
 
+      def resolve_next(context:, objects:, arguments:)
+        has_override_implementation = @field.execution_next_mode != :direct_send
+
+        if !has_override_implementation
+          if context.query.subscription_update?
+            objects
+          else
+            objects.map { |o| context.skip }
+          end
+        else
+          yield(objects, arguments)
+        end
+      end
+
       def after_resolve(value:, context:, object:, arguments:, **rest)
+        self.class.write_subscription(@field, value, arguments, context)
+      end
+
+      def after_resolve_next(values:, context:, objects:, arguments:, **rest)
+        values.map do |value|
+          self.class.write_subscription(@field, value, arguments, context)
+        end
+      end
+
+      def self.write_subscription(field, value, arguments, context)
         if value.is_a?(GraphQL::ExecutionError)
           value
-        elsif @field.resolver&.method_defined?(:subscription_written?) &&
+        elsif field.resolver&.method_defined?(:subscription_written?) &&
           (subscription_namespace = context.namespace(:subscriptions)) &&
           (subscriptions_by_path = subscription_namespace[:subscriptions])
           (subscription_instance = subscriptions_by_path[context.current_path])

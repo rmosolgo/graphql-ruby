@@ -10,10 +10,13 @@ require "graphql/execution/errors"
 module GraphQL
   module Execution
     # @api private
-    class Skip < GraphQL::Error; end
+    class Skip < GraphQL::RuntimeError
+      attr_accessor :path
+      def ast_nodes=(_ignored); end
 
-    # Just a singleton for implementing {Query::Context#skip}
-    # @api private
-    SKIP = Skip.new
+      def assign_graphql_result(query, result_data, key)
+        result_data.delete(key)
+      end
+    end
   end
 end
