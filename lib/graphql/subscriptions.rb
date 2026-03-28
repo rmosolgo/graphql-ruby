@@ -249,6 +249,16 @@ module GraphQL
       nil
     end
 
+    # Called during execution when a subscription operation has finished
+    # @param query [GraphQL::Query]
+    # @return [void]
+    def finish_subscriptions(query)
+      if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
+        write_subscription(query, events)
+      end
+      nil
+    end
+
     private
 
     # Recursively normalize `args` as belonging to `arg_owner`:

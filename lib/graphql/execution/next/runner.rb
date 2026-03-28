@@ -176,8 +176,8 @@ module GraphQL
 
             queries.each_with_index.map do |query, idx|
               result = results[idx]
-              if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
-                @schema.subscriptions.write_subscription(query, events)
+              if query.subscription?
+                @schema.subscriptions.finish_subscriptions(query)
               end
 
               fin_result = if query.context.errors.empty?
