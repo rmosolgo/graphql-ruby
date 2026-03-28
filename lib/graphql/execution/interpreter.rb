@@ -58,9 +58,6 @@ module GraphQL
               # Do as much eager evaluation of the query as possible
               results = []
               queries.each_with_index do |query, idx|
-                if query.subscription? && !query.subscription_update?
-                  schema.subscriptions.initialize_subscriptions(query)
-                end
                 multiplex.dataloader.append_job {
                   operation = query.selected_operation
                   result = if operation.nil? || !query.valid? || !query.context.errors.empty?
@@ -72,7 +69,9 @@ module GraphQL
                       # in particular, assign it here:
                       runtime = Runtime.new(query: query)
                       query.context.namespace(:interpreter_runtime)[:runtime] = runtime
-
+                      if query.subscription? && !query.subscription_update?
+                        schema.subscriptions.initialize_subscriptions(query)
+                      end
                       query.current_trace.execute_query(query: query) do
                         runtime.run_eager
                       end
