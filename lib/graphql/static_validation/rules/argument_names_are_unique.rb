@@ -16,12 +16,24 @@ module GraphQL
 
       def validate_arguments(node)
         argument_defns = node.arguments
-        if !argument_defns.empty?
-          args_by_name = Hash.new { |h, k| h[k] = [] }
-          argument_defns.each { |a| args_by_name[a.name] << a }
-          args_by_name.each do |name, defns|
-            if defns.size > 1
-              add_error(GraphQL::StaticValidation::ArgumentNamesAreUniqueError.new("There can be only one argument named \"#{name}\"", nodes: defns, name: name))
+        if argument_defns.size > 1
+          seen = {}
+          argument_defns.each do |a|
+            name = a.name
+            if seen.key?(name)
+              prev = seen[name]
+              if prev.is_a?(Array)
+                prev << a
+              else
+                seen[name] = [prev, a]
+              end
+            else
+              seen[name] = a
+            end
+          end
+          seen.each do |name, val|
+            if val.is_a?(Array)
+              add_error(GraphQL::StaticValidation::ArgumentNamesAreUniqueError.new("There can be only one argument named \"#{name}\"", nodes: val, name: name))
             end
           end
         end

@@ -32,7 +32,7 @@ module GraphQL
       # TODO stop using def_delegators because of Array allocations
       def_delegators :@visitor,
         :path, :type_definition, :field_definition, :argument_definition,
-        :parent_type_definition, :directive_definition, :object_types, :dependencies
+        :parent_type_definition, :directive_definition, :dependencies
 
       def on_dependency_resolve(&handler)
         @on_dependency_resolve_handlers << handler

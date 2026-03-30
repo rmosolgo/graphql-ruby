@@ -48,59 +48,86 @@ module GraphQL
           nil
         end
 
-        def coerce_arguments(argument_owner, ast_arguments_or_hash)
+        def coerce_arguments(argument_owner, ast_arguments_or_hash, run_loads = true)
           arg_defns = @selections_step.query.types.arguments(argument_owner)
           if arg_defns.empty?
             return EmptyObjects::EMPTY_HASH
           end
           args_hash = {}
-          if ast_arguments_or_hash.is_a?(Hash)
-            ast_arguments_or_hash.each do |key, value|
-              key_s = nil
-              arg_defn = arg_defns.find { |a|
-                a.keyword == key || a.graphql_name == (key_s ||= String(key))
-              }
-              coerce_argument_value(args_hash, arg_defn, value)
-            end
-          else
-            ast_arguments_or_hash.each { |arg_node|
-              arg_defn = arg_defns.find { |ad| ad.graphql_name == arg_node.name }
-              coerce_argument_value(args_hash, arg_defn, arg_node.value)
-            }
+          
+          if ast_arguments_or_hash.nil? # This can happen with `.trigger`
+            return args_hash
           end
-          # TODO refactor the loop above into this one
-          arg_defns.each do |arg_defn|
-            if arg_defn.default_value? && !args_hash.key?(arg_defn.keyword)
-              coerce_argument_value(args_hash, arg_defn, arg_defn.default_value)
+
+          arg_inputs_are_h = ast_arguments_or_hash.is_a?(Hash)
+
+          arg_defns.each do |arg_graphql_name, arg_defn|
+            arg_value = nil
+            was_found = false
+            if arg_inputs_are_h
+              ast_arguments_or_hash.each do |key, value|
+                if key == arg_defn.keyword || key.to_s == arg_defn.graphql_name
+                  arg_value = value
+                  was_found = true
+                  break
+                end
+              end
+            else
+              ast_arguments_or_hash.each do |arg_node|
+                if arg_node.name == arg_defn.graphql_name
+                  arg_value = arg_node.value
+                  was_found = true
+                  break
+                end
+              end
+            end
+
+            if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+              vars = @selections_step.query.variables
+              arg_value = if vars.key?(arg_value.name)
+                vars[arg_value.name]
+              elsif vars.key?(arg_value.name.to_sym)
+                vars[arg_value.name.to_sym]
+              else
+                was_found = false
+                nil
+              end
+            end
+
+            if !was_found && arg_defn.default_value?
+              was_found = true
+              arg_value = arg_defn.default_value
+            end
+
+            if was_found
+              coerce_argument_value(args_hash, arg_defn, arg_value, run_loads)
             end
           end
 
           args_hash
         end
 
-        def coerce_argument_value(arguments, arg_defn, arg_value, target_keyword: arg_defn.keyword, as_type: nil)
+        def coerce_argument_value(arguments, arg_defn, arg_value, run_loads, target_keyword: run_loads ? arg_defn.keyword : arg_defn.graphql_name, as_type: nil)
           arg_t = as_type || arg_defn.type
           if arg_t.non_null?
             arg_t = arg_t.of_type
           end
 
-          arg_value = if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+          if arg_value.is_a?(Language::Nodes::VariableIdentifier)
             vars = @selections_step.query.variables
-            if vars.key?(arg_value.name)
+            arg_value = if vars.key?(arg_value.name)
               vars[arg_value.name]
             elsif vars.key?(arg_value.name.to_sym)
               vars[arg_value.name.to_sym]
             else
-              return # not present
+              nil
             end
-          elsif arg_value.is_a?(Language::Nodes::NullValue)
-            nil
+          end
+
+          if arg_value.is_a?(Language::Nodes::NullValue)
+            arg_value = nil
           elsif arg_value.is_a?(Language::Nodes::Enum)
-            arg_value.name
-          elsif arg_value.is_a?(Language::Nodes::InputObject)
-            arg_value.arguments # rubocop:disable Development/ContextIsPassedCop
-          else
-            arg_value
+            arg_value = arg_value.name
           end
 
           ctx = @selections_step.query.context
@@ -111,7 +138,7 @@ module GraphQL
               arg_value = Array(arg_value)
               inner_t = arg_t.of_type
               result = Array.new(arg_value.size)
-              arg_value.each_with_index { |v, i| coerce_argument_value(result, arg_defn, v, target_keyword: i, as_type: inner_t) }
+              arg_value.each_with_index { |v, i| coerce_argument_value(result, arg_defn, v, run_loads, target_keyword: i, as_type: inner_t) }
               result
             end
           elsif arg_t.kind.leaf?
@@ -125,7 +152,8 @@ module GraphQL
               end
             end
           elsif arg_t.kind.input_object?
-            input_obj_args = coerce_arguments(arg_t, arg_value)
+            input_obj_vals = arg_value.is_a?(Language::Nodes::InputObject) ? arg_value.arguments : arg_value # rubocop:disable Development/ContextIsPassedCop
+            input_obj_args = coerce_arguments(arg_t, input_obj_vals)
             arg_t.new(nil, ruby_kwargs: input_obj_args, context: @selections_step.query.context, defaults_used: nil)
           else
             raise "Unsupported argument value: #{arg_t.to_type_signature} / #{arg_value.class} (#{arg_value.inspect})"
@@ -145,7 +173,7 @@ module GraphQL
 
           if arg_value.is_a?(GraphQL::Error)
             @arguments = arg_value
-          elsif arg_defn.loads && as_type.nil? && !arg_value.nil?
+          elsif run_loads && arg_defn.loads && as_type.nil? && !arg_value.nil?
             # This is for legacy compat:
             load_receiver = if (r = @field_definition.resolver)
               r.new(field: @field_definition, context: @selections_step.query.context, object: nil)
@@ -256,7 +284,7 @@ module GraphQL
           @arguments ||= arguments # may have already been set to an error
 
           if (@pending_steps.nil? || @pending_steps.size == 0) &&
-              @field_results.nil? # Make sure this wasn't continue via inline dataloader execution
+              @field_results.nil? # Make sure the arguments flow didn't already call through
             execute_field
           end
         end
@@ -316,6 +344,14 @@ module GraphQL
               is_authed = @field_definition.authorized?(o, @arguments, ctx)
               if is_authed
                 authorized_objects << o
+              else
+                begin
+                  err = GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
+                  authorized_objects << query.schema.unauthorized_object(err)
+                  is_authed = true
+                rescue GraphQL::ExecutionError => exec_err
+                  add_graphql_error(exec_err)
+                end
               end
               is_authed
             }
@@ -609,29 +645,35 @@ module GraphQL
           method_receiver = @field_definition.dynamic_introspection ? @field_definition.owner : @parent_type
           case @field_definition.execution_next_mode
           when :resolve_batch
-            if args_hash.empty?
-              method_receiver.public_send(@field_definition.execution_next_mode_key, objects, context)
-            else
+            begin
               method_receiver.public_send(@field_definition.execution_next_mode_key, objects, context, **args_hash)
+            rescue GraphQL::ExecutionError => exec_err
+              Array.new(objects.size, exec_err)
             end
           when :resolve_static
-            result = if args_hash.empty?
-              method_receiver.public_send(@field_definition.execution_next_mode_key, context)
-            else
-              method_receiver.public_send(@field_definition.execution_next_mode_key, context, **args_hash)
-            end
+            result = method_receiver.public_send(@field_definition.execution_next_mode_key, context, **args_hash)
             Array.new(objects.size, result)
           when :resolve_each
-            if args_hash.empty?
-              objects.map { |o| method_receiver.public_send(@field_definition.execution_next_mode_key, o, context) }
-            else
-              objects.map { |o| method_receiver.public_send(@field_definition.execution_next_mode_key, o, context, **args_hash) }
+            objects.map do |o|
+              method_receiver.public_send(@field_definition.execution_next_mode_key, o, context, **args_hash)
+            rescue GraphQL::ExecutionError => err
+              err
             end
           when :hash_key
             objects.map { |o| o[@field_definition.execution_next_mode_key] }
           when :direct_send
             if args_hash.empty?
-              objects.map { |o| o.public_send(@field_definition.execution_next_mode_key) }
+              objects.map do |o|
+                o.public_send(@field_definition.execution_next_mode_key)
+              rescue GraphQL::ExecutionError => err
+                err
+              rescue StandardError => stderr
+                begin
+                  @selections_step.query.handle_or_reraise(stderr)
+                rescue GraphQL::ExecutionError => ex_err
+                  ex_err
+                end
+              end
             else
               objects.map { |o| o.public_send(@field_definition.execution_next_mode_key, **args_hash) }
             end
@@ -677,11 +719,7 @@ module GraphQL
               if @field_definition.dynamic_introspection
                 obj_inst = @owner.wrap(obj_inst, context)
               end
-              if args_hash.empty?
-                obj_inst.public_send(@field_definition.execution_next_mode_key)
-              else
-                obj_inst.public_send(@field_definition.execution_next_mode_key, **args_hash)
-              end
+              obj_inst.public_send(@field_definition.execution_next_mode_key, **args_hash)
             rescue GraphQL::ExecutionError => exec_err
               exec_err
             end
@@ -689,7 +727,6 @@ module GraphQL
             raise "Batching execution for #{path} not implemented (execution_next_mode: #{@execution_next_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
           end
         end
-
       end
 
       class RawValueFieldResolveStep < FieldResolveStep

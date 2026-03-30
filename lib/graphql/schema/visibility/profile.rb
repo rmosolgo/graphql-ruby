@@ -54,6 +54,9 @@ module GraphQL
           @cached_fields.default_proc = nil
           @cached_arguments.default_proc = nil
           @loadable_possible_types.default_proc = nil
+          @cached_field_result.default_proc = nil
+          @cached_field_result.each { |_, h| h.default_proc = nil }
+          @cached_type_result.default_proc = nil
           super
         end
 
@@ -122,6 +125,14 @@ module GraphQL
           end.compare_by_identity
 
           @loadable_possible_types = Hash.new { |h, union_type| h[union_type] = union_type.possible_types }.compare_by_identity
+
+          # Combined cache for field(owner, field_name) — avoids repeated kind check + parent lookup + visibility check
+          @cached_field_result = Hash.new { |h, owner|
+            h[owner] = Hash.new { |h2, field_name| h2[field_name] = compute_field(owner, field_name) }
+          }.compare_by_identity
+
+          # Cache for type(type_name) — avoids repeated get_type + visibility + referenced? checks
+          @cached_type_result = Hash.new { |h, type_name| h[type_name] = compute_type(type_name) }
         end
 
         def field_on_visible_interface?(field, owner)
@@ -149,58 +160,11 @@ module GraphQL
         end
 
         def type(type_name)
-          t = @visibility.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
-          if t
-            if t.is_a?(Array)
-              vis_t = nil
-              t.each do |t_defn|
-                if @cached_visible[t_defn] && referenced?(t_defn)
-                  if vis_t.nil?
-                    vis_t = t_defn
-                  else
-                    raise_duplicate_definition(vis_t, t_defn)
-                  end
-                end
-              end
-              vis_t
-            else
-              if t && @cached_visible[t] && referenced?(t)
-                t
-              else
-                nil
-              end
-            end
-          end
+          @cached_type_result[type_name]
         end
 
         def field(owner, field_name)
-          f = if owner.kind.fields? && (field = @cached_parent_fields[owner][field_name])
-            field
-          elsif owner == query_root && (entry_point_field = @schema.introspection_system.entry_point(name: field_name))
-            entry_point_field
-          elsif (dynamic_field = @schema.introspection_system.dynamic_field(name: field_name))
-            dynamic_field
-          else
-            nil
-          end
-          if f.is_a?(Array)
-            visible_f = nil
-            f.each do |f_defn|
-              if @cached_visible_fields[owner][f_defn]
-
-                if visible_f.nil?
-                  visible_f = f_defn
-                else
-                  raise_duplicate_definition(visible_f, f_defn)
-                end
-              end
-            end
-            visible_f&.ensure_loaded
-          elsif f && @cached_visible_fields[owner][f.ensure_loaded]
-            f
-          else
-            nil
-          end
+          @cached_field_result[owner][field_name]
         end
 
         def fields(owner)
@@ -306,6 +270,7 @@ module GraphQL
         def preload
           load_all_types
           @all_types.each do |type_name, type_defn|
+            type(type_name)
             if type_defn.kind.fields?
               fields(type_defn).each do |f|
                 field(type_defn, f.graphql_name)
@@ -340,6 +305,60 @@ module GraphQL
         end
 
         private
+
+        def compute_type(type_name)
+          t = @visibility.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
+          if t
+            if t.is_a?(Array)
+              vis_t = nil
+              t.each do |t_defn|
+                if @cached_visible[t_defn] && referenced?(t_defn)
+                  if vis_t.nil?
+                    vis_t = t_defn
+                  else
+                    raise_duplicate_definition(vis_t, t_defn)
+                  end
+                end
+              end
+              vis_t
+            else
+              if t && @cached_visible[t] && referenced?(t)
+                t
+              else
+                nil
+              end
+            end
+          end
+        end
+
+        def compute_field(owner, field_name)
+          f = if owner.kind.fields? && (field = @cached_parent_fields[owner][field_name])
+            field
+          elsif owner == query_root && (entry_point_field = @schema.introspection_system.entry_point(name: field_name))
+            entry_point_field
+          elsif (dynamic_field = @schema.introspection_system.dynamic_field(name: field_name))
+            dynamic_field
+          else
+            nil
+          end
+          if f.is_a?(Array)
+            visible_f = nil
+            f.each do |f_defn|
+              if @cached_visible_fields[owner][f_defn]
+                if visible_f.nil?
+                  visible_f = f_defn
+                else
+                  raise_duplicate_definition(visible_f, f_defn)
+                end
+              end
+            end
+            visible_f&.ensure_loaded
+          elsif f && @cached_visible_fields[owner][f.ensure_loaded]
+            f
+          else
+            nil
+          end
+        end
 
         def non_duplicate_items(definitions, visibility_cache)
           non_dups = []

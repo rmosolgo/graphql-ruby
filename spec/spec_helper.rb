@@ -217,7 +217,7 @@ module Minitest
     def assert_graphql_equal(data1, data2, message = "GraphQL Result was equal")
       case data1
       when Hash
-        assert_equal(data1, data2, message)
+        assert_equal(data1, data2.to_h, message)
         assert_equal(data1.keys, data2.keys, "Order of keys matched (#{message})")
       when Array
         data1.each_with_index do |item1, idx|

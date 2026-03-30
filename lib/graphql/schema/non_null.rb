@@ -24,7 +24,7 @@ module GraphQL
       end
 
       def to_type_signature
-        "#{@of_type.to_type_signature}!"
+        @type_signature ||= -"#{@of_type.to_type_signature}!"
       end
 
       def inspect

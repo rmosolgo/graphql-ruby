@@ -140,7 +140,18 @@ module GraphQL
                   )]
                 end
               when "subscription"
-                raise ArgumentError, "TODO implement subscriptions"
+                if !query.subscription_update?
+                  schema.subscriptions.initialize_subscriptions(query)
+                end
+                isolated_steps[0] << SelectionsStep.new(
+                  parent_type: root_type,
+                  selections: selected_operation.selections,
+                  objects: [root_value],
+                  results: [data],
+                  path: EmptyObjects::EMPTY_ARRAY,
+                  runner: self,
+                  query: query,
+                )
               else
                 raise ArgumentError, "Unhandled operation type: #{operation.operation_type.inspect}"
               end
@@ -165,6 +176,10 @@ module GraphQL
 
             queries.each_with_index.map do |query, idx|
               result = results[idx]
+              if query.subscription?
+                @schema.subscriptions.finish_subscriptions(query)
+              end
+
               fin_result = if query.context.errors.empty?
                 result
               else
@@ -242,16 +257,17 @@ module GraphQL
           paths_to_check.compact! # root-level auth errors currently come without a path
           # TODO dry with above?
           # This is also where a query-level "Step" would be used?
-          selected_operation = query.document.definitions.first # TODO pick a selected operation
-          root_type = case selected_operation.operation_type
-          when nil, "query"
-            query.schema.query
-          when "mutation"
-            query.schema.mutation
-          when "subscription"
-            raise "Not implemented yet, TODO"
+          if (selected_operation = query.selected_operation)
+            root_type = case selected_operation.operation_type
+            when nil, "query"
+              query.schema.query
+            when "mutation"
+              query.schema.mutation
+            when "subscription"
+              query.schema.subscription
+            end
+            check_object_result(query, data, root_type, selected_operation.selections, [], [], paths_to_check)
           end
-          check_object_result(query, data, root_type, selected_operation.selections, [], [], paths_to_check)
         end
 
         def check_object_result(query, result_h, static_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
@@ -270,22 +286,26 @@ module GraphQL
                   if (result_type_non_null = result_type.non_null?)
                     result_type = result_type.of_type
                   end
+
                   new_result_value = if result_value.is_a?(GraphQL::Error)
                     result_value.path = current_result_path.dup
-                    nil
+                    result_value.assign_graphql_result(query, result_h, key)
+                    result_h.key?(key) ? result_h[key] : :unassigned
                   else
                     if result_type.list?
                       check_list_result(query, result_value, result_type.of_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
-                    elsif result_type.kind.leaf?
-                      result_value
-                    else
+                    elsif !result_type.kind.leaf?
                       check_object_result(query, result_value, result_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
+                    else
+                      result_value
                     end
                   end
 
                   if new_result_value.nil? && result_type_non_null
                     return nil
-                  else
+                  elsif :unassigned.equal?(new_result_value)
+                    # Do nothing
+                  elsif !new_result_value.equal?(result_value)
                     result_h[key] = new_result_value
                   end
                 end
@@ -318,24 +338,25 @@ module GraphQL
           end
 
           new_invalid_null = false
-          result_arr.map!.with_index do |result_item, idx|
+          result_arr.each_with_index do |result_item, idx|
             current_result_path << idx
             new_result = if result_item.is_a?(GraphQL::Error)
               result_item.path = current_result_path.dup
-              nil
+              result_item.assign_graphql_result(query, result_arr, idx)
+              result_arr[idx]
             elsif inner_type.list?
               check_list_result(query, result_item, inner_type.of_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
-            elsif inner_type.kind.leaf?
-              result_item
-            else
+            elsif !inner_type.kind.leaf?
               check_object_result(query, result_item, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+            else
+              result_item
             end
 
             if new_result.nil? && inner_type_non_null
               new_invalid_null = true
-              nil
-            else
-              new_result
+              result_arr[idx] = nil
+            elsif !new_result.equal?(result_item)
+              result_arr[idx] = new_result
             end
           ensure
             current_result_path.pop

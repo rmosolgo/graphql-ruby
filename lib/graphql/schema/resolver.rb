@@ -46,7 +46,7 @@ module GraphQL
         @prepared_arguments = nil
       end
 
-      attr_accessor :exec_result, :exec_index, :field_resolve_step
+      attr_accessor :exec_result, :exec_index, :field_resolve_step, :raw_arguments
 
       # @return [Object] The application object this field is being resolved on
       attr_accessor :object
@@ -79,13 +79,19 @@ module GraphQL
 
         result = if is_authed
           Schema::Validator.validate!(self.class.validators, object, context, @prepared_arguments, as: @field)
+          if q.subscription? && @field.owner == context.schema.subscription
+            # This needs to use arguments without `loads:`
+            @original_arguments = @field_resolve_step.coerce_arguments(@field, @field_resolve_step.ast_node.arguments, false)
+          end
           call_resolve(@prepared_arguments)
+        elsif new_return_value.nil?
+          err = UnauthorizedFieldError.new(object: object, type: @field_resolve_step.parent_type, context: context, field: @field)
+          context.schema.unauthorized_field(err)
         else
           new_return_value
         end
         q = context.query
         q.current_trace.end_execute_field(field, @prepared_arguments, trace_objs, q, [result])
-
         exec_result[exec_index] = result
       rescue RuntimeError => err
         exec_result[exec_index] = err
@@ -201,6 +207,10 @@ module GraphQL
         arg_owner = @field # || self.class
         args = context.types.arguments(arg_owner)
         authorize_arguments(args, inputs)
+      end
+
+      def self.authorizes?(context)
+        self.instance_method(:authorized?).owner != GraphQL::Schema::Resolver
       end
 
       # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.
