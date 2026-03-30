@@ -150,8 +150,12 @@ module GraphQL
 
         def global_id_field(field_name, **kwargs)
           type = self
-          field field_name, "ID", **kwargs, null: false
+          field field_name, "ID", **kwargs, null: false, resolve_each: true
           define_method(field_name) do
+            context.schema.id_from_object(object, type, context)
+          end
+
+          define_singleton_method(field_name) do |object, context|
             context.schema.id_from_object(object, type, context)
           end
         end
