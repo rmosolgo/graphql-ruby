@@ -54,14 +54,14 @@ module GraphQL
             return EmptyObjects::EMPTY_HASH
           end
           args_hash = {}
-          
+
           if ast_arguments_or_hash.nil? # This can happen with `.trigger`
             return args_hash
           end
 
           arg_inputs_are_h = ast_arguments_or_hash.is_a?(Hash)
 
-          arg_defns.each do |arg_graphql_name, arg_defn|
+          arg_defns.each do |arg_defn|
             arg_value = nil
             was_found = false
             if arg_inputs_are_h
