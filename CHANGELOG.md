@@ -99,7 +99,7 @@
 
 - Runtime: add hooks for experimental custom runtimes #5425, #5429
 - Lazy handling and Dataloader have been merged under the hood #5422
-- Doc: merk `load_application_object_failed` as public #5426
+- Doc: mark `load_application_object_failed` as public #5426
 
 # 2.5.11 (9 Jul 2025)
 

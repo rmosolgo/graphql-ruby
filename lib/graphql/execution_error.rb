@@ -6,7 +6,7 @@ module GraphQL
   class ExecutionError < GraphQL::RuntimeError
     # @return [GraphQL::Language::Nodes::Field] the field where the error occurred
     def ast_node
-      ast_nodes.first
+      ast_nodes&.first
     end
 
     def ast_node=(new_node)

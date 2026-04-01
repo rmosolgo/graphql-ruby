@@ -23,9 +23,9 @@ module GraphQL
         end
 
         def resolve_type(type, object, query)
-          query.current_trace.begin_resolve_type(@static_type, object, query.context)
+          query.current_trace.begin_resolve_type(type, object, query.context)
           resolved_type, _ignored_new_value = query.resolve_type(type, object)
-          query.current_trace.end_resolve_type(@static_type, object, query.context, resolved_type)
+          query.current_trace.end_resolve_type(type, object, query.context, resolved_type)
           resolved_type
         end
 
@@ -199,7 +199,8 @@ module GraphQL
                 res_h
               end
 
-              GraphQL::Query::Result.new(query: query, values: fin_result)
+              query.result_values = fin_result
+              query.result
             end
           end
         ensure

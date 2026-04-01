@@ -66,7 +66,12 @@ module GraphQL
         q = context.query
         trace_objs = [object]
         q.current_trace.begin_execute_field(field, @prepared_arguments, trace_objs, q)
-        is_authed, new_return_value = authorized?(**@prepared_arguments)
+        begin
+          is_authed, new_return_value = authorized?(**@prepared_arguments)
+        rescue GraphQL::UnauthorizedError  => err
+          new_return_value = q.schema.unauthorized_object(err)
+          is_authed = true # the error was handled
+        end
 
         if (runner = @field_resolve_step.runner).resolves_lazies && runner.schema.lazy?(is_authed)
           is_authed, new_return_value = runner.schema.sync_lazy(is_authed)

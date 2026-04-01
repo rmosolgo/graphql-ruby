@@ -72,7 +72,7 @@ module GraphQL
           begin
             query.current_trace.begin_authorized(@resolved_type, @object, query.context)
             @authorized_value = @resolved_type.authorized?(@object, query.context)
-            query.current_trace.end_authorized(@resolve_type, @object, query.context, @authorized_value)
+            query.current_trace.end_authorized(@resolved_type, @object, query.context, @authorized_value)
           rescue GraphQL::UnauthorizedError => auth_err
             @authorization_error = auth_err
           end
@@ -83,7 +83,7 @@ module GraphQL
           else
             create_result
           end
-        rescue GraphQL::Error => err
+        rescue GraphQL::RuntimeError => err
           @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
         end
 
