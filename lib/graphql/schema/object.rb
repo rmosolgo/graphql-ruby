@@ -32,7 +32,8 @@ module GraphQL
       # Call this in a field method to return a value that should be returned to the client
       # without any further handling by GraphQL.
       def raw_value(obj)
-        GraphQL::Execution::Interpreter::RawValue.new(obj)
+        rv = GraphQL::Execution::Interpreter::RawValue.new(obj)
+        context.query.add_finalizer(rv)
       end
 
       class << self

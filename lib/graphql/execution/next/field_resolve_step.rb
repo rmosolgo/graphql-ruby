@@ -520,8 +520,12 @@ module GraphQL
                 else
                   nil
                 end
-              elsif field_result.is_a?(GraphQL::RuntimeError)
-                add_graphql_error(field_result)
+              elsif field_result.is_a?(Finalizer)
+                if field_result.is_a?(GraphQL::RuntimeError)
+                  add_graphql_error(field_result)
+                else
+                  field_result.path = path
+                end
               else
                 # TODO `nil`s in [T!] types aren't handled
                 return_type.coerce_result(field_result, ctx)
@@ -596,8 +600,13 @@ module GraphQL
             else
               graphql_result[key] = nil
             end
-          elsif field_result.is_a?(GraphQL::RuntimeError)
-            graphql_result[key] = add_graphql_error(field_result)
+          elsif field_result.is_a?(Finalizer)
+            graphql_result[key] = if field_result.is_a?(GraphQL::RuntimeError)
+              add_graphql_error(field_result)
+            else
+              field_result.path = path
+              field_result
+            end
           elsif is_list
             if is_nn
               return_type = return_type.of_type
@@ -725,16 +734,6 @@ module GraphQL
             end
           else
             raise "Batching execution for #{path} not implemented (execution_next_mode: #{@execution_next_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
-          end
-        end
-      end
-
-      class RawValueFieldResolveStep < FieldResolveStep
-        def build_graphql_result(graphql_result, key, field_result, return_type, is_nn, is_list, is_from_array) # rubocop:disable Metrics/ParameterLists
-          if field_result.is_a?(Interpreter::RawValue)
-            graphql_result[key] = field_result.resolve
-          else
-            super
           end
         end
       end

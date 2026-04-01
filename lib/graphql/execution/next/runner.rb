@@ -13,7 +13,6 @@ module GraphQL
           @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
           @lazy_cache = resolves_lazies ? {}.compare_by_identity : nil
-          @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
           @authorization = authorization
           if @authorization
             @authorizes_cache = Hash.new do |h, query_context|
@@ -180,7 +179,8 @@ module GraphQL
                 @schema.subscriptions.finish_subscriptions(query)
               end
 
-              fin_result = if query.context.errors.empty?
+              finalizers = query.finalizers
+              fin_result = if finalizers.empty?
                 result
               else
                 data = result["data"]
@@ -216,7 +216,7 @@ module GraphQL
               step = into[key] ||= begin
                 prototype_result[key] = nil
 
-                @field_resolve_step_class.new(
+                FieldResolveStep.new(
                   selections_step: selections_step,
                   key: key,
                   parent_type: type_defn,

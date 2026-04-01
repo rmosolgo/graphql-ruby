@@ -308,7 +308,7 @@ module GraphQL
     def add_finalizer(finalizer)
       f = @finalizers ||= []
       f << finalizer
-      f
+      finalizer
     end
 
     # Determine the values for variables of this query, using default values

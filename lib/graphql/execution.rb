@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 require "graphql/execution/directive_checks"
+require "graphql/execution/next"
 require "graphql/execution/interpreter"
 require "graphql/execution/lazy"
 require "graphql/execution/lookahead"
 require "graphql/execution/multiplex"
-require "graphql/execution/next"
 require "graphql/execution/errors"
 
 module GraphQL
