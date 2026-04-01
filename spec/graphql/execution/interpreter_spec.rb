@@ -999,4 +999,102 @@ describe GraphQL::Execution::Interpreter do
       assert_nil Fiber[:__graphql_runtime_info]
     end
   end
+
+  describe "list items with dataloader and current_path usage" do
+    class ListBugExampleSchema < GraphQL::Schema
+      class PathTest < GraphQL::Schema::Directive
+        locations(GraphQL::Schema::Directive::INLINE_FRAGMENT)
+
+        def self.resolve(object, arguments, context)
+          context[:test_paths] ||= []
+          context[:test_paths] << context[:current_path]
+          super
+        end
+      end
+
+      class DataloadedSource < GraphQL::Dataloader::Source
+        def fetch(objects)
+          objects.map(&:dataloaded)
+        end
+      end
+
+      class DataloadedType < GraphQL::Schema::Object
+        field :int, Integer
+      end
+
+      class SiblingType < GraphQL::Schema::Object
+        field :dataloaded, DataloadedType, null: false
+
+        def dataloaded
+          dataload(DataloadedSource, object)
+        end
+      end
+
+
+      class ChildType < GraphQL::Schema::Object
+        field :int, Integer, null: false
+      end
+
+      class ParentType < GraphQL::Schema::Object
+        field :children, [ChildType], null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :parent, ParentType do
+          argument :name, String
+        end
+
+        def parent(name:)
+          object.parent
+        end
+
+        field :siblings, [SiblingType], null: false
+      end
+
+      query(Query)
+      use GraphQL::Dataloader
+      directive PathTest
+    end
+
+    it "correctly provides current_type at selections-level" do
+      query_str = <<~GRAPHQL
+      query {
+        parent(name: "ABC") {
+          children {
+            ... @pathTest {
+              int
+            }
+          }
+        }
+        siblings {
+          dataloaded {
+            int
+          }
+        }
+      }
+      GRAPHQL
+
+      root_value = OpenStruct.new(
+        parent: OpenStruct.new(
+          children: [
+            OpenStruct.new(int: 1),
+          ]
+        ),
+        siblings: [
+          OpenStruct.new(dataloaded: OpenStruct.new(int: 2)),
+        ]
+      )
+
+      result = ListBugExampleSchema.execute(query_str, root_value: root_value)
+      expected_result = {
+        "data" => {
+          "parent" => {"children" => [{"int" => 1}]},
+          "siblings" => [{"dataloaded" => {"int" => 2}}]
+        }
+      }
+
+      assert_graphql_equal expected_result, result
+      assert_equal [["parent", "children", 0]], result.context[:test_paths]
+    end
+  end
 end
