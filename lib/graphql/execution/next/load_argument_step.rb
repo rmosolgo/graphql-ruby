@@ -45,7 +45,7 @@ module GraphQL
         private
 
         def assign_value
-          if @loaded_value.is_a?(GraphQL::Error)
+          if @loaded_value.is_a?(GraphQL::RuntimeError)
             @loaded_value.path = @field_resolve_step.path
             @field_resolve_step.arguments = @loaded_value
           else

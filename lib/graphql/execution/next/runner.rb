@@ -184,7 +184,7 @@ module GraphQL
                 result
               else
                 data = result["data"]
-                data = propagate_errors(data, query)
+                data = run_finalizers(data, query)
                 errors = []
                 query.context.errors.each do |err|
                   if err.respond_to?(:to_h)
@@ -252,8 +252,8 @@ module GraphQL
 
         private
 
-        def propagate_errors(data, query)
-          paths_to_check = query.context.errors.map(&:path)
+        def run_finalizers(data, query)
+          paths_to_check = query.finalizers.map(&:path)
           paths_to_check.compact! # root-level auth errors currently come without a path
           # TODO dry with above?
           # This is also where a query-level "Step" would be used?
@@ -287,7 +287,7 @@ module GraphQL
                     result_type = result_type.of_type
                   end
 
-                  new_result_value = if result_value.is_a?(GraphQL::Error)
+                  new_result_value = if result_value.is_a?(Finalizer)
                     result_value.path = current_result_path.dup
                     result_value.assign_graphql_result(query, result_h, key)
                     result_h.key?(key) ? result_h[key] : :unassigned
@@ -340,7 +340,7 @@ module GraphQL
           new_invalid_null = false
           result_arr.each_with_index do |result_item, idx|
             current_result_path << idx
-            new_result = if result_item.is_a?(GraphQL::Error)
+            new_result = if result_item.is_a?(Finalizer)
               result_item.path = current_result_path.dup
               result_item.assign_graphql_result(query, result_arr, idx)
               result_arr[idx]

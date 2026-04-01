@@ -171,7 +171,7 @@ module GraphQL
             end
           end
 
-          if arg_value.is_a?(GraphQL::Error)
+          if arg_value.is_a?(GraphQL::RuntimeError)
             @arguments = arg_value
           elsif run_loads && arg_defn.loads && as_type.nil? && !arg_value.nil?
             # This is for legacy compat:
@@ -292,7 +292,7 @@ module GraphQL
         def execute_field
           objects = @selections_step.objects
           # TODO not as good because only one error?
-          if @arguments.is_a?(GraphQL::Error)
+          if @arguments.is_a?(GraphQL::RuntimeError)
             @field_results = Array.new(objects.size, @arguments)
             @object_is_authorized = AlwaysAuthorized
             build_results
@@ -520,7 +520,7 @@ module GraphQL
                 else
                   nil
                 end
-              elsif field_result.is_a?(GraphQL::Error)
+              elsif field_result.is_a?(GraphQL::RuntimeError)
                 add_graphql_error(field_result)
               else
                 # TODO `nil`s in [T!] types aren't handled
@@ -596,7 +596,7 @@ module GraphQL
             else
               graphql_result[key] = nil
             end
-          elsif field_result.is_a?(GraphQL::Error)
+          elsif field_result.is_a?(GraphQL::RuntimeError)
             graphql_result[key] = add_graphql_error(field_result)
           elsif is_list
             if is_nn
