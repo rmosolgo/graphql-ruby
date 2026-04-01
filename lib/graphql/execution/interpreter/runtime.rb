@@ -761,7 +761,7 @@ module GraphQL
                   idx += 1
                   if use_dataloader_job
                     @dataloader.append_job do
-                      resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
+                      resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, nil)
                     end
                   else
                     resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
@@ -803,6 +803,7 @@ module GraphQL
         end
 
         def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state) # rubocop:disable Metrics/ParameterLists
+          runtime_state ||= get_current_runtime_state
           runtime_state.current_result_name = this_idx
           runtime_state.current_result = response_list
           call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
