@@ -103,7 +103,7 @@ module GraphQL
               else
                 @graphql_result[@key] = @field_resolve_step.add_graphql_error(@authorization_error)
               end
-            rescue GraphQL::Error => err
+            rescue GraphQL::RuntimeError => err
               if @is_non_null
                 @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
               else

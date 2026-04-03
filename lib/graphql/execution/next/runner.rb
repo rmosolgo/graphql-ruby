@@ -12,8 +12,23 @@ module GraphQL
           @selected_operation = nil
           @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
           @resolves_lazies = @schema.resolves_lazies?
+
+          @runtime_directives = nil
+          @schema.directives.each do |name, dir_class|
+            if dir_class.runtime? && name != "if" && name != "skip"
+              @runtime_directives ||= {}
+              @runtime_directives[dir_class.graphql_name] = dir_class
+            end
+          end
+
+          if @runtime_directives.nil?
+            @uses_runtime_directives = false
+            @runtime_directives = EmptyObjects::EMPTY_HASH
+          else
+            @uses_runtime_directives = true
+          end
+
           @lazy_cache = resolves_lazies ? {}.compare_by_identity : nil
-          @field_resolve_step_class = @schema.uses_raw_value? ? RawValueFieldResolveStep : FieldResolveStep
           @authorization = authorization
           if @authorization
             @authorizes_cache = Hash.new do |h, query_context|
@@ -21,6 +36,8 @@ module GraphQL
             end.compare_by_identity
           end
         end
+
+        attr_reader :runtime_directives, :uses_runtime_directives
 
         def resolve_type(type, object, query)
           query.current_trace.begin_resolve_type(type, object, query.context)
@@ -180,11 +197,12 @@ module GraphQL
                 @schema.subscriptions.finish_subscriptions(query)
               end
 
-              fin_result = if query.context.errors.empty?
+              finalizers = query.finalizers
+              fin_result = if finalizers.empty?
                 result
               else
                 data = result["data"]
-                data = propagate_errors(data, query)
+                data = run_finalizers(data, query, finalizers)
                 errors = []
                 query.context.errors.each do |err|
                   if err.respond_to?(:to_h)
@@ -207,16 +225,17 @@ module GraphQL
           Fiber[:__graphql_current_multiplex] = nil
         end
 
-        def gather_selections(type_defn, ast_selections, selections_step, query, prototype_result, into:)
+        def gather_selections(type_defn, ast_selections, selections_step, query, all_selections, prototype_result, into:)
           ast_selections.each do |ast_selection|
             next if !directives_include?(query, ast_selection)
+
             case ast_selection
             when GraphQL::Language::Nodes::Field
               key = ast_selection.alias || ast_selection.name
               step = into[key] ||= begin
                 prototype_result[key] = nil
 
-                @field_resolve_step_class.new(
+                FieldResolveStep.new(
                   selections_step: selections_step,
                   key: key,
                   parent_type: type_defn,
@@ -227,13 +246,21 @@ module GraphQL
             when GraphQL::Language::Nodes::InlineFragment
               type_condition = ast_selection.type&.name
               if type_condition.nil? || type_condition_applies?(query.context, type_defn, type_condition)
-                gather_selections(type_defn, ast_selection.selections, selections_step, query, prototype_result, into: into)
+                if uses_runtime_directives && ast_selection.directives.any?
+                  all_selections << (into = { __node: ast_selection })
+                  all_selections << (prototype_result = {})
+                end
+                gather_selections(type_defn, ast_selection.selections, selections_step, query, all_selections, prototype_result, into: into)
               end
             when GraphQL::Language::Nodes::FragmentSpread
-              fragment_definition = query.document.definitions.find { |defn| defn.is_a?(GraphQL::Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
+              fragment_definition = query.fragments[ast_selection.name]
               type_condition = fragment_definition.type.name
               if type_condition_applies?(query.context, type_defn, type_condition)
-                gather_selections(type_defn, fragment_definition.selections, selections_step, query, prototype_result, into: into)
+                if uses_runtime_directives && ast_selection.directives.any?
+                  all_selections << (into = { __node: ast_selection })
+                  all_selections << (prototype_result = {})
+                end
+                gather_selections(type_defn, fragment_definition.selections, selections_step, query, all_selections, prototype_result, into: into)
               end
             else
               raise ArgumentError, "Unsupported graphql selection node: #{ast_selection.class} (#{ast_selection.inspect})"
@@ -252,8 +279,8 @@ module GraphQL
 
         private
 
-        def propagate_errors(data, query)
-          paths_to_check = query.context.errors.map(&:path)
+        def run_finalizers(data, query, finalizers)
+          paths_to_check = finalizers.map(&:path)
           paths_to_check.compact! # root-level auth errors currently come without a path
           # TODO dry with above?
           # This is also where a query-level "Step" would be used?
@@ -266,11 +293,19 @@ module GraphQL
             when "subscription"
               query.schema.subscription
             end
-            check_object_result(query, data, root_type, selected_operation.selections, [], [], paths_to_check)
+            paths_to_check.each_with_index do |path_to_check, idx|
+              if path_to_check.empty?
+                finalizer = finalizers[idx]
+                # Path is already `[]`
+                finalizer.finalize_graphql_result(query, data, nil)
+                finalizers[idx] = nil
+              end
+            end
+            check_object_result(query, data, root_type, selected_operation.selections, [], [], paths_to_check, finalizers)
           end
         end
 
-        def check_object_result(query, result_h, static_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+        def check_object_result(query, result_h, static_type, ast_selections, current_exec_path, current_result_path, paths_to_check, finalizers) # rubocop:disable Metrics/ParameterLists
           current_path_len = current_exec_path.length
           ast_selections.each do |ast_selection|
             case ast_selection
@@ -279,7 +314,15 @@ module GraphQL
                 key = ast_selection.alias || ast_selection.name
                 current_exec_path << key
                 current_result_path << key
-                if paths_to_check.any? { |path_to_check| path_to_check[current_path_len] == key }
+                this_finalizer_idx = nil
+                should_continue = false
+                paths_to_check.each_with_index do |path_to_check, idx|
+                  if this_finalizer_idx.nil? && current_exec_path == path_to_check
+                    this_finalizer_idx = idx
+                  end
+                  should_continue ||= path_to_check[current_path_len] == key
+                end
+                if should_continue
                   result_value = result_h[key]
                   field_defn = query.context.types.field(static_type, ast_selection.name)
                   result_type = field_defn.type
@@ -287,15 +330,22 @@ module GraphQL
                     result_type = result_type.of_type
                   end
 
-                  new_result_value = if result_value.is_a?(GraphQL::Error)
+                  new_result_value = if result_value.is_a?(Finalizer)
                     result_value.path = current_result_path.dup
-                    result_value.assign_graphql_result(query, result_h, key)
+                    result_value.finalize_graphql_result(query, result_h, key)
                     result_h.key?(key) ? result_h[key] : :unassigned
+                  elsif this_finalizer_idx
+                    if (finalizer = finalizers[this_finalizer_idx])
+                      finalizer.path = current_result_path.dup
+                      finalizer.finalize_graphql_result(query, result_h, key)
+                      finalizers[this_finalizer_idx] = nil
+                    end
+                    result_value
                   else
                     if result_type.list?
-                      check_list_result(query, result_value, result_type.of_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
+                      check_list_result(query, result_value, result_type.of_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check, finalizers)
                     elsif !result_type.kind.leaf?
-                      check_object_result(query, result_value, result_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
+                      check_object_result(query, result_value, result_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check, finalizers)
                     else
                       result_value
                     end
@@ -315,14 +365,14 @@ module GraphQL
               end
             when Language::Nodes::InlineFragment
               static_type_at_result = @static_type_at[result_h]
-              if static_type_at_result && type_condition_applies?(query.context, static_type_at_result, ast_selection.type.name)
-                result_h = check_object_result(query, result_h, static_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check)
+              if static_type_at_result && ((t = ast_selection.type).nil? || type_condition_applies?(query.context, static_type_at_result, t.name))
+                result_h = check_object_result(query, result_h, static_type, ast_selection.selections, current_exec_path, current_result_path, paths_to_check, finalizers)
               end
             when Language::Nodes::FragmentSpread
               fragment_defn = query.document.definitions.find { |defn| defn.is_a?(Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
               static_type_at_result = @static_type_at[result_h]
               if static_type_at_result && type_condition_applies?(query.context, static_type_at_result, fragment_defn.type.name)
-                result_h = check_object_result(query, result_h, static_type, fragment_defn.selections, current_exec_path, current_result_path, paths_to_check)
+                result_h = check_object_result(query, result_h, static_type, fragment_defn.selections, current_exec_path, current_result_path, paths_to_check, finalizers)
               end
             end
           end
@@ -330,7 +380,7 @@ module GraphQL
           result_h
         end
 
-        def check_list_result(query, result_arr, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+        def check_list_result(query, result_arr, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check, finalizers) # rubocop:disable Metrics/ParameterLists
           inner_type_non_null = false
           if inner_type.non_null?
             inner_type_non_null = true
@@ -340,14 +390,14 @@ module GraphQL
           new_invalid_null = false
           result_arr.each_with_index do |result_item, idx|
             current_result_path << idx
-            new_result = if result_item.is_a?(GraphQL::Error)
+            new_result = if result_item.is_a?(Finalizer)
               result_item.path = current_result_path.dup
-              result_item.assign_graphql_result(query, result_arr, idx)
+              result_item.finalize_graphql_result(query, result_arr, idx)
               result_arr[idx]
             elsif inner_type.list?
-              check_list_result(query, result_item, inner_type.of_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+              check_list_result(query, result_item, inner_type.of_type, ast_selections, current_exec_path, current_result_path, paths_to_check, finalizers)
             elsif !inner_type.kind.leaf?
-              check_object_result(query, result_item, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check)
+              check_object_result(query, result_item, inner_type, ast_selections, current_exec_path, current_result_path, paths_to_check, finalizers)
             else
               result_item
             end

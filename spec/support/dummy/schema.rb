@@ -550,6 +550,7 @@ module Dummy
     orphan_types Honey
     trace_with GraphQL::Tracing::CallLegacyTracers
     directives(DirectiveForVariableDefinition)
+    use GraphQL::Execution::Next
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 

@@ -242,12 +242,13 @@ Resolver classes are called.
 
 ### `raw_value` 🟡
 
-Supported but requires a manual opt-in at schema level. Support for this will probably get better somehow in a future version.
+Supported, but the `raw_value` call must be made on `context`, for example:
 
 ```ruby
-class MyAppSchema < GraphQL::Schema
-  uses_raw_value(true) # TODO This configuration will be improved in a future GraphQL-Ruby version
-  use GraphQL::Execution::Next
+field :values, SomeObjectType, resolve_static: true
+
+def self.values(context)
+  context.raw_value(...)
 end
 ```
 

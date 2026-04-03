@@ -296,7 +296,6 @@ describe GraphQL::Execution::Interpreter do
       query(Query)
       mutation(Mutation)
       lazy_resolve(Box, :value)
-      uses_raw_value(true)
       use GraphQL::Schema::AlwaysVisible
       use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
 

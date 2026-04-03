@@ -67,6 +67,13 @@ module GraphQL
         runner = Runner.new(multiplex, **schema.execution_next_options)
         runner.execute
       end
+
+      module Finalizer
+        attr_accessor :path
+        def finalize_graphql_result(query, result_data, result_key)
+          raise RequiredImplementationMissingError
+        end
+      end
     end
   end
 end

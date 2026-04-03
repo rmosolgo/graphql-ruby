@@ -298,6 +298,19 @@ module GraphQL
       with_prepared_ast { @selected_operation }
     end
 
+    # @return [Array<Execution::Next::Finalizer>]
+    def finalizers
+      @finalizers ? (@finalizers + context.errors) : context.errors
+    end
+
+    # @param finalizer [Execution::Next::Finalizer]
+    # @return [Execution::NextFinalizer] `finalizer`
+    def add_finalizer(finalizer)
+      f = @finalizers ||= []
+      f << finalizer
+      finalizer
+    end
+
     # Determine the values for variables of this query, using default values
     # if a value isn't provided at runtime.
     #

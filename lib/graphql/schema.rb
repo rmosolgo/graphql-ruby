@@ -1362,14 +1362,6 @@ module GraphQL
         lazy_methods.set(lazy_class, value_method)
       end
 
-      def uses_raw_value?
-        !!@uses_raw_value
-      end
-
-      def uses_raw_value(new_val)
-        @uses_raw_value = new_val
-      end
-
       def resolves_lazies?
         lazy_method_count = 0
         lazy_methods.each do |k, v|
