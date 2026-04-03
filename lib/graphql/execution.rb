@@ -14,7 +14,7 @@ module GraphQL
       attr_accessor :path
       def ast_nodes=(_ignored); end
 
-      def assign_graphql_result(query, result_data, key)
+      def finalize_graphql_result(query, result_data, key)
         result_data.delete(key)
       end
     end

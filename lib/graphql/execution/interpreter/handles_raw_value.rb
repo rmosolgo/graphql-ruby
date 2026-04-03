@@ -7,7 +7,7 @@ module GraphQL
       class RawValue
         include GraphQL::Execution::Next::Finalizer
 
-        def assign_graphql_result(query, result_data, result_key)
+        def finalize_graphql_result(query, result_data, result_key)
           result_data[result_key] = @object
         end
 

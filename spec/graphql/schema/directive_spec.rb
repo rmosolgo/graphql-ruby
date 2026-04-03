@@ -141,35 +141,98 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         ctx[:count_fields][path] << field_count
         nil # this does nothing
       end
+
+      class FieldCount
+        include GraphQL::Execution::Next::Finalizer
+
+        def initialize(ast_node)
+          @ast_node = ast_node
+        end
+
+        def finalize_graphql_result(query, result_data, result_key)
+          counts = query.context[:count_fields] ||= Hash.new { |h, k| h[k] = [] }
+          count = case @ast_node
+          when GraphQL::Language::Nodes::Field
+            1
+          when GraphQL::Language::Nodes::InlineFragment
+            @ast_node.selections.size
+          when GraphQL::Language::Nodes::FragmentSpread
+            frag = query.fragments[@ast_node.name]
+            frag.selections.size
+          else
+            raise ArgumentError, "Unexpected ast_node: #{ast_node.inspect}"
+          end
+          counts[path] << count
+        end
+      end
+
+      def self.resolve_field(ast_nodes, parent_type, field_defn, objects, arguments, context)
+        context.query.add_finalizer(FieldCount.new(ast_nodes.first))
+      end
+
+      def self.resolve_inline_fragment(ast_node, parent_type, objects, context)
+        context.query.add_finalizer(FieldCount.new(ast_node))
+      end
+
+      def self.resolve_fragment_spread(ast_node, parent_type, objects, context)
+        context.query.add_finalizer(FieldCount.new(ast_node))
+      end
     end
 
     class Thing < GraphQL::Schema::Object
-      field :name, String, null: false
+      field :name, String, null: false, hash_key: :name
     end
 
     module HasThings
       include GraphQL::Schema::Interface
-      field :thing, Thing, null: false, extras: [:ast_node]
+      field :thing, Thing, null: false, extras: [:ast_node], resolve_static: true
 
       def thing(ast_node:)
-        context[:name_resolved_count] ||= 0
-        context[:name_resolved_count] += 1
-        { name: ast_node.alias || ast_node.name }
+        self.class.thing(ast_node: ast_node)
       end
 
-      field :lazy_thing, Thing, null: false, extras: [:ast_node]
+      resolver_methods do
+        def thing(context, ast_node:)
+          context[:name_resolved_count] ||= 0
+          context[:name_resolved_count] += 1
+          { name: ast_node.alias || ast_node.name }
+        end
+      end
+
+      field :lazy_thing, Thing, null: false, extras: [:ast_node], resolve_static: true
+
       def lazy_thing(ast_node:)
-        -> { thing(ast_node: ast_node) }
+        self.class.lazy_thing(context, ast_node: ast_node)
       end
 
-      field :dataloaded_thing, Thing, null: false, extras: [:ast_node]
+      resolver_methods do
+        def lazy_thing(context, ast_node:)
+          -> { self.thing(context, ast_node: ast_node) }
+        end
+      end
+
+      field :dataloaded_thing, Thing, null: false, extras: [:ast_node], resolve_static: true
+
       def dataloaded_thing(ast_node:)
-        dataloader.with(ThingSource).load(ast_node.alias || ast_node.name)
+        self.class.dataloaded_thing(context, ast_node:)
       end
 
-      field :lazy_things, [Thing], extras: [:ast_node]
+      resolver_methods do
+        def dataloaded_thing(context, ast_node:)
+          context.dataload(ThingSource, ast_node.alias || ast_node.name)
+        end
+      end
+
+      field :lazy_things, [Thing], extras: [:ast_node], resolve_static: true
+
       def lazy_things(ast_node:)
-        -> { [thing(ast_node: ast_node), thing(ast_node: ast_node)]}
+        self.class.lazy_things(context, ast_node: ast_node)
+      end
+
+      resolver_methods do
+        def lazy_things(context, ast_node:)
+          -> { [self.thing(context, ast_node: ast_node), self.thing(context, ast_node: ast_node)]}
+        end
       end
     end
 
@@ -190,6 +253,15 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       directive(CountFields)
       lazy_resolve(Proc, :call)
       use GraphQL::Dataloader
+      use GraphQL::Execution::Next
+    end
+  end
+
+  def exec_query(...)
+    if TESTING_EXEC_NEXT
+      RuntimeDirectiveTest::Schema.execute_next(...)
+    else
+      RuntimeDirectiveTest::Schema.execute(...)
     end
   end
 
@@ -226,7 +298,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       }
       GRAPHQL
 
-      res = RuntimeDirectiveTest::Schema.execute(query_str)
+      res = exec_query(query_str)
       expected_data = {
         "t1" => {
           "t1n" => "t1",
@@ -268,7 +340,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         }
       }
       GRAPHQL
-      res = RuntimeDirectiveTest::Schema.execute(query_str)
+      res = exec_query(query_str)
       expected_data = { "t1" => { "name" => "t1"}, "t2" => { "name" => "t2" }, "t3" => { "name" => "t3" } }
       assert_graphql_equal expected_data, res["data"]
 
@@ -288,7 +360,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         }
       }
       "
-      res = RuntimeDirectiveTest::Schema.execute(query_str, context: { backtrace: true })
+      res = exec_query(query_str, context: { backtrace: true })
       assert_equal 2, res["data"]["lazyThings"].size
     end
   end

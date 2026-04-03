@@ -368,6 +368,37 @@ module GraphQL
           end
 
           query.current_trace.begin_execute_field(@field_definition, @arguments, authorized_objects, query)
+
+          if @runner.uses_runtime_directives
+            if @ast_nodes.nil? || @ast_nodes.size == 1
+              directives = if @ast_node.directives.any?
+                @ast_node.directives
+              else
+                nil
+              end
+            else
+              directives = nil
+              @ast_nodes.each do |n|
+                if (d = n.directives).any? # rubocop:disable Development/NoneWithoutBlockCop
+                  directives ||= []
+                  directives.concat(d)
+                end
+              end
+            end
+
+            if directives
+              directives.each do |dir_node|
+                if (dir_defn = @runner.runtime_directives[dir_node.name])
+                  # Skip or include won't be present
+                  result = dir_defn.resolve_field(ast_nodes, @parent_type, field_definition, authorized_objects, @arguments, ctx)
+                  if result.is_a?(Finalizer)
+                    result.path = path
+                  end
+                end
+              end
+            end
+          end
+
           has_extensions = @field_definition.extensions.size > 0
           if has_extensions
             @extended = GraphQL::Schema::Field::ExtendedState.new(@arguments, authorized_objects)

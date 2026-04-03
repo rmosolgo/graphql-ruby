@@ -70,7 +70,7 @@ module GraphQL
 
       module Finalizer
         attr_accessor :path
-        def assign_graphql_result(query, result_data, result_key)
+        def finalize_graphql_result(query, result_data, result_key)
           raise RequiredImplementationMissingError
         end
       end

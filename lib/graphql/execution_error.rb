@@ -36,7 +36,7 @@ module GraphQL
       super(message)
     end
 
-    def assign_graphql_result(query, result_data, key)
+    def finalize_graphql_result(query, result_data, key)
       result_data[key] = nil
     end
 
