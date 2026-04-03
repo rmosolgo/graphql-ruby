@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::StaticValidation::FieldsWillMerge
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::StaticValidation::FieldsWillMerge";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (F)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../StaticValidation.html" title="GraphQL::StaticValidation (module)">StaticValidation</a></span></span>
+     &raquo; 
+    <span class="title">FieldsWillMerge</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::StaticValidation::FieldsWillMerge
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/static_validation/rules/fields_will_merge.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="FieldsWillMerge/Field.html" title="GraphQL::StaticValidation::FieldsWillMerge::Field (class)">Field</a></span>
+    
+  
+</p>
+
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="NO_ARGS-constant" class="">NO_ARGS =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Validates that a selection set is valid if all fields (including spreading any
+fragments) either correspond to distinct response names or can be merged
+without ambiguity.</p>
+
+<p>Optimized algorithm based on:
+https://tech.new-work.se/graphql-overlapping-fields-can-be-merged-fast-ea6e92e0a01</p>
+
+<p>Instead of comparing fields, fields-vs-fragments, and fragments-vs-fragments
+separately (which leads to exponential recursion through nested fragments),
+we flatten all fragment spreads into a single field map and compare within it.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../EmptyObjects.html" title="GraphQL::EmptyObjects (module)">EmptyObjects</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../EmptyObjects.html#EMPTY_HASH-constant" title="GraphQL::EmptyObjects::EMPTY_HASH (constant)">EMPTY_HASH</a></span></span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_field-instance_method" title="#on_field (instance method)">#<strong>on_field</strong>(node, _parent)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#on_operation_definition-instance_method" title="#on_operation_definition (instance method)">#<strong>on_operation_definition</strong>(node, _parent)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/rules/fields_will_merge.rb', line 38</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='op'>*</span><span class='rparen'>)</span>
+  <span class='kw'>super</span>
+  <span class='ivar'>@conflict_count</span> <span class='op'>=</span> <span class='int'>0</span>
+  <span class='ivar'>@max_errors</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_max_errors'>max_errors</span>
+  <span class='ivar'>@fragments</span> <span class='op'>=</span> <span class='id identifier rubyid_context'>context</span><span class='period'>.</span><span class='id identifier rubyid_fragments'>fragments</span>
+  <span class='comment'># Track which sub-selection node pairs have been compared to prevent
+</span>  <span class='comment'># infinite recursion with cyclic fragments
+</span>  <span class='ivar'>@compared_sub_selections</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+  <span class='comment'># Cache mutually_exclusive? results for type pairs
+</span>  <span class='ivar'>@mutually_exclusive_cache</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+  <span class='comment'># Cache collect_fields results for sub-selection comparison
+</span>  <span class='ivar'>@sub_fields_cache</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='period'>.</span><span class='id identifier rubyid_compare_by_identity'>compare_by_identity</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_field-instance_method">
+  
+    #<strong>on_field</strong>(node, _parent)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+59
+60
+61
+62
+63
+64
+65
+66</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/rules/fields_will_merge.rb', line 59</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_field'>on_field</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid__parent'>_parent</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_selections'>selections</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_selections_may_conflict?'>selections_may_conflict?</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_selections'>selections</span><span class='rparen'>)</span>
+    <span class='ivar'>@conflicts</span> <span class='op'>=</span> <span class='kw'>nil</span>
+    <span class='id identifier rubyid_conflicts_within_selection_set'>conflicts_within_selection_set</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_type_definition'>type_definition</span><span class='rparen'>)</span>
+    <span class='ivar'>@conflicts</span><span class='op'>&amp;.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_error_type'>error_type</span><span class='op'>|</span> <span class='id identifier rubyid_error_type'>error_type</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_error'>error</span><span class='op'>|</span> <span class='id identifier rubyid_add_error'>add_error</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span><span class='rparen'>)</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="on_operation_definition-instance_method">
+  
+    #<strong>on_operation_definition</strong>(node, _parent)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+52
+53
+54
+55
+56
+57</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/static_validation/rules/fields_will_merge.rb', line 52</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_on_operation_definition'>on_operation_definition</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid__parent'>_parent</span><span class='rparen'>)</span>
+  <span class='ivar'>@conflicts</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_conflicts_within_selection_set'>conflicts_within_selection_set</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_type_definition'>type_definition</span><span class='rparen'>)</span>
+  <span class='ivar'>@conflicts</span><span class='op'>&amp;.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_error_type'>error_type</span><span class='op'>|</span> <span class='id identifier rubyid_error_type'>error_type</span><span class='period'>.</span><span class='id identifier rubyid_each_value'>each_value</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_error'>error</span><span class='op'>|</span> <span class='id identifier rubyid_add_error'>add_error</span><span class='lparen'>(</span><span class='id identifier rubyid_error'>error</span><span class='rparen'>)</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Fri Apr  3 15:16:36 2026 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.38 (ruby-3.2.11).
+</div>
+
+    </div>
+  </body>
+</html>
