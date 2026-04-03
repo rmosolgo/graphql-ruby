@@ -10,6 +10,17 @@
 
 ### Bug fixes
 
+# 2.5.23
+
+### New features
+
+- Static Validations: several performance improvements #5584, #5585, #5586, #5585, #5587, #5591
+- Continue building `Execution::Next` #5589, #5592, #5582
+
+### Bug fixes
+
+- Fix Dataloader state on list items #5597
+
 # 2.5.22
 
 - Continue building `Execution::Next`: #5575 #5581
