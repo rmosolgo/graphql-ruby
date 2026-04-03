@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.22/">API</a>
+            <a href="/api-doc/2.5.23/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -154,14 +154,14 @@
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#migration-philosophy'>Migration Philosophy
-</a></li><li class='contents-entry'><a href='#coming-soon-migration-and-clean-up-script'>COMING SOON: Migration and Clean-Up Script
+</a></li><li class='contents-entry'><a href='#migration-and-clean-up-script'>Migration and Clean-Up Script
 </a></li><li class='contents-entry'><a href='#production-considerations'>Production Considerations
 </a><ol class='contents-list'><li class='contents-entry'><a href='#feature-flags'>Feature Flags
 </a></li><li class='contents-entry'><a href='#experiments'>Experiments
 </a></li></ol></li><li class='contents-entry'><a href='#combining-feature-flags-and-experiments'>Combining feature flags and experiments
 </a></li><li class='contents-entry'><a href='#compatibility-notes'>Compatibility Notes
 </a><ol class='contents-list'><li class='contents-entry'><a href='#implicit-field-resolution'>Implicit Field Resolution
-</a></li><li class='contents-entry'><a href='#query-analyzers-including-complexity'>Query Analyzers, including complexity 🌕
+</a></li><li class='contents-entry'><a href='#query-analyzers-including-complexity'>Query Analyzers, including complexity 🟡
 </a></li><li class='contents-entry'><a href='#authorization-scoping'>Authorization, Scoping
 </a></li><li class='contents-entry'><a href='#visibility-including-changesets'>Visibility, including Changesets
 </a></li><li class='contents-entry'><a href='#dataloader'>Dataloader
@@ -174,7 +174,7 @@
 </a></li><li class='contents-entry'><a href='#as'><code>as:</code>
 </a></li><li class='contents-entry'><a href='#loads'><code>loads:</code>
 </a></li><li class='contents-entry'><a href='#prepare'><code>prepare:</code>
-</a></li><li class='contents-entry'><a href='#validates'><code>validates:</code> ❌
+</a></li><li class='contents-entry'><a href='#validates'><code>validates:</code> 🟡
 </a></li><li class='contents-entry'><a href='#field-extensions'>Field Extensions
 </a></li><li class='contents-entry'><a href='#resolver-classes-including-mutations-and-subscriptions'>Resolver classes (including Mutations and Subscriptions)
 </a></li><li class='contents-entry'><a href='#field-extras-including-lookahead'>Field <code>extras:</code>, including <code>lookahead</code>
@@ -224,9 +224,9 @@
 
 <p>When all tests pass on <code class="language-plaintext highlighter-rouge">.execute_next</code>, you’re ready to try it out in production.</p>
 
-<h2 id="coming-soon-migration-and-clean-up-script">COMING SOON: Migration and Clean-Up Script</h2>
+<h2 id="migration-and-clean-up-script">Migration and Clean-Up Script</h2>
 
-<p>Migrating field implementations can be automated in many cases. A script to analyze and execute these cases is in the works: <a href="https://github.com/rmosolgo/graphql-ruby/pull/5531">Pull Request</a>. This script will also be able to clean up unused instance methods when the migration is complete.</p>
+<p><code class="language-plaintext highlighter-rouge">graphql_migrate_execution</code> is a command-line development tool that can automate many common GraphQL-Ruby field resolver patterns. Check out its docs and try out: https://rmosolgo.github.io/graphql_migrate_execution/</p>
 
 <h2 id="production-considerations">Production Considerations</h2>
 
@@ -337,7 +337,7 @@
 
 <p>Now, GraphQL-Ruby simply calls <code class="language-plaintext highlighter-rouge">object.title</code> and allows the <code class="language-plaintext highlighter-rouge">NoMethodError</code> to bubble up if one is raised.</p>
 
-<h3 id="query-analyzers-including-complexity-">Query Analyzers, including complexity 🌕</h3>
+<h3 id="query-analyzers-including-complexity-">Query Analyzers, including complexity 🟡</h3>
 
 <p>Support is identical; this runs before execution using the exact same code.</p>
 
@@ -353,7 +353,7 @@
 
 <h3 id="dataloader">Dataloader</h3>
 
-<p>Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use <a href="/api-doc/2.5.22/GraphQL/Schema/Member/HasDataloader#dataload_all-instance_method" target="_blank" title="API docs for GraphQL::Schema::Member::HasDataloader#dataload_all"><code>Schema::Member::HasDataloader#dataload_all</code></a> instead of <code class="language-plaintext highlighter-rouge">.dataload</code>.</p>
+<p>Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use <a href="/api-doc/2.5.23/GraphQL/Schema/Member/HasDataloader#dataload_all-instance_method" target="_blank" title="API docs for GraphQL::Schema::Member::HasDataloader#dataload_all"><code>Schema::Member::HasDataloader#dataload_all</code></a> instead of <code class="language-plaintext highlighter-rouge">.dataload</code>.</p>
 
 <h3 id="tracing">Tracing</h3>
 
@@ -399,7 +399,7 @@
 
 <p>These methods/procs are called.</p>
 
-<h3 id="validates-"><code class="language-plaintext highlighter-rouge">validates:</code> ❌</h3>
+<h3 id="validates-"><code class="language-plaintext highlighter-rouge">validates:</code> 🟡</h3>
 
 <p>Built-in validators are supported. Custom validators will always receive <code class="language-plaintext highlighter-rouge">nil</code> as the <code class="language-plaintext highlighter-rouge">object</code>. (<code class="language-plaintext highlighter-rouge">object</code> is no longer available; this API will probably change before this is fully released.)</p>
 

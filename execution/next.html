@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.22/">API</a>
+            <a href="/api-doc/2.5.23/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -172,7 +172,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>GraphQL-Ruby has a new execution engine under development, <a href="/api-doc/2.5.22/GraphQL/Execution/Next" target="_blank" title="API docs for GraphQL::Execution::Next"><code>GraphQL::Execution::Next</code></a>. It’s not yet recommended for production use, but you can try it in development as described below.</p>
+  <p>GraphQL-Ruby has a new execution engine under development, <a href="/api-doc/2.5.23/GraphQL/Execution/Next" target="_blank" title="API docs for GraphQL::Execution::Next"><code>GraphQL::Execution::Next</code></a>. It’s not yet recommended for production use, but you can try it in development as described below.</p>
 
 <p>It’s much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.</p>
 
@@ -317,7 +317,7 @@
 
 <h4 id="rails-associations">Rails Associations</h4>
 
-<p>Load ActiveRecord associations using <a href="/api-doc/2.5.22/GraphQL/Dataloader/ActiveRecordAssociationSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordAssociationSource"><code>GraphQL::Dataloader::ActiveRecordAssociationSource</code></a>:</p>
+<p>Load ActiveRecord associations using <a href="/api-doc/2.5.23/GraphQL/Dataloader/ActiveRecordAssociationSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordAssociationSource"><code>GraphQL::Dataloader::ActiveRecordAssociationSource</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::CommentType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Equivalent to `dataload_association(:post)`</span>
@@ -329,7 +329,7 @@
 
 <h4 id="rails-records">Rails Records</h4>
 
-<p>Load ActiveRecord associations using <a href="/api-doc/2.5.22/GraphQL/Dataloader/ActiveRecordSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordSource"><code>GraphQL::Dataloader::ActiveRecordSource</code></a>.</p>
+<p>Load ActiveRecord associations using <a href="/api-doc/2.5.23/GraphQL/Dataloader/ActiveRecordSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordSource"><code>GraphQL::Dataloader::ActiveRecordSource</code></a>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::SearchResult</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Equivalent to `dataload_record(Post, object.post_id)`</span>
