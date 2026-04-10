@@ -23,7 +23,15 @@ module GraphQL
       attr_reader :pos, :tokens_count
 
       def advance
-        @scanner.skip(IGNORE_REGEXP)
+        loop do
+          @scanner.skip(IGNORE_REGEXP)
+          if @scanner.skip(COMMENT_REGEXP)
+            @tokens_count += 1
+            next
+          end
+          break
+        end
+
         if @scanner.eos?
           @finished = true
           return false
@@ -173,12 +181,8 @@ module GraphQL
         raise GraphQL::ParseError.new(message, line, col, @string, filename: @filename)
       end
 
-      IGNORE_REGEXP = %r{
-        (?:
-          [, \c\r\n\t]+ |
-          \#.*$
-        )*
-      }x
+      IGNORE_REGEXP = /[, \c\r\n\t]+/
+      COMMENT_REGEXP = /\#[^\n]*/
       IDENTIFIER_REGEXP = /[_A-Za-z][_0-9A-Za-z]*/
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
       FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
