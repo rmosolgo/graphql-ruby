@@ -104,7 +104,7 @@ module GraphQL
                   transitive_names = interface_names.map { |n| document.definitions.find { |d| d.respond_to?(:name) && d.name == n }&.interfaces&.map(&:name) }
                   transitive_names.flatten!
                   transitive_names.compact!
-                  if (missing_transitive_interfaces = transitive_names - interface_names).any?
+                  if !(missing_transitive_interfaces = transitive_names - interface_names).empty?
                     raise GraphQL::Schema::InvalidDocumentError, "type #{definition.name} is missing one or more transitive interface names: #{missing_transitive_interfaces.join(", ")}. Add them to the type's `implements` list and try again."
                   end
                 end
