@@ -143,7 +143,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       end
 
       class FieldCount
-        include GraphQL::Execution::Next::Finalizer
+        include GraphQL::Execution::Finalizer
 
         def initialize(ast_node)
           @ast_node = ast_node

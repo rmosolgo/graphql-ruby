@@ -4,32 +4,20 @@ require "spec_helper"
 describe GraphQL::Schema::FieldExtension do
   module FilterTestSchema
     class DoubleFilter < GraphQL::Schema::FieldExtension
-      def after_resolve(object:, value:, arguments:, context:, memo:)
-        value * 2
-      end
-
-      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
-        values.map { |v| v * 2 }
+      def after_resolve(object: nil, objects: nil, values: nil, value: nil, arguments:, context:, memo:)
+        values ? values.map { |v| v * 2 } : value * 2
       end
     end
 
     class PowerOfFilter < GraphQL::Schema::FieldExtension
-      def after_resolve(object:, value:, arguments:, context:, memo:)
-        value**options.fetch(:power, 2)
-      end
-
-      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
-        values.map { |v| v**options.fetch(:power,2) }
+      def after_resolve(object: nil, objects: nil, values: nil, value: nil, arguments:, context:, memo:)
+        values ? values.map { |v| v**options.fetch(:power,2) } : value**options.fetch(:power, 2)
       end
     end
 
     class MultiplyByOption < GraphQL::Schema::FieldExtension
-      def after_resolve(object:, value:, arguments:, context:, memo:)
-        value * options[:factor]
-      end
-
-      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
-        values.map { |v| v * options[:factor] }
+      def after_resolve(object: nil, objects: nil, values: nil, value: nil, arguments:, context:, memo:)
+        values ? values.map { |v| v * options[:factor] } : value * options[:factor]
       end
     end
 
@@ -38,22 +26,13 @@ describe GraphQL::Schema::FieldExtension do
         field.argument(:factor, Integer)
       end
 
-      def resolve(object:, arguments:, context:)
+      def resolve(object: nil, objects: nil, arguments:, context:)
         factor = arguments[:factor]
-        yield(object, arguments, factor)
+        yield(object || objects , arguments, factor)
       end
 
-      def resolve_next(objects:, arguments:, context:)
-        factor = arguments[:factor]
-        yield(objects, arguments, factor)
-      end
-
-      def after_resolve(object:, value:, arguments:, context:, memo:)
-        value * memo
-      end
-
-      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
-        values.map { |v| v * memo }
+      def after_resolve(object: nil, objects: nil, values: nil, value: nil, arguments:, context:, memo:)
+        values ? values.map { |v| v * memo } : value * memo
       end
     end
 
@@ -64,16 +43,10 @@ describe GraphQL::Schema::FieldExtension do
 
       # `yield` returns the user-returned value
       # This method's return value is passed along
-      def resolve(object:, arguments:, context:)
+      def resolve(object: nil, objects: nil, arguments:, context:)
         factor = arguments[:factor]
-        result = yield(object, arguments)
-        result * factor
-      end
-
-      def resolve_next(objects:, arguments:, context:)
-        results = yield(objects, arguments)
-        factor = arguments[:factor]
-        results.map { |r| r * factor }
+        result = yield(object || objects, arguments)
+        objects ? result.map { |r| r * factor } : result * factor
       end
     end
 
@@ -82,78 +55,53 @@ describe GraphQL::Schema::FieldExtension do
         field.argument(:factor, Integer)
       end
 
-      def resolve(object:, arguments:, context:)
+      def resolve(object: nil, objects: nil, arguments:, context:)
         new_arguments = arguments.dup
         new_arguments.delete(:factor)
-        yield(object, new_arguments, { original_arguments: arguments})
+        yield(object || objects, new_arguments, { original_arguments: arguments})
       end
 
-      def resolve_next(objects:, arguments:, context:)
-        new_arguments = arguments.dup
-        new_arguments.delete(:factor)
-        yield(objects, new_arguments, { original_arguments: arguments})
-      end
-
-      def after_resolve(object:, value:, arguments:, context:, memo:)
-        f = memo[:original_arguments][:factor]
-        value * f
-      end
-
-      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
-        f = memo[:original_arguments][:factor]
-        values.map { |v| v * f }
+      def after_resolve(object: nil, objects: nil, values: nil, value: nil, arguments:, context:, memo:)
+        if values
+          f = memo[:original_arguments][:factor]
+          values.map { |v| v * f }
+        else
+          f = memo[:original_arguments][:factor]
+          value * f
+        end
       end
     end
 
     class ExtendsArguments < GraphQL::Schema::FieldExtension
-      def resolve(object:, arguments:, **_rest)
+      def resolve(object: nil, objects: nil, arguments:, context:)
         new_args = arguments.dup
         new_args[:extended] = true
-        yield(object, new_args)
+        yield(object || objects, new_args)
       end
 
-      def resolve_next(objects:, arguments:, **_rest)
-        new_args = arguments.dup
-        new_args[:extended] = true
-        yield(objects, new_args)
-      end
-
-      def after_resolve(arguments:, context:, value:, **_rest)
+      def after_resolve(object: nil, objects: nil, values: nil, value: nil, arguments:, context:, memo:)
         context[:extended_args] = arguments[:extended]
-        value
-      end
-
-      def after_resolve_next(objects:, values:, arguments:, context:, memo:)
-        context[:extended_args] = arguments[:extended]
-        values
+        if objects
+          values
+        else
+          value
+        end
       end
     end
 
     class ShortcutsResolve < GraphQL::Schema::FieldExtension
-      def resolve(**_args)
-        options[:shortcut_value]
-      end
-
-      def resolve_next(objects:, **args)
-        Array.new(objects.size, options[:shortcut_value])
+      def resolve(object: nil, objects: nil, arguments:, context:)
+        objects ? Array.new(objects.size, options[:shortcut_value]) : options[:shortcut_value]
       end
     end
 
     class ObjectClassExtension < GraphQL::Schema::FieldExtension
-      def resolve(object:, **_args)
-        object.class.name
+      def resolve(object: nil, objects: nil, arguments:, context:)
+        objects ? objects.map { |o| o.class.name } : object.class.name
       end
 
-      def resolve_next(objects:, **_args)
-        objects.map { |o| o.class.name }
-      end
-
-      def after_resolve(value:, object:, **_args)
-        [object.class.name, value]
-      end
-
-      def after_resolve_next(objects:, values:, **_args)
-        objects.map.with_index { |o, i| [o.class.name, values[i]] }
+      def after_resolve(object: nil, objects: nil, values: nil, value: nil, arguments:, context:, memo:)
+        objects ? objects.map.with_index { |o, i| [o.class.name, values[i]] } : [object.class.name, value]
       end
     end
 
@@ -164,10 +112,6 @@ describe GraphQL::Schema::FieldExtension do
 
       class NestedExtension < GraphQL::Schema::FieldExtension
         def resolve(**_args)
-          1
-        end
-
-        def resolve_next(**_args)
           1
         end
       end

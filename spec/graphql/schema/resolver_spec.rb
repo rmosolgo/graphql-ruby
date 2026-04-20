@@ -90,14 +90,14 @@ describe GraphQL::Schema::Resolver do
     end
 
     class GreetingExtension < GraphQL::Schema::FieldExtension
-      def resolve(object:, arguments:, **rest)
-        name = yield(object, arguments)
-        "#{options[:greeting]}, #{name}!"
-      end
-
-      def resolve_next(objects:, arguments:, **rest)
-        names = yield(objects, arguments)
-        names.map { |n| "#{options[:greeting]}, #{n}!" }
+      def resolve(object: nil, objects: nil, arguments:, **rest)
+        if objects
+          names = yield(objects, arguments)
+          names.map { |n| "#{options[:greeting]}, #{n}!" }
+        else
+          name = yield(object, arguments)
+          "#{options[:greeting]}, #{name}!"
+        end
       end
     end
 

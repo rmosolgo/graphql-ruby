@@ -2,41 +2,41 @@
 module GraphQL
   class Subscriptions
     class DefaultSubscriptionResolveExtension < GraphQL::Schema::FieldExtension
-      def resolve(context:, object:, arguments:)
-        has_override_implementation = @field.resolver ||
-          object.respond_to?(@field.resolver_method)
+      def resolve(context:, object: nil, objects: nil,  arguments:)
+        if objects
+          has_override_implementation = @field.execution_mode != :direct_send
 
-        if !has_override_implementation
-          if context.query.subscription_update?
-            object.object
+          if !has_override_implementation
+            if context.query.subscription_update?
+              objects
+            else
+              objects.map { |o| context.skip }
+            end
           else
-            context.skip
+            yield(objects, arguments)
           end
         else
-          yield(object, arguments)
+          has_override_implementation = @field.resolver ||
+            object.respond_to?(@field.resolver_method)
+
+          if !has_override_implementation
+            if context.query.subscription_update?
+              object.object
+            else
+              context.skip
+            end
+          else
+            yield(object, arguments)
+          end
         end
       end
 
-      def resolve_next(context:, objects:, arguments:)
-        has_override_implementation = @field.execution_next_mode != :direct_send
-
-        if !has_override_implementation
-          if context.query.subscription_update?
-            objects
-          else
-            objects.map { |o| context.skip }
+      def after_resolve(values: nil, value: nil, context:, objects: nil, object: nil, arguments:, **rest)
+        if values
+          values.map do |value|
+            self.class.write_subscription(@field, value, arguments, context)
           end
         else
-          yield(objects, arguments)
-        end
-      end
-
-      def after_resolve(value:, context:, object:, arguments:, **rest)
-        self.class.write_subscription(@field, value, arguments, context)
-      end
-
-      def after_resolve_next(values:, context:, objects:, arguments:, **rest)
-        values.map do |value|
           self.class.write_subscription(@field, value, arguments, context)
         end
       end

@@ -270,32 +270,32 @@ module GraphQL
         @resolver_method = (resolver_method || name_s).to_sym
 
         if resolve_static
-          @execution_next_mode = :resolve_static
-          @execution_next_mode_key = resolve_static == true ? @method_sym : resolve_static
+          @execution_mode = :resolve_static
+          @execution_mode_key = resolve_static == true ? @method_sym : resolve_static
         elsif resolve_batch
-          @execution_next_mode = :resolve_batch
-          @execution_next_mode_key = resolve_batch == true ? @method_sym : resolve_batch
+          @execution_mode = :resolve_batch
+          @execution_mode_key = resolve_batch == true ? @method_sym : resolve_batch
         elsif resolve_each
-          @execution_next_mode = :resolve_each
-          @execution_next_mode_key = resolve_each == true ? @method_sym : resolve_each
+          @execution_mode = :resolve_each
+          @execution_mode_key = resolve_each == true ? @method_sym : resolve_each
         elsif hash_key
-          @execution_next_mode = :hash_key
-          @execution_next_mode_key = hash_key
+          @execution_mode = :hash_key
+          @execution_mode_key = hash_key
         elsif dig
-          @execution_next_mode = :dig
-          @execution_next_mode_key = dig
+          @execution_mode = :dig
+          @execution_mode_key = dig
         elsif resolver_class
-          @execution_next_mode = :resolver_class
-          @execution_next_mode_key = resolver_class
+          @execution_mode = :resolver_class
+          @execution_mode_key = resolver_class
         elsif resolve_legacy_instance_method
-          @execution_next_mode = :resolve_legacy_instance_method
-          @execution_next_mode_key = resolve_legacy_instance_method == true ? @method_sym : resolve_legacy_instance_method
+          @execution_mode = :resolve_legacy_instance_method
+          @execution_mode_key = resolve_legacy_instance_method == true ? @method_sym : resolve_legacy_instance_method
         elsif dataload
-          @execution_next_mode = :dataload
-          @execution_next_mode_key = dataload
+          @execution_mode = :dataload
+          @execution_mode_key = dataload
         else
-          @execution_next_mode = :direct_send
-          @execution_next_mode_key = @method_sym
+          @execution_mode = :direct_send
+          @execution_mode_key = @method_sym
         end
 
         @complexity = complexity
@@ -369,7 +369,7 @@ module GraphQL
       end
 
       # @api private
-      attr_reader :execution_next_mode_key, :execution_next_mode
+      attr_reader :execution_mode_key, :execution_mode
 
       # Calls the definition block, if one was given.
       # This is deferred so that references to the return type
@@ -929,7 +929,7 @@ ERR
       def run_next_extensions_before_resolve(objs, args, ctx, extended, idx: 0, &block)
         extension = @extensions[idx]
         if extension
-          extension.resolve_next(objects: objs, arguments: args, context: ctx) do |extended_objs, extended_args, memo|
+          extension.resolve(objects: objs, arguments: args, context: ctx) do |extended_objs, extended_args, memo|
             if memo
               memos = extended.memos ||= {}
               memos[idx] = memo

@@ -264,7 +264,7 @@ module GraphQL
     end
 
     class Finalizer
-      include Execution::Next::Finalizer
+      include Execution::Finalizer
       def initialize(subscriptions)
         @subscriptions = subscriptions
       end

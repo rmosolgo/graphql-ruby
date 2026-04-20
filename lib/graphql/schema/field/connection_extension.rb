@@ -12,22 +12,13 @@ module GraphQL
         end
 
         # Remove pagination args before passing it to a user method
-        def resolve(object:, arguments:, context:)
+        def resolve(object: nil, objects: nil, arguments:, context:)
           next_args = arguments.dup
           next_args.delete(:first)
           next_args.delete(:last)
           next_args.delete(:before)
           next_args.delete(:after)
-          yield(object, next_args, arguments)
-        end
-
-        def resolve_next(objects:, arguments:, context:)
-          next_args = arguments.dup
-          next_args.delete(:first)
-          next_args.delete(:last)
-          next_args.delete(:before)
-          next_args.delete(:after)
-          yield(objects, next_args, arguments)
+          yield(object || objects, next_args, arguments)
         end
 
         def after_resolve(value:, object:, arguments:, context:, memo:)
@@ -35,10 +26,6 @@ module GraphQL
           context.query.after_lazy(value) do |resolved_value|
             context.schema.connections.populate_connection(field, object.object, resolved_value, original_arguments, context)
           end
-        end
-
-        def after_resolve_next(**kwargs)
-          raise "This should never be called -- it's hardcoded in execution instead."
         end
       end
     end
