@@ -280,7 +280,7 @@ module GraphQL
         query = @selections_step.query
         field_name = @ast_node.name
         @field_definition = query.types.field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
-        arguments = coerce_arguments(@field_definition, @ast_node.arguments) # rubocop:disable Development/ContextIsPassedCop
+        arguments = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, @pending_steps) # rubocop:disable Development/ContextIsPassedCop
         @arguments ||= arguments # may have already been set to an error
 
         if (@pending_steps.nil? || @pending_steps.size == 0) &&
@@ -389,7 +389,7 @@ module GraphQL
               if (dir_defn = @runner.runtime_directives[dir_node.name])
                 # TODO: `coerce_arguments` modifies self, assuming it's field arguments. Extract to pure function for use
                 # here and with fragments.
-                dir_args = coerce_arguments(dir_defn, dir_node.arguments, false) # rubocop:disable Development/ContextIsPassedCop
+                dir_args = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, nil)  # rubocop:disable Development/ContextIsPassedCop
                 result = dir_defn.resolve_field(ast_nodes, @parent_type, field_definition, authorized_objects, dir_args, ctx)
                 if !result.nil?
                   if result.is_a?(Finalizer)

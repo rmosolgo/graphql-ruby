@@ -38,13 +38,7 @@ module GraphQL
             directives.each do |dir_node|
               dir_defn = @runner.runtime_directives[dir_node.name]
               if dir_defn # not present for `skip` or `include`
-                dummy_frs = FieldResolveStep.new(
-                  selections_step: self,
-                  key: nil,
-                  parent_type: @parent_type,
-                  runner: @runner,
-                )
-                dir_args = dummy_frs.coerce_arguments(dir_defn, dir_node.arguments, false) # rubocop:disable Development/ContextIsPassedCop
+                dir_args = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
                 result = case directives_owner
                 when Language::Nodes::FragmentSpread
                   dir_defn.resolve_fragment_spread(directives_owner, @parent_type, @objects, dir_args, self.query.context)
