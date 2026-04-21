@@ -30,7 +30,7 @@ module GraphQL
         end
       end
 
-      def argument_values(owner_defn, argument_nodes, pending_steps)
+      def argument_values(owner_defn, argument_nodes, field_resolve_step)
         arg_defns = @query.types.arguments(owner_defn)
         argument_values = {}
 
@@ -40,12 +40,12 @@ module GraphQL
           arg_node = argument_nodes.find { |a| a.name == arg_graphql_key }
           if arg_node.nil?
             if argument_definition.default_value?
-              argument_values[arg_ruby_key] = argument_definition.default_value # TODO coerce
+              argument_value(argument_values, arg_ruby_key, argument_definition, argument_definition.default_value, nil, field_resolve_step)
             elsif argument_definition.type.non_null?
               # TODO Add an error
             end
           else
-            argument_values[arg_ruby_key] = argument_value(arg_node.value, argument_definition.type, pending_steps)
+            argument_value(argument_values, arg_ruby_key, argument_definition, arg_node.value, nil, field_resolve_step)
           end
         end
 
@@ -55,28 +55,52 @@ module GraphQL
 
       private
 
-      def argument_value(arg_value, argument_type, pending_steps)
-        if argument_type.non_null?
-          argument_type = argument_type.unwrap
+      def argument_value(argument_values, arg_ruby_key, argument_definition, arg_value, override_type, field_resolve_step)
+        treat_as_type = override_type || argument_definition.type
+        if treat_as_type.non_null?
+          treat_as_type = treat_as_type.unwrap
         end
 
-        case arg_value
+        arg_value = case arg_value
         when Language::Nodes::AbstractNode
           case arg_value
           when Language::Nodes::VariableIdentifier
             variable_values[arg_value.name]
           when Language::Nodes::Enum
-            argument_type.coerce_input(arg_value.name, @query.context)
+            treat_as_type.coerce_input(arg_value.name, @query.context)
           when Language::Nodes::NullValue
             nil
           when Language::Nodes::InputObject
-            self.argument_values(argument_type, arg_value.arguments, pending_steps)
+            self.argument_values(treat_as_type, arg_value.arguments, field_resolve_step)
           end
         when Array
-          inner_t = argument_type.unwrap
-          arg_value.map { |inner_v| argument_value(inner_v, inner_t, pending_steps)}
+          inner_t = treat_as_type.unwrap
+          arg_value.map { |inner_v| argument_value(argument_values, arg_ruby_key, argument_definition, inner_v, inner_t, field_resolve_step)}
         else
           arg_value # todo coerce
+        end
+
+        if argument_definition.loads && arg_value && override_type.nil?
+          field_defn = field_resolve_step.field_definition
+          load_receiver = if (r = field_defn.resolver)
+            r.new(field: field_defn, context: @query.context, object: nil)
+          else
+            field_defn
+          end
+
+          loads_step = LoadArgumentStep.new(
+            field_resolve_step: field_resolve_step,
+            load_receiver: load_receiver,
+            argument_value: arg_value,
+            argument_definition: argument_definition,
+            arguments: argument_values,
+            argument_key: arg_ruby_key,
+          )
+          ps = field_resolve_step.pending_steps ||= []
+          ps.push(loads_step)
+          @runner.add_step(loads_step)
+        else
+          argument_values[arg_ruby_key] = arg_value
         end
       end
     end

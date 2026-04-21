@@ -48,171 +48,171 @@ module GraphQL
         nil
       end
 
-      def coerce_arguments(argument_owner, ast_arguments_or_hash, run_loads = true)
-        arg_defns = @selections_step.query.types.arguments(argument_owner)
-        if arg_defns.empty?
-          return EmptyObjects::EMPTY_HASH
-        end
-        args_hash = {}
+      # def coerce_arguments(argument_owner, ast_arguments_or_hash, run_loads = true)
+      #   arg_defns = @selections_step.query.types.arguments(argument_owner)
+      #   if arg_defns.empty?
+      #     return EmptyObjects::EMPTY_HASH
+      #   end
+      #   args_hash = {}
 
-        if ast_arguments_or_hash.nil? # This can happen with `.trigger`
-          return args_hash
-        end
+      #   if ast_arguments_or_hash.nil? # This can happen with `.trigger`
+      #     return args_hash
+      #   end
 
-        arg_inputs_are_h = ast_arguments_or_hash.is_a?(Hash)
+      #   arg_inputs_are_h = ast_arguments_or_hash.is_a?(Hash)
 
-        arg_defns.each do |arg_defn|
-          arg_value = nil
-          was_found = false
-          if arg_inputs_are_h
-            ast_arguments_or_hash.each do |key, value|
-              if key == arg_defn.keyword || key.to_s == arg_defn.graphql_name
-                arg_value = value
-                was_found = true
-                break
-              end
-            end
-          else
-            ast_arguments_or_hash.each do |arg_node|
-              if arg_node.name == arg_defn.graphql_name
-                arg_value = arg_node.value
-                was_found = true
-                break
-              end
-            end
-          end
+      #   arg_defns.each do |arg_defn|
+      #     arg_value = nil
+      #     was_found = false
+      #     if arg_inputs_are_h
+      #       ast_arguments_or_hash.each do |key, value|
+      #         if key == arg_defn.keyword || key.to_s == arg_defn.graphql_name
+      #           arg_value = value
+      #           was_found = true
+      #           break
+      #         end
+      #       end
+      #     else
+      #       ast_arguments_or_hash.each do |arg_node|
+      #         if arg_node.name == arg_defn.graphql_name
+      #           arg_value = arg_node.value
+      #           was_found = true
+      #           break
+      #         end
+      #       end
+      #     end
 
-          if arg_value.is_a?(Language::Nodes::VariableIdentifier)
-            vars = @selections_step.query.variables
-            arg_value = if vars.key?(arg_value.name)
-              vars[arg_value.name]
-            elsif vars.key?(arg_value.name.to_sym)
-              vars[arg_value.name.to_sym]
-            else
-              was_found = false
-              nil
-            end
-          end
+      #     if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+      #       vars = @selections_step.query.variables
+      #       arg_value = if vars.key?(arg_value.name)
+      #         vars[arg_value.name]
+      #       elsif vars.key?(arg_value.name.to_sym)
+      #         vars[arg_value.name.to_sym]
+      #       else
+      #         was_found = false
+      #         nil
+      #       end
+      #     end
 
-          if !was_found && arg_defn.default_value?
-            was_found = true
-            arg_value = arg_defn.default_value
-          end
+      #     if !was_found && arg_defn.default_value?
+      #       was_found = true
+      #       arg_value = arg_defn.default_value
+      #     end
 
-          if was_found
-            coerce_argument_value(args_hash, arg_defn, arg_value, run_loads)
-          end
-        end
+      #     if was_found
+      #       coerce_argument_value(args_hash, arg_defn, arg_value, run_loads)
+      #     end
+      #   end
 
-        args_hash
-      end
+      #   args_hash
+      # end
 
-      def coerce_argument_value(arguments, arg_defn, arg_value, run_loads, target_keyword: run_loads ? arg_defn.keyword : arg_defn.graphql_name, as_type: nil)
-        arg_t = as_type || arg_defn.type
-        if arg_t.non_null?
-          arg_t = arg_t.of_type
-        end
+      # def coerce_argument_value(arguments, arg_defn, arg_value, run_loads, target_keyword: run_loads ? arg_defn.keyword : arg_defn.graphql_name, as_type: nil)
+      #   arg_t = as_type || arg_defn.type
+      #   if arg_t.non_null?
+      #     arg_t = arg_t.of_type
+      #   end
 
-        if arg_value.is_a?(Language::Nodes::VariableIdentifier)
-          vars = @selections_step.query.variables
-          arg_value = if vars.key?(arg_value.name)
-            vars[arg_value.name]
-          elsif vars.key?(arg_value.name.to_sym)
-            vars[arg_value.name.to_sym]
-          else
-            nil
-          end
-        end
+      #   if arg_value.is_a?(Language::Nodes::VariableIdentifier)
+      #     vars = @selections_step.query.variables
+      #     arg_value = if vars.key?(arg_value.name)
+      #       vars[arg_value.name]
+      #     elsif vars.key?(arg_value.name.to_sym)
+      #       vars[arg_value.name.to_sym]
+      #     else
+      #       nil
+      #     end
+      #   end
 
-        if arg_value.is_a?(Language::Nodes::NullValue)
-          arg_value = nil
-        elsif arg_value.is_a?(Language::Nodes::Enum)
-          arg_value = arg_value.name
-        end
+      #   if arg_value.is_a?(Language::Nodes::NullValue)
+      #     arg_value = nil
+      #   elsif arg_value.is_a?(Language::Nodes::Enum)
+      #     arg_value = arg_value.name
+      #   end
 
-        ctx = @selections_step.query.context
-        arg_value = if arg_t.list?
-          if arg_value.nil?
-            arg_value
-          else
-            arg_value = Array(arg_value)
-            inner_t = arg_t.of_type
-            result = Array.new(arg_value.size)
-            arg_value.each_with_index { |v, i| coerce_argument_value(result, arg_defn, v, run_loads, target_keyword: i, as_type: inner_t) }
-            result
-          end
-        elsif arg_t.kind.leaf?
-          begin
-            arg_t.coerce_input(arg_value, ctx)
-          rescue GraphQL::UnauthorizedEnumValueError => enum_err
-            begin
-              @runner.schema.unauthorized_object(enum_err)
-            rescue GraphQL::ExecutionError => ex_err
-              ex_err
-            end
-          end
-        elsif arg_t.kind.input_object?
-          input_obj_vals = arg_value.is_a?(Language::Nodes::InputObject) ? arg_value.arguments : arg_value # rubocop:disable Development/ContextIsPassedCop
-          input_obj_args = coerce_arguments(arg_t, input_obj_vals)
-          arg_t.new(nil, ruby_kwargs: input_obj_args, context: @selections_step.query.context, defaults_used: nil)
-        else
-          raise "Unsupported argument value: #{arg_t.to_type_signature} / #{arg_value.class} (#{arg_value.inspect})"
-        end
+      #   ctx = @selections_step.query.context
+      #   arg_value = if arg_t.list?
+      #     if arg_value.nil?
+      #       arg_value
+      #     else
+      #       arg_value = Array(arg_value)
+      #       inner_t = arg_t.of_type
+      #       result = Array.new(arg_value.size)
+      #       arg_value.each_with_index { |v, i| coerce_argument_value(result, arg_defn, v, run_loads, target_keyword: i, as_type: inner_t) }
+      #       result
+      #     end
+      #   elsif arg_t.kind.leaf?
+      #     begin
+      #       arg_t.coerce_input(arg_value, ctx)
+      #     rescue GraphQL::UnauthorizedEnumValueError => enum_err
+      #       begin
+      #         @runner.schema.unauthorized_object(enum_err)
+      #       rescue GraphQL::ExecutionError => ex_err
+      #         ex_err
+      #       end
+      #     end
+      #   elsif arg_t.kind.input_object?
+      #     input_obj_vals = arg_value.is_a?(Language::Nodes::InputObject) ? arg_value.arguments : arg_value # rubocop:disable Development/ContextIsPassedCop
+      #     input_obj_args = coerce_arguments(arg_t, input_obj_vals)
+      #     arg_t.new(nil, ruby_kwargs: input_obj_args, context: @selections_step.query.context, defaults_used: nil)
+      #   else
+      #     raise "Unsupported argument value: #{arg_t.to_type_signature} / #{arg_value.class} (#{arg_value.inspect})"
+      #   end
 
-        if as_type.nil? # only on root arguments, not list elements
-          arg_value = begin
-            begin
-              arg_defn.prepare_value(nil, arg_value, context: ctx)
-            rescue StandardError => err
-              @runner.schema.handle_or_reraise(ctx, err)
-            end
-          rescue GraphQL::ExecutionError => exec_err
-            exec_err
-          end
-        end
+      #   if as_type.nil? # only on root arguments, not list elements
+      #     arg_value = begin
+      #       begin
+      #         arg_defn.prepare_value(nil, arg_value, context: ctx)
+      #       rescue StandardError => err
+      #         @runner.schema.handle_or_reraise(ctx, err)
+      #       end
+      #     rescue GraphQL::ExecutionError => exec_err
+      #       exec_err
+      #     end
+      #   end
 
-        if arg_value.is_a?(GraphQL::RuntimeError)
-          @arguments = arg_value
-        elsif run_loads && arg_defn.loads && as_type.nil? && !arg_value.nil?
-          # This is for legacy compat:
-          load_receiver = if (r = @field_definition.resolver)
-            r.new(field: @field_definition, context: @selections_step.query.context, object: nil)
-          else
-            @field_definition
-          end
-          @pending_steps ||= []
-          if arg_t.list?
-            results = Array.new(arg_value.size, nil)
-            arguments[arg_defn.keyword] = results
-            arg_value.each_with_index do |inner_v, idx|
-              loads_step = LoadArgumentStep.new(
-                field_resolve_step: self,
-                load_receiver: load_receiver,
-                argument_value: inner_v,
-                argument_definition: arg_defn,
-                arguments: results,
-                argument_key: idx,
-              )
-              @pending_steps.push(loads_step)
-              @runner.add_step(loads_step)
-            end
-          else
-            loads_step = LoadArgumentStep.new(
-              field_resolve_step: self,
-              load_receiver: load_receiver,
-              argument_value: arg_value,
-              argument_definition: arg_defn,
-              arguments: arguments,
-              argument_key: arg_defn.keyword,
-            )
-            @pending_steps.push(loads_step)
-            @runner.add_step(loads_step)
-          end
-        else
-          arguments[target_keyword] = arg_value
-        end
-        nil
-      end
+      #   if arg_value.is_a?(GraphQL::RuntimeError)
+      #     @arguments = arg_value
+      #   elsif run_loads && arg_defn.loads && as_type.nil? && !arg_value.nil?
+      #     # This is for legacy compat:
+      #     load_receiver = if (r = @field_definition.resolver)
+      #       r.new(field: @field_definition, context: @selections_step.query.context, object: nil)
+      #     else
+      #       @field_definition
+      #     end
+      #     @pending_steps ||= []
+      #     if arg_t.list?
+      #       results = Array.new(arg_value.size, nil)
+      #       arguments[arg_defn.keyword] = results
+      #       arg_value.each_with_index do |inner_v, idx|
+      #         loads_step = LoadArgumentStep.new(
+      #           field_resolve_step: self,
+      #           load_receiver: load_receiver,
+      #           argument_value: inner_v,
+      #           argument_definition: arg_defn,
+      #           arguments: results,
+      #           argument_key: idx,
+      #         )
+      #         @pending_steps.push(loads_step)
+      #         @runner.add_step(loads_step)
+      #       end
+      #     else
+      #       loads_step = LoadArgumentStep.new(
+      #         field_resolve_step: self,
+      #         load_receiver: load_receiver,
+      #         argument_value: arg_value,
+      #         argument_definition: arg_defn,
+      #         arguments: arguments,
+      #         argument_key: arg_defn.keyword,
+      #       )
+      #       @pending_steps.push(loads_step)
+      #       @runner.add_step(loads_step)
+      #     end
+      #   else
+      #     arguments[target_keyword] = arg_value
+      #   end
+      #   nil
+      # end
 
       # Implement that Lazy API
       def value
@@ -280,7 +280,7 @@ module GraphQL
         query = @selections_step.query
         field_name = @ast_node.name
         @field_definition = query.types.field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
-        arguments = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, @pending_steps) # rubocop:disable Development/ContextIsPassedCop
+        arguments = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
         @arguments ||= arguments # may have already been set to an error
 
         if (@pending_steps.nil? || @pending_steps.size == 0) &&
