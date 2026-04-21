@@ -63,6 +63,10 @@ module GraphQL
           type = type.of_type
         end
 
+        if value.is_a?(Language::Nodes::Enum)
+          value = value.name
+        end
+
         if value.nil?
           nil
         elsif type.list?
@@ -138,26 +142,19 @@ module GraphQL
           end
         end
 
-        if field_resolve_step && arg_value && override_type.nil? && (argument_definition.loads || treat_as_type.kind.input_object?)
-          loads_recursively(argument_values, argument_key, argument_definition, arg_value, field_resolve_step)
-        else
-          argument_values[argument_key] = arg_value
-        end
-        nil
-      end
-
-      def loads_recursively(argument_values, argument_key, argument_definition, arg_value, field_resolve_step)
-        if (input_obj_type = argument_definition.type.unwrap).kind.input_object?
-          arg_defns = @query.types.arguments(input_obj_type)
-          loadable_arg_value = argument_values[argument_key] = arg_value.dup
+        if arg_value && treat_as_type.kind.input_object?
+          arg_defns = @query.types.arguments(treat_as_type)
+          arg_value = arg_value.dup
           arg_defns.each do |inner_arg_defn|
             inner_arg_key = inner_arg_defn.keyword
-            inner_arg_value = loadable_arg_value[inner_arg_key]
+            inner_arg_value = arg_value[inner_arg_key]
             if !inner_arg_value.nil?
-              loads_recursively(loadable_arg_value, inner_arg_key, inner_arg_defn, inner_arg_value, field_resolve_step)
+              argument_value(arg_value, inner_arg_key, inner_arg_defn, inner_arg_value, nil, field_resolve_step)
             end
           end
-        elsif argument_definition.loads
+        end
+
+        if field_resolve_step && arg_value && override_type.nil? && argument_definition.loads
           field_defn = field_resolve_step.field_definition
           load_receiver = if (r = field_defn.resolver)
             r.new(field: field_defn, context: @query.context, object: nil)
@@ -194,7 +191,9 @@ module GraphQL
             @runner.add_step(loads_step)
           end
         else
+          argument_values[argument_key] = arg_value
         end
+        nil
       end
 
       def value_from_ast(value_node, type)
