@@ -207,7 +207,7 @@ module GraphQL
         if value_node.nil?
           nil
         elsif value_node.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
-          v = variable_values[value_node.name]
+          variable_values[value_node.name]
         elsif value_node.is_a?(GraphQL::Language::Nodes::NullValue)
           nil
         elsif type.list?

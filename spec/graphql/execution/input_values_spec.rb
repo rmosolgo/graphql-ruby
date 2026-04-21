@@ -68,6 +68,7 @@ class ExecutionInputValuesTest < Minitest::Test
 
   class DummyRunner
     def add_step(s); end
+    def schema; TEST_SCHEMA; end
   end
 
   def get_input_values(variables_string: "", variables: nil)
