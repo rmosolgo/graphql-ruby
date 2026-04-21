@@ -47,8 +47,6 @@ module GraphQL
           if arg_node.nil?
             if argument_definition.default_value?
               argument_value(argument_values, arg_ruby_key, argument_definition, argument_definition.default_value, nil, field_resolve_step)
-            elsif argument_definition.type.non_null?
-              # TODO Add an error
             end
           else
             argument_value(argument_values, arg_ruby_key, argument_definition, arg_node.value, nil, field_resolve_step)
@@ -140,7 +138,7 @@ module GraphQL
           end
         end
 
-        if arg_value && override_type.nil? && (argument_definition.loads || treat_as_type.kind.input_object?)
+        if field_resolve_step && arg_value && override_type.nil? && (argument_definition.loads || treat_as_type.kind.input_object?)
           loads_recursively(argument_values, argument_key, argument_definition, arg_value, field_resolve_step)
         else
           argument_values[argument_key] = arg_value
@@ -239,10 +237,9 @@ module GraphQL
             end
 
             arg_value = value_from_ast(arg_node.value, arg.type)
-            coerced_obj[arg_key] = arg_value # validate_value(arg, arg_value, state:)
+            coerced_obj[arg_key] = arg_value
           end
 
-          # validate_value(type, coerced_obj.freeze, state:)
           coerced_obj
         elsif type.kind.leaf?
           if type.kind.enum?
