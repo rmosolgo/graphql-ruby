@@ -25,7 +25,7 @@ module GraphQL
               elsif !var_node.default_value.nil?
                 var_node.default_value
               else
-                nil
+                next
               end
 
               var_type = @runner.schema.type_from_ast(var_node.type, context: @query.context)
@@ -44,7 +44,7 @@ module GraphQL
           arg_ruby_key = argument_definition.keyword
           arg_graphql_key = argument_definition.graphql_name
           arg_node = argument_nodes.find { |a| a.name == arg_graphql_key }
-          if arg_node.nil?
+          if arg_node.nil? || (arg_node.value.is_a?(Language::Nodes::VariableIdentifier) && !variable_values.key?(arg_node.value.name))
             if argument_definition.default_value?
               argument_value(argument_values, arg_ruby_key, argument_definition, argument_definition.default_value, nil, field_resolve_step)
             end
@@ -54,6 +54,8 @@ module GraphQL
         end
 
         argument_values
+      rescue GraphQL::ExecutionError => exec_err
+        exec_err
       end
 
       private
@@ -86,7 +88,7 @@ module GraphQL
             elsif value.key?(sym_name = arg.graphql_name.to_sym)
               arg_value = value[sym_name]
             elsif arg.default_value?
-              coerced_obj[arg_key] = arg.default_value # todo coerce
+              coerced_obj[arg_key] = arg.default_value
               next
             else
               next
@@ -95,17 +97,11 @@ module GraphQL
             coerced_obj[arg_key] = variable_value(arg_value, arg.type)
           end
 
-          coerced_obj.freeze
+          coerced_obj
         elsif type.kind.leaf?
-          result = begin
-            type.coerce_input(value, @query.context)
-          rescue GraphQL::ExecutionError => e
-            e
-          end
-
-          result
+          type.coerce_input(value, @query.context)
         else
-          raise InputCoercionError, "Unexpected input type: #{type.graphql_name}."
+          raise GraphQL::Error, "Unexpected input type: #{type.graphql_name}."
         end
       end
 
@@ -132,26 +128,28 @@ module GraphQL
 
         if override_type.nil? # only on root arguments, not list elements
           arg_value = begin
-            begin
-              argument_definition.prepare_value(nil, arg_value, context: @query.context)
-            rescue StandardError => err
-              @runner.schema.handle_or_reraise(@query.context, err)
-            end
-          rescue GraphQL::ExecutionError => exec_err
-            exec_err
+            argument_definition.prepare_value(nil, arg_value, context: @query.context)
+          rescue StandardError => err
+            @runner.schema.handle_or_reraise(@query.context, err)
           end
         end
 
         if arg_value && treat_as_type.kind.input_object?
           arg_defns = @query.types.arguments(treat_as_type)
-          arg_value = arg_value.dup
+          new_arg_value = {}
           arg_defns.each do |inner_arg_defn|
             inner_arg_key = inner_arg_defn.keyword
-            inner_arg_value = arg_value[inner_arg_key]
+            if arg_value.is_a?(Hash)
+              inner_arg_value = arg_value[inner_arg_key]
+            else
+              inner_arg_name = inner_arg_defn.graphql_name
+              inner_arg_value = arg_value.arguments.find { |a| a.name == inner_arg_name } # rubocop:disable Development/ContextIsPassedCop
+            end
             if !inner_arg_value.nil?
-              argument_value(arg_value, inner_arg_key, inner_arg_defn, inner_arg_value, nil, field_resolve_step)
+              argument_value(new_arg_value, inner_arg_key, inner_arg_defn, inner_arg_value, nil, field_resolve_step)
             end
           end
+          arg_value = new_arg_value
         end
 
         if field_resolve_step && arg_value && override_type.nil? && argument_definition.loads
@@ -228,7 +226,7 @@ module GraphQL
           @query.types.arguments(type).each do |arg|
             arg_node = arg_nodes_by_name[arg.graphql_name]
             arg_key = arg.keyword
-            if arg_node.nil?
+            if arg_node.nil? || (arg_node.value.is_a?(Language::Nodes::VariableIdentifier) && !variable_values.key?(arg_node.value.name))
               if arg.default_value?
                 coerced_obj[arg_key] = arg.default_value
               end
@@ -250,13 +248,7 @@ module GraphQL
           begin
             type.coerce_input(value_node, @query.context)
           rescue GraphQL::UnauthorizedEnumValueError => enum_err
-            begin
-              @runner.schema.unauthorized_object(enum_err)
-            rescue GraphQL::ExecutionError => ex_err
-              ex_err
-            end
-          rescue GraphQL::ExecutionError => exec_err
-            exec_err
+            @runner.schema.unauthorized_object(enum_err)
           end
         else
           raise "Unexpected input type: #{type.to_type_signature}."

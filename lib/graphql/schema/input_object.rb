@@ -112,6 +112,12 @@ module GraphQL
         nil
       end
 
+      # @api private
+      def self.validate_for(ruby_style_hash, context)
+        # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
+        Schema::Validator.validate!(validators, nil, context, ruby_style_hash, as: self)
+        nil
+      end
       class << self
         def authorized?(obj, value, ctx)
           # Authorize each argument (but this doesn't apply if `prepare` is implemented):
