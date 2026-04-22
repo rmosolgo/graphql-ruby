@@ -30,7 +30,7 @@ class ExecutionInputValuesTest < Minitest::Test
     def schema; TEST_SCHEMA; end
   end
 
-  def get_input_values(variables_string: "", variables: nil)
+  def get_input_values(variables_string: nil, variables: nil)
     query_str = "query#{variables_string ? "(#{variables_string})" : ""} { __typename }"
     query = GraphQL::Query.new(TEST_SCHEMA, query_str, validate: false, variables: variables)
     GraphQL::Execution::InputValues.new(query, DummyRunner.new)
