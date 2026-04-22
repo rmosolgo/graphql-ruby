@@ -8,48 +8,15 @@ class ExecutionInputValuesTest < Minitest::Test
       INACTIVE
     }
 
-    input NestedInput {
-      value: String
-      nested: NestedInput
-    }
-
     input TestInput {
       string: String
-      int: Int
       float: Float
-      boolean: Boolean
-      id: ID
-      enum: TestStatus
-      nested: NestedInput
-      stringList: [String]
-      nonNullItemList: [String!]
-      nestedList: [NestedInput]
-    }
-
-    input RequiredFieldsInput {
-      required: String!
-      optional: String
-    }
-
-    input ValidatedFieldsInput {
-      scalar: String
-      list: [String]
-      input: ValidatedFieldsInput
-      inputList: [ValidatedFieldsInput]
-    }
-
-    input OneOfInput @oneOf {
-      string: String
       int: Int
+      enum: TestStatus
     }
 
     type Mutation {
       testInput(input: TestInput): Boolean
-      requiredFields(input: RequiredFieldsInput!): Boolean
-      argWithDefault(input: String = "fallback-value"): Boolean
-      oneOf(input: OneOfInput!): Boolean
-      validates(input: ValidatedFieldsInput!): Boolean
-      validatesOneArg(a: String, b: String): Boolean
     }
 
     type Query {
@@ -57,14 +24,6 @@ class ExecutionInputValuesTest < Minitest::Test
     }
   |)
 
-  TEST_SCHEMA.mutation.fields["validatesOneArg"].tap do |f|
-    f.validates(required: { one_of: [:a, :b] })
-  end
-
-  TEST_SCHEMA.get_type("ValidatedFieldsInput").tap do |t|
-    t.arguments["scalar"].validates(length: { minimum: 2 })
-    t.arguments["list"].validates(length: { minimum: 2 })
-  end
 
   class DummyRunner
     def add_step(s); end
@@ -72,7 +31,7 @@ class ExecutionInputValuesTest < Minitest::Test
   end
 
   def get_input_values(variables_string: "", variables: nil)
-    query_str = "query(#{variables_string}) { __typename }"
+    query_str = "query#{variables_string ? "(#{variables_string})" : ""} { __typename }"
     query = GraphQL::Query.new(TEST_SCHEMA, query_str, validate: false, variables: variables)
     GraphQL::Execution::InputValues.new(query, DummyRunner.new)
   end
