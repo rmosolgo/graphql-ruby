@@ -140,13 +140,16 @@ module GraphQL
           arg_defns.each do |inner_arg_defn|
             inner_arg_key = inner_arg_defn.keyword
             if arg_value.is_a?(Hash)
-              inner_arg_value = arg_value[inner_arg_key]
+              if arg_value.key?(inner_arg_key)
+                inner_arg_value = arg_value[inner_arg_key]
+                argument_value(new_arg_value, inner_arg_key, inner_arg_defn, inner_arg_value, nil, field_resolve_step)
+              end
             else
               inner_arg_name = inner_arg_defn.graphql_name
               inner_arg_value = arg_value.arguments.find { |a| a.name == inner_arg_name } # rubocop:disable Development/ContextIsPassedCop
-            end
-            if !inner_arg_value.nil?
-              argument_value(new_arg_value, inner_arg_key, inner_arg_defn, inner_arg_value, nil, field_resolve_step)
+              if inner_arg_value
+                argument_value(new_arg_value, inner_arg_key, inner_arg_defn, inner_arg_value, nil, field_resolve_step)
+              end
             end
           end
           arg_value = new_arg_value
