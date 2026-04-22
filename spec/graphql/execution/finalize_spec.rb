@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-class ErrorResultFormatterTest < Minitest::Test
+class ExecutionFinalizeTest < Minitest::Test
   class HashKeyResolver
     def initialize(key)
       @key = key

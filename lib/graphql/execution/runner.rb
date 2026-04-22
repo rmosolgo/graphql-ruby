@@ -12,6 +12,9 @@ module GraphQL
         @selected_operation = nil
         @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
         @resolves_lazies = @schema.resolves_lazies?
+        @input_values = Hash.new do |h, query|
+          h[query] = InputValues.new(query, self)
+        end.compare_by_identity
 
         @runtime_directives = nil
         @schema.directives.each do |name, dir_class|
@@ -60,7 +63,7 @@ module GraphQL
         @dataloader.append_job(step)
       end
 
-      attr_reader :authorization, :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers
+      attr_reader :authorization, :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
 
       # @return [void]
       def add_finalizer(query, result_value, key, finalizer)
@@ -354,24 +357,14 @@ module GraphQL
         @static_type_at[data] = root_type
       end
 
-      def dir_arg_value(query, arg_node)
-        if arg_node.value.is_a?(Language::Nodes::VariableIdentifier)
-          var_key = arg_node.value.name
-          if query.variables.key?(var_key)
-            query.variables[var_key]
-          else
-            query.variables[var_key.to_sym]
-          end
-        else
-          arg_node.value
-        end
-      end
       def directives_include?(query, ast_selection)
         if ast_selection.directives.any? { |dir_node|
               if dir_node.name == "skip"
-                dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(query, arg_node) == true } # rubocop:disable Development/ContextIsPassedCop
+                skip_args = @input_values[query].argument_values(GraphQL::Schema::Directive::Skip, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+                skip_args[:if] == true
               elsif dir_node.name == "include"
-                dir_node.arguments.any? { |arg_node| arg_node.name == "if" && dir_arg_value(query, arg_node) == false } # rubocop:disable Development/ContextIsPassedCop
+                include_args = @input_values[query].argument_values(GraphQL::Schema::Directive::Include, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+                include_args[:if] == false
               end
             }
           false
