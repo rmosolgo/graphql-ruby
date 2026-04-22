@@ -10,6 +10,13 @@ module GraphQL
 
       def variable_values
         @variable_values ||= begin
+          if @query.selected_operation.nil?
+            raise <<~TXT
+              Missing selected_operation: #{@query.query_string.inspect}
+
+              #{@query.context.errors.map(&:inspect).join("\n\n")}
+            TXT
+          end
           variable_nodes = @query.selected_operation.variables
           if variable_nodes.empty?
             EmptyObjects::EMPTY_HASH
