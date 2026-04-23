@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.23/">API</a>
+            <a href="/api-doc/2.5.24/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -161,25 +161,27 @@
 </a></li></ol></li><li class='contents-entry'><a href='#combining-feature-flags-and-experiments'>Combining feature flags and experiments
 </a></li><li class='contents-entry'><a href='#compatibility-notes'>Compatibility Notes
 </a><ol class='contents-list'><li class='contents-entry'><a href='#implicit-field-resolution'>Implicit Field Resolution
-</a></li><li class='contents-entry'><a href='#query-analyzers-including-complexity'>Query Analyzers, including complexity 🟡
+</a></li><li class='contents-entry'><a href='#query-analyzers-including-complexity-'>Query Analyzers, including complexity 🟡
 </a></li><li class='contents-entry'><a href='#authorization-scoping'>Authorization, Scoping
 </a></li><li class='contents-entry'><a href='#visibility-including-changesets'>Visibility, including Changesets
 </a></li><li class='contents-entry'><a href='#dataloader'>Dataloader
 </a></li><li class='contents-entry'><a href='#tracing'>Tracing
 </a></li><li class='contents-entry'><a href='#lazy-resolution-graphql-batch'>Lazy resolution (GraphQL-Batch)
-</a></li><li class='contents-entry'><a href='#current_path'><code>current_path</code> ❌
-</a></li><li class='contents-entry'><a href='#defer-and-stream'><code>@defer</code> and <code>@stream</code> ❌
-</a></li><li class='contents-entry'><a href='#objectcache'>ObjectCache ❌
-</a></li><li class='contents-entry'><a href='#custom-directives'>Custom Directives ❌
+</a></li><li class='contents-entry'><a href='#current_path-'><code>current_path</code> ❌
+</a></li><li class='contents-entry'><a href='#scoped-context-'>Scoped context ❌
+</a></li><li class='contents-entry'><a href='#defer-and-stream-'><code>@defer</code> and <code>@stream</code> ❌
+</a><ol class='contents-list'><li class='contents-entry'><a href='#graphql-batch-support'>GraphQL-Batch support
+</a></li></ol></li><li class='contents-entry'><a href='#objectcache-'>ObjectCache ❌
+</a></li><li class='contents-entry'><a href='#custom-directives-'>Custom Directives ❌
 </a></li><li class='contents-entry'><a href='#as'><code>as:</code>
 </a></li><li class='contents-entry'><a href='#loads'><code>loads:</code>
 </a></li><li class='contents-entry'><a href='#prepare'><code>prepare:</code>
-</a></li><li class='contents-entry'><a href='#validates'><code>validates:</code> 🟡
+</a></li><li class='contents-entry'><a href='#validates-'><code>validates:</code> 🟡
 </a></li><li class='contents-entry'><a href='#field-extensions'>Field Extensions
 </a></li><li class='contents-entry'><a href='#resolver-classes-including-mutations-and-subscriptions'>Resolver classes (including Mutations and Subscriptions)
 </a></li><li class='contents-entry'><a href='#field-extras-including-lookahead'>Field <code>extras:</code>, including <code>lookahead</code>
-</a></li><li class='contents-entry'><a href='#raw_value'><code>raw_value</code> 🟡
-</a></li><li class='contents-entry'><a href='#errors-and-rescue_from'>Errors and <code>rescue_from</code> 🟡
+</a></li><li class='contents-entry'><a href='#raw_value-'><code>raw_value</code> 🟡
+</a></li><li class='contents-entry'><a href='#errors-and-rescue_from-'>Errors and <code>rescue_from</code> 🟡
 </a></li><li class='contents-entry'><a href='#connection-fields'>Connection fields
 </a></li><li class='contents-entry'><a href='#custom-introspection'>Custom Introspection
 </a></li><li class='contents-entry'><a href='#multiplex'>Multiplex
@@ -353,7 +355,7 @@
 
 <h3 id="dataloader">Dataloader</h3>
 
-<p>Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use <a href="/api-doc/2.5.23/GraphQL/Schema/Member/HasDataloader#dataload_all-instance_method" target="_blank" title="API docs for GraphQL::Schema::Member::HasDataloader#dataload_all"><code>Schema::Member::HasDataloader#dataload_all</code></a> instead of <code class="language-plaintext highlighter-rouge">.dataload</code>.</p>
+<p>Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use <a href="/api-doc/2.5.24/GraphQL/Schema/Member/HasDataloader#dataload_all-instance_method" target="_blank" title="API docs for GraphQL::Schema::Member::HasDataloader#dataload_all"><code>Schema::Member::HasDataloader#dataload_all</code></a> instead of <code class="language-plaintext highlighter-rouge">.dataload</code>.</p>
 
 <h3 id="tracing">Tracing</h3>
 
@@ -375,9 +377,23 @@
 
 <p>It is theoretically possible to support this but it will be a ton of work. If you use this for core runtime functions, please share your use case in a GitHub issue and we can investigate future options.</p>
 
+<h3 id="scoped-context-">Scoped context ❌</h3>
+
+<p>This is currently implemented with <code class="language-plaintext highlighter-rouge">current_path</code>. Another implementation is probably possible but not implemented yet. Please open an issue to discuss.</p>
+
 <h3 id="defer-and-stream-"><code class="language-plaintext highlighter-rouge">@defer</code> and <code class="language-plaintext highlighter-rouge">@stream</code> ❌</h3>
 
-<p>This depends on <code class="language-plaintext highlighter-rouge">current_path</code> so isn’t possible yet.</p>
+<p><code class="language-plaintext highlighter-rouge">@defer</code> is supported with an implementation difference that <em>probably</em> doesn’t affect your application: previously, <code class="language-plaintext highlighter-rouge">@defer</code> worked by pausing and resuming the <em>same <code class="language-plaintext highlighter-rouge">GraphQL::Query</code> instance</em>. However, with <code class="language-plaintext highlighter-rouge">Execution::Next</code>, <code class="language-plaintext highlighter-rouge">@defer</code> takes a different approach. Instead, when a <code class="language-plaintext highlighter-rouge">GraphQL::Query</code> encounters <code class="language-plaintext highlighter-rouge">@defer</code>, it notes the location in the document and stops executing that branch. Later, when you request the deferred result, that branch of the query is resumed using a new instance of <code class="language-plaintext highlighter-rouge">GraphQL::Query::Partial</code>.</p>
+
+<p>This might matter if you’re modifying <code class="language-plaintext highlighter-rouge">context</code> at runtime because those new instances <em>also</em> have fresh <code class="language-plaintext highlighter-rouge">Query::Context</code> instances. The original query context <em>will</em> get copied into the <code class="language-plaintext highlighter-rouge">@defer</code> branches using <code class="language-plaintext highlighter-rouge">Query::Context.new(**original_query.context.to_h)</code>, so any custom values will be available. But if you <em>assign new keys</em> after the context is copied, those keys won’t appear when running later <code class="language-plaintext highlighter-rouge">@defer</code>ed branches.</p>
+
+<p>To handle this, you can refactor how you accumulate data during execution. Instead of <code class="language-plaintext highlighter-rouge">||=</code>‘ing into <code class="language-plaintext highlighter-rouge">context[...]</code> during execution, assign a new accumulator object <em>before</em> starting the query, then call methods on that object to make any necessary state changes. That new object <em>will</em> be copied into <code class="language-plaintext highlighter-rouge">@defer</code> partials, and since the object is shared between the different branches, any necessary state changes will still be “seen” everywhere.</p>
+
+<p>If this gives you trouble, please feel free to email me or open an issue on GitHub to discuss a migration strategy.</p>
+
+<h5 id="graphql-batch-support">GraphQL-Batch support</h5>
+
+<p>When using <code class="language-plaintext highlighter-rouge">Execution::Next</code>, no custom code is required to support <code class="language-plaintext highlighter-rouge">graphql-batch</code>.</p>
 
 <h3 id="objectcache-">ObjectCache ❌</h3>
 
@@ -424,11 +440,12 @@
 
 <h3 id="raw_value-"><code class="language-plaintext highlighter-rouge">raw_value</code> 🟡</h3>
 
-<p>Supported but requires a manual opt-in at schema level. Support for this will probably get better somehow in a future version.</p>
+<p>Supported, but the <code class="language-plaintext highlighter-rouge">raw_value</code> call must be made on <code class="language-plaintext highlighter-rouge">context</code>, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">uses_raw_value</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span> <span class="c1"># TODO This configuration will be improved in a future GraphQL-Ruby version</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Execution</span><span class="o">::</span><span class="no">Next</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:values</span><span class="p">,</span> <span class="no">SomeObjectType</span><span class="p">,</span> <span class="ss">resolve_static: </span><span class="kp">true</span>
+
+<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">values</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+  <span class="n">context</span><span class="p">.</span><span class="nf">raw_value</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
