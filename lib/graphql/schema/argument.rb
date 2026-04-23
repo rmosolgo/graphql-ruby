@@ -426,9 +426,6 @@ module GraphQL
         elsif value.is_a?(GraphQL::Schema::InputObject)
           value.validate_for(context)
           value.prepare
-        elsif value.is_a?(Hash)
-          type.validate_for(value, context)
-          value
         else
           value
         end
