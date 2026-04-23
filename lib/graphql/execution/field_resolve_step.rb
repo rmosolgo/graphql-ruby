@@ -17,7 +17,7 @@ module GraphQL
         @all_next_results = nil
         @static_type = nil
         @next_selections = nil
-        @object_is_authorized = nil
+        @results = nil
         @finish_extension_idx = nil
         @was_scoped = nil
         @pending_steps = nil
@@ -103,12 +103,6 @@ module GraphQL
         err
       end
 
-      module AlwaysAuthorized
-        def self.[](_key)
-          true
-        end
-      end
-
       def build_arguments
         query = @selections_step.query
         field_name = @ast_node.name
@@ -124,10 +118,10 @@ module GraphQL
 
       def execute_field
         objects = @selections_step.objects
+        @results = @selections_step.results
         # TODO not as good because only one error?
         if @arguments.is_a?(GraphQL::RuntimeError)
           @field_results = Array.new(objects.size, @arguments)
-          @object_is_authorized = AlwaysAuthorized
           build_results
           return
         end
@@ -139,7 +133,6 @@ module GraphQL
             Schema::Validator.validate!(v, nil, ctx, @arguments)
           rescue GraphQL::RuntimeError => err
             @field_results = Array.new(objects.size, err)
-            @object_is_authorized = AlwaysAuthorized
             build_results
             return
           end
@@ -170,30 +163,37 @@ module GraphQL
           # TODO break this backwards compat somehow?
           objects = @selections_step.graphql_objects
         end
+
         if @runner.authorization && @runner.authorizes?(@field_definition, ctx)
           authorized_objects = []
-          @object_is_authorized = objects.map { |o|
-            is_authed = @field_definition.authorized?(o, @arguments, ctx)
-            if is_authed
+          authorized_results = []
+          l = objects.size
+          i = 0
+          while i < l
+            o = objects[i]
+            if @field_definition.authorized?(o, @arguments, ctx)
+              authorized_results << @results[i]
               authorized_objects << o
             else
               begin
                 err = GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
                 authorized_objects << query.schema.unauthorized_object(err)
-                is_authed = true
+                authorized_results << @results[i]
               rescue GraphQL::ExecutionError => exec_err
                 add_graphql_error(exec_err)
               end
             end
-            is_authed
-          }
+            i += 1
+          end
+
           if authorized_objects.size == 0
             return
           end
+          @results = authorized_results
         else
           authorized_objects = objects
-          @object_is_authorized = AlwaysAuthorized
         end
+
         if @parent_type.default_relay? && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
           @was_scoped = true
         end
@@ -361,18 +361,11 @@ module GraphQL
 
           is_list = return_type.list?
           is_non_null = return_type.non_null?
-          results = @selections_step.results
-          field_result_idx = 0
           i = 0
-          s = results.size
+          s = @results.size
           while i < s do
-            result_h = results[i]
-            if @object_is_authorized[i]
-              result = @field_results[field_result_idx]
-              field_result_idx += 1
-            else
-              result = nil
-            end
+            result_h = @results[i]
+            result = @field_results[i]
             i += 1
             build_graphql_result(result_h, @key, result, return_type, is_non_null, is_list, false)
           end
@@ -385,18 +378,11 @@ module GraphQL
           end
         else
           ctx = @selections_step.query.context
-          results = @selections_step.results
-          field_result_idx = 0
           i = 0
-          s = results.size
+          s = @results.size
           while i < s do
-            result_h = results[i]
-            if @object_is_authorized[i]
-              field_result = @field_results[field_result_idx]
-              field_result_idx += 1
-            else
-              field_result = nil
-            end
+            result_h = @results[i]
+            field_result = @field_results[i]
             i += 1
             finish_leaf_result(result_h, @key, field_result, return_type, ctx)
           end
@@ -520,10 +506,14 @@ module GraphQL
             build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
             i += 1
           end
-        elsif @runner.resolves_lazies || (@runner.authorization && (@static_type.kind.object? ? @runner.authorizes?(@static_type, @selections_step.query.context) : (
-              (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))
-              ) && @runner.authorizes?(runtime_type, @selections_step.query.context)
-            )))
+        elsif @runner.resolves_lazies || (
+                @runner.authorization && (
+                    @static_type.kind.object? ?
+                      @runner.authorizes?(@static_type, @selections_step.query.context) :
+                      (
+                        (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))) &&
+                        @runner.authorizes?(runtime_type, @selections_step.query.context)
+                      )))
           obj_step = PrepareObjectStep.new(
             object: field_result,
             runner: @runner,
