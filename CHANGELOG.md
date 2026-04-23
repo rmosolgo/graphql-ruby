@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.5.24
+
+### New features
+
+- Continue building `Execution::Next`: #5606, #5603, #5596, #5604, #5607
+
 # 2.5.23
 
 ### New features
