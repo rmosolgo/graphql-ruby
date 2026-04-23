@@ -45,10 +45,12 @@ module GraphQL
           arg_node = argument_nodes.find { |a| a.name == arg_graphql_key }
           if arg_node.nil? || (arg_node.value.is_a?(Language::Nodes::VariableIdentifier) && !variable_values.key?(arg_node.value.name))
             if argument_definition.default_value?
-              argument_value(argument_values, arg_ruby_key, argument_definition, argument_definition.default_value, nil, field_resolve_step)
+              arg_value = value_from_ast(argument_definition.default_value, argument_definition.type)
+              argument_value(argument_values, arg_ruby_key, argument_definition, arg_value, nil, field_resolve_step)
             end
           else
-            argument_value(argument_values, arg_ruby_key, argument_definition, arg_node.value, nil, field_resolve_step)
+            arg_value = value_from_ast(arg_node.value, argument_definition.type)
+            argument_value(argument_values, arg_ruby_key, argument_definition, arg_value, nil, field_resolve_step)
           end
         end
 
@@ -110,8 +112,6 @@ module GraphQL
           treat_as_type = treat_as_type.of_type
         end
 
-        arg_value = value_from_ast(arg_value, treat_as_type)
-
         if treat_as_type.kind.list? && !arg_value.nil?
           inner_t = treat_as_type.unwrap
           arg_value = if arg_value.is_a?(Array)
@@ -122,14 +122,6 @@ module GraphQL
             values = [nil]
             argument_value(values, 0, argument_definition, arg_value, inner_t, field_resolve_step)
             values
-          end
-        end
-
-        if override_type.nil? # only on root arguments, not list elements
-          arg_value = begin
-            argument_definition.prepare_value(nil, arg_value, context: @query.context)
-          rescue StandardError => err
-            @runner.schema.handle_or_reraise(@query.context, err)
           end
         end
 
@@ -151,7 +143,15 @@ module GraphQL
               end
             end
           end
-          arg_value = new_arg_value
+          arg_value = treat_as_type.new(nil, ruby_kwargs: new_arg_value, context: @query.context, defaults_used: nil)
+        end
+
+        if override_type.nil? # only on root arguments, not list elements
+          arg_value = begin
+            argument_definition.prepare_value(nil, arg_value, context: @query.context)
+          rescue StandardError => err
+            @runner.schema.handle_or_reraise(@query.context, err)
+          end
         end
 
         if field_resolve_step && arg_value && override_type.nil? && argument_definition.loads
