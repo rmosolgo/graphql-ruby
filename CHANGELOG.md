@@ -10,6 +10,17 @@
 
 ### Bug fixes
 
+# 2.6.0
+
+### Breaking changes
+
+- SDL: previously, GraphQL-Ruby didn't require object types and interfaces to explicitly name all transitively implemented interfaces. For example if Interface A implements Interface B, and Object O implements Interface A, GraphQL-Ruby didn't require the SDL to include `implements ... & B`, But it should have, according to the spec. This misbehavior has been corrected, but may cause some previously-accepted SDL strings to be rejected with errors. #5602
+
+### Bug fixes
+
+- SDL: require types to name _all_ implemented interfaces #5602
+- Execution::Next: call Resolver `#ready?` methods #5611
+
 # 2.5.25
 
 ### Bug fixes
