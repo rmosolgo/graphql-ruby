@@ -66,14 +66,31 @@ module GraphQL
         q = context.query
         trace_objs = [object]
         q.current_trace.begin_execute_field(field, @prepared_arguments, trace_objs, q)
-        begin
-          is_authed, new_return_value = authorized?(**@prepared_arguments)
-        rescue GraphQL::UnauthorizedError  => err
-          new_return_value = q.schema.unauthorized_object(err)
-          is_authed = true # the error was handled
+        is_ready = ready?(**@prepared_arguments)
+        runner = @field_resolve_step.runner
+        if runner.resolves_lazies && runner.schema.lazy?(is_ready)
+          is_ready, new_return_value = runner.schema.sync_lazy(is_ready)
         end
 
-        if (runner = @field_resolve_step.runner).resolves_lazies && runner.schema.lazy?(is_authed)
+        if is_ready.is_a?(Array)
+          is_ready, new_return_value = is_ready
+          if is_ready != false
+            raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{is_ready.inspect}, #{new_return_value.inspect}]"
+          else
+            new_return_value
+          end
+        end
+
+        if is_ready
+          begin
+            is_authed, new_return_value = authorized?(**@prepared_arguments)
+          rescue GraphQL::UnauthorizedError  => err
+            new_return_value = q.schema.unauthorized_object(err)
+            is_authed = true # the error was handled
+          end
+        end
+
+        if runner.resolves_lazies && runner.schema.lazy?(is_authed)
           is_authed, new_return_value = runner.schema.sync_lazy(is_authed)
         end
 
@@ -93,7 +110,13 @@ module GraphQL
         q = context.query
         q.current_trace.end_execute_field(field, @prepared_arguments, trace_objs, q, [result])
         exec_result[exec_index] = result
-      rescue RuntimeError => err
+      rescue GraphQL::UnauthorizedError => auth_err
+        exec_result[exec_index] = begin
+          context.schema.unauthorized_object(auth_err)
+        rescue GraphQL::ExecutionError => exec_err
+          exec_err
+        end
+      rescue GraphQL::RuntimeError => err
         exec_result[exec_index] = err
       rescue StandardError => stderr
         exec_result[exec_index] = begin

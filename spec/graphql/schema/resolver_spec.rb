@@ -179,8 +179,8 @@ describe GraphQL::Schema::Resolver do
 
     class PrepResolver7 < GraphQL::Schema::Mutation
       argument :int, Integer
-      field :errors, [String]
-      field :int, Integer
+      field :errors, [String], hash_key: :errors
+      field :int, Integer, hash_key: :int
 
       def ready?(int:)
         if int == 13
@@ -209,7 +209,7 @@ describe GraphQL::Schema::Resolver do
 
     class ResolverWithInvalidReady < GraphQL::Schema::Mutation
       argument :int, Integer
-      field :int, Integer
+      field :int, Integer, hash_key: :int
 
       def ready?(**args)
         return [1,2,3]
@@ -801,40 +801,38 @@ describe GraphQL::Schema::Resolver do
       assert_equal ResolverTest::HasValue, arg.loads
     end
 
-    if !TESTING_EXEC_NEXT
-      describe "ready?" do
-        it "can raise errors" do
-          res = exec_query("{ int: prepResolver5(int: 5) }")
-          assert_equal 50, res["data"]["int"]
-          add_error_assertions("prepResolver5", "ready?")
-        end
+    describe "ready?" do
+      it "can raise errors" do
+        res = exec_query("{ int: prepResolver5(int: 5) }")
+        assert_equal TESTING_EXEC_NEXT ? 5 : 50, res["data"]["int"]
+        add_error_assertions("prepResolver5", "ready?")
+      end
 
-        it "can raise errors in lazy sync" do
-          res = exec_query("{ int: prepResolver6(int: 5) }")
-          assert_equal 50, res["data"]["int"]
-          add_error_assertions("prepResolver6", "lazy ready?")
-        end
+      it "can raise errors in lazy sync" do
+        res = exec_query("{ int: prepResolver6(int: 5) }")
+        assert_equal TESTING_EXEC_NEXT ? 5 : 50, res["data"]["int"]
+        add_error_assertions("prepResolver6", "lazy ready?")
+      end
 
-        it "can return false and data" do
-          res = exec_query("{ int: prepResolver7(int: 13) { errors int } }")
-          assert_equal ["Bad number!"], res["data"]["int"]["errors"]
+      it "can return false and data" do
+        res = exec_query("{ int: prepResolver7(int: 13) { errors int } }")
+        assert_equal ["Bad number!"], res["data"]["int"]["errors"]
 
-          res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
-          assert_equal 213, res["data"]["int"]["int"]
-        end
+        res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
+        assert_equal 213, res["data"]["int"]["int"]
+      end
 
-        it "can return false and falsey data" do
-          res = exec_query("{ result: resolverWithFalseyValueReady }")
-          assert_equal false, res["data"]["result"] # must be `false`, not just falsey
-          assert_nil res["errors"]
-        end
+      it "can return false and falsey data" do
+        res = exec_query("{ result: resolverWithFalseyValueReady }")
+        assert_equal false, res["data"]["result"] # must be `false`, not just falsey
+        assert_nil res["errors"]
+      end
 
-        it 'raises the correct error on invalid return type' do
-          err = assert_raises(RuntimeError) do
-            exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
-          end
-          assert_match("Unexpected result from #ready?", err.message)
+      it 'raises the correct error on invalid return type' do
+        err = assert_raises(RuntimeError) do
+          exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
         end
+        assert_match("Unexpected result from #ready?", err.message)
       end
     end
 

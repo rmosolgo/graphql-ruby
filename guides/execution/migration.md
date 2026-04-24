@@ -199,7 +199,7 @@ It is theoretically possible to support this but it will be a ton of work. If yo
 
 This is currently implemented with `current_path`. Another implementation is probably possible but not implemented yet. Please open an issue to discuss.
 
-### `@defer` and `@stream` ❌
+### `@defer` 🟡
 
 `@defer` is supported with an implementation difference that _probably_ doesn't affect your application: previously, `@defer` worked by pausing and resuming the _same `GraphQL::Query` instance_. However, with `Execution::Next`, `@defer` takes a different approach. Instead, when a `GraphQL::Query` encounters `@defer`, it notes the location in the document and stops executing that branch. Later, when you request the deferred result, that branch of the query is resumed using a new instance of `GraphQL::Query::Partial`.
 
@@ -211,21 +211,29 @@ If this gives you trouble, please feel free to email me or open an issue on GitH
 
 ##### GraphQL-Batch support
 
-When using `Execution::Next`, no custom code is required to support `graphql-batch`.
+When using `Execution::Next`, no custom code is required to support `graphql-batch` -- support is built-in.
 
-### ObjectCache ❌
+### `@stream`
 
-Actually this probably works but I haven't tested it.
+`@stream` is supported.
+
+See the not above about how `@defer` no longer _resumes_ the original, top-level query. The same thing applies to `@stream`.
+
+`GraphQL::Pro::Stream` now lazily streams Enumerators. If you were using the (undocumented) `GraphQL::Pro::FutureStream`, you can switch to `GraphQL::Pro::Stream` _after_ migrating to `Execution::Next`. (Once all your traffic uses the new execution module, you'll get the same runtime behavior from `GraphQL::Pro::Stream`.)
+
+### ObjectCache
+
+Supported completely.
 
 ### Custom Directives ❌
 
-Not supported yet. This will need some new kind of integration.
+There is some implementation in the code right now but it's not stable. Please open an issue to discuss.
 
 ### `as:`
 
 `as:` is applied: arguments are passed into Ruby methods by their `as:` names instead of their GraphQL names.
 
-### `loads:`
+### `loads:` 🟡
 
 `loads:` is handled as previously, __except__ that custom `def load_...` methods are _not_ called.
 
@@ -237,18 +245,21 @@ These methods/procs are called.
 
 Built-in validators are supported. Custom validators will always receive `nil` as the `object`. (`object` is no longer available; this API will probably change before this is fully released.)
 
-### Field Extensions
+### Field Extensions 🟡
 
-Field extensions _are_ called, but it uses new methods:
+Field extension methods are called with new arguments:
 
-- `def resolve_batching(objects:, arguments:, context:, &block)` receives `objects:` instead of `object:` and should yield them to the given block to continue execution
-- `def after_resolve_batching(objects:, arguments:, context:, values:, memo:)` receives `objects:, values:, ...` instead of `object:, value:, ...` and should return an Array of results (isntead of a single result value).
+- `objects:` instead of `object:`, with an Array
+- `values:` instead of `value:`, with an Array
 
-Because of their close integration with the runtime, `ConnectionExtension` and `ScopeExtension` don't actually use `after_resolve_batching`. Instead, support is hard-coded inside the runtime. This might be a smell that field extensions aren't worth supporting.
+You can support both types of calls in your methods by changing the signature to `object: nil, objects: nil` (and `value: nil, values: nil`), then checking which argument was passed.
 
-### Resolver classes (including Mutations and Subscriptions)
+### Resolver classes (including Mutations and Subscriptions) 🟡
 
-Resolver classes are called.
+Resolver classes are called, but with slightly different semantics:
+
+- `#ready?` is still called, but after arguments are loaded. It's now a useless method and will probably be deprecated.
+- `def load_...` methods are not called; instead, arguments are passed to the top-level `Schema.object_from_id` hook.
 
 ### Field `extras:`, including `lookahead`
 
@@ -266,13 +277,9 @@ def self.values(context)
 end
 ```
 
-### Errors and `rescue_from` 🟡
+### Errors and `rescue_from`
 
-Support is mostly in place here but not thoroughly tested
-
-- rescue_from handlers
-- raising GraphQL::ExecutionError
-- Schema class error handling hooks
+Supported.
 
 ### Connection fields
 
