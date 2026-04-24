@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.7.0 (24 Apr 2026)
+
+- Support GraphQL-Ruby's new `Execution::Next` runtime
+
 # 1.6.0 (25 Nov 2025)
 
 - `RuntimeLimiter` and `ActiveOperationLimiter` now support `Redis::Cluster` via `redis_cluster: ...` options #5465
