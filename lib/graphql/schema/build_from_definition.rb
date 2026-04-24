@@ -99,6 +99,16 @@ module GraphQL
               # It's possible that this was already loaded by the directives
               prev_type = types[definition.name]
               if prev_type.nil? || prev_type.is_a?(Schema::LateBoundType)
+                if definition.is_a?(GraphQL::Language::Nodes::ObjectTypeDefinition) || definition.is_a?(Language::Nodes::InterfaceTypeDefinition)
+                  interface_names = definition.interfaces.map(&:name)
+                  transitive_names = interface_names.map { |n| document.definitions.find { |d| d.respond_to?(:name) && d.name == n }&.interfaces&.map(&:name) }
+                  transitive_names.flatten!
+                  transitive_names.compact!
+                  if !(missing_transitive_interfaces = transitive_names - interface_names).empty?
+                    raise GraphQL::Schema::InvalidDocumentError, "type #{definition.name} is missing one or more transitive interface names: #{missing_transitive_interfaces.join(", ")}. Add them to the type's `implements` list and try again."
+                  end
+                end
+
                 types[definition.name] = build_definition_from_node(definition, type_resolver, default_resolve, base_types)
               end
             end

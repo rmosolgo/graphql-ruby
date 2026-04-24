@@ -539,6 +539,29 @@ interface WorldInterface {
       assert_schema_and_compare_output(schema)
     end
 
+    it "requires transitive dependencies to be named" do
+      schema_str = <<~GRAPHQL
+      interface A implements B {
+        s: String
+      }
+
+      interface B {
+        s: String
+      }
+
+      type Query implements A & B {
+        s: String
+      }
+      GRAPHQL
+
+      assert_schema_and_compare_output(schema_str)
+
+      invalid_schema_str = schema_str.sub("A & B", "A")
+      assert_raises GraphQL::Schema::InvalidDocumentError do
+        GraphQL::Schema.from_definition(invalid_schema_str)
+      end
+    end
+
     it "supports interfaces that implement interfaces" do
       schema = <<-SCHEMA
 interface Named implements Node {
@@ -1542,13 +1565,13 @@ type ReachableType implements Node {
         person: Person
       }
 
-      type Person implements NamedEntity {
+      type Person implements NamedEntity & Entity {
         id: ID!
         name: String
         nationality: String
       }
 
-      type Product implements NamedEntity {
+      type Product implements NamedEntity & Entity {
         id: ID!
         name: String
         amount: Int
