@@ -434,4 +434,28 @@ describe GraphQL::Schema::FieldExtension do
       assert_equal "f3", res.context[:other_last_ast_node].name
     end
   end
+
+
+  describe "when returning false from resolve" do
+    class ReturnFalseSchema < GraphQL::Schema
+      class EmptyExtension < GraphQL::Schema::FieldExtension
+        def resolve(object: nil, objects: nil, arguments:, **_rest)
+          yield(object || objects, arguments)
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :is_false, Boolean, extensions: [EmptyExtension], resolve_static: true
+        def self.is_false(ctx); false; end
+        def is_false; false; end
+      end
+
+      query QueryType
+    end
+
+    it "is properly returned (not nil)" do
+      result = ReturnFalseSchema.execute("{ isFalse }")
+      assert_equal false, result["data"]["isFalse"]
+    end
+  end
 end

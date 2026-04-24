@@ -132,7 +132,7 @@ module GraphQL
       # @yieldparam memo [Object] Any extension-specific value which will be passed to {#after_resolve} later
       # @return [Object] The return value for this field.
       def resolve(object: nil, objects: nil, arguments:, context:)
-        yield(object || objects, arguments, nil)
+        yield(object.nil? ? objects : object, arguments, nil)
       end
 
       # Called after {#field} was resolved, and after any lazy values (like `Promise`s) were synced,
@@ -149,7 +149,7 @@ module GraphQL
       # @param memo [Object] The third value yielded by {#resolve}, or `nil` if there wasn't one
       # @return [Object] The return value for this field.
       def after_resolve(object: nil, objects: nil, arguments:, context:, values: nil, value: nil, memo:)
-        value || values
+        value.nil? ? values : value
       end
     end
   end
