@@ -110,6 +110,12 @@ module GraphQL
         q = context.query
         q.current_trace.end_execute_field(field, @prepared_arguments, trace_objs, q, [result])
         exec_result[exec_index] = result
+      rescue GraphQL::UnauthorizedError => auth_err
+        exec_result[exec_index] = begin
+          context.schema.unauthorized_object(auth_err)
+        rescue GraphQL::ExecutionError => exec_err
+          exec_err
+        end
       rescue GraphQL::RuntimeError => err
         exec_result[exec_index] = err
       rescue StandardError => stderr
