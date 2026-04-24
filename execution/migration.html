@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.5.25/">API</a>
+            <a href="/api-doc/2.6.0/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -169,19 +169,20 @@
 </a></li><li class='contents-entry'><a href='#lazy-resolution-graphql-batch'>Lazy resolution (GraphQL-Batch)
 </a></li><li class='contents-entry'><a href='#current_path-'><code>current_path</code> ❌
 </a></li><li class='contents-entry'><a href='#scoped-context-'>Scoped context ❌
-</a></li><li class='contents-entry'><a href='#defer-and-stream-'><code>@defer</code> and <code>@stream</code> ❌
+</a></li><li class='contents-entry'><a href='#defer-'><code>@defer</code> 🟡
 </a><ol class='contents-list'><li class='contents-entry'><a href='#graphql-batch-support'>GraphQL-Batch support
-</a></li></ol></li><li class='contents-entry'><a href='#objectcache-'>ObjectCache ❌
+</a></li></ol></li><li class='contents-entry'><a href='#stream'><code>@stream</code>
+</a></li><li class='contents-entry'><a href='#objectcache'>ObjectCache
 </a></li><li class='contents-entry'><a href='#custom-directives-'>Custom Directives ❌
 </a></li><li class='contents-entry'><a href='#as'><code>as:</code>
-</a></li><li class='contents-entry'><a href='#loads'><code>loads:</code>
+</a></li><li class='contents-entry'><a href='#loads-'><code>loads:</code> 🟡
 </a></li><li class='contents-entry'><a href='#prepare'><code>prepare:</code>
 </a></li><li class='contents-entry'><a href='#validates-'><code>validates:</code> 🟡
-</a></li><li class='contents-entry'><a href='#field-extensions'>Field Extensions
-</a></li><li class='contents-entry'><a href='#resolver-classes-including-mutations-and-subscriptions'>Resolver classes (including Mutations and Subscriptions)
+</a></li><li class='contents-entry'><a href='#field-extensions-'>Field Extensions 🟡
+</a></li><li class='contents-entry'><a href='#resolver-classes-including-mutations-and-subscriptions-'>Resolver classes (including Mutations and Subscriptions) 🟡
 </a></li><li class='contents-entry'><a href='#field-extras-including-lookahead'>Field <code>extras:</code>, including <code>lookahead</code>
 </a></li><li class='contents-entry'><a href='#raw_value-'><code>raw_value</code> 🟡
-</a></li><li class='contents-entry'><a href='#errors-and-rescue_from-'>Errors and <code>rescue_from</code> 🟡
+</a></li><li class='contents-entry'><a href='#errors-and-rescue_from'>Errors and <code>rescue_from</code>
 </a></li><li class='contents-entry'><a href='#connection-fields'>Connection fields
 </a></li><li class='contents-entry'><a href='#custom-introspection'>Custom Introspection
 </a></li><li class='contents-entry'><a href='#multiplex'>Multiplex
@@ -355,7 +356,7 @@
 
 <h3 id="dataloader">Dataloader</h3>
 
-<p>Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use <a href="/api-doc/2.5.25/GraphQL/Schema/Member/HasDataloader#dataload_all-instance_method" target="_blank" title="API docs for GraphQL::Schema::Member::HasDataloader#dataload_all"><code>Schema::Member::HasDataloader#dataload_all</code></a> instead of <code class="language-plaintext highlighter-rouge">.dataload</code>.</p>
+<p>Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use <a href="/api-doc/2.6.0/GraphQL/Schema/Member/HasDataloader#dataload_all-instance_method" target="_blank" title="API docs for GraphQL::Schema::Member::HasDataloader#dataload_all"><code>Schema::Member::HasDataloader#dataload_all</code></a> instead of <code class="language-plaintext highlighter-rouge">.dataload</code>.</p>
 
 <h3 id="tracing">Tracing</h3>
 
@@ -381,7 +382,7 @@
 
 <p>This is currently implemented with <code class="language-plaintext highlighter-rouge">current_path</code>. Another implementation is probably possible but not implemented yet. Please open an issue to discuss.</p>
 
-<h3 id="defer-and-stream-"><code class="language-plaintext highlighter-rouge">@defer</code> and <code class="language-plaintext highlighter-rouge">@stream</code> ❌</h3>
+<h3 id="defer-"><code class="language-plaintext highlighter-rouge">@defer</code> 🟡</h3>
 
 <p><code class="language-plaintext highlighter-rouge">@defer</code> is supported with an implementation difference that <em>probably</em> doesn’t affect your application: previously, <code class="language-plaintext highlighter-rouge">@defer</code> worked by pausing and resuming the <em>same <code class="language-plaintext highlighter-rouge">GraphQL::Query</code> instance</em>. However, with <code class="language-plaintext highlighter-rouge">Execution::Next</code>, <code class="language-plaintext highlighter-rouge">@defer</code> takes a different approach. Instead, when a <code class="language-plaintext highlighter-rouge">GraphQL::Query</code> encounters <code class="language-plaintext highlighter-rouge">@defer</code>, it notes the location in the document and stops executing that branch. Later, when you request the deferred result, that branch of the query is resumed using a new instance of <code class="language-plaintext highlighter-rouge">GraphQL::Query::Partial</code>.</p>
 
@@ -393,21 +394,29 @@
 
 <h5 id="graphql-batch-support">GraphQL-Batch support</h5>
 
-<p>When using <code class="language-plaintext highlighter-rouge">Execution::Next</code>, no custom code is required to support <code class="language-plaintext highlighter-rouge">graphql-batch</code>.</p>
+<p>When using <code class="language-plaintext highlighter-rouge">Execution::Next</code>, no custom code is required to support <code class="language-plaintext highlighter-rouge">graphql-batch</code> – support is built-in.</p>
 
-<h3 id="objectcache-">ObjectCache ❌</h3>
+<h3 id="stream"><code class="language-plaintext highlighter-rouge">@stream</code></h3>
 
-<p>Actually this probably works but I haven’t tested it.</p>
+<p><code class="language-plaintext highlighter-rouge">@stream</code> is supported.</p>
+
+<p>See the not above about how <code class="language-plaintext highlighter-rouge">@defer</code> no longer <em>resumes</em> the original, top-level query. The same thing applies to <code class="language-plaintext highlighter-rouge">@stream</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Pro::Stream</code> now lazily streams Enumerators. If you were using the (undocumented) <code class="language-plaintext highlighter-rouge">GraphQL::Pro::FutureStream</code>, you can switch to <code class="language-plaintext highlighter-rouge">GraphQL::Pro::Stream</code> <em>after</em> migrating to <code class="language-plaintext highlighter-rouge">Execution::Next</code>. (Once all your traffic uses the new execution module, you’ll get the same runtime behavior from <code class="language-plaintext highlighter-rouge">GraphQL::Pro::Stream</code>.)</p>
+
+<h3 id="objectcache">ObjectCache</h3>
+
+<p>Supported completely.</p>
 
 <h3 id="custom-directives-">Custom Directives ❌</h3>
 
-<p>Not supported yet. This will need some new kind of integration.</p>
+<p>There is some implementation in the code right now but it’s not stable. Please open an issue to discuss.</p>
 
 <h3 id="as"><code class="language-plaintext highlighter-rouge">as:</code></h3>
 
 <p><code class="language-plaintext highlighter-rouge">as:</code> is applied: arguments are passed into Ruby methods by their <code class="language-plaintext highlighter-rouge">as:</code> names instead of their GraphQL names.</p>
 
-<h3 id="loads"><code class="language-plaintext highlighter-rouge">loads:</code></h3>
+<h3 id="loads-"><code class="language-plaintext highlighter-rouge">loads:</code> 🟡</h3>
 
 <p><code class="language-plaintext highlighter-rouge">loads:</code> is handled as previously, <strong>except</strong> that custom <code class="language-plaintext highlighter-rouge">def load_...</code> methods are <em>not</em> called.</p>
 
@@ -419,20 +428,25 @@
 
 <p>Built-in validators are supported. Custom validators will always receive <code class="language-plaintext highlighter-rouge">nil</code> as the <code class="language-plaintext highlighter-rouge">object</code>. (<code class="language-plaintext highlighter-rouge">object</code> is no longer available; this API will probably change before this is fully released.)</p>
 
-<h3 id="field-extensions">Field Extensions</h3>
+<h3 id="field-extensions-">Field Extensions 🟡</h3>
 
-<p>Field extensions <em>are</em> called, but it uses new methods:</p>
+<p>Field extension methods are called with new arguments:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">def resolve_batching(objects:, arguments:, context:, &amp;block)</code> receives <code class="language-plaintext highlighter-rouge">objects:</code> instead of <code class="language-plaintext highlighter-rouge">object:</code> and should yield them to the given block to continue execution</li>
-  <li><code class="language-plaintext highlighter-rouge">def after_resolve_batching(objects:, arguments:, context:, values:, memo:)</code> receives <code class="language-plaintext highlighter-rouge">objects:, values:, ...</code> instead of <code class="language-plaintext highlighter-rouge">object:, value:, ...</code> and should return an Array of results (isntead of a single result value).</li>
+  <li><code class="language-plaintext highlighter-rouge">objects:</code> instead of <code class="language-plaintext highlighter-rouge">object:</code>, with an Array</li>
+  <li><code class="language-plaintext highlighter-rouge">values:</code> instead of <code class="language-plaintext highlighter-rouge">value:</code>, with an Array</li>
 </ul>
 
-<p>Because of their close integration with the runtime, <code class="language-plaintext highlighter-rouge">ConnectionExtension</code> and <code class="language-plaintext highlighter-rouge">ScopeExtension</code> don’t actually use <code class="language-plaintext highlighter-rouge">after_resolve_batching</code>. Instead, support is hard-coded inside the runtime. This might be a smell that field extensions aren’t worth supporting.</p>
+<p>You can support both types of calls in your methods by changing the signature to <code class="language-plaintext highlighter-rouge">object: nil, objects: nil</code> (and <code class="language-plaintext highlighter-rouge">value: nil, values: nil</code>), then checking which argument was passed.</p>
 
-<h3 id="resolver-classes-including-mutations-and-subscriptions">Resolver classes (including Mutations and Subscriptions)</h3>
+<h3 id="resolver-classes-including-mutations-and-subscriptions-">Resolver classes (including Mutations and Subscriptions) 🟡</h3>
 
-<p>Resolver classes are called.</p>
+<p>Resolver classes are called, but with slightly different semantics:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">#ready?</code> is still called, but after arguments are loaded. It’s now a useless method and will probably be deprecated.</li>
+  <li><code class="language-plaintext highlighter-rouge">def load_...</code> methods are not called; instead, arguments are passed to the top-level <code class="language-plaintext highlighter-rouge">Schema.object_from_id</code> hook.</li>
+</ul>
 
 <h3 id="field-extras-including-lookahead">Field <code class="language-plaintext highlighter-rouge">extras:</code>, including <code class="language-plaintext highlighter-rouge">lookahead</code></h3>
 
@@ -449,15 +463,9 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="errors-and-rescue_from-">Errors and <code class="language-plaintext highlighter-rouge">rescue_from</code> 🟡</h3>
+<h3 id="errors-and-rescue_from">Errors and <code class="language-plaintext highlighter-rouge">rescue_from</code></h3>
 
-<p>Support is mostly in place here but not thoroughly tested</p>
-
-<ul>
-  <li>rescue_from handlers</li>
-  <li>raising GraphQL::ExecutionError</li>
-  <li>Schema class error handling hooks</li>
-</ul>
+<p>Supported.</p>
 
 <h3 id="connection-fields">Connection fields</h3>
 
