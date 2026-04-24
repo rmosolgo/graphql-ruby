@@ -217,7 +217,9 @@ When using `Execution::Next`, no custom code is required to support `graphql-bat
 
 `@stream` is supported.
 
-As a bonus, `GraphQL::Pro::Stream` now lazily streams Enumerators. If you were using the (undocumented) `GraphQL::Pro::FutureStream`, you can switch to `GraphQL::Pro::Stream` _after_ migrating to `Execution::Next`. (Once all your traffic uses the new execution module, you'll get the same runtime behavior from `GraphQL::Pro::Stream`.)
+See the not above about how `@defer` no longer _resumes_ the original, top-level query. The same thing applies to `@stream`.
+
+`GraphQL::Pro::Stream` now lazily streams Enumerators. If you were using the (undocumented) `GraphQL::Pro::FutureStream`, you can switch to `GraphQL::Pro::Stream` _after_ migrating to `Execution::Next`. (Once all your traffic uses the new execution module, you'll get the same runtime behavior from `GraphQL::Pro::Stream`.)
 
 ### ObjectCache
 
