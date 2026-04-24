@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.5.25
+
+### Bug fixes
+
+- Field extensions: correctly return `false` through for fields with extensions that don't define `after_resolve` #5610
+
 # 2.5.24
 
 ### New features
