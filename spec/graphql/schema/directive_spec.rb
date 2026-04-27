@@ -179,6 +179,19 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       end
     end
 
+    class ValidationTest < GraphQL::Schema::Directive
+      locations(FIELD)
+      argument :int, Int, validates: { numericality: { less_than: 10 } }
+
+      def self.include?(*_args)
+        true
+      end
+
+      def self.resolve_field(*_args)
+        nil
+      end
+    end
+
     class Thing < GraphQL::Schema::Object
       field :name, String, null: false, hash_key: :name
     end
@@ -251,6 +264,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     class Schema < GraphQL::Schema
       query(Query)
       directive(CountFields)
+      directive(ValidationTest)
       lazy_resolve(Proc, :call)
       use GraphQL::Dataloader
       use GraphQL::Execution::Next
@@ -362,6 +376,19 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       "
       res = exec_query(query_str, context: { backtrace: true })
       assert_equal 2, res["data"]["lazyThings"].size
+    end
+
+    it "handles validation errors in .include?" do
+      skip("Custom `.include?` is not supported in Execution::Next yet") if TESTING_EXEC_NEXT
+      res = exec_query("{ __typename @validationTest(int: 12) }")
+      expected_result = {
+        "errors" => [{"message" => "int must be less than 10", "locations" => [{"line" => 1, "column" => 14}], "path" => [ "__typename" ]}],
+        "data" => {}
+      }
+      assert_equal expected_result, res.to_h
+
+      res2 = exec_query("{ __typename @validationTest(int: 8) }")
+      assert_equal({ "data" => { "__typename" => "Query" }}, res2.to_h)
     end
   end
 

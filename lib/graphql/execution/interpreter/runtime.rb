@@ -198,7 +198,7 @@ module GraphQL
 
         def each_gathered_selections(response_hash)
           ordered_result_keys = []
-          gathered_selections = gather_selections(response_hash.graphql_application_value, response_hash.graphql_result_type, response_hash.graphql_selections, nil, {}, ordered_result_keys)
+          gathered_selections = gather_selections(response_hash, response_hash.graphql_application_value, response_hash.graphql_result_type, response_hash.graphql_selections, nil, {}, ordered_result_keys)
           ordered_result_keys.uniq!
           if gathered_selections.is_a?(Array)
             gathered_selections.each do |item|
@@ -209,15 +209,13 @@ module GraphQL
           end
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_to_run, selections_by_name, ordered_result_keys)
+        def gather_selections(graphql_response, owner_object, owner_type, selections, selections_to_run, selections_by_name, ordered_result_keys)
           selections.each do |node|
-            # Skip gathering this if the directive says so
-            if !directives_include?(node, owner_object, owner_type)
-              next
-            end
-
             if node.is_a?(GraphQL::Language::Nodes::Field)
               response_key = node.alias || node.name
+              if !directives_include?(node, owner_object, owner_type, graphql_response, response_key)
+                next
+              end
               ordered_result_keys << response_key
               selections = selections_by_name[response_key]
               # if there was already a selection of this field,
@@ -234,6 +232,9 @@ module GraphQL
                 selections_by_name[response_key] = node
               end
             else
+              if !directives_include?(node, owner_object, owner_type, graphql_response, nil)
+                next
+              end
               # This is an InlineFragment or a FragmentSpread
               if !@runtime_directive_names.empty? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = {}
@@ -255,14 +256,14 @@ module GraphQL
                   type_defn = query.types.type(node.type.name)
 
                   if query.types.possible_types(type_defn).include?(owner_type)
-                    result = gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
+                    result = gather_selections(graphql_response, owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
                     if !result.equal?(next_selections)
                       selections_to_run = result
                     end
                   end
                 else
                   # it's an untyped fragment, definitely continue
-                  result = gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
+                  result = gather_selections(graphql_response, owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
                   if !result.equal?(next_selections)
                     selections_to_run = result
                   end
@@ -271,7 +272,7 @@ module GraphQL
                 fragment_def = query.fragments[node.name]
                 type_defn = query.types.type(fragment_def.type.name)
                 if query.types.possible_types(type_defn).include?(owner_type)
-                  result = gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections, ordered_result_keys)
+                  result = gather_selections(graphql_response, owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections, ordered_result_keys)
                   if !result.equal?(next_selections)
                     selections_to_run = result
                   end
@@ -579,7 +580,7 @@ module GraphQL
                 value.path ||= current_path
                 value.ast_node ||= ast_node
                 context.errors << value
-                if selection_result
+                if selection_result && result_name
                   set_result(selection_result, result_name, nil, false, is_non_null)
                 end
               end
@@ -856,11 +857,31 @@ module GraphQL
         end
 
         # Check {Schema::Directive.include?} for each directive that's present
-        def directives_include?(node, graphql_object, parent_type)
+        def directives_include?(node, graphql_object, parent_type, selection_result, extra_path_part)
           node.directives.each do |dir_node|
             dir_defn = @schema_directives.fetch(dir_node.name)
-            args = arguments(graphql_object, dir_defn, dir_node)
-            if !dir_defn.include?(graphql_object, args, context)
+            raw_dir_args = arguments(nil, dir_defn, dir_node)
+            if !raw_dir_args.is_a?(GraphQL::ExecutionError)
+              begin
+                dir_defn.validate!(raw_dir_args, context)
+              rescue GraphQL::ExecutionError => err
+                raw_dir_args = err
+              end
+            end
+
+            if extra_path_part && raw_dir_args.is_a?(GraphQL::ExecutionError)
+              raw_dir_args.path = current_path + [extra_path_part]
+            end
+
+            dir_args = continue_value(
+              raw_dir_args, # value
+              nil, # field
+              false, # is_non_null
+              dir_node, # ast_node
+              nil, # result_name
+              selection_result
+            )
+            if dir_args == HALT || !dir_defn.include?(graphql_object, dir_args, context)
               return false
             end
           end
