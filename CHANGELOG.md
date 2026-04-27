@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.3.23 (27 Apr 2026)
+
+### Bug fixes
+
+- Ruby Lexer: increment token count when encountering a comment
+
 # 2.3.22 (13 Mar 2025)
 
 ### Bug fixes
