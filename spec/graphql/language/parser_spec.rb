@@ -235,6 +235,19 @@ createRecord(data: {
     assert_equal expected_msg, err.message
   end
 
+  it "shows the right character in error messages" do
+    err = assert_raises(GraphQL::ParseError) {
+      GraphQL.parse("query # comment\n ~ { a b }")
+    }
+    expected_msg = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"~\"), expecting LCURLY at [2, 2]"
+    else
+      "Expected NAME, actual: UNKNOWN_CHAR (\"~\") at [2, 2]"
+    end
+
+    assert_equal expected_msg, err.message
+  end
+
   it "can reject name start at the end of numbers" do
     prev_reject_numers_followed_by_names = GraphQL.reject_numbers_followed_by_names
     GraphQL.reject_numbers_followed_by_names = false
