@@ -211,13 +211,11 @@ module GraphQL
 
         def gather_selections(graphql_response, owner_object, owner_type, selections, selections_to_run, selections_by_name, ordered_result_keys)
           selections.each do |node|
-            # Skip gathering this if the directive says so
-            if !directives_include?(node, owner_object, owner_type, graphql_response)
-              next
-            end
-
             if node.is_a?(GraphQL::Language::Nodes::Field)
               response_key = node.alias || node.name
+              if !directives_include?(node, owner_object, owner_type, graphql_response, response_key)
+                next
+              end
               ordered_result_keys << response_key
               selections = selections_by_name[response_key]
               # if there was already a selection of this field,
@@ -234,6 +232,9 @@ module GraphQL
                 selections_by_name[response_key] = node
               end
             else
+              if !directives_include?(node, owner_object, owner_type, graphql_response, nil)
+                next
+              end
               # This is an InlineFragment or a FragmentSpread
               if !@runtime_directive_names.empty? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = {}
@@ -856,7 +857,7 @@ module GraphQL
         end
 
         # Check {Schema::Directive.include?} for each directive that's present
-        def directives_include?(node, graphql_object, parent_type, selection_result)
+        def directives_include?(node, graphql_object, parent_type, selection_result, extra_path_part)
           node.directives.each do |dir_node|
             dir_defn = @schema_directives.fetch(dir_node.name)
             raw_dir_args = arguments(nil, dir_defn, dir_node)
@@ -867,6 +868,11 @@ module GraphQL
                 raw_dir_args = err
               end
             end
+
+            if extra_path_part && raw_dir_args.is_a?(GraphQL::ExecutionError)
+              raw_dir_args.path = current_path + [extra_path_part]
+            end
+
             dir_args = continue_value(
               raw_dir_args, # value
               nil, # field
