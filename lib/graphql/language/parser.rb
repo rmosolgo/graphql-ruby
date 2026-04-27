@@ -806,7 +806,7 @@ module GraphQL
 
       def expect_token(expected_token_name)
         unless @token_name == expected_token_name
-          raise_parse_error("Expected #{expected_token_name}, actual: #{token_name || "(none)"} (#{debug_token_value.inspect})")
+          raise_parse_error("Expected #{expected_token_name}, #{@token_name == false ? "not end of file" : "actual: #{@token_name} (#{debug_token_value.inspect})"}")
         end
         advance_token
       end
