@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.6.1
+
+### Bug fixes
+
+- Lexer: in the Ruby lexer, count comments against a schema's `max_token_count` configuration
+
 # 2.6.0
 
 ### Breaking changes
