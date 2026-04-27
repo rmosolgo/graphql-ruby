@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.4.18 (27 Apr 2026)
+
+### Bug fixes
+
+- Ruby Lexer: count comments towards configured max token count
+
 # 2.4.16 (1 Apr 2025)
 
 ### New features
