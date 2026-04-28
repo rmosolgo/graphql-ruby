@@ -49,7 +49,9 @@ When all tests pass on `.execute_next`, you're ready to try it out in production
 
 ## Migration and Clean-Up Script
 
-`graphql_migrate_execution` is a command-line development tool that can automate many common GraphQL-Ruby field resolver patterns. Check out its docs and try out: https://rmosolgo.github.io/graphql_migrate_execution/
+`graphql_migrate_execution` is a command-line development tool that can automate many common GraphQL-Ruby field resolver patterns.
+
+Check out its docs and try out: <https://rmosolgo.github.io/graphql_migrate_execution/>
 
 ## Production Considerations
 
@@ -142,7 +144,7 @@ render json: result.to_h
 
 ## Compatibility Notes
 
-Performance improvements in batching execution come at the cost of removing support for many "nice-to-have" features in GraphQL-Ruby by default. Those features are addressed here.
+`Execution::Next`'s new structure means that some GraphQL-Ruby features behave differently (or aren't supported at all, at least not yet). They are discussed one-by-one below.
 
 ### Implicit Field Resolution
 
