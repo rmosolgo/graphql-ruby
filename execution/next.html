@@ -137,17 +137,6 @@
   </li>
 </ul>
 
-  <div class="experimental-header">
-    <p>
-      <strong>⚠ Experimental ⚠</strong>
-    </p>
-    <p>
-      This feature may get big changes in future releases.
-      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> or
-      subscribe to the <a href="https://buttondown.email/graphql-ruby">newsletter</a> for updates.
-    </p>
-  </div>
-
 
 
 <h1 class="guide-header">New Execution Module</h1>
@@ -172,9 +161,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>GraphQL-Ruby has a new execution engine under development, <a href="/api-doc/2.6.1/GraphQL/Execution/Next" target="_blank" title="API docs for GraphQL::Execution::Next"><code>GraphQL::Execution::Next</code></a>. It’s not yet recommended for production use, but you can try it in development as described below.</p>
-
-<p>It’s much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.</p>
+  <p>GraphQL-Ruby has a new execution engine, <a href="/api-doc/2.6.1/GraphQL/Execution/Next" target="_blank" title="API docs for GraphQL::Execution::Next"><code>GraphQL::Execution::Next</code></a>. It’s much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.</p>
 
 <p>This feature is in heavy development, so if you give it a try and run into any problems, please open an issue on GitHub!</p>
 
@@ -215,7 +202,7 @@
 
 <h3 id="method-calls-default-method">Method calls (default, <code class="language-plaintext highlighter-rouge">method:</code>)</h3>
 
-<p>Fields that call <code class="language-plaintext highlighter-rouge">object.#{field_name}</code>. This is the default, and the method name can be overridden with <code class="language-plaintext highlighter-rouge">method: ...</code>:</p>
+<p>These fields call <code class="language-plaintext highlighter-rouge">object.#{field_name}</code>. This is the default, and the method name can be overridden with <code class="language-plaintext highlighter-rouge">method: ...</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span> <span class="c1"># calls object.title</span>
 <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">method: :get_title_somehow</span> <span class="c1"># calls object.get_title_somehow</span>
@@ -223,25 +210,43 @@
 
 <h3 id="hash-keys-hash_key">Hash keys (<code class="language-plaintext highlighter-rouge">hash_key:</code>)</h3>
 
-<p>Fields that call <code class="language-plaintext highlighter-rouge">object[hash_key]</code>, configured with <code class="language-plaintext highlighter-rouge">hash_key: ...</code>.</p>
+<p>These fields call <code class="language-plaintext highlighter-rouge">object[hash_key]</code>, configured with <code class="language-plaintext highlighter-rouge">hash_key: ...</code>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">hash_key: :title</span> <span class="c1"># calls object[:title]</span>
 <span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">hash_key: </span><span class="s2">"title"</span> <span class="c1"># calls object["title"]</span>
 </code></pre></div></div>
 
-<p>(Note: new execution doesn’t “fall back” to hash key lookups, and it doesn’t try strings when Symbols are given. The existing runtime engine does that…)</p>
+<p><strong>Note:</strong> new execution doesn’t “fall back” to hash key lookups, and it doesn’t try strings when Symbols are given. The existing runtime engine does that, but it has been excluded for performance reasons. To get the old resolution behavior, you can code it like:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">resolve_each: </span><span class="kp">true</span>
+
+<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">title</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+  <span class="c1"># For example, try a symbol key first, then a string:</span>
+  <span class="n">object</span><span class="p">[</span><span class="ss">:title</span><span class="p">]</span> <span class="o">||</span> <span class="n">object</span><span class="p">[</span><span class="s2">"title"</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 <h3 id="per-object-resolve_each">Per-object (<code class="language-plaintext highlighter-rouge">resolve_each:</code>)</h3>
 
-<p>These fields use a <em>class method</em> to produce a result for each parent object, configured with <code class="language-plaintext highlighter-rouge">resolve_each:</code>.</p>
+<p>These fields use a <em>class method</em> to produce a result for each object, configured with <code class="language-plaintext highlighter-rouge">resolve_each:</code>.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">resolve_each: :title</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">resolve_each: </span><span class="kp">true</span> <span class="k">do</span> <span class="c1"># calls `self.title(...)` below</span>
   <span class="n">argument</span> <span class="ss">:language</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Language</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default_value: </span><span class="s2">"EN"</span>
 <span class="k">end</span>
 
 <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">title</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">language</span><span class="p">:)</span>
   <span class="c1"># Assuming this makes no database lookups or other external service calls:</span>
   <span class="n">object</span><span class="p">.</span><span class="nf">localization</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="ss">:title</span><span class="p">,</span> <span class="n">language</span><span class="p">:)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The default method is the same as the field name symbol. You can also provide a custom method:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Avoid a conflict with Ruby's built-in `Class#name`:</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">resolve_each: :get_name</span>
+
+<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">get_name</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+  <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -274,11 +279,11 @@
 
 <p>These fields use a <em>class method</em> to map parent objects to field results, configured with <code class="language-plaintext highlighter-rouge">resolve_batch:</code>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">resolve_batch: :titles</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">resolve_batch: </span><span class="kp">true</span> <span class="k">do</span> <span class="c1"># calls self.title below</span>
   <span class="n">argument</span> <span class="ss">:language</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Language</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default_value: </span><span class="s2">"EN"</span>
 <span class="k">end</span>
 
-<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">titles</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">language</span><span class="p">:)</span>
+<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">title</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">language</span><span class="p">:)</span>
   <span class="c1"># This is equivalent to plain `field :title, ...`, but for example:</span>
   <span class="n">objects</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">obj</span><span class="o">|</span> <span class="n">obj</span><span class="p">.</span><span class="nf">title</span><span class="p">(</span><span class="n">language</span><span class="p">:)</span> <span class="p">}</span>
 <span class="k">end</span>
@@ -293,6 +298,15 @@
     <span class="n">authors</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="nf">dataload_all_records</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="ss">:author</span><span class="p">)</span>
     <span class="n">context</span><span class="p">.</span><span class="nf">dataload_all</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">AuthorRating</span><span class="p">,</span> <span class="n">authors</span><span class="p">)</span>
   <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>By default, it calls a class method matching the field name. You can customize this configuration, too:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:author_rating</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">resolve_batch: :calculate_rating</span> <span class="c1"># calls `self.calculate_rating(objects, context)`</span>
+
+<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">calculate_rating</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+  <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -357,7 +371,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Under the hood, GraphQL-Ruby calls <code class="language-plaintext highlighter-rouge">objects.map { ... }</code>, calling this instance method.</p>
+<p>Under the hood, GraphQL-Ruby calls <code class="language-plaintext highlighter-rouge">objects.map { ... }</code>, calling this instance method. It adds significant overhead because GraphQL-Ruby initializes the object type class.</p>
 
 <h3 id="true-shorthand"><code class="language-plaintext highlighter-rouge">true</code> shorthand</h3>
 
