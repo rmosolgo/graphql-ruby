@@ -174,7 +174,7 @@
 <p>GraphQL-Ruby brings these breadth-first design principles to the open-source community with several novel techniques for implementing GraphQL:</p>
 
 <ul>
-  <li>Fields are resolved breadth-first using implicitly batched resolvers (no DataLoader). These run longer and hotter on application logic with no execution overhead.</li>
+  <li>Fields are resolved breadth-first using implicitly batched resolvers. These run longer and hotter on application logic with no execution overhead.</li>
   <li>Batched resolvers may bind entire load sets to a single lazy promise to dramatically reduce promise bloat.</li>
   <li>Error handling is optimized into a second pass that only runs when errors actually occur.</li>
   <li>Stack profiling becomes much more organized with a linear flow and aggregate field spans, rather than fields getting split up across subtree repetitions.</li>
@@ -183,7 +183,7 @@
 
 <p>Breadth-first patterns can produce dramatic results in responses with a high degree of repetition: it’s not uncommon to see breadth batching run <strong>15x</strong> faster and use <strong>75% less</strong> memory than classic GraphQL Ruby execution. However – gains are relative. A flat tree with no lists will see little difference. A list of 2 resolving one field each will see a small gain, while a list of 100 resolving ten fields each will likely see dramatic results.</p>
 
-<p>The downside is that many of GraphQL-Ruby’s “bonus features” – beyond the behavior described in the GraphQL Specification – add non-trivial latency when used. So, the task ahead is to “lift the ceiling” of performance in GraphQL-Ruby while retaining as much compatibility as possible and supporting a gradual transition to this new runtime engine.</p>
+<p>The downside is that many of GraphQL-Ruby’s “bonus features” – those that go beyond the behavior described in the GraphQL Specification – add non-trivial overhead when used. So, the task ahead is to “lift the ceiling” of performance in GraphQL-Ruby while retaining as much compatibility as possible and supporting a gradual transition to this new runtime engine.</p>
 
 <h2 id="enabling-executionnext">Enabling Execution::Next</h2>
 

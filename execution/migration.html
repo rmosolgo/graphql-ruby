@@ -218,7 +218,9 @@
 
 <h2 id="migration-and-clean-up-script">Migration and Clean-Up Script</h2>
 
-<p><code class="language-plaintext highlighter-rouge">graphql_migrate_execution</code> is a command-line development tool that can automate many common GraphQL-Ruby field resolver patterns. Check out its docs and try out: https://rmosolgo.github.io/graphql_migrate_execution/</p>
+<p><code class="language-plaintext highlighter-rouge">graphql_migrate_execution</code> is a command-line development tool that can automate many common GraphQL-Ruby field resolver patterns.</p>
+
+<p>Check out its docs and try out: <a href="https://rmosolgo.github.io/graphql_migrate_execution/">https://rmosolgo.github.io/graphql_migrate_execution/</a></p>
 
 <h2 id="production-considerations">Production Considerations</h2>
 
@@ -314,7 +316,7 @@
 
 <h2 id="compatibility-notes">Compatibility Notes</h2>
 
-<p>Performance improvements in batching execution come at the cost of removing support for many “nice-to-have” features in GraphQL-Ruby by default. Those features are addressed here.</p>
+<p><code class="language-plaintext highlighter-rouge">Execution::Next</code>’s new structure means that some GraphQL-Ruby features behave differently (or aren’t supported at all, at least not yet). They are discussed one-by-one below.</p>
 
 <h3 id="implicit-field-resolution">Implicit Field Resolution</h3>
 
