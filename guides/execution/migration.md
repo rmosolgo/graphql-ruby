@@ -2,7 +2,6 @@
 layout: guide
 doc_stub: false
 search: true
-experimental: true
 section: Execution
 title: Migrating to Execution::Next
 desc: Guidelines for migrating to the new execution engine

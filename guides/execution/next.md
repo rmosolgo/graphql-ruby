@@ -2,16 +2,13 @@
 layout: guide
 doc_stub: false
 search: true
-experimental: true
 section: Execution
 title: New Execution Module
 desc: Background on GraphQL-Ruby's new execution approach
 index: 1
 ---
 
-GraphQL-Ruby has a new execution engine under development, {{ "GraphQL::Execution::Next" | api_doc }}. It's not yet recommended for production use, but you can try it in development as described below.
-
-It's much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.
+GraphQL-Ruby has a new execution engine, {{ "GraphQL::Execution::Next" | api_doc }}. It's much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.
 
 This feature is in heavy development, so if you give it a try and run into any problems, please open an issue on GitHub!
 
@@ -48,7 +45,7 @@ The new runtime engine supports several field resolution configurations out of t
 
 ### Method calls (default, `method:`)
 
-Fields that call `object.#{field_name}`. This is the default, and the method name can be overridden with `method: ...`:
+These fields call `object.#{field_name}`. This is the default, and the method name can be overridden with `method: ...`:
 
 ```ruby
 field :title, String # calls object.title
@@ -57,21 +54,30 @@ field :title, String, method: :get_title_somehow # calls object.get_title_someho
 
 ### Hash keys (`hash_key:`)
 
-Fields that call `object[hash_key]`, configured with `hash_key: ...`.
+These fields call `object[hash_key]`, configured with `hash_key: ...`.
 
 ```ruby
 field :title, String, hash_key: :title # calls object[:title]
 field :title, String, hash_key: "title" # calls object["title"]
 ```
 
-(Note: new execution doesn't "fall back" to hash key lookups, and it doesn't try strings when Symbols are given. The existing runtime engine does that...)
+**Note:** new execution doesn't "fall back" to hash key lookups, and it doesn't try strings when Symbols are given. The existing runtime engine does that, but it has been excluded for performance reasons. To get the old resolution behavior, you can code it like:
+
+```ruby
+field :title, String, resolve_each: true
+
+def self.title(object, context)
+  # For example, try a symbol key first, then a string:
+  object[:title] || object["title"]
+end
+```
 
 ### Per-object (`resolve_each:`)
 
-These fields use a _class method_ to produce a result for each parent object, configured with `resolve_each:`.
+These fields use a _class method_ to produce a result for each object, configured with `resolve_each:`.
 
 ```ruby
-field :title, String, resolve_each: :title do
+field :title, String, resolve_each: true do # calls `self.title(...)` below
   argument :language, Types::Language, required: false, default_value: "EN"
 end
 
@@ -81,7 +87,20 @@ def self.title(object, context, language:)
 end
 ```
 
+The default method is the same as the field name symbol. You can also provide a custom method:
+
+```ruby
+# Avoid a conflict with Ruby's built-in `Class#name`:
+field :name, String, resolve_each: :get_name
+
+def self.get_name(object, context)
+  # ...
+end
+```
+
+
 Under the hood, GraphQL-Ruby calls `objects.map { ... }`, calling this class method.
+
 
 ‼️ __Don't use this__ if your logic calls external services or databases (including with Dataloader). If you do, your I/O will be sequential instead of batched. Use `resolve_batch:` or `resolve_static:` instead, see below.
 
@@ -112,11 +131,11 @@ This is a high-performance option for when you need to do I/O to generate result
 These fields use a _class method_ to map parent objects to field results, configured with `resolve_batch:`:
 
 ```ruby
-field :title, String, resolve_batch: :titles do
+field :title, String, resolve_batch: true do # calls self.title below
   argument :language, Types::Language, required: false, default_value: "EN"
 end
 
-def self.titles(objects, context, language:)
+def self.title(objects, context, language:)
   # This is equivalent to plain `field :title, ...`, but for example:
   objects.map { |obj| obj.title(language:) }
 end
@@ -132,6 +151,16 @@ class Types::Comment < BaseObject
     authors = context.dataload_all_records(objects, :author)
     context.dataload_all(Sources::AuthorRating, authors)
   end
+end
+```
+
+By default, it calls a class method matching the field name. You can customize this configuration, too:
+
+```ruby
+field :author_rating, Integer, resolve_batch: :calculate_rating # calls `self.calculate_rating(objects, context)`
+
+def self.calculate_rating(objects, context)
+  # ...
 end
 ```
 
@@ -200,7 +229,7 @@ def title(language:)
 end
 ```
 
-Under the hood, GraphQL-Ruby calls `objects.map { ... }`, calling this instance method.
+Under the hood, GraphQL-Ruby calls `objects.map { ... }`, calling this instance method. It adds significant overhead because GraphQL-Ruby initializes the object type class.
 
 
 ### `true` shorthand
@@ -214,7 +243,6 @@ def self.posts_count(context)
   Post.all.count
 end
 ```
-
 
 ## Migration
 
