@@ -106,7 +106,7 @@ module GraphQL
       def build_arguments
         query = @selections_step.query
         field_name = @ast_node.name
-        @field_definition = query.types.field(@parent_type, field_name) || raise("Invariant: no field found for #{@parent_type.to_type_signature}.#{ast_node.name}")
+        @field_definition = query.types.field(@parent_type, field_name) || raise(GraphQL::Error, "No field definition found for #{@parent_type.to_type_signature}.#{ast_node.name} (at #{@ast_node.position})")
         arguments = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
         @arguments ||= arguments # may have already been set to an error
 

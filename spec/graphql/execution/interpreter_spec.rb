@@ -342,11 +342,11 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
-  def exec_query(query_str, context: nil, variables: nil)
+  def exec_query(...)
     if TESTING_EXEC_NEXT
-      InterpreterTest::Schema.execute_next(query_str, context: context, variables: variables)
+      InterpreterTest::Schema.execute_next(...)
     else
-      InterpreterTest::Schema.execute(query_str, context: context, variables: variables)
+      InterpreterTest::Schema.execute(...)
     end
   end
 
@@ -482,6 +482,15 @@ describe GraphQL::Execution::Interpreter do
       # These are both `field_counter_2`, but one is lazy
       assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo(0)', res["data"]["fieldCounter"]["fieldCounter"]["runtimeInfo"]
       assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "lazyRuntimeInfo"] -> FieldCounter.lazyRuntimeInfo(1)', res["data"]["fieldCounter"]["fieldCounter"]["lazyRuntimeInfo"]
+    end
+  end
+
+  describe "when a field is missing and validate: false" do
+    it "raises a useful error" do
+      err = assert_raises GraphQL::Error do
+        exec_query("{ nonsense }", validate: false)
+      end
+      assert_equal "No field definition found for Query.nonsense (at [1, 3])", err.message
     end
   end
 
