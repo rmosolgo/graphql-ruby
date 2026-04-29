@@ -40,13 +40,13 @@ module GraphQL
           end
         end
 
-        multiplex_results = multiplex_analyzers.map(&:result)
-        multiplex_errors = analysis_errors(multiplex_results)
 
+        multiplex_analyzers.map!(&:result)
+        multiplex_errors = analysis_errors(EmptyObjects::EMPTY_ARRAY, multiplex_analyzers)
         multiplex.queries.each_with_index do |query, idx|
-          query.analysis_errors = multiplex_errors + analysis_errors(query_results[idx])
+          query.analysis_errors = analysis_errors(multiplex_errors, query_results[idx])
         end
-        multiplex_results
+        multiplex_analyzers
       end
     end
 
@@ -55,13 +55,11 @@ module GraphQL
     # @return [Array<Any>] Results from those analyzers
     def analyze_query(query, analyzers, multiplex_analyzers: [])
       query.current_trace.analyze_query(query: query) do
-        query_analyzers = analyzers
-          .map { |analyzer| analyzer.new(query) }
-          .tap { _1.select!(&:analyze?) }
-
+        query_analyzers = analyzers.map { |analyzer| analyzer.new(query) }
+        query_analyzers.select!(&:analyze?)
         analyzers_to_run = query_analyzers + multiplex_analyzers
-        if !analyzers_to_run.empty?
 
+        if !analyzers_to_run.empty?
           analyzers_to_run.select!(&:visit?)
           if !analyzers_to_run.empty?
             visitor = GraphQL::Analysis::Visitor.new(
@@ -79,18 +77,27 @@ module GraphQL
 
           query_analyzers.map(&:result)
         else
-          []
+          EmptyObjects::EMPTY_ARRAY
         end
       end
     rescue TimeoutError => err
       [err]
     rescue GraphQL::UnauthorizedError, GraphQL::ExecutionError
       # This error was raised during analysis and will be returned the client before execution
-      []
+      EmptyObjects::EMPTY_ARRAY
     end
 
-    def analysis_errors(results)
-      results.flatten.tap { _1.select! { |r| r.is_a?(GraphQL::AnalysisError) } }
+    def analysis_errors(parent_errors, results)
+      if !results.empty?
+        results = results.flatten
+        results.select! { |r| r.is_a?(GraphQL::AnalysisError) }
+      end
+
+      if parent_errors.empty?
+        results
+      else
+        parent_errors + results
+      end
     end
   end
 end

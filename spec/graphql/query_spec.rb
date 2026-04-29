@@ -680,7 +680,7 @@ describe GraphQL::Query do
       if USING_C_PARSER
         expected_err = "syntax error, unexpected end of file at [1, 2]"
       else
-        expected_err = "Expected NAME, actual: (none) (\" \") at [1, 2]"
+        expected_err = "Expected NAME, not end of file at [1, 2]"
       end
       expected_locations = [{"line" => 1, "column" => 2}]
       assert_equal expected_err, res["errors"][0]["message"]
@@ -691,7 +691,7 @@ describe GraphQL::Query do
       if USING_C_PARSER
         expected_err = "syntax error, unexpected end of file at [1, 1]"
       else
-        expected_err = "Expected NAME, actual: (none) (\"\") at [1, 1]"
+        expected_err = "Expected NAME, not end of file at [1, 1]"
       end
       expected_locations = [{"line" => 1, "column" => 1}]
       assert_equal expected_err, res["errors"][0]["message"]

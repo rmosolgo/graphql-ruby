@@ -239,6 +239,41 @@ module GraphQL
       query.context.namespace(:subscriptions)[:subscription_broadcastable]
     end
 
+    # Called during execution when a new `subscription ...` operation is received
+    # @param query [GraphQL::Query]
+    # @return [void]
+    def initialize_subscriptions(query)
+      subs_namespace = query.context.namespace(:subscriptions)
+      subs_namespace[:events] = []
+      subs_namespace[:subscriptions] = {}
+      nil
+    end
+
+    # Called during execution when a subscription operation has finished
+    # @param query [GraphQL::Query]
+    # @return [void]
+    def finish_subscriptions(query)
+      if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
+        write_subscription(query, events)
+      end
+      nil
+    end
+
+    def finalizer
+      Finalizer.new(self)
+    end
+
+    class Finalizer
+      include Execution::Finalizer
+      def initialize(subscriptions)
+        @subscriptions = subscriptions
+      end
+
+      def finalize_graphql_result(query, result_data, result_key)
+        @subscriptions.finish_subscriptions(query)
+      end
+    end
+
     private
 
     # Recursively normalize `args` as belonging to `arg_owner`:

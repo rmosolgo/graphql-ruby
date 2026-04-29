@@ -2,7 +2,6 @@
 layout: guide
 doc_stub: false
 search: true
-experimental: true
 section: Execution
 title: Migrating to Execution::Next
 desc: Guidelines for migrating to the new execution engine
@@ -48,9 +47,11 @@ Adopting a feature flag system (described below) can also make this easier.
 
 When all tests pass on `.execute_next`, you're ready to try it out in production.
 
-## COMING SOON: Migration and Clean-Up Script
+## Migration and Clean-Up Script
 
-Migrating field implementations can be automated in many cases. A script to analyze and execute these cases is in the works: [Pull Request](https://github.com/rmosolgo/graphql-ruby/pull/5531). This script will also be able to clean up unused instance methods when the migration is complete.
+`graphql_migrate_execution` is a command-line development tool that can automate many common GraphQL-Ruby field resolver patterns.
+
+Check out its docs and try out: <https://rmosolgo.github.io/graphql_migrate_execution/>
 
 ## Production Considerations
 
@@ -143,7 +144,7 @@ render json: result.to_h
 
 ## Compatibility Notes
 
-Performance improvements in batching execution come at the cost of removing support for many "nice-to-have" features in GraphQL-Ruby by default. Those features are addressed here.
+`Execution::Next`'s new structure means that some GraphQL-Ruby features behave differently (or aren't supported at all, at least not yet). They are discussed one-by-one below.
 
 ### Implicit Field Resolution
 
@@ -159,7 +160,7 @@ Previously, GraphQL-Ruby would check `type_object.respond_to?(:title)`, `object.
 
 Now, GraphQL-Ruby simply calls `object.title` and allows the `NoMethodError` to bubble up if one is raised.
 
-### Query Analyzers, including complexity 🌕
+### Query Analyzers, including complexity 🟡
 
 Support is identical; this runs before execution using the exact same code.
 
@@ -195,23 +196,45 @@ This is not supported because the new runtime doesn't actually produce `current_
 
 It is theoretically possible to support this but it will be a ton of work. If you use this for core runtime functions, please share your use case in a GitHub issue and we can investigate future options.
 
-### `@defer` and `@stream` ❌
+### Scoped context ❌
 
-This depends on `current_path` so isn't possible yet.
+This is currently implemented with `current_path`. Another implementation is probably possible but not implemented yet. Please open an issue to discuss.
 
-### ObjectCache ❌
+### `@defer` 🟡
 
-Actually this probably works but I haven't tested it.
+`@defer` is supported with an implementation difference that _probably_ doesn't affect your application: previously, `@defer` worked by pausing and resuming the _same `GraphQL::Query` instance_. However, with `Execution::Next`, `@defer` takes a different approach. Instead, when a `GraphQL::Query` encounters `@defer`, it notes the location in the document and stops executing that branch. Later, when you request the deferred result, that branch of the query is resumed using a new instance of `GraphQL::Query::Partial`.
+
+This might matter if you're modifying `context` at runtime because those new instances _also_ have fresh `Query::Context` instances. The original query context _will_ get copied into the `@defer` branches using `Query::Context.new(**original_query.context.to_h)`, so any custom values will be available. But if you _assign new keys_ after the context is copied, those keys won't appear when running later `@defer`ed branches.
+
+To handle this, you can refactor how you accumulate data during execution. Instead of `||=`'ing into `context[...]` during execution, assign a new accumulator object _before_ starting the query, then call methods on that object to make any necessary state changes. That new object _will_ be copied into `@defer` partials, and since the object is shared between the different branches, any necessary state changes will still be "seen" everywhere.
+
+If this gives you trouble, please feel free to email me or open an issue on GitHub to discuss a migration strategy.
+
+##### GraphQL-Batch support
+
+When using `Execution::Next`, no custom code is required to support `graphql-batch` -- support is built-in.
+
+### `@stream`
+
+`@stream` is supported.
+
+See the not above about how `@defer` no longer _resumes_ the original, top-level query. The same thing applies to `@stream`.
+
+`GraphQL::Pro::Stream` now lazily streams Enumerators. If you were using the (undocumented) `GraphQL::Pro::FutureStream`, you can switch to `GraphQL::Pro::Stream` _after_ migrating to `Execution::Next`. (Once all your traffic uses the new execution module, you'll get the same runtime behavior from `GraphQL::Pro::Stream`.)
+
+### ObjectCache
+
+Supported completely.
 
 ### Custom Directives ❌
 
-Not supported yet. This will need some new kind of integration.
+There is some implementation in the code right now but it's not stable. Please open an issue to discuss.
 
 ### `as:`
 
 `as:` is applied: arguments are passed into Ruby methods by their `as:` names instead of their GraphQL names.
 
-### `loads:`
+### `loads:` 🟡
 
 `loads:` is handled as previously, __except__ that custom `def load_...` methods are _not_ called.
 
@@ -219,22 +242,25 @@ Not supported yet. This will need some new kind of integration.
 
 These methods/procs are called.
 
-### `validates:` ❌
+### `validates:` 🟡
 
 Built-in validators are supported. Custom validators will always receive `nil` as the `object`. (`object` is no longer available; this API will probably change before this is fully released.)
 
-### Field Extensions
+### Field Extensions 🟡
 
-Field extensions _are_ called, but it uses new methods:
+Field extension methods are called with new arguments:
 
-- `def resolve_batching(objects:, arguments:, context:, &block)` receives `objects:` instead of `object:` and should yield them to the given block to continue execution
-- `def after_resolve_batching(objects:, arguments:, context:, values:, memo:)` receives `objects:, values:, ...` instead of `object:, value:, ...` and should return an Array of results (isntead of a single result value).
+- `objects:` instead of `object:`, with an Array
+- `values:` instead of `value:`, with an Array
 
-Because of their close integration with the runtime, `ConnectionExtension` and `ScopeExtension` don't actually use `after_resolve_batching`. Instead, support is hard-coded inside the runtime. This might be a smell that field extensions aren't worth supporting.
+You can support both types of calls in your methods by changing the signature to `object: nil, objects: nil` (and `value: nil, values: nil`), then checking which argument was passed.
 
-### Resolver classes (including Mutations and Subscriptions)
+### Resolver classes (including Mutations and Subscriptions) 🟡
 
-Resolver classes are called.
+Resolver classes are called, but with slightly different semantics:
+
+- `#ready?` is still called, but after arguments are loaded. It's now a useless method and will probably be deprecated.
+- `def load_...` methods are not called; instead, arguments are passed to the top-level `Schema.object_from_id` hook.
 
 ### Field `extras:`, including `lookahead`
 
@@ -242,22 +268,19 @@ Resolver classes are called.
 
 ### `raw_value` 🟡
 
-Supported but requires a manual opt-in at schema level. Support for this will probably get better somehow in a future version.
+Supported, but the `raw_value` call must be made on `context`, for example:
 
 ```ruby
-class MyAppSchema < GraphQL::Schema
-  uses_raw_value(true) # TODO This configuration will be improved in a future GraphQL-Ruby version
-  use GraphQL::Execution::Next
+field :values, SomeObjectType, resolve_static: true
+
+def self.values(context)
+  context.raw_value(...)
 end
 ```
 
-### Errors and `rescue_from` 🟡
+### Errors and `rescue_from`
 
-Support is mostly in place here but not thoroughly tested
-
-- rescue_from handlers
-- raising GraphQL::ExecutionError
-- Schema class error handling hooks
+Supported.
 
 ### Connection fields
 

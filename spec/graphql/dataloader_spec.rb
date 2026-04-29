@@ -965,6 +965,17 @@ describe GraphQL::Dataloader do
           assert_equal expected_log, database_log
         end
 
+        it "works with side-by-side top level arguments when one is a list" do
+          skip("Only supported in Execution::Next") unless TESTING_EXEC_NEXT
+          query_str = "{ r1: recipe(id: 5) { name } recipesById(ids: [6]) { name } }"
+          context = { batched_calls_counter: BatchedCallsCounter.new }
+          result = exec_query(query_str, context: context)
+          assert_graphql_equal({ "r1" => {"name" => "Cornbread" }, "recipesById" => [ { "name" => "Grits"}]}, result["data"])
+          assert_equal 1, context[:batched_calls_counter].count
+          expected_log = [[:mget, ["5", "6"]]]
+          assert_equal expected_log, database_log
+        end
+
         it "batches calls in .authorized?" do
           query_str = "{ r1: recipe(id: 5) { name } r2: recipe(id: 6) { name } }"
           context = { batched_calls_counter: BatchedCallsCounter.new }

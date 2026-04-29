@@ -6,7 +6,7 @@ module GraphQL
   class ExecutionError < GraphQL::RuntimeError
     # @return [GraphQL::Language::Nodes::Field] the field where the error occurred
     def ast_node
-      ast_nodes.first
+      ast_nodes&.first
     end
 
     def ast_node=(new_node)
@@ -34,6 +34,10 @@ module GraphQL
       @options = options
       @extensions = extensions
       super(message)
+    end
+
+    def finalize_graphql_result(query, result_data, key)
+      result_data[key] = nil
     end
 
     # @return [Hash] An entry for the response's "errors" key

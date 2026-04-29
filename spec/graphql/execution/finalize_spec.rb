@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-class ErrorResultFormatterTest < Minitest::Test
+class ExecutionFinalizeTest < Minitest::Test
   class HashKeyResolver
     def initialize(key)
       @key = key
@@ -518,13 +518,6 @@ class ErrorResultFormatterTest < Minitest::Test
       ],
     }
     expected = {
-      "data" => {
-        "test" => [
-          { "req" => "yes", "opt" => nil },
-          { "req" => "yes", "opt" => nil },
-          { "req" => "yes", "opt" => nil },
-        ],
-      },
       "errors" => [{
         "message" => "Not okay!",
         "locations" => [{ "line" => 1, "column" => 14 }],
@@ -534,9 +527,16 @@ class ErrorResultFormatterTest < Minitest::Test
         "locations" => [{ "line" => 1, "column" => 14 }],
         "path" => ["test", 2, "opt"],
       }],
+      "data" => {
+        "test" => [
+          { "req" => "yes", "opt" => nil },
+          { "req" => "yes", "opt" => nil },
+          { "req" => "yes", "opt" => nil },
+        ],
+      },
     }
 
-    assert_equal expected, exec_test(schema, "{ test { req opt } }", source)
+    assert_graphql_equal expected, exec_test(schema, "{ test { req opt } }", source)
   end
 
   def test_multiple_offenses_for_non_null_position_without_intersecting_propagation_report_all_instances

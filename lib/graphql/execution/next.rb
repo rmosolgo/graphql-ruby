@@ -1,11 +1,29 @@
 # frozen_string_literal: true
-require "graphql/execution/next/prepare_object_step"
-require "graphql/execution/next/field_resolve_step"
-require "graphql/execution/next/load_argument_step"
-require "graphql/execution/next/runner"
-require "graphql/execution/next/selections_step"
+require "graphql/execution/prepare_object_step"
+require "graphql/execution/input_values"
+require "graphql/execution/field_resolve_step"
+require "graphql/execution/finalize"
+require "graphql/execution/load_argument_step"
+require "graphql/execution/runner"
+require "graphql/execution/selections_step"
 module GraphQL
   module Execution
+    module Finalizer
+      attr_accessor :path
+      def finalize_graphql_result(query, result_data, result_key)
+        raise RequiredImplementationMissingError
+      end
+    end
+
+    module HaltExecution
+    end
+
+    module PostProcessor
+      def after_resolve(field_results)
+        raise RequiredImplementationMissingError, "#{self.class}#after_resolve should handle `field_results` and return a new value to use"
+      end
+    end
+
     module Next
       module SchemaExtension
         def execute_next(query_str = nil, context: nil, document: nil, operation_name: nil, variables: nil, root_value: nil, validate: true, visibility_profile: nil)
@@ -52,7 +70,7 @@ module GraphQL
 
       def self.run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
         queries = query_options.map do |opts|
-          case opts
+          query = case opts
           when Hash
             schema.query_class.new(schema, nil, **opts)
           when GraphQL::Query, GraphQL::Query::Partial
@@ -60,6 +78,8 @@ module GraphQL
           else
             raise "Expected Hash or GraphQL::Query, not #{opts.class} (#{opts.inspect})"
           end
+          query.context[:__graphql_execute_next] = true
+          query
         end
         multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
         runner = Runner.new(multiplex, **schema.execution_next_options)

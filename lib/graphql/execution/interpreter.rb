@@ -58,11 +58,6 @@ module GraphQL
               # Do as much eager evaluation of the query as possible
               results = []
               queries.each_with_index do |query, idx|
-                if query.subscription? && !query.subscription_update?
-                  subs_namespace = query.context.namespace(:subscriptions)
-                  subs_namespace[:events] = []
-                  subs_namespace[:subscriptions] = {}
-                end
                 multiplex.dataloader.append_job {
                   operation = query.selected_operation
                   result = if operation.nil? || !query.valid? || !query.context.errors.empty?
@@ -74,7 +69,9 @@ module GraphQL
                       # in particular, assign it here:
                       runtime = Runtime.new(query: query)
                       query.context.namespace(:interpreter_runtime)[:runtime] = runtime
-
+                      if query.subscription? && !query.subscription_update?
+                        schema.subscriptions.initialize_subscriptions(query)
+                      end
                       query.current_trace.execute_query(query: query) do
                         runtime.run_eager
                       end
@@ -91,9 +88,6 @@ module GraphQL
               # Then, find all errors and assign the result to the query object
               results.each_with_index do |data_result, idx|
                 query = queries[idx]
-                if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
-                  schema.subscriptions.write_subscription(query, events)
-                end
                 # Assign the result so that it can be accessed in instrumentation
                 query.result_values = if data_result.equal?(NO_OPERATION)
                   if !query.valid? || !query.context.errors.empty?
@@ -103,6 +97,9 @@ module GraphQL
                     data_result
                   end
                 else
+                  if query.subscription?
+                    schema.subscriptions.finish_subscriptions(query)
+                  end
                   result = {}
 
                   if !query.context.errors.empty?

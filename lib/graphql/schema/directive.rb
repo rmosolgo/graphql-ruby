@@ -31,15 +31,23 @@ module GraphQL
 
         def locations(*new_locations)
           if !new_locations.empty?
+            is_runtime = false
             new_locations.each do |new_loc|
-              if !LOCATIONS.include?(new_loc.to_sym)
+              loc_sym = new_loc.to_sym
+              if !LOCATIONS.include?(loc_sym)
                 raise ArgumentError, "#{self} (#{self.graphql_name}) has an invalid directive location: `locations #{new_loc}` "
               end
+              is_runtime ||= RUNTIME_LOCATIONS.include?(loc_sym)
             end
             @locations = new_locations
+            @is_runtime = is_runtime
           else
             @locations ||= (superclass.respond_to?(:locations) ? superclass.locations : [])
           end
+        end
+
+        def runtime?
+          @is_runtime
         end
 
         def default_directive(new_default_directive = nil)
@@ -104,8 +112,12 @@ module GraphQL
 
         def inherited(subclass)
           super
+          parent_class = self
           subclass.class_exec do
             @default_graphql_name ||= nil
+            @locations = parent_class.locations
+            @is_runtime = parent_class.runtime?
+            @repeatable = false
           end
         end
       end
@@ -177,13 +189,16 @@ module GraphQL
       end
 
       LOCATIONS = [
-        QUERY =                  :QUERY,
-        MUTATION =               :MUTATION,
-        SUBSCRIPTION =           :SUBSCRIPTION,
-        FIELD =                  :FIELD,
-        FRAGMENT_DEFINITION =    :FRAGMENT_DEFINITION,
-        FRAGMENT_SPREAD =        :FRAGMENT_SPREAD,
-        INLINE_FRAGMENT =        :INLINE_FRAGMENT,
+        *(RUNTIME_LOCATIONS = [
+          QUERY =                  :QUERY,
+          MUTATION =               :MUTATION,
+          SUBSCRIPTION =           :SUBSCRIPTION,
+          FIELD =                  :FIELD,
+          FRAGMENT_DEFINITION =    :FRAGMENT_DEFINITION,
+          FRAGMENT_SPREAD =        :FRAGMENT_SPREAD,
+          INLINE_FRAGMENT =        :INLINE_FRAGMENT,
+          VARIABLE_DEFINITION =    :VARIABLE_DEFINITION,
+        ]),
         SCHEMA =                 :SCHEMA,
         SCALAR =                 :SCALAR,
         OBJECT =                 :OBJECT,
@@ -195,7 +210,6 @@ module GraphQL
         ENUM_VALUE =             :ENUM_VALUE,
         INPUT_OBJECT =           :INPUT_OBJECT,
         INPUT_FIELD_DEFINITION = :INPUT_FIELD_DEFINITION,
-        VARIABLE_DEFINITION =    :VARIABLE_DEFINITION,
       ]
 
       DEFAULT_DEPRECATION_REASON = 'No longer supported'

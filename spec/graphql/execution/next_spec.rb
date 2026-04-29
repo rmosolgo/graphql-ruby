@@ -342,7 +342,7 @@ describe "Next Execution" do
     assert_graphql_equal expected_result, result
   end
 
-  it "propages nested nulls in objects in lists" do
+  it "propagates nested nulls in objects in lists" do
     NextExecutionSchema::DATA << OpenStruct.new(
       name: nil,
       species: [OpenStruct.new(name: "Artichoke")]
@@ -381,6 +381,6 @@ describe "Next Execution" do
         ]
       },
     }
-    assert_equal expected_result, result
+    assert_graphql_equal expected_result, result
   end
 end

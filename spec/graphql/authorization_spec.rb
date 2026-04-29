@@ -345,6 +345,8 @@ describe "GraphQL::Authorization" do
       def self.visible?(ctx)
         !!ctx[:show_nothing_directive]
       end
+
+      def self.resolve_field(...); end
     end
 
     class Schema < GraphQL::Schema
@@ -621,7 +623,11 @@ describe "GraphQL::Authorization" do
     it "halts on unauthorized mutations" do
       query = "mutation { doUnauthorizedStuff(input: {}) { __typename } }"
       res = auth_execute(query, context: { unauthorized_mutation: true })
-      assert_nil res["data"].fetch("doUnauthorizedStuff")
+      if TESTING_EXEC_NEXT
+        assert_equal({}, res["data"])
+      else
+        assert_nil res["data"].fetch("doUnauthorizedStuff")
+      end
       assert_raises GraphQL::RequiredImplementationMissingError do
         auth_execute(query)
       end
@@ -906,7 +912,7 @@ describe "GraphQL::Authorization" do
         unauth_res = auth_execute(query, context: { query_unauthorized: true })
 
         assert_equal({
-          "errors" => [{"message"=>"Unauthorized Query: nil"}],
+          "errors" => [(TESTING_EXEC_NEXT ? {"message"=>"Unauthorized Query: nil", "path" => [] } : {"message"=>"Unauthorized Query: nil"})],
           "data" => nil,
         }, unauth_res.to_h)
       end

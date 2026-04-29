@@ -104,6 +104,7 @@ module GraphQL
 
         def stringify_args(arg_owner, args, context)
           arg_owner = arg_owner.respond_to?(:unwrap) ? arg_owner.unwrap : arg_owner # remove list and non-null wrappers
+
           case args
           when Hash
             next_args = {}

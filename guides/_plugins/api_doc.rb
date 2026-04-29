@@ -131,9 +131,12 @@ module GraphQLSite
         end
         text = h.gsub(/^#+ /, "")
         target = text.downcase
+          .gsub("🟡", "00emoji00")
+          .gsub("❌", "00emoji00")
           .gsub(/[^a-z0-9_]+/, "-")
           .sub(/-$/, "")
           .sub(/^-/, "")
+          .gsub("-00emoji00", "-")
 
         rendered_text = Kramdown::Document.new(text, auto_ids: false)
           .to_html

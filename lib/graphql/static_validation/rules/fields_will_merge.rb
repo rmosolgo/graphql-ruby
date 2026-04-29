@@ -8,30 +8,102 @@ module GraphQL
       # fragments) either correspond to distinct response names or can be merged
       # without ambiguity.
       #
-      # Original Algorithm: https://github.com/graphql/graphql-js/blob/master/src/validation/rules/OverlappingFieldsCanBeMerged.js
+      # Optimized algorithm based on:
+      # https://tech.new-work.se/graphql-overlapping-fields-can-be-merged-fast-ea6e92e0a01
+      #
+      # Instead of comparing fields, fields-vs-fragments, and fragments-vs-fragments
+      # separately (which leads to exponential recursion through nested fragments),
+      # we flatten all fragment spreads into a single field map and compare within it.
       NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
-      Field = Struct.new(:node, :definition, :owner_type, :parents)
-      FragmentSpread = Struct.new(:name, :parents)
+      class Field
+        attr_reader :node, :definition, :owner_type, :parents
+
+        def initialize(node, definition, owner_type, parents)
+          @node = node
+          @definition = definition
+          @owner_type = owner_type
+          @parents = parents
+        end
+
+        def return_type
+          @return_type ||= @definition&.type
+        end
+
+        def unwrapped_return_type
+          @unwrapped_return_type ||= return_type&.unwrap
+        end
+      end
 
       def initialize(*)
         super
-        @visited_fragments = {}
-        @compared_fragments = {}
         @conflict_count = 0
+        @max_errors = context.max_errors
+        @fragments = context.fragments
+        # Track which sub-selection node pairs have been compared to prevent
+        # infinite recursion with cyclic fragments
+        @compared_sub_selections = {}.compare_by_identity
+        # Cache mutually_exclusive? results for type pairs
+        @mutually_exclusive_cache = {}.compare_by_identity
+        # Cache collect_fields results for sub-selection comparison
+        @sub_fields_cache = {}.compare_by_identity
       end
 
       def on_operation_definition(node, _parent)
-        setting_errors { conflicts_within_selection_set(node, type_definition) }
+        @conflicts = nil
+        conflicts_within_selection_set(node, type_definition)
+        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
         super
       end
 
       def on_field(node, _parent)
-        setting_errors { conflicts_within_selection_set(node, type_definition) }
+        if !node.selections.empty? && selections_may_conflict?(node.selections)
+          @conflicts = nil
+          conflicts_within_selection_set(node, type_definition)
+          @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
+        end
         super
       end
 
       private
+
+      # Quick check: can the direct children of this selection set possibly conflict?
+      # If all direct selections are Fields with unique names and no aliases,
+      # and there are no fragments, then no response key can have >1 field,
+      # so there are no merge conflicts to check at this level.
+      def selections_may_conflict?(selections)
+        i = 0
+        len = selections.size
+        while i < len
+          sel = selections[i]
+          # Fragment spread or inline fragment — needs full check
+          return true unless sel.is_a?(GraphQL::Language::Nodes::Field)
+
+          # Aliased field — could create duplicate response key
+          return true if sel.alias
+
+          i += 1
+        end
+
+        # All are unaliased fields — check for duplicate names
+        # For small sets, O(n²) is cheaper than hash allocation
+        if len <= 8
+          i = 0
+          while i < len
+            j = i + 1
+            name_i = selections[i].name
+            while j < len
+              return true if selections[j].name == name_i
+              j += 1
+            end
+            i += 1
+          end
+
+          false
+        else
+          true # Assume potential conflicts for larger sets
+        end
+      end
 
       def conflicts
         @conflicts ||= Hash.new do |h, error_type|
@@ -41,177 +113,201 @@ module GraphQL
         end
       end
 
-      def setting_errors
-        @conflicts = nil
-        yield
-        # don't initialize these if they weren't initialized in the block:
-        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
-      end
-
+      # Core algorithm: collect ALL fields (expanding fragments inline) into a flat
+      # map keyed by response key, then compare within each group.
       def conflicts_within_selection_set(node, parent_type)
         return if parent_type.nil?
+        return if node.selections.empty?
 
-        fields, fragment_spreads = fields_and_fragments_from_selection(node, owner_type: parent_type, parents: nil)
+        # Collect all fields from this selection set, expanding fragments transitively
+        response_keys = collect_fields(node.selections, owner_type: parent_type, parents: [])
 
-        # (A) Find find all conflicts "within" the fields of this selection set.
-        find_conflicts_within(fields)
+        # Find conflicts within each response key group
+        find_conflicts_within(response_keys)
+      end
 
-        fragment_spreads.each_with_index do |fragment_spread, i|
-          are_mutually_exclusive = mutually_exclusive?(
-            fragment_spread.parents,
-            [parent_type]
-          )
+      # Collect all fields from selections, expanding fragment spreads inline.
+      # Returns a Hash of { response_key => Field | [Field, ...] }
+      def collect_fields(selections, owner_type:, parents:)
+        response_keys = {}
+        collect_fields_inner(selections, owner_type: owner_type, parents: parents, response_keys: response_keys, visited_fragments: nil)
+        response_keys
+      end
 
-          # (B) Then find conflicts between these fields and those represented by
-          # each spread fragment name found.
-          find_conflicts_between_fields_and_fragment(
-            fragment_spread,
-            fields,
-            mutually_exclusive: are_mutually_exclusive,
-          )
+      def collect_fields_inner(selections, owner_type:, parents:, response_keys:, visited_fragments:)
+        deferred_spreads = nil
+        sel_idx = 0
+        sel_len = selections.size
 
-          # (C) Then compare this fragment with all other fragments found in this
-          # selection set to collect conflicts between fragments spread together.
-          # This compares each item in the list of fragment names to every other
-          # item in that same list (except for itself).
-          fragment_spreads[i + 1..-1].each do |fragment_spread2|
-            are_mutually_exclusive = mutually_exclusive?(
-              fragment_spread.parents,
-              fragment_spread2.parents
-            )
+        while sel_idx < sel_len
+          sel = selections[sel_idx]
 
-            find_conflicts_between_fragments(
-              fragment_spread,
-              fragment_spread2,
-              mutually_exclusive: are_mutually_exclusive,
-            )
+          case sel
+          when GraphQL::Language::Nodes::Field
+            definition = @types.field(owner_type, sel.name)
+            key = sel.alias || sel.name
+            field = Field.new(sel, definition, owner_type, parents)
+            existing = response_keys[key]
+
+            if existing.nil?
+              response_keys[key] = field
+            elsif existing.is_a?(Field)
+              response_keys[key] = [existing, field]
+            else
+              existing << field
+            end
+          when GraphQL::Language::Nodes::InlineFragment
+            frag_type = sel.type ? @types.type(sel.type.name) : owner_type
+
+            if frag_type
+              new_parents = parents.dup
+              new_parents << frag_type
+              collect_fields_inner(sel.selections, owner_type: frag_type, parents: new_parents, response_keys: response_keys, visited_fragments: visited_fragments)
+            end
+          when GraphQL::Language::Nodes::FragmentSpread
+            (deferred_spreads ||= []) << sel
           end
-        end
-      end
 
-      def find_conflicts_between_fragments(fragment_spread1, fragment_spread2, mutually_exclusive:)
-        fragment_name1 = fragment_spread1.name
-        fragment_name2 = fragment_spread2.name
-        return if fragment_name1 == fragment_name2
-
-        cache_key = compared_fragments_key(
-          fragment_name1,
-          fragment_name2,
-          mutually_exclusive,
-        )
-        if @compared_fragments.key?(cache_key)
-          return
-        else
-          @compared_fragments[cache_key] = true
+          sel_idx += 1
         end
 
-        fragment1 = context.fragments[fragment_name1]
-        fragment2 = context.fragments[fragment_name2]
+        if deferred_spreads
+          visited_fragments ||= {}
+          sel_idx = 0
+          sel_len = deferred_spreads.size
 
-        return if fragment1.nil? || fragment2.nil?
+          while sel_idx < sel_len
+            sel = deferred_spreads[sel_idx]
+            sel_idx += 1
+            next if visited_fragments.key?(sel.name)
 
-        fragment_type1 = context.query.types.type(fragment1.type.name)
-        fragment_type2 = context.query.types.type(fragment2.type.name)
+            visited_fragments[sel.name] = true
+            frag = @fragments[sel.name]
+            next unless frag
 
-        return if fragment_type1.nil? || fragment_type2.nil?
+            frag_type = @types.type(frag.type.name)
+            next unless frag_type
 
-        fragment_fields1, fragment_spreads1 = fields_and_fragments_from_selection(
-          fragment1,
-          owner_type: fragment_type1,
-          parents: [*fragment_spread1.parents, fragment_type1]
-        )
-        fragment_fields2, fragment_spreads2 = fields_and_fragments_from_selection(
-          fragment2,
-          owner_type: fragment_type1,
-          parents: [*fragment_spread2.parents, fragment_type2]
-        )
-
-        # (F) First, find all conflicts between these two collections of fields
-        # (not including any nested fragments).
-        find_conflicts_between(
-          fragment_fields1,
-          fragment_fields2,
-          mutually_exclusive: mutually_exclusive,
-        )
-
-        # (G) Then collect conflicts between the first fragment and any nested
-        # fragments spread in the second fragment.
-        fragment_spreads2.each do |fragment_spread|
-          find_conflicts_between_fragments(
-            fragment_spread1,
-            fragment_spread,
-            mutually_exclusive: mutually_exclusive,
-          )
-        end
-
-        # (G) Then collect conflicts between the first fragment and any nested
-        # fragments spread in the second fragment.
-        fragment_spreads1.each do |fragment_spread|
-          find_conflicts_between_fragments(
-            fragment_spread2,
-            fragment_spread,
-            mutually_exclusive: mutually_exclusive,
-          )
-        end
-      end
-
-      def find_conflicts_between_fields_and_fragment(fragment_spread, fields, mutually_exclusive:)
-        fragment_name = fragment_spread.name
-        return if @visited_fragments.key?(fragment_name)
-        @visited_fragments[fragment_name] = true
-
-        fragment = context.fragments[fragment_name]
-        return if fragment.nil?
-
-        fragment_type = @types.type(fragment.type.name)
-        return if fragment_type.nil?
-
-        fragment_fields, fragment_spreads = fields_and_fragments_from_selection(fragment, owner_type: fragment_type, parents: [*fragment_spread.parents, fragment_type])
-
-        # (D) First find any conflicts between the provided collection of fields
-        # and the collection of fields represented by the given fragment.
-        find_conflicts_between(
-          fields,
-          fragment_fields,
-          mutually_exclusive: mutually_exclusive,
-        )
-
-        # (E) Then collect any conflicts between the provided collection of fields
-        # and any fragment names found in the given fragment.
-        fragment_spreads.each do |fragment_spread|
-          find_conflicts_between_fields_and_fragment(
-            fragment_spread,
-            fields,
-            mutually_exclusive: mutually_exclusive,
-          )
+            new_parents = parents.dup
+            new_parents << frag_type
+            collect_fields_inner(frag.selections, owner_type: frag_type, parents: new_parents, response_keys: response_keys, visited_fragments: visited_fragments)
+          end
         end
       end
 
       def find_conflicts_within(response_keys)
         response_keys.each do |key, fields|
-          next if fields.size < 2
-          # find conflicts within nodes
-          i = 0
-          while i < fields.size
-            j = i + 1
-            while j < fields.size
-              find_conflict(key, fields[i], fields[j])
-              j += 1
+          next unless fields.is_a?(Array)
+
+          # Optimization: group fields by signature (name + definition + arguments).
+          # Fields with the same signature can only conflict on sub-selections,
+          # so we only need to compare one pair within each group.
+          if fields.size > 4
+            f0 = fields[0]
+            all_same = true
+            i = 1
+            while i < fields.size
+              unless fields_same_signature?(f0, fields[i])
+                all_same = false
+                break
+              end
+              i += 1
             end
-            i += 1
+
+            if all_same
+              # All fields share a signature, so they can only conflict on
+              # sub-selections. Deduplicate by AST node identity — fields from
+              # the same node always have identical sub-selections.
+              unique_nodes = fields.uniq { |f| f.node.object_id }
+              i = 0
+              while i < unique_nodes.size
+                j = i + 1
+                while j < unique_nodes.size
+                  if unique_nodes[i].node.selections.size > 0 || unique_nodes[j].node.selections.size > 0
+                    find_conflict(key, unique_nodes[i], unique_nodes[j])
+                  end
+                  j += 1
+                end
+                i += 1
+              end
+            else
+              groups = fields.group_by { |f| field_signature(f) }
+              unique_groups = groups.values
+
+              # Compare representatives across different groups
+              gi = 0
+              while gi < unique_groups.size
+                gj = gi + 1
+                while gj < unique_groups.size
+                  find_conflict(key, unique_groups[gi][0], unique_groups[gj][0])
+                  gj += 1
+                end
+
+                # Within same group, deduplicate by AST node and compare all
+                # pairs for sub-selection conflicts
+                group = unique_groups[gi]
+                if group.size >= 2
+                  unique_in_group = group.uniq { |f| f.node.object_id }
+                  ui = 0
+                  while ui < unique_in_group.size
+                    uj = ui + 1
+                    while uj < unique_in_group.size
+                      if unique_in_group[ui].node.selections.size > 0 || unique_in_group[uj].node.selections.size > 0
+                        find_conflict(key, unique_in_group[ui], unique_in_group[uj])
+                      end
+                      uj += 1
+                    end
+                    ui += 1
+                  end
+                end
+
+                gi += 1
+              end
+            end
+          else
+            # Small number of fields — original O(n²) is fine
+            i = 0
+            while i < fields.size
+              j = i + 1
+              while j < fields.size
+                find_conflict(key, fields[i], fields[j])
+                j += 1
+              end
+              i += 1
+            end
           end
         end
       end
 
+      def fields_same_signature?(f1, f2)
+        n1 = f1.node
+        n2 = f2.node
+
+        f1.definition.equal?(f2.definition) &&
+          n1.name == n2.name &&
+          same_arguments?(n1, n2)
+      end
+
+      def field_signature(field)
+        node = field.node
+        defn = field.definition
+        args = node.arguments
+
+        if args.empty?
+          [node.name, defn.object_id]
+        else
+          [node.name, defn.object_id, args.map { |a| [a.name, serialize_arg(a.value)] }]
+        end
+      end
+
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
-        return if @conflict_count >= context.max_errors
+        return if @conflict_count >= @max_errors
         return if field1.definition.nil? || field2.definition.nil?
 
         node1 = field1.node
         node2 = field2.node
 
-        are_mutually_exclusive = mutually_exclusive ||
-                                 mutually_exclusive?(field1.parents, field2.parents)
+        are_mutually_exclusive = mutually_exclusive || mutually_exclusive?(field1.parents, field2.parents)
 
         if !are_mutually_exclusive
           if node1.name != node2.name
@@ -234,17 +330,20 @@ module GraphQL
         end
 
         if !conflicts[:field].key?(response_key) &&
-            (t1 = field1.definition&.type) &&
-            (t2 = field2.definition&.type) &&
+            !field1.definition.equal?(field2.definition) &&
+            (t1 = field1.return_type) &&
+            (t2 = field2.return_type) &&
             return_types_conflict?(t1, t2)
 
           return_error = nil
           message_override = nil
+
           case @schema.allow_legacy_invalid_return_type_conflicts
           when false
             return_error = true
           when true
             legacy_handling = @schema.legacy_invalid_return_type_conflicts(@context.query, t1, t2, node1, node2)
+
             case legacy_handling
             when nil
               return_error = false
@@ -267,9 +366,11 @@ module GraphQL
 
           if return_error
             conflict = conflicts[:return_type][response_key]
+
             if message_override
               conflict.message = message_override
             end
+
             conflict.add_conflict(node1, "`#{t1.to_type_signature}`")
             conflict.add_conflict(node2, "`#{t2.to_type_signature}`")
             @conflict_count += 1
@@ -303,121 +404,78 @@ module GraphQL
         elsif type1.kind.leaf? && type2.kind.leaf?
           type1 != type2
         else
-          # One or more of these are composite types,
-          # their selections will be validated later on.
           false
         end
       end
 
+      # When two fields with the same response key both have sub-selections,
+      # we need to check those sub-selections against each other.
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
         return if field1.definition.nil? ||
           field2.definition.nil? ||
           (field1.node.selections.empty? && field2.node.selections.empty?)
 
-        return_type1 = field1.definition.type.unwrap
-        return_type2 = field2.definition.type.unwrap
-        parents1 = [return_type1]
-        parents2 = [return_type2]
+        node1 = field1.node
+        node2 = field2.node
 
-        fields, fragment_spreads = fields_and_fragments_from_selection(
-          field1.node,
-          owner_type: return_type1,
-          parents: parents1
-        )
+        # Prevent infinite recursion from cyclic fragments
+        return if node1.equal?(node2)
 
-        fields2, fragment_spreads2 = fields_and_fragments_from_selection(
-          field2.node,
-          owner_type: return_type2,
-          parents: parents2
-        )
-
-        # (H) First, collect all conflicts between these two collections of field.
-        find_conflicts_between(fields, fields2, mutually_exclusive: mutually_exclusive)
-
-        # (I) Then collect conflicts between the first collection of fields and
-        # those referenced by each fragment name associated with the second.
-        fragment_spreads2.each do |fragment_spread|
-          find_conflicts_between_fields_and_fragment(
-            fragment_spread,
-            fields,
-            mutually_exclusive: mutually_exclusive,
-          )
+        inner = @compared_sub_selections[node1]
+        if inner
+          return if inner.key?(node2)
+          inner[node2] = true
+        else
+          inner = {}.compare_by_identity
+          inner[node2] = true
+          @compared_sub_selections[node1] = inner
         end
 
-        # (I) Then collect conflicts between the second collection of fields and
-        # those referenced by each fragment name associated with the first.
-        fragment_spreads.each do |fragment_spread|
-          find_conflicts_between_fields_and_fragment(
-            fragment_spread,
-            fields2,
-            mutually_exclusive: mutually_exclusive,
-          )
-        end
+        return_type1 = field1.unwrapped_return_type
+        return_type2 = field2.unwrapped_return_type
 
-        # (J) Also collect conflicts between any fragment names by the first and
-        # fragment names by the second. This compares each item in the first set of
-        # names to each item in the second set of names.
-        fragment_spreads.each do |frag1|
-          fragment_spreads2.each do |frag2|
-            find_conflicts_between_fragments(
-              frag1,
-              frag2,
-              mutually_exclusive: mutually_exclusive
-            )
-          end
+        response_keys1 = cached_sub_fields(node1, return_type1)
+        response_keys2 = cached_sub_fields(node2, return_type2)
+
+        find_conflicts_between(response_keys1, response_keys2, mutually_exclusive: mutually_exclusive)
+      end
+
+      def cached_sub_fields(node, return_type)
+        inner = @sub_fields_cache[node]
+
+        if inner && inner.key?(return_type)
+          inner[return_type]
+        else
+          result = collect_fields(node.selections, owner_type: return_type, parents: [return_type])
+          inner ||= {}.compare_by_identity
+          inner[return_type] = result
+          @sub_fields_cache[node] = inner
+          result
         end
       end
 
       def find_conflicts_between(response_keys, response_keys2, mutually_exclusive:)
         response_keys.each do |key, fields|
           fields2 = response_keys2[key]
-          if fields2
-            fields.each do |field|
-              fields2.each do |field2|
-                find_conflict(
-                  key,
-                  field,
-                  field2,
-                  mutually_exclusive: mutually_exclusive,
-                )
-              end
+          next unless fields2
+
+          fields_arr = fields.is_a?(Field) ? [fields] : fields
+          fields2_arr = fields2.is_a?(Field) ? [fields2] : fields2
+
+          fields_arr.each do |field|
+            fields2_arr.each do |field2|
+              find_conflict(
+                key,
+                field,
+                field2,
+                mutually_exclusive: mutually_exclusive,
+              )
             end
           end
         end
       end
 
-      NO_SELECTIONS = [GraphQL::EmptyObjects::EMPTY_HASH, GraphQL::EmptyObjects::EMPTY_ARRAY].freeze
-
-      def fields_and_fragments_from_selection(node, owner_type:, parents:)
-        if node.selections.empty?
-          NO_SELECTIONS
-        else
-          parents ||= []
-          fields, fragment_spreads = find_fields_and_fragments(node.selections, owner_type: owner_type, parents: parents, fields: [], fragment_spreads: [])
-          response_keys = fields.group_by { |f| f.node.alias || f.node.name }
-          [response_keys, fragment_spreads]
-        end
-      end
-
-      def find_fields_and_fragments(selections, owner_type:, parents:, fields:, fragment_spreads:)
-        selections.each do |node|
-          case node
-          when GraphQL::Language::Nodes::Field
-            definition = @types.field(owner_type, node.name)
-            fields << Field.new(node, definition, owner_type, parents)
-          when GraphQL::Language::Nodes::InlineFragment
-            fragment_type = node.type ? @types.type(node.type.name) : owner_type
-            find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: fragment_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
-          when GraphQL::Language::Nodes::FragmentSpread
-            fragment_spreads << FragmentSpread.new(node.name, parents)
-          end
-        end
-
-        [fields, fragment_spreads]
-      end
-
       def same_arguments?(field1, field2)
-        # Check for incompatible / non-identical arguments on this node:
         arguments1 = field1.arguments
         arguments2 = field2.arguments
 
@@ -450,38 +508,46 @@ module GraphQL
         serialized_args
       end
 
-      def compared_fragments_key(frag1, frag2, exclusive)
-        # Cache key to not compare two fragments more than once.
-        # The key includes both fragment names sorted (this way we
-        # avoid computing "A vs B" and "B vs A"). It also includes
-        # "exclusive" since the result may change depending on the parent_type
-        "#{[frag1, frag2].sort.join('-')}-#{exclusive}"
-      end
-
       # Given two list of parents, find out if they are mutually exclusive
-      # In this context, `parents` represents the "self scope" of the field,
-      # what types may be found at this point in the query.
       def mutually_exclusive?(parents1, parents2)
         if parents1.empty? || parents2.empty?
           false
         elsif parents1.length == parents2.length
-          parents1.length.times.any? do |i|
+          i = 0
+          len = parents1.length
+
+          while i < len
             type1 = parents1[i - 1]
             type2 = parents2[i - 1]
-            if type1 == type2
-              # If the types we're comparing are the same type,
-              # then they aren't mutually exclusive
-              false
-            else
-              # Check if these two scopes have _any_ types in common.
-              possible_right_types = context.types.possible_types(type1)
-              possible_left_types = context.types.possible_types(type2)
-              (possible_right_types & possible_left_types).empty?
+            unless type1.equal?(type2)
+              inner = @mutually_exclusive_cache[type1]
+              if inner
+                cached = inner[type2]
+                if cached.nil?
+                  cached = types_mutually_exclusive?(type1, type2)
+                  inner[type2] = cached
+                end
+              else
+                cached = types_mutually_exclusive?(type1, type2)
+                inner = {}.compare_by_identity
+                inner[type2] = cached
+                @mutually_exclusive_cache[type1] = inner
+              end
+              return true if cached
             end
+            i += 1
           end
+
+          false
         else
           true
         end
+      end
+
+      def types_mutually_exclusive?(type1, type2)
+        possible_right_types = @types.possible_types(type1)
+        possible_left_types = @types.possible_types(type2)
+        (possible_right_types & possible_left_types).empty?
       end
     end
   end

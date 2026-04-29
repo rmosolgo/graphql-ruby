@@ -36,6 +36,8 @@ module Cop
         :execute_query,
         :execute_query_lazy,
         :lex,
+        :object_loaded,
+        :objects,
         :parse,
         :resolve_type,
         :resolve_type_lazy,
@@ -70,7 +72,9 @@ module Cop
             :lex, :analyze_query, :execute_query, :execute_query_lazy,
             # Only useful for isolated event tracking:
             :begin_dataloader, :end_dataloader,
-            :dataloader_fiber_exit, :dataloader_spawn_execution_fiber, :dataloader_spawn_source_fiber
+            :dataloader_fiber_exit, :dataloader_spawn_execution_fiber, :dataloader_spawn_source_fiber,
+            # Tracks object references, but not durations:
+            :objects, :object_loaded
           ]
           missing_defs.each do |missing_def|
             if all_defs.include?(:"begin_#{missing_def}") && all_defs.include?(:"end_#{missing_def}")

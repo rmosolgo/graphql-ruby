@@ -115,7 +115,7 @@ Multiplex analyzers may return {{ "AnalysisError" | api_doc }} to halt execution
 
 You can add hooks for each multiplex run with {% internal_link "trace modules", "/queries/tracing" %}.
 
-The trace module may implement `def execute_multiplex(multiplex:)` which `yield`s to allow the multiplex to execute. See {{ "Execution::Multiplex" | api_doc }} for available methods.
+The trace module may implement `def execute_multiplex(multiplex:)` which calls `super` to allow the multiplex to execute. See {{ "Execution::Multiplex" | api_doc }} for available methods.
 
 For example:
 
@@ -124,7 +124,7 @@ For example:
 module MultiplexCounter
   def execute_multiplex(multiplex:)
     Rails.logger.info("Multiplex size: #{multiplex.queries.length}")
-    yield
+    super
   end
 end
 

@@ -46,7 +46,7 @@ module GraphQL
         @prepared_arguments = nil
       end
 
-      attr_accessor :exec_result, :exec_index, :field_resolve_step
+      attr_accessor :exec_result, :exec_index, :field_resolve_step, :raw_arguments
 
       # @return [Object] The application object this field is being resolved on
       attr_accessor :object
@@ -66,23 +66,57 @@ module GraphQL
         q = context.query
         trace_objs = [object]
         q.current_trace.begin_execute_field(field, @prepared_arguments, trace_objs, q)
-        is_authed, new_return_value = authorized?(**@prepared_arguments)
+        is_ready = ready?(**@prepared_arguments)
+        runner = @field_resolve_step.runner
+        if runner.resolves_lazies && runner.schema.lazy?(is_ready)
+          is_ready, new_return_value = runner.schema.sync_lazy(is_ready)
+        end
 
-        if (runner = @field_resolve_step.runner).resolves_lazies && runner.schema.lazy?(is_authed)
+        if is_ready.is_a?(Array)
+          is_ready, new_return_value = is_ready
+          if is_ready != false
+            raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{is_ready.inspect}, #{new_return_value.inspect}]"
+          else
+            new_return_value
+          end
+        end
+
+        if is_ready
+          begin
+            is_authed, new_return_value = authorized?(**@prepared_arguments)
+          rescue GraphQL::UnauthorizedError  => err
+            new_return_value = q.schema.unauthorized_object(err)
+            is_authed = true # the error was handled
+          end
+        end
+
+        if runner.resolves_lazies && runner.schema.lazy?(is_authed)
           is_authed, new_return_value = runner.schema.sync_lazy(is_authed)
         end
 
         result = if is_authed
           Schema::Validator.validate!(self.class.validators, object, context, @prepared_arguments, as: @field)
+          if q.subscription? && @field.owner == context.schema.subscription
+            # This needs to use arguments without `loads:`. TODO extract this into subscription-related code somehow?
+            @original_arguments = @field_resolve_step.runner.input_values[q].argument_values(@field, @field_resolve_step.ast_node.arguments, nil)
+          end
           call_resolve(@prepared_arguments)
+        elsif new_return_value.nil?
+          err = UnauthorizedFieldError.new(object: object, type: @field_resolve_step.parent_type, context: context, field: @field)
+          context.schema.unauthorized_field(err)
         else
           new_return_value
         end
         q = context.query
         q.current_trace.end_execute_field(field, @prepared_arguments, trace_objs, q, [result])
-
         exec_result[exec_index] = result
-      rescue RuntimeError => err
+      rescue GraphQL::UnauthorizedError => auth_err
+        exec_result[exec_index] = begin
+          context.schema.unauthorized_object(auth_err)
+        rescue GraphQL::ExecutionError => exec_err
+          exec_err
+        end
+      rescue GraphQL::RuntimeError => err
         exec_result[exec_index] = err
       rescue StandardError => stderr
         exec_result[exec_index] = begin
@@ -196,6 +230,10 @@ module GraphQL
         arg_owner = @field # || self.class
         args = context.types.arguments(arg_owner)
         authorize_arguments(args, inputs)
+      end
+
+      def self.authorizes?(context)
+        self.instance_method(:authorized?).owner != GraphQL::Schema::Resolver
       end
 
       # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.

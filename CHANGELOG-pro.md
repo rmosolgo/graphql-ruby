@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.30.0 (24 Apr 2025)
+
+- Support GraphQL-Ruby's new `Execution::Next` runtime
+
 # 1.29.14 (21 Nov 2025)
 
 - Add configuration for `ostruct` dependency

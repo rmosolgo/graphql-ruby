@@ -1362,14 +1362,6 @@ module GraphQL
         lazy_methods.set(lazy_class, value_method)
       end
 
-      def uses_raw_value?
-        !!@uses_raw_value
-      end
-
-      def uses_raw_value(new_val)
-        @uses_raw_value = new_val
-      end
-
       def resolves_lazies?
         lazy_method_count = 0
         lazy_methods.each do |k, v|
@@ -1450,7 +1442,16 @@ module GraphQL
       end
 
       def tracers
-        find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
+        inherited = find_inherited_value(:tracers, EMPTY_ARRAY)
+        if inherited.length > 0
+          if own_tracers.length > 0
+            inherited + own_tracers
+          else
+            inherited
+          end
+        else
+          own_tracers
+        end
       end
 
       # Mix `trace_mod` into this schema's `Trace` class so that its methods will be called at runtime.
@@ -1560,7 +1561,8 @@ module GraphQL
       end
 
       def query_analyzers
-        find_inherited_value(:query_analyzers, EMPTY_ARRAY) + own_query_analyzers
+        inherited_qa = find_inherited_value(:query_analyzers, EMPTY_ARRAY)
+        inherited_qa.empty? ? own_query_analyzers : (inherited_qa + own_query_analyzers)
       end
 
       # @param new_analyzer [Class<GraphQL::Analysis::Analyzer>] An analyzer to run on multiplexes to this schema

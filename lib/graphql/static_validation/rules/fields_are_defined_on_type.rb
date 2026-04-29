@@ -3,7 +3,7 @@ module GraphQL
   module StaticValidation
     module FieldsAreDefinedOnType
       def on_field(node, parent)
-        parent_type = @object_types[-2]
+        parent_type = @parent_object_type
         field = context.query.types.field(parent_type, node.name)
 
         if field.nil?
@@ -14,8 +14,9 @@ module GraphQL
               node_name: parent_type.graphql_name
             ))
           else
-            possible_fields = possible_fields(context, parent_type)
-            suggestion = context.did_you_mean_suggestion(node.name, possible_fields)
+            suggestion = if @schema.did_you_mean
+              context.did_you_mean_suggestion(node.name, possible_fields(context, parent_type))
+            end
             message = "Field '#{node.name}' doesn't exist on type '#{parent_type.graphql_name}'#{suggestion}"
             add_error(GraphQL::StaticValidation::FieldsAreDefinedOnTypeError.new(
               message,

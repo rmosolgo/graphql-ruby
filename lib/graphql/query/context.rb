@@ -112,7 +112,7 @@ module GraphQL
       # Return this value to tell the runtime
       # to exclude this field from the response altogether
       def skip
-        GraphQL::Execution::SKIP
+        GraphQL::Execution::Skip.new
       end
 
       # Add error at query-level.
@@ -124,6 +124,12 @@ module GraphQL
         end
         errors << error
         nil
+      end
+
+      # @param value [Object] Any object to be inserted directly into the final response
+      # @return [GraphQL::Execution::Interpreter::RawValue] Return this from the field
+      def raw_value(value)
+        GraphQL::Execution::Interpreter::RawValue.new(value)
       end
 
       # @example Print the GraphQL backtrace during field resolution

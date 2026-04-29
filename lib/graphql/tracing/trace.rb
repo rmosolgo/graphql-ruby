@@ -98,6 +98,12 @@ module GraphQL
         yield
       end
 
+      def objects(type, object, context)
+      end
+
+      def object_loaded(argument_definition, object, context)
+      end
+
       # A call to `.authorized?` is starting
       # @param type [Class<GraphQL::Schema::Object>]
       # @param object [Object]

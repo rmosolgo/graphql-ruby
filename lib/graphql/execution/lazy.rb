@@ -38,7 +38,7 @@ module GraphQL
         # (fewer clauses in a hot `case` block), but now it requires special handling here.
         # I think it's still worth it for the performance win, but if the number of special
         # cases grows, then maybe it's worth rethinking somehow.
-        if @value.is_a?(StandardError) && @value != GraphQL::Execution::SKIP
+        if @value.is_a?(StandardError) && !@value.is_a?(GraphQL::Execution::Skip)
           raise @value
         else
           @value

@@ -159,6 +159,7 @@ module GraphQL
       @root_value = root_value
       @fragments = nil
       @operations = nil
+      @finalizers = @top_level_finalizers = nil
       @validate = validate
       self.static_validator = static_validator if static_validator
       context_tracers = (context ? context.fetch(:tracers, []) : [])
@@ -262,6 +263,10 @@ module GraphQL
       with_prepared_ast { @operations }
     end
 
+    def path
+      EmptyObjects::EMPTY_ARRAY
+    end
+
     # Run subtree partials of this query and return their results.
     # Each partial is identified with a `path:` and `object:`
     # where the path references a field in the AST and the object will be treated
@@ -271,7 +276,11 @@ module GraphQL
     # @return [Array<GraphQL::Query::Result>]
     def run_partials(partials_hashes)
       partials = partials_hashes.map { |partial_options| Partial.new(query: self, **partial_options) }
-      Execution::Interpreter.run_all(@schema, partials, context: @context)
+      if context[:__graphql_execute_next]
+        Execution::Next.run_all(@schema, partials, context: @context)
+      else
+        Execution::Interpreter.run_all(@schema, partials, context: @context)
+      end
     end
 
     # Get the result for this query, executing it once

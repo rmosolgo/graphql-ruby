@@ -33,6 +33,26 @@ module GraphQL
           self::DefinitionMethods.module_exec(&block)
         end
 
+        # Instance methods defined in this block will become class methods on objects that implement this interface.
+        # Use it to implement `resolve_each:`, `resolve_batch:`, and `resolve_static:` fields.
+        # @example
+        #   field :thing, String, resolve_static: true
+        #
+        #   resolver_methods do
+        #     def thing
+        #       Somehow.get.thing
+        #     end
+        #   end
+        def resolver_methods(&block)
+          if !defined?(@_resolver_methods)
+            resolver_methods_module = Module.new
+            @_resolver_methods = resolver_methods_module
+            const_set(:ResolverMethods, resolver_methods_module)
+            extend(self::ResolverMethods)
+          end
+          self::ResolverMethods.module_exec(&block)
+        end
+
         # @see {Schema::Warden} hides interfaces without visible implementations
         def visible?(context)
           true
@@ -78,6 +98,12 @@ module GraphQL
 
             if !backtrace_line
               raise "Attach interfaces using `implements(#{self})`, not `include(#{self})`"
+            end
+
+            child_class.ancestors.reverse_each do |ancestor|
+              if ancestor.const_defined?(:ResolverMethods)
+                child_class.extend(ancestor::ResolverMethods)
+              end
             end
           end
 

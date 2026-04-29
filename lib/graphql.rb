@@ -21,9 +21,6 @@ module GraphQL
   class Error < StandardError
   end
 
-  class RuntimeError < Error
-  end
-
   # This error is raised when GraphQL-Ruby encounters a situation
   # that it *thought* would never happen. Please report this bug!
   class InvariantError < Error
@@ -122,6 +119,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   autoload :ParseError, "graphql/parse_error"
   autoload :Backtrace, "graphql/backtrace"
 
+  autoload :RuntimeError, "graphql/runtime_error"
   autoload :UnauthorizedError, "graphql/unauthorized_error"
   autoload :UnauthorizedEnumValueError, "graphql/unauthorized_enum_value_error"
   autoload :UnauthorizedFieldError, "graphql/unauthorized_field_error"

@@ -10,6 +10,50 @@
 
 ### Bug fixes
 
+# 2.6.1
+
+### Bug fixes
+
+- Lexer: in the Ruby lexer, count comments against a schema's `max_token_count` configuration
+
+# 2.6.0
+
+### Breaking changes
+
+- SDL: previously, GraphQL-Ruby didn't require object types and interfaces to explicitly name all transitively implemented interfaces. For example if Interface A implements Interface B, and Object O implements Interface A, GraphQL-Ruby didn't require the SDL to include `implements ... & B`, But it should have, according to the spec. This misbehavior has been corrected, but may cause some previously-accepted SDL strings to be rejected with errors. #5602
+
+### Bug fixes
+
+- SDL: require types to name _all_ implemented interfaces #5602
+- Execution::Next: call Resolver `#ready?` methods #5611
+
+# 2.5.25
+
+### Bug fixes
+
+- Field extensions: correctly return `false` through for fields with extensions that don't define `after_resolve` #5610
+
+# 2.5.24
+
+### New features
+
+- Continue building `Execution::Next`: #5606, #5603, #5596, #5604, #5607
+
+# 2.5.23
+
+### New features
+
+- Static Validations: several performance improvements #5584, #5585, #5586, #5585, #5587, #5591
+- Continue building `Execution::Next` #5589, #5592, #5582
+
+### Bug fixes
+
+- Fix Dataloader state on list items #5597
+
+# 2.5.22
+
+- Continue building `Execution::Next`: #5575 #5581
+
 # 2.5.21
 
 ### New features
@@ -95,7 +139,7 @@
 
 - Runtime: add hooks for experimental custom runtimes #5425, #5429
 - Lazy handling and Dataloader have been merged under the hood #5422
-- Doc: merk `load_application_object_failed` as public #5426
+- Doc: mark `load_application_object_failed` as public #5426
 
 # 2.5.11 (9 Jul 2025)
 

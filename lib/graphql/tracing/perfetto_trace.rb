@@ -253,7 +253,7 @@ module GraphQL
         packet = trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
-          name: query.context.current_path.join("."),
+          name: query.context.current_path&.join(".") || field.path,
           category_iids: FIELD_EXECUTE_CATEGORY_IIDS,
           extra_counter_track_uuids: @counts_objects,
           extra_counter_values: [count_allocations],
@@ -269,7 +269,7 @@ module GraphQL
         if @create_debug_annotations
           start_field.track_event = dup_with(start_field.track_event,{
             debug_annotations: [
-                payload_to_debug(nil, object.object, iid: DA_OBJECT_IID, intern_value: true),
+                payload_to_debug(nil, (object.is_a?(GraphQL::Schema::Object) ? object.object : object), iid: DA_OBJECT_IID, intern_value: true),
                 payload_to_debug(nil, arguments, iid: DA_ARGUMENTS_IID),
                 payload_to_debug(nil, app_result, iid: DA_RESULT_IID, intern_value: true)
               ]

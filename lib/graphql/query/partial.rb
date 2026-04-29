@@ -32,6 +32,7 @@ module GraphQL
         @multiplex = nil
         @result_values = nil
         @result = nil
+        @finalizers = @top_level_finalizers = nil
 
         if fragment_node
           @ast_nodes = [fragment_node]
@@ -49,6 +50,10 @@ module GraphQL
 
       def leaf?
         @leaf
+      end
+
+      def root_value
+        object
       end
 
       attr_reader :context, :query, :ast_nodes, :root_type, :object, :field_definition, :path, :schema
@@ -90,8 +95,20 @@ module GraphQL
         @query.fragments
       end
 
+      def validate
+        @query.validate
+      end
+
       def valid?
         @query.valid?
+      end
+
+      def query?
+        true
+      end
+
+      def run_partials(...)
+        @query.run_partials(...)
       end
 
       def analyzers
@@ -107,7 +124,7 @@ module GraphQL
       end
 
       def selected_operation
-        ast_nodes.first
+        Language::Nodes::OperationDefinition.new(selections: ast_nodes.flat_map(&:selections))
       end
 
       def static_errors
@@ -123,7 +140,6 @@ module GraphQL
       def set_type_info_from_path
         selections = [@query.selected_operation]
         type = @query.root_type
-        parent_type = nil
         field_defn = nil
 
         @path.each do |name_in_doc|
@@ -162,7 +178,6 @@ module GraphQL
           end
           field_name = next_selections.first.name
           field_defn = @schema.get_field(type, field_name, @query.context) || raise("Invariant: no field called #{field_name} on #{type.graphql_name}")
-          parent_type = type
           type = field_defn.type
           if type.non_null?
             type = type.of_type

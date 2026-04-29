@@ -251,6 +251,13 @@ string with \\"""
 
           result2 = parent_schema.execute(query_str)
           assert_equal ["An operation name is required"], result2["errors"].map { |e| e["message"] }
+
+          query_str2 = "query C { __typename #{5000.times.map { |n| "# comment #{n}\n" }.join} }"
+          result3 = child_schema.execute(query_str2)
+          assert_equal ["This query is too large to execute."], result3["errors"].map { |e| e["message"] }
+
+          result4 = parent_schema.execute(query_str2)
+          assert_equal({ "__typename" => "Query" }, result4["data"])
         end
       end
     end
