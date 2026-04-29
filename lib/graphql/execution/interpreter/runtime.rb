@@ -340,7 +340,7 @@ module GraphQL
           end
           field_name = ast_node.name
           owner_type = selections_result.graphql_result_type
-          field_defn = query.types.field(owner_type, field_name)
+          field_defn = query.types.field(owner_type, field_name) || raise(GraphQL::Error, "No field definition found for #{owner_type.graphql_name}.#{field_name} (at #{ast_node.position})")
 
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           runtime_state = get_current_runtime_state
