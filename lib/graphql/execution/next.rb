@@ -55,17 +55,11 @@ module GraphQL
         def multiplex_next(query_options, context: {}, max_complexity: self.max_complexity)
           Next.run_all(self, query_options, context: context, max_complexity: max_complexity)
         end
-
-        def execution_next_options
-          @execution_next_options || find_inherited_value(:execution_next_options, EmptyObjects::EMPTY_HASH)
-        end
-
-        attr_writer :execution_next_options
       end
 
-      def self.use(schema, authorization: true)
+      def self.use(schema, as_default: false)
         schema.extend(SchemaExtension)
-        schema.execution_next_options = { authorization: authorization }
+        schema.default_execution_next = as_default
       end
 
       def self.run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
@@ -82,7 +76,7 @@ module GraphQL
           query
         end
         multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
-        runner = Runner.new(multiplex, **schema.execution_next_options)
+        runner = Runner.new(multiplex)
         runner.execute
       end
     end

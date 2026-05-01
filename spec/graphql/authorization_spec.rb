@@ -354,7 +354,7 @@ describe "GraphQL::Authorization" do
       mutation(Mutation)
       directive(Nothing)
       use GraphQL::Schema::Warden if ADD_WARDEN
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
+      use GraphQL::Execution::Next, as_default: true if TESTING_EXEC_NEXT
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
@@ -388,12 +388,9 @@ describe "GraphQL::Authorization" do
   end
 
   def auth_execute(*args, **kwargs)
-    if TESTING_EXEC_NEXT
-      AuthTest::Schema.execute_next(*args, **kwargs)
-    else
-      AuthTest::Schema.execute(*args, **kwargs)
-    end
+    AuthTest::Schema.execute(*args, **kwargs)
   end
+
 
   describe "applying the visible? method" do
     it "works in queries" do

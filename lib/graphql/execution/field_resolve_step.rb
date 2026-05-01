@@ -164,7 +164,7 @@ module GraphQL
           objects = @selections_step.graphql_objects
         end
 
-        if @runner.authorization && @runner.authorizes?(@field_definition, ctx)
+        if @runner.authorizes?(@field_definition, ctx)
           authorized_objects = []
           authorized_results = []
           l = objects.size
@@ -507,13 +507,12 @@ module GraphQL
             i += 1
           end
         elsif @runner.resolves_lazies || (
-                @runner.authorization && (
-                    @static_type.kind.object? ?
-                      @runner.authorizes?(@static_type, @selections_step.query.context) :
-                      (
-                        (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))) &&
-                        @runner.authorizes?(runtime_type, @selections_step.query.context)
-                      )))
+                @static_type.kind.object? ?
+                  @runner.authorizes?(@static_type, @selections_step.query.context) :
+                  (
+                    (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))) &&
+                    @runner.authorizes?(runtime_type, @selections_step.query.context)
+                  ))
           obj_step = PrepareObjectStep.new(
             object: field_result,
             runner: @runner,

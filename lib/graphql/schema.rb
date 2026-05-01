@@ -1587,6 +1587,14 @@ module GraphQL
       # @see {Query#initialize} for arguments.
       # @return [GraphQL::Query::Result] query result, ready to be serialized as JSON
       def execute(query_str = nil, **kwargs)
+        if default_execution_next
+          execute_next(query_str, **kwargs)
+        else
+          execute_legacy(query_str, **kwargs)
+        end
+      end
+
+      def execute_legacy(query_str = nil, **kwargs)
         if query_str
           kwargs[:query] = query_str
         end
@@ -1628,8 +1636,14 @@ module GraphQL
       # @option kwargs [nil, Integer] :max_complexity (nil)
       # @return [Array<GraphQL::Query::Result>] One result for each query in the input
       def multiplex(queries, **kwargs)
-        GraphQL::Execution::Interpreter.run_all(self, queries, **kwargs)
+        if @default_execution_next
+          multiplex_next(queries, **kwargs)
+        else
+          GraphQL::Execution::Interpreter.run_all(self, queries, **kwargs)
+        end
       end
+
+      attr_accessor :default_execution_next
 
       def instrumenters
         inherited_instrumenters = find_inherited_value(:instrumenters) || Hash.new { |h,k| h[k] = [] }

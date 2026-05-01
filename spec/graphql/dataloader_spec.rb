@@ -486,7 +486,7 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
+    use GraphQL::Execution::Next, as_default: true if TESTING_EXEC_NEXT
     lazy_resolve Proc, :call
 
     class FieldTestError < StandardError; end
@@ -582,7 +582,7 @@ describe GraphQL::Dataloader do
 
     query(Query)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
+    use GraphQL::Execution::Next, as_default: true if TESTING_EXEC_NEXT
   end
 
   module DataloaderAssertions
@@ -638,11 +638,7 @@ describe GraphQL::Dataloader do
         let(:parts_schema) { make_schema_from(PartsSchema) }
 
         def exec_query(query_string, schema: self.schema, context: nil, variables: nil)
-          if TESTING_EXEC_NEXT
-            schema.execute_next(query_string, context: context, variables: variables)
-          else
-            schema.execute(query_string, context: context, variables: variables)
-          end
+          schema.execute(query_string, context: context, variables: variables)
         end
 
         it "Works with request(...)" do

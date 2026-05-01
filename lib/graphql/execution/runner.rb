@@ -2,7 +2,7 @@
 module GraphQL
   module Execution
     class Runner
-      def initialize(multiplex, authorization:)
+      def initialize(multiplex)
         @multiplex = multiplex
         @schema = multiplex.schema
         @steps_queue = []
@@ -32,12 +32,9 @@ module GraphQL
         end
 
         @lazy_cache = resolves_lazies ? {}.compare_by_identity : nil
-        @authorization = authorization
-        if @authorization
-          @authorizes_cache = Hash.new do |h, query_context|
-            h[query_context] = {}.compare_by_identity
-          end.compare_by_identity
-        end
+        @authorizes_cache = Hash.new do |h, query_context|
+          h[query_context] = {}.compare_by_identity
+        end.compare_by_identity
       end
 
       attr_reader :runtime_directives, :uses_runtime_directives, :finalizer_keys
@@ -63,7 +60,7 @@ module GraphQL
         @dataloader.append_job(step)
       end
 
-      attr_reader :authorization, :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
+      attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
 
       # @return [void]
       def add_finalizer(query, result_value, key, finalizer)
@@ -233,7 +230,7 @@ module GraphQL
 
         case root_type.kind.name
         when "OBJECT"
-          if self.authorization && authorizes?(root_type, query.context)
+          if authorizes?(root_type, query.context)
             query.current_trace.begin_authorized(root_type, root_value, query.context)
             auth_check = schema.sync_lazy(root_type.authorized?(root_value, query.context))
             query.current_trace.end_authorized(root_type, root_value, query.context, auth_check)
