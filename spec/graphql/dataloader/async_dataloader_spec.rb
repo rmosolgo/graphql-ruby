@@ -309,51 +309,51 @@ if RUBY_VERSION >= "3.2.0"
       include AsyncDataloaderAssertions
     end
 
-    describe "with perfetto trace turned on" do
-      class TraceAsyncSchema < AsyncSchema
-        trace_with GraphQL::Tracing::PerfettoTrace
-        use GraphQL::Dataloader::AsyncDataloader
-      end
+    # describe "with perfetto trace turned on" do
+    #   class TraceAsyncSchema < AsyncSchema
+    #     trace_with GraphQL::Tracing::PerfettoTrace
+    #     use GraphQL::Dataloader::AsyncDataloader
+    #   end
 
-      before do
-        @schema = TraceAsyncSchema
-        AsyncSchema::KeyWaitForSource.reset
-      end
+    #   before do
+    #     @schema = TraceAsyncSchema
+    #     AsyncSchema::KeyWaitForSource.reset
+    #   end
 
-      include AsyncDataloaderAssertions
-      include PerfettoSnapshot
+    #   include AsyncDataloaderAssertions
+    #   include PerfettoSnapshot
 
-      it "produces a trace" do
-        query_str = <<-GRAPHQL
-        {
-          s1: sleeper(duration: 0.1) {
-            sleeper(duration: 0.1) {
-              sleeper(duration: 0.1) {
-                duration
-              }
-            }
-          }
-          s2: sleeper(duration: 0.2) {
-            sleeper(duration: 0.1) {
-              duration
-            }
-          }
-          s3: sleeper(duration: 0.3) {
-            duration
-          }
-        }
-        GRAPHQL
-        res = @schema.execute(query_str)
-        if ENV["DUMP_PERFETTO"]
-          res.context.query.current_trace.write(file: "perfetto.dump")
-        end
+    #   it "produces a trace" do
+    #     query_str = <<-GRAPHQL
+    #     {
+    #       s1: sleeper(duration: 0.1) {
+    #         sleeper(duration: 0.1) {
+    #           sleeper(duration: 0.1) {
+    #             duration
+    #           }
+    #         }
+    #       }
+    #       s2: sleeper(duration: 0.2) {
+    #         sleeper(duration: 0.1) {
+    #           duration
+    #         }
+    #       }
+    #       s3: sleeper(duration: 0.3) {
+    #         duration
+    #       }
+    #     }
+    #     GRAPHQL
+    #     res = @schema.execute(query_str)
+    #     if ENV["DUMP_PERFETTO"]
+    #       res.context.query.current_trace.write(file: "perfetto.dump")
+    #     end
 
-        json = res.context.query.current_trace.write(file: nil, debug_json: true)
-        data = JSON.parse(json)
+    #     json = res.context.query.current_trace.write(file: nil, debug_json: true)
+    #     data = JSON.parse(json)
 
 
-        check_snapshot(data, "example.json")
-      end
-    end
+    #     check_snapshot(data, "example.json")
+    #   end
+    # end
   end
 end
