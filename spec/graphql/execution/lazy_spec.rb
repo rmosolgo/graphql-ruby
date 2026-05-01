@@ -297,32 +297,32 @@ describe GraphQL::Execution::Lazy do
 
         def self.resolve_type(obj, ctx)
           Loader.for(ctx, :versionable).load(obj[:versionable]) do |versionable|
-            versionable[:foo] ? FooVersionable : BarVersionable
+            [(versionable[:foo] ? FooVersionable : BarVersionable), versionable]
           end
         end
       end
 
       class FooVersionable < GraphQL::Schema::Object
         implements Version
-        field :foo, String
+        field :foo, String, hash_key: :foo
       end
 
       class BarVersionable < GraphQL::Schema::Object
         implements Version
-        field :bar, String
+        field :bar, String, hash_key: :bar
       end
 
       class VersionReference < GraphQL::Schema::Object
-        field :version, Version
+        field :version, Version, resolve_each: true
 
-        def version
+        def self.version(object, context)
           Loader.for(context, :version).load(object[:version])
         end
       end
       class Query < GraphQL::Schema::Object
-        field :version_references, [VersionReference]
+        field :version_references, [VersionReference], resolve_static: true
 
-        def version_references
+        def self.version_references(context)
           [{ version: 1 }, { version: 2 }]
         end
       end
@@ -330,6 +330,7 @@ describe GraphQL::Execution::Lazy do
       lazy_resolve(Proc, :call)
       query(Query)
       orphan_types FooVersionable, BarVersionable
+      use GraphQL::Execution::Next
     end
 
     it "resolves lazies efficiently" do
@@ -342,10 +343,19 @@ describe GraphQL::Execution::Lazy do
           }
         }
       }"
-      res = LazyResolveTypeSchema.execute(query_str)
-      pp res.to_h
-      expected_log = [
 
+      res = LazyResolveTypeSchema.execute_next(query_str)
+      expected_data = {
+        "versionReferences" => [
+          {"version" => {"foo" => "foo"}},
+          {"version" => {"bar" => "bar"}}
+        ]
+      }
+
+      assert_equal expected_data, res["data"]
+      expected_log = [
+        [:version, [1, 2]],
+        [:versionable, [3, 4]]
       ]
       assert_equal expected_log, LazyResolveTypeSchema::Loader::LOG
     end
