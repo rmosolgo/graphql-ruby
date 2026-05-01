@@ -59,7 +59,7 @@ module GraphQL
 
       def self.use(schema, as_default: false)
         schema.extend(SchemaExtension)
-        schema.default_execution_next = as_default
+        schema.default_execution_next(as_default)
       end
 
       def self.run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)

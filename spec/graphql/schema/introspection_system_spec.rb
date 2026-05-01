@@ -4,11 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::IntrospectionSystem do
 
   def execute_query(...)
-    if TESTING_EXEC_NEXT
-      Jazz::Schema.execute_next(...)
-    else
-      Jazz::Schema.execute(...)
-    end
+    Jazz::Schema.execute(...)
   end
 
   describe "custom introspection" do

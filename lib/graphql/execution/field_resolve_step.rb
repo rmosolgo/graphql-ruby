@@ -171,13 +171,22 @@ module GraphQL
           i = 0
           while i < l
             o = objects[i]
-            if @field_definition.authorized?(o, @arguments, ctx)
+            err = nil
+            begin
+              field_authed = @field_definition.authorized?(o, @arguments, ctx)
+            rescue GraphQL::UnauthorizedFieldError => field_auth_err
+              err = field_auth_err
+              err.field ||= @field_definition
+              field_authed = false
+            end
+
+            if field_authed
               authorized_results << @results[i]
               authorized_objects << o
             else
               begin
-                err = GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
-                authorized_objects << query.schema.unauthorized_object(err)
+                err ||= GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
+                authorized_objects << query.schema.unauthorized_field(err)
                 authorized_results << @results[i]
               rescue GraphQL::ExecutionError => exec_err
                 add_graphql_error(exec_err)

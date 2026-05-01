@@ -38,13 +38,11 @@ describe GraphQL::Tracing::SentryTrace do
       end
       trace_with OtherTrace
       trace_with GraphQL::Tracing::SentryTrace
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     end
 
     class SchemaWithTransactionName < GraphQL::Schema
       query(Query)
       trace_with(GraphQL::Tracing::SentryTrace, set_transaction_name: true)
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     end
   end
 
@@ -53,11 +51,7 @@ describe GraphQL::Tracing::SentryTrace do
   end
 
   def exec_query(query_str, context: {}, schema: SentryTraceTest::SchemaWithoutTransactionName)
-    if TESTING_EXEC_NEXT
-      schema.execute_next(query_str, context: context)
-    else
-      schema.execute(query_str, context: context)
-    end
+    schema.execute(query_str, context: context)
   end
 
   it "works with other trace modules" do

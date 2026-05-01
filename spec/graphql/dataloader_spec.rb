@@ -486,7 +486,6 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Next, as_default: true if TESTING_EXEC_NEXT
     lazy_resolve Proc, :call
 
     class FieldTestError < StandardError; end
@@ -582,7 +581,6 @@ describe GraphQL::Dataloader do
 
     query(Query)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Next, as_default: true if TESTING_EXEC_NEXT
   end
 
   module DataloaderAssertions

@@ -172,7 +172,6 @@ describe GraphQL::Schema::Subscription do
     query(Query)
     mutation(Mutation)
     subscription(Subscription)
-    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
 
     rescue_from(StandardError) { |err, *rest|
       if err.is_a?(GraphQL::Subscriptions::SubscriptionScopeMissingError)
@@ -244,11 +243,7 @@ describe GraphQL::Schema::Subscription do
   end
 
   def exec_query(*args, **kwargs)
-    if TESTING_EXEC_NEXT
-      SubscriptionFieldSchema.execute_next(*args, **kwargs)
-    else
-      SubscriptionFieldSchema.execute(*args, **kwargs)
-    end
+    SubscriptionFieldSchema.execute(*args, **kwargs)
   end
 
   def in_memory_subscription_count

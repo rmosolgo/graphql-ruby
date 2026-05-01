@@ -188,7 +188,6 @@ module LazyHelpers
     lazy_resolve(SumAll, :value)
     trace_with(SumAllInstrumentation2)
     trace_with(SumAllInstrumentation)
-    use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
 
     def self.sync_lazy(lazy)
       if lazy.is_a?(SumAll) && lazy.own_value > 1000
@@ -201,10 +200,6 @@ module LazyHelpers
   end
 
   def run_query(query_str, **rest)
-    if TESTING_EXEC_NEXT
-      LazySchema.execute_next(query_str, **rest)
-    else
-      LazySchema.execute(query_str, **rest)
-    end
+    LazySchema.execute(query_str, **rest)
   end
 end

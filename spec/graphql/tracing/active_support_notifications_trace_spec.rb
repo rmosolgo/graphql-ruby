@@ -62,11 +62,7 @@ if testing_rails?
       }
       query_str = "{ nameable(id: 1) { name } }"
       ActiveSupport::Notifications.subscribed(callback) do
-        if TESTING_EXEC_NEXT
-          AsnSchema.execute_next(query_str)
-        else
-          AsnSchema.execute(query_str)
-        end
+        AsnSchema.execute(query_str)
       end
 
       expected_names = [

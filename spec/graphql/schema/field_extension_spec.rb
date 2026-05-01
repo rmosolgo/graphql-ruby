@@ -186,16 +186,11 @@ describe GraphQL::Schema::FieldExtension do
 
     class Schema < GraphQL::Schema
       query(Query)
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     end
   end
 
   def exec_query(query_str, **kwargs)
-    if TESTING_EXEC_NEXT
-      FilterTestSchema::Schema.execute_next(query_str, **kwargs)
-    else
-      FilterTestSchema::Schema.execute(query_str, **kwargs)
-    end
+    FilterTestSchema::Schema.execute(query_str, **kwargs)
   end
 
   describe "object" do

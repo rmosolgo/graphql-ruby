@@ -297,7 +297,6 @@ describe GraphQL::Execution::Interpreter do
       mutation(Mutation)
       lazy_resolve(Box, :value)
       use GraphQL::Schema::AlwaysVisible
-      use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
 
       def self.object_from_id(id, ctx)
         OpenStruct.new(id: id)
@@ -343,11 +342,7 @@ describe GraphQL::Execution::Interpreter do
   end
 
   def exec_query(...)
-    if TESTING_EXEC_NEXT
-      InterpreterTest::Schema.execute_next(...)
-    else
-      InterpreterTest::Schema.execute(...)
-    end
+    InterpreterTest::Schema.execute(...)
   end
 
   it "runs a query" do
@@ -981,11 +976,7 @@ describe GraphQL::Execution::Interpreter do
 
   describe "multiplex queries" do
     def exec_multiplex(...)
-      if TESTING_EXEC_NEXT
-        InterpreterTest::Schema.multiplex_next(...)
-      else
-        InterpreterTest::Schema.multiplex(...)
-      end
+      InterpreterTest::Schema.multiplex(...)
     end
 
     it "runs multiplex queries" do

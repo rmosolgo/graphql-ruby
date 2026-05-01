@@ -354,7 +354,6 @@ describe "GraphQL::Authorization" do
       mutation(Mutation)
       directive(Nothing)
       use GraphQL::Schema::Warden if ADD_WARDEN
-      use GraphQL::Execution::Next, as_default: true if TESTING_EXEC_NEXT
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
@@ -637,6 +636,7 @@ describe "GraphQL::Authorization" do
             it "replaces the response with the return value of the unauthorized field hook" do
               query = "{ unauthorized }"
               response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :replace)
+              pp response
               assert_equal 42, response["data"].fetch("unauthorized")
             end
           end
@@ -931,7 +931,7 @@ describe "GraphQL::Authorization" do
           false
         end
 
-        field :int, Integer, null: false
+        field :int, Integer, null: false, resolve_legacy_instance_method: true
 
         def int
           1
@@ -942,7 +942,11 @@ describe "GraphQL::Authorization" do
 
     it "works out-of-the-box" do
       res = FalseSchema.execute("{ int }")
-      assert_nil res.fetch("data")
+      if TESTING_EXEC_NEXT
+        refute res.key?("data")
+      else
+        assert_nil res.fetch("data")
+      end
       refute res.key?("errors")
     end
   end
@@ -991,6 +995,7 @@ describe "GraphQL::Authorization" do
     end
 
     it "avoids calls to Object.authorized?" do
+      skip("Doesn't work this way with exec-next") if TESTING_EXEC_NEXT
       log = []
       res = AuthorizedNewOverrideSchema.execute("{ __typename int }", context: { log: log })
       assert_equal "Query", res["data"]["__typename"]

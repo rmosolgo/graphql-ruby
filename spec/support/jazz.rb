@@ -937,8 +937,6 @@ module Jazz
     extra_types BlogPost
     use GraphQL::Dataloader
     use GraphQL::Schema::Warden if ADD_WARDEN
-    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
-
 
     def self.resolves_lazies?
       # This is a shim for GraphQL::Execution::Next

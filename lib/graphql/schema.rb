@@ -1643,7 +1643,17 @@ module GraphQL
         end
       end
 
-      attr_accessor :default_execution_next
+      def default_execution_next(new_value = NOT_CONFIGURED)
+        if !NOT_CONFIGURED.equal?(new_value)
+          @default_execution_next = new_value
+        elsif instance_variable_defined?(:@default_execution_next)
+          @default_execution_next
+        elsif superclass.respond_to?(:default_execution_next)
+          superclass.default_execution_next
+        else
+          false
+        end
+      end
 
       def instrumenters
         inherited_instrumenters = find_inherited_value(:instrumenters) || Hash.new { |h,k| h[k] = [] }

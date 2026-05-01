@@ -190,20 +190,13 @@ module ConnectionAssertions
       end
 
       query(query)
-      if TESTING_EXEC_NEXT
-        use GraphQL::Execution::Next
-      end
     end
   end
 
   def self.included(child_module)
     child_module.class_exec do
       def exec_query(query_str, root_value: nil, **variables)
-        if TESTING_EXEC_NEXT
-          schema.execute_next(query_str, root_value: root_value, variables: variables)
-        else
-          schema.execute(query_str, root_value: root_value, variables: variables)
-        end
+        schema.execute(query_str, root_value: root_value, variables: variables)
       end
 
       def get_page_info(result, page_info_field)

@@ -3,11 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Execution::Multiplex do
   def multiplex(*a, **kw)
-    if TESTING_EXEC_NEXT
-      LazyHelpers::LazySchema.multiplex_next(*a, **kw)
-    else
-      LazyHelpers::LazySchema.multiplex(*a, **kw)
-    end
+    LazyHelpers::LazySchema.multiplex(*a, **kw)
   end
 
   let(:q1) { <<-GRAPHQL

@@ -59,7 +59,6 @@ describe GraphQL::Schema::Visibility do
 
     query(Query)
     use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
-    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
   end
 
   class DynVisSchema < VisSchema
@@ -71,11 +70,7 @@ describe GraphQL::Schema::Visibility do
   end
 
   def exec_query(...)
-    if TESTING_EXEC_NEXT
-      VisSchema.execute_next(...)
-    else
-      VisSchema.execute(...)
-    end
+    VisSchema.execute(...)
   end
 
   describe "top-level schema caches" do

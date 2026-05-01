@@ -272,11 +272,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
   end
 
   def exec_query(...)
-    if TESTING_EXEC_NEXT
-      RuntimeDirectiveTest::Schema.execute_next(...)
-    else
-      RuntimeDirectiveTest::Schema.execute(...)
-    end
+    RuntimeDirectiveTest::Schema.execute(...)
   end
 
   describe "runtime directives" do

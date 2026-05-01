@@ -230,11 +230,7 @@ if testing_rails?
     end
 
     def exec_query(...)
-      if TESTING_EXEC_NEXT
-        VulfpeckSchema.execute_next(...)
-      else
-        VulfpeckSchema.execute(...)
-      end
+      VulfpeckSchema.execute(...)
     end
   end
   class Author < ActiveRecord::Base
