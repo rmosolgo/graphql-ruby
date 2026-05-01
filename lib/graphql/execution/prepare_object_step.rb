@@ -28,7 +28,10 @@ module GraphQL
           ctx = @field_resolve_step.selections_step.query.context
           st = @field_resolve_step.static_type
           ctx.query.current_trace.begin_resolve_type(st, @object, ctx)
-          @resolved_type, _ignored_value = @field_resolve_step.sync(@resolved_type)
+          @resolved_type, new_value = @field_resolve_step.sync(@resolved_type)
+          if new_value
+            @object = new_value
+          end
           ctx.query.current_trace.end_resolve_type(st, @object, ctx, @resolved_type)
         end
         @runner.add_step(self)
@@ -41,7 +44,10 @@ module GraphQL
           if static_type.kind.abstract?
             ctx = @field_resolve_step.selections_step.query.context
             ctx.query.current_trace.begin_resolve_type(static_type, @object, ctx)
-            @resolved_type, _ignored_value = @runner.schema.resolve_type(static_type, @object, ctx)
+            @resolved_type, new_value = @runner.schema.resolve_type(static_type, @object, ctx)
+            if new_value
+              @object = new_value
+            end
             ctx.query.current_trace.end_resolve_type(static_type, @object, ctx, @resolved_type)
           else
             @resolved_type = static_type
