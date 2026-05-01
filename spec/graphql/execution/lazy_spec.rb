@@ -282,7 +282,7 @@ describe GraphQL::Execution::Lazy do
         end
 
         def resolve
-          if @loading_ids.any?
+          if !@loading_ids.empty?
             Loader::LOG << [@loading_key, @loading_ids.to_a]
             @loading_ids.to_a.each do |id|
               @loaded[id] = DATA[id]
