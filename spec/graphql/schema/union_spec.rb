@@ -112,16 +112,24 @@ describe GraphQL::Schema::Union do
         end
 
         class Query < GraphQL::Schema::Object
-          field :boxed_union, BoxedUnion
+          field :boxed_union, BoxedUnion, resolve_static: true
 
-          def boxed_union
+          def self.boxed_union(context)
             Box.new(context[:value])
           end
 
-          field :unboxed_union, UnboxedUnion
+          def boxed_union
+            self.class.boxed_union(context)
+          end
+
+          field :unboxed_union, UnboxedUnion, resolve_static: true
+
+          def self.unboxed_union(context)
+            context[:value]
+          end
 
           def unboxed_union
-            context[:value]
+            self.class.unboxed_union(context)
           end
         end
 
@@ -410,15 +418,15 @@ describe GraphQL::Schema::Union do
   describe "use with loads:" do
     class UnionLoadsSchema < GraphQL::Schema
       class Image < GraphQL::Schema::Object
-        field :title, String
+        field :title, String, hash_key: :title
       end
 
       class Video < GraphQL::Schema::Object
-        field :title, String
+        field :title, String, hash_key: :title
       end
 
       class Post < GraphQL::Schema::Object
-        field :title, String
+        field :title, String, hash_key: :title
       end
 
       class MediaItem < GraphQL::Schema::Union
@@ -426,12 +434,16 @@ describe GraphQL::Schema::Union do
       end
 
       class Query < GraphQL::Schema::Object
-        field :media_item_type, String do
+        field :media_item_type, String, resolve_static: true do
           argument :id, ID, loads: MediaItem, as: :media_item
         end
 
-        def media_item_type(media_item:)
+        def self.media_item_type(context, media_item:)
           media_item[:type]
+        end
+
+        def media_item_type(media_item:)
+          self.class.media_item_type(context, media_item: media_item)
         end
       end
 

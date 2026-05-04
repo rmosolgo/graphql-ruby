@@ -442,7 +442,16 @@ module GraphQL
               if (object_type = @runner.runtime_type_at[result])
                 # OK
               else
-                object_type = @runner.resolve_type(@static_type, next_object, query)
+                query.current_trace.begin_resolve_type(@static_type, next_object, query.context)
+                object_type = query.resolve_type(@static_type, next_object)
+                if object_type.is_a?(Array)
+                  object_type, next_object = object_type
+                end
+                if @runner.resolves_lazies && @runner.lazy?(object_type)
+                  # TODO batch this
+                  object_type = sync(object_type)
+                end
+                query.current_trace.end_resolve_type(@static_type, next_object, query.context, object_type)
                 @runner.runtime_type_at[result] = object_type
               end
               next_objects_by_type[object_type] << next_object
