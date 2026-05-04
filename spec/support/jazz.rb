@@ -575,7 +575,7 @@ module Jazz
 
   class AddEnsembleRelay < GraphQL::Schema::RelayClassicMutation
     argument :ensemble, EnsembleInput
-    field :ensemble, Ensemble, null: false
+    field :ensemble, Ensemble, null: false, hash_key: :ensemble
 
     def resolve(ensemble:)
       ens = Models::Ensemble.new(ensemble.name)
@@ -588,7 +588,7 @@ module Jazz
     null true
     description "Get Sitar to musical instrument"
 
-    field :instrument, InstrumentType, null: false
+    field :instrument, InstrumentType, null: false, hash_key: :instrument
 
     def resolve
       instrument = Models::Instrument.new("Sitar", :str)
@@ -603,8 +603,8 @@ module Jazz
     argument :int, Integer, required: false
     extras [:ast_node]
 
-    field :node_class, String, null: false
-    field :int, Integer
+    field :node_class, String, null: false, hash_key: :node_class
+    field :int, Integer, hash_key: :int
 
     def resolve(int: nil, ast_node:)
       {
@@ -620,8 +620,8 @@ module Jazz
 
     argument :int, Integer, required: false
 
-    field :lookahead_class, String, null: false
-    field :int, Integer
+    field :lookahead_class, String, null: false, hash_key: :lookahead_class
+    field :int, Integer, hash_key: :int
 
     def resolve(int: nil, lookahead:)
       {
@@ -637,10 +637,17 @@ module Jazz
       context[:has_lookahead] = !!lookahead
       super(**rest)
     end
+
+    def call
+      # This is not a very user-friendly API, but this demonstrates that a better API will be possible
+      context[:has_lookahead] = @prepared_arguments.key?(:lookahead)
+      @prepared_arguments.delete(:lookahead)
+      super
+    end
   end
 
   class HasExtrasStripped < StripsExtras
-    field :int, Integer, null: false
+    field :int, Integer, null: false, hash_key: :int
 
     def authorized?
       true
@@ -657,7 +664,7 @@ module Jazz
     argument :named_entity_id, ID, loads: NamedEntity
     argument :new_name, String
 
-    field :named_entity, NamedEntity, null: false
+    field :named_entity, NamedEntity, null: false, hash_key: :named_entity
 
     def resolve(named_entity:, new_name:)
       # doesn't actually update the "database"
@@ -674,7 +681,7 @@ module Jazz
     argument :performing_act_id, ID, loads: PerformingAct
     argument :new_name, String
 
-    field :performing_act, PerformingAct, null: false
+    field :performing_act, PerformingAct, null: false, hash_key: :performing_act
 
     def resolve(performing_act:, new_name:)
       # doesn't actually update the "database"
@@ -691,7 +698,7 @@ module Jazz
     argument :ensemble_id, ID, loads: Ensemble
     argument :new_name, String
 
-    field :ensemble, Ensemble, null: false
+    field :ensemble, Ensemble, null: false, hash_key: :ensemble
 
     def resolve(ensemble:, new_name:)
       # doesn't actually update the "database"
@@ -706,7 +713,7 @@ module Jazz
   class UpvoteEnsembles < GraphQL::Schema::RelayClassicMutation
     argument :ensemble_ids, [ID], loads: Ensemble
 
-    field :ensembles, [Ensemble], null: false
+    field :ensembles, [Ensemble], null: false, hash_key: :ensembles
 
     def resolve(ensembles:)
       {
@@ -718,7 +725,7 @@ module Jazz
   class UpvoteEnsemblesAsBands < GraphQL::Schema::RelayClassicMutation
     argument :ensemble_ids, [ID], loads: Ensemble, as: :bands
 
-    field :ensembles, [Ensemble], null: false
+    field :ensembles, [Ensemble], null: false, hash_key: :ensembles
 
     def resolve(bands:)
       {
@@ -730,7 +737,7 @@ module Jazz
   class UpvoteEnsemblesIds < GraphQL::Schema::RelayClassicMutation
     argument :ensembles_ids, [ID], loads: Ensemble
 
-    field :ensembles, [Ensemble], null: false
+    field :ensembles, [Ensemble], null: false, hash_key: :ensembles
 
     def resolve(ensembles:)
       {
@@ -742,7 +749,7 @@ module Jazz
   class RenameEnsembleAsBand < RenameEnsemble
     argument :ensemble_id, ID, loads: Ensemble, as: :band
     # This is duplicate to the inherited one; make sure it overrides it
-    field :ensemble, Ensemble, null: false
+    field :ensemble, Ensemble, null: false, hash_key: :ensemble
     def resolve(band:, new_name:)
       super(ensemble: band, new_name: new_name)
     end

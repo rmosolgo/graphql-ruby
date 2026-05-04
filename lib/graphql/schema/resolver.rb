@@ -60,9 +60,6 @@ module GraphQL
       attr_writer :prepared_arguments
 
       def call
-        if self.class < Schema::HasSingleInputArgument
-          @prepared_arguments = @prepared_arguments[:input]
-        end
         q = context.query
         trace_objs = [object]
         q.current_trace.begin_execute_field(field, @prepared_arguments, trace_objs, q)

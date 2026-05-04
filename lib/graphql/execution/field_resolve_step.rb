@@ -116,6 +116,12 @@ module GraphQL
         end
       end
 
+      def loaded_argument_unauthorized
+        @results = @selections_step.results
+        @field_results = Array.new(@selections_step.objects.size, nil)
+        build_results
+      end
+
       def execute_field
         objects = @selections_step.objects
         @results = @selections_step.results
