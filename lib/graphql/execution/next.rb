@@ -26,7 +26,7 @@ module GraphQL
 
     module Next
       module SchemaExtension
-        def execute_next(query_str = nil, context: nil, document: nil, operation_name: nil, variables: nil, root_value: nil, validate: true, visibility_profile: nil)
+        def execute_next(query_str = nil, query: nil, subscription_topic: nil, context: nil, document: nil, operation_name: nil, variables: nil, root_value: nil, validate: true, visibility_profile: nil)
           multiplex_context = if context
             {
               backtrace: context[:backtrace],
@@ -39,7 +39,8 @@ module GraphQL
             {}
           end
           query_opts = {
-            query: query_str,
+            query: query || query_str,
+            subscription_topic: subscription_topic,
             document: document,
             context: context,
             validate: validate,

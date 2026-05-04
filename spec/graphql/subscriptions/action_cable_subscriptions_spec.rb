@@ -21,11 +21,11 @@ describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
       argument :filter, Filter, required: false
       argument :keywords, [Keyword], required: false
 
-      field :text, String, null: false
+      field :text, String, null: false, hash_key: :text
     end
 
     class EvenCounter < GraphQL::Schema::Subscription
-      field :count, Integer, null: false
+      field :count, Integer, null: false, hash_key: :count
 
       def update
         if object[:count].even?
@@ -226,8 +226,8 @@ describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
       end
 
       class PointScored < GraphQL::Schema::Subscription
-        field :score, Int, null: false
-        field :player, Player, null: false
+        field :score, Int, null: false, hash_key: :score
+        field :player, Player, null: false, hash_key: :player
         subscription_scope :tenant
 
         def update
