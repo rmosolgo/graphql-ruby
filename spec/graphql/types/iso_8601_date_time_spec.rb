@@ -16,46 +16,66 @@ describe GraphQL::Types::ISO8601DateTime do
     end
 
     class Query < GraphQL::Schema::Object
-      field :parse_date, DateTimeObject do
+      field :parse_date, DateTimeObject, resolve_static: true do
         argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :parse_date_time, DateTimeObject do
+      field :parse_date_time, DateTimeObject, resolve_static: true do
         argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :parse_date_string, DateTimeObject do
+      field :parse_date_string, DateTimeObject, resolve_static: true do
         argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :parse_date_time_string, DateTimeObject do
+      field :parse_date_time_string, DateTimeObject, resolve_static: true do
         argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :invalid_date, DateTimeObject, null: false
+      field :invalid_date, DateTimeObject, null: false, resolve_static: true
 
-      def parse_date(date:)
+      def self.parse_date(context, date:)
         # Resolve a Date object
         Date.parse(date.iso8601)
       end
 
-      def parse_date_time(date:)
+      def parse_date(date:)
+        self.class.parse_date(context, date: date)
+      end
+
+      def self.parse_date_time(context, date:)
         # Resolve a Time object
         Time.parse(date.iso8601(3))
       end
 
-      def parse_date_string(date:)
+      def parse_date_time(date:)
+        self.class.parse_date_time(context, date: date)
+      end
+
+      def self.parse_date_string(context, date:)
         # Resolve a Date string
         Date.parse(date.iso8601).iso8601
       end
 
-      def parse_date_time_string(date:)
+      def parse_date_string(date:)
+        self.class.parse_date_string(context, date: date)
+      end
+
+      def self.parse_date_time_string(context, date:)
         # Resolve a DateTime string
         DateTime.parse(date.iso8601).iso8601
       end
 
-      def invalid_date
+      def parse_date_time_string(date:)
+        self.class.parse_date_time_string(context, date: date)
+      end
+
+      def self.invalid_date(context)
         'abc'
+      end
+
+      def invalid_date
+        self.class.invalid_date(context)
       end
     end
 
@@ -259,7 +279,11 @@ describe GraphQL::Types::ISO8601DateTime do
         err = assert_raises(GraphQL::Error) do
           DateTimeTest::Schema.execute(query_str)
         end
-        assert_equal err.message, 'An incompatible object (String) was given to GraphQL::Types::ISO8601DateTime. Make sure that only Times, Dates, DateTimes, and well-formatted Strings are used with this type. (no time information in "abc")'
+        expected_message = 'An incompatible object (String) was given to GraphQL::Types::ISO8601DateTime. Make sure that only Times, Dates, DateTimes, and well-formatted Strings are used with this type. (no time information in "abc")'
+        if TESTING_EXEC_NEXT
+          expected_message = "Resolving DateTimeObject.iso8601: #{expected_message}"
+        end
+        assert_equal expected_message, err.message
       end
     end
   end
