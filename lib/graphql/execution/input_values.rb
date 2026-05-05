@@ -82,20 +82,37 @@ module GraphQL
         elsif type.kind.input_object?
           coerced_obj = {}
 
-          @query.types.arguments(type).each do |arg|
-            arg_key = arg.keyword
-            if value.key?(arg.graphql_name)
-              arg_value = value[arg.graphql_name]
-            elsif value.key?(sym_name = arg.graphql_name.to_sym)
-              arg_value = value[sym_name]
-            elsif arg.default_value?
-              coerced_obj[arg_key] = arg.default_value
-              next
-            else
-              next
-            end
+          if value.is_a?(Hash)
+            @query.types.arguments(type).each do |arg|
+              arg_key = arg.keyword
+              if value.key?(arg.graphql_name)
+                arg_value = value[arg.graphql_name]
+              elsif value.key?(sym_name = arg.graphql_name.to_sym)
+                arg_value = value[sym_name]
+              elsif arg.default_value?
+                coerced_obj[arg_key] = arg.default_value
+                next
+              else
+                next
+              end
 
-            coerced_obj[arg_key] = variable_value(arg_value, arg.type)
+              coerced_obj[arg_key] = variable_value(arg_value, arg.type)
+            end
+          else
+            @query.types.arguments(type).each do |arg|
+              arg_key = arg.keyword
+              arg_name = arg.graphql_name
+              if (v_node = value.arguments.find { |a| a.name == arg_name })
+                arg_value = v_node.value
+              elsif arg.default_value?
+                coerced_obj[arg_key] = arg.default_value
+                next
+              else
+                next
+              end
+
+              coerced_obj[arg_key] = variable_value(arg_value, arg.type)
+            end
           end
 
           coerced_obj

@@ -152,15 +152,19 @@ describe GraphQL::Query::Variables do
 
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          field :variables_test, Integer, extras: [:ast_node], camelize: false do
+          field :variables_test, Integer, extras: [:ast_node], camelize: false, resolve_static: true do
             argument :val, Integer, required: false
             argument :val_with_default, Integer, required: false, default_value: 13, camelize: false
             argument :complex_val, complex_val, required: false, camelize: false
           end
 
-          def variables_test(ast_node:, **args)
+          def self.variables_test(context, ast_node:, **args)
             context.schema.args_cache[ast_node.alias] = args
             1
+          end
+
+          def variables_test(ast_node:, **args)
+            self.class.variables_test(context, ast_node: ast_node, **args)
           end
         end
 

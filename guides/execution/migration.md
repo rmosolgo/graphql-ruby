@@ -186,6 +186,8 @@ Fully supported, but some legacy hooks are _not_ called. Implement the new hooks
 - `execute_query`, `execute_query_lazy`: use `execute_multiplex` for a top-level hook instead. (Single queries are always executed in a multiplex of size = 1.)
 - `resolve_type`, `authorized`: use `{begin,end}_resolve_type` and `{begin,end}_authorized` instead. (May be called multiple times for Dataloader etc.)
 
+Additionally, `object` parameters to those methods will receive an _Array_ of `objects` instead.
+
 ### Lazy resolution (GraphQL-Batch)
 
 Lazy resolution runs in the new execution (GraphQL-Batch is supported). When migrating to class methods, you may need to update your library method calls to work on a set of inputs rather than a single input.
