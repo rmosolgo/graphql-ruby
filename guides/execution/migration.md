@@ -280,11 +280,13 @@ def self.values(context)
 end
 ```
 
-### Errors and `rescue_from`
+### Errors and `rescue_from` 🟡
 
-Supported.
+Raising `GraphQL::ExecutionError` and adding `rescue_from` handlers are supported
 
 Returning an array of `GraphQL::ExecutionError` instances is not supported anymore.
+
+`extras: [:execution_errors]` and `context.add_error` are not supported anymore.
 
 ### Connection fields
 

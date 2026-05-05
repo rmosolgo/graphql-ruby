@@ -151,6 +151,9 @@ module GraphQL
             end
 
             query.result_values = fin_result
+            if query.context.namespace?(:__query_result_extensions__)
+              query.result_values["extensions"] = query.context.namespace(:__query_result_extensions__)
+            end
             query.result
           end
         end
