@@ -5,14 +5,18 @@ describe "GraphQL::Query::Variables" do
   module VariablesTest
     class MaxValidationSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :items, [String], null: false do
+        field :items, [String], null: false, resolve_static: true do
           argument :a, Int
           argument :b, Int
           argument :c, Int
         end
 
-        def items(a:, b:, c:)
+        def self.items(context, a:, b:, c:)
           [a, b, c].map(&:to_s)
+        end
+
+        def items(a:, b:, c:)
+          self.class.items(a: a, b: b, c: c)
         end
       end
 
