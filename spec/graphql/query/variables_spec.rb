@@ -16,7 +16,7 @@ describe "GraphQL::Query::Variables" do
         end
 
         def items(a:, b:, c:)
-          self.class.items(a: a, b: b, c: c)
+          self.class.items(context, a: a, b: b, c: c)
         end
       end
 
