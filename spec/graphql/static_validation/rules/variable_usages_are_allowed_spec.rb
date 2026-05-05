@@ -256,7 +256,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       end
 
       class FooMutation < GraphQL::Schema::Mutation
-        field(:foo, String)
+        field(:foo, String, hash_key: :foo)
         argument(:input, Input)
 
         def resolve(input:)

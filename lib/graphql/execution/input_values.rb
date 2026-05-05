@@ -109,6 +109,9 @@ module GraphQL
       def argument_value(argument_values, argument_key, argument_definition, arg_value, override_type, field_resolve_step)
         treat_as_type = override_type || argument_definition.type
         if treat_as_type.non_null?
+          if arg_value.nil?
+            treat_as_type.coerce_input(arg_value, @query.context)
+          end
           treat_as_type = treat_as_type.of_type
         end
 
