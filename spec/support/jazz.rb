@@ -555,18 +555,20 @@ module Jazz
     null true
     description "Register a new musical instrument in the database"
 
-    argument :name, String, prepare: :prepare_name
+    argument :name, String, prepare: TESTING_EXEC_NEXT ? ->(v, _ctx) { v.capitalize} : :prepare_name
     argument :family, Family
 
-    field :instrument, InstrumentType, null: false
+    field :instrument, InstrumentType, null: false, hash_key: :instrument
     # This is meaningless, but it's to test the conflict with `Hash#entries`
-    field :entries, [InstrumentType], null: false
+    field :entries, [InstrumentType], null: false, hash_key: :entries
     # Test `extras` injection
 
-    field :ee, String, null: false
-    extras [:execution_errors]
+    field :ee, String, null: false, hash_key: :ee
+    if !TESTING_EXEC_NEXT
+      extras [:execution_errors]
+    end
 
-    def resolve(name:, family:, execution_errors:)
+    def resolve(name:, family:, execution_errors: nil)
       instrument = Jazz::Models::Instrument.new(name, family)
       Jazz::Models.data["Instrument"] << instrument
       {instrument: instrument, entries: Jazz::Models.data["Instrument"], ee: execution_errors.class.name}
@@ -782,7 +784,7 @@ module Jazz
   end
 
   class ReturnInvalidNull < GraphQL::Schema::Mutation
-    field :int, Integer, null: false
+    field :int, Integer, null: false, hash_key: :int
 
     def resolve
       { int: nil }
@@ -818,7 +820,7 @@ module Jazz
     end
 
     field :prepare_input, Integer, null: false, resolve_legacy_instance_method: true do
-      argument :input, Integer, prepare: :square, as: :squared_input
+      argument :input, Integer, prepare: TESTING_EXEC_NEXT ? ->(v, _ctx) { v ** 2 } : :square, as: :squared_input
     end
 
     def prepare_input(squared_input:)

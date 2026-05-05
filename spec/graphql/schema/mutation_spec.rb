@@ -97,12 +97,13 @@ describe GraphQL::Schema::Mutation do
       response = Jazz::Schema.execute(query_str)
       assert_equal "Trombone", response["data"]["addInstrument"]["instrument"]["name"]
       assert_equal "BRASS", response["data"]["addInstrument"]["instrument"]["family"]
-      errors_class = "GraphQL::Execution::Interpreter::ExecutionErrors"
+      errors_class = TESTING_EXEC_NEXT ? "NilClass" : "GraphQL::Execution::Interpreter::ExecutionErrors"
       assert_equal errors_class, response["data"]["addInstrument"]["ee"]
       assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
 
     it "accepts a list of errors as a valid result" do
+      skip("Not implemented in GraphQL::Execution::Next") if TESTING_EXEC_NEXT
       query_str = "mutation { returnsMultipleErrors { dummyField { name } } }"
 
       response = Jazz::Schema.execute(query_str)
@@ -189,7 +190,7 @@ describe GraphQL::Schema::Mutation do
     class SignIn < GraphQL::Schema::Mutation
       argument :login, String
       argument :password, String
-      field :success, Boolean, null: false
+      field :success, Boolean, null: false, hash_key: :success
       def resolve(login:, password:)
         { success: login == password }
       end
@@ -228,7 +229,7 @@ describe GraphQL::Schema::Mutation do
     parent_mutation = Class.new(GraphQL::Schema::Mutation) do
       graphql_name "ParentMutation"
       argument :thing_id, "ID"
-      field :inputs, String
+      field :inputs, String, hash_key: :inputs
 
       def resolve(**inputs)
         { inputs: inputs.inspect }
@@ -290,7 +291,7 @@ describe GraphQL::Schema::Mutation do
         field :value, Integer
       end
       class Increment < GraphQL::Schema::Mutation
-        field :counter, CounterType
+        field :counter, CounterType, hash_key: :counter
         argument :counter_id, ID, loads: CounterType
 
         def resolve(counter:)

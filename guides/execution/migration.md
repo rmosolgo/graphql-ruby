@@ -238,9 +238,11 @@ There is some implementation in the code right now but it's not stable. Please o
 
 `loads:` is handled as previously, __except__ that custom `def load_...` methods are _not_ called.
 
-### `prepare:`
+### `prepare:` 🟡
 
-These methods/procs are called.
+Procs are called as before.
+
+Methods that depend on a runtime `object` (such as a type instance or Mutation class) are _not_ called, because arguments are prepared before objects are ready.
 
 ### `validates:` 🟡
 
@@ -281,6 +283,8 @@ end
 ### Errors and `rescue_from`
 
 Supported.
+
+Returning an array of `GraphQL::ExecutionError` instances is not supported anymore.
 
 ### Connection fields
 
