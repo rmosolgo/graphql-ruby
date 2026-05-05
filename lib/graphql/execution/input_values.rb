@@ -102,7 +102,7 @@ module GraphQL
             @query.types.arguments(type).each do |arg|
               arg_key = arg.keyword
               arg_name = arg.graphql_name
-              if (v_node = value.arguments.find { |a| a.name == arg_name })
+              if (v_node = value.arguments.find { |a| a.name == arg_name }) # rubocop:disable Development/ContextIsPassedCop
                 arg_value = v_node.value
               elsif arg.default_value?
                 coerced_obj[arg_key] = arg.default_value

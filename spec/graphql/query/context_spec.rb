@@ -34,7 +34,8 @@ describe GraphQL::Query::Context do
 
       field :push_query_error, Integer, null: false
       def push_query_error
-        self.class.push_query_error(context)
+        context.add_error(GraphQL::ExecutionError.new("Query-level error"))
+        1
       end
     end
 
