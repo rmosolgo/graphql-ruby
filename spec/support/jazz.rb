@@ -422,7 +422,7 @@ module Jazz
       upcase.inspect
     end
 
-    field :input_object_camelization, String, null: false do
+    field :input_object_camelization, String, null: false, resolve_legacy_instance_method: true do
       argument :input, CamelizedBooleanInput
     end
 
@@ -525,7 +525,7 @@ module Jazz
       "#{arg_with_default.class.name} -> #{arg_with_default.to_h}"
     end
 
-    field :default_value_test_2, String, null: false, resolver_method: :default_value_test do
+    field :default_value_test_2, String, null: false, resolver_method: :default_value_test, resolve_legacy_instance_method: :default_value_test do
       argument :arg_with_default, FullyOptionalInput, required: false, default_value: {}
     end
 

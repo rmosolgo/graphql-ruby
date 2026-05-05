@@ -192,8 +192,11 @@ module GraphQL
             else
               begin
                 err ||= GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
-                authorized_objects << query.schema.unauthorized_field(err)
-                authorized_results << @results[i]
+                new_obj = query.schema.unauthorized_field(err)
+                if !new_obj.nil?
+                  authorized_objects << new_obj
+                  authorized_results << @results[i]
+                end
               rescue GraphQL::ExecutionError => exec_err
                 add_graphql_error(exec_err)
               end

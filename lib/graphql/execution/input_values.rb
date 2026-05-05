@@ -113,7 +113,7 @@ module GraphQL
         end
 
         if treat_as_type.kind.list? && !arg_value.nil?
-          inner_t = treat_as_type.unwrap
+          inner_t = treat_as_type.of_type
           arg_value = if arg_value.is_a?(Array)
             values = Array.new(arg_value.size)
             arg_value.each_with_index { |inner_v, idx| argument_value(values, idx, argument_definition, inner_v, inner_t, field_resolve_step)}
@@ -221,23 +221,39 @@ module GraphQL
 
         elsif type.kind.input_object?
           coerced_obj = {}
-          arg_nodes_by_name = value_node.arguments.each_with_object({}) do |arg_node, acc| # rubocop:disable Development/ContextIsPassedCop
-            acc[arg_node.name] = arg_node
-          end
-
-          @query.types.arguments(type).each do |arg|
-            arg_node = arg_nodes_by_name[arg.graphql_name]
-            arg_key = arg.keyword
-            if arg_node.nil? || (arg_node.value.is_a?(Language::Nodes::VariableIdentifier) && !variable_values.key?(arg_node.value.name))
-              if arg.default_value?
-                coerced_obj[arg_key] = arg.default_value
+          if value_node.is_a?(Hash)
+            @query.types.arguments(type).each do |arg|
+              arg_value = value_node[arg.keyword]
+              arg_key = arg.keyword
+              if arg_value.nil?
+                if arg.default_value?
+                  coerced_obj[arg_key] = arg.default_value
+                end
+                next
               end
-              next
+
+              coerced_obj[arg_key] = value_from_ast(arg_value, arg.type)
+            end
+          else
+            arg_nodes_by_name = value_node.arguments.each_with_object({}) do |arg_node, acc| # rubocop:disable Development/ContextIsPassedCop
+              acc[arg_node.name] = arg_node
             end
 
-            arg_value = value_from_ast(arg_node.value, arg.type)
-            coerced_obj[arg_key] = arg_value
+            @query.types.arguments(type).each do |arg|
+              arg_node = arg_nodes_by_name[arg.graphql_name]
+              arg_key = arg.keyword
+              if arg_node.nil? || (arg_node.value.is_a?(Language::Nodes::VariableIdentifier) && !variable_values.key?(arg_node.value.name))
+                if arg.default_value?
+                  coerced_obj[arg_key] = arg.default_value
+                end
+                next
+              end
+
+              arg_value = value_from_ast(arg_node.value, arg.type)
+              coerced_obj[arg_key] = arg_value
+            end
           end
+
 
           coerced_obj
         elsif type.kind.leaf?
