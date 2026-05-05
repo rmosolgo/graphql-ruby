@@ -1150,17 +1150,14 @@ module GraphQL
       attr_accessor :using_backtrace
 
       # @api private
-      def handle_or_reraise(context, err)
+      def handle_or_reraise(context, err, object: context[:current_object], arguments: context[:current_arguments], field: context[:current_field])
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
-          obj = context[:current_object]
-          args = context[:current_arguments]
-          args = args && args.respond_to?(:keyword_arguments) ? args.keyword_arguments : nil
-          field = context[:current_field]
-          if obj.is_a?(GraphQL::Schema::Object)
-            obj = obj.object
+          arguments = arguments.respond_to?(:keyword_arguments) ? arguments.keyword_arguments : arguments
+          if object.is_a?(GraphQL::Schema::Object)
+            object = object.object
           end
-          handler[:handler].call(err, obj, args, context, field)
+          handler[:handler].call(err, object, arguments, context, field)
         else
           if (context[:backtrace] || using_backtrace) && !err.is_a?(GraphQL::ExecutionError)
             err = GraphQL::Backtrace::TracedError.new(err, context)

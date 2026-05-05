@@ -36,7 +36,7 @@ module GraphQL
         assign_value
       rescue StandardError => stderr
         @loaded_value = begin
-          context.query.handle_or_reraise(stderr)
+          context.query.handle_or_reraise(stderr, field: @field_resolve_step.field_definition, arguments: @field_resolve_step.arguments, object: nil) # rubocop:disable Development/ContextIsPassedCop
         rescue GraphQL::ExecutionError => ex_err
           ex_err
         end

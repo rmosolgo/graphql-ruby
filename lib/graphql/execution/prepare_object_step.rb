@@ -91,6 +91,13 @@ module GraphQL
         end
       rescue GraphQL::RuntimeError => err
         @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+      rescue StandardError => err
+        query ||= @field_resolve_step.selections_step.query
+        begin
+          query.handle_or_reraise(err, field: @field_resolve_step.field_definition, arguments: @field_resolve_step.arguments, object: @object) # rubocop:disable Development/ContextIsPassedCop
+        rescue GraphQL::RuntimeError => err
+          @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+        end
       end
 
       def create_result

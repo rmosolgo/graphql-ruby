@@ -69,7 +69,7 @@ module GraphQL
         err
       rescue StandardError => stderr
         begin
-          @selections_step.query.handle_or_reraise(stderr)
+          @selections_step.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
         rescue GraphQL::ExecutionError => ex_err
           ex_err
         end
@@ -287,6 +287,14 @@ module GraphQL
         elsif @pending_steps.nil? || @pending_steps.empty?
           build_results
         end
+      rescue GraphQL::ExecutionError => err
+        add_graphql_error(err)
+      rescue StandardError => stderr
+        begin
+          @selections_step.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
+        rescue GraphQL::ExecutionError => err
+          add_graphql_error(err)
+        end
       end
 
       def any_lazy_results?
@@ -405,9 +413,16 @@ module GraphQL
       end
 
       def finish_leaf_result(result_h, key, field_result, return_type, ctx)
-        final_field_result = if field_result.nil?
+        final_field_result = build_leaf_result(field_result, return_type, ctx, false)
+
+        @directive_finalizers&.each { |f| @runner.add_finalizer(ctx.query, result_h, key, f) }
+        result_h[@key] = final_field_result
+      end
+
+      def build_leaf_result(field_result, return_type, ctx, is_from_array)
+        if field_result.nil?
           if return_type.non_null?
-            add_non_null_error(false)
+            add_non_null_error(is_from_array)
           else
             nil
           end
@@ -418,13 +433,16 @@ module GraphQL
             field_result.path = path
             @runner.add_finalizer(ctx.query, result_h, key, field_result)
           end
+        elsif return_type.list?
+          if return_type.non_null?
+            return_type = return_type.of_type
+          end
+
+          inner_type = return_type.of_type
+          field_result.map { |item| build_leaf_result(item, inner_type, ctx, true) }
         else
-          # TODO `nil`s in [T!] types aren't handled
           return_type.coerce_result(field_result, ctx)
         end
-
-        @directive_finalizers&.each { |f| @runner.add_finalizer(ctx.query, result_h, key, f) }
-        result_h[@key] = final_field_result
       end
 
       def enqueue_next_steps
@@ -569,12 +587,24 @@ module GraphQL
             method_receiver.public_send(@field_definition.execution_mode_key, objects, context, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
             Array.new(objects.size, exec_err)
+          rescue StandardError => stderr
+            begin
+              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
+            rescue GraphQL::ExecutionError => exec_err
+              Array.new(objects.size, exec_err)
+            end
           end
         when :resolve_static
           result = begin
             method_receiver.public_send(@field_definition.execution_mode_key, context, **args_hash)
           rescue GraphQL::ExecutionError => err
             err
+          rescue StandardError => stderr
+            begin
+              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
+            rescue GraphQL::ExecutionError => err
+              err
+            end
           end
           Array.new(objects.size, result)
         when :resolve_each
@@ -582,6 +612,12 @@ module GraphQL
             method_receiver.public_send(@field_definition.execution_mode_key, o, context, **args_hash)
           rescue GraphQL::ExecutionError => err
             err
+          rescue StandardError => stderr
+            begin
+              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: o)
+            rescue GraphQL::ExecutionError => err
+              err
+            end
           end
         when :hash_key
           k = @field_definition.execution_mode_key
