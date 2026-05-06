@@ -521,8 +521,12 @@ describe GraphQL::Schema::Object do
             "begin_execute_field",
             "end_execute_field"
           ] : [
+            "begin_execute_field",
             "execute_field",
+            "end_execute_field",
+            "begin_execute_field",
             "execute_field",
+            "end_execute_field",
             "execute_query_lazy"
           ]
         )

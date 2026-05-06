@@ -166,7 +166,7 @@ module GraphQL
         end
 
         if @field_definition.dynamic_introspection
-          objects = objects.map { |o| @field_definition.owner.wrap(o, ctx) }
+          objects = @selections_step.graphql_objects.map { |o| @field_definition.owner.wrap(o, ctx) }
         end
 
         if @runner.authorizes?(@field_definition, ctx)
@@ -582,7 +582,8 @@ module GraphQL
       end
 
       def resolve_batch(objects, context, args_hash)
-        method_receiver = @field_definition.dynamic_introspection ? @field_definition.owner : @parent_type
+        dyn_ins = @field_definition.dynamic_introspection
+        method_receiver = dyn_ins ? @field_definition.owner : @parent_type
         case @field_definition.execution_mode
         when :resolve_batch
           begin
@@ -611,7 +612,8 @@ module GraphQL
           Array.new(objects.size, result)
         when :resolve_each
           objects.map do |o|
-            method_receiver.public_send(@field_definition.execution_mode_key, o, context, **args_hash)
+            passed_in_obj = dyn_ins ? o.object : o
+            method_receiver.public_send(@field_definition.execution_mode_key, passed_in_obj, context, **args_hash)
           rescue GraphQL::ExecutionError => err
             err
           rescue StandardError => stderr
@@ -675,12 +677,7 @@ module GraphQL
           end
           results
         when :resolve_legacy_instance_method
-          legacy_objects = if @field_definition.dynamic_introspection
-            objects
-          else
-            @selections_step.graphql_objects
-          end
-          legacy_objects.map do |obj_inst|
+          @selections_step.graphql_objects.map do |obj_inst|
             obj_inst.public_send(@field_definition.execution_mode_key, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
             exec_err

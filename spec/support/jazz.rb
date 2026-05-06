@@ -929,11 +929,11 @@ module Jazz
       field :__classname, String, "The Ruby class name of the root object", null: false, resolve_each: :__classname
 
       def __classname
-        self.class.__classname(object, context)
+        object.object.class.name
       end
 
       def self.__classname(object, context)
-        object.object.class.name # TODO don't pass instances here
+        object.object.class.name
       end
     end
   end
