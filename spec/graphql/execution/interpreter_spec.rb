@@ -654,18 +654,18 @@ describe GraphQL::Execution::Interpreter do
         def self.authorized?(obj, ctx)
           -> { true }
         end
-        field :skip, String
+        field :skip, String, resolve_legacy_instance_method: true
 
         def skip
           context.skip
         end
 
-        field :lazy_skip, String
+        field :lazy_skip, String, resolve_legacy_instance_method: true
         def lazy_skip
           -> { context.skip }
         end
 
-        field :mixed_skips, [String]
+        field :mixed_skips, [String], resolve_legacy_instance_method: true
         def mixed_skips
           [
             "a",
@@ -678,7 +678,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       class NothingSubscription < GraphQL::Schema::Subscription
-        field :nothing, String
+        field :nothing, String, hash_key: :nothing
         def authorized?(*)
           -> { true }
         end
@@ -745,24 +745,32 @@ describe GraphQL::Execution::Interpreter do
         field_class BaseField
         connection_type_class BaseConnection
         edge_type_class BaseEdge
-        field :title, String, null: false
-        field :body, String, null: false
+        field :title, String, null: false, hash_key: :title
+        field :body, String, null: false, hash_key: :body
       end
 
       class Query < GraphQL::Schema::Object
-        field :things, Thing.connection_type, null: false
+        field :things, Thing.connection_type, null: false, resolve_static: true
 
-        def things
+        def self.things(context)
           [{title: "a"}, {title: "b"}, {title: "c"}]
         end
 
-        field :thing, Thing, null: false
+        def things
+          self.class.things(context)
+        end
 
-        def thing
+        field :thing, Thing, null: false, resolve_static: true
+
+        def self.thing(context)
           {
             title: "a",
             body: "b",
           }
+        end
+
+        def thing
+          self.class.things(context)
         end
       end
 
@@ -796,14 +804,18 @@ describe GraphQL::Execution::Interpreter do
 
       class Thing < GraphQL::Schema::Object
         field_class BaseField
-        field :title, String, null: false
+        field :title, String, null: false, hash_key: :title
       end
 
       class Query < GraphQL::Schema::Object
-        field :things, [Thing], null: false
+        field :things, [Thing], null: false, resolve_static: true
+
+        def self.things(context)
+          [{title: "a"}, {title: "b"}, {title: "c"}]
+        end
 
         def things
-          [{title: "a"}, {title: "b"}, {title: "c"}]
+          self.class.things(context)
         end
       end
 
@@ -827,31 +839,47 @@ describe GraphQL::Execution::Interpreter do
       end
 
       class Txn < GraphQL::Schema::Object
-        field :fails, String, null: false
+        field :fails, String, null: false, resolve_static: true
+
+        def self.fails(context)
+          raise GraphQL::ExecutionError, "boom"
+        end
 
         def fails
-          raise GraphQL::ExecutionError, "boom"
+          self.class.fails(context)
         end
       end
 
       class Concrete < GraphQL::Schema::Object
         implements Iface
 
-        field :txn, Txn
+        field :txn, Txn, resolve_static: true
+
+        def self.txn(context)
+          {}
+        end
 
         def txn
           {}
         end
 
-        field :msg, String
+        field :msg, String, resolve_static: true
+
+        def self.msg(context)
+          "THIS SHOULD SHOW UP"
+        end
 
         def msg
-          "THIS SHOULD SHOW UP"
+          self.class.msg(context)
         end
       end
 
       class Query < GraphQL::Schema::Object
-        field :iface, Iface
+        field :iface, Iface, resolve_static: true
+
+        def self.iface(context)
+          {}
+        end
 
         def iface
           {}
@@ -922,23 +950,31 @@ describe GraphQL::Execution::Interpreter do
   describe "fragment used twice in different ways" do
     class FragmentBugSchema < GraphQL::Schema
       class ProductVariant < GraphQL::Schema::Object
-        field :product, "FragmentBugSchema::Product"
+        field :product, "FragmentBugSchema::Product", hash_key: :product
       end
 
       class Product < GraphQL::Schema::Object
-        field :id, ID
-        field :variants, [ProductVariant]
+        field :id, ID, hash_key: :id
+        field :variants, [ProductVariant], resolve_static: true
+
+        def self.variants(context)
+          [{ product: { id: "1" } }]
+        end
 
         def variants
-          [{ product: { id: "1" } }]
+          self.class.variants(context)
         end
       end
 
       class Query < GraphQL::Schema::Object
-        field :variant, ProductVariant
+        field :variant, ProductVariant, resolve_static: true
+
+        def self.variant(context)
+          { product: { id: "1" } }
+        end
 
         def variant
-          { product: { id: "1" } }
+          self.class.variant(context)
         end
       end
 
@@ -1056,6 +1092,7 @@ describe GraphQL::Execution::Interpreter do
     end
 
     it "correctly provides current_type at selections-level" do
+      skip("No context[:current_type] in exec-next") if TESTING_EXEC_NEXT
       query_str = <<~GRAPHQL
       query {
         parent(name: "ABC") {

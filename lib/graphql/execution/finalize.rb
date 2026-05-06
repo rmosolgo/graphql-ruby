@@ -181,11 +181,20 @@ module GraphQL
           return result_arr if @finalizers_count == 0
         end
 
-        result_arr.each_with_index do |result_item, idx|
-          @current_result_path << idx
-          new_result = if (f = finalizers(result_arr, idx))
-            run_finalizers(@current_result_path.dup, f, result_arr, idx)
-            result_arr[idx]
+        effective_idx = -1
+        result_arr.each_with_index do |result_item, before_idx|
+          effective_idx += 1
+          @current_result_path << before_idx
+          new_result = if (f = finalizers(result_arr, before_idx))
+            before_size = result_arr.size
+            run_finalizers(@current_result_path.dup, f, result_arr, effective_idx)
+            after_size = result_arr.size
+            if after_size < before_size
+              effective_idx -= 1
+              :unassigned
+            else
+              result_arr[effective_idx]
+            end
           elsif inner_type.list? && result_item
             check_list_result(result_item, inner_type.of_type, ast_selections)
           elsif !inner_type.kind.leaf? && result_item
@@ -196,10 +205,12 @@ module GraphQL
 
           if new_result.nil? && inner_type_non_null
             new_invalid_null = true
-            result_arr[idx] = nil
+            result_arr[effective_idx] = nil
+            break if @finalizers_count == 0
+          elsif :unassigned.equal?(new_result)
             break if @finalizers_count == 0
           elsif !new_result.equal?(result_item)
-            result_arr[idx] = new_result
+            result_arr[effective_idx] = new_result
             break if @finalizers_count == 0
           end
         ensure
