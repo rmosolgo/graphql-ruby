@@ -38,6 +38,9 @@ javascript_client/subscriptions
 javascript_client/sync
 javascript_client/cli*
 javascript_client/index*
+javascript_client/esm/**/*.d.ts
+javascript_client/esm/**/*.js
+!javascript_client/esm/package.json
 # Don't commit compiled extension files:
 *.bundle
 *.so

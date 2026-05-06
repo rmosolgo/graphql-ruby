@@ -3,7 +3,71 @@
   "version": "1.14.9",
   "description": "JavaScript client for graphql-ruby",
   "main": "index.js",
+  "module": "esm/index.js",
   "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./index.js",
+      "default": "./index.js"
+    },
+    "./index.js": {
+      "types": "./index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./index.js",
+      "default": "./index.js"
+    },
+    "./cli.js": "./cli.js",
+    "./CHANGELOG.md": "./CHANGELOG.md",
+    "./DumpPayloadExample.json": "./DumpPayloadExample.json",
+    "./LICENSE.md": "./LICENSE.md",
+    "./readme.md": "./readme.md",
+    "./sync": {
+      "types": "./sync/index.d.ts",
+      "import": "./esm/sync/index.js",
+      "require": "./sync/index.js",
+      "default": "./sync/index.js"
+    },
+    "./sync/*": {
+      "types": "./sync/*",
+      "import": "./esm/sync/*.js",
+      "require": "./sync/*.js",
+      "default": "./sync/*.js"
+    },
+    "./sync/*.js": {
+      "types": "./sync/*.d.ts",
+      "import": "./esm/sync/*.js",
+      "require": "./sync/*.js",
+      "default": "./sync/*.js"
+    },
+    "./subscriptions/*": {
+      "types": "./subscriptions/*",
+      "import": "./esm/subscriptions/*.js",
+      "require": "./subscriptions/*.js",
+      "default": "./subscriptions/*.js"
+    },
+    "./subscriptions/*.js": {
+      "types": "./subscriptions/*.d.ts",
+      "import": "./esm/subscriptions/*.js",
+      "require": "./subscriptions/*.js",
+      "default": "./subscriptions/*.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "sync": [
+        "sync/index.d.ts"
+      ],
+      "sync/*": [
+        "sync/*"
+      ],
+      "subscriptions/*": [
+        "subscriptions/*"
+      ]
+    }
+  },
   "repository": "https://github.com/rmosolgo/graphql-ruby",
   "author": "Robert Mosolgo",
   "license": "LGPL-3.0",
@@ -34,8 +98,10 @@
     "urql": "^2.2.2"
   },
   "scripts": {
+    "build": "tsc && node scripts/clean-esm.js && tsc -p tsconfig.esm.json && node scripts/prepare-esm.js",
+    "prepack": "npm run build",
     "test": "tsc && jest",
-    "prepublishOnly": "tsc"
+    "prepublishOnly": "npm test"
   },
   "dependencies": {
     "glob": "^13.0.6",
