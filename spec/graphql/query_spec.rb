@@ -1114,8 +1114,9 @@ describe GraphQL::Query do
   describe "context[:trace]" do
     class QueryTraceSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :int, Integer
+        field :int, Integer, resolve_static: true
         def int; 1; end
+        def self.int(context); 1; end
       end
 
       class Trace < GraphQL::Tracing::Trace
@@ -1131,7 +1132,7 @@ describe GraphQL::Query do
           super
         end
 
-        def execute_field(**rest)
+        def begin_execute_field(*args)
           @execute_field_count ||= 0
           @execute_field_count += 1
           super
