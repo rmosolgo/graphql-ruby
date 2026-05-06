@@ -166,8 +166,7 @@ module GraphQL
         end
 
         if @field_definition.dynamic_introspection
-          # TODO break this backwards compat somehow?
-          objects = @selections_step.graphql_objects
+          objects = objects.map { |o| @field_definition.owner.wrap(o, ctx) }
         end
 
         if @runner.authorizes?(@field_definition, ctx)
@@ -514,7 +513,7 @@ module GraphQL
       end
 
       def add_non_null_error(is_from_array)
-        err = InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path)
+        err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path)
         @runner.schema.type_error(err, @selections_step.query.context)
       end
 
@@ -676,10 +675,12 @@ module GraphQL
           end
           results
         when :resolve_legacy_instance_method
-          @selections_step.graphql_objects.map do |obj_inst|
-            if @field_definition.dynamic_introspection
-              obj_inst = @owner.wrap(obj_inst, context)
-            end
+          legacy_objects = if @field_definition.dynamic_introspection
+            objects
+          else
+            @selections_step.graphql_objects
+          end
+          legacy_objects.map do |obj_inst|
             obj_inst.public_send(@field_definition.execution_mode_key, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
             exec_err

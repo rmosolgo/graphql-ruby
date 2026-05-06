@@ -160,6 +160,33 @@ Previously, GraphQL-Ruby would check `type_object.respond_to?(:title)`, `object.
 
 Now, GraphQL-Ruby simply calls `object.title` and allows the `NoMethodError` to bubble up if one is raised.
 
+### Interface Resolver Methods
+
+Resolver methods are now class methods instead of instance methods. In order to make this work in interface modules, they must be defined in a `resolver_methods do ... end` block, for example:
+
+
+```ruby
+module Node
+  include BaseInterface
+
+  field :id, ID, resolve_each: true
+
+  resolver_methods do
+    # This will define `def self.id` on Object types that implement this interface
+    def id(object, context)
+      GlobalId.new(object).to_s
+    end
+  end
+
+  # Backwards compat instance method:
+  def id
+    self.class.id(object, context)
+  end
+end
+```
+
+Methods defined in `resolver_methods { ... }` will be copied into Object type classes as _class methods_, so they'll be available for `resolve_{each|static|batch}` fields.
+
 ### Query Analyzers, including complexity 🟡
 
 Support is identical; this runs before execution using the exact same code.
@@ -297,6 +324,8 @@ Connection arguments are automatically handled and connection wrapper objects ar
 ### Custom Introspection
 
 This _works_ but if you want custom authorization or any lazy values, see notes about that compatibility.
+
+If you're reimplementing default values, you'll need to add the corresponding `resolve_static: true` or `resolve_each: true` configurations. See the built-in type definitions under `GraphQL::Introspection` to get these configurations.
 
 ### Multiplex
 

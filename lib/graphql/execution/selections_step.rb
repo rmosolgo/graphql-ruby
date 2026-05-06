@@ -19,7 +19,7 @@ module GraphQL
 
       def graphql_objects
         @graphql_objects ||= @objects.map do |obj|
-          @parent_type.scoped_new(obj, @query.context)
+          @parent_type.wrap(obj, @query.context)
         end
       end
 

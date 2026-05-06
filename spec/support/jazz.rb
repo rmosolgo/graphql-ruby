@@ -207,7 +207,7 @@ module Jazz
 
   module HasMusicians
     include BaseInterface
-    field :musicians, "[Jazz::Musician]", null: false
+    field :musicians, "[Jazz::Musician]", null: false, hash_key: :musicians
   end
 
   # Here's a new-style GraphQL type definition
@@ -374,7 +374,7 @@ module Jazz
   end
 
   class HashKeyTest < BaseObject
-    field :falsey, Boolean, null: false
+    field :falsey, Boolean, null: false, hash_key: :falsey
   end
 
   class CamelizedBooleanInput <  GraphQL::Schema::InputObject
@@ -383,11 +383,11 @@ module Jazz
 
   # Another new-style definition, with method overrides
   class Query < BaseObject
-    field :ensembles, [Ensemble], null: false
+    field :ensembles, [Ensemble], null: false, resolve_static: true
     field :find, GloballyIdentifiableType, resolve_legacy_instance_method: true do
       argument :id, ID
     end
-    field :instruments, [InstrumentType], null: false, resolve_legacy_instance_method: true do
+    field :instruments, [InstrumentType], null: false, resolve_static: true do
       argument :family, Family, required: false
     end
     field :inspect_input, [String], null: false, resolve_legacy_instance_method: true do
@@ -430,9 +430,13 @@ module Jazz
       input.to_h.inspect
     end
 
-    def ensembles
+    def self.ensembles(context)
       # Filter out the unauthorized one to avoid an error later
       Models.data["Ensemble"].select { |e| e.name != "Spinal Tap" }
+    end
+
+    def ensembles
+      self.class.ensembles(context)
     end
 
     def find(id:)
@@ -443,12 +447,16 @@ module Jazz
       end
     end
 
-    def instruments(family: nil)
+    def self.instruments(context, family: nil)
       objs = Models.data["Instrument"]
       if family
         objs = objs.select { |i| i.family == family }
       end
       objs
+    end
+
+    def instruments(family: nil)
+      self.class.instruments(context, family: family)
     end
 
     # This is for testing input object behavior
@@ -792,7 +800,7 @@ module Jazz
   end
 
   class Mutation < BaseObject
-    field :add_ensemble, Ensemble, null: false do
+    field :add_ensemble, Ensemble, null: false, resolve_static: true do
       argument :input, EnsembleInput
     end
 
@@ -813,10 +821,14 @@ module Jazz
     field :has_field_extras, mutation: HasFieldExtras, extras: [:lookahead]
     field :return_invalid_null, mutation: ReturnInvalidNull
 
-    def add_ensemble(input:)
+    def self.add_ensemble(context, input:)
       ens = Models::Ensemble.new(input.name)
       Models.data["Ensemble"] << ens
       ens
+    end
+
+    def add_ensemble(input:)
+      self.class.add_ensemble(context, input: input)
     end
 
     field :prepare_input, Integer, null: false, resolve_legacy_instance_method: true do
