@@ -15,8 +15,8 @@ module StarWars
     graphql_name "Base"
     implements GraphQL::Types::Relay::Node
     global_id_field :id
-    field :name, String, null: false
-    def name
+    field :name, String, null: false, resolve_each: true
+    def self.name(object, context)
       LazyWrapper.new {
         if object.id.nil?
           raise GraphQL::ExecutionError, "Boom!"
@@ -24,6 +24,10 @@ module StarWars
           object.name
         end
       }
+    end
+
+    def name
+      self.class.name(object, context)
     end
     field :planet, String
   end
@@ -44,10 +48,14 @@ module StarWars
     edge_type(BaseEdge, nodes_field: false)
     nodes_field
 
-    field :total_count, Integer
+    field :total_count, Integer, resolve_each: true
+
+    def self.total_count(object, context)
+      object.items.count
+    end
 
     def total_count
-      object.items.count
+      self.class.total_count(object, context)
     end
   end
 
@@ -65,23 +73,35 @@ module StarWars
     node_type(BaseType)
     field :upcased_name, String
     field :upcased_parent_name, String
-    field :edge_class_name, String
+    field :edge_class_name, String, resolve_each: true
+
+    def self.edge_class_name(object, context)
+      object.class.name
+    end
 
     def edge_class_name
-      object.class.name
+      self.class.edge_class_name(object, context)
     end
   end
 
   class CustomEdgeBaseConnectionType < GraphQL::Types::Relay::BaseConnection
     edge_type(CustomBaseEdgeType, edge_class: NewCustomBaseEdge, nodes_field: true)
-    field :total_count_times_100, Integer
-    def total_count_times_100
+    field :total_count_times_100, Integer, resolve_each: true
+    def self.total_count_times_100(object, context)
       object.items.count * 100
     end
 
-    field :field_name, String
-    def field_name
+    def total_count_times_100
+      self.class.total_count_times_100(object, context)
+    end
+
+    field :field_name, String, resolve_each: true
+    def self.field_name(object, context)
       object.field.name
+    end
+
+    def field_name
+      self.class.field_name(object, context)
     end
   end
 
@@ -100,10 +120,14 @@ module StarWars
 
   class ShipConnectionWithParentType < GraphQL::Types::Relay::BaseConnection
     edge_type(Ship.edge_type)
-    field :parent_class_name, String, null: false
+    field :parent_class_name, String, null: false, resolve_each: true
+
+    def self.parent_class_name(object, context)
+      object.parent.class.name
+    end
 
     def parent_class_name
-      object.parent.class.name
+      self.class.parent_class_name(object, context)
     end
   end
 
@@ -118,13 +142,17 @@ module StarWars
   class Faction < GraphQL::Schema::Object
     implements GraphQL::Types::Relay::Node
 
-    field :id, ID, null: false
-    def id
+    field :id, ID, null: false, resolve_each: true
+    def self.id(object, context)
       GraphQL::Relay::GlobalIdResolve.new(type: Faction).call(object, {}, context)
     end
 
+    def id
+      self.class.id(object, context)
+    end
+
     field :name, String
-    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true do
+    field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true, resolve_each: true do
       argument :name_includes, String, required: false
     end
 
@@ -134,7 +162,7 @@ module StarWars
 
     field :shipsByResolver, resolver: ShipsByResolver, connection: true
 
-    def ships(name_includes: nil)
+    def self.ships(object, context, name_includes: nil)
       all_ships = object.ships.map {|ship_id| StarWars::DATA["Ship"][ship_id] }
       if name_includes
         case name_includes
@@ -158,14 +186,18 @@ module StarWars
       all_ships
     end
 
+    def ships(name_includes: nil)
+      self.class.ships(object, context, name_includes: name_includes)
+    end
+
     field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, resolver: ShipsWithMaxPageSize
 
-    field :bases, BasesConnectionWithTotalCountType, connection: true do
+    field :bases, BasesConnectionWithTotalCountType, connection: true, resolve_each: true do
       argument :name_includes, String, required: false
       argument :complex_order, Boolean, required: false
     end
 
-    def bases(name_includes: nil, complex_order: nil)
+    def self.bases(object, context, name_includes: nil, complex_order: nil)
       all_bases = Base.where(id: object.bases)
       if name_includes
         all_bases = all_bases.where("name LIKE ?", "%#{name_includes}%")
@@ -179,49 +211,73 @@ module StarWars
       all_bases.load
     end
 
+    def bases(name_includes: nil, complex_order: nil)
+      self.class.bases(object, context, name_includes: name_includes, complex_order: complex_order)
+    end
+
     field :bases_clone, BaseConnection
-    field :bases_by_name, BaseConnection do
+    field :bases_by_name, BaseConnection, resolve_each: true do
       argument :order, String, default_value: "name", required: false
     end
-    def bases_by_name(order: nil)
+    def self.bases_by_name(object, context, order: nil)
       if order.present?
-        @object.bases.order(order)
+        object.bases.order(order)
       else
-        @object.bases
+        object.bases
       end
     end
 
-    def all_bases
+    def bases_by_name(order: nil)
+      self.class.bases_by_name(object, context, order: order)
+    end
+
+    def self.all_bases(context)
       Base.all
     end
 
-    def all_bases_array
-      all_bases.to_a
+    def all_bases
+      self.class.all_bases(context)
     end
 
-    field :basesWithMaxLimitRelation, BaseConnection, max_page_size: 2, resolver_method: :all_bases
-    field :basesWithMaxLimitArray, BaseConnection, max_page_size: 2, resolver_method: :all_bases_array
-    field :basesWithDefaultMaxLimitRelation, BaseConnection, resolver_method: :all_bases
-    field :basesWithDefaultMaxLimitArray, BaseConnection, resolver_method: :all_bases_array
-    field :basesWithLargeMaxLimitRelation, BaseConnection, max_page_size: 1000, resolver_method: :all_bases
-    field :basesWithoutNodes, BaseConnectionWithoutNodes, resolver_method: :all_bases_array
+    def self.all_bases_array(context)
+      Base.all.to_a
+    end
 
-    field :bases_as_sequel_dataset, BasesConnectionWithTotalCountType, connection: true, max_page_size: 1000 do
+    def all_bases_array
+      self.class.all_bases_array(context)
+    end
+
+    field :basesWithMaxLimitRelation, BaseConnection, max_page_size: 2, resolver_method: :all_bases, resolve_static: :all_bases
+    field :basesWithMaxLimitArray, BaseConnection, max_page_size: 2, resolver_method: :all_bases_array, resolve_static: :all_bases_array
+    field :basesWithDefaultMaxLimitRelation, BaseConnection, resolver_method: :all_bases, resolve_static: :all_bases
+    field :basesWithDefaultMaxLimitArray, BaseConnection, resolver_method: :all_bases_array, resolve_static: :all_bases_array
+    field :basesWithLargeMaxLimitRelation, BaseConnection, max_page_size: 1000, resolver_method: :all_bases, resolve_static: :all_bases
+    field :basesWithoutNodes, BaseConnectionWithoutNodes, resolver_method: :all_bases_array, resolve_static: :all_bases_array
+
+    field :bases_as_sequel_dataset, BasesConnectionWithTotalCountType, connection: true, max_page_size: 1000, resolve_each: true do
       argument :name_includes, String, required: false
     end
 
-    def bases_as_sequel_dataset(name_includes: nil)
-      all_bases = SequelBase.where(faction_id: @object.id)
+    def self.bases_as_sequel_dataset(object, context, name_includes: nil)
+      all_bases = SequelBase.where(faction_id: object.id)
       if name_includes
         all_bases = all_bases.where(Sequel.like(:name, "%#{name_includes}%"))
       end
       all_bases
     end
 
-    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, connection: true, resolver_method: :lazy_bases
+    def bases_as_sequel_dataset(name_includes: nil)
+      self.class.bases_as_sequel_dataset(object, context, name_includes: name_includes)
+    end
+
+    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, connection: true, resolver_method: :lazy_bases, resolve_each: :lazy_bases
+
+    def self.lazy_bases(object, context)
+      LazyNodesWrapper.new(object.bases)
+    end
 
     def lazy_bases
-      LazyNodesWrapper.new(object.bases)
+      self.class.lazy_bases(object, context)
     end
   end
 
@@ -327,62 +383,94 @@ module StarWars
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
 
-    field :rebels, Faction
-    def rebels
+    field :rebels, Faction, resolve_static: true
+    def self.rebels(context)
       StarWars::DATA["Faction"]["1"]
     end
 
-    field :empire, Faction
-    def empire
+    def rebels
+      self.class.rebels(context)
+    end
+
+    field :empire, Faction, resolve_static: true
+    def self.empire(context)
       StarWars::DATA["Faction"]["2"]
     end
 
-    field :largest_base, BaseType
+    def empire
+      self.class.empire(context)
+    end
 
-    def largest_base
+    field :largest_base, BaseType, resolve_static: true
+
+    def self.largest_base(context)
       Base.find(3)
     end
 
-    field :newest_bases_grouped_by_faction, BaseConnection
+    def largest_base
+      self.class.largest_base(context)
+    end
 
-    def newest_bases_grouped_by_faction
+    field :newest_bases_grouped_by_faction, BaseConnection, resolve_static: true
+
+    def self.newest_bases_grouped_by_faction(context)
       Base
         .having('id in (select max(id) from bases group by faction_id)')
         .group(:id)
         .order('faction_id desc')
     end
 
-    field :bases_with_null_name, BaseConnection, null: false
+    def newest_bases_grouped_by_faction
+      self.class.newest_bases_grouped_by_faction(context)
+    end
+
+    field :bases_with_null_name, BaseConnection, null: false, resolve_static: true
+
+    def self.bases_with_null_name(context)
+      [OpenStruct.new(id: nil)]
+    end
 
     def bases_with_null_name
-      [OpenStruct.new(id: nil)]
+      self.class.bases_with_null_name(context)
     end
 
     include GraphQL::Types::Relay::HasNodeField
 
-    field :node_with_custom_resolver, GraphQL::Types::Relay::Node do
+    field :node_with_custom_resolver, GraphQL::Types::Relay::Node, resolve_static: true do
       argument :id, ID
     end
-    def node_with_custom_resolver(id:)
+    def self.node_with_custom_resolver(context, id:)
       StarWars::DATA["Faction"]["1"]
+    end
+
+    def node_with_custom_resolver(id:)
+      self.class.node_with_custom_resolver(context, id: id)
     end
 
 
     include GraphQL::Types::Relay::HasNodesField
 
-    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true] do
+    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], resolve_static: true do
       argument :ids, [ID]
     end
-    def nodes_with_custom_resolver(ids:)
+    def self.nodes_with_custom_resolver(context, ids:)
       [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
     end
 
-    field :batched_base, BaseType do
+    def nodes_with_custom_resolver(ids:)
+      self.class.nodes_with_custom_resolver(context, ids: ids)
+    end
+
+    field :batched_base, BaseType, resolve_static: true do
       argument :id, ID
     end
 
-    def batched_base(id:)
+    def self.batched_base(context, id:)
       LazyLoader.defer(@context, Base, id)
+    end
+
+    def batched_base(id:)
+      self.class.batched_base(context, id: id)
     end
   end
 
