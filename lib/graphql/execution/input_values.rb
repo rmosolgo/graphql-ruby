@@ -38,6 +38,7 @@ module GraphQL
       def argument_values(owner_defn, argument_nodes, field_resolve_step)
         arg_defns = @query.types.arguments(owner_defn)
         argument_values = {}
+        errors = nil
 
         arg_defns.each do |argument_definition|
           arg_ruby_key = argument_definition.keyword
@@ -52,11 +53,12 @@ module GraphQL
             arg_value = value_from_ast(arg_node.value, argument_definition.type)
             argument_value(argument_values, arg_ruby_key, argument_definition, arg_value, nil, field_resolve_step)
           end
+        rescue GraphQL::RuntimeError => exec_err
+          errors ||= []
+          errors << exec_err
         end
 
-        argument_values
-      rescue GraphQL::ExecutionError => exec_err
-        exec_err
+        return argument_values, errors
       end
 
       private
@@ -96,6 +98,10 @@ module GraphQL
                 next
               end
 
+              if arg_value.nil? && arg.replace_null_with_default?
+                arg_value = arg.default_value
+              end
+
               coerced_obj[arg_key] = variable_value(arg_value, arg.type)
             end
           else
@@ -104,14 +110,16 @@ module GraphQL
               arg_name = arg.graphql_name
               if (v_node = value.arguments.find { |a| a.name == arg_name }) # rubocop:disable Development/ContextIsPassedCop
                 arg_value = v_node.value
+                coerced_obj[arg_key] = if arg_value.nil? && arg.replace_null_with_default?
+                  arg.default_value
+                else
+                  variable_value(arg_value, arg.type)
+                end
               elsif arg.default_value?
                 coerced_obj[arg_key] = arg.default_value
-                next
               else
-                next
+                # Nothing
               end
-
-              coerced_obj[arg_key] = variable_value(arg_value, arg.type)
             end
           end
 
@@ -130,6 +138,10 @@ module GraphQL
             treat_as_type.coerce_input(arg_value, @query.context)
           end
           treat_as_type = treat_as_type.of_type
+        end
+
+        if arg_value.nil? && argument_definition.replace_null_with_default?
+          arg_value = argument_definition.default_value
         end
 
         if treat_as_type.kind.list? && !arg_value.nil?

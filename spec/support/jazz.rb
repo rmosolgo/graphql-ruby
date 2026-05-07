@@ -767,7 +767,7 @@ module Jazz
 
   class LoadAndReturnEnsemble < GraphQL::Schema::RelayClassicMutation
     argument :ensemble_id, ID, required: false, loads: Ensemble
-    field :ensemble, Ensemble
+    field :ensemble, Ensemble, hash_key: :ensemble
 
     def resolve(ensemble: nil)
       { ensemble: ensemble }

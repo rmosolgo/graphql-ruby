@@ -14,7 +14,21 @@ module GraphQL
       end
 
       def value
-        @loaded_value = @field_resolve_step.sync(@loaded_value)
+        schema = @field_resolve_step.runner.schema
+        @loaded_value = schema.sync_lazy(@loaded_value)
+        assign_value
+      rescue GraphQL::UnauthorizedError => auth_err
+        @is_authorized = false
+        schema.unauthorized_object(auth_err)
+      rescue GraphQL::RuntimeError => err
+        @loaded_value = err
+        assign_value
+      rescue StandardError => stderr
+        begin
+          @field_resolve_step.selections_step.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
+        rescue GraphQL::ExecutionError => ex_err
+          @loaded_value = ex_err
+        end
         assign_value
       end
 

@@ -107,8 +107,16 @@ module GraphQL
         query = @selections_step.query
         field_name = @ast_node.name
         @field_definition = query.types.field(@parent_type, field_name) || raise(GraphQL::Error, "No field definition found for #{@parent_type.to_type_signature}.#{ast_node.name} (at #{@ast_node.position})")
-        arguments = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
-        @arguments ||= arguments # may have already been set to an error
+        @arguments, errors = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
+        if errors
+          @field_results = Array.new(@selections_step.objects.size, errors.pop)
+          @results = @selections_step.results
+          errors.each do |e|
+            add_graphql_error(e)
+          end
+          build_results
+          return
+        end
 
         if (@pending_steps.nil? || @pending_steps.size == 0) &&
             @field_results.nil? # Make sure the arguments flow didn't already call through
@@ -125,12 +133,6 @@ module GraphQL
       def execute_field
         objects = @selections_step.objects
         @results = @selections_step.results
-        # TODO not as good because only one error?
-        if @arguments.is_a?(GraphQL::RuntimeError)
-          @field_results = Array.new(objects.size, @arguments)
-          build_results
-          return
-        end
 
         query = @selections_step.query
         ctx = query.context
@@ -237,9 +239,7 @@ module GraphQL
           if directives
             directives.each do |dir_node|
               if (dir_defn = @runner.runtime_directives[dir_node.name])
-                # TODO: `coerce_arguments` modifies self, assuming it's field arguments. Extract to pure function for use
-                # here and with fragments.
-                dir_args = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, nil)  # rubocop:disable Development/ContextIsPassedCop
+                dir_args, _errors = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, nil)  # rubocop:disable Development/ContextIsPassedCop
                 result = dir_defn.resolve_field(ast_nodes, @parent_type, field_definition, authorized_objects, dir_args, ctx)
                 if !result.nil?
                   if result.is_a?(Finalizer)
