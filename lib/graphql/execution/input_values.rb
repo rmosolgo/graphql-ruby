@@ -225,8 +225,6 @@ module GraphQL
           nil
         elsif value_node.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           variable_values[value_node.name]
-        elsif value_node.is_a?(GraphQL::Language::Nodes::NullValue)
-          nil
         elsif type.list?
           inner_type = type.of_type
           if value_node.is_a?(Array)
@@ -234,13 +232,15 @@ module GraphQL
               value_from_ast(inner_value_node, inner_type)
             end
             coerced_items.freeze
+          elsif value_node.is_a?(Language::Nodes::NullValue)
+            nil
           else
             item_value = value_from_ast(value_node, inner_type)
             [item_value].freeze
           end
-
         elsif type.kind.input_object?
           coerced_obj = {}
+          # TODO manually handle NullValue here?
           if value_node.is_a?(Hash)
             @query.types.arguments(type).each do |arg|
               arg_value = value_node[arg.keyword]
@@ -277,10 +277,8 @@ module GraphQL
 
           coerced_obj
         elsif type.kind.leaf?
-          if type.kind.enum?
-            if value_node.is_a?(GraphQL::Language::Nodes::Enum)
-              value_node = value_node.name
-            end
+          if value_node.is_a?(Language::Nodes::AbstractNode) || value_node.is_a?(Array)
+            value_node = coerce_untyped_input(value_node)
           end
 
           begin
@@ -290,6 +288,32 @@ module GraphQL
           end
         else
           raise "Unexpected input type: #{type.to_type_signature}."
+        end
+      end
+
+      private
+
+      def coerce_untyped_input(input_value)
+        case input_value
+        when Language::Nodes::AbstractNode
+          case input_value
+          when Language::Nodes::NullValue
+            nil
+          when Language::Nodes::Enum
+            input_value.name
+          when Language::Nodes::InputObject
+            value_h = {}
+            input_value.arguments.each do |arg|
+              value_h[arg.name] = coerce_untyped_input(arg.value)
+            end
+            value_h
+          else
+            raise "Unhandled untyped input AST node: #{input_value.class}"
+          end
+        when Array
+          input_value.map { |v| coerce_untyped_input(v) }
+        else
+          input_value
         end
       end
     end
