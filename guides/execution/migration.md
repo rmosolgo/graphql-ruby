@@ -259,6 +259,8 @@ Supported completely.
 
 There is some implementation in the code right now but it's not stable. Please open an issue to discuss.
 
+Query-level directives are not implemented yet, but will be. Please open an issue if you have a use case for this.
+
 ### `as:`
 
 `as:` is applied: arguments are passed into Ruby methods by their `as:` names instead of their GraphQL names.

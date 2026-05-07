@@ -14,7 +14,7 @@ module PerfettoSnapshot
       FileUtils.mkdir_p(snapshot_dir)
       File.write(snapshot_path, JSON.pretty_generate(snapshot_json))
     elsif !File.exist?(snapshot_path)
-      raise "Snapshot file not found: #{snapshot_path.inspect}"
+      refute true, "Snapshot file not found: #{snapshot_path.inspect}. Rerun with UPDATE_PERFETTO=1 to create it."
     else
       snapshot_data = JSON.parse(File.read(snapshot_path))
       cleaned_data = convert_to_snapshot(data, iid_table)
