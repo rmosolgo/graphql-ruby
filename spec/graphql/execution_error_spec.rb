@@ -415,8 +415,12 @@ describe GraphQL::ExecutionError do
       query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
 
-        field :test, test_union
+        field :test, test_union, resolve_static: true
         define_method(:test) do
+          1
+        end
+
+        define_singleton_method(:test) do |ctx|
           1
         end
       end
@@ -461,8 +465,12 @@ describe GraphQL::ExecutionError do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
 
-          field :test, test_union
+          field :test, test_union, resolve_static: true
           define_method(:test) do
+            1
+          end
+
+          define_singleton_method(:test) do |ctx|
             1
           end
         end
@@ -505,11 +513,15 @@ describe GraphQL::ExecutionError do
 
       query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
-        field :item, String do
+        field :item, String, resolve_static: true do
           argument :key, String
         end
         define_method(:item) do |key:|
           dataloader.with(item_error_loader).load(key)
+        end
+
+        define_singleton_method(:item) do |ctx, key:|
+          ctx.dataloader.with(item_error_loader).load(key)
         end
       end
 

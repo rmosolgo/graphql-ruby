@@ -310,7 +310,7 @@ module GraphQL
           if resolves_lazies && lazy?(resolved_type)
             resolved_type = schema.sync_lazy(resolved_type)
           end
-          resolved_type, new_value = resolved_type
+          resolved_type, root_value = resolved_type
           ResolveTypeStep.assert_valid_resolved_type(root_type, resolved_type, root_value, nil, query: query)
           objects = [root_value]
           query.current_trace.objects(resolved_type, objects, query.context)

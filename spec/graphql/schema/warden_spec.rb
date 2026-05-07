@@ -1069,7 +1069,7 @@ describe GraphQL::Schema::Warden do
     identifiable = Module.new do
       include GraphQL::Schema::Interface
       graphql_name "Identifiable"
-      field :id, "ID", null: false
+      field :id, "ID", null: false, hash_key: :id
     end
 
     hidden_account = Class.new(GraphQL::Schema::Object) do
@@ -1086,10 +1086,14 @@ describe GraphQL::Schema::Warden do
 
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
-      field :account, visible_account
+      field :account, visible_account, resolve_static: true
+
+      def self.account(context)
+        { id: "1" }
+      end
 
       def account
-        { id: "1" }
+        self.class.account(context)
       end
     end
 

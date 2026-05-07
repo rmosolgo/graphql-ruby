@@ -289,8 +289,8 @@ module StarWars
     argument :faction_id, ID
 
     # Result may have access to these fields:
-    field :ship_edge, Ship.edge_type
-    field :faction, Faction
+    field :ship_edge, Ship.edge_type, hash_key: :ship_edge
+    field :faction, Faction, hash_key: :faction
     field :aliased_faction, Faction, hash_key: :aliased_faction, null: true
 
     def resolve(ship_name: nil, faction_id:)
