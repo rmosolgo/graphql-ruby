@@ -315,7 +315,7 @@ module GraphQL
             input_value.name
           when Language::Nodes::InputObject
             value_h = {}
-            input_value.arguments.each do |arg|
+            input_value.arguments.each do |arg| # rubocop:disable Development/ContextIsPassedCop
               value_h[arg.name] = coerce_untyped_input(arg.value)
             end
             value_h
