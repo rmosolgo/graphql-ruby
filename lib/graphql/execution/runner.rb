@@ -306,10 +306,12 @@ module GraphQL
             raise ArgumentError, "Unknown operation type (not query, mutation or subscription): #{query.query_string}"
           end
         when "UNION", "INTERFACE"
-          resolved_type = resolve_type(root_type, root_value, query)
-          if resolves_lazies
+          resolved_type = ResolveTypeStep.resolve_type(root_type, root_value, query)
+          if resolves_lazies && lazy?(resolved_type)
             resolved_type = schema.sync_lazy(resolved_type)
           end
+          resolved_type, new_value = resolved_type
+          ResolveTypeStep.assert_valid_resolved_type(root_type, resolved_type, root_value, nil, query: query)
           objects = [root_value]
           query.current_trace.objects(resolved_type, objects, query.context)
           runtime_type_at[data] = resolved_type

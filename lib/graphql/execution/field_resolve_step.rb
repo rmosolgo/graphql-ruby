@@ -471,14 +471,15 @@ module GraphQL
                 # OK
               else
                 query.current_trace.begin_resolve_type(@static_type, next_object, query.context)
-                object_type = ResolveTypeStep.resolve_type(@static_type, next_object, self, query)
+                object_type = ResolveTypeStep.resolve_type(@static_type, next_object, query)
                 if object_type.is_a?(Array)
                   object_type, next_object = object_type
                 end
                 if @runner.resolves_lazies && @runner.lazy?(object_type)
                   # TODO batch this
-                  object_type = sync(object_type)
+                  object_type, next_object = sync(object_type)
                 end
+                ResolveTypeStep.assert_valid_resolved_type(@static_type, object_type, next_object, self)
                 query.current_trace.end_resolve_type(@static_type, next_object, query.context, object_type)
                 @runner.runtime_type_at[result] = object_type
               end
@@ -562,7 +563,7 @@ module GraphQL
                 @static_type.kind.object? ?
                   @runner.authorizes?(@static_type, @selections_step.query.context) :
                   (
-                    (runtime_type, _ignored_new_value = ResolveTypeStep.resolve_type(@static_type, field_result, self, @selections_step.query)) &&
+                    (runtime_type, _ignored_new_value = ResolveTypeStep.resolve_type(@static_type, field_result, @selections_step.query)) &&
                     (@runner.runtime_type_at[graphql_result] = runtime_type) &&
                     @runner.authorizes?(runtime_type, @selections_step.query.context)
                   ))

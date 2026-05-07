@@ -29,6 +29,7 @@ module GraphQL
           st = @field_resolve_step.static_type
           ctx.query.current_trace.begin_resolve_type(st, @object, ctx)
           @resolved_type, new_value = @field_resolve_step.sync(@resolved_type)
+          ResolveTypeStep.assert_valid_resolved_type(st, @resolved_type, new_value, @field_resolve_step)
           if new_value
             @object = new_value
           end
@@ -43,8 +44,9 @@ module GraphQL
           static_type = @field_resolve_step.static_type
           if static_type.kind.abstract?
             query = @field_resolve_step.selections_step.query
-            @resolved_type, new_value = ResolveTypeStep.resolve_type(static_type, @object, @field_resolve_step, query)
+            @resolved_type, new_value = ResolveTypeStep.resolve_type(static_type, @object, query)
             if new_value
+              ResolveTypeStep.assert_valid_resolved_type(static_type, @resolved_type, new_value, @field_resolve_step)
               @object = new_value
             end
           else
