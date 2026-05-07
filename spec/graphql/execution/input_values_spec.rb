@@ -65,8 +65,8 @@ class ExecutionInputValuesTest < Minitest::Test
   def test_it_produces_argument_values_for_simple_scalars
     vs = "$if: Boolean = false"
     input = get_input_values(variables_string: vs)
-    assert_equal( { if: false }, input.argument_values(GraphQL::Schema::Directive::Skip, get_argument_nodes("if: $if"), nil))
-    assert_equal( { if: true }, input.argument_values(GraphQL::Schema::Directive::Skip, get_argument_nodes("if: true"), nil))
+    assert_equal_input( { if: false }, input.argument_values(GraphQL::Schema::Directive::Skip, get_argument_nodes("if: $if"), nil))
+    assert_equal_input( { if: true }, input.argument_values(GraphQL::Schema::Directive::Skip, get_argument_nodes("if: true"), nil))
   end
 
   def test_it_produces_argument_values_for_input_objects
@@ -75,6 +75,9 @@ class ExecutionInputValuesTest < Minitest::Test
   end
 
   def assert_equal_input(expected_ruby_hash, graphql_input, path = [])
+    if path.empty? && graphql_input.is_a?(Array) && graphql_input.last.nil? && expected_ruby_hash.is_a?(Hash)
+      graphql_input = graphql_input.first # ignore the `nil` errors in the multiple return
+    end
     case expected_ruby_hash
     when Array
       assert_instance_of Array, graphql_input, "Matches at `#{path.join(".")}`"
