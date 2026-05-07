@@ -71,7 +71,7 @@ describe GraphQL::Schema::Argument do
       end
 
       def field(**args)
-        self.class.field(context, **args)
+        self.class.run_field(context, **args)
       end
 
       def multiply(val)
