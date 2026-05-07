@@ -4,6 +4,7 @@ require "graphql/execution/input_values"
 require "graphql/execution/field_resolve_step"
 require "graphql/execution/finalize"
 require "graphql/execution/load_argument_step"
+require "graphql/execution/resolve_type_step"
 require "graphql/execution/runner"
 require "graphql/execution/selections_step"
 module GraphQL

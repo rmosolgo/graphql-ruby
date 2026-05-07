@@ -5,10 +5,14 @@ require "spec_helper"
 describe GraphQL::Tracing::NotificationsTracing do
   module NotificationsTracingTest
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
+
+      def self.int(context)
+        1
+      end
 
       def int
-        1
+        self.class.int(context)
       end
     end
 

@@ -133,6 +133,12 @@ module GraphQL
       def execute_field
         objects = @selections_step.objects
         @results = @selections_step.results
+        if @arguments.is_a?(GraphQL::RuntimeError)
+          # TODO dry with similar early return in `build_arguments`
+          @field_results = Array.new(objects.size, @arguments)
+          build_results
+          return
+        end
 
         query = @selections_step.query
         ctx = query.context
@@ -465,7 +471,7 @@ module GraphQL
                 # OK
               else
                 query.current_trace.begin_resolve_type(@static_type, next_object, query.context)
-                object_type = query.resolve_type(@static_type, next_object)
+                object_type = ResolveTypeStep.resolve_type(@static_type, next_object, self, query)
                 if object_type.is_a?(Array)
                   object_type, next_object = object_type
                 end
@@ -556,7 +562,8 @@ module GraphQL
                 @static_type.kind.object? ?
                   @runner.authorizes?(@static_type, @selections_step.query.context) :
                   (
-                    (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))) &&
+                    (runtime_type, _ignored_new_value = ResolveTypeStep.resolve_type(@static_type, field_result, self, @selections_step.query)) &&
+                    (@runner.runtime_type_at[graphql_result] = runtime_type) &&
                     @runner.authorizes?(runtime_type, @selections_step.query.context)
                   ))
           obj_step = PrepareObjectStep.new(

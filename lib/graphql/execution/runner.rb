@@ -39,13 +39,6 @@ module GraphQL
 
       attr_reader :runtime_directives, :uses_runtime_directives, :finalizer_keys
 
-      def resolve_type(type, object, query)
-        query.current_trace.begin_resolve_type(type, object, query.context)
-        resolved_type, _ignored_new_value = query.resolve_type(type, object)
-        query.current_trace.end_resolve_type(type, object, query.context, resolved_type)
-        resolved_type
-      end
-
       def authorizes?(graphql_definition, query_context)
         auth_cache = @authorizes_cache[query_context]
         case (auth_res = auth_cache[graphql_definition])

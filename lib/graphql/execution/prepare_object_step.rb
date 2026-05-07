@@ -42,13 +42,11 @@ module GraphQL
         when :resolve_type
           static_type = @field_resolve_step.static_type
           if static_type.kind.abstract?
-            ctx = @field_resolve_step.selections_step.query.context
-            ctx.query.current_trace.begin_resolve_type(static_type, @object, ctx)
-            @resolved_type, new_value = @runner.schema.resolve_type(static_type, @object, ctx)
+            query = @field_resolve_step.selections_step.query
+            @resolved_type, new_value = ResolveTypeStep.resolve_type(static_type, @object, @field_resolve_step, query)
             if new_value
               @object = new_value
             end
-            ctx.query.current_trace.end_resolve_type(static_type, @object, ctx, @resolved_type)
           else
             @resolved_type = static_type
           end
