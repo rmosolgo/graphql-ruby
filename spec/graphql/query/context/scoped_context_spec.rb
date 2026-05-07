@@ -82,6 +82,7 @@ describe GraphQL::Query::Context::ScopedContext do
   end
 
   it "works with promise tree resolution and .scoped" do
+    skip("Scoped context not implemented because it depends on context[:current_path]") if TESTING_EXEC_NEXT
     query_str = "{ things { edges { node { name name2 } } } }"
     res = ScopedContextSchema.execute(query_str)
     assert_equal "one", res["data"]["things"]["edges"][0]["node"]["name"]

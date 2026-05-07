@@ -182,7 +182,7 @@ module GraphQL
           arg_value = begin
             argument_definition.prepare_value(nil, arg_value, context: @query.context)
           rescue StandardError => err
-            @runner.schema.handle_or_reraise(@query.context, err)
+            @runner.schema.handle_or_reraise(@query.context, err, object: nil, arguments: argument_values, field: field_resolve_step.field_definition)
           end
         end
 

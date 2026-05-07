@@ -284,10 +284,12 @@ module GraphQL
 
         if any_lazy_results?
           @runner.dataloader.lazy_at_depth(path.size, self)
-        elsif has_extensions
-          finish_extensions
         elsif @pending_steps.nil? || @pending_steps.empty?
-          build_results
+          if has_extensions
+            finish_extensions
+          else
+            build_results
+          end
         end
       rescue GraphQL::ExecutionError => err
         add_graphql_error(err)
@@ -634,7 +636,7 @@ module GraphQL
             err
           rescue StandardError => stderr
             begin
-              @selections_step.query.handle_or_reraise(stderr)
+              @selections_step.query.handle_or_reraise(stderr, object: o, field: @field_definition, arguments: args_hash)
             rescue GraphQL::ExecutionError => ex_err
               ex_err
             end
