@@ -114,35 +114,55 @@ describe GraphQL::Schema::Validator::RequiredValidator do
       class Query < GraphQL::Schema::Object
         field_class(BaseField)
 
-        field :one_argument, Int, fallback_value: 1 do
+        field :one_argument, Int, fallback_value: 1, resolve_static: true do
           argument :a, Int, required: :nullable, always_hidden: true
         end
 
-        field :two_arguments, Int, fallback_value: 2 do
+        def self.one_argument(_context)
+          1
+        end
+
+        field :two_arguments, Int, fallback_value: 2, resolve_static: true do
           validates required: { one_of: [:a, :b], allow_all_hidden: true }
           argument :a, Int, required: false, always_hidden: true
           argument :b, Int, required: false, always_hidden: true
         end
 
-        field :two_arguments_error, Int, fallback_value: 2 do
+        def self.two_arguments(_context)
+          2
+        end
+
+        field :two_arguments_error, Int, fallback_value: 2, resolve_static: true do
           validates required: { one_of: [:a, :b] }
           argument :a, Int, required: false, always_hidden: true
           argument :b, Int, required: false, always_hidden: true
         end
 
-        field :three_arguments, Int, fallback_value: 3 do
+        def self.two_arguments_error(_context)
+          2
+        end
+
+        field :three_arguments, Int, fallback_value: 3, resolve_static: true do
           validates required: { one_of: [:a, :b], allow_all_hidden: true }
           argument :a, Int, required: false, always_hidden: true
           argument :b, Int, required: false, always_hidden: true
           argument :c, Int
         end
 
-        field :four_arguments, Int, fallback_value: 4 do
+        def self.three_arguments(_context, **args)
+          3
+        end
+
+        field :four_arguments, Int, fallback_value: 4, resolve_static: true do
           validates required: { one_of: [[:a, :b], :c, :d], allow_all_hidden: true}
           argument :a, Int, required: false, always_hidden: true
           argument :b, Int, required: false, always_hidden: true
           argument :c, Int, required: false, always_hidden: true
           argument :d, Int, required: false, always_hidden: true
+        end
+
+        def self.four_arguments(_context)
+          4
         end
       end
 
@@ -161,7 +181,7 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         RequiredHiddenSchema.execute("{ twoArgumentsError }")
       end
 
-      expected_message = "Query.twoArgumentsError validates `required: ...` but all required arguments were hidden.\n\nUpdate your schema definition to allow the client to see some fields or skip validation by adding `required: { ..., allow_all_hidden: true }`\n"
+      expected_message = "#{TESTING_EXEC_NEXT ? "Resolving Query.twoArgumentsError: " : ""}Query.twoArgumentsError validates `required: ...` but all required arguments were hidden.\n\nUpdate your schema definition to allow the client to see some fields or skip validation by adding `required: { ..., allow_all_hidden: true }`\n"
       assert_equal expected_message, err.message
     end
 

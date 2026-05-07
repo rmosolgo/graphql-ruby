@@ -366,40 +366,52 @@ describe GraphQL::Schema::FieldExtension do
     class ExtensionExtrasSchema < GraphQL::Schema
       class AstNodeExtension < GraphQL::Schema::FieldExtension
         extras [:ast_node]
-        def resolve(object:, arguments:, context:, **rest)
+        def resolve(object: nil, objects: nil, arguments:, context:, **rest)
           context[:last_ast_node] = arguments[:ast_node]
-          yield(object, arguments)
+          yield(object || objects, arguments)
         end
       end
 
       class AnotherAstNodeExtension < AstNodeExtension
-        def resolve(object:, arguments:, context:, **rest)
+        def resolve(object: nil, objects: nil, arguments:, context:, **rest)
           context[:other_last_ast_node] = arguments[:ast_node]
-          yield(object, arguments)
+          yield(object || objects, arguments)
         end
       end
 
       class Query < GraphQL::Schema::Object
-        field :f1, Int, extensions: [AstNodeExtension] do
+        field :f1, Int, extensions: [AstNodeExtension], resolve_static: true do
           argument :i1, Int
+        end
+
+        def self.f1(context, i1:)
+          i1
         end
 
         def f1(i1:)
-          i1
+          self.class.f1(context, i1: i1)
         end
 
-        field :f2, Int, extensions: [AstNodeExtension], extras: [:ast_node]
+        field :f2, Int, extensions: [AstNodeExtension], extras: [:ast_node], resolve_static: true
 
-        def f2(ast_node:)
+        def self.f2(context, ast_node:)
           (ast_node.alias || "").size
         end
 
-        field :f3, Int, extensions: [AstNodeExtension, AnotherAstNodeExtension] do
+        def f2(ast_node:)
+          self.class.f2(context, ast_node: ast_node)
+        end
+
+        field :f3, Int, extensions: [AstNodeExtension, AnotherAstNodeExtension], resolve_static: true do
           argument :i1, Int
         end
 
-        def f3(i1:)
+        def self.f3(context, i1:)
           i1
+        end
+
+        def f3(i1:)
+          self.class.f3(context, i1: i1)
         end
       end
       query(Query)
