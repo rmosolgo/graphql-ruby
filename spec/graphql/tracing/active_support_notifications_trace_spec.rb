@@ -73,7 +73,6 @@ if testing_rails?
         "authorized.graphql",
         "dataloader_source.graphql",
         "execute_field.graphql",
-        (TESTING_EXEC_NEXT ? "resolve_type.graphql" : nil), # `loads:`-related?
         "resolve_type.graphql",
         "authorized.graphql",
         "execute_field.graphql",
