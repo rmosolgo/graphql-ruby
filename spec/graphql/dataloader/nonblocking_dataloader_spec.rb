@@ -30,53 +30,76 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
 
       class Sleeper < GraphQL::Schema::Object
-        field :sleeper, Sleeper, null: false, resolver_method: :sleep do
+        field :sleeper, Sleeper, null: false, resolver_method: :sleep, resolve_static: :sleep do
           argument :duration, Float
         end
 
-        def sleep(duration:)
+        def self.sleep(context, duration:)
           `sleep #{duration}`
           duration
         end
 
-        field :duration, Float, null: false
-        def duration; object; end
+        def sleep(duration:)
+          self.class.sleep(context, duration: duration)
+        end
+
+        field :duration, Float, null: false, resolve_each: true
+        def self.duration(object, context); object; end
+
+        def duration; self.class.duration(object, context); end
       end
 
       class Waiter < GraphQL::Schema::Object
-        field :wait_for, Waiter, null: false do
+        field :wait_for, Waiter, null: false, resolve_batch: true do
           argument :tag, String
           argument :wait, Float
+        end
+
+        def self.wait_for(objects, context, tag:, wait:)
+          context.dataload_all(WaitForSource, tag, Array.new(objects.size, wait))
         end
 
         def wait_for(tag:, wait:)
           dataloader.with(WaitForSource, tag).load(wait)
         end
 
-        field :tag, String, null: false
-        def tag
+        field :tag, String, null: false, resolve_each: true
+        def self.tag(object, context)
           object
+        end
+
+        def tag
+          self.class.tag(object, context)
         end
       end
 
       class Query < GraphQL::Schema::Object
-        field :sleep, Float, null: false do
+        field :sleep, Float, null: false, resolve_static: true do
           argument :duration, Float
         end
 
-        field :sleeper, Sleeper, null: false, resolver_method: :sleep do
+        field :sleeper, Sleeper, null: false, resolver_method: :sleep, resolve_static: :sleep do
           argument :duration, Float
         end
 
-        def sleep(duration:)
+        def self.sleep(context, duration:)
           `sleep #{duration}`
           duration
         end
 
-        field :wait_for, Waiter, null: false do
+        def sleep(duration:)
+          self.class.sleep(context, duration: duration)
+        end
+
+        field :wait_for, Waiter, null: false, resolve_batch: true do
           argument :tag, String
           argument :wait, Float
         end
+
+        def self.wait_for(objects, context, tag:, wait:)
+          context.dataload_all(WaitForSource, tag, Array.new(objects.size, wait))
+        end
+
 
         def wait_for(tag:, wait:)
           dataloader.with(WaitForSource, tag).load(wait)
