@@ -381,6 +381,8 @@ class ExecutionFinalizeTest < Minitest::Test
     }
 
     assert_equal expected, exec_test(schema, "{ test { req opt } }", source)
+    # Reset this object so that node detection will work during the next execution:
+    source["test"][1]["opt"].ast_node = nil
 
     inline_fragment_errors = [{
       "message" => "Not okay!",
@@ -397,7 +399,8 @@ class ExecutionFinalizeTest < Minitest::Test
       "locations" => [{ "line" => 1, "column" => 59 }],
       "path" => ["test", 1, "opt"],
     }]
-
+    # Reset this object so that node detection will work during the next execution:
+    source["test"][1]["opt"].ast_node = nil
     result = exec_test(schema, "{ ...Selection } fragment Selection on Query { test { req opt } }", source)
     assert_equal expected["data"], result["data"]
     assert_equal fragment_errors, result["errors"]

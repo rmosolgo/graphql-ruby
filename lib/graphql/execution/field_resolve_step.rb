@@ -98,7 +98,9 @@ module GraphQL
 
       def add_graphql_error(err)
         err.path = path
-        err.ast_nodes ||= ast_nodes
+        if err.ast_node.nil?
+          err.ast_nodes = ast_nodes
+        end
         @selections_step.query.context.add_error(err)
         err
       end
