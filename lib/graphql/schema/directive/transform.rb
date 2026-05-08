@@ -54,6 +54,26 @@ module GraphQL
             nil
           end
         end
+
+        def self.resolve_field(ast_nodes, parent_type, field_defn, objects, arguments, context)
+          transform_name = arguments[:by]
+          if TRANSFORMS.include?(transform_name)
+            Transformer.new(transform_name)
+          else
+            nil
+          end
+        end
+
+        class Transformer
+          include Execution::PostProcessor
+          def initialize(transform)
+            @transform = transform
+          end
+          def after_resolve(field_results)
+            field_results.map! { |r| r.respond_to?(@transform) ? r.public_send(@transform) : r }
+            field_results
+          end
+        end
       end
     end
   end
