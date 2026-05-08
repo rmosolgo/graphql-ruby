@@ -98,9 +98,21 @@ module GraphQL
 
       def add_graphql_error(err)
         err.path = path
-        err.ast_nodes = ast_nodes
+        err.ast_nodes ||= ast_nodes
         @selections_step.query.context.add_error(err)
         err
+      end
+
+      def build_errors_result(errors, single_error)
+        first_error = errors.nil? ? single_error : errors.pop
+        @field_results = Array.new(@selections_step.objects.size, first_error)
+        if errors
+          errors.each do |e|
+            add_graphql_error(e)
+          end
+        end
+        @results ||= @selections_step.results
+        build_results
       end
 
       def build_arguments
@@ -109,12 +121,7 @@ module GraphQL
         @field_definition = query.types.field(@parent_type, field_name) || raise(GraphQL::Error, "No field definition found for #{@parent_type.to_type_signature}.#{ast_node.name} (at #{@ast_node.position})")
         @arguments, errors = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
         if errors
-          @field_results = Array.new(@selections_step.objects.size, errors.pop)
-          @results = @selections_step.results
-          errors.each do |e|
-            add_graphql_error(e)
-          end
-          build_results
+          build_errors_result(errors, nil)
           return
         end
 
@@ -124,30 +131,21 @@ module GraphQL
         end
       end
 
-      def loaded_argument_unauthorized
-        @results = @selections_step.results
-        @field_results = Array.new(@selections_step.objects.size, nil)
-        build_results
-      end
-
       def execute_field
         objects = @selections_step.objects
-        @results = @selections_step.results
         if @arguments.is_a?(GraphQL::RuntimeError)
-          # TODO dry with similar early return in `build_arguments`
-          @field_results = Array.new(objects.size, @arguments)
-          build_results
+          build_errors_result(nil, @arguments)
           return
         end
 
+        @results = @selections_step.results
         query = @selections_step.query
         ctx = query.context
         if (v = @field_definition.validators).any?  # rubocop:disable Development/NoneWithoutBlockCop
           begin
             Schema::Validator.validate!(v, nil, ctx, @arguments)
           rescue GraphQL::RuntimeError => err
-            @field_results = Array.new(objects.size, err)
-            build_results
+            build_errors_result(nil, err)
             return
           end
         end
@@ -245,25 +243,37 @@ module GraphQL
           if directives
             directives.each do |dir_node|
               if (dir_defn = @runner.runtime_directives[dir_node.name])
-                dir_args, _errors = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, nil)  # rubocop:disable Development/ContextIsPassedCop
-                result = dir_defn.resolve_field(ast_nodes, @parent_type, field_definition, authorized_objects, dir_args, ctx)
-                if !result.nil?
-                  if result.is_a?(Finalizer)
-                    result.path = path
-                    @directive_finalizers ||= []
-                    @directive_finalizers << result
-                  end
+                dir_args, errors = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, self)  # rubocop:disable Development/ContextIsPassedCop
+                if errors
+                  @results.each { |r| r.delete(@key) }
+                  errors.each { |e| e.ast_node = dir_node }
+                  build_errors_result(errors, nil)
+                  return
+                else
+                  begin
+                    dir_defn.validate!(dir_args, query.context)
+                    if !(result = dir_defn.resolve_field(ast_nodes, @parent_type, field_definition, authorized_objects, dir_args, ctx)).nil?
+                      if result.is_a?(Finalizer)
+                        result.path = path
+                        @directive_finalizers ||= []
+                        @directive_finalizers << result
+                      end
 
-                  if result.is_a?(PostProcessor)
-                    @post_processors ||= []
-                    @post_processors << result
-                  end
+                      if result.is_a?(PostProcessor)
+                        @post_processors ||= []
+                        @post_processors << result
+                      end
 
-                  if result.is_a?(HaltExecution)
-                    @directive_finalizers&.each { |f|
-                      @selections_step.results.each { |r|  @runner.add_finalizer(query, r, key, f) }
-                    }
-                    return
+                      if result.is_a?(HaltExecution)
+                        @directive_finalizers&.each { |f|
+                          @selections_step.results.each { |r|  @runner.add_finalizer(query, r, key, f) }
+                        }
+                        return
+                      end
+                    end
+                  rescue GraphQL::RuntimeError => err
+                    err.ast_node = dir_node
+                    raise
                   end
                 end
               end

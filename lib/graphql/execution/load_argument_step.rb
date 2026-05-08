@@ -64,7 +64,7 @@ module GraphQL
           @field_resolve_step.arguments = EmptyObjects::EMPTY_HASH
           field_pending_steps = @field_resolve_step.pending_steps
           field_pending_steps.clear
-          @field_resolve_step.loaded_argument_unauthorized
+          @field_resolve_step.build_errors_result(nil, nil)
         else
           if @loaded_value.is_a?(GraphQL::RuntimeError)
             @loaded_value.path = @field_resolve_step.path

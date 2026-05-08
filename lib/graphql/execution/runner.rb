@@ -221,6 +221,7 @@ module GraphQL
 
       def begin_execute(isolated_steps, results, query, root_type, root_value)
         data = {}
+        @static_type_at[data] = root_type
         selected_operation = query.selected_operation
         beginning_path = query.path
 
@@ -258,10 +259,40 @@ module GraphQL
           objects = [root_value]
           query.current_trace.objects(root_type, objects, query.context)
 
+          if query.is_a?(GraphQL::Query) && uses_runtime_directives && (query_dirs = selected_operation.directives).any? # rubocop:disable Development/NoneWithoutBlockCop
+            continue_execution = true
+            query_dirs.each do |dir_node|
+              dir_defn = runtime_directives[dir_node.name] || raise(GraphQL::Error, "No directive definition found for: #{dir_node.name.inspect}")
+              dir_args, errors = input_values[query].argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+              if errors
+                errors.each { |e|
+                  e.ast_node = dir_node
+                  e.path = beginning_path
+                  query.context.add_error(e)
+                }
+                continue_execution = false
+                break
+              end
+              result = dir_defn.resolve_operation(selected_operation, query, objects, dir_args, query.context)
+              if result.is_a?(Finalizer)
+                result.path = path
+                add_finalizer(query, result, nil, data)
+                if result.is_a?(HaltExecution)
+                  continue_execution = false
+                  break
+                end
+              end
+            end
+
+            if !continue_execution
+              return
+            end
+          end
+
           if query.query?
             isolated_steps[0] << SelectionsStep.new(
               parent_type: root_type,
-              selections: query.selected_operation.selections,
+              selections: selected_operation.selections,
               objects: objects,
               results: [data],
               path: beginning_path,
@@ -318,7 +349,7 @@ module GraphQL
           results << { "data" => data }
           isolated_steps[0] << SelectionsStep.new(
             parent_type: resolved_type,
-            selections: query.selected_operation.selections,
+            selections: selected_operation.selections,
             objects: objects,
             results: [data],
             path: beginning_path,
@@ -335,7 +366,7 @@ module GraphQL
             results << { "data" => list_result }
             isolated_steps[0] << SelectionsStep.new(
               parent_type: inner_type,
-              selections: query.selected_operation.selections,
+              selections: selected_operation.selections,
               objects: root_value,
               results: list_result,
               path: beginning_path,
@@ -348,8 +379,6 @@ module GraphQL
         else
           raise "Unhandled root type kind: #{root_type.kind.name.inspect}"
         end
-
-        @static_type_at[data] = root_type
       end
 
       def directives_include?(query, ast_selection)

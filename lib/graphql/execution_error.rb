@@ -37,7 +37,12 @@ module GraphQL
     end
 
     def finalize_graphql_result(query, result_data, key)
-      result_data[key] = nil
+      if ast_node.is_a?(GraphQL::Language::Nodes::Directive)
+        # This is for backwards compatibility ... what does the spec say?
+        result_data.delete(key)
+      else
+        result_data[key] = nil
+      end
     end
 
     # @return [Hash] An entry for the response's "errors" key

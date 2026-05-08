@@ -636,7 +636,6 @@ describe "GraphQL::Authorization" do
             it "replaces the response with the return value of the unauthorized field hook" do
               query = "{ unauthorized }"
               response = AuthTest::SchemaWithFieldHook.execute(query, root_value: :replace)
-              pp response
               assert_equal 42, response["data"].fetch("unauthorized")
             end
           end
