@@ -110,6 +110,10 @@ module GraphQL
             trace.execute_query(query: query) do
               begin_execute(isolated_steps, results, query, root_type, root_value)
             end
+          rescue GraphQL::RuntimeError => err
+            err.ast_node = query.selected_operation
+            err.path = query.path
+            query.context.add_error(err)
           end
 
           trace.execute_query_lazy(query: nil, multiplex: @multiplex) do
@@ -127,8 +131,10 @@ module GraphQL
             fin_result = if (!@finalizers&.key?(query) && query.context.errors.empty?) || !query.valid?
               result
             else
-              data = result["data"]
-              data = Finalize.new(query, data, self).run
+              if result
+                data = result["data"]
+                data = Finalize.new(query, data, self).run
+              end
               errors = []
               query.context.errors.each do |err|
                 if err.respond_to?(:to_h)

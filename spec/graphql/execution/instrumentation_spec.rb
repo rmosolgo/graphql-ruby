@@ -132,7 +132,13 @@ describe GraphQL::Schema do
         assert_equal({
           "data" => nil,
           "errors" => [
-            { "message" => "Raised from trace execute_query" },
+            {
+              "message" => "Raised from trace execute_query",
+              **(TESTING_EXEC_NEXT ? {
+                "locations" => [{"line" => 1, "column" => 2}],
+                "path" => [],
+              } : {})
+            },
           ]
         }, res.to_h)
       end
