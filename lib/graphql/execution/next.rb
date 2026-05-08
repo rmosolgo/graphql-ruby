@@ -14,6 +14,16 @@ module GraphQL
       def finalize_graphql_result(query, result_data, result_key)
         raise RequiredImplementationMissingError
       end
+
+      def ast_node
+        ast_nodes&.first
+      end
+
+      def ast_node=(new_node)
+        @ast_nodes = [new_node]
+      end
+
+      attr_accessor :ast_nodes
     end
 
     module HaltExecution
