@@ -32,24 +32,28 @@ module GraphQL
 
       # @api private
       def call_resolve(args_hash)
-        @original_arguments, _errors = @field_resolve_step.runner.input_values[context.query].argument_values(@field, @field_resolve_step.ast_node.arguments, nil)
-        result = nil
-        unsubscribed = true
-        unsubscribed_result = catch :graphql_subscription_unsubscribed do
-          result = super
-          unsubscribed = false
-        end
-
-
-        if unsubscribed
-          if unsubscribed_result
-            context.namespace(:subscriptions)[:final_update] = true
-            unsubscribed_result
-          else
-            context.skip
-          end
+        if @field_resolve_step.nil?
+          super
         else
-          result
+          @original_arguments, _errors = @field_resolve_step.runner.input_values[context.query].argument_values(@field, @field_resolve_step.ast_node.arguments, nil)
+          result = nil
+          unsubscribed = true
+          unsubscribed_result = catch :graphql_subscription_unsubscribed do
+            result = super
+            unsubscribed = false
+          end
+
+
+          if unsubscribed
+            if unsubscribed_result
+              context.namespace(:subscriptions)[:final_update] = true
+              unsubscribed_result
+            else
+              context.skip
+            end
+          else
+            result
+          end
         end
       end
 
