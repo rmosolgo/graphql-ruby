@@ -338,3 +338,25 @@ To use the new engine to run a multiplex, use `MyAppSchema.multiplex_next(...)` 
 `current_field` doesn't work; `dataloader_source` works. `current_operation_name` doesn't work.
 
 This will be fixed soon but may require opt-in to avoid needless overhead.
+
+### `fallback_value:` ❌
+
+`fallback_value:` is not supported in Execution::Next. It's not implemented because of the overhead it adds to resultion. You'll have to implement it by hand in resolvers.
+
+`graphql_migrate_execution` creates a resolver that _always_ returns the `fallback_value`. This might be right in some cases, but you'll probably have to implement your own method, like:
+
+```ruby
+field :name, String, fallback_value: "Anonymous", resolve_each: :resolve_name
+
+def resolve_name(object, context)
+  if object.respond_to?(:name)
+    object.name
+  elsif (is_h = object.is_a?(Hash)) && object.key?(:name)
+    object[:name]
+  elsif is_h && object.key?("name")
+    object["name"]
+  else
+    "Anonymous"
+  end
+end
+```

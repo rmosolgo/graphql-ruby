@@ -132,10 +132,16 @@ module Jazz
       description: "A unique identifier for this object",
       resolve_legacy_instance_method: true
     )
-    upcased_field :upcased_id, ID, null: false, resolver_method: :id # upcase: true added by helper
+    upcased_field :upcased_id, ID, null: false, resolver_method: :id, resolve_each: :id # upcase: true added by helper
 
     def id
-      GloballyIdentifiableType.to_id(@object)
+      self.class.id(object, context)
+    end
+
+    resolver_methods do
+      def id(object, context)
+        GloballyIdentifiableType.to_id(object)
+      end
     end
 
     def self.to_id(object)
