@@ -775,7 +775,7 @@ describe GraphQL::Schema::Subscription do
       err = assert_raises GraphQL::Error do
         DirectWriteSchema.execute("subscription { directTwice }")
       end
-      assert_equal "`write_subscription` was called but `DirectWriteSchema::DirectWriteTwice#subscription_written?` is already true. Remove a call to `write subscription`.", err.message
+      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving Subscription.directTwice: " : ""}`write_subscription` was called but `DirectWriteSchema::DirectWriteTwice#subscription_written?` is already true. Remove a call to `write subscription`.", err.message
     end
   end
 end

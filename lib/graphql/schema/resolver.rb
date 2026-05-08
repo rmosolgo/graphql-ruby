@@ -93,10 +93,6 @@ module GraphQL
 
         result = if is_authed
           Schema::Validator.validate!(self.class.validators, object, context, @prepared_arguments, as: @field)
-          if q.subscription? && @field.owner == context.schema.subscription
-            # This needs to use arguments without `loads:`. TODO extract this into subscription-related code somehow?
-            @original_arguments, _errors = @field_resolve_step.runner.input_values[q].argument_values(@field, @field_resolve_step.ast_node.arguments, nil)
-          end
           call_resolve(@prepared_arguments)
         elsif new_return_value.nil?
           err = UnauthorizedFieldError.new(object: object, type: @field_resolve_step.parent_type, context: context, field: @field)
