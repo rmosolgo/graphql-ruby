@@ -8,7 +8,11 @@ describe GraphQL::Schema::Visibility::Profile do
     end
 
     class Query < GraphQL::Schema::Object
-      field :thing, Thing, fallback_value: :Something
+      field :thing, Thing, fallback_value: :Something, resolve_static: true
+
+      def self.thing(_context)
+        :Something
+      end
       field :greeting, String
     end
 
@@ -74,10 +78,14 @@ describe GraphQL::Schema::Visibility::Profile do
           !!ctx[:internal]
         end
 
-        field :inspect_context, String
+        field :inspect_context, String, resolve_static: true
+
+        def self.inspect_context(context)
+          JSON.dump(context.to_h)
+        end
 
         def inspect_context
-          JSON.dump(context.to_h)
+          self.class.inspect_context(context)
         end
       end
 
@@ -94,9 +102,13 @@ describe GraphQL::Schema::Visibility::Profile do
       ProfileContextSchema.last_visibility_context = nil
     end
 
+    def context_str(str_pairs, extra_keys: TESTING_EXEC_NEXT ? ',"__graphql_execute_next":true' : "")
+      "{#{str_pairs}#{extra_keys}}"
+    end
+
     it "uses the configured context for `visible?` calls, not the query context" do
       res = ProfileContextSchema.execute("{ inspectContext }", context: { visibility_profile: :internal })
-      assert_equal '{"visibility_profile":"internal"}', res["data"]["inspectContext"]
+      assert_equal context_str('"visibility_profile":"internal"'), res["data"]["inspectContext"]
       assert_equal '{"internal":true,"visibility_profile":"internal"}', ProfileContextSchema.last_visibility_context
 
       res = ProfileContextSchema.execute("{ inspectContext }", context: { internal: true, visibility_profile: :public })
