@@ -389,12 +389,17 @@ module GraphQL
 
       def directives_include?(query, ast_selection)
         if ast_selection.directives.any? { |dir_node|
-              if dir_node.name == "skip"
+              case dir_node.name
+              when "skip"
                 skip_args, _errors = @input_values[query].argument_values(GraphQL::Schema::Directive::Skip, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
                 skip_args[:if] == true
-              elsif dir_node.name == "include"
+              when "include"
                 include_args, _errors = @input_values[query].argument_values(GraphQL::Schema::Directive::Include, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
                 include_args[:if] == false
+              else
+                dir_defn = runtime_directives[dir_node.name]
+                dir_args, _errors = @input_values[query].argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+                !dir_defn.include?(nil, dir_args, query.context)
               end
             }
           false
