@@ -466,7 +466,7 @@ module StarWars
     end
 
     def self.batched_base(context, id:)
-      LazyLoader.defer(@context, Base, id)
+      LazyLoader.defer(context, Base, id)
     end
 
     def batched_base(id:)
