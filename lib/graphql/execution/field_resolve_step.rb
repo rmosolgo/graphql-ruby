@@ -357,6 +357,8 @@ module GraphQL
                 conn.was_authorized_by_scope_items = @was_scoped
               end
               conn
+            rescue GraphQL::RuntimeError => err
+              err
             end
           when Schema::Field::ScopeExtension
             if @was_scoped.nil?
