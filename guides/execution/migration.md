@@ -332,3 +332,9 @@ If you're reimplementing default values, you'll need to add the corresponding `r
 ### Multiplex
 
 To use the new engine to run a multiplex, use `MyAppSchema.multiplex_next(...)` with the same arguments.
+
+### GraphQL::Current 🟡
+
+`current_field` doesn't work; `dataloader_source` works. `current_operation_name` doesn't work.
+
+This will be fixed soon but may require opt-in to avoid needless overhead.

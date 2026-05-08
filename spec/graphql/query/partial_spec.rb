@@ -155,7 +155,7 @@ describe GraphQL::Query::Partial do
         context.current_path
       end
 
-      field :current_values, [String], resolve_static: true
+      field :current_values, [String, null: true], resolve_static: true
       def self.current_values(context)
         [
           GraphQL::Current.operation_name,
