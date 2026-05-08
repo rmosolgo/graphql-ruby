@@ -60,26 +60,26 @@ module GraphQL
       private
 
       def assign_value
-        if @is_authorized == false
+        if @loaded_value.is_a?(GraphQL::RuntimeError)
+          @loaded_value.path = @field_resolve_step.path
+          @field_resolve_step.arguments = @loaded_value
+        elsif @is_authorized == false
+          # An unauthorized_object hook ate the error
           @field_resolve_step.arguments = EmptyObjects::EMPTY_HASH
           field_pending_steps = @field_resolve_step.pending_steps
           field_pending_steps.clear
           @field_resolve_step.build_errors_result(nil, nil)
+          return
         else
-          if @loaded_value.is_a?(GraphQL::RuntimeError)
-            @loaded_value.path = @field_resolve_step.path
-            @field_resolve_step.arguments = @loaded_value
-          else
-            query = @field_resolve_step.selections_step.query
-            query.current_trace.object_loaded(@argument_definition, @loaded_value, query.context)
-            @arguments[@argument_key] = @loaded_value
-          end
+          query = @field_resolve_step.selections_step.query
+          query.current_trace.object_loaded(@argument_definition, @loaded_value, query.context)
+          @arguments[@argument_key] = @loaded_value
+        end
 
-          field_pending_steps = @field_resolve_step.pending_steps
-          field_pending_steps.delete(self)
-          if @field_resolve_step.arguments && field_pending_steps.size == 0 # rubocop:disable Development/ContextIsPassedCop
-            @field_resolve_step.runner.add_step(@field_resolve_step)
-          end
+        field_pending_steps = @field_resolve_step.pending_steps
+        field_pending_steps.delete(self)
+        if @field_resolve_step.arguments && field_pending_steps.size == 0 # rubocop:disable Development/ContextIsPassedCop
+          @field_resolve_step.runner.add_step(@field_resolve_step)
         end
       end
     end
