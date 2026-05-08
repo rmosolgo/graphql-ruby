@@ -31,20 +31,28 @@ describe GraphQL::Execution::Lookahead do
       field :name, String, null: false
       field :id, ID, null: false, method: :name
       field :is_waterfowl, Boolean, null: false
-      field :similar_species, [BirdSpecies], null: false
+      field :similar_species, [BirdSpecies], null: false, resolve_each: true
 
-      def similar_species
+      def self.similar_species(object, context)
         object.similar_species_names.map { |n| DATA.find_by_name(n) }
       end
 
-      field :genus, BirdGenus, null: false,
+      def similar_species
+        self.class.similar_species(object, context)
+      end
+
+      field :genus, BirdGenus, null: false, resolve_each: true,
         extras: [:lookahead]
 
-      def genus(lookahead:)
+      def self.genus(object, context, lookahead:)
         if lookahead.selects?(:latin_name)
           context[:lookahead_latin_name] += 1
         end
         object.genus
+      end
+
+      def genus(lookahead:)
+        self.class.genus(object, context, lookahead: lookahead)
       end
     end
 
@@ -60,19 +68,23 @@ describe GraphQL::Execution::Lookahead do
     end
 
     class Query < GraphQL::Schema::Object
-      field :find_bird_species, BirdSpecies do
+      field :find_bird_species, BirdSpecies, resolve_static: true do
         argument :by_name, String
       end
 
-      def find_bird_species(by_name:)
+      def self.find_bird_species(context, by_name:)
         DATA.find_by_name(by_name)
       end
 
-      field :node, Node do
+      def find_bird_species(by_name:)
+        self.class.find_bird_species(context, by_name: by_name)
+      end
+
+      field :node, Node, resolve_static: true do
         argument :id, ID
       end
 
-      def node(id:)
+      def self.node(context, id:)
         if (node = DATA.find_by_name(id))
           node
         else
@@ -80,12 +92,20 @@ describe GraphQL::Execution::Lookahead do
         end
       end
 
-      field :species, Species do
+      def node(id:)
+        self.class.node(context, id: id)
+      end
+
+      field :species, Species, resolve_static: true do
         argument :id, ID
       end
 
-      def species(id:)
+      def self.species(context, id:)
         DATA.find_by_name(id)
+      end
+
+      def species(id:)
+        self.class.species(context, id: id)
       end
     end
 
@@ -359,21 +379,29 @@ describe GraphQL::Execution::Lookahead do
     describe "When there is an argument error" do
       class NestedArgumentErrorSchema < GraphQL::Schema
         class Data < GraphQL::Schema::Object
-          field :echo, String do
+          field :echo, String, resolve_static: true do
             argument :input, String
           end
 
-          def echo(input:)
+          def self.echo(context, input:)
             input
+          end
+
+          def echo(input:)
+            self.class.echo(context, input: input)
           end
         end
 
         class Query < GraphQL::Schema::Object
-          field :data, Data, extras: [:lookahead]
+          field :data, Data, extras: [:lookahead], resolve_static: true
 
-          def data(lookahead:)
+          def self.data(context, lookahead:)
             context[:args_class] = lookahead.selection(:echo).arguments.class
             {}
+          end
+
+          def data(lookahead:)
+            self.class.data(context, lookahead: lookahead)
           end
         end
 
