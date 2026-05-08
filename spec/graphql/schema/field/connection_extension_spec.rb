@@ -4,31 +4,43 @@ require "spec_helper"
 describe GraphQL::Schema::Field::ConnectionExtension do
   class ConnectionShortcutSchema < GraphQL::Schema
     class ShortcutResolveExtension < GraphQL::Schema::FieldExtension
-      def resolve(arguments:, **rest)
+      def resolve(object: nil, objects: nil, arguments:, **rest)
         collection = ["a", "b", "c", "d", "e"]
         if (filter = arguments[:starting_with])
           collection.select! { |x| x.start_with?(filter) }
         end
-        collection
+        if objects.nil?
+          collection
+        else
+          [collection]
+        end
       end
     end
 
     class CustomStringConnection < GraphQL::Types::Relay::BaseConnection
       edge_type(GraphQL::Types::String.edge_type)
-      field :argument_data, [String], null: false
+      field :argument_data, [String], null: false, resolve_each: true
+
+      def self.argument_data(object, context)
+        [object.arguments.class.name, *object.arguments.keys.map(&:inspect).sort]
+      end
 
       def argument_data
-        [object.arguments.class.name, *object.arguments.keys.map(&:inspect).sort]
+        self.class.argument_data(object, context)
       end
     end
 
     class Query < GraphQL::Schema::Object
-      field :names, CustomStringConnection, null: false, extensions: [ShortcutResolveExtension] do
+      field :names, CustomStringConnection, null: false, extensions: [ShortcutResolveExtension], resolve_static: true do
         argument :starting_with, String, required: false
       end
 
-      def names
+      def self.names(context)
         raise "This should never be called"
+      end
+
+      def names
+        self.class.names(context)
       end
     end
 
