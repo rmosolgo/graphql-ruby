@@ -195,7 +195,11 @@ TODO: accessing loaded arguments inside analyzers may turn out to be slightly di
 
 ### Authorization, Scoping
 
-Full compatibility. `def (self.)authorized?` and `def self.scope_items` will be called as needed during execution.
+`def (self.)authorized?` and `def self.scope_items` will be called as needed during execution.
+
+One incompatibility:
+
+- Argument `#authorized?` _will_ be called if the argument wasn't present in the query but a default value is used. `Execution::Next` doesn't create the metadata necessary to skip authorization in that case. A work-around might be to check if the value is equal to the default value in `def authorized?` and permit it if it is. If this is a blocker for you, please open an issue on GitHub and we can check it out.
 
 ### Visibility, including Changesets
 

@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::Member::HasArguments do
   class DefaultArgumentAuthSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
-      field :add, Int do
+      field :add, Int, resolve_static: true do
         argument :left, Int
         argument :right, Int, required: false, default_value: 1 do
           def authorized?(_object, _arg_value, context)
@@ -13,8 +13,13 @@ describe GraphQL::Schema::Member::HasArguments do
         end
       end
 
-      def add(left:, right:)
+
+      def self.add(context, left:, right:)
         left + right
+      end
+
+      def add(left:, right:)
+        self.class.add(context, left: left, right: right)
       end
     end
 
@@ -24,6 +29,11 @@ describe GraphQL::Schema::Member::HasArguments do
   it "doesn't require authorization when arguments with default values aren't present in the query" do
     assert_equal 5, DefaultArgumentAuthSchema.execute("{ add(left: 3, right: 2) }", context: { is_authorized: true })["data"].fetch("add")
     assert_nil DefaultArgumentAuthSchema.execute("{ add(left: 3, right: 2) }", context: { is_authorized: false })["data"].fetch("add")
-    assert_equal 4, DefaultArgumentAuthSchema.execute("{ add(left: 3) }", context: { is_authorized: false })["data"].fetch("add")
+    if TESTING_EXEC_NEXT
+      # Exec-next doesn't create Interpreter::Arguments instances which have `#default_used?`, so it applies authorization
+      assert_nil DefaultArgumentAuthSchema.execute("{ add(left: 3) }", context: { is_authorized: false })["data"].fetch("add")
+    else
+      assert_equal 4, DefaultArgumentAuthSchema.execute("{ add(left: 3) }", context: { is_authorized: false })["data"].fetch("add")
+    end
   end
 end
