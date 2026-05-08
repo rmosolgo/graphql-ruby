@@ -76,6 +76,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
       expected_plugins = [
         (GraphQL::Schema.use_visibility_profile? ? GraphQL::Schema::Visibility : nil),
+        (TESTING_EXEC_NEXT ? GraphQL::Execution::Next : nil),
         GraphQL::Backtrace,
         GraphQL::Subscriptions::ActionCableSubscriptions
       ].compact
@@ -149,6 +150,9 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
       expected_plugins = [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions]
+      if TESTING_EXEC_NEXT
+        expected_plugins.unshift(GraphQL::Execution::Next)
+      end
       if GraphQL::Schema.use_visibility_profile?
         expected_plugins.unshift(GraphQL::Schema::Visibility)
       end
@@ -572,6 +576,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     end
 
     it "raises a TracedError when backtrace is enabled" do
+      skip "Not implemented for Exec-next" if TESTING_EXEC_NEXT
       schema = Class.new(GraphQL::Schema) do
         query(Query)
         use GraphQL::Backtrace
@@ -584,6 +589,8 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     end
 
     it "rescues them when using rescue_from with backtrace" do
+      skip "Not implemented for Exec-next" if TESTING_EXEC_NEXT
+
       schema = Class.new(GraphQL::Schema) do
         query(Query)
         use GraphQL::Backtrace

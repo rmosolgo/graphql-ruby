@@ -364,3 +364,7 @@ def resolve_name(object, context)
   end
 end
 ```
+
+## GraphQL::Backtrace
+
+Doesn't support Execution::Next, but it's probably not necessary. `Execution::Next` includes the field name in error messages and doesn't generate crazy-long stack traces because of its design.
