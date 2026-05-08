@@ -226,7 +226,6 @@ if testing_rails?
 
       query(Query)
       use GraphQL::Dataloader
-      use GraphQL::Execution::Next
     end
 
     def exec_query(...)
