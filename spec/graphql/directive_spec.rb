@@ -4,11 +4,7 @@ require "spec_helper"
 describe "GraphQL::Directive" do
   let(:variables) { {"t" => true, "f" => false} }
   let(:result) {
-    if TESTING_EXEC_NEXT
-      Dummy::Schema.execute_next(query_string, variables: variables)
-    else
-      Dummy::Schema.execute(query_string, variables: variables)
-    end
+    Dummy::Schema.execute(query_string, variables: variables)
   }
   describe "on fields" do
     let(:query_string) { %|query directives($t: Boolean!, $f: Boolean!) {

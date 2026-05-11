@@ -28,7 +28,7 @@ describe GraphQL::Schema::Argument do
     end
 
     class Query < GraphQL::Schema::Object
-      field :field, String do
+      field :field, String, resolve_static: :run_field do
         argument :arg, String, description: "test", comment: "test comment", required: false
         argument :deprecated_arg, String, deprecation_reason: "don't use me!", required: false
 
@@ -62,7 +62,7 @@ describe GraphQL::Schema::Argument do
         argument :prepared_by_callable_arg, Int, required: false, prepare: Multiply.new
       end
 
-      def field(**args)
+      def self.run_field(context, **args)
         # sort the fields so that they match the output of the new interpreter
         sorted_keys = args.keys.sort
         sorted_args = {}
@@ -70,16 +70,24 @@ describe GraphQL::Schema::Argument do
         sorted_args.inspect
       end
 
+      def field(**args)
+        self.class.run_field(context, **args)
+      end
+
       def multiply(val)
         context[:multiply_by] * val
       end
 
-      field :context_arg_test, [String], null: false do
+      field :context_arg_test, [String], null: false, resolve_static: true do
         argument :input, ContextInput
       end
 
+      def self.context_arg_test(context, input:)
+        [input.context, input.context.class, context.class]
+      end
+
       def context_arg_test(input:)
-        [input.context, input.context.class, self.context.class]
+        self.class.context_arg_test(context, input: input)
       end
 
       field :other_unauthorized_instruments, resolver: LoadUnauthorizedInstruments
@@ -180,6 +188,7 @@ describe GraphQL::Schema::Argument do
 
   describe "prepare:" do
     it "calls the method on the field's owner" do
+      skip("Prepare methods aren't called with exec-next") if TESTING_EXEC_NEXT
       query_str = <<-GRAPHQL
       { field(preparedArg: 5) }
       GRAPHQL
@@ -289,7 +298,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = Jazz::Schema.execute(query_str, variables: { ensembleId: "Ensemble/Robert Glasper Experiment" })
-      assert_equal "ROBERT GLASPER Experiment", res["data"]["loadAndReturnEnsemble"]["ensemble"]["name"]
+      assert_equal "#{TESTING_EXEC_NEXT ? "Robert Glasper" : "ROBERT GLASPER"} Experiment", res["data"]["loadAndReturnEnsemble"]["ensemble"]["name"]
 
       res2 = Jazz::Schema.execute(query_str, variables: { ensembleId: nil })
       assert_nil res2["data"]["loadAndReturnEnsemble"].fetch("ensemble")
@@ -344,6 +353,7 @@ describe GraphQL::Schema::Argument do
     end
 
     it "handles applies authorization even when a custom load method is provided" do
+      skip "Custom load methods aren't called" if TESTING_EXEC_NEXT
       query_str = <<-GRAPHQL
       query { otherUnauthorizedInstruments(ids: ["Instrument/Drum Kit"]) }
       GRAPHQL
@@ -586,8 +596,12 @@ describe GraphQL::Schema::Argument do
   describe "required: :nullable" do
     class RequiredNullableSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :echo, String do
+        field :echo, String, resolve_static: true do
           argument :str, String, required: :nullable
+        end
+
+        def self.echo(context, str:)
+          str
         end
 
         def echo(str:)
@@ -626,23 +640,31 @@ describe GraphQL::Schema::Argument do
       end
 
       class Query < GraphQL::Schema::Object
-        field :add1, Integer do
+        field :add1, Integer, resolve_static: true do
           argument :left, Integer, required: false, default_value: 5, replace_null_with_default: true
           argument :right, Integer
         end
 
-        def add1(left:, right:)
+        def self.add1(context, left:, right:)
           left + right
+        end
+
+        def add1(left:, right:)
+          self.class.add1(context, left: left, right: right)
         end
 
         field :add2, resolver: Add
 
-        field :add3, Integer do
+        field :add3, Integer, resolve_static: true do
           argument :input, AddInput
         end
 
-        def add3(input:)
+        def self.add3(context, input:)
           input[:left] + input[:right]
+        end
+
+        def add3(input:)
+          self.class.add3(context, input: input)
         end
       end
       query(Query)
@@ -699,14 +721,18 @@ describe GraphQL::Schema::Argument do
       class Query < GraphQL::Schema::Object
         field_class BaseField
 
-        field :echo, String do
+        field :echo, String, resolve_static: true do
           argument :input, String, required: false, default_value: "argument-default-1", use_if: :visible_1
           argument :input, String, required: false, default_value: "argument-default-2", use_if: :visible_2
           argument :input, String, required: false, default_value: nil, use_if: :visible_3
         end
 
-        def echo(input: "method-default")
+        def self.echo(context, input: "method-default")
           input || "dynamic-fallback"
+        end
+
+        def echo(input: "method-default")
+          self.class.echo(context, input: input)
         end
       end
 

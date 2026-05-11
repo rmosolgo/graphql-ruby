@@ -9,8 +9,10 @@ describe GraphQL::Schema::AlwaysVisible do
         false
       end
 
-      field :one, Integer
-      def one; 1; end
+      field :one, Integer, resolve_static: true
+      def self.one(context); 1; end
+
+      def one; self.class.one(context); end
     end
     query(Query)
     use GraphQL::Schema::AlwaysVisible

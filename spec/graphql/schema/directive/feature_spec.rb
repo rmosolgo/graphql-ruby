@@ -24,14 +24,31 @@ describe GraphQL::Schema::Directive::Feature do
           # pass
         end
       end
+
+      def self.resolve_fragment_spread(ast_node, parent_type, objects, arguments, context)
+        flag_name = arguments[:flag]
+        if context[flag_name]
+          nil
+        else
+          FailsFlag.new
+        end
+      end
+
+      class FailsFlag
+        include GraphQL::Execution::HaltExecution
+      end
     end
 
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
 
-      def int
+      def self.int(context)
         context[:int] ||= 0
         context[:int] += 1
+      end
+
+      def int
+        self.class.int(context)
       end
     end
 

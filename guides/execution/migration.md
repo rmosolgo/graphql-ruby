@@ -160,6 +160,33 @@ Previously, GraphQL-Ruby would check `type_object.respond_to?(:title)`, `object.
 
 Now, GraphQL-Ruby simply calls `object.title` and allows the `NoMethodError` to bubble up if one is raised.
 
+### Interface Resolver Methods
+
+Resolver methods are now class methods instead of instance methods. In order to make this work in interface modules, they must be defined in a `resolver_methods do ... end` block, for example:
+
+
+```ruby
+module Node
+  include BaseInterface
+
+  field :id, ID, resolve_each: true
+
+  resolver_methods do
+    # This will define `def self.id` on Object types that implement this interface
+    def id(object, context)
+      GlobalId.new(object).to_s
+    end
+  end
+
+  # Backwards compat instance method:
+  def id
+    self.class.id(object, context)
+  end
+end
+```
+
+Methods defined in `resolver_methods { ... }` will be copied into Object type classes as _class methods_, so they'll be available for `resolve_{each|static|batch}` fields.
+
 ### Query Analyzers, including complexity 🟡
 
 Support is identical; this runs before execution using the exact same code.
@@ -168,7 +195,11 @@ TODO: accessing loaded arguments inside analyzers may turn out to be slightly di
 
 ### Authorization, Scoping
 
-Full compatibility. `def (self.)authorized?` and `def self.scope_items` will be called as needed during execution.
+`def (self.)authorized?` and `def self.scope_items` will be called as needed during execution.
+
+One incompatibility:
+
+- Argument `#authorized?` _will_ be called if the argument wasn't present in the query but a default value is used. `Execution::Next` doesn't create the metadata necessary to skip authorization in that case. A work-around might be to check if the value is equal to the default value in `def authorized?` and permit it if it is. If this is a blocker for you, please open an issue on GitHub and we can check it out.
 
 ### Visibility, including Changesets
 
@@ -185,6 +216,8 @@ Fully supported, but some legacy hooks are _not_ called. Implement the new hooks
 - `execute_field`, `execute_field_lazy`: use `begin_execute_field`, `end_execute_field` instead. (These may be called multiple times when Dataloader pauses or a GraphQL-Batch promise is returned)
 - `execute_query`, `execute_query_lazy`: use `execute_multiplex` for a top-level hook instead. (Single queries are always executed in a multiplex of size = 1.)
 - `resolve_type`, `authorized`: use `{begin,end}_resolve_type` and `{begin,end}_authorized` instead. (May be called multiple times for Dataloader etc.)
+
+Additionally, `object` parameters to those methods will receive an _Array_ of `objects` instead.
 
 ### Lazy resolution (GraphQL-Batch)
 
@@ -230,6 +263,8 @@ Supported completely.
 
 There is some implementation in the code right now but it's not stable. Please open an issue to discuss.
 
+Query-level directives are not implemented yet, but will be. Please open an issue if you have a use case for this.
+
 ### `as:`
 
 `as:` is applied: arguments are passed into Ruby methods by their `as:` names instead of their GraphQL names.
@@ -238,9 +273,11 @@ There is some implementation in the code right now but it's not stable. Please o
 
 `loads:` is handled as previously, __except__ that custom `def load_...` methods are _not_ called.
 
-### `prepare:`
+### `prepare:` 🟡
 
-These methods/procs are called.
+Procs are called as before.
+
+Methods that depend on a runtime `object` (such as a type instance or Mutation class) are _not_ called, because arguments are prepared before objects are ready.
 
 ### `validates:` 🟡
 
@@ -278,9 +315,13 @@ def self.values(context)
 end
 ```
 
-### Errors and `rescue_from`
+### Errors and `rescue_from` 🟡
 
-Supported.
+Raising `GraphQL::ExecutionError` and adding `rescue_from` handlers are supported
+
+Returning an array of `GraphQL::ExecutionError` instances is not supported anymore.
+
+`extras: [:execution_errors]` and `context.add_error` are not supported anymore.
 
 ### Connection fields
 
@@ -290,6 +331,40 @@ Connection arguments are automatically handled and connection wrapper objects ar
 
 This _works_ but if you want custom authorization or any lazy values, see notes about that compatibility.
 
+If you're reimplementing default values, you'll need to add the corresponding `resolve_static: true` or `resolve_each: true` configurations. See the built-in type definitions under `GraphQL::Introspection` to get these configurations.
+
 ### Multiplex
 
 To use the new engine to run a multiplex, use `MyAppSchema.multiplex_next(...)` with the same arguments.
+
+### GraphQL::Current 🟡
+
+`current_field` doesn't work; `dataloader_source` works. `current_operation_name` doesn't work.
+
+This will be fixed soon but may require opt-in to avoid needless overhead.
+
+### `fallback_value:` ❌
+
+`fallback_value:` is not supported in Execution::Next. It's not implemented because of the overhead it adds to resultion. You'll have to implement it by hand in resolvers.
+
+`graphql_migrate_execution` creates a resolver that _always_ returns the `fallback_value`. This might be right in some cases, but you'll probably have to implement your own method, like:
+
+```ruby
+field :name, String, fallback_value: "Anonymous", resolve_each: :resolve_name
+
+def resolve_name(object, context)
+  if object.respond_to?(:name)
+    object.name
+  elsif (is_h = object.is_a?(Hash)) && object.key?(:name)
+    object[:name]
+  elsif is_h && object.key?("name")
+    object["name"]
+  else
+    "Anonymous"
+  end
+end
+```
+
+## GraphQL::Backtrace
+
+Doesn't support Execution::Next, but it's probably not necessary. `Execution::Next` includes the field name in error messages and doesn't generate crazy-long stack traces because of its design.

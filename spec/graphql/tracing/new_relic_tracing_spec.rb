@@ -10,7 +10,11 @@ describe GraphQL::Tracing::NewRelicTracing do
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
+
+      def self.int(context)
+        1
+      end
 
       def int
         1

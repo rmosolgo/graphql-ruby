@@ -21,7 +21,7 @@ module GraphQL
         @finish_extension_idx = nil
         @was_scoped = nil
         @pending_steps = nil
-        @post_processors = @directive_finalizers = nil
+        @arguments_without_loads = @post_processors = @directive_finalizers = nil
       end
 
       attr_reader :ast_node, :key, :parent_type, :selections_step, :runner,
@@ -69,7 +69,7 @@ module GraphQL
         err
       rescue StandardError => stderr
         begin
-          @selections_step.query.handle_or_reraise(stderr)
+          @selections_step.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
         rescue GraphQL::ExecutionError => ex_err
           ex_err
         end
@@ -98,17 +98,34 @@ module GraphQL
 
       def add_graphql_error(err)
         err.path = path
-        err.ast_nodes = ast_nodes
+        if err.ast_node.nil?
+          err.ast_nodes = ast_nodes
+        end
         @selections_step.query.context.add_error(err)
         err
+      end
+
+      def build_errors_result(errors, single_error)
+        first_error = errors.nil? ? single_error : errors.pop
+        @field_results = error_instance_array(@selections_step.objects.size, first_error)
+        if errors
+          errors.each do |e|
+            add_graphql_error(e)
+          end
+        end
+        @results ||= @selections_step.results
+        build_results
       end
 
       def build_arguments
         query = @selections_step.query
         field_name = @ast_node.name
         @field_definition = query.types.field(@parent_type, field_name) || raise(GraphQL::Error, "No field definition found for #{@parent_type.to_type_signature}.#{ast_node.name} (at #{@ast_node.position})")
-        arguments = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
-        @arguments ||= arguments # may have already been set to an error
+        @arguments, errors = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
+        if errors
+          build_errors_result(errors, nil)
+          return
+        end
 
         if (@pending_steps.nil? || @pending_steps.size == 0) &&
             @field_results.nil? # Make sure the arguments flow didn't already call through
@@ -116,24 +133,29 @@ module GraphQL
         end
       end
 
+      # Used for compatibility in Schema::Subscription
+      def arguments_without_loads
+        if @arguments_without_loads.nil?
+          @arguments_without_loads, _errors = @runner.input_values[@selections_step.query].argument_values(@field_definition, ast_node.arguments, nil)
+        end
+        @arguments_without_loads
+      end
+
       def execute_field
         objects = @selections_step.objects
-        @results = @selections_step.results
-        # TODO not as good because only one error?
         if @arguments.is_a?(GraphQL::RuntimeError)
-          @field_results = Array.new(objects.size, @arguments)
-          build_results
+          build_errors_result(nil, @arguments)
           return
         end
 
+        @results = @selections_step.results
         query = @selections_step.query
         ctx = query.context
         if (v = @field_definition.validators).any?  # rubocop:disable Development/NoneWithoutBlockCop
           begin
             Schema::Validator.validate!(v, nil, ctx, @arguments)
           rescue GraphQL::RuntimeError => err
-            @field_results = Array.new(objects.size, err)
-            build_results
+            build_errors_result(nil, err)
             return
           end
         end
@@ -160,25 +182,40 @@ module GraphQL
         end
 
         if @field_definition.dynamic_introspection
-          # TODO break this backwards compat somehow?
-          objects = @selections_step.graphql_objects
+          objects = @selections_step.graphql_objects.map { |o| @field_definition.owner.wrap(o, ctx) }
         end
 
-        if @runner.authorization && @runner.authorizes?(@field_definition, ctx)
+        if @runner.authorizes?(@field_definition, ctx)
           authorized_objects = []
           authorized_results = []
           l = objects.size
           i = 0
           while i < l
             o = objects[i]
-            if @field_definition.authorized?(o, @arguments, ctx)
+            err = nil
+            begin
+              field_authed = @field_definition.authorized?(o, @arguments, ctx)
+              if @runner.resolves_lazies && @runner.lazy?(field_authed)
+                # TODO batch this properly...
+                field_authed = sync(field_authed)
+              end
+            rescue GraphQL::UnauthorizedFieldError => field_auth_err
+              err = field_auth_err
+              err.field ||= @field_definition
+              field_authed = false
+            end
+
+            if field_authed
               authorized_results << @results[i]
               authorized_objects << o
             else
               begin
-                err = GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
-                authorized_objects << query.schema.unauthorized_object(err)
-                authorized_results << @results[i]
+                err ||= GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
+                new_obj = query.schema.unauthorized_field(err)
+                if !new_obj.nil?
+                  authorized_objects << new_obj
+                  authorized_results << @results[i]
+                end
               rescue GraphQL::ExecutionError => exec_err
                 add_graphql_error(exec_err)
               end
@@ -220,27 +257,37 @@ module GraphQL
           if directives
             directives.each do |dir_node|
               if (dir_defn = @runner.runtime_directives[dir_node.name])
-                # TODO: `coerce_arguments` modifies self, assuming it's field arguments. Extract to pure function for use
-                # here and with fragments.
-                dir_args = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, nil)  # rubocop:disable Development/ContextIsPassedCop
-                result = dir_defn.resolve_field(ast_nodes, @parent_type, field_definition, authorized_objects, dir_args, ctx)
-                if !result.nil?
-                  if result.is_a?(Finalizer)
-                    result.path = path
-                    @directive_finalizers ||= []
-                    @directive_finalizers << result
-                  end
+                dir_args, errors = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, self)  # rubocop:disable Development/ContextIsPassedCop
+                if errors
+                  @results.each { |r| r.delete(@key) }
+                  errors.each { |e| e.ast_node = dir_node }
+                  build_errors_result(errors, nil)
+                  return
+                else
+                  begin
+                    dir_defn.validate!(dir_args, query.context)
+                    if !(result = dir_defn.resolve_field(ast_nodes, @parent_type, field_definition, authorized_objects, dir_args, ctx)).nil?
+                      if result.is_a?(Finalizer)
+                        result.path = path
+                        @directive_finalizers ||= []
+                        @directive_finalizers << result
+                      end
 
-                  if result.is_a?(PostProcessor)
-                    @post_processors ||= []
-                    @post_processors << result
-                  end
+                      if result.is_a?(PostProcessor)
+                        @post_processors ||= []
+                        @post_processors << result
+                      end
 
-                  if result.is_a?(HaltExecution)
-                    @directive_finalizers&.each { |f|
-                      @selections_step.results.each { |r|  @runner.add_finalizer(query, r, key, f) }
-                    }
-                    return
+                      if result.is_a?(HaltExecution)
+                        @directive_finalizers&.each { |f|
+                          @selections_step.results.each { |r|  @runner.add_finalizer(query, r, key, f) }
+                        }
+                        return
+                      end
+                    end
+                  rescue GraphQL::RuntimeError => err
+                    err.ast_node = dir_node
+                    raise
                   end
                 end
               end
@@ -267,10 +314,20 @@ module GraphQL
 
         if any_lazy_results?
           @runner.dataloader.lazy_at_depth(path.size, self)
-        elsif has_extensions
-          finish_extensions
         elsif @pending_steps.nil? || @pending_steps.empty?
-          build_results
+          if has_extensions
+            finish_extensions
+          else
+            build_results
+          end
+        end
+      rescue GraphQL::ExecutionError => err
+        add_graphql_error(err)
+      rescue StandardError => stderr
+        begin
+          @selections_step.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
+        rescue GraphQL::ExecutionError => err
+          add_graphql_error(err)
         end
       end
 
@@ -312,6 +369,8 @@ module GraphQL
                 conn.was_authorized_by_scope_items = @was_scoped
               end
               conn
+            rescue GraphQL::RuntimeError => err
+              err
             end
           when Schema::Field::ScopeExtension
             if @was_scoped.nil?
@@ -390,9 +449,16 @@ module GraphQL
       end
 
       def finish_leaf_result(result_h, key, field_result, return_type, ctx)
-        final_field_result = if field_result.nil?
+        final_field_result = build_leaf_result(field_result, return_type, ctx, false)
+
+        @directive_finalizers&.each { |f| @runner.add_finalizer(ctx.query, result_h, key, f) }
+        result_h[@key] = final_field_result
+      end
+
+      def build_leaf_result(field_result, return_type, ctx, is_from_array)
+        if field_result.nil?
           if return_type.non_null?
-            add_non_null_error(false)
+            add_non_null_error(is_from_array)
           else
             nil
           end
@@ -403,13 +469,16 @@ module GraphQL
             field_result.path = path
             @runner.add_finalizer(ctx.query, result_h, key, field_result)
           end
+        elsif return_type.list?
+          if return_type.non_null?
+            return_type = return_type.of_type
+          end
+
+          inner_type = return_type.of_type
+          field_result.map { |item| build_leaf_result(item, inner_type, ctx, true) }
         else
-          # TODO `nil`s in [T!] types aren't handled
           return_type.coerce_result(field_result, ctx)
         end
-
-        @directive_finalizers&.each { |f| @runner.add_finalizer(ctx.query, result_h, key, f) }
-        result_h[@key] = final_field_result
       end
 
       def enqueue_next_steps
@@ -427,7 +496,17 @@ module GraphQL
               if (object_type = @runner.runtime_type_at[result])
                 # OK
               else
-                object_type = @runner.resolve_type(@static_type, next_object, query)
+                query.current_trace.begin_resolve_type(@static_type, next_object, query.context)
+                object_type = ResolveTypeStep.resolve_type(@static_type, next_object, query)
+                if object_type.is_a?(Array)
+                  object_type, next_object = object_type
+                end
+                if @runner.resolves_lazies && @runner.lazy?(object_type)
+                  # TODO batch this
+                  object_type, next_object = sync(object_type)
+                end
+                ResolveTypeStep.assert_valid_resolved_type(@static_type, object_type, next_object, self)
+                query.current_trace.end_resolve_type(@static_type, next_object, query.context, object_type)
                 @runner.runtime_type_at[result] = object_type
               end
               next_objects_by_type[object_type] << next_object
@@ -469,7 +548,7 @@ module GraphQL
       end
 
       def add_non_null_error(is_from_array)
-        err = InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path)
+        err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path)
         @runner.schema.type_error(err, @selections_step.query.context)
       end
 
@@ -507,13 +586,13 @@ module GraphQL
             i += 1
           end
         elsif @runner.resolves_lazies || (
-                @runner.authorization && (
-                    @static_type.kind.object? ?
-                      @runner.authorizes?(@static_type, @selections_step.query.context) :
-                      (
-                        (runtime_type = (@runner.runtime_type_at[graphql_result] = @runner.resolve_type(@static_type, field_result, @selections_step.query))) &&
-                        @runner.authorizes?(runtime_type, @selections_step.query.context)
-                      )))
+                @static_type.kind.object? ?
+                  @runner.authorizes?(@static_type, @selections_step.query.context) :
+                  (
+                    (runtime_type, _ignored_new_value = ResolveTypeStep.resolve_type(@static_type, field_result, @selections_step.query)) &&
+                    (@runner.runtime_type_at[graphql_result] = runtime_type) &&
+                    @runner.authorizes?(runtime_type, @selections_step.query.context)
+                  ))
           obj_step = PrepareObjectStep.new(
             object: field_result,
             runner: @runner,
@@ -539,26 +618,46 @@ module GraphQL
       end
 
       def resolve_batch(objects, context, args_hash)
-        method_receiver = @field_definition.dynamic_introspection ? @field_definition.owner : @parent_type
+        dyn_ins = @field_definition.dynamic_introspection
+        method_receiver = dyn_ins ? @field_definition.owner : @parent_type
         case @field_definition.execution_mode
         when :resolve_batch
           begin
             method_receiver.public_send(@field_definition.execution_mode_key, objects, context, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
-            Array.new(objects.size, exec_err)
+            error_instance_array(objects.size, exec_err)
+          rescue StandardError => stderr
+            begin
+              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
+            rescue GraphQL::ExecutionError => exec_err
+              error_instance_array(objects.size, exec_err)
+            end
           end
         when :resolve_static
           result = begin
             method_receiver.public_send(@field_definition.execution_mode_key, context, **args_hash)
           rescue GraphQL::ExecutionError => err
             err
+          rescue StandardError => stderr
+            begin
+              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
+            rescue GraphQL::ExecutionError => err
+              err
+            end
           end
           Array.new(objects.size, result)
         when :resolve_each
           objects.map do |o|
-            method_receiver.public_send(@field_definition.execution_mode_key, o, context, **args_hash)
+            passed_in_obj = dyn_ins ? o.object : o
+            method_receiver.public_send(@field_definition.execution_mode_key, passed_in_obj, context, **args_hash)
           rescue GraphQL::ExecutionError => err
             err
+          rescue StandardError => stderr
+            begin
+              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: o)
+            rescue GraphQL::ExecutionError => err
+              err
+            end
           end
         when :hash_key
           k = @field_definition.execution_mode_key
@@ -571,7 +670,7 @@ module GraphQL
             err
           rescue StandardError => stderr
             begin
-              @selections_step.query.handle_or_reraise(stderr)
+              @selections_step.query.handle_or_reraise(stderr, object: o, field: @field_definition, arguments: args_hash)
             rescue GraphQL::ExecutionError => ex_err
               ex_err
             end
@@ -615,9 +714,6 @@ module GraphQL
           results
         when :resolve_legacy_instance_method
           @selections_step.graphql_objects.map do |obj_inst|
-            if @field_definition.dynamic_introspection
-              obj_inst = @owner.wrap(obj_inst, context)
-            end
             obj_inst.public_send(@field_definition.execution_mode_key, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
             exec_err
@@ -625,6 +721,10 @@ module GraphQL
         else
           raise "Batching execution for #{path} not implemented (execution_mode: #{@execution_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
         end
+      end
+
+      def error_instance_array(size, err_prototype)
+        Array.new(size) { err_prototype.dup }
       end
     end
   end

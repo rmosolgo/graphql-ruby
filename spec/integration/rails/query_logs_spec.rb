@@ -33,22 +33,34 @@ describe "Integration with ActiveRecord::QueryLogs" do
     end
 
     class Query < GraphQL::Schema::Object
-      field :some_thing, ThingType
+      field :some_thing, ThingType, resolve_static: true
 
-      def some_thing
+      def self.some_thing(context)
         Thing.find(2)
       end
 
-      field :thing, ThingType do
+      def some_thing
+        self.class.some_thing(context)
+      end
+
+      field :thing, ThingType, resolve_batch: true do
         argument :id, ID
+      end
+
+      def self.thing(objects, context, id:)
+        context.dataload_all(ThingSource, Array.new(objects.size, id.to_i))
       end
 
       def thing(id:)
         dataloader.with(ThingSource).load(id.to_i)
       end
 
-      field :other_thing, ThingType do
+      field :other_thing, ThingType, resolve_batch: true do
         argument :thing_id, ID
+      end
+
+      def self.other_thing(objects, context, thing_id:)
+        context.dataload_all(OtherThingSource, Array.new(objects.size, thing_id.to_i))
       end
 
       def other_thing(thing_id:)
@@ -91,8 +103,11 @@ describe "Integration with ActiveRecord::QueryLogs" do
     assert_equal "Fork", res["data"]["someThing"]["otherThing"]["name"]
     # These can appear in different orders in the SQL comment:
     assert_includes log, "current_graphql_operation:OtherThingName"
-    assert_includes log, "current_graphql_field:Query.someThing"
-    assert_includes log, "current_graphql_field:Thing.otherThing"
+    if !TESTING_EXEC_NEXT
+      # Exec-next doesn't broadcast this info yet
+      assert_includes log, "current_graphql_field:Query.someThing"
+      assert_includes log, "current_graphql_field:Thing.otherThing"
+    end
   end
 
   it "includes dataloader source when configured" do

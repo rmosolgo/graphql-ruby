@@ -2,6 +2,9 @@
 require "spec_helper"
 
 describe GraphQL::Backtrace do
+  def skip_with_exec_next
+    skip("Not supported with exec-next because of dependence on context[:current_path]") if TESTING_EXEC_NEXT
+  end
   class LazyError
     def raise_err
       raise "Lazy Boom"
@@ -97,6 +100,7 @@ describe GraphQL::Backtrace do
 
   describe "GraphQL backtrace helpers" do
     it "raises a TracedError when enabled" do
+      skip_with_exec_next
       assert_raises(GraphQL::Backtrace::TracedError) {
         backtrace_schema.execute("query BrokenList { field1 { listField { strField } } }")
       }
@@ -107,6 +111,7 @@ describe GraphQL::Backtrace do
     end
 
     it "works for objects inside lists" do
+      skip_with_exec_next
       assert_raises(GraphQL::Backtrace::TracedError) do
         backtrace_schema.execute("{ nestedList { thing { name } } }")
       end
@@ -117,6 +122,7 @@ describe GraphQL::Backtrace do
     end
 
     it "annotates crashes from user code" do
+      skip_with_exec_next
       err = assert_raises(GraphQL::Backtrace::TracedError) {
         backtrace_schema.execute <<-GRAPHQL, root_value: "Root"
         query($msg: String = \"Boom\") {
@@ -155,11 +161,12 @@ describe GraphQL::Backtrace do
       assert_includes err.message, "\n" + rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:49", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:52", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
     it "annotates crashes from user code when using inline fragments" do
+      skip_with_exec_next
       err = assert_raises(GraphQL::Backtrace::TracedError) {
         backtrace_schema.execute <<-GRAPHQL, root_value: "Root"
         query($msg: String = \"Boom\") {
@@ -192,11 +199,12 @@ describe GraphQL::Backtrace do
       assert_includes err.message, "\n" + rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:49", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:52", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
     it "annotates errors from Query#result" do
+      skip_with_exec_next
       query_str = "query StrField { field2 { strField } __typename }"
       context = { backtrace: true }
       query = GraphQL::Query.new(schema, query_str, context: context)
@@ -207,6 +215,7 @@ describe GraphQL::Backtrace do
     end
 
     it "annotates errors inside lazy resolution" do
+      skip_with_exec_next
       # Test context-based flag
       err = assert_raises(GraphQL::Backtrace::TracedError) {
         schema.execute("query StrField { field2 { strField } __typename }", context: { backtrace: true })
@@ -240,6 +249,7 @@ describe GraphQL::Backtrace do
     end
 
     it "always stringifies the #inspect response" do
+      skip_with_exec_next
       # test the schema plugin
       err = assert_raises(GraphQL::Backtrace::TracedError) {
         backtrace_schema.execute("query { nilInspect { raiseField(message: \"pop!\") } }")
@@ -260,6 +270,7 @@ describe GraphQL::Backtrace do
     end
 
     it "raises original exception instead of a TracedError when error does not occur during resolving" do
+      skip_with_exec_next
       instrumentation_schema = Class.new(schema) do
         trace_with(ErrorTrace, required_arg: true)
       end
@@ -342,12 +353,16 @@ describe GraphQL::Backtrace do
   describe "When validators are used" do
     class ValidatorBacktraceSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :greeting, String do
+        field :greeting, String, resolve_static: true do
           argument :name, String, validates: { length: { minimum: 5 }}
         end
 
-        def greeting(name:)
+        def self.greeting(context, name:)
           "Hello, #{name}!"
+        end
+
+        def greeting(name:)
+          self.class.greeting(context, name: name)
         end
       end
 

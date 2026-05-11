@@ -105,11 +105,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
     module Node
       include BaseInterface
 
-      field :id, Int, null: false, future_schema: true, deprecation_reason: "Use databaseId instead"
-      field :id, Int, null: false, future_schema: false
+      field :id, Int, null: false, hash_key: :id, future_schema: true, deprecation_reason: "Use databaseId instead"
+      field :id, Int, null: false, hash_key: :id, future_schema: false
 
-      field :database_id, Int, null: false, future_schema: true
-      field :uuid, ID, null: false, future_schema: true
+      field :database_id, Int, null: false, hash_key: :database_id, future_schema: true
+      field :uuid, ID, null: false, hash_key: :uuid, future_schema: true
     end
 
     class MoneyScalar < BaseScalar
@@ -124,14 +124,14 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     module HasCurrency
       include BaseInterface
-      field :currency, String, null: false
+      field :currency, String, null: false, hash_key: :currency
       self.future_schema = true
     end
 
     class Money < BaseObject
       implements HasCurrency
-      field :amount, Integer, null: false
-      field :currency, String, null: false, description: "The denomination of this amount of money"
+      field :amount, Integer, null: false, hash_key: :amount
+      field :currency, String, null: false, hash_key: :currency, description: "The denomination of this amount of money"
 
       self.future_schema = true
     end
@@ -163,14 +163,14 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class LegacyThing < BaseObject
       implements Node
-      field :price, LegacyMoney
+      field :price, LegacyMoney, hash_key: :price
     end
 
     class Thing < LegacyThing
       # TODO can I get rid of `future_schema: ...` here in a way that
       # still only requires one call to `visible?` at runtime?
-      field :price, Money, future_schema: true
-      field :price, MoneyScalar, method: :legacy_price, future_schema: false
+      field :price, Money, future_schema: true, hash_key: :price
+      field :price, MoneyScalar, hash_key: :legacy_price, future_schema: false
     end
 
     class Language < BaseEnum
@@ -228,8 +228,8 @@ describe "Dynamic types, fields, arguments, and enum values" do
     class LegacyBot < BaseObject
       description "Legacy bot"
       graphql_name "Bot"
-      field :handle, String, null: false
-      field :verified, Boolean, null: false
+      field :handle, String, null: false, hash_key: :handle
+      field :verified, Boolean, null: false, hash_key: :verified
       self.future_schema = false
     end
 
@@ -239,8 +239,8 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class Bot < AbstractNamedThing
       description "Future bot"
-      field :name, String, null: false
-      field :is_verified, Boolean, null: false
+      field :name, String, null: false, hash_key: :name
+      field :is_verified, Boolean, null: false, hash_key: :is_verified
       self.future_schema = true
     end
 
@@ -284,10 +284,10 @@ describe "Dynamic types, fields, arguments, and enum values" do
         argument :id, ID
       end
 
-      field :f1, String, future_schema: true
-      field :f1, Int, future_schema: false
+      field :f1, String, future_schema: true, resolve_static: true
+      field :f1, Int, future_schema: false, resolve_static: true
 
-      def f1
+      def self.f1(context)
         if context[:future_schema]
           "abcdef"
         else
@@ -295,45 +295,69 @@ describe "Dynamic types, fields, arguments, and enum values" do
         end
       end
 
-      field :thing, Thing do
+      def f1
+        self.class.f1(context)
+      end
+
+      field :thing, Thing, resolve_static: true do
         argument :input, ThingIdInput
       end
 
-      def thing(input:)
+      def self.thing(context, input:)
         input[:thing]
       end
 
-      field :legacy_thing, LegacyThing, null: false do
+      def thing(input:)
+        self.class.thing(context, input: input)
+      end
+
+      field :legacy_thing, LegacyThing, null: false, resolve_static: true do
         argument :id, ID
       end
 
-      def legacy_thing(id:)
+      def self.legacy_thing(context, id:)
         { id: id, database_id: id, uuid: "thing-#{id}", price: "⚛︎#{id}00" }
       end
 
-      field :favorite_language, Language, null: false do
+      def legacy_thing(id:)
+        self.class.legacy_thing(context, id: id)
+      end
+
+      field :favorite_language, Language, null: false, resolve_static: true do
         argument :lang, Language, required: false
       end
 
-      def favorite_language(lang: nil)
+      def self.favorite_language(context, lang: nil)
         lang || context[:favorite_language] || "RUBY"
+      end
+
+      def favorite_language(lang: nil)
+        self.class.favorite_language(context, lang: lang)
       end
 
       field :add, resolver: Add
 
-      field :actor, Actor
-      def actor
+      field :actor, Actor, resolve_static: true
+      def self.actor(context)
         { handle: "bot1", verified: false, name: "bot2", is_verified: true }
       end
 
-      field :yell, String, null: false do
+      def actor
+        self.class.actor(context)
+      end
+
+      field :yell, String, null: false, resolve_static: true do
         # TODO: can I get rid of the requirement for `future_schema: true` here since `Scream.future_schema` is true?
         argument :scream, Scream, future_schema: true
         argument :scream, LegacyScream, future_schema: false
       end
 
-      def yell(scream:)
+      def self.yell(context, scream:)
         scream
+      end
+
+      def yell(scream:)
+        self.class.yell(context, scream: scream)
       end
 
       # just to attach these to the schema:
@@ -353,7 +377,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       argument :thing_id, Int, future_schema: false
       argument :price, Int
 
-      field :thing, Thing, null: false, future_schema: true, method: :custom_thing
+      field :thing, Thing, null: false, future_schema: true, hash_key: :custom_thing
       field :thing, LegacyThing, null: false, hash_key: :legacy_thing, future_schema: false
 
       def resolve(thing_id:, price:)
@@ -857,7 +881,7 @@ GRAPHQL
       module ThingInterface
         include GraphQL::Schema::Interface
         graphql_name "Thing"
-        field :t, String, null: false
+        field :t, String, null: false, hash_key: :t
         extend ConflictingThing
 
         def self.resolve_type(_obj, _ctx)
@@ -867,13 +891,13 @@ GRAPHQL
 
       class ThingObject < GraphQL::Schema::Object
         graphql_name "Thing"
-        field :t, String, null: false
+        field :t, String, null: false, hash_key: :t
         extend ConflictingThing
       end
 
       class OtherObject < GraphQL::Schema::Object
         implements ThingInterface
-        field :f, Int, null: false
+        field :f, Int, null: false, hash_key: :f
       end
       class ThingUnion < GraphQL::Schema::Union
         graphql_name "Thing"
@@ -897,22 +921,26 @@ GRAPHQL
 
       class Query < GraphQL::Schema::Object
         field_class BaseField
-        field :f1, Int, null: false do
+        field :f1, Int, null: false, resolve_static: true do
           argument :thing, ThingInput, required: false
         end
 
-        def f1(thing: nil)
+        def self.f1(context, thing: nil)
           5 * thing[:t]
         end
 
-        field :thing, ThingScalar
-        field :thing, ThingEnum
-        field :thing, ThingObject
-        field :thing, ThingUnion
-        field :thing, ThingInterface
+        def f1(thing: nil)
+          self.class.f1(context, thing: thing)
+        end
 
-        def thing
-          type_kind = context[:current_field].type.kind.name
+        field :thing, ThingScalar, resolve_static: true, extras: [:lookahead]
+        field :thing, ThingEnum, resolve_static: true, extras: [:lookahead]
+        field :thing, ThingObject, resolve_static: true, extras: [:lookahead]
+        field :thing, ThingUnion, resolve_static: true, extras: [:lookahead]
+        field :thing, ThingInterface, resolve_static: true, extras: [:lookahead]
+
+        def self.thing(context, lookahead:)
+          type_kind = lookahead.field.type.kind.name
           case type_kind
           when "ENUM"
             "T"
@@ -927,6 +955,10 @@ GRAPHQL
           else
             raise ArgumentError, "Unhandled type kind: #{type_kind.inspect}"
           end
+        end
+
+        def thing(lookahead:)
+          self.class.thing(context, lookahead: lookahead)
         end
 
         field :other_object, OtherObject
@@ -1031,8 +1063,8 @@ GRAPHQL
 
       class DuplicateFieldObject < GraphQL::Schema::Object
         field_class(BaseField)
-        field :f, String, allow_for: [1, 2], description: "first definition"
-        field :f, Int, allow_for: [2, 3], description: "second definition"
+        field :f, String, allow_for: [1, 2], description: "first definition", hash_key: :f
+        field :f, Int, allow_for: [2, 3], description: "second definition", hash_key: :f
       end
 
       class DuplicateArgumentObject < GraphQL::Schema::Object
@@ -1048,7 +1080,7 @@ GRAPHQL
         graphql_name("DuplicateNameObject")
         description "first definition"
 
-        field :f, String, null: false
+        field :f, String, null: false, hash_key: :f
 
         def self.visible?(context)
           (context[:allowed_for] == 1 || context[:allowed_for] == 2) && super
@@ -1059,7 +1091,7 @@ GRAPHQL
         graphql_name("DuplicateNameObject")
         description "second definition"
 
-        field :f, String, null: false
+        field :f, String, null: false, hash_key: :f
 
         def self.visible?(context)
           (context[:allowed_for] == 2 || context[:allowed_for] == 3) && super
@@ -1114,7 +1146,7 @@ GRAPHQL
         schema.to_json(context: { allowed_for: 2 })
       end
       assert_equal "DuplicateNameObject", err4.duplicated_name
-      assert_equal expected_message, err4.message
+      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving __Schema.types: " : ""}" + expected_message, err4.message
     end
 
     it "raises when a given context would permit multiple enum values with the same name" do
@@ -1140,7 +1172,7 @@ GRAPHQL
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
         enum_type.values({ allowed_for: 2 })
       end
-      expected_message ="Found two visible definitions for `DuplicateEnumValue.ONE`: #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE @value=\"ONE\" @description=\"second definition\">, #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE @value=\"ONE\" @description=\"first definition\">"
+      expected_message = "Found two visible definitions for `DuplicateEnumValue.ONE`: #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE @value=\"ONE\" @description=\"second definition\">, #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE @value=\"ONE\" @description=\"first definition\">"
       assert_equal expected_message, err.message
 
       # no get_value method ... yet ...
@@ -1155,7 +1187,7 @@ GRAPHQL
         schema.to_json(context: { allowed_for: 2 })
       end
       assert_equal "DuplicateEnumValue.ONE", err4.duplicated_name
-      assert_equal expected_message, err4.message
+      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving __Type.enumValues: " : ""}" + expected_message, err4.message
     end
 
     it "raises when a given context would permit multiple argument definitions" do
@@ -1199,7 +1231,7 @@ GRAPHQL
       err4 = assert_raises GraphQL::Schema::DuplicateNamesError do
         schema.to_json(context: { allowed_for: 2 })
       end
-      assert_equal expected_message, err4.message
+      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving __Schema.types: " : ""}" + expected_message, err4.message
       assert_equal "DuplicateArgumentObject.multiArg.a", err4.duplicated_name
     end
 
@@ -1242,7 +1274,7 @@ GRAPHQL
       err4 = assert_raises GraphQL::Schema::DuplicateNamesError do
         schema.to_json(context: { allowed_for: 2 })
       end
-      assert_equal expected_message, err4.message
+      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving __Schema.types: " : ""}" + expected_message, err4.message
       assert_equal "DuplicateFieldObject.f", err4.duplicated_name
     end
   end

@@ -29,6 +29,7 @@ module GraphQL
           st = @field_resolve_step.static_type
           ctx.query.current_trace.begin_resolve_type(st, @object, ctx)
           @resolved_type, new_value = @field_resolve_step.sync(@resolved_type)
+          ResolveTypeStep.assert_valid_resolved_type(st, @resolved_type, new_value, @field_resolve_step)
           if new_value
             @object = new_value
           end
@@ -42,13 +43,12 @@ module GraphQL
         when :resolve_type
           static_type = @field_resolve_step.static_type
           if static_type.kind.abstract?
-            ctx = @field_resolve_step.selections_step.query.context
-            ctx.query.current_trace.begin_resolve_type(static_type, @object, ctx)
-            @resolved_type, new_value = @runner.schema.resolve_type(static_type, @object, ctx)
+            query = @field_resolve_step.selections_step.query
+            @resolved_type, new_value = ResolveTypeStep.resolve_type(static_type, @object, query)
             if new_value
+              ResolveTypeStep.assert_valid_resolved_type(static_type, @resolved_type, new_value, @field_resolve_step)
               @object = new_value
             end
-            ctx.query.current_trace.end_resolve_type(static_type, @object, ctx, @resolved_type)
           else
             @resolved_type = static_type
           end
@@ -91,6 +91,13 @@ module GraphQL
         end
       rescue GraphQL::RuntimeError => err
         @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+      rescue StandardError => err
+        query ||= @field_resolve_step.selections_step.query
+        begin
+          query.handle_or_reraise(err, field: @field_resolve_step.field_definition, arguments: @field_resolve_step.arguments, object: @object) # rubocop:disable Development/ContextIsPassedCop
+        rescue GraphQL::RuntimeError => err
+          @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+        end
       end
 
       def create_result

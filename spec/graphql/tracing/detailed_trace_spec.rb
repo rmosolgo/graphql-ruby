@@ -26,19 +26,11 @@ describe GraphQL::Tracing::DetailedTrace do
   end
 
   def exec_query(...)
-    if TESTING_EXEC_NEXT
-      SamplerSchema.execute_next(...)
-    else
-      SamplerSchema.execute(...)
-    end
+    SamplerSchema.execute(...)
   end
 
   def exec_multiplex(...)
-    if TESTING_EXEC_NEXT
-      SamplerSchema.multiplex_next(...)
-    else
-      SamplerSchema.multiplex(...)
-    end
+    SamplerSchema.multiplex(...)
   end
 
   it "runs when the configured trace mode is set" do

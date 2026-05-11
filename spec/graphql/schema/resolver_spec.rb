@@ -513,7 +513,6 @@ describe GraphQL::Schema::Resolver do
       mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
 
       def self.object_from_id(id, ctx)
         if id == "invalid"
@@ -534,11 +533,7 @@ describe GraphQL::Schema::Resolver do
   end
 
   def exec_query(*args, **kwargs)
-    if TESTING_EXEC_NEXT
-      ResolverTest::Schema.execute_next(*args, **kwargs)
-    else
-      ResolverTest::Schema.execute(*args, **kwargs)
-    end
+    ResolverTest::Schema.execute(*args, **kwargs)
   end
 
   it "can access self.arguments inside authorized?" do

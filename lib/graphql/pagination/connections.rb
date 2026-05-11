@@ -85,9 +85,7 @@ module GraphQL
 
       def populate_connection(field, object, value, original_arguments, context)
         if value.is_a? GraphQL::ExecutionError
-          # This isn't even going to work because context doesn't have ast_node anymore
-          context.add_error(value)
-          nil
+          raise value
         elsif value.nil?
           nil
         elsif value.is_a?(GraphQL::Pagination::Connection)

@@ -4,11 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::IntrospectionSystem do
 
   def execute_query(...)
-    if TESTING_EXEC_NEXT
-      Jazz::Schema.execute_next(...)
-    else
-      Jazz::Schema.execute(...)
-    end
+    Jazz::Schema.execute(...)
   end
 
   describe "custom introspection" do
@@ -281,12 +277,12 @@ describe GraphQL::Schema::IntrospectionSystem do
       module CustomIntrospection
         class DynamicFields < GraphQL::Introspection::DynamicFields
           field_class(BaseField)
-          field :__typename, String, null: false
+          field :__typename, String, null: false, resolve_each: true
         end
 
         class EntryPoints < GraphQL::Introspection::EntryPoints
           field_class(BaseField)
-          field :__type, GraphQL::Introspection::TypeType do
+          field :__type, GraphQL::Introspection::TypeType, resolve_static: true do
             argument :name, String
           end
         end

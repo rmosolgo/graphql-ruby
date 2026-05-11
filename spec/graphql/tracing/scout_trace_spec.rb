@@ -7,10 +7,14 @@ describe GraphQL::Tracing::ScoutTrace do
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
+
+      def self.int(context)
+        1
+      end
 
       def int
-        1
+        self.class.int(context)
       end
     end
 
@@ -40,7 +44,7 @@ describe GraphQL::Tracing::ScoutTrace do
       (USING_C_PARSER ? "lex.graphql" : nil),
       "parse.graphql",
       "validate.graphql",
-      "Query.authorized.graphql"
+      (TESTING_EXEC_NEXT ? nil : "Query.authorized.graphql"), # skipped because not implemented
     ].compact
     assert_equal expected_events, ScoutApm::EVENTS
   end

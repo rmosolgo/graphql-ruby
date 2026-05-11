@@ -152,6 +152,7 @@ describe GraphQL::Schema::Object do
 
   describe "wrapping a Hash" do
     it "automatically looks up symbol and string keys" do
+      skip("Exec-next does NOT fall back to string keys") if TESTING_EXEC_NEXT
       query_str = <<-GRAPHQL
       {
         hashyEnsemble {
@@ -167,6 +168,7 @@ describe GraphQL::Schema::Object do
     end
 
     it "works with strings and symbols" do
+      skip("Exec-next DOES NOT fall back to string keys") if TESTING_EXEC_NEXT
       query_str = <<-GRAPHQL
       {
         hashByString { falsey }
@@ -210,7 +212,8 @@ describe GraphQL::Schema::Object do
       res = Jazz::Schema.execute(query_str)
       expected_ensembles = [
         {"name" => "Bela Fleck and the Flecktones"},
-        {"name" => "ROBERT GLASPER Experiment"},
+        # This is implemented in `def resolve` which Exec-next doesn't call
+        {"name" => "#{TESTING_EXEC_NEXT ? "Robert Glasper" : "ROBERT GLASPER"} Experiment"},
       ]
       assert_equal expected_ensembles, res["data"]["ensembles"]
       assert_equal({"name" => "Banjo"}, res["data"]["instruments"].first)
@@ -330,19 +333,29 @@ describe GraphQL::Schema::Object do
       module Numberable
         include GraphQL::Schema::Interface
 
-        field :float, Float, null: false
+        field :float, Float, null: false, resolve_static: true
+
+        resolver_methods do
+          def float(context)
+            nil
+          end
+        end
 
         def float
-          nil
+          self.class.float(context)
         end
       end
 
       class Query < GraphQL::Schema::Object
         implements Numberable
 
-        field :int, Integer, null: false
-        def int
+        field :int, Integer, null: false, resolve_static: true
+        def self.int(context)
           nil
+        end
+
+        def int
+          self.class.int(context)
         end
       end
       query(Query)
@@ -445,9 +458,24 @@ describe GraphQL::Schema::Object do
             trace(method_name, data, &block)
           end
         end
+
+        def begin_execute_field(field, object, arguments, query)
+          query.context[:log] << "begin_execute_field"
+          super
+        end
+
+        def end_execute_field(field, object, arguments, query, result)
+          query.context[:log] << "end_execute_field"
+          super
+        end
       end
 
       class SimpleMethodCallField < GraphQL::Schema::Field
+        def initialize(*args, **kwargs, &block)
+          kwargs[:method] = "resolve_#{kwargs[:name]}"
+          super
+        end
+
         def resolve(obj, args, ctx)
           obj.public_send("resolve_#{@original_name}")
         end
@@ -478,6 +506,7 @@ describe GraphQL::Schema::Object do
     end
 
     it "avoids calls to Object.authorized? and uses the returned object" do
+      skip("Exec-next doesn't use .wrap") if TESTING_EXEC_NEXT
       log = []
       res = WrapOverrideSchema.execute("{ __typename int }", context: { log: log })
       assert_equal "Wrapped", res["data"]["__typename"]
@@ -486,9 +515,22 @@ describe GraphQL::Schema::Object do
         "validate",
         "analyze_query",
         "execute_query",
-        "execute_field",
-        "execute_field",
-        "execute_query_lazy"
+        *(
+          TESTING_EXEC_NEXT ? [
+            "begin_execute_field",
+            "end_execute_field",
+            "begin_execute_field",
+            "end_execute_field"
+          ] : [
+            "begin_execute_field",
+            "execute_field",
+            "end_execute_field",
+            "begin_execute_field",
+            "execute_field",
+            "end_execute_field",
+            "execute_query_lazy"
+          ]
+        )
       ]
 
       assert_equal expected_log, log

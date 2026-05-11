@@ -31,7 +31,11 @@ describe "Trace modes for schemas" do
       end
 
       class Query < GraphQL::Schema::Object
-        field :greeting, String, fallback_value: "Howdy!"
+        field :greeting, String, fallback_value: "Howdy!", resolve_static: true
+
+        def self.greeting(_context)
+          "Howdy!"
+        end
       end
 
       query(Query)

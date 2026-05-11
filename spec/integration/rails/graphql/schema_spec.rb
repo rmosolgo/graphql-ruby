@@ -238,12 +238,16 @@ type Query {
       Class.new(GraphQL::Schema) do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          field :int, Integer do
+          field :int, Integer, resolve_static: true do
             argument :value, Integer, required: false
           end
 
-          def int(value:)
+          def self.int(context, value:)
             value == 13 ? raise("13 is unlucky") : value
+          end
+
+          def int(value:)
+            self.class.int(context, value: value)
           end
         end
 

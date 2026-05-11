@@ -226,15 +226,10 @@ if testing_rails?
 
       query(Query)
       use GraphQL::Dataloader
-      use GraphQL::Execution::Next
     end
 
     def exec_query(...)
-      if TESTING_EXEC_NEXT
-        VulfpeckSchema.execute_next(...)
-      else
-        VulfpeckSchema.execute(...)
-      end
+      VulfpeckSchema.execute(...)
     end
   end
   class Author < ActiveRecord::Base

@@ -4,10 +4,30 @@ module GraphQL
   class Schema
     module HasSingleInputArgument
       def resolve_with_support(**inputs)
-        if inputs[:input].is_a?(InputObject)
-          input = inputs[:input].to_kwargs
+        input_kwargs = flatten_arguments(inputs)
+        if !input_kwargs.empty?
+          super(**input_kwargs)
         else
-          input = inputs[:input]
+          super()
+        end
+      end
+
+      def self.included(base)
+        base.extend(ClassMethods)
+      end
+
+      def call
+        @prepared_arguments = flatten_arguments(@prepared_arguments)
+        super
+      end
+
+      private
+
+      def flatten_arguments(inputs)
+        input = if inputs[:input].is_a?(InputObject)
+          inputs[:input].to_kwargs
+        else
+          inputs[:input]
         end
 
         new_extras = field ? field.extras : []
@@ -24,7 +44,6 @@ module GraphQL
         end
 
         if input
-          # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
           input_kwargs = input.to_h
         else
           # Relay Classic Mutations with no `argument`s
@@ -32,15 +51,7 @@ module GraphQL
           input_kwargs = {}
         end
 
-        if !input_kwargs.empty?
-          super(**input_kwargs)
-        else
-          super()
-        end
-      end
-
-      def self.included(base)
-        base.extend(ClassMethods)
+        input_kwargs
       end
 
       module ClassMethods

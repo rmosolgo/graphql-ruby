@@ -171,16 +171,20 @@ describe GraphQL::Analysis::MaxQueryComplexity do
         def self.authorized?(obj, ctx)
           !!ctx[:authorized] && super
         end
-        field :name, String
+        field :name, String, hash_key: :name
       end
 
       class Query < GraphQL::Schema::Object
-        field :things, Thing.connection_type do
+        field :things, Thing.connection_type, resolve_static: true do
           argument :thing_id, ID, loads: Thing
         end
 
-        def things(thing:)
+        def self.things(context, thing:)
           [thing]
+        end
+
+        def things(thing:)
+          self.class.things(context, thing: thing)
         end
       end
 

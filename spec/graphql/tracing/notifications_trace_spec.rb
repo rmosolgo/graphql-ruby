@@ -5,11 +5,17 @@ require "spec_helper"
 describe GraphQL::Tracing::NotificationsTrace do
   module NotificationsTraceTest
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
 
-      def int
+      def self.int(context)
         1
       end
+
+      def int
+        self.class.int(context)
+      end
+
+      def self.authorized?(...); true; end
     end
 
     class DummyEngine < GraphQL::Tracing::NotificationsTrace::Adapter

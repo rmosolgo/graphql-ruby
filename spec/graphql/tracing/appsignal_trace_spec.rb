@@ -39,7 +39,9 @@ describe GraphQL::Tracing::AppsignalTrace do
 
   module AppsignalTraceTest
     class Thing < GraphQL::Schema::Object
-      field :str, String
+      field :str, String, resolve_static: true
+
+      def self.str(context); "blah"; end
 
       def str; "blah"; end
     end
@@ -54,16 +56,21 @@ describe GraphQL::Tracing::AppsignalTrace do
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
 
-      def int
+      def self.int(context)
         IntBox.new(1)
       end
 
-      field :thing, Thing
+      def int
+        self.class.int(context)
+      end
+
+      field :thing, Thing, resolve_static: true
+      def self.thing(context); :thing; end
       def thing; :thing; end
 
-      field :named, Named, resolver_method: :thing
+      field :named, Named, resolver_method: :thing, resolve_static: :thing
     end
 
     class TestSchema < GraphQL::Schema
@@ -85,7 +92,7 @@ describe GraphQL::Tracing::AppsignalTrace do
       "parse.graphql",
       "validate.graphql",
       "analyze.graphql",
-      "Query.authorized.graphql",
+      (TESTING_EXEC_NEXT ? nil : "Query.authorized.graphql"),
       "Query.thing.graphql",
       "Thing.authorized.graphql",
       "Query.named.graphql",
@@ -124,7 +131,7 @@ describe GraphQL::Tracing::AppsignalTrace do
         "parse.graphql",
         "validate.graphql",
         "analyze.graphql",
-        "Query.authorized.graphql",
+        (TESTING_EXEC_NEXT ? nil : "Query.authorized.graphql"),
         "Query.thing.graphql",
         "Thing.authorized.graphql",
         "Query.named.graphql",
@@ -157,7 +164,7 @@ describe GraphQL::Tracing::AppsignalTrace do
         "execute.graphql",
         "validate.graphql",
         "analyze.graphql",
-        "Query.authorized.graphql",
+        (TESTING_EXEC_NEXT ? nil : "Query.authorized.graphql"),
         "Query.thing.graphql",
         "Thing.authorized.graphql",
         "Query.named.graphql",

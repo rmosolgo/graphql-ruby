@@ -47,9 +47,13 @@ describe GraphQL::Types::String do
           query_type = Class.new(GraphQL::Schema::Object) do
             graphql_name "Query"
 
-            field :bad_string, String
-            def bad_string
+            field :bad_string, String, resolve_static: true
+            def self.bad_string(context)
               "\0\0\0foo\255\255\255".dup.force_encoding("BINARY")
+            end
+
+            def bad_string
+              self.class.bad_string(nil)
             end
           end
 
@@ -62,7 +66,7 @@ describe GraphQL::Types::String do
           err = assert_raises GraphQL::StringEncodingError do
             schema.execute("{ badString }")
           end
-          expected_err = "String \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\" was encoded as ASCII-8BIT @ badString (Query.badString). GraphQL requires an encoding compatible with UTF-8."
+          expected_err = "#{TESTING_EXEC_NEXT ? "Resolving Query.badString: " : ""}String \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\" was encoded as ASCII-8BIT#{TESTING_EXEC_NEXT ? "" : " @ badString (Query.badString)"}. GraphQL requires an encoding compatible with UTF-8."
           assert_equal expected_err, err.message
         end
       end
@@ -106,12 +110,16 @@ describe GraphQL::Types::String do
   describe "unicode escapes" do
     class UnicodeEscapeSchema < GraphQL::Schema
       class QueryType < GraphQL::Schema::Object
-        field :get_string, String do
+        field :get_string, String, resolve_static: true do
           argument :string, String
         end
 
-        def get_string(string:)
+        def self.get_string(context, string:)
           string
+        end
+
+        def get_string(string:)
+          self.class.get_string(context, string: string)
         end
       end
 

@@ -84,18 +84,26 @@ describe GraphQL::Pagination::Connections do
     end
 
     class Query < GraphQL::Schema::Object
-      field :things, [ThingConnection], null: false
+      field :things, [ThingConnection], null: false, resolve_static: true
 
-      def things
+      def self.things(context)
         [{name: "thing1"}, {name: "thing2"}]
       end
 
-      field :things2, [ThingConnection], null: false, connection: false
+      def things
+        self.class.things(context)
+      end
 
-      def things2
+      field :things2, [ThingConnection], null: false, connection: false, resolve_static: true
+
+      def self.things2(context)
         [
           BadThing.new
         ]
+      end
+
+      def things2
+        self.class.things2(context)
       end
     end
 
@@ -103,6 +111,7 @@ describe GraphQL::Pagination::Connections do
   end
 
   it "raises a helpful error when it fails to implement a connection" do
+    skip "Exec-next doesn't do this" if TESTING_EXEC_NEXT
     err = assert_raises GraphQL::Execution::Interpreter::ListResultFailedError do
       pp ConnectionErrorTestSchema.execute("{ things { name } }")
     end
@@ -131,14 +140,19 @@ describe GraphQL::Pagination::Connections do
   it "uses a field's `max_page_size: nil` configuration" do
     user_type = Class.new(GraphQL::Schema::Object) do
       graphql_name 'User'
-      field :name, String, null: false
+      field :name, String, null: false, hash_key: :name
     end
 
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name 'Query'
-      field :users, user_type.connection_type, max_page_size: nil
-      def users
+      field :users, user_type.connection_type, max_page_size: nil, resolve_static: true
+
+      def self.users(context)
         [{ name: 'Yoda' }, { name: 'Anakin' }, { name: 'Obi Wan' }]
+      end
+
+      def users
+        self.class.users(context)
       end
     end
 
@@ -163,10 +177,14 @@ describe GraphQL::Pagination::Connections do
 
   class SingleNewConnectionSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
-      field :strings, GraphQL::Types::String.connection_type, null: false
+      field :strings, GraphQL::Types::String.connection_type, null: false, resolve_static: true
+
+      def self.strings(context)
+        GraphQL::Pagination::ArrayConnection.new(["a", "b", "c"])
+      end
 
       def strings
-        GraphQL::Pagination::ArrayConnection.new(["a", "b", "c"])
+        self.class.strings(context)
       end
     end
 

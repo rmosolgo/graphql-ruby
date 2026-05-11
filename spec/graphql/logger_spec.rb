@@ -72,11 +72,15 @@ describe "Logger" do
         end
 
         class Query < GraphQL::Schema::Object
-          field :node, Node do
+          field :node, Node, resolve_static: true do
             argument :id, ID
           end
 
+          def self.node(context, id:)
+          end
+
           def node(id:)
+            self.class.node(context, id: id)
           end
 
           field :something_else, String

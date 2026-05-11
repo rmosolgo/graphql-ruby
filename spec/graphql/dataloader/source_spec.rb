@@ -94,8 +94,12 @@ describe GraphQL::Dataloader::Source do
     end
 
     class Query < GraphQL::Schema::Object
-      field :thing, Thing do
+      field :thing, Thing, resolve_batch: true do
         argument :id, ID
+      end
+
+      def self.thing(objects, context, id:)
+        context.dataload_all(ThingSource, Array.new(objects.size, id))
       end
 
       def thing(id:)
@@ -110,7 +114,7 @@ describe GraphQL::Dataloader::Source do
       NoDataloaderSchema.execute("{ thing(id: 1) { name } }")
     end
 
-    expected_message = "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
+    expected_message = "#{TESTING_EXEC_NEXT ? "Resolving Query.thing: " : ""}GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
     assert_equal expected_message, err.message
   end
 end

@@ -45,8 +45,8 @@ module GraphQL
       end
 
       # @api private
-      def handle_or_reraise(err)
-        @schema.handle_or_reraise(context, err)
+      def handle_or_reraise(err, **kwargs)
+        @schema.handle_or_reraise(context, err, **kwargs)
       end
     end
 

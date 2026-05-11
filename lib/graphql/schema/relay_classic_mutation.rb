@@ -25,7 +25,7 @@ module GraphQL
       argument :client_mutation_id, String, "A unique identifier for the client performing the mutation.", required: false
 
       # The payload should always include this field
-      field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.")
+      field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.", hash_key: :client_mutation_id)
       # Relay classic default:
       null(true)
 
@@ -35,7 +35,6 @@ module GraphQL
         input = inputs[:input].to_kwargs
 
         if input
-          # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
           input_kwargs = input.to_h
           client_mutation_id = input_kwargs.delete(:client_mutation_id)
           inputs[:input] = input_kwargs
@@ -49,6 +48,21 @@ module GraphQL
             return_hash[:client_mutation_id] = client_mutation_id
           end
           return_hash
+        end
+      end
+
+      def call
+        input = @prepared_arguments[:input]&.to_kwargs
+
+        if input
+          client_mutation_id = input.delete(:client_mutation_id)
+          @prepared_arguments[:input] = input
+        end
+
+        super
+
+        if (return_value = exec_result[exec_index]).is_a?(Hash)
+          return_value[:client_mutation_id] = client_mutation_id
         end
       end
     end

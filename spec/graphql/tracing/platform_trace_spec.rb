@@ -234,7 +234,11 @@ describe GraphQL::Tracing::PlatformTrace do
   describe "using subclasses altogether" do
     class KitchenSinkTraceSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :int, Int, fallback_value: 1
+        field :int, Int, fallback_value: 1, resolve_static: true
+
+        def self.int(_context)
+          1
+        end
       end
 
       query(Query)

@@ -25,29 +25,39 @@ describe GraphQL::Tracing::AppOpticsTrace do
       class Company < GraphQL::Schema::Object
         global_id_field :id
         field :name, String
-        field :address, Schema::Address
+        field :address, Schema::Address, resolve_static: true
 
-        def address
+        def self.address(context)
           OpenStruct.new(
             id: AppOpticsTraceTest::Schema.id_from_object,
             street: 'MyStreetName',
             number: 'MyStreetNumber'
           )
         end
+
+        def address
+          self.class.address(context)
+        end
       end
 
       class Query < GraphQL::Schema::Object
-        field :int, Integer, null: false
-        def int; 1; end
+        field :int, Integer, null: false, resolve_static: true
+        def self.int(context); 1; end
 
-        field :company, Company do
+        def int; self.class.int(context); end
+
+        field :company, Company, resolve_static: true do
           argument :id, ID
         end
 
-        def company(id:)
+        def self.company(context, id:)
           OpenStruct.new(
             id: id,
             name: 'MyName')
+        end
+
+        def company(id:)
+          self.class.company(context, id: id)
         end
       end
 
@@ -93,8 +103,10 @@ describe GraphQL::Tracing::AppOpticsTrace do
     assert_equal $appoptics_tracing_name, 'graphql.query.company'
     refute $appoptics_tracing_spans.find { |name| name !~ /^graphql\./ }
     assert_equal $appoptics_tracing_kvs.compact.size, $appoptics_tracing_spans.compact.size
-    assert_includes($appoptics_tracing_spans, 'graphql.Query.company')
-    assert_includes($appoptics_tracing_spans, 'graphql.Company.address')
+    if !TESTING_EXEC_NEXT
+      assert_includes($appoptics_tracing_spans, 'graphql.Query.company')
+      assert_includes($appoptics_tracing_spans, 'graphql.Company.address')
+    end
   end
 
   # case: appoptics_apm didn't get required

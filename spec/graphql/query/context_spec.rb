@@ -10,22 +10,29 @@ describe GraphQL::Query::Context do
 
   class ContextTestSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
-      field :context, String, resolver_method: :fetch_context_key do
+      field :context, String, resolver_method: :fetch_context_key, resolve_static: :fetch_context_key do
         argument :key, String
       end
 
-      def fetch_context_key(key:)
+      def self.fetch_context_key(context, key:)
         context[key]
       end
 
-      field :query_name, String
+      def fetch_context_key(key:)
+        self.class.fetch_context_key(context, key: key)
+      end
 
-      def query_name
+      field :query_name, String, resolve_static: true
+
+      def self.query_name(context)
         context.query.class.name
       end
 
-      field :push_query_error, Integer, null: false
+      def query_name
+        self.class.query_name(context)
+      end
 
+      field :push_query_error, Integer, null: false
       def push_query_error
         context.add_error(GraphQL::ExecutionError.new("Query-level error"))
         1
@@ -130,6 +137,7 @@ describe GraphQL::Query::Context do
     |}
 
     it "allows query-level errors" do
+      skip(".add_error isn't supported") if TESTING_EXEC_NEXT
       expected_err = { "message" => "Query-level error" }
       assert_equal [expected_err], result["errors"]
     end
@@ -232,6 +240,7 @@ describe GraphQL::Query::Context do
     end
 
     it "can be set and does not leak to sibling fields" do
+      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
       query_str = %|
         {
           before: getScopedContext(key: "a")
@@ -276,6 +285,7 @@ describe GraphQL::Query::Context do
     end
 
     it "can be set and does not leak to sibling fields when all resolvers are lazy values" do
+      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
       query_str = %|
         {
           before: getScopedContext(key: "a", lazy: true)
@@ -306,6 +316,8 @@ describe GraphQL::Query::Context do
     end
 
     it "can be set and does not leak to sibling fields when all get resolvers are lazy values" do
+      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+
       query_str = %|
         {
           before: getScopedContext(key: "a", lazy: true)
@@ -336,6 +348,8 @@ describe GraphQL::Query::Context do
     end
 
     it "can be set and does not leak to sibling fields when all set resolvers are lazy values" do
+      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+
       query_str = %|
         {
           before: getScopedContext(key: "a")
@@ -366,6 +380,8 @@ describe GraphQL::Query::Context do
     end
 
     it "doesn't leak inside lists" do
+      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+
       query_str = <<-GRAPHQL
       {
         intList {
@@ -389,6 +405,7 @@ describe GraphQL::Query::Context do
     end
 
     it "always retrieves a scoped context value if set" do
+      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil)
       dummy_runtime = OpenStruct.new(current_result: nil)
       Fiber[:__graphql_runtime_info] = { context.query => dummy_runtime }
@@ -440,6 +457,8 @@ describe GraphQL::Query::Context do
     end
 
     it "sets a value using #scoped_set!" do
+      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+
       expected_key = :a
       expected_value = :test
 
@@ -451,6 +470,8 @@ describe GraphQL::Query::Context do
     end
 
     it "has a #current_path method" do
+      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil)
       current_result = OpenStruct.new(path: ["somewhere", "child", "grandchild"])
       Fiber[:__graphql_runtime_info] = { context.query => OpenStruct.new(current_result: current_result) }
@@ -461,11 +482,15 @@ describe GraphQL::Query::Context do
   describe "Adding extensions to the response" do
     class ResponseExtensionsSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :with_extension, String
+        field :with_extension, String, resolve_static: true
 
-        def with_extension
+        def self.with_extension(context)
           context.response_extensions["Something"] = "Something else"
           "OK"
+        end
+
+        def with_extension
+          self.class.with_extension(context)
         end
       end
       query(Query)

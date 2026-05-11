@@ -11,27 +11,27 @@ describe GraphQL::Types::ISO8601Date do
     end
 
     class Query < GraphQL::Schema::Object
-      field :parse_date, DateObject do
+      field :parse_date, DateObject, resolve_static: true do
         argument :date, GraphQL::Types::ISO8601Date
       end
 
-      field :parse_date_optional, DateObject do
+      field :parse_date_optional, DateObject, resolve_static: true do
         argument :date, GraphQL::Types::ISO8601Date, required: false
       end
 
-      field :parse_date_time, DateObject do
+      field :parse_date_time, DateObject, resolve_static: true do
         argument :date, GraphQL::Types::ISO8601Date
       end
 
-      field :parse_date_string, DateObject do
+      field :parse_date_string, DateObject, resolve_static: true do
         argument :date, GraphQL::Types::ISO8601Date
       end
 
-      field :parse_date_time_string, DateObject do
+      field :parse_date_time_string, DateObject, resolve_static: true do
         argument :date, GraphQL::Types::ISO8601Date
       end
 
-      field :serialize_date_default_argument, DateObject do
+      field :serialize_date_default_argument, DateObject, resolve_static: true do
         argument(
           :date,
           GraphQL::Types::ISO8601Date,
@@ -40,7 +40,7 @@ describe GraphQL::Types::ISO8601Date do
           )
       end
 
-      field :serialize_date_time_default_argument, DateObject do
+      field :serialize_date_time_default_argument, DateObject, resolve_static: true do
         argument(
           :date,
           GraphQL::Types::ISO8601Date,
@@ -49,7 +49,7 @@ describe GraphQL::Types::ISO8601Date do
           )
       end
 
-      field :serialize_time_default_argument, DateObject do
+      field :serialize_time_default_argument, DateObject, resolve_static: true do
         argument(
           :date,
           GraphQL::Types::ISO8601Date,
@@ -58,7 +58,7 @@ describe GraphQL::Types::ISO8601Date do
           )
       end
 
-      field :serialize_string_default_argument, DateObject do
+      field :serialize_string_default_argument, DateObject, resolve_static: true do
         argument(
           :date,
           GraphQL::Types::ISO8601Date,
@@ -67,46 +67,82 @@ describe GraphQL::Types::ISO8601Date do
           )
       end
 
-      def parse_date(date:)
+      def self.parse_date(context, date:)
         # Resolve a Date object
         Date.parse(date.iso8601)
       end
 
-      def parse_date_optional(date:)
+      def parse_date(date:)
+        self.class.parse_date(context, date: date)
+      end
+
+      def self.parse_date_optional(context, date:)
         return unless date
 
         Date.parse(date.iso8601)
       end
 
-      def parse_date_time(date:)
+      def parse_date_optional(date:)
+        self.class.parse_date_optional(context, date: date)
+      end
+
+      def self.parse_date_time(context, date:)
         # Resolve a DateTime object
         DateTime.parse(date.iso8601)
       end
 
-      def parse_date_string(date:)
+      def parse_date_time(date:)
+        self.class.parse_date_time(context, date: date)
+      end
+
+      def self.parse_date_string(context, date:)
         # Resolve a Date string
         Date.parse(date.iso8601).iso8601
       end
 
-      def parse_date_time_string(date:)
+      def parse_date_string(date:)
+        self.class.parse_date_string(context, date: date)
+      end
+
+      def self.parse_date_time_string(context, date:)
         # Resolve a DateTime string
         DateTime.parse(date.iso8601).iso8601
       end
 
+      def parse_date_time_string(date:)
+        self.class.parse_date_time_string(context, date: date)
+      end
+
+      def self.serialize_date_default_argument(context, date:)
+        date
+      end
+
       def serialize_date_default_argument(date:)
+        self.class.serialize_date_default_argument(context, date: date)
+      end
+
+      def self.serialize_date_time_default_argument(context, date:)
         date
       end
 
       def serialize_date_time_default_argument(date:)
+        self.class.serialize_date_time_default_argument(context, date: date)
+      end
+
+      def self.serialize_time_default_argument(context, date:)
         date
       end
 
       def serialize_time_default_argument(date:)
+        self.class.serialize_time_default_argument(context, date: date)
+      end
+
+      def self.serialize_string_default_argument(context, date:)
         date
       end
 
       def serialize_string_default_argument(date:)
-        date
+        self.class.serialize_string_default_argument(context, date: date)
       end
     end
 

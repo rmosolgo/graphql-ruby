@@ -194,6 +194,9 @@ if !USING_C_PARSER && defined?(GraphQL::CParser::Parser)
   raise "Load error: didn't opt in to C parser but GraphQL::CParser::Parser was defined"
 end
 
+if TESTING_EXEC_NEXT
+  GraphQL::Schema.use GraphQL::Execution::Next, as_default: true
+end
 def assert_warns(warning, printing = "")
   return_val = nil
   stdout, stderr = capture_io { return_val = yield }

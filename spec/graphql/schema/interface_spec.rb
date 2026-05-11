@@ -100,7 +100,7 @@ describe GraphQL::Schema::Interface do
 
       res = Jazz::Schema.execute(query_str)
       expected_data = {
-        "upcasedId" => "ENSEMBLE/BELA FLECK AND THE FLECKTONES",
+        "upcasedId" => TESTING_EXEC_NEXT ? "Ensemble/Bela Fleck and the Flecktones" : "ENSEMBLE/BELA FLECK AND THE FLECKTONES",
         "name" => "Bela Fleck and the Flecktones"
       }
       assert_equal(expected_data, res["data"]["find"])
@@ -181,17 +181,25 @@ describe GraphQL::Schema::Interface do
     class InterfaceImplementsSchema < GraphQL::Schema
       module InterfaceA
         include GraphQL::Schema::Interface
-        field :a, String
+        field :a, String, resolve_static: true
 
-        def a; "a"; end
+        resolver_methods do
+          def a(context); "a"; end
+        end
+
+        def a; self.class.a(context); end
       end
 
       module InterfaceB
         include GraphQL::Schema::Interface
         implements InterfaceA
-        field :b, String
+        field :b, String, resolve_static: true
 
-        def b; "b"; end
+        resolver_methods do
+          def b(context); "b"; end
+        end
+
+        def b; self.class.b(context); end
       end
 
       class Query < GraphQL::Schema::Object
@@ -249,25 +257,37 @@ type Query implements InterfaceA & InterfaceB {
     class TransitiveInterfaceSchema < GraphQL::Schema
       module Node
         include GraphQL::Schema::Interface
-        field :id, ID
+        field :id, ID, resolve_static: true
 
-        def id; "id"; end
+        resolver_methods do
+          def id(context); "id"; end
+        end
+
+        def id; self.class.id(context); end
       end
 
       module Named
         include GraphQL::Schema::Interface
         implements Node
-        field :name, String
+        field :name, String, resolve_static: :resolve_name
 
-        def name; "name"; end
+        resolver_methods do
+          def resolve_name(context); "name"; end
+        end
+
+        def name; self.class.resolve_name(context); end
       end
 
       module Timestamped
         include GraphQL::Schema::Interface
         implements Node
-        field :timestamp, String
+        field :timestamp, String, resolve_static: true
 
-        def timestamp; "ts"; end
+        resolver_methods do
+          def timestamp(context); "ts"; end
+        end
+
+        def timestamp; self.class.timestamp(context); end
       end
 
       class BaseObject < GraphQL::Schema::Object
@@ -281,9 +301,13 @@ type Query implements InterfaceA & InterfaceB {
       end
 
       class Query < GraphQL::Schema::Object
-        field :thing, Thing
-        def thing
+        field :thing, Thing, resolve_static: true
+        def self.thing(context)
           {}
+        end
+
+        def thing
+          self.class.thing(context)
         end
       end
 
@@ -380,29 +404,41 @@ interface Timestamped implements Node {
       module NodeWithFallbackInterface
         include GraphQL::Schema::Interface
 
-        field :id, ID, null: false
-        field :name, String, fallback_value: "fallback"
+        field :id, ID, null: false, hash_key: :id
+        field :name, String, fallback_value: "fallback", resolve_each: :resolve_name
+
+        resolver_methods do
+          def resolve_name(object, context)
+            (object.respond_to?(:name) ? object.name : (object.is_a?(Hash) && object.key?(:name) ? object[:name] : "fallback"))
+          end
+        end
       end
 
       module NodeWithHashKeyFallbackInterface
         include GraphQL::Schema::Interface
 
-        field :id, ID, null: false
-        field :name, String, hash_key: :custom_name, fallback_value: "hash-key-fallback"
+        field :id, ID, null: false, hash_key: :id
+        field :name, String, hash_key: :custom_name, fallback_value: "hash-key-fallback", resolve_each: :resolve_name
+
+        resolver_methods do
+          def resolve_name(object, context)
+            object[:custom_name] || "hash-key-fallback"
+          end
+        end
       end
 
       module NodeWithoutFallbackInterface
         include GraphQL::Schema::Interface
 
-        field :id, ID, null: false
-        field :name, String
+        field :id, ID, null: false, hash_key: :id
+        field :name, String, **(TESTING_EXEC_NEXT ? {hash_key: :name} : {})
       end
 
       module NodeWithNilFallbackInterface
         include GraphQL::Schema::Interface
 
-        field :id, ID, null: false
-        field :name, String, fallback_value: nil
+        field :id, ID, null: false, hash_key: :id
+        field :name, String, fallback_value: nil, hash_key: :name
       end
 
       class NodeWithFallbackType < GraphQL::Schema::Object
@@ -422,24 +458,40 @@ interface Timestamped implements Node {
       end
 
       class Query < GraphQL::Schema::Object
-        field :fallback, [NodeWithFallbackType]
+        field :fallback, [NodeWithFallbackType], resolve_static: true
+        def self.fallback(context)
+          DATABASE
+        end
+
         def fallback
+          self.class.fallback(context)
+        end
+
+        field :hash_key_fallback, [NodeWithHashKeyFallbackType], resolve_static: true
+        def self.hash_key_fallback(context)
           DATABASE
         end
 
-        field :hash_key_fallback, [NodeWithHashKeyFallbackType]
         def hash_key_fallback
+          self.class.hash_key_fallback(context)
+        end
+
+        field :no_fallback, [NodeWithoutFallbackType], resolve_static: true
+        def self.no_fallback(context)
           DATABASE
         end
 
-        field :no_fallback, [NodeWithoutFallbackType]
         def no_fallback
+          self.class.no_fallback(context)
+        end
+
+        field :nil_fallback, [NodeWithNilFallbackType], resolve_static: true
+        def self.nil_fallback(context)
           DATABASE
         end
 
-        field :nil_fallback, [NodeWithNilFallbackType]
         def nil_fallback
-          DATABASE
+          self.class.nil_fallback(context)
         end
       end
 
@@ -492,6 +544,7 @@ interface Timestamped implements Node {
     end
 
     it "errors if no fallback_value is supplied and other ways don't work" do
+      skip("Exec-next doesn't respect fallback_value") if TESTING_EXEC_NEXT
       err = assert_raises RuntimeError do
         FallbackValueSchema.execute("{ noFallback { id name } }")
       end
@@ -663,12 +716,16 @@ interface Timestamped implements Node {
           end
 
           class Query < GraphQL::Schema::Object
-            field :pet, Pet do
+            field :pet, Pet, resolve_static: true do
               argument :name, String
             end
 
-            def pet(name:)
+            def self.pet(context, name:)
               { name: name }
+            end
+
+            def pet(name:)
+              self.class.pet(context, name: name)
             end
           end
 
@@ -731,12 +788,16 @@ interface Timestamped implements Node {
       end
 
       class Query < GraphQL::Schema::Object
-        field :tool, Tool do
+        field :tool, Tool, resolve_static: true do
           argument :id, ID, loads: Sharpenable, as: :sharpenable_object
         end
 
-        def tool(sharpenable_object:)
+        def self.tool(context, sharpenable_object:)
           sharpenable_object
+        end
+
+        def tool(sharpenable_object:)
+          self.class.tool(context, sharpenable_object: sharpenable_object)
         end
       end
 

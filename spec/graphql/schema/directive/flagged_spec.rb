@@ -15,32 +15,40 @@ describe GraphQL::Schema::Directive::Flagged do
     class PolarBear < GraphQL::Schema::Object
       implements Animal
       directive GraphQL::Schema::Directive::Flagged, by: ["northPole"]
-      field :name, String, null: false
+      field :name, String, null: false, hash_key: :name
     end
 
     class Penguin < GraphQL::Schema::Object
       implements Animal
       directive GraphQL::Schema::Directive::Flagged, by: ["southPole"]
-      field :name, String, null: false
+      field :name, String, null: false, hash_key: :name
     end
 
     class Query < GraphQL::Schema::Object
-      field :animals, [Animal], null: false
+      field :animals, [Animal], null: false, resolve_static: true
 
-      def animals
+      def self.animals(context)
         [
           context[:flags].include?("southPole") ? { type: "Penguin", name: "King Dedede" } : nil,
           context[:flags].include?("northPole") ? { type: "PolarBear", name: "Iorek" } : nil,
         ].compact
       end
 
-      field :antarctica, Boolean, null: false,
-        directives: { GraphQL::Schema::Directive::Flagged => { by: ["southPole"] } }
-      def antarctica; true; end
+      def animals
+        self.class.animals(context)
+      end
 
-      field :santas_workshop, Boolean, null: false,
+      field :antarctica, Boolean, null: false, resolve_static: true,
+        directives: { GraphQL::Schema::Directive::Flagged => { by: ["southPole"] } }
+      def self.antarctica(context); true; end
+
+      def antarctica; self.class.antarctica(context); end
+
+      field :santas_workshop, Boolean, null: false, resolve_static: true,
         directives: { GraphQL::Schema::Directive::Flagged => { by: ["northPole"] } }
-      def santas_workshop; true; end
+      def self.santas_workshop(context); true; end
+
+      def santas_workshop; self.class.santas_workshop(context); end
 
       field :something_not_flagged, String
     end

@@ -14,7 +14,7 @@ describe GraphQL::Tracing::LegacyTrace do
 
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name("Query")
-      field :int, Integer
+      field :int, Integer, resolve_legacy_instance_method: true
       def int
         4
       end
@@ -55,7 +55,7 @@ describe GraphQL::Tracing::LegacyTrace do
 
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name("Query")
-      field :int, Integer
+      field :int, Integer, resolve_legacy_instance_method: true
       def int
         4
       end
