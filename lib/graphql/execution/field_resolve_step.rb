@@ -107,7 +107,7 @@ module GraphQL
 
       def build_errors_result(errors, single_error)
         first_error = errors.nil? ? single_error : errors.pop
-        @field_results = Array.new(@selections_step.objects.size, first_error)
+        @field_results = error_instance_array(@selections_step.objects.size, first_error)
         if errors
           errors.each do |e|
             add_graphql_error(e)
@@ -195,6 +195,10 @@ module GraphQL
             err = nil
             begin
               field_authed = @field_definition.authorized?(o, @arguments, ctx)
+              if @runner.resolves_lazies && @runner.lazy?(field_authed)
+                # TODO batch this properly...
+                field_authed = sync(field_authed)
+              end
             rescue GraphQL::UnauthorizedFieldError => field_auth_err
               err = field_auth_err
               err.field ||= @field_definition
@@ -621,12 +625,12 @@ module GraphQL
           begin
             method_receiver.public_send(@field_definition.execution_mode_key, objects, context, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
-            Array.new(objects.size, exec_err)
+            error_instance_array(objects.size, exec_err)
           rescue StandardError => stderr
             begin
               context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
             rescue GraphQL::ExecutionError => exec_err
-              Array.new(objects.size, exec_err)
+              error_instance_array(objects.size, exec_err)
             end
           end
         when :resolve_static
@@ -717,6 +721,10 @@ module GraphQL
         else
           raise "Batching execution for #{path} not implemented (execution_mode: #{@execution_mode.inspect}); provide `resolve_static:`, `resolve_batch:`, `hash_key:`, `method:`, or use a compatibility plug-in"
         end
+      end
+
+      def error_instance_array(size, err_prototype)
+        Array.new(size) { err_prototype.dup }
       end
     end
   end

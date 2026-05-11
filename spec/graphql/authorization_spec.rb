@@ -41,9 +41,11 @@ describe "GraphQL::Authorization" do
         if object == :raise
           raise GraphQL::UnauthorizedFieldError.new("raised authorized field error", object: object)
         end
-        return Box.new(value: context[:lazy_field_authorized]) if context.key?(:lazy_field_authorized)
-
-        super && object != :hide && object != :replace
+        if context.key?(:lazy_field_authorized)
+          Box.new(value: context[:lazy_field_authorized])
+        else
+          super && object != :hide && object != :replace
+        end
       end
     end
 
