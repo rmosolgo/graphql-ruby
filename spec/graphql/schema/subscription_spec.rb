@@ -551,7 +551,7 @@ describe GraphQL::Schema::Subscription do
       obj = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: matz)
       SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
       assert_equal 2, mailbox.size
-      assert_equal ["Can't subscribe to private user ([\"tootWasTooted\"])"], mailbox.last["errors"].map { |e| e["message"] }
+      assert_equal ["Can't subscribe to private user (#{TESTING_EXEC_NEXT ? "EXEC_NEXT_NO_PATH" : "[\"tootWasTooted\"]"})"], mailbox.last["errors"].map { |e| e["message"] }
       # The subscription remains in place
       assert_equal 1, in_memory_subscription_count
     end

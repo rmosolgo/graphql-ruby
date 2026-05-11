@@ -35,12 +35,15 @@ module GraphQL
         if @field_resolve_step.nil?
           super
         else
-          @original_arguments, _errors = @field_resolve_step.runner.input_values[context.query].argument_values(@field, @field_resolve_step.ast_node.arguments, nil)
+          context.namespace(:subscriptions)[:update_event] = event
           result = nil
           unsubscribed = true
-          unsubscribed_result = catch :graphql_subscription_unsubscribed do
+          unsubscribed_result = nil
+          begin
             result = super
             unsubscribed = false
+          rescue EarlyUnsubscribe => err
+            unsubscribed_result = err.unsubscribed_result
           end
 
 
@@ -62,9 +65,12 @@ module GraphQL
         @original_arguments = args # before `loads:` have been run
         result = nil
         unsubscribed = true
-        unsubscribed_result = catch :graphql_subscription_unsubscribed do
+        unsubscribed_result = nil
+        begin
           result = super
           unsubscribed = false
+        rescue EarlyUnsubscribe => err
+          unsubscribed_result = err.unsubscribed_result
         end
 
 
@@ -141,7 +147,13 @@ module GraphQL
       # @return [void]
       def unsubscribe(update_value = nil)
         context.namespace(:subscriptions)[:unsubscribed] = true
-        throw :graphql_subscription_unsubscribed, update_value
+        err = EarlyUnsubscribe.new
+        err.unsubscribed_result = update_value
+        raise err
+      end
+
+      class EarlyUnsubscribe < GraphQL::RuntimeError
+        attr_accessor :unsubscribed_result
       end
 
       # Call this method to provide a new subscription_scope; OR
@@ -214,12 +226,18 @@ module GraphQL
 
       # @return [Subscriptions::Event] This object is used as a representation of this subscription for the backend
       def event
-        @event ||= Subscriptions::Event.new(
-          name: field.name,
-          arguments: @original_arguments,
-          context: context,
-          field: field,
-        )
+        @event ||= begin
+          if @original_arguments.nil? && @field_resolve_step
+            @original_arguments, _errors = @field_resolve_step.arguments_without_loads
+          end
+
+          Subscriptions::Event.new(
+            name: field.name,
+            arguments: @original_arguments,
+            context: context,
+            field: field,
+          )
+        end
       end
     end
   end

@@ -12,7 +12,7 @@ module GraphQL
     module Finalizer
       attr_accessor :path
       def finalize_graphql_result(query, result_data, result_key)
-        raise RequiredImplementationMissingError
+        raise RequiredImplementationMissingError, "#{self.class} must implement #finalize_graphql_result(query, result_data, result_key)\n\nresult_data: #{result_data}\nresult_key: #{result_key.inspect}"
       end
 
       def ast_node

@@ -21,7 +21,7 @@ module GraphQL
         @finish_extension_idx = nil
         @was_scoped = nil
         @pending_steps = nil
-        @post_processors = @directive_finalizers = nil
+        @arguments_without_loads = @post_processors = @directive_finalizers = nil
       end
 
       attr_reader :ast_node, :key, :parent_type, :selections_step, :runner,
@@ -131,6 +131,14 @@ module GraphQL
             @field_results.nil? # Make sure the arguments flow didn't already call through
           execute_field
         end
+      end
+
+      # Used for compatibility in Schema::Subscription
+      def arguments_without_loads
+        if @arguments_without_loads.nil?
+          @arguments_without_loads, _errors = @runner.input_values[@selections_step.query].argument_values(@field_definition, ast_node.arguments, nil)
+        end
+        @arguments_without_loads
       end
 
       def execute_field

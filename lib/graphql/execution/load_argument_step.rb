@@ -21,7 +21,11 @@ module GraphQL
         @is_authorized = false
         schema.unauthorized_object(auth_err)
       rescue GraphQL::RuntimeError => err
-        @loaded_value = err
+        @loaded_value = if err.is_a?(Schema::Subscription::EarlyUnsubscribe)
+          err.unsubscribed_result
+        else
+          err
+        end
         assign_value
       rescue StandardError => stderr
         begin
@@ -46,7 +50,12 @@ module GraphQL
           assign_value
         end
       rescue GraphQL::RuntimeError => err
-        @loaded_value = err
+        @loaded_value = if err.is_a?(Schema::Subscription::EarlyUnsubscribe)
+          @is_authorized = false
+          err.unsubscribed_result
+        else
+          err
+        end
         assign_value
       rescue StandardError => stderr
         @loaded_value = begin

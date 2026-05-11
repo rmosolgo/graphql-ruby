@@ -54,6 +54,12 @@ module GraphQL
             events << subscription_instance.event
           end
           value
+        elsif (exec_next_update_event = context.namespace(:subscriptions)[:update_event])
+          if context.query.subscription_topic == exec_next_update_event.topic
+            value
+          else
+            context.skip
+          end
         elsif (events = context.namespace(:subscriptions)[:events])
           # This is the first execution, so gather an Event
           # for the backend to register:
