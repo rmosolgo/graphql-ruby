@@ -497,7 +497,7 @@ describe GraphQL::Schema::Object do
         def self.wrap(obj, ctx)
           OpenStruct.new(resolve_int: 5)
         end
-        field :int, Integer, null: false, resolve_legacy_instance_method: :resolve_int
+        field :int, Integer, null: false
       end
 
       query(Query)
@@ -506,6 +506,7 @@ describe GraphQL::Schema::Object do
     end
 
     it "avoids calls to Object.authorized? and uses the returned object" do
+      skip("Exec-next doesn't use .wrap") if TESTING_EXEC_NEXT
       log = []
       res = WrapOverrideSchema.execute("{ __typename int }", context: { log: log })
       assert_equal "Wrapped", res["data"]["__typename"]
