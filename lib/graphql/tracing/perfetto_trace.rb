@@ -67,6 +67,8 @@ module GraphQL
         DA_FETCH_KEYS_IID => "fetch keys",
       }
 
+      ANON_CLASS_NAME = "(anonymous)"
+
       DEBUG_INSPECT_CATEGORY_IIDS = [15]
       DA_DEBUG_INSPECT_CLASS_IID = 16
       DEBUG_INSPECT_EVENT_NAME_IID = 17
@@ -118,7 +120,7 @@ module GraphQL
         }
 
         @source_name_iids = Hash.new do |h, source_class|
-          h[source_class] = @interned_event_name_iids[source_class.name]
+          h[source_class] = @interned_event_name_iids[source_class.name || ANON_CLASS_NAME]
         end.compare_by_identity
 
         @auth_name_iids = Hash.new do |h, graphql_type|
@@ -144,7 +146,7 @@ module GraphQL
         end
 
         @class_name_iids = Hash.new do |h, k|
-          h[k] = @interned_da_string_values[k.name]
+          h[k] = @interned_da_string_values[k.name || ANON_CLASS_NAME]
         end.compare_by_identity
 
         @starting_objects = GC.stat(:total_allocated_objects)
@@ -682,7 +684,7 @@ module GraphQL
         when GraphQL::Schema::InputObject
           payload_to_debug(k, v.to_h, iid: iid, intern_value: intern_value)
         else
-          class_name_iid = @interned_da_string_values[(v.class.name || "(anonymous)")]
+          class_name_iid = @interned_da_string_values[(v.class.name || ANON_CLASS_NAME)]
           da = [
             debug_annotation(DA_DEBUG_INSPECT_CLASS_IID, :string_value_iid, class_name_iid),
           ]
