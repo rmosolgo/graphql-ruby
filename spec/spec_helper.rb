@@ -55,6 +55,24 @@ require "minitest/focus"
 require "minitest/reporters"
 require "graphql/batch"
 
+class Minitest::Test
+  def exec_next_TODO(message) # rubocop:disable Naming/MethodName
+    skip("TODO: " + message) if TESTING_EXEC_NEXT
+  end
+
+  def exec_next_WONTFIX(message) # rubocop:disable Naming/MethodName
+    skip("WONTFIX: " + message) if TESTING_EXEC_NEXT
+  end
+
+  def exec_next_error_message(field_name, message)
+    if TESTING_EXEC_NEXT
+      "#{} #{message}"
+    else
+      message
+    end
+  end
+end
+
 running_in_rubymine = ENV["RM_INFO"]
 unless running_in_rubymine
   Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)

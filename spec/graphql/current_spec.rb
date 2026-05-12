@@ -49,7 +49,7 @@ describe GraphQL::Current do
     end
 
     it "returns execution information" do
-      skip "Not implemented yet" if TESTING_EXEC_NEXT
+      exec_next_TODO("not implemented yet")
       ctx = {
         current_field: [],
         current_source: [],

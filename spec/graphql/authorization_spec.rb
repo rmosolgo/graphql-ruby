@@ -996,7 +996,7 @@ describe "GraphQL::Authorization" do
     end
 
     it "avoids calls to Object.authorized?" do
-      skip("Doesn't work this way with exec-next") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX("Doesn't work this way with exec-next")
       log = []
       res = AuthorizedNewOverrideSchema.execute("{ __typename int }", context: { log: log })
       assert_equal "Query", res["data"]["__typename"]
