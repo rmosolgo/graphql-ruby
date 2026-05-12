@@ -892,7 +892,7 @@ describe GraphQL::Schema::InputObject do
 
     it "does not match missing keys" do
       assert case input_object
-      in { z: }
+      in { z: 5 }
         false
       else
         true
