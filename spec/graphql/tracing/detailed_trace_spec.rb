@@ -3,12 +3,13 @@ require "spec_helper"
 
 describe GraphQL::Tracing::DetailedTrace do
   class SamplerSchema < GraphQL::Schema
-    class Query < GraphQL::Schema::Object
-      field :truthy, Boolean, fallback_value: true, resolve_static: true
+    query = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Query"
+      field :truthy, GraphQL::Types::Boolean, fallback_value: true, resolve_static: true
       def self.truthy(ctx); true; end
     end
 
-    query(Query)
+    query(query)
     use GraphQL::Tracing::DetailedTrace, memory: true
     def self.detailed_trace?(query)
       if query.is_a?(GraphQL::Execution::Multiplex)
@@ -41,6 +42,11 @@ describe GraphQL::Tracing::DetailedTrace do
 
     exec_query("{ truthy }")
     assert_equal 1, SamplerSchema.detailed_trace.traces.size
+  end
+
+  it "works with introspection on anonymous classes" do
+    assert_nil SamplerSchema.query.name
+    assert exec_query("{ __schema { types { name } } }")
   end
 
   it "calls through to storage for access methods" do
