@@ -10,6 +10,20 @@
 
 ### Bug fixes
 
+# 2.6.2
+
+### New features
+
+- Use a better error message for end-of-file parse errors #6513
+
+### Bug fixes
+
+- `Execution::Next`: Lots of compatibility improvements and bug fixes #5625 #5618
+- Directives: handle errors raised when checking `.include?` #5612
+- Improve error message when a field definition is missing at runtime #5615
+- JRuby: fix `Dataloader#with` #5616
+- DetailedTrace: fix introspection with anonymous classes #5624
+
 # 2.6.1
 
 ### Bug fixes
