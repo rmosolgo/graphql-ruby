@@ -384,7 +384,7 @@ if RUBY_VERSION >= "3.2.0"
         json = res.context.query.current_trace.write(file: nil, debug_json: true)
         data = JSON.parse(json)
 
-        check_snapshot(data, TESTING_EXEC_NEXT ? "example-next.json" : "example.json")
+        check_snapshot(data, if_exec_next("example-next.json", "example.json"))
       end
     end
   end

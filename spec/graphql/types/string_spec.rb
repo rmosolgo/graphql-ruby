@@ -66,7 +66,7 @@ describe GraphQL::Types::String do
           err = assert_raises GraphQL::StringEncodingError do
             schema.execute("{ badString }")
           end
-          expected_err = "#{TESTING_EXEC_NEXT ? "Resolving Query.badString: " : ""}String \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\" was encoded as ASCII-8BIT#{TESTING_EXEC_NEXT ? "" : " @ badString (Query.badString)"}. GraphQL requires an encoding compatible with UTF-8."
+          expected_err = exec_next_error_message "Query.badString", "String \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\" was encoded as ASCII-8BIT#{if_exec_next("", " @ badString (Query.badString)")}. GraphQL requires an encoding compatible with UTF-8."
           assert_equal expected_err, err.message
         end
       end

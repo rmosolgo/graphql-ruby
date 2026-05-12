@@ -97,13 +97,13 @@ describe GraphQL::Schema::Mutation do
       response = Jazz::Schema.execute(query_str)
       assert_equal "Trombone", response["data"]["addInstrument"]["instrument"]["name"]
       assert_equal "BRASS", response["data"]["addInstrument"]["instrument"]["family"]
-      errors_class = TESTING_EXEC_NEXT ? "NilClass" : "GraphQL::Execution::Interpreter::ExecutionErrors"
+      errors_class = if_exec_next("NilClass", "GraphQL::Execution::Interpreter::ExecutionErrors")
       assert_equal errors_class, response["data"]["addInstrument"]["ee"]
       assert_equal 7, response["data"]["addInstrument"]["entries"].size
     end
 
     it "accepts a list of errors as a valid result" do
-      skip("Not implemented in GraphQL::Execution::Next") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX("Returning an array of errors is not supported")
       query_str = "mutation { returnsMultipleErrors { dummyField { name } } }"
 
       response = Jazz::Schema.execute(query_str)

@@ -55,6 +55,10 @@ require "minitest/focus"
 require "minitest/reporters"
 require "graphql/batch"
 
+def if_exec_next(exec_next_value, legacy_value)
+  TESTING_EXEC_NEXT ? exec_next_value : legacy_value
+end
+
 class Minitest::Test
   def exec_next_TODO(message) # rubocop:disable Naming/MethodName
     skip("TODO: " + message) if TESTING_EXEC_NEXT
@@ -64,9 +68,13 @@ class Minitest::Test
     skip("WONTFIX: " + message) if TESTING_EXEC_NEXT
   end
 
-  def exec_next_error_message(field_name, message)
+  def exec_next_only(message)
+    skip("Exec-next only: #{message}") unless TESTING_EXEC_NEXT
+  end
+
+  def exec_next_error_message(field_path, message)
     if TESTING_EXEC_NEXT
-      "#{} #{message}"
+      "Resolving #{field_path}: #{message}"
     else
       message
     end

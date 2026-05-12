@@ -103,11 +103,9 @@ describe "Integration with ActiveRecord::QueryLogs" do
     assert_equal "Fork", res["data"]["someThing"]["otherThing"]["name"]
     # These can appear in different orders in the SQL comment:
     assert_includes log, "current_graphql_operation:OtherThingName"
-    if !TESTING_EXEC_NEXT
-      # Exec-next doesn't broadcast this info yet
-      assert_includes log, "current_graphql_field:Query.someThing"
-      assert_includes log, "current_graphql_field:Thing.otherThing"
-    end
+    exec_next_TODO "Exec-next doesn't broadcast this info yet but it should"
+    assert_includes log, "current_graphql_field:Query.someThing"
+    assert_includes log, "current_graphql_field:Thing.otherThing"
   end
 
   it "includes dataloader source when configured" do

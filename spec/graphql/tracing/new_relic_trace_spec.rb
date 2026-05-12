@@ -182,7 +182,7 @@ describe GraphQL::Tracing::NewRelicTrace do
         "FINISH GraphQL/analyze",
 
         # Exec-next doesn't run no-op authorization:
-        *(TESTING_EXEC_NEXT ? [] : ["GraphQL/Authorized/Query", "FINISH GraphQL/Authorized/Query"]),
+        *if_exec_next([], ["GraphQL/Authorized/Query", "FINISH GraphQL/Authorized/Query"]),
         "GraphQL/Query/other",
         "FINISH GraphQL/Query/other",
         # Here's the source run:
@@ -248,7 +248,7 @@ describe GraphQL::Tracing::NewRelicTrace do
       "GraphQL/validate",
       "FINISH GraphQL/analyze",
       # Exec-next doesn't run no-op authorization:
-      *(TESTING_EXEC_NEXT ? [] : ["GraphQL/Authorized/Query", "FINISH GraphQL/Authorized/Query"]),
+      *if_exec_next([], ["GraphQL/Authorized/Query", "FINISH GraphQL/Authorized/Query"]),
       # Eager:
       "GraphQL/Query/lazyNameable",
       "FINISH GraphQL/Query/lazyNameable",

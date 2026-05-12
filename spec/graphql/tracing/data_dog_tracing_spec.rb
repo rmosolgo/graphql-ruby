@@ -94,7 +94,7 @@ describe GraphQL::Tracing::DataDogTracing do
       ["custom:validate", "validate,query"],
       ["custom:analyze_query", "query"],
       ["custom:execute_query", "query"],
-      *(TESTING_EXEC_NEXT ? [] : [
+      *if_exec_next([], [
         ["custom:authorized", "context,type,object,path"],
         ["custom:execute_field", "field,query,ast_node,arguments,object,owner,path"],
         ["custom:authorized", "context,type,object,path"],

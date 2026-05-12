@@ -134,10 +134,10 @@ describe GraphQL::Schema do
           "errors" => [
             {
               "message" => "Raised from trace execute_query",
-              **(TESTING_EXEC_NEXT ? {
+              **if_exec_next({
                 "locations" => [{"line" => 1, "column" => 2}],
                 "path" => [],
-              } : {})
+              }, {})
             },
           ]
         }, res.to_h)

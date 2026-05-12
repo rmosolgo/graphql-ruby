@@ -181,7 +181,7 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         RequiredHiddenSchema.execute("{ twoArgumentsError }")
       end
 
-      expected_message = "#{TESTING_EXEC_NEXT ? "Resolving Query.twoArgumentsError: " : ""}Query.twoArgumentsError validates `required: ...` but all required arguments were hidden.\n\nUpdate your schema definition to allow the client to see some fields or skip validation by adding `required: { ..., allow_all_hidden: true }`\n"
+      expected_message = exec_next_error_message("Query.twoArgumentsError", "Query.twoArgumentsError validates `required: ...` but all required arguments were hidden.\n\nUpdate your schema definition to allow the client to see some fields or skip validation by adding `required: { ..., allow_all_hidden: true }`\n")
       assert_equal expected_message, err.message
     end
 

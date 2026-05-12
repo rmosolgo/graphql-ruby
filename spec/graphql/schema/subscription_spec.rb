@@ -362,7 +362,7 @@ describe GraphQL::Schema::Subscription do
       expected_response = {
         "errors"=>[
           {
-            "message"=>"Can't subscribe to private user (#{TESTING_EXEC_NEXT ? "EXEC_NEXT_NO_PATH" : "[\"tootWasTooted\"]"})",
+            "message"=>"Can't subscribe to private user (#{if_exec_next("EXEC_NEXT_NO_PATH", "[\"tootWasTooted\"]")})",
             "locations"=>[{"line"=>2, "column"=>9}],
             "path"=>["tootWasTooted"]
           },
@@ -551,7 +551,7 @@ describe GraphQL::Schema::Subscription do
       obj = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: matz)
       SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
       assert_equal 2, mailbox.size
-      assert_equal ["Can't subscribe to private user (#{TESTING_EXEC_NEXT ? "EXEC_NEXT_NO_PATH" : "[\"tootWasTooted\"]"})"], mailbox.last["errors"].map { |e| e["message"] }
+      assert_equal ["Can't subscribe to private user (#{if_exec_next("EXEC_NEXT_NO_PATH", "[\"tootWasTooted\"]")})"], mailbox.last["errors"].map { |e| e["message"] }
       # The subscription remains in place
       assert_equal 1, in_memory_subscription_count
     end
@@ -607,11 +607,7 @@ describe GraphQL::Schema::Subscription do
         GRAPHQL
       end
       plain_expected_message = "Subscription.directTootWasTooted (SubscriptionFieldSchema::DirectTootWasTooted) requires a `scope:` value to trigger updates (Set `subscription_scope ..., optional: true` to disable this requirement)"
-      expected_message = if TESTING_EXEC_NEXT
-        "Resolving Subscription.directTootWasTooted: #{plain_expected_message}"
-      else
-        plain_expected_message
-      end
+      expected_message = exec_next_error_message("Subscription.directTootWasTooted", plain_expected_message)
       assert_equal expected_message, err.message
       assert_equal 0, in_memory_subscription_count
 
@@ -775,7 +771,8 @@ describe GraphQL::Schema::Subscription do
       err = assert_raises GraphQL::Error do
         DirectWriteSchema.execute("subscription { directTwice }")
       end
-      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving Subscription.directTwice: " : ""}`write_subscription` was called but `DirectWriteSchema::DirectWriteTwice#subscription_written?` is already true. Remove a call to `write subscription`.", err.message
+      expected_message = exec_next_error_message "Subscription.directTwice", "`write_subscription` was called but `DirectWriteSchema::DirectWriteTwice#subscription_written?` is already true. Remove a call to `write subscription`."
+      assert_equal expected_message, err.message
     end
   end
 end

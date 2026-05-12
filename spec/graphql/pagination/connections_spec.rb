@@ -111,9 +111,9 @@ describe GraphQL::Pagination::Connections do
   end
 
   it "raises a helpful error when it fails to implement a connection" do
-    skip "Exec-next doesn't do this" if TESTING_EXEC_NEXT
+    exec_next_TODO "Should exec-next raise an error like this too?"
     err = assert_raises GraphQL::Execution::Interpreter::ListResultFailedError do
-      pp ConnectionErrorTestSchema.execute("{ things { name } }")
+      ConnectionErrorTestSchema.execute("{ things { name } }")
     end
 
     assert_includes err.message, "Failed to build a GraphQL list result for field `Query.things` at path `things`."

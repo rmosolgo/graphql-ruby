@@ -103,11 +103,9 @@ describe GraphQL::Tracing::AppOpticsTracing do
     assert_equal $appoptics_tracing_name, 'graphql.query.company'
     refute $appoptics_tracing_spans.find { |name| name !~ /^graphql\./ }
     assert_equal $appoptics_tracing_kvs.compact.size, $appoptics_tracing_spans.compact.size
-    if !TESTING_EXEC_NEXT
-      # Exec-next calls begin_execute_field instead, not implemented here
-      assert_includes($appoptics_tracing_spans, 'graphql.Query.company')
-      assert_includes($appoptics_tracing_spans, 'graphql.Company.address')
-    end
+    exec_next_WONTFIX "Doesn't call these events"
+    assert_includes($appoptics_tracing_spans, 'graphql.Query.company')
+    assert_includes($appoptics_tracing_spans, 'graphql.Company.address')
   end
 
   # case: appoptics_apm didn't get required

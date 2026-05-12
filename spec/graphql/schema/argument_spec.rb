@@ -188,7 +188,7 @@ describe GraphQL::Schema::Argument do
 
   describe "prepare:" do
     it "calls the method on the field's owner" do
-      skip("Prepare methods aren't called with exec-next") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX("Prepare methods aren't called with exec-next")
       query_str = <<-GRAPHQL
       { field(preparedArg: 5) }
       GRAPHQL
@@ -298,7 +298,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = Jazz::Schema.execute(query_str, variables: { ensembleId: "Ensemble/Robert Glasper Experiment" })
-      assert_equal "#{TESTING_EXEC_NEXT ? "Robert Glasper" : "ROBERT GLASPER"} Experiment", res["data"]["loadAndReturnEnsemble"]["ensemble"]["name"]
+      assert_equal "#{if_exec_next("Robert Glasper", "ROBERT GLASPER")} Experiment", res["data"]["loadAndReturnEnsemble"]["ensemble"]["name"]
 
       res2 = Jazz::Schema.execute(query_str, variables: { ensembleId: nil })
       assert_nil res2["data"]["loadAndReturnEnsemble"].fetch("ensemble")
@@ -353,7 +353,7 @@ describe GraphQL::Schema::Argument do
     end
 
     it "handles applies authorization even when a custom load method is provided" do
-      skip "Custom load methods aren't called" if TESTING_EXEC_NEXT
+      exec_next_WONTFIX "Custom load methods aren't called"
       query_str = <<-GRAPHQL
       query { otherUnauthorizedInstruments(ids: ["Instrument/Drum Kit"]) }
       GRAPHQL

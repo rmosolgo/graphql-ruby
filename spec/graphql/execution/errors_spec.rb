@@ -244,7 +244,7 @@ describe "GraphQL::Execution::Errors" do
       ctx = { errors: [] }
       res = ErrorsTestSchema.execute "{ f1(a1: 1) }", context: ctx, root_value: :abc
       assert_equal({ "data" => { "f1" => nil } }, res)
-      assert_equal ["f1 broke (ErrorsTestSchema::Query.f1, #{TESTING_EXEC_NEXT ? "nil" : ":abc"}, #{{a1: 1}.inspect})"], ctx[:errors]
+      assert_equal ["f1 broke (ErrorsTestSchema::Query.f1, #{if_exec_next("nil", ":abc")}, #{{a1: 1}.inspect})"], ctx[:errors]
     end
 
     it "rescues errors from lazy code" do
@@ -320,7 +320,7 @@ describe "GraphQL::Execution::Errors" do
       it "rescues them" do
         context = { authorized: false }
         res = ErrorsTestSchema.execute(" { thing { string } } ", context: context)
-        assert_equal ["ErrorD on #{TESTING_EXEC_NEXT ? ":thing" : "nil"} at Query.thing({})"], res["errors"].map { |e| e["message"] }
+        assert_equal ["ErrorD on #{if_exec_next(":thing", "nil")} at Query.thing({})"], res["errors"].map { |e| e["message"] }
       end
     end
 
@@ -330,7 +330,7 @@ describe "GraphQL::Execution::Errors" do
         res = ErrorsTestSchema.execute(" { inputField(values: { value: 2 }) } ", root_value: :root, context: context)
         # It would be better to have the arguments here, but since this error was raised during _creation_ of keywords,
         # so the runtime arguments aren't available now.
-        assert_equal ["ErrorD on #{TESTING_EXEC_NEXT ? "nil" : ":root"} at Query.inputField()"], res["errors"].map { |e| e["message"] }
+        assert_equal ["ErrorD on #{if_exec_next("nil", ":root")} at Query.inputField()"], res["errors"].map { |e| e["message"] }
       end
 
       it "rescues them from variable values" do

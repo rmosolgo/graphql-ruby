@@ -395,9 +395,7 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "runs a nested query and maintains proper state" do
-    if TESTING_EXEC_NEXT
-      skip "Haven't figure out if/how to implement context[:current_path]"
-    end
+    exec_next_TODO "requires context[:current_path]"
     query_str = "query($queryStr: String!) { nestedQuery(query: $queryStr) { result currentPath } }"
     result = exec_query(query_str, variables: { queryStr: "{ __typename }" })
     assert_equal '{"data":{"__typename":"Query"}}', result["data"]["nestedQuery"]["result"]
@@ -458,9 +456,7 @@ describe GraphQL::Execution::Interpreter do
 
   describe "runtime info in context" do
     it "is available" do
-      if TESTING_EXEC_NEXT
-        skip "Doesn't exist with Execution::Next"
-      end
+      exec_next_TODO "requires runtime info"
       res = exec_query <<-GRAPHQL
       {
         fieldCounter {
@@ -789,7 +785,7 @@ describe GraphQL::Execution::Interpreter do
       assert_equal 1, res.context[:authorized_calls]
 
       res = ConnectionErrorTest::Schema.execute("{ thing { title body } }")
-      skip("TODO: Exec-next should abort other branches in this case") if TESTING_EXEC_NEXT
+      exec_next_TODO "should abort other branches in this case"
       assert_equal 1, res["errors"].size
       assert_equal 1, res.context[:authorized_calls]
     end
@@ -927,9 +923,8 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "supports extras: [:parent]" do
-    if TESTING_EXEC_NEXT
-      skip "Not possible in batching"
-    end
+    exec_next_WONTFIX "Not possible in batching"
+
     query_str = <<-GRAPHQL
     {
       card(name: "Dark Confidant") {
@@ -1093,7 +1088,7 @@ describe GraphQL::Execution::Interpreter do
     end
 
     it "correctly provides current_type at selections-level" do
-      skip("No context[:current_type] in exec-next") if TESTING_EXEC_NEXT
+      exec_next_TODO("No context[:current_type] in exec-next")
       query_str = <<~GRAPHQL
       query {
         parent(name: "ABC") {

@@ -43,14 +43,14 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
       "validate.graphql",
       "analyze_query.graphql",
       "analyze_multiplex.graphql",
-      *(TESTING_EXEC_NEXT ? [] : [
+      *if_exec_next([], [
         "authorized.graphql",
         "execute_field.graphql (Query.batchedBase)",
         "execute_field.graphql (Query.batchedBase)",
       ]),
       "execute_query.graphql",
       "lazy_loader.graphql",
-      *(TESTING_EXEC_NEXT ? [] : [
+      *if_exec_next([], [
         "execute_field_lazy.graphql (Query.batchedBase)",
         "authorized.graphql",
         "execute_field.graphql (Base.name)",

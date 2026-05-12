@@ -102,7 +102,7 @@ describe GraphQL::Schema::Visibility::Profile do
       ProfileContextSchema.last_visibility_context = nil
     end
 
-    def context_str(str_pairs, extra_keys: TESTING_EXEC_NEXT ? ',"__graphql_execute_next":true' : "")
+    def context_str(str_pairs, extra_keys: if_exec_next(',"__graphql_execute_next":true', ""))
       "{#{str_pairs}#{extra_keys}}"
     end
 

@@ -196,11 +196,8 @@ describe GraphQL::Schema::FieldExtension do
   describe "object" do
     it "is the schema type object" do
       res = exec_query("{ objectClassTest }", root_value: Object.new)
-      if TESTING_EXEC_NEXT
-        assert_equal ["Object", "Object"], res["data"]["objectClassTest"]
-      else
-        assert_equal ["FilterTestSchema::Query", "FilterTestSchema::Query"], res["data"]["objectClassTest"]
-      end
+      expected_class_names = if_exec_next(["Object", "Object"], ["FilterTestSchema::Query", "FilterTestSchema::Query"])
+      assert_equal expected_class_names, res["data"]["objectClassTest"]
     end
   end
 
