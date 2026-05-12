@@ -39,6 +39,8 @@ The new execution engine is enabled with two steps:
 
 See {% internal_link "compatibility notes", "/execution/migration#compatibility-notes" %} for updating your schema to run queries with the new engine.
 
+You can also add `..., as_default: true` to use `execute_next` by default. In that case, call `execute_legacy` if you need the old runtime.
+
 ## Field configurations
 
 The new runtime engine supports several field resolution configurations out of the box.
