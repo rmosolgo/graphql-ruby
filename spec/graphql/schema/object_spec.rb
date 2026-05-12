@@ -152,7 +152,7 @@ describe GraphQL::Schema::Object do
 
   describe "wrapping a Hash" do
     it "automatically looks up symbol and string keys" do
-      skip("Exec-next does NOT fall back to string keys") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX("Exec-next does NOT fall back to string keys")
       query_str = <<-GRAPHQL
       {
         hashyEnsemble {
@@ -168,7 +168,7 @@ describe GraphQL::Schema::Object do
     end
 
     it "works with strings and symbols" do
-      skip("Exec-next DOES NOT fall back to string keys") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX("Exec-next does NOT fall back to string keys")
       query_str = <<-GRAPHQL
       {
         hashByString { falsey }
@@ -213,7 +213,7 @@ describe GraphQL::Schema::Object do
       expected_ensembles = [
         {"name" => "Bela Fleck and the Flecktones"},
         # This is implemented in `def resolve` which Exec-next doesn't call
-        {"name" => "#{TESTING_EXEC_NEXT ? "Robert Glasper" : "ROBERT GLASPER"} Experiment"},
+        {"name" => "#{if_exec_next("Robert Glasper", "ROBERT GLASPER")} Experiment"},
       ]
       assert_equal expected_ensembles, res["data"]["ensembles"]
       assert_equal({"name" => "Banjo"}, res["data"]["instruments"].first)
@@ -506,7 +506,7 @@ describe GraphQL::Schema::Object do
     end
 
     it "avoids calls to Object.authorized? and uses the returned object" do
-      skip("Exec-next doesn't use .wrap") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX("Exec-next doesn't use .wrap")
       log = []
       res = WrapOverrideSchema.execute("{ __typename int }", context: { log: log })
       assert_equal "Wrapped", res["data"]["__typename"]
@@ -515,13 +515,12 @@ describe GraphQL::Schema::Object do
         "validate",
         "analyze_query",
         "execute_query",
-        *(
-          TESTING_EXEC_NEXT ? [
+        *if_exec_next([
             "begin_execute_field",
             "end_execute_field",
             "begin_execute_field",
             "end_execute_field"
-          ] : [
+          ], [
             "begin_execute_field",
             "execute_field",
             "end_execute_field",
@@ -529,8 +528,7 @@ describe GraphQL::Schema::Object do
             "execute_field",
             "end_execute_field",
             "execute_query_lazy"
-          ]
-        )
+        ])
       ]
 
       assert_equal expected_log, log

@@ -613,31 +613,25 @@ describe GraphQL::Schema::RelayClassicMutation do
 
     it "calls #authorized? on arguments defined on the mutation" do
       res = RelayClassicArgumentAuthSchema.execute("mutation { nameOne(input: { name: \"Camry\" }) { name } }")
-      assert_equal true, res.context[:authorized][(TESTING_EXEC_NEXT ? "NameOne.name" : ["nameOne"])]
+      assert_equal true, res.context[:authorized][if_exec_next("NameOne.name", ["nameOne"])]
     end
 
     it "calls #authorized? on arguments defined on the input_type" do
       res = RelayClassicArgumentAuthSchema.execute("mutation { nameTwo(input: { name: \"Camry\" }) { name } }")
-      if TESTING_EXEC_NEXT
-        assert_equal true, res.context[:authorized]["NameInput.name"]
-      else
-        assert_equal true, res.context[:authorized][["nameTwo"]]
-      end
+      context_key = if_exec_next("NameInput.name", ["nameTwo"])
+      assert_equal true, res.context[:authorized][context_key]
     end
 
     it "calls #authorized? on arguments defined on the inputObjectClass" do
       res = RelayClassicArgumentAuthSchema.execute("mutation { nameThree(input: { name: \"Camry\" }) { name } }")
-      assert_equal true, res.context[:authorized][(TESTING_EXEC_NEXT ? "NameInput.name" : ["nameThree"])]
+      assert_equal true, res.context[:authorized][if_exec_next("NameInput.name", ["nameThree"])]
     end
 
     it "calls #authorized? on loaded argument values" do
       res = RelayClassicArgumentAuthSchema.execute("mutation { nameFour(input: { thingId: \"Corolla\" }) { thing { name } } }")
-      assert_equal true, res.context[:authorized][(TESTING_EXEC_NEXT ? "NameFour.thingId" : ["nameFour"])]
-      if TESTING_EXEC_NEXT
-        assert_equal({ name: "Corolla"}, res.context[:authorized_value][nil]["NameFour.thingId"])
-      else
-        assert_equal({ name: "Corolla"}, res.context[:authorized_value][["nameFour"]]["NameFour.thingId"])
-      end
+      assert_equal true, res.context[:authorized][if_exec_next("NameFour.thingId", ["nameFour"])]
+      context_key = if_exec_next(nil, ["nameFour"])
+      assert_equal({ name: "Corolla"}, res.context[:authorized_value][context_key]["NameFour.thingId"])
       assert_equal "Corolla", res["data"]["nameFour"]["thing"]["name"]
     end
   end

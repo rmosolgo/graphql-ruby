@@ -569,7 +569,7 @@ module Jazz
     null true
     description "Register a new musical instrument in the database"
 
-    argument :name, String, prepare: TESTING_EXEC_NEXT ? ->(v, _ctx) { v.capitalize} : :prepare_name
+    argument :name, String, prepare: if_exec_next(->(v, _ctx) { v.capitalize}, :prepare_name)
     argument :family, Family
 
     field :instrument, InstrumentType, null: false, hash_key: :instrument
@@ -838,7 +838,7 @@ module Jazz
     end
 
     field :prepare_input, Integer, null: false, resolve_legacy_instance_method: true do
-      argument :input, Integer, prepare: TESTING_EXEC_NEXT ? ->(v, _ctx) { v ** 2 } : :square, as: :squared_input
+      argument :input, Integer, prepare: if_exec_next(->(v, _ctx) { v ** 2 }, :square), as: :squared_input
     end
 
     def prepare_input(squared_input:)

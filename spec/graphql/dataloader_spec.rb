@@ -960,7 +960,7 @@ describe GraphQL::Dataloader do
         end
 
         it "works with side-by-side top level arguments when one is a list" do
-          skip("Only supported in Execution::Next") unless TESTING_EXEC_NEXT
+          exec_next_only("Only supported in Execution::Next")
           query_str = "{ r1: recipe(id: 5) { name } recipesById(ids: [6]) { name } }"
           context = { batched_calls_counter: BatchedCallsCounter.new }
           result = exec_query(query_str, context: context)
@@ -1141,10 +1141,7 @@ describe GraphQL::Dataloader do
           err = assert_raises GraphQL::Error do
             exec_query("{ testError }")
           end
-          expected_message = "Field error"
-          if TESTING_EXEC_NEXT
-            expected_message = "Resolving Query.testError: #{expected_message}"
-          end
+          expected_message = exec_next_error_message("Query.testError", "Field error")
           assert_equal expected_message, err.message
         end
 
@@ -1152,10 +1149,7 @@ describe GraphQL::Dataloader do
           err = assert_raises GraphQL::Error do
             exec_query("{ testError(source: true) }")
           end
-          expected_message = "Source error on: [1]"
-          if TESTING_EXEC_NEXT
-            expected_message = "Resolving Query.testError: #{expected_message}"
-          end
+          expected_message = exec_next_error_message "Query.testError", "Source error on: [1]"
           assert_equal expected_message, err.message
         end
 
@@ -1249,11 +1243,11 @@ describe GraphQL::Dataloader do
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
             assert_equal(10, FiberCounting.last_spawn_fiber_count)
-            assert_last_max_fiber_count((TESTING_EXEC_NEXT ? 9 : 9), "No limit works as expected")
+            assert_last_max_fiber_count(9, "No limit works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal((TESTING_EXEC_NEXT ? 11 : 12), FiberCounting.last_spawn_fiber_count)
+            assert_equal(if_exec_next(11, 12), FiberCounting.last_spawn_fiber_count)
             assert_last_max_fiber_count(4, "Limit of 4 works as expected")
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
@@ -1478,13 +1472,13 @@ describe GraphQL::Dataloader do
   it "has proper context[:current_field]" do
     res = FiberSchema.execute("mutation { mutation1(argument1: \"abc\") { __typename } mutation2(argument2: \"def\") { __typename } }")
     assert_equal({"mutation1"=>{ "__typename" => "Mutation1Payload" }, "mutation2"=>{ "__typename" => "Mutation2Payload"} }, res["data"])
-    expected_errors = TESTING_EXEC_NEXT ?
+    expected_errors = if_exec_next(
       # No context[:current_...] values:
-      ["FieldTestError @ --, Mutation.mutation1 / --", "FieldTestError @ --, Mutation.mutation2 / --"]
-    : [
-      "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
-      "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
-    ]
+      ["FieldTestError @ --, Mutation.mutation1 / --", "FieldTestError @ --, Mutation.mutation2 / --"],
+      [
+        "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
+        "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
+      ])
     assert_equal expected_errors, res.context[:errors]
   end
 

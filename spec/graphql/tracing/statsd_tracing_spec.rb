@@ -61,7 +61,7 @@ describe GraphQL::Tracing::StatsdTracing do
       "graphql.validate",
       "graphql.analyze_query",
       "graphql.execute_query",
-      *(TESTING_EXEC_NEXT ? [] : [
+      *if_exec_next([], [
         "graphql.authorized.Query",
         "graphql.Query.thing",
         "graphql.authorized.Thing",

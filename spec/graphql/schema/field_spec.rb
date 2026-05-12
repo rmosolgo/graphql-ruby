@@ -160,7 +160,7 @@ describe GraphQL::Schema::Field do
 
     describe "extras" do
       it "can get errors, which adds path" do
-        skip("No execution_errors in exec-next") if TESTING_EXEC_NEXT
+        exec_next_WONTFIX("No execution_errors in exec-next")
         query_str = <<-GRAPHQL
         query {
           find(id: "Musician/Herbie Hancock") {
@@ -179,7 +179,7 @@ describe GraphQL::Schema::Field do
       end
 
       it "can get methods from the field instance" do
-        skip("Doesn't work this way in exec-next") if TESTING_EXEC_NEXT
+        exec_next_WONTFIX("Doesn't work this way in exec-next")
         query_str = <<-GRAPHQL
         {
           upcaseCheck1
@@ -263,7 +263,7 @@ describe GraphQL::Schema::Field do
         end
 
         it "raises a nice error when missing" do
-          skip("Not implemented this way") if TESTING_EXEC_NEXT
+          exec_next_TODO("Should it raise a nice error here?")
           assert_equal "OK", ArgumentErrorSchema.execute("{ f1 }")["data"]["f1"]
           assert_equal "ALSO OK", ArgumentErrorSchema.execute("{ f2 }")["data"]["f2"]
           err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
@@ -331,7 +331,7 @@ describe GraphQL::Schema::Field do
         end
 
         it "provides metadata about arguments" do
-          skip("Not implemented in exec-next") if TESTING_EXEC_NEXT
+          exec_next_WONTFIX("Exec-next doesn't make this kind of metadata")
           res = ArgumentDetailsSchema.execute("{ argumentDetails }")
           expected_strs = [
             "GraphQL::Execution::Interpreter::Arguments",
@@ -663,15 +663,15 @@ describe GraphQL::Schema::Field do
   describe "looking up hash keys with case" do
     class HashKeySchema < GraphQL::Schema
       class ResultType < GraphQL::Schema::Object
-        field :lowercase, String, camelize: false, null: true, **(TESTING_EXEC_NEXT ? {hash_key: "lowercase"} : {})
-        field :Capital, String, camelize: false, null: true, **(TESTING_EXEC_NEXT ? {hash_key: "Capital"} : {})
-        field :Other, String, camelize: true, null: true, **(TESTING_EXEC_NEXT ? {hash_key: "Other"} : {})
+        field :lowercase, String, camelize: false, null: true, **(if_exec_next({hash_key: "lowercase"}, {}))
+        field :Capital, String, camelize: false, null: true, **(if_exec_next({hash_key: "Capital"}, {}))
+        field :Other, String, camelize: true, null: true, **(if_exec_next({hash_key: "Other"}, {}))
         field :OtherCapital, String, camelize: false, null: true, hash_key: "OtherCapital"
         # regression test against https://github.com/rmosolgo/graphql-ruby/issues/3944
         field :method, String, camelize: false, null: false, hash_key: "some_random_key"
-        field :stringified_hash_key, String, null: false, **(TESTING_EXEC_NEXT ? {hash_key: "stringified_hash_key"} : { hash_key: :stringified_hash_key })
-        field :boolean_true_with_hash_key, Boolean, null: false, **(TESTING_EXEC_NEXT ? {hash_key: "boolean_true_with_hash_key"} : { hash_key: :boolean_true_with_hash_key })
-        field :boolean_false_with_hash_key, Boolean, null: false, **(TESTING_EXEC_NEXT ? {hash_key: "boolean_false_with_hash_key"} : { hash_key: :boolean_false_with_hash_key })
+        field :stringified_hash_key, String, null: false, **(if_exec_next({hash_key: "stringified_hash_key"}, { hash_key: :stringified_hash_key }))
+        field :boolean_true_with_hash_key, Boolean, null: false, **(if_exec_next({hash_key: "boolean_true_with_hash_key"}, { hash_key: :boolean_true_with_hash_key }))
+        field :boolean_false_with_hash_key, Boolean, null: false, **(if_exec_next({hash_key: "boolean_false_with_hash_key"}, { hash_key: :boolean_false_with_hash_key }))
         field :boolean_false_with_symbolized_hash_key, Boolean, null: false, hash_key: :boolean_false_with_symbolized_hash_key
       end
 
@@ -909,7 +909,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   end
 
   it "works with implicit hash key and default value" do
-    skip("No implicit hash key lookup in exec-next") if TESTING_EXEC_NEXT
+    exec_next_WONTFIX("No implicit hash key lookup in exec-next")
     class HashDefautSchema < GraphQL::Schema
       class Example < GraphQL::Schema::Object
         field :implicit_lookup, [String, null: true]

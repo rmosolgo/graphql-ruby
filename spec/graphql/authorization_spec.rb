@@ -534,12 +534,11 @@ describe "GraphQL::Authorization" do
         GRAPHQL
       end
 
-      # This switches on `context[:current_path]` which isn't implemented by Batching (yet?)
-      expected_message = if TESTING_EXEC_NEXT
-        "Resolving Query.landscapeFeature: `\"STREAM\"` was returned for `LandscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
-      else
+      # This switches on `context[:current_path]` which isn't implemented by exec-next (yet?)
+      expected_message = if_exec_next(
+        "Resolving Query.landscapeFeature: `\"STREAM\"` was returned for `LandscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`).",
         "`Query.landscapeFeature` returned `\"STREAM\"` at `landscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
-      end
+      )
       assert_equal expected_message, err.message
     end
 
@@ -910,7 +909,7 @@ describe "GraphQL::Authorization" do
         unauth_res = auth_execute(query, context: { query_unauthorized: true })
 
         assert_equal({
-          "errors" => [(TESTING_EXEC_NEXT ? {"message"=>"Unauthorized Query: nil", "path" => [] } : {"message"=>"Unauthorized Query: nil"})],
+          "errors" => [if_exec_next({"message"=>"Unauthorized Query: nil", "path" => [] }, {"message"=>"Unauthorized Query: nil"})],
           "data" => nil,
         }, unauth_res.to_h)
       end
@@ -996,7 +995,7 @@ describe "GraphQL::Authorization" do
     end
 
     it "avoids calls to Object.authorized?" do
-      skip("Doesn't work this way with exec-next") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX("Doesn't work this way with exec-next")
       log = []
       res = AuthorizedNewOverrideSchema.execute("{ __typename int }", context: { log: log })
       assert_equal "Query", res["data"]["__typename"]

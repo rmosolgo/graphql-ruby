@@ -375,7 +375,6 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     end
 
     it "handles validation errors in .include?" do
-      skip("Custom `.include?` is not supported in Execution::Next yet") if TESTING_EXEC_NEXT
       res = exec_query("{ __typename @validationTest(int: 12) }")
       expected_result = {
         "errors" => [{"message" => "int must be less than 10", "locations" => [{"line" => 1, "column" => 14}], "path" => [ "__typename" ]}],

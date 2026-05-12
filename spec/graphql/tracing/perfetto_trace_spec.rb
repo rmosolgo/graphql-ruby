@@ -215,7 +215,7 @@ if testing_rails?
       data = JSON.parse(json)
 
 
-      check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}#{TESTING_EXEC_NEXT ? "-next" : ""}.json")
+      check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}#{if_exec_next("-next", "")}.json")
     end
 
     it "replaces nil class name with (anonymous)" do

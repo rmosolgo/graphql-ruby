@@ -214,7 +214,7 @@ describe GraphQL::Schema::Enum do
         EmptyEnumSchema.execute("{ emptyEnum }")
       end
 
-      expected_message = "#{TESTING_EXEC_NEXT ? "Resolving Query.emptyEnum: " : ""}Enum types require at least one value, but EmptyEnum didn't provide any for this query. Make sure at least one value is defined and visible for this query."
+      expected_message = exec_next_error_message("Query.emptyEnum", "Enum types require at least one value, but EmptyEnum didn't provide any for this query. Make sure at least one value is defined and visible for this query.")
       assert_equal expected_message, err.message
     end
 

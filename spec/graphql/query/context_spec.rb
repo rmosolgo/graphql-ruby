@@ -137,7 +137,7 @@ describe GraphQL::Query::Context do
     |}
 
     it "allows query-level errors" do
-      skip(".add_error isn't supported") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX ".add_error isn't supported"
       expected_err = { "message" => "Query-level error" }
       assert_equal [expected_err], result["errors"]
     end
@@ -240,7 +240,7 @@ describe GraphQL::Query::Context do
     end
 
     it "can be set and does not leak to sibling fields" do
-      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+      exec_next_TODO "Not supported because it depends on context[:current_path]"
       query_str = %|
         {
           before: getScopedContext(key: "a")
@@ -285,7 +285,7 @@ describe GraphQL::Query::Context do
     end
 
     it "can be set and does not leak to sibling fields when all resolvers are lazy values" do
-      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+      exec_next_TODO "Not supported because it depends on context[:current_path]"
       query_str = %|
         {
           before: getScopedContext(key: "a", lazy: true)
@@ -316,7 +316,7 @@ describe GraphQL::Query::Context do
     end
 
     it "can be set and does not leak to sibling fields when all get resolvers are lazy values" do
-      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+      exec_next_TODO "Not supported because it depends on context[:current_path]"
 
       query_str = %|
         {
@@ -348,7 +348,7 @@ describe GraphQL::Query::Context do
     end
 
     it "can be set and does not leak to sibling fields when all set resolvers are lazy values" do
-      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+      exec_next_TODO "Not supported because it depends on context[:current_path]"
 
       query_str = %|
         {
@@ -380,7 +380,7 @@ describe GraphQL::Query::Context do
     end
 
     it "doesn't leak inside lists" do
-      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+      exec_next_TODO "Not supported because it depends on context[:current_path]"
 
       query_str = <<-GRAPHQL
       {
@@ -405,7 +405,7 @@ describe GraphQL::Query::Context do
     end
 
     it "always retrieves a scoped context value if set" do
-      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+      exec_next_TODO "Not supported because it depends on context[:current_path]"
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil)
       dummy_runtime = OpenStruct.new(current_result: nil)
       Fiber[:__graphql_runtime_info] = { context.query => dummy_runtime }
@@ -457,7 +457,7 @@ describe GraphQL::Query::Context do
     end
 
     it "sets a value using #scoped_set!" do
-      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+      exec_next_TODO "Not supported because it depends on context[:current_path]"
 
       expected_key = :a
       expected_value = :test
@@ -470,7 +470,7 @@ describe GraphQL::Query::Context do
     end
 
     it "has a #current_path method" do
-      skip "Not supported because it depends on context[:current_path]" if TESTING_EXEC_NEXT
+      exec_next_TODO "Not supported because it depends on context[:current_path]"
 
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil)
       current_result = OpenStruct.new(path: ["somewhere", "child", "grandchild"])

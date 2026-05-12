@@ -281,13 +281,13 @@ describe GraphQL::Schema::InputObject do
       GRAPHQL
       res2 = InputObjectPrepareTest::Schema.execute(query_str2, context: { multiply_by: 3 })
       # With exec-next, prepare is still applied to these nested inputs:
-      expected_hash_values =  TESTING_EXEC_NEXT ? {a: 2, b2: 4, c: 18, d2: 24, e2: 60 } : { a: 2, b2: 4, c: 6, d2: 8, e2: 60 }
+      expected_hash_values =  if_exec_next({a: 2, b2: 4, c: 18, d2: 24, e2: 60 }, { a: 2, b2: 4, c: 6, d2: 8, e2: 60 })
       expected_hash_str = expected_hash_values.inspect.sub("{", "").sub("}", "")
       assert_includes res2["data"]["inputs"][0], expected_hash_str
     end
 
     it "calls load_ methods for arguments when they're present" do
-      skip("Not implemented for Exec-next") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX("Not implemented for Exec-next")
       query_str = <<-GRAPHQL
       mutation {
         touchInstrumentByName(inputObj: { instrumentName: "Flute" }) {

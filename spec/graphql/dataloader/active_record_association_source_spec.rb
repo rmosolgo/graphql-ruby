@@ -32,7 +32,7 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
     end
 
     it "works with field shorthands" do
-      skip("NOT IMPLEMENTED") unless TESTING_EXEC_NEXT
+      exec_next_only("Only exec-next uses these configs")
       result = exec_query <<-GRAPHQL
         {
           band(name: "Vulfpeck") {

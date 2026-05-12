@@ -100,7 +100,7 @@ describe GraphQL::Schema::Interface do
 
       res = Jazz::Schema.execute(query_str)
       expected_data = {
-        "upcasedId" => TESTING_EXEC_NEXT ? "Ensemble/Bela Fleck and the Flecktones" : "ENSEMBLE/BELA FLECK AND THE FLECKTONES",
+        "upcasedId" => if_exec_next("Ensemble/Bela Fleck and the Flecktones", "ENSEMBLE/BELA FLECK AND THE FLECKTONES"),
         "name" => "Bela Fleck and the Flecktones"
       }
       assert_equal(expected_data, res["data"]["find"])
@@ -431,7 +431,7 @@ interface Timestamped implements Node {
         include GraphQL::Schema::Interface
 
         field :id, ID, null: false, hash_key: :id
-        field :name, String, **(TESTING_EXEC_NEXT ? {hash_key: :name} : {})
+        field :name, String, **(if_exec_next({hash_key: :name}, {}))
       end
 
       module NodeWithNilFallbackInterface
@@ -544,7 +544,7 @@ interface Timestamped implements Node {
     end
 
     it "errors if no fallback_value is supplied and other ways don't work" do
-      skip("Exec-next doesn't respect fallback_value") if TESTING_EXEC_NEXT
+      exec_next_WONTFIX("Exec-next doesn't use fallback_value")
       err = assert_raises RuntimeError do
         FallbackValueSchema.execute("{ noFallback { id name } }")
       end

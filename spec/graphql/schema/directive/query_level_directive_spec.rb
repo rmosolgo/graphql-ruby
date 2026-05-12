@@ -16,6 +16,11 @@ describe "Query level Directive" do
         ctx[:int] = args[:val] || args[:input][:val] || 0
         yield
       end
+
+      def self.resolve_operation(ast_node, query, objects, args, context)
+        context[:int] = args[:val] || args[:input][:val] || 0
+        nil
+      end
     end
 
     class Query < GraphQL::Schema::Object
@@ -56,7 +61,6 @@ describe "Query level Directive" do
   end
 
   it "runs on the query level" do
-    skip "Not supported yet -- but could be" if TESTING_EXEC_NEXT
     str = 'query TestDirective @initInt(val: 10) {
       int1: int
       int2: int
@@ -68,7 +72,6 @@ describe "Query level Directive" do
   end
 
   it "works with input object arguments" do
-    skip "Not supported yet -- but could be" if TESTING_EXEC_NEXT
     str = 'query TestDirective @initInt(input: { val: 12 }) {
       int1: int
       int2: int

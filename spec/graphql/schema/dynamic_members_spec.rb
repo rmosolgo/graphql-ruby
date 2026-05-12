@@ -1146,7 +1146,7 @@ GRAPHQL
         schema.to_json(context: { allowed_for: 2 })
       end
       assert_equal "DuplicateNameObject", err4.duplicated_name
-      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving __Schema.types: " : ""}" + expected_message, err4.message
+      assert_equal exec_next_error_message("__Schema.types", expected_message), err4.message
     end
 
     it "raises when a given context would permit multiple enum values with the same name" do
@@ -1187,7 +1187,7 @@ GRAPHQL
         schema.to_json(context: { allowed_for: 2 })
       end
       assert_equal "DuplicateEnumValue.ONE", err4.duplicated_name
-      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving __Type.enumValues: " : ""}" + expected_message, err4.message
+      assert_equal exec_next_error_message("__Type.enumValues", expected_message), err4.message
     end
 
     it "raises when a given context would permit multiple argument definitions" do
@@ -1231,7 +1231,7 @@ GRAPHQL
       err4 = assert_raises GraphQL::Schema::DuplicateNamesError do
         schema.to_json(context: { allowed_for: 2 })
       end
-      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving __Schema.types: " : ""}" + expected_message, err4.message
+      assert_equal exec_next_error_message("__Schema.types", expected_message), err4.message
       assert_equal "DuplicateArgumentObject.multiArg.a", err4.duplicated_name
     end
 
@@ -1274,7 +1274,7 @@ GRAPHQL
       err4 = assert_raises GraphQL::Schema::DuplicateNamesError do
         schema.to_json(context: { allowed_for: 2 })
       end
-      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving __Schema.types: " : ""}" + expected_message, err4.message
+      assert_equal exec_next_error_message("__Schema.types", expected_message), err4.message
       assert_equal "DuplicateFieldObject.f", err4.duplicated_name
     end
   end

@@ -12,7 +12,7 @@ describe GraphQL::Dataloader::Source do
     describe "with field configuration shorthands" do
       include VulfpeckSchemaHelpers
       it "calls the configured source" do
-        skip("Not implemented") unless TESTING_EXEC_NEXT
+        exec_next_only("Only exec-next uses these configs")
         result = exec_query("{ bandsCount albumsCount }")
         assert_equal 4, result["data"]["bandsCount"]
         assert_equal 6, result["data"]["albumsCount"]
@@ -114,7 +114,7 @@ describe GraphQL::Dataloader::Source do
       NoDataloaderSchema.execute("{ thing(id: 1) { name } }")
     end
 
-    expected_message = "#{TESTING_EXEC_NEXT ? "Resolving Query.thing: " : ""}GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
+    expected_message = exec_next_error_message "Query.thing", "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
     assert_equal expected_message, err.message
   end
 end

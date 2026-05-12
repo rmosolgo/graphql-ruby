@@ -223,7 +223,7 @@ describe GraphQL::Schema::Timeout do
 
     it "calls the block" do
       err = assert_raises(RuntimeError) { result }
-      assert_equal "#{TESTING_EXEC_NEXT ? "Resolving Query.sleepFor: " : ""}Query timed out after 2s: Timeout on Query.sleepFor", err.message
+      assert_equal exec_next_error_message("Query.sleepFor", "Query timed out after 2s: Timeout on Query.sleepFor"), err.message
     end
   end
 

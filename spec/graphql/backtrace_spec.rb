@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Backtrace do
   def skip_with_exec_next
-    skip("Not supported with exec-next because of dependence on context[:current_path]") if TESTING_EXEC_NEXT
+    exec_next_TODO("Not supported with exec-next because of dependence on context[:current_path]")
   end
   class LazyError
     def raise_err

@@ -44,7 +44,7 @@ describe GraphQL::Tracing::ScoutTrace do
       (USING_C_PARSER ? "lex.graphql" : nil),
       "parse.graphql",
       "validate.graphql",
-      (TESTING_EXEC_NEXT ? nil : "Query.authorized.graphql"), # skipped because not implemented
+      if_exec_next(nil, "Query.authorized.graphql"), # skipped because not implemented
     ].compact
     assert_equal expected_events, ScoutApm::EVENTS
   end
