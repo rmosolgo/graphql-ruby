@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.6.1/">API</a>
+            <a href="/api-doc/2.6.2/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -150,6 +150,7 @@
 </a></li></ol></li><li class='contents-entry'><a href='#combining-feature-flags-and-experiments'>Combining feature flags and experiments
 </a></li><li class='contents-entry'><a href='#compatibility-notes'>Compatibility Notes
 </a><ol class='contents-list'><li class='contents-entry'><a href='#implicit-field-resolution'>Implicit Field Resolution
+</a></li><li class='contents-entry'><a href='#interface-resolver-methods'>Interface Resolver Methods
 </a></li><li class='contents-entry'><a href='#query-analyzers-including-complexity-'>Query Analyzers, including complexity 🟡
 </a></li><li class='contents-entry'><a href='#authorization-scoping'>Authorization, Scoping
 </a></li><li class='contents-entry'><a href='#visibility-including-changesets'>Visibility, including Changesets
@@ -165,17 +166,20 @@
 </a></li><li class='contents-entry'><a href='#custom-directives-'>Custom Directives ❌
 </a></li><li class='contents-entry'><a href='#as'><code>as:</code>
 </a></li><li class='contents-entry'><a href='#loads-'><code>loads:</code> 🟡
-</a></li><li class='contents-entry'><a href='#prepare'><code>prepare:</code>
+</a></li><li class='contents-entry'><a href='#prepare-'><code>prepare:</code> 🟡
 </a></li><li class='contents-entry'><a href='#validates-'><code>validates:</code> 🟡
 </a></li><li class='contents-entry'><a href='#field-extensions-'>Field Extensions 🟡
 </a></li><li class='contents-entry'><a href='#resolver-classes-including-mutations-and-subscriptions-'>Resolver classes (including Mutations and Subscriptions) 🟡
 </a></li><li class='contents-entry'><a href='#field-extras-including-lookahead'>Field <code>extras:</code>, including <code>lookahead</code>
 </a></li><li class='contents-entry'><a href='#raw_value-'><code>raw_value</code> 🟡
-</a></li><li class='contents-entry'><a href='#errors-and-rescue_from'>Errors and <code>rescue_from</code>
+</a></li><li class='contents-entry'><a href='#errors-and-rescue_from-'>Errors and <code>rescue_from</code> 🟡
 </a></li><li class='contents-entry'><a href='#connection-fields'>Connection fields
 </a></li><li class='contents-entry'><a href='#custom-introspection'>Custom Introspection
 </a></li><li class='contents-entry'><a href='#multiplex'>Multiplex
-</a></li></ol></li></ol>
+</a></li><li class='contents-entry'><a href='#graphql-current-'>GraphQL::Current 🟡
+</a></li><li class='contents-entry'><a href='#fallback_value-'><code>fallback_value:</code> ❌
+</a></li></ol></li><li class='contents-entry'><a href='#graphql-backtrace'>GraphQL::Backtrace
+</a></li></ol>
 </div>
 </div>
 <div class="guide-container">
@@ -331,6 +335,31 @@
 
 <p>Now, GraphQL-Ruby simply calls <code class="language-plaintext highlighter-rouge">object.title</code> and allows the <code class="language-plaintext highlighter-rouge">NoMethodError</code> to bubble up if one is raised.</p>
 
+<h3 id="interface-resolver-methods">Interface Resolver Methods</h3>
+
+<p>Resolver methods are now class methods instead of instance methods. In order to make this work in interface modules, they must be defined in a <code class="language-plaintext highlighter-rouge">resolver_methods do ... end</code> block, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Node</span>
+  <span class="kp">include</span> <span class="no">BaseInterface</span>
+
+  <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">resolve_each: </span><span class="kp">true</span>
+
+  <span class="n">resolver_methods</span> <span class="k">do</span>
+    <span class="c1"># This will define `def self.id` on Object types that implement this interface</span>
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+      <span class="no">GlobalId</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">object</span><span class="p">).</span><span class="nf">to_s</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Backwards compat instance method:</span>
+  <span class="k">def</span> <span class="nf">id</span>
+    <span class="nb">self</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">id</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Methods defined in <code class="language-plaintext highlighter-rouge">resolver_methods { ... }</code> will be copied into Object type classes as <em>class methods</em>, so they’ll be available for <code class="language-plaintext highlighter-rouge">resolve_{each|static|batch}</code> fields.</p>
+
 <h3 id="query-analyzers-including-complexity-">Query Analyzers, including complexity 🟡</h3>
 
 <p>Support is identical; this runs before execution using the exact same code.</p>
@@ -339,7 +368,13 @@
 
 <h3 id="authorization-scoping">Authorization, Scoping</h3>
 
-<p>Full compatibility. <code class="language-plaintext highlighter-rouge">def (self.)authorized?</code> and <code class="language-plaintext highlighter-rouge">def self.scope_items</code> will be called as needed during execution.</p>
+<p><code class="language-plaintext highlighter-rouge">def (self.)authorized?</code> and <code class="language-plaintext highlighter-rouge">def self.scope_items</code> will be called as needed during execution.</p>
+
+<p>One incompatibility:</p>
+
+<ul>
+  <li>Argument <code class="language-plaintext highlighter-rouge">#authorized?</code> <em>will</em> be called if the argument wasn’t present in the query but a default value is used. <code class="language-plaintext highlighter-rouge">Execution::Next</code> doesn’t create the metadata necessary to skip authorization in that case. A work-around might be to check if the value is equal to the default value in <code class="language-plaintext highlighter-rouge">def authorized?</code> and permit it if it is. If this is a blocker for you, please open an issue on GitHub and we can check it out.</li>
+</ul>
 
 <h3 id="visibility-including-changesets">Visibility, including Changesets</h3>
 
@@ -347,7 +382,7 @@
 
 <h3 id="dataloader">Dataloader</h3>
 
-<p>Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use <a href="/api-doc/2.6.1/GraphQL/Schema/Member/HasDataloader#dataload_all-instance_method" target="_blank" title="API docs for GraphQL::Schema::Member::HasDataloader#dataload_all"><code>Schema::Member::HasDataloader#dataload_all</code></a> instead of <code class="language-plaintext highlighter-rouge">.dataload</code>.</p>
+<p>Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use <a href="/api-doc/2.6.2/GraphQL/Schema/Member/HasDataloader#dataload_all-instance_method" target="_blank" title="API docs for GraphQL::Schema::Member::HasDataloader#dataload_all"><code>Schema::Member::HasDataloader#dataload_all</code></a> instead of <code class="language-plaintext highlighter-rouge">.dataload</code>.</p>
 
 <h3 id="tracing">Tracing</h3>
 
@@ -358,6 +393,8 @@
   <li><code class="language-plaintext highlighter-rouge">execute_query</code>, <code class="language-plaintext highlighter-rouge">execute_query_lazy</code>: use <code class="language-plaintext highlighter-rouge">execute_multiplex</code> for a top-level hook instead. (Single queries are always executed in a multiplex of size = 1.)</li>
   <li><code class="language-plaintext highlighter-rouge">resolve_type</code>, <code class="language-plaintext highlighter-rouge">authorized</code>: use <code class="language-plaintext highlighter-rouge">{begin,end}_resolve_type</code> and <code class="language-plaintext highlighter-rouge">{begin,end}_authorized</code> instead. (May be called multiple times for Dataloader etc.)</li>
 </ul>
+
+<p>Additionally, <code class="language-plaintext highlighter-rouge">object</code> parameters to those methods will receive an <em>Array</em> of <code class="language-plaintext highlighter-rouge">objects</code> instead.</p>
 
 <h3 id="lazy-resolution-graphql-batch">Lazy resolution (GraphQL-Batch)</h3>
 
@@ -403,6 +440,8 @@
 
 <p>There is some implementation in the code right now but it’s not stable. Please open an issue to discuss.</p>
 
+<p>Query-level directives are not implemented yet, but will be. Please open an issue if you have a use case for this.</p>
+
 <h3 id="as"><code class="language-plaintext highlighter-rouge">as:</code></h3>
 
 <p><code class="language-plaintext highlighter-rouge">as:</code> is applied: arguments are passed into Ruby methods by their <code class="language-plaintext highlighter-rouge">as:</code> names instead of their GraphQL names.</p>
@@ -411,9 +450,11 @@
 
 <p><code class="language-plaintext highlighter-rouge">loads:</code> is handled as previously, <strong>except</strong> that custom <code class="language-plaintext highlighter-rouge">def load_...</code> methods are <em>not</em> called.</p>
 
-<h3 id="prepare"><code class="language-plaintext highlighter-rouge">prepare:</code></h3>
+<h3 id="prepare-"><code class="language-plaintext highlighter-rouge">prepare:</code> 🟡</h3>
 
-<p>These methods/procs are called.</p>
+<p>Procs are called as before.</p>
+
+<p>Methods that depend on a runtime <code class="language-plaintext highlighter-rouge">object</code> (such as a type instance or Mutation class) are <em>not</em> called, because arguments are prepared before objects are ready.</p>
 
 <h3 id="validates-"><code class="language-plaintext highlighter-rouge">validates:</code> 🟡</h3>
 
@@ -454,9 +495,13 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="errors-and-rescue_from">Errors and <code class="language-plaintext highlighter-rouge">rescue_from</code></h3>
+<h3 id="errors-and-rescue_from-">Errors and <code class="language-plaintext highlighter-rouge">rescue_from</code> 🟡</h3>
 
-<p>Supported.</p>
+<p>Raising <code class="language-plaintext highlighter-rouge">GraphQL::ExecutionError</code> and adding <code class="language-plaintext highlighter-rouge">rescue_from</code> handlers are supported</p>
+
+<p>Returning an array of <code class="language-plaintext highlighter-rouge">GraphQL::ExecutionError</code> instances is not supported anymore.</p>
+
+<p><code class="language-plaintext highlighter-rouge">extras: [:execution_errors]</code> and <code class="language-plaintext highlighter-rouge">context.add_error</code> are not supported anymore.</p>
 
 <h3 id="connection-fields">Connection fields</h3>
 
@@ -466,9 +511,42 @@
 
 <p>This <em>works</em> but if you want custom authorization or any lazy values, see notes about that compatibility.</p>
 
+<p>If you’re reimplementing default values, you’ll need to add the corresponding <code class="language-plaintext highlighter-rouge">resolve_static: true</code> or <code class="language-plaintext highlighter-rouge">resolve_each: true</code> configurations. See the built-in type definitions under <code class="language-plaintext highlighter-rouge">GraphQL::Introspection</code> to get these configurations.</p>
+
 <h3 id="multiplex">Multiplex</h3>
 
 <p>To use the new engine to run a multiplex, use <code class="language-plaintext highlighter-rouge">MyAppSchema.multiplex_next(...)</code> with the same arguments.</p>
+
+<h3 id="graphqlcurrent-">GraphQL::Current 🟡</h3>
+
+<p><code class="language-plaintext highlighter-rouge">current_field</code> doesn’t work; <code class="language-plaintext highlighter-rouge">dataloader_source</code> works. <code class="language-plaintext highlighter-rouge">current_operation_name</code> doesn’t work.</p>
+
+<p>This will be fixed soon but may require opt-in to avoid needless overhead.</p>
+
+<h3 id="fallback_value-"><code class="language-plaintext highlighter-rouge">fallback_value:</code> ❌</h3>
+
+<p><code class="language-plaintext highlighter-rouge">fallback_value:</code> is not supported in Execution::Next. It’s not implemented because of the overhead it adds to resultion. You’ll have to implement it by hand in resolvers.</p>
+
+<p><code class="language-plaintext highlighter-rouge">graphql_migrate_execution</code> creates a resolver that <em>always</em> returns the <code class="language-plaintext highlighter-rouge">fallback_value</code>. This might be right in some cases, but you’ll probably have to implement your own method, like:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">fallback_value: </span><span class="s2">"Anonymous"</span><span class="p">,</span> <span class="ss">resolve_each: :resolve_name</span>
+
+<span class="k">def</span> <span class="nf">resolve_name</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">object</span><span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:name</span><span class="p">)</span>
+    <span class="n">object</span><span class="p">.</span><span class="nf">name</span>
+  <span class="k">elsif</span> <span class="p">(</span><span class="n">is_h</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">Hash</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="n">object</span><span class="p">.</span><span class="nf">key?</span><span class="p">(</span><span class="ss">:name</span><span class="p">)</span>
+    <span class="n">object</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span>
+  <span class="k">elsif</span> <span class="n">is_h</span> <span class="o">&amp;&amp;</span> <span class="n">object</span><span class="p">.</span><span class="nf">key?</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+    <span class="n">object</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
+  <span class="k">else</span>
+    <span class="s2">"Anonymous"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="graphqlbacktrace">GraphQL::Backtrace</h2>
+
+<p>Doesn’t support Execution::Next, but it’s probably not necessary. <code class="language-plaintext highlighter-rouge">Execution::Next</code> includes the field name in error messages and doesn’t generate crazy-long stack traces because of its design.</p>
 
 </div>
 <p class="guide-footer">

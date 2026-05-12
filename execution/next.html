@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.6.1/">API</a>
+            <a href="/api-doc/2.6.2/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -161,7 +161,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>GraphQL-Ruby has a new execution engine, <a href="/api-doc/2.6.1/GraphQL/Execution/Next" target="_blank" title="API docs for GraphQL::Execution::Next"><code>GraphQL::Execution::Next</code></a>. It’s much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.</p>
+  <p>GraphQL-Ruby has a new execution engine, <a href="/api-doc/2.6.2/GraphQL/Execution/Next" target="_blank" title="API docs for GraphQL::Execution::Next"><code>GraphQL::Execution::Next</code></a>. It’s much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.</p>
 
 <p>This feature is in heavy development, so if you give it a try and run into any problems, please open an issue on GitHub!</p>
 
@@ -195,6 +195,8 @@
 </ul>
 
 <p>See <a href="/execution/migration#compatibility-notes">compatibility notes</a> for updating your schema to run queries with the new engine.</p>
+
+<p>You can also add <code class="language-plaintext highlighter-rouge">..., as_default: true</code> to use <code class="language-plaintext highlighter-rouge">execute_next</code> by default. In that case, call <code class="language-plaintext highlighter-rouge">execute_legacy</code> if you need the old runtime.</p>
 
 <h2 id="field-configurations">Field configurations</h2>
 
@@ -331,7 +333,7 @@
 
 <h4 id="rails-associations">Rails Associations</h4>
 
-<p>Load ActiveRecord associations using <a href="/api-doc/2.6.1/GraphQL/Dataloader/ActiveRecordAssociationSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordAssociationSource"><code>GraphQL::Dataloader::ActiveRecordAssociationSource</code></a>:</p>
+<p>Load ActiveRecord associations using <a href="/api-doc/2.6.2/GraphQL/Dataloader/ActiveRecordAssociationSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordAssociationSource"><code>GraphQL::Dataloader::ActiveRecordAssociationSource</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::CommentType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Equivalent to `dataload_association(:post)`</span>
@@ -343,7 +345,7 @@
 
 <h4 id="rails-records">Rails Records</h4>
 
-<p>Load ActiveRecord associations using <a href="/api-doc/2.6.1/GraphQL/Dataloader/ActiveRecordSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordSource"><code>GraphQL::Dataloader::ActiveRecordSource</code></a>.</p>
+<p>Load ActiveRecord associations using <a href="/api-doc/2.6.2/GraphQL/Dataloader/ActiveRecordSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordSource"><code>GraphQL::Dataloader::ActiveRecordSource</code></a>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::SearchResult</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Equivalent to `dataload_record(Post, object.post_id)`</span>
