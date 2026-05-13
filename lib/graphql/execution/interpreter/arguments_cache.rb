@@ -30,7 +30,10 @@ module GraphQL
               @storage[argument_owner][parent_object][ast_node] = resolved_args
             end
           end
+        end
 
+        def cached_arguments_for(ast_node, argument_owner)
+          @storage[argument_owner][nil][ast_node]
         end
 
         # @yield [Interpreter::Arguments, Lazy<Interpreter::Arguments>] The finally-loaded arguments
