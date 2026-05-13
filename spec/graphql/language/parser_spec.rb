@@ -72,6 +72,7 @@ createRecord(data: {
       # No modification to block strings:
       "{ a(\"\"\"\n abc\n\"\"\") }" => "{ a(\"\"\"\n abc\n\"\"\") }",
       "{ a(\"\"\"\r\n abc\r\n\"\"\") }" => "{ a(\"\"\"\r\n abc\r\n\"\"\") }",
+      "{ x(s: \"\"\"The user said \"Did\n\"you change my input ?\"\"\") }" => "{ x(s: \"\"\"The user said \"Did\n\"you change my input ?\"\"\") }",
     }
 
     replacements.each_with_index do |(before_str, after_str), idx|
