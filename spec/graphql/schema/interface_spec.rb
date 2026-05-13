@@ -159,7 +159,6 @@ describe GraphQL::Schema::Interface do
   end
 
   describe "::ResolverMethods" do
-    focus
     it "doesn't conflict with a top-level module" do
       Object.const_set(:ResolverMethods, Module.new do
         def not_a_resolver
