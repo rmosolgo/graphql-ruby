@@ -163,7 +163,10 @@ module GraphQL
         return true if a == b
 
         id_a, id_b = a.object_id, b.object_id
-        key = id_a < id_b ? (id_a << 32) | id_b : (id_b << 32) | id_a
+        # Build a symmetric composite key: smaller ID in the high 64 bits, larger in the low
+        # 64 bits, so (a,b) and (b,a) always map to the same key. Ruby integers are
+        # arbitrary-precision, so the shift is lossless regardless of object_id magnitude.
+        key = id_a < id_b ? (id_a << 64) | id_b : (id_b << 64) | id_a
         return @intersect_cache[key] if @intersect_cache.key?(key)
 
         a_types = @possible_types_cache[a] ||= query.types.possible_types(a).to_set
