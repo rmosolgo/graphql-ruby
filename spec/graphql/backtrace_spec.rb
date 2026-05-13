@@ -375,4 +375,44 @@ describe GraphQL::Backtrace do
       assert_equal ["name is too short (minimum is 5)"], ValidatorBacktraceSchema.execute("{ greeting(name: \"Tim\") }")["errors"].map { |e| e["message"] }
     end
   end
+
+
+  describe "when prepare fails as in https://github.com/rmosolgo/graphql-ruby/issues/5627" do
+    class BacktracePrepareErrorSchema < GraphQL::Schema
+      class CreateComment < GraphQL::Schema::RelayClassicMutation
+        argument :author_id, String, as: :author, prepare: :prepare_author
+        argument :body,      String
+
+        field :comment_id, String
+
+        def self.prepare_author(id, _ctx)
+          raise "Author #{id} not found"
+        end
+
+        def resolve(author:, body:)
+          { comment_id: "new-comment" }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :create_comment, mutation: CreateComment
+      end
+
+      use GraphQL::Backtrace
+      mutation Mutation
+    end
+
+    it "works" do
+      skip_with_exec_next
+      assert_raises GraphQL::Backtrace::TracedError do
+        BacktracePrepareErrorSchema.execute <<~GRAPHQL
+          mutation {
+            createComment(input: { authorId: "unknown", body: "hello" }) {
+              commentId
+            }
+          }
+        GRAPHQL
+      end
+    end
+  end
 end

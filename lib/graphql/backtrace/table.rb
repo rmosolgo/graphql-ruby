@@ -90,7 +90,16 @@ module GraphQL
 
           if ast_node
             field_defn = query.get_field(result.graphql_result_type, ast_node.name)
-            args = query.arguments_for(ast_node, field_defn).to_h
+            args = begin
+              if (cached_args = query.arguments_cache.cached_arguments_for(ast_node, field_defn))
+                cached_args.to_h
+              else
+                EmptyObjects::EMPTY_HASH
+              end
+            rescue StandardError => err
+              "Failed to load arguments, #{err.class}: #{err.message}"
+            end
+
             field_path = field_defn.path
             if ast_node.alias
               field_path += " as #{ast_node.alias}"
