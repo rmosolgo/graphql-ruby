@@ -403,6 +403,7 @@ describe GraphQL::Backtrace do
     end
 
     it "works" do
+      skip_with_exec_next
       assert_raises GraphQL::Backtrace::TracedError do
         BacktracePrepareErrorSchema.execute <<~GRAPHQL
           mutation {
