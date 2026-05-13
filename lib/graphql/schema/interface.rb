@@ -101,7 +101,7 @@ module GraphQL
             end
 
             child_class.ancestors.reverse_each do |ancestor|
-              if ancestor.const_defined?(:ResolverMethods)
+              if ancestor != child_class && ancestor <= GraphQL::Schema::Interface && ancestor.const_defined?(:ResolverMethods, false)
                 child_class.extend(ancestor::ResolverMethods)
               end
             end
