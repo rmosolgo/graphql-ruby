@@ -9,6 +9,8 @@ module GraphQL
         super
         @skip_introspection_fields = !query.schema.max_complexity_count_introspection_fields
         @complexities_on_type_by_query = {}
+        @intersect_cache = {}
+        @possible_types_cache = {}
       end
 
       # Override this method to use the complexity result
@@ -159,8 +161,14 @@ module GraphQL
 
       def types_intersect?(query, a, b)
         return true if a == b
-        a_types = query.types.possible_types(a)
-        query.types.possible_types(b).any? { |t| a_types.include?(t) }
+
+        id_a, id_b = a.object_id, b.object_id
+        key = id_a < id_b ? (id_a << 32) | id_b : (id_b << 32) | id_a
+        return @intersect_cache[key] if @intersect_cache.key?(key)
+
+        a_types = @possible_types_cache[a] ||= query.types.possible_types(a).to_set
+        b_types = @possible_types_cache[b] ||= query.types.possible_types(b).to_set
+        @intersect_cache[key] = a_types.intersect?(b_types)
       end
 
       # A hook which is called whenever a field's max complexity is calculated.
