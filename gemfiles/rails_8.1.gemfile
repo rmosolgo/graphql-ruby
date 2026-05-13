@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 
 # working around https://github.com/rails/bootsnap/issues/547
-gem "bootsnap", github: "rails/bootsnap", ref: "main"
+gem "bootsnap"
 gem "ruby-prof", platform: :ruby
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
