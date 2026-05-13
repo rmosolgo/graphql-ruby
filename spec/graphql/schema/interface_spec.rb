@@ -158,6 +158,41 @@ describe GraphQL::Schema::Interface do
     end
   end
 
+  describe "::ResolverMethods" do
+    it "doesn't conflict with a top-level module" do
+      Object.const_set(:ResolverMethods, Module.new do
+        def not_a_resolver
+        end
+      end)
+      new_int = Module.new do
+        include GraphQL::Schema::Interface
+        resolver_methods do
+          def resolver_test
+          end
+        end
+      end
+
+      other_new_int = Module.new do
+        include GraphQL::Schema::Interface
+        resolver_methods do
+          def resolver_test_2
+          end
+        end
+      end
+
+      new_object = Class.new(GraphQL::Schema::Object) do
+        implements new_int
+        implements other_new_int
+      end
+
+      assert new_object.respond_to?(:resolver_test)
+      assert new_object.respond_to?(:resolver_test_2)
+      refute new_object.respond_to?(:not_a_resolver)
+    ensure
+      Object.send :remove_const, :ResolverMethods
+    end
+  end
+
   describe "comments" do
     class SchemaWithInterface < GraphQL::Schema
       module InterfaceWithComment
