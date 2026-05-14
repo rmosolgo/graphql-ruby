@@ -892,8 +892,8 @@ describe GraphQL::Schema::InputObject do
 
     it "does not match missing keys" do
       assert case input_object
-      in { z: 5 }
-        false
+      in { z: }
+        raise "Unexpectedly matched a non-present key, z: #{z.inspect} (in: #{input_object.inspect})"
       else
         true
       end
