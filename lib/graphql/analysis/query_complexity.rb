@@ -160,7 +160,7 @@ module GraphQL
       end
 
       def types_intersect?(query, a, b)
-        return true if a.equal?(b)
+        return true if a == b
 
         if a.object_id < b.object_id
           first_cache = @intersect_cache[a]
