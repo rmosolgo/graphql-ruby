@@ -9,8 +9,8 @@ module GraphQL
         super
         @skip_introspection_fields = !query.schema.max_complexity_count_introspection_fields
         @complexities_on_type_by_query = {}
-        @intersect_cache = {}
-        @possible_types_cache = {}
+        @intersect_cache = Hash.new { |h, k| h[k] = {}.compare_by_identity }.compare_by_identity
+        @possible_types_cache = {}.compare_by_identity
       end
 
       # Override this method to use the complexity result
@@ -160,18 +160,23 @@ module GraphQL
       end
 
       def types_intersect?(query, a, b)
-        return true if a == b
+        return true if a.equal?(b)
 
-        id_a, id_b = a.object_id, b.object_id
-        # Build a symmetric composite key: smaller ID in the high 64 bits, larger in the low
-        # 64 bits, so (a,b) and (b,a) always map to the same key. Ruby integers are
-        # arbitrary-precision, so the shift is lossless regardless of object_id magnitude.
-        key = id_a < id_b ? (id_a << 64) | id_b : (id_b << 64) | id_a
-        return @intersect_cache[key] if @intersect_cache.key?(key)
+        if a.object_id < b.object_id
+          first_cache = @intersect_cache[a]
+          second_key = b
+        else
+          first_cache = @intersect_cache[b]
+          second_key = a
+        end
 
-        a_types = @possible_types_cache[a] ||= query.types.possible_types(a).to_set
-        b_types = @possible_types_cache[b] ||= query.types.possible_types(b).to_set
-        @intersect_cache[key] = a_types.intersect?(b_types)
+        if first_cache.key?(second_key)
+          first_cache[second_key]
+        else
+          a_types = @possible_types_cache[a] ||= query.types.possible_types(a).to_set
+          b_types = @possible_types_cache[b] ||= query.types.possible_types(b).to_set
+          first_cache[second_key] = a_types.intersect?(b_types)
+        end
       end
 
       # A hook which is called whenever a field's max complexity is calculated.
