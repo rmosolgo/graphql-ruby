@@ -50,6 +50,24 @@ describe "GraphQL::Directive" do
       end
     end
 
+    describe "when directive argument variable is explicitly null" do
+      let(:query_string) { <<-GRAPHQL
+        query($f: Boolean = false) {
+          cheese(id: 1) {
+            includeFlavor: flavor @include(if: $f)
+            skipFlavor: flavor @skip(if: $f)
+          }
+        }
+      GRAPHQL
+      }
+      let(:variables) { {"f" => nil} }
+
+      it "returns the coercion error without raising" do
+        expected = "`null` is not a valid input for `Boolean!`, please provide a value for this argument."
+        assert_equal [expected], result["errors"].map { |e| e["message"] }.uniq
+      end
+    end
+
     describe "when directive uses argument with default value" do
       describe "with false" do
         let(:query_string) { <<-GRAPHQL

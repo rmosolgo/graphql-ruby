@@ -18,11 +18,13 @@ module GraphQL
           case name
           when SKIP
             args = query.arguments_for(directive_ast_node, directive_defn)
+            next if args.is_a?(GraphQL::ExecutionError)
             if args[:if] == true
               return false
             end
           when INCLUDE
             args = query.arguments_for(directive_ast_node, directive_defn)
+            next if args.is_a?(GraphQL::ExecutionError)
             if args[:if] == false
               return false
             end
