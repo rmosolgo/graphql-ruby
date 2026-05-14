@@ -9,6 +9,8 @@ module GraphQL
         super
         @skip_introspection_fields = !query.schema.max_complexity_count_introspection_fields
         @complexities_on_type_by_query = {}
+        @intersect_cache = Hash.new { |h, k| h[k] = {}.compare_by_identity }.compare_by_identity
+        @possible_types_cache = {}.compare_by_identity
       end
 
       # Override this method to use the complexity result
@@ -159,8 +161,22 @@ module GraphQL
 
       def types_intersect?(query, a, b)
         return true if a == b
-        a_types = query.types.possible_types(a)
-        query.types.possible_types(b).any? { |t| a_types.include?(t) }
+
+        if a.object_id < b.object_id
+          first_cache = @intersect_cache[a]
+          second_key = b
+        else
+          first_cache = @intersect_cache[b]
+          second_key = a
+        end
+
+        if first_cache.key?(second_key)
+          first_cache[second_key]
+        else
+          a_types = @possible_types_cache[a] ||= query.types.possible_types(a).to_set
+          b_types = @possible_types_cache[b] ||= query.types.possible_types(b).to_set
+          first_cache[second_key] = a_types.intersect?(b_types)
+        end
       end
 
       # A hook which is called whenever a field's max complexity is calculated.
@@ -175,18 +191,16 @@ module GraphQL
       # @param inner_selections [Array<Hash<String, ScopedTypeComplexity>>] Field selections for a scope
       # @return [Integer] Total complexity value for all these selections in the parent scope
       def merged_max_complexity(query, inner_selections)
-        # Aggregate a set of all unique field selection keys across all scopes.
-        # Use a hash, but ignore the values; it's just a fast way to work with the keys.
-        unique_field_keys = inner_selections.each_with_object({}) do |inner_selection, memo|
-          memo.merge!(inner_selection)
+        child_scopes_by_key = {}
+        inner_selections.each do |inner_selection|
+          inner_selection.each do |k, v|
+            scopes = child_scopes_by_key[k] ||= []
+            scopes << v
+          end
         end
-
         # Add up the total cost for each unique field name's coalesced selections
-        unique_field_keys.each_key.reduce(0) do |total, field_key|
-          # Collect all child scopes for this field key;
-          # all keys come with at least one scope.
-          child_scopes = inner_selections.filter_map { _1[field_key] }
-
+        total = 0
+        child_scopes_by_key.each do |field_key, child_scopes|
           # Compute maximum possible cost of child selections;
           # composites merge their maximums, while leaf scopes are always zero.
           # FieldsWillMerge validation assures all scopes are uniformly composite or leaf.
@@ -214,8 +228,10 @@ module GraphQL
             child_complexity: maximum_children_cost,
           )
 
-          total + maximum_cost
+          total += maximum_cost
         end
+
+        total
       end
 
       def legacy_merged_max_complexity(query, inner_selections)
