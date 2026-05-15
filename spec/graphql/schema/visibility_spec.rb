@@ -85,6 +85,59 @@ describe GraphQL::Schema::Visibility do
     refute_includes schema_sdl, "WidgetKind"
   end
 
+  it "raises errors when configuration comes after preload: true" do
+    assert_raises GraphQL::Schema::Visibility::TypeConfigurationError do
+      Class.new(GraphQL::Schema) do
+        use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
+        query(VisSchema::Query)
+      end
+    end
+
+    assert_raises GraphQL::Schema::Visibility::TypeConfigurationError do
+      Class.new(GraphQL::Schema) do
+        use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
+        mutation(VisSchema::Mutation)
+      end
+    end
+
+    assert_raises GraphQL::Schema::Visibility::TypeConfigurationError do
+      Class.new(GraphQL::Schema) do
+        use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
+        subscription(VisSchema::Subscription)
+      end
+    end
+
+    assert_raises GraphQL::Schema::Visibility::TypeConfigurationError do
+      Class.new(GraphQL::Schema) do
+        use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
+        orphan_types([VisSchema::Query])
+      end
+    end
+
+    assert_raises GraphQL::Schema::Visibility::TypeConfigurationError do
+      Class.new(GraphQL::Schema) do
+        use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
+        introspection(VisSchema::IntrospectionSystem)
+      end
+    end
+  end
+
+  it "doesn't raise when preload: false" do
+    assert(Class.new(GraphQL::Schema) do
+      use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: false
+      query(VisSchema::Query)
+    end)
+  end
+
+  it "raises when preload: nil" do
+    assert_raises GraphQL::Schema::Visibility::TypeConfigurationError do
+      Class.new(GraphQL::Schema) do
+        use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: nil
+        query(VisSchema::Query)
+      end
+    end
+  end
+
   describe "running queries" do
     it "requires context[:visibility]" do
       err = assert_raises ArgumentError do
@@ -173,10 +226,10 @@ describe GraphQL::Schema::Visibility do
         end
         # This one is added before `Visibility`
         subscription(Subscription)
-        use GraphQL::Schema::Visibility, preload: true
         query { Query }
         mutation { Mutation }
         orphan_types(OrphanType)
+        use GraphQL::Schema::Visibility, preload: true
 
         module CustomIntrospection
           class DynamicFields < GraphQL::Introspection::DynamicFields
@@ -195,7 +248,9 @@ describe GraphQL::Schema::Visibility do
         assert_equal [NoProfileSchema::ExampleExtension, NoProfileSchema::OtherExampleExtension], NoProfileSchema::OrphanType.all_field_definitions.first.extensions.map(&:class)
         custom_int_field = NoProfileSchema::CustomIntrospection::DynamicFields.all_field_definitions.find { |f| f.original_name == :__hello }
         assert_equal [], custom_int_field.extensions
-        NoProfileSchema.introspection(NoProfileSchema::CustomIntrospection)
+        assert_raises GraphQL::Schema::Visibility::TypeConfigurationError do
+          NoProfileSchema.introspection(NoProfileSchema::CustomIntrospection)
+        end
         assert_equal [NoProfileSchema::OtherExampleExtension], custom_int_field.extensions.map(&:class)
       end
     end
@@ -313,8 +368,8 @@ describe GraphQL::Schema::Visibility do
       end
 
       query(Query)
-      def self.resolve_type(...); Thing; end
       use GraphQL::Schema::Visibility
+      def self.resolve_type(...); Thing; end
     end
   end
 
