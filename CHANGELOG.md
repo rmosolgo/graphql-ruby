@@ -149,6 +149,10 @@
 
 # 2.5.12 (15 Sep 2025)
 
+### Breaking Changes
+
+- Tracing: `execute_query_lazy` will _not_ be called if there isn't any lazy resolution (eg GraphQL-Batch) to do. Migrate any finalization code to `execute_multiplex` instead. #5450 #5422
+
 ### New features
 
 - Runtime: add hooks for experimental custom runtimes #5425, #5429
