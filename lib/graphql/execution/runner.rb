@@ -116,7 +116,7 @@ module GraphQL
             query.context.add_error(err)
           end
 
-          trace.execute_query_lazy(query: nil, multiplex: @multiplex) do
+          trace.execute_query_lazy(query: @multiplex.queries.size == 1 ? @multiplex.queries.first : nil, multiplex: @multiplex) do
             while (next_isolated_steps = isolated_steps.shift)
               next_isolated_steps.each do |step|
                 add_step(step)
