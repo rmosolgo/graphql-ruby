@@ -10,9 +10,7 @@ module GraphQL
         task = Async::Task.current
         run.finished_tasks.push(task)
         condition = Fiber[:graphql_async_dataloader_condition]
-        puts "Yield, waiting on #{source.class}"
         condition.wait
-        puts "Resuming after signal on condition"
         run.started_tasks.push(task)
         trace&.dataloader_fiber_resume(source)
         nil
@@ -90,6 +88,12 @@ module GraphQL
         started_tasks = 0
         finished_tasks = 0
 
+        counting_task = run.root_task.async do
+          while _t = run.started_tasks.wait
+            started_tasks += 1
+          end
+        end
+
         waiting_task = run.root_task.async do
           completed_first_run.wait
           while _t = run.finished_tasks.wait
@@ -100,11 +104,6 @@ module GraphQL
           end
         end
 
-        counting_task = run.root_task.async do
-          while _t = run.started_tasks.wait
-            started_tasks += 1
-          end
-        end
 
         if run.snoozed_jobs_condition.waiting?
           run.snoozed_jobs_condition.signal
@@ -123,13 +122,12 @@ module GraphQL
 
         waiting_task.cancel
         counting_task.cancel
-
       end
 
       def spawn_job_task(run)
         if !@pending_jobs.empty?
           fiber_vars = get_fiber_variables
-          new_task = run.root_task.async do |task|
+          run.root_task.async do |task|
             run.trace&.dataloader_spawn_execution_fiber(@pending_jobs)
             Fiber[:graphql_async_dataloader_run] = run
             Fiber[:graphql_async_dataloader_condition] = run.snoozed_jobs_condition
@@ -140,40 +138,34 @@ module GraphQL
             end
           ensure
             cleanup_fiber
-            run.finished_tasks.push(task)
+            run.finished_tasks.push($! || task)
             run.trace&.dataloader_fiber_exit
           end
-          if !new_task.alive?
-            new_task.wait # raise the error
-          end
-
-          new_task
         end
       end
 
       def run_sources(run)
-        puts "Running sources (waiting? #{run.snoozed_sources_condition.waiting?})"
         started_tasks = 0
         finished_tasks = 0
         completed_first_run = Async::Promise.new
         finished_all_tasks = Async::Promise.new
 
-        waiting_task = run.root_task.async do
-          completed_first_run.wait
-          while _t = run.finished_tasks.wait
-            finished_tasks += 1
-            puts "Finished task #{finished_tasks}"
-            if finished_tasks == started_tasks
-              finished_all_tasks.resolve(true)
-            end
+        counting_task = run.root_task.async do
+          while _t = run.started_tasks.wait
+            started_tasks += 1
           end
         end
 
-
-        counting_task = run.root_task.async do
+        waiting_task = run.root_task.async do
           completed_first_run.wait
-          while _t = run.started_tasks.wait
-            started_tasks += 1
+          while t = run.finished_tasks.wait
+            finished_tasks += 1
+            if t.failed?
+              raise t.wait
+            end
+            if finished_tasks == started_tasks
+              finished_all_tasks.resolve(true)
+            end
           end
         end
 
@@ -190,13 +182,11 @@ module GraphQL
             completed_first_run.resolve(true)
           end
 
-          puts "Waiting for finished_all_tasks"
-          pp [:fat, finished_all_tasks.wait]
+          finished_all_tasks.wait
         end
-
+      ensure
         waiting_task.cancel
         counting_task.cancel
-
       end
 
       #### TODO DRY  Had to duplicate to remove spawn_job_fiber

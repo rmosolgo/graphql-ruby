@@ -100,8 +100,7 @@ module GraphQL
         raise "Implement `#{self.class}#fetch(#{keys.inspect}) to return a record for each of the keys"
       end
 
-      # MAX_ITERATIONS = 1000
-      MAX_ITERATIONS = 10
+      MAX_ITERATIONS = 1000
       # Wait for a batch, if there's anything to batch.
       # Then run the batch and update the cache.
       # @return [void]
@@ -146,7 +145,6 @@ module GraphQL
         fetch_h = @pending
         @pending = {}
         @fetching.merge!(fetch_h)
-        p [self.class, :Fetching, fetch_h.values]
         results = fetch(fetch_h.values)
         fetch_h.each_with_index do |(key, _value), idx|
           @results[key] = results[idx]
