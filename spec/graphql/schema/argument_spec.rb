@@ -620,6 +620,35 @@ describe GraphQL::Schema::Argument do
       res = RequiredNullableSchema.execute('{ echo }')
       assert_equal ["echo must include the following argument: str."], res["errors"].map { |e| e["message"] }
     end
+
+    describe "combined with `as:`" do
+      class RequiredNullableAsSchema < GraphQL::Schema
+        class Query < GraphQL::Schema::Object
+          field :echo, String, resolve_static: true do
+            argument :str, String, required: :nullable, as: :renamed_str
+          end
+
+          def self.echo(context, renamed_str:)
+            renamed_str.inspect
+          end
+
+          def echo(renamed_str:)
+            renamed_str.inspect
+          end
+        end
+
+        query(Query)
+      end
+
+      it "validates against the aliased keyword" do
+        res = RequiredNullableAsSchema.execute('{ echo(str: "ok") }')
+        assert_equal "\"ok\"", res["data"]["echo"]
+        res = RequiredNullableAsSchema.execute('{ echo(str: null) }')
+        assert_equal "nil", res["data"]["echo"]
+        res = RequiredNullableAsSchema.execute('{ echo }')
+        assert_equal ["echo must include the following argument: str."], res["errors"].map { |e| e["message"] }
+      end
+    end
   end
 
   describe "replace_null_with_default: true" do
