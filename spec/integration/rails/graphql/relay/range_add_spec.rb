@@ -50,9 +50,9 @@ describe GraphQL::Relay::RangeAdd do
       argument :price, Integer
       argument :menu_idx, Integer
 
-      field :item_edge, item.edge_type, null: false
-      field :items, item.connection_type, null: false
-      field :menu, menu, null: false
+      field :item_edge, item.edge_type, null: false, hash_key: :item_edge
+      field :items, item.connection_type, null: false, hash_key: :items
+      field :menu, menu, null: false, hash_key: :menu
 
       define_method :resolve do |input|
         this_menu = menus[input[:menu_idx]]

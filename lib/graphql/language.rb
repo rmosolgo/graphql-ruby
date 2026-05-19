@@ -47,13 +47,19 @@ module GraphQL
     def self.escape_single_quoted_newlines(query_str)
       scanner = StringScanner.new(query_str)
       inside_single_quoted_string = false
+      inside_triple_quoted_string = false
       new_query_str = nil
       while !scanner.eos?
-        if scanner.skip(/(?:\\"|[^"\n\r]|""")+/m)
+        if scanner.skip('"""')
+          inside_triple_quoted_string = !inside_triple_quoted_string
+          new_query_str && (new_query_str << scanner.matched)
+        elsif scanner.skip(/(?:\\"|[^"\n\r])+/m)
           new_query_str && (new_query_str << scanner.matched)
         elsif scanner.skip('"')
           new_query_str && (new_query_str << '"')
-          inside_single_quoted_string = !inside_single_quoted_string
+          if !inside_triple_quoted_string
+            inside_single_quoted_string = !inside_single_quoted_string
+          end
         elsif scanner.skip("\n")
           if inside_single_quoted_string
             new_query_str ||= query_str[0, scanner.pos - 1]

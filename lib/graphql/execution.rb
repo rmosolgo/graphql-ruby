@@ -15,7 +15,14 @@ module GraphQL
       def ast_nodes=(_ignored); end
 
       def finalize_graphql_result(query, result_data, key)
-        result_data.delete(key)
+        case result_data
+        when Hash
+          result_data.delete(key)
+        when Array
+          result_data.delete_at(key)
+        else
+          raise "Unexpected result data #{result_data.class}: #{result_data}"
+        end
       end
     end
   end

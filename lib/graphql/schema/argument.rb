@@ -165,8 +165,8 @@ module GraphQL
         true
       end
 
-      def authorizes?(_context)
-        self.method(:authorized?).owner != GraphQL::Schema::Argument
+      def authorizes?(context)
+        self.method(:authorized?).owner != GraphQL::Schema::Argument || type.unwrap.authorizes?(context)
       end
 
       def authorized?(obj, value, ctx)

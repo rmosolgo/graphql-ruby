@@ -272,11 +272,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
   end
 
   def exec_query(...)
-    if TESTING_EXEC_NEXT
-      RuntimeDirectiveTest::Schema.execute_next(...)
-    else
-      RuntimeDirectiveTest::Schema.execute(...)
-    end
+    RuntimeDirectiveTest::Schema.execute(...)
   end
 
   describe "runtime directives" do
@@ -379,7 +375,6 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     end
 
     it "handles validation errors in .include?" do
-      skip("Custom `.include?` is not supported in Execution::Next yet") if TESTING_EXEC_NEXT
       res = exec_query("{ __typename @validationTest(int: 12) }")
       expected_result = {
         "errors" => [{"message" => "int must be less than 10", "locations" => [{"line" => 1, "column" => 14}], "path" => [ "__typename" ]}],
@@ -403,10 +398,14 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :hello, String, null: false
+        field :hello, String, null: false, resolve_static: true
+
+        def self.hello(context)
+          "Hello World!"
+        end
 
         def hello
-          "Hello World!"
+          self.class.hello(context)
         end
       end
       query QueryType
@@ -457,12 +456,35 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
           value.values.compact!
           value
         end
+
+        def self.resolve_field(ast_nodes, parent_type, field_defn, objects, arguments, context)
+          IndexFilter.new(arguments[:select])
+        end
+
+        class IndexFilter
+          include GraphQL::Execution::PostProcessor
+
+          def initialize(filter_method)
+            @filter_method = filter_method
+          end
+
+          def after_resolve(results)
+            results.each do |result_arr|
+              result_arr.select! { |i| i.public_send(@filter_method)}
+            end
+            results
+          end
+        end
       end
 
       class Query < GraphQL::Schema::Object
-        field :numbers, [Integer]
-        def numbers
+        field :numbers, [Integer], resolve_static: true
+        def self.numbers(context)
           [0,1,2,3,4,5]
+        end
+
+        def numbers
+          self.class.numbers(context)
         end
       end
 
@@ -515,10 +537,18 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         argument :s, String, required: false, validates: { format: { with: /^[a-z]{3}$/ } }
         argument :e, SomeEnum, required: false
         validates required: { one_of: [:f, :s]}
+
+        def self.resolve_field(*args)
+          nil
+        end
       end
 
       class Query < GraphQL::Schema::Object
-        field :i, Int, fallback_value: 100
+        field :i, Int, fallback_value: 100, resolve_static: true
+
+        def self.i(_context)
+          100
+        end
       end
 
       query(Query)

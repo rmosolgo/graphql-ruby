@@ -513,7 +513,6 @@ describe GraphQL::Schema::Resolver do
       mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
 
       def self.object_from_id(id, ctx)
         if id == "invalid"
@@ -534,11 +533,7 @@ describe GraphQL::Schema::Resolver do
   end
 
   def exec_query(*args, **kwargs)
-    if TESTING_EXEC_NEXT
-      ResolverTest::Schema.execute_next(*args, **kwargs)
-    else
-      ResolverTest::Schema.execute(*args, **kwargs)
-    end
+    ResolverTest::Schema.execute(*args, **kwargs)
   end
 
   it "can access self.arguments inside authorized?" do
@@ -580,9 +575,7 @@ describe GraphQL::Schema::Resolver do
   end
 
   it "uses the object's field_class" do
-    if TESTING_EXEC_NEXT
-      skip "This tests that Field#resolve is called, which it isn't."
-    end
+    exec_next_WONTFIX "This tests that Field#resolve is called, which it isn't."
     res = exec_query " { r1: resolver3(value: 1) r2: resolver3 }"
     assert_equal [100, 1, -1], res["data"]["r1"]
     assert_equal [100, nil, -1], res["data"]["r2"]
@@ -600,9 +593,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "gets path from extras" do
-      if TESTING_EXEC_NEXT
-        skip "path isn't supported with Batching"
-      end
+      exec_next_WONTFIX "current_path isn't supported with Batching"
       res = exec_query " { resolverWithPath } ", root_value: OpenStruct.new(value: 0)
       assert_equal '["resolverWithPath"]', res["data"]["resolverWithPath"]
     end
@@ -804,13 +795,13 @@ describe GraphQL::Schema::Resolver do
     describe "ready?" do
       it "can raise errors" do
         res = exec_query("{ int: prepResolver5(int: 5) }")
-        assert_equal TESTING_EXEC_NEXT ? 5 : 50, res["data"]["int"]
+        assert_equal if_exec_next(5, 50), res["data"]["int"]
         add_error_assertions("prepResolver5", "ready?")
       end
 
       it "can raise errors in lazy sync" do
         res = exec_query("{ int: prepResolver6(int: 5) }")
-        assert_equal TESTING_EXEC_NEXT ? 5 : 50, res["data"]["int"]
+        assert_equal if_exec_next(5, 50), res["data"]["int"]
         add_error_assertions("prepResolver6", "lazy ready?")
       end
 
@@ -839,33 +830,29 @@ describe GraphQL::Schema::Resolver do
     describe "loading arguments" do
       it "calls load methods and injects the return value" do
         res = exec_query("{ prepResolver1(int: 5) }")
-        if TESTING_EXEC_NEXT
-          assert_equal 5, res["data"]["prepResolver1"], "def load_\#{...} was not called"
-        else
-          assert_equal 50, res["data"]["prepResolver1"], "The load multiplier was called"
-        end
+        assertion_message = if_exec_next("def load_\#{...} was not called", "The load multiplier was called")
+        expected_value = if_exec_next(5, 50)
+        assert_equal expected_value, res["data"]["prepResolver1"], assertion_message
       end
 
       it "supports lazy values" do
         res = exec_query("{ prepResolver2(int: 5) }")
-        if TESTING_EXEC_NEXT
-          assert_equal 5, res["data"]["prepResolver2"], "def load_\#{...} was not called"
-        else
-          assert_equal 15, res["data"]["prepResolver2"], "The load multiplier was called"
-        end
+        assertion_message = if_exec_next("def load_\#{...} was not called", "The load multiplier was called")
+        expected_value = if_exec_next(5, 15)
+        assert_equal expected_value, res["data"]["prepResolver2"], assertion_message
       end
 
       it "supports raising GraphQL::UnauthorizedError and GraphQL::ExecutionError" do
         res = exec_query("{ prepResolver3(int: 5) }")
         assert_equal 5, res["data"]["prepResolver3"]
-        skip("def load_... not supported") if TESTING_EXEC_NEXT
+        exec_next_WONTFIX "def load_... not supported"
         add_error_assertions("prepResolver3", "load_ hook")
       end
 
       it "supports raising errors from promises" do
         res = exec_query("{ prepResolver4(int: 5) }")
         assert_equal 5, res["data"]["prepResolver4"]
-        skip("def load_... not supported") if TESTING_EXEC_NEXT
+        exec_next_WONTFIX "def load_... not supported"
         add_error_assertions("prepResolver4", "lazy load_ hook")
       end
     end
@@ -940,12 +927,9 @@ describe GraphQL::Schema::Resolver do
           context = { max_value: 8 }
           res = exec_query(query_str, context: context)
           assert_nil res["data"]["prepResolver9"]
-          if TESTING_EXEC_NEXT
-            # context[:current_path] isn't defined, uses field.path instead
-            assert_equal ["Unauthorized IntegerWrapper loaded for Query.prepResolver9"], res["errors"].map { |e| e["message"] }
-          else
-            assert_equal ["Unauthorized IntegerWrapper loaded for prepResolver9"], res["errors"].map { |e| e["message"] }
-          end
+          # context[:current_path] isn't defined with exec-next, uses field.path instead
+          expected_errors = if_exec_next ["Unauthorized IntegerWrapper loaded for Query.prepResolver9"], ["Unauthorized IntegerWrapper loaded for prepResolver9"]
+          assert_equal expected_errors, res["errors"].map { |e| e["message"] }
 
           # This is OK
           context = { max_value: 900 }

@@ -19,19 +19,27 @@ describe GraphQL::Tracing::StatsdTracing do
 
   class StatsdTestSchema < GraphQL::Schema
     class Thing < GraphQL::Schema::Object
-      field :str, String
-      def str; "blah"; end
+      field :str, String, resolve_static: true
+      def self.str(context); "blah"; end
+
+      def str; self.class.str(context); end
     end
 
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
 
-      def int
+      def self.int(context)
         1
       end
 
-      field :thing, Thing
-      def thing; :thing; end
+      def int
+        self.class.int(context)
+      end
+
+      field :thing, Thing, resolve_static: true
+      def self.thing(context); :thing; end
+
+      def thing; self.class.thing(context); end
     end
 
     query(Query)
@@ -53,9 +61,11 @@ describe GraphQL::Tracing::StatsdTracing do
       "graphql.validate",
       "graphql.analyze_query",
       "graphql.execute_query",
-      "graphql.authorized.Query",
-      "graphql.Query.thing",
-      "graphql.authorized.Thing",
+      *if_exec_next([], [
+        "graphql.authorized.Query",
+        "graphql.Query.thing",
+        "graphql.authorized.Thing",
+      ]),
       "graphql.execute_query_lazy"
     ].compact
     assert_equal expected_timings, MockStatsd.timings

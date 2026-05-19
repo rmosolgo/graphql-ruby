@@ -175,12 +175,16 @@ describe GraphQL::Schema::Validator do
       end
 
       class Query < GraphQL::Schema::Object
-        field :int_input, Int do
+        field :int_input, Int, resolve_static: true do
           argument :input, IntInput
         end
 
-        def int_input(input:)
+        def self.int_input(context, input:)
           input[:int] || input[:other_int]
+        end
+
+        def int_input(input:)
+          self.class.int_input(context, input: input)
         end
 
         field :int, resolver: IntResolver

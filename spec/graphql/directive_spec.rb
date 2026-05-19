@@ -4,11 +4,7 @@ require "spec_helper"
 describe "GraphQL::Directive" do
   let(:variables) { {"t" => true, "f" => false} }
   let(:result) {
-    if TESTING_EXEC_NEXT
-      Dummy::Schema.execute_next(query_string, variables: variables)
-    else
-      Dummy::Schema.execute(query_string, variables: variables)
-    end
+    Dummy::Schema.execute(query_string, variables: variables)
   }
   describe "on fields" do
     let(:query_string) { %|query directives($t: Boolean!, $f: Boolean!) {
@@ -51,6 +47,24 @@ describe "GraphQL::Directive" do
         first_field = result["data"]["__type"]["fields"].first
         assert first_field.key?("name")
         assert !first_field.key?("isDeprecated")
+      end
+    end
+
+    describe "when directive argument variable is explicitly null" do
+      let(:query_string) { <<-GRAPHQL
+        query($f: Boolean = false) {
+          cheese(id: 1) {
+            includeFlavor: flavor @include(if: $f)
+            skipFlavor: flavor @skip(if: $f)
+          }
+        }
+      GRAPHQL
+      }
+      let(:variables) { {"f" => nil} }
+
+      it "returns the coercion error without raising" do
+        expected = "`null` is not a valid input for `Boolean!`, please provide a value for this argument."
+        assert_equal [expected], result["errors"].map { |e| e["message"] }.uniq
       end
     end
 

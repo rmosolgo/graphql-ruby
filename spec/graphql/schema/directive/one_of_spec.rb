@@ -14,9 +14,13 @@ describe GraphQL::Schema::Directive::OneOf do
     query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
 
-        field :one_of_field, output_type, null: false do
+        field :one_of_field, output_type, null: false, resolve_static: true do
           argument :one_of_arg, this.one_of_input_object
         end.ensure_loaded
+
+        def self.one_of_field(context, one_of_arg:)
+          one_of_arg
+        end
 
         def one_of_field(one_of_arg:)
           one_of_arg

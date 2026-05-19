@@ -23,19 +23,36 @@ describe GraphQL::Tracing::StatsdTracing do
 
   class StatsdTraceTestSchema < GraphQL::Schema
     class Thing < GraphQL::Schema::Object
-      field :str, String
-      def str; "blah"; end
+      field :str, String, resolve_static: true
+      def self.str(context); "blah"; end
+
+      def str
+        self.class.str(context)
+      end
+
+      def self.authorized?(obj, ctx)
+        true
+      end
     end
 
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
 
-      def int
+      def self.int(context)
         1
       end
 
-      field :thing, Thing
+      def int
+        self.class.int(context)
+      end
+
+      field :thing, Thing, resolve_static: true
+      def self.thing(context); :thing; end
       def thing; :thing; end
+
+      def self.authorized?(obj, ctx)
+        true
+      end
     end
 
     query(Query)

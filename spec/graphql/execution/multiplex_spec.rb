@@ -3,11 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Execution::Multiplex do
   def multiplex(*a, **kw)
-    if TESTING_EXEC_NEXT
-      LazyHelpers::LazySchema.multiplex_next(*a, **kw)
-    else
-      LazyHelpers::LazySchema.multiplex(*a, **kw)
-    end
+    LazyHelpers::LazySchema.multiplex(*a, **kw)
   end
 
   let(:q1) { <<-GRAPHQL
@@ -123,15 +119,7 @@ describe GraphQL::Execution::Multiplex do
               "path"=>["invalidNestedNull", "nullableNestedSum", "nestedSum"],
               "locations"=>[{"line"=>5, "column"=>11}],
             },
-            (
-              TESTING_EXEC_NEXT ? {
-                # TODO: maybe batching can be made to *not* run this field
-                "message" => "Cannot return null for non-nullable field LazySum.nestedSum",
-                "locations" => [{"line" => 9, "column" => 11}],
-                "path" => ["invalidNestedNull", "nullableNestedSum", "ns2"]
-              } : nil
-            )
-          ].compact,
+          ],
           "data"=>{"invalidNestedNull"=>{"value" => 2,"nullableNestedSum" => nil}},
         },
         {
@@ -204,28 +192,44 @@ describe GraphQL::Execution::Multiplex do
 
     class InspectSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :raise_execution_error, String
+        field :raise_execution_error, String, resolve_static: true
 
-        def raise_execution_error
+        def self.raise_execution_error(context)
           raise GraphQL::ExecutionError, "Whoops"
         end
 
-        field :raise_error, String
+        def raise_execution_error
+          self.class.raise_execution_error(context)
+        end
 
-        def raise_error
+        field :raise_error, String, resolve_static: true
+
+        def self.raise_error(context)
           raise GraphQL::Error, "Crash"
         end
 
-        field :raise_syntax_error, String
+        def raise_error
+          self.class.raise_error(context)
+        end
 
-        def raise_syntax_error
+        field :raise_syntax_error, String, resolve_static: true
+
+        def self.raise_syntax_error(context)
           raise SyntaxError
         end
 
-        field :raise_exception, String
+        def raise_syntax_error
+          self.class.raise_syntax_error(context)
+        end
+
+        field :raise_exception, String, resolve_static: true
+
+        def self.raise_exception(context)
+          raise Exception
+        end
 
         def raise_exception
-          raise Exception
+          self.class.raise_exception(context)
         end
       end
 
@@ -264,7 +268,9 @@ describe GraphQL::Execution::Multiplex do
   describe "context[:trace]" do
     class MultiplexTraceSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :int, Integer
+        field :int, Integer, resolve_static: true
+        def self.int(context); 1; end
+
         def int; 1; end
       end
 

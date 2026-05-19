@@ -381,13 +381,17 @@ describe GraphQL::Analysis do
       end
 
       class Query < GraphQL::Schema::Object
-        field :f1, Int do
+        field :f1, Int, resolve_static: true do
           argument :arg, String, prepare: ->(val, ctx) {
             ctx[:analysis_finished] ? val.to_i : raise("Prepared too soon!")
           }
         end
-        def f1(arg:)
+        def self.f1(context, arg:)
           arg
+        end
+
+        def f1(arg:)
+          self.class.f1(context, arg: arg)
         end
       end
 
@@ -546,12 +550,16 @@ describe GraphQL::Analysis do
       end
 
       class Query < BaseObject
-        field :article, String, visible: false do |f|
+        field :article, String, visible: false, resolve_static: true do |f|
           f.argument(:id, Integer)
         end
 
-        def article(id:)
+        def self.article(context, id:)
           { title: "hello world" }
+        end
+
+        def article(id:)
+          self.class.article(context, id: id)
         end
       end
 
@@ -619,7 +627,7 @@ describe GraphQL::Analysis do
       end
 
       class Query < GraphQL::Schema::Object
-        field :f1, Int do
+        field :f1, Int, resolve_static: true do
           argument :a, String, required: false
           argument :b, String, required: false
           argument :c, String, required: false
@@ -628,15 +636,21 @@ describe GraphQL::Analysis do
           argument :f, String, required: false
         end
 
-        def f1(...)
+        def self.f1(context, **kwargs)
           context[:int] ||= 0
           context[:int] += 1
+        end
+
+        def f1(...)
+          self.class.f1(context)
         end
       end
 
       class Nothing < GraphQL::Schema::Directive
         locations(GraphQL::Schema::Directive::FIELD)
         repeatable(true)
+
+        def self.resolve_field(...); end
       end
       directive(Nothing)
 

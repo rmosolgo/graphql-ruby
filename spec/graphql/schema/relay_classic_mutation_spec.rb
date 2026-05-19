@@ -316,13 +316,13 @@ describe GraphQL::Schema::RelayClassicMutation do
       class MutationInterfaceSchema < GraphQL::Schema
         module ResultInterface
           include GraphQL::Schema::Interface
-          field :success, Boolean, null: false
-          field :notice, String
+          field :success, Boolean, null: false, hash_key: :success
+          field :notice, String, hash_key: :notice
         end
 
         module ErrorInterface
           include GraphQL::Schema::Interface
-          field :error, String
+          field :error, String, hash_key: :error
         end
 
         class BaseReturnType < GraphQL::Schema::Object
@@ -331,7 +331,7 @@ describe GraphQL::Schema::RelayClassicMutation do
 
         class ReturnTypeWithInterfaceTest < GraphQL::Schema::RelayClassicMutation
           object_class BaseReturnType
-          field :name, String
+          field :name, String, hash_key: :name
 
           def resolve
             {
@@ -531,7 +531,8 @@ describe GraphQL::Schema::RelayClassicMutation do
           end
           authed_val[context[:current_path]][self.path] = args
           authed = context[:authorized] ||= {}
-          authed[context[:current_path]] = super
+          auth_key = context[:current_path] || self.path
+          authed[auth_key] = super
         end
       end
 
@@ -544,7 +545,7 @@ describe GraphQL::Schema::RelayClassicMutation do
         argument_class BaseArgument
         argument :name, String, as: :name_one
 
-        field :name, String
+        field :name, String, hash_key: :name
 
         def resolve(**arguments)
           {
@@ -555,7 +556,7 @@ describe GraphQL::Schema::RelayClassicMutation do
 
       class NameTwo < GraphQL::Schema::RelayClassicMutation
         input_type NameInput
-        field :name, String
+        field :name, String, hash_key: :name
 
         def resolve(**arguments)
           {
@@ -566,7 +567,7 @@ describe GraphQL::Schema::RelayClassicMutation do
 
       class NameThree < GraphQL::Schema::RelayClassicMutation
         input_object_class NameInput
-        field :name, String
+        field :name, String, hash_key: :name
 
         def resolve(**arguments)
           {
@@ -576,14 +577,14 @@ describe GraphQL::Schema::RelayClassicMutation do
       end
 
       class Thing < GraphQL::Schema::Object
-        field :name, String
+        field :name, String, hash_key: :name
       end
 
       class NameFour < GraphQL::Schema::RelayClassicMutation
         argument_class BaseArgument
         argument :thing_id, ID, loads: Thing
 
-        field :thing, Thing
+        field :thing, Thing, hash_key: :thing
 
         def resolve(**arguments)
           {
@@ -612,23 +613,25 @@ describe GraphQL::Schema::RelayClassicMutation do
 
     it "calls #authorized? on arguments defined on the mutation" do
       res = RelayClassicArgumentAuthSchema.execute("mutation { nameOne(input: { name: \"Camry\" }) { name } }")
-      assert_equal true, res.context[:authorized][["nameOne"]]
+      assert_equal true, res.context[:authorized][if_exec_next("NameOne.name", ["nameOne"])]
     end
 
     it "calls #authorized? on arguments defined on the input_type" do
       res = RelayClassicArgumentAuthSchema.execute("mutation { nameTwo(input: { name: \"Camry\" }) { name } }")
-      assert_equal true, res.context[:authorized][["nameTwo"]]
+      context_key = if_exec_next("NameInput.name", ["nameTwo"])
+      assert_equal true, res.context[:authorized][context_key]
     end
 
     it "calls #authorized? on arguments defined on the inputObjectClass" do
       res = RelayClassicArgumentAuthSchema.execute("mutation { nameThree(input: { name: \"Camry\" }) { name } }")
-      assert_equal true, res.context[:authorized][["nameThree"]]
+      assert_equal true, res.context[:authorized][if_exec_next("NameInput.name", ["nameThree"])]
     end
 
     it "calls #authorized? on loaded argument values" do
       res = RelayClassicArgumentAuthSchema.execute("mutation { nameFour(input: { thingId: \"Corolla\" }) { thing { name } } }")
-      assert_equal true, res.context[:authorized][["nameFour"]]
-      assert_equal({ name: "Corolla"}, res.context[:authorized_value][["nameFour"]]["NameFour.thingId"])
+      assert_equal true, res.context[:authorized][if_exec_next("NameFour.thingId", ["nameFour"])]
+      context_key = if_exec_next(nil, ["nameFour"])
+      assert_equal({ name: "Corolla"}, res.context[:authorized_value][context_key]["NameFour.thingId"])
       assert_equal "Corolla", res["data"]["nameFour"]["thing"]["name"]
     end
   end

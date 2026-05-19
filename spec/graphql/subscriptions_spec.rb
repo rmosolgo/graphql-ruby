@@ -310,11 +310,7 @@ end
 
 describe GraphQL::Subscriptions do
   def exec_query(*args, schema: self.schema, **kwargs)
-    if TESTING_EXEC_NEXT
-      schema.execute_next(*args, **kwargs)
-    else
-      schema.execute(*args, **kwargs)
-    end
+    schema.execute(*args, **kwargs)
   end
 
   [ClassBasedInMemoryBackend, FromDefinitionInMemoryBackend].each do |in_memory_backend_class|
@@ -909,11 +905,7 @@ describe GraphQL::Subscriptions do
     end
 
     def exec_query(query_str, **options)
-      if TESTING_EXEC_NEXT
-        BroadcastTrueSchema.execute_next(query_str, **options)
-      else
-        BroadcastTrueSchema.execute(query_str, **options)
-      end
+      BroadcastTrueSchema.execute(query_str, **options)
     end
 
     it "broadcasts when possible" do

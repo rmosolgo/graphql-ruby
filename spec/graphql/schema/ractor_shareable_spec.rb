@@ -11,19 +11,35 @@ if RUN_RACTOR_TESTS
         value :B
       end
       class Query < GraphQL::Schema::Object
-        field :i, Int, fallback_value: 1
-        field :e, SomeEnum, fallback_value: "A"
+        field :i, Int, fallback_value: 1, resolve_static: true
 
-        field :error_1, String
+        def self.i(_context)
+          1
+        end
+        field :e, SomeEnum, fallback_value: "A", resolve_static: true
 
-        def error_1
+        def self.e(_context)
+          "A"
+        end
+
+        field :error_1, String, resolve_static: true
+
+        def self.error_1(context)
           raise GraphQL::ExecutionError, "Boom!"
         end
 
-        field :error_2, String
+        def error_1
+          self.class.error_1(context)
+        end
+
+        field :error_2, String, resolve_static: true
+
+        def self.error_2(context)
+          raise CustomError
+        end
 
         def error_2
-          raise CustomError
+          self.class.error_2(context)
         end
       end
 

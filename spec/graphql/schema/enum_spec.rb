@@ -121,10 +121,14 @@ describe GraphQL::Schema::Enum do
       end
 
       class Query < GraphQL::Schema::Object
-        field :value, Value
+        field :value, Value, resolve_static: true
+
+        def self.value(context)
+          "THREE"
+        end
 
         def value
-          "THREE"
+          self.class.value(context)
         end
       end
 
@@ -183,10 +187,14 @@ describe GraphQL::Schema::Enum do
       end
 
       class Query < GraphQL::Schema::Object
-        field :empty_enum, EmptyEnum
+        field :empty_enum, EmptyEnum, resolve_static: true
+
+        def self.empty_enum(context)
+          :something
+        end
 
         def empty_enum
-          :something
+          self.class.empty_enum(context)
         end
       end
 
@@ -206,7 +214,7 @@ describe GraphQL::Schema::Enum do
         EmptyEnumSchema.execute("{ emptyEnum }")
       end
 
-      expected_message = "Enum types require at least one value, but EmptyEnum didn't provide any for this query. Make sure at least one value is defined and visible for this query."
+      expected_message = exec_next_error_message("Query.emptyEnum", "Enum types require at least one value, but EmptyEnum didn't provide any for this query. Make sure at least one value is defined and visible for this query.")
       assert_equal expected_message, err.message
     end
 
@@ -310,12 +318,16 @@ describe GraphQL::Schema::Enum do
           end
           query = Class.new(GraphQL::Schema::Object) do
             graphql_name "Query"
-            field :names, [String], null: false do
+            field :names, [String], null: false, resolve_static: true do
               argument :things, [plural]
             end
 
-            def names(things:)
+            def self.names(context, things:)
               things.reduce(&:+)
+            end
+
+            def names(things:)
+              self.class.names(context, things: things)
             end
           end
           query(query)
@@ -369,7 +381,11 @@ describe GraphQL::Schema::Enum do
         end
       end
       class Query < GraphQL::Schema::Object
-        field :mode, TransportationMode, fallback_value: "SCOOTER"
+        field :mode, TransportationMode, fallback_value: "SCOOTER", resolve_static: true
+
+        def self.mode(_context)
+          "SCOOTER"
+        end
       end
       query(Query)
     end

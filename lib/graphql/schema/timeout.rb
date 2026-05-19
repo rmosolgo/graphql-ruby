@@ -68,7 +68,7 @@ module GraphQL
           super
         end
 
-        def execute_field(query:, field:, **_rest)
+        def begin_execute_field(field, _arguments, _objects, query)
           timeout_state = query.context.namespace(@timeout).fetch(:state)
           # If the `:state` is `false`, then `max_seconds(query)` opted out of timeout for this query.
           if timeout_state == false
@@ -84,7 +84,7 @@ module GraphQL
 
             # `handle_timeout` may have set this to be `false`
             if timeout_state != false
-              error
+              raise error
             else
               super
             end

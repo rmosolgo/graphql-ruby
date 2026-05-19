@@ -59,56 +59,77 @@ if RUBY_VERSION >= "3.2.0"
       end
 
       class Sleeper < GraphQL::Schema::Object
-        field :sleeper, Sleeper, null: false, resolver_method: :sleep do
+        field :sleeper, Sleeper, null: false, resolve_static: true  do
           argument :duration, Float
         end
 
-        def sleep(duration:)
+        def self.sleeper(context, duration:)
           context[:key_i] ||= 0
           new_key = context[:key_i] += 1
-          dataloader.with(SleepSource, new_key).load(duration)
+          context.dataloader.with(SleepSource, new_key).load(duration)
           duration
         end
 
-        field :duration, Float, null: false
+        def sleeper(duration:)
+          self.class.sleeper(context, duration: duration)
+        end
+
+        field :duration, Float, null: false, resolve_each: true
+        def self.duration(object, context); object; end
         def duration; object; end
       end
 
       class Waiter < GraphQL::Schema::Object
-        field :wait_for, Waiter, null: false do
+        field :wait_for, Waiter, null: false, resolve_batch: true do
           argument :tag, String
           argument :wait, Float
+        end
+
+        def self.wait_for(objects, context, tag:, wait:)
+          context.dataload_all(WaitForSource, tag, Array.new(objects.size, wait))
         end
 
         def wait_for(tag:, wait:)
           dataloader.with(WaitForSource, tag).load(wait)
         end
 
-        field :tag, String, null: false
-        def tag
+        field :tag, String, null: false, resolve_each: true
+        def self.tag(object, context)
           object
+        end
+
+        def tag
+          self.class.tag(object, context)
         end
       end
 
       class Query < GraphQL::Schema::Object
-        field :sleep, Float, null: false do
+        field :sleep, Float, null: false, resolve_static: true do
           argument :duration, Float
         end
 
-        field :sleeper, Sleeper, null: false, resolver_method: :sleep do
+        field :sleeper, Sleeper, null: false, resolver_method: :sleep, resolve_static: :sleep do
           argument :duration, Float
         end
 
-        def sleep(duration:)
+        def self.sleep(context, duration:)
           context[:key_i] ||= 0
           new_key = context[:key_i] += 1
-          dataloader.with(SleepSource, new_key).load(duration)
+          context.dataloader.with(SleepSource, new_key).load(duration)
           duration
         end
 
-        field :wait_for, Waiter, null: false do
+        def sleep(duration:)
+          self.class.sleep(context, duration: duration)
+        end
+
+        field :wait_for, Waiter, null: false, resolve_batch: true do
           argument :tag, String
           argument :wait, Float
+        end
+
+        def self.wait_for(objects, context, tag:, wait:)
+          context.dataload_all(WaitForSource, tag, Array.new(objects.size, wait))
         end
 
         def wait_for(tag:, wait:)
@@ -116,26 +137,39 @@ if RUBY_VERSION >= "3.2.0"
         end
 
         class ListWaiter < GraphQL::Schema::Object
-          field :waiter, Waiter
+          field :waiter, Waiter, resolve_batch: true
+
+          def self.waiter(objects, context)
+            reqs = objects.map { |obj| context.dataloader.with(KeyWaitForSource, obj[:wait]).request(obj[:tag]) }
+            reqs.map(&:load)
+          end
 
           def waiter
             dataloader.with(KeyWaitForSource, object[:wait]).load(object[:tag])
           end
         end
 
-        field :list_waiters, [ListWaiter] do
+        field :list_waiters, [ListWaiter], resolve_static: true do
           argument :wait, Float
           argument :tags, [String]
         end
 
-        def list_waiters(wait:, tags:)
+        def self.list_waiters(context, wait:, tags:)
           Kernel.sleep(0.1)
           tags.map { |t| { tag: t, wait: wait }}
         end
 
-        field :fiber_local_context, String do
+        def list_waiters(wait:, tags:)
+          self.class.list_waiters(context, wait: wait, tags: tags)
+        end
+
+        field :fiber_local_context, String, resolve_batch: true do
           argument :key, String
         end
+        def self.fiber_local_context(objects, context, key:)
+          context.dataload_all(FiberLocalContextSource, Array.new(objects.size, key))
+        end
+
         def fiber_local_context(key:)
           dataloader.with(FiberLocalContextSource).load(key)
         end
@@ -143,7 +177,6 @@ if RUBY_VERSION >= "3.2.0"
 
       query(Query)
       use GraphQL::Dataloader::AsyncDataloader
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     end
 
     module AsyncDataloaderAssertions
@@ -351,8 +384,7 @@ if RUBY_VERSION >= "3.2.0"
     #     json = res.context.query.current_trace.write(file: nil, debug_json: true)
     #     data = JSON.parse(json)
 
-
-    #     check_snapshot(data, "example.json")
+    #     check_snapshot(data, if_exec_next("example-next.json", "example.json"))
     #   end
     # end
   end

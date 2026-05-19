@@ -5,26 +5,38 @@ require "spec_helper"
 describe GraphQL::Tracing::DataDogTracing do
   module DataDogTest
     class Thing < GraphQL::Schema::Object
-      field :str, String
+      field :str, String, resolve_static: true
+
+      def self.str(context)
+        "blah"
+      end
 
       def str
-        "blah"
+        self.class.str(context)
       end
     end
 
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
 
-      def int
+      def self.int(context)
         1
       end
 
-      field :thing, Thing
+      def int
+        self.class.int(context)
+      end
+
+      field :thing, Thing, resolve_static: true
+
+      def self.thing(context)
+        :thing
+      end
 
       def thing
-        :thing
+        self.class.thing(context)
       end
     end
 
@@ -82,9 +94,11 @@ describe GraphQL::Tracing::DataDogTracing do
       ["custom:validate", "validate,query"],
       ["custom:analyze_query", "query"],
       ["custom:execute_query", "query"],
-      ["custom:authorized", "context,type,object,path"],
-      ["custom:execute_field", "field,query,ast_node,arguments,object,owner,path"],
-      ["custom:authorized", "context,type,object,path"],
+      *if_exec_next([], [
+        ["custom:authorized", "context,type,object,path"],
+        ["custom:execute_field", "field,query,ast_node,arguments,object,owner,path"],
+        ["custom:authorized", "context,type,object,path"],
+      ]),
       ["custom:execute_query_lazy", "multiplex,query"],
     ].compact
 

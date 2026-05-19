@@ -32,11 +32,15 @@ describe GraphQL::Current do
         end
       end
       class Query < GraphQL::Schema::Object
-        field :thing, Thing
+        field :thing, Thing, resolve_static: true
 
-        def thing
+        def self.thing(context)
           context[:current_field] << GraphQL::Current.field.path
           :thing
+        end
+
+        def thing
+          self.class.thing(context)
         end
       end
 
@@ -45,6 +49,7 @@ describe GraphQL::Current do
     end
 
     it "returns execution information" do
+      exec_next_TODO("not implemented yet")
       ctx = {
         current_field: [],
         current_source: [],

@@ -115,18 +115,11 @@ module ValidatorHelpers
       schema.use(GraphQL::Schema::Visibility)
     end
 
-    if TESTING_EXEC_NEXT
-      schema.use(GraphQL::Execution::Next)
-    end
     @current_schema = schema
   end
 
   def exec_query(...)
-    if TESTING_EXEC_NEXT
-      @current_schema.execute_next(...)
-    else
-      @current_schema.execute(...)
-    end
+    @current_schema.execute(...)
   end
 
   module ClassMethods
@@ -136,11 +129,7 @@ module ValidatorHelpers
         it "#{name}#{validator_name} on #{field_type} works with #{expectation[:config]}" do
           schema = build_schema(field_type, { validator_name => expectation[:config] })
           expectation[:cases].each do |test_case|
-            result = if TESTING_EXEC_NEXT
-              schema.execute_next(test_case[:query], variables: test_case[:variables])
-            else
-              schema.execute(test_case[:query], variables: test_case[:variables])
-            end
+            result = schema.execute(test_case[:query], variables: test_case[:variables])
             if !result["data"]
               pp result
               refute result["errors"].map { |e| e["message"] }, test_case[:query]

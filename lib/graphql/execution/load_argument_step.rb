@@ -10,10 +10,29 @@ module GraphQL
         @argument_definition = argument_definition
         @argument_key = argument_key
         @loaded_value = nil
+        @is_authorized = true
       end
 
       def value
-        @loaded_value = @field_resolve_step.sync(@loaded_value)
+        schema = @field_resolve_step.runner.schema
+        @loaded_value = schema.sync_lazy(@loaded_value)
+        assign_value
+      rescue GraphQL::UnauthorizedError => auth_err
+        @is_authorized = false
+        schema.unauthorized_object(auth_err)
+      rescue GraphQL::RuntimeError => err
+        @loaded_value = if err.is_a?(Schema::Subscription::EarlyUnsubscribe)
+          err.unsubscribed_result
+        else
+          err
+        end
+        assign_value
+      rescue StandardError => stderr
+        begin
+          @field_resolve_step.selections_step.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
+        rescue GraphQL::ExecutionError => ex_err
+          @loaded_value = ex_err
+        end
         assign_value
       end
 
@@ -22,6 +41,7 @@ module GraphQL
         @loaded_value = begin
           @load_receiver.load_and_authorize_application_object(@argument_definition, @argument_value, context)
         rescue GraphQL::UnauthorizedError => auth_err
+          @is_authorized = false
           context.schema.unauthorized_object(auth_err)
         end
         if (runner = @field_resolve_step.runner).resolves_lazies && runner.lazy?(@loaded_value)
@@ -30,11 +50,16 @@ module GraphQL
           assign_value
         end
       rescue GraphQL::RuntimeError => err
-        @loaded_value = err
+        @loaded_value = if err.is_a?(Schema::Subscription::EarlyUnsubscribe)
+          @is_authorized = false
+          err.unsubscribed_result
+        else
+          err
+        end
         assign_value
       rescue StandardError => stderr
         @loaded_value = begin
-          context.query.handle_or_reraise(stderr)
+          context.query.handle_or_reraise(stderr, field: @field_resolve_step.field_definition, arguments: @field_resolve_step.arguments, object: nil) # rubocop:disable Development/ContextIsPassedCop
         rescue GraphQL::ExecutionError => ex_err
           ex_err
         end
@@ -47,6 +72,13 @@ module GraphQL
         if @loaded_value.is_a?(GraphQL::RuntimeError)
           @loaded_value.path = @field_resolve_step.path
           @field_resolve_step.arguments = @loaded_value
+        elsif @is_authorized == false
+          # An unauthorized_object hook ate the error
+          @field_resolve_step.arguments = EmptyObjects::EMPTY_HASH
+          field_pending_steps = @field_resolve_step.pending_steps
+          field_pending_steps.clear
+          @field_resolve_step.build_errors_result(nil, nil)
+          return
         else
           query = @field_resolve_step.selections_step.query
           query.current_trace.object_loaded(@argument_definition, @loaded_value, query.context)

@@ -155,7 +155,7 @@ describe GraphQL::Query::Partial do
         context.current_path
       end
 
-      field :current_values, [String], resolve_static: true
+      field :current_values, [String, null: true], resolve_static: true
       def self.current_values(context)
         [
           GraphQL::Current.operation_name,
@@ -269,7 +269,7 @@ describe GraphQL::Query::Partial do
 
   it "works with GraphQL::Current" do
     res = run_partials("query CheckCurrentValues { query { currentValues } }", [path: ["query"], object: nil])
-    assert_equal ["CheckCurrentValues", TESTING_EXEC_NEXT ? nil : "Query.currentValues", "nil"], res[0]["data"]["currentValues"]
+    assert_equal ["CheckCurrentValues", if_exec_next(nil, "Query.currentValues"), "nil"], res[0]["data"]["currentValues"]
   end
 
 
@@ -368,7 +368,7 @@ describe GraphQL::Query::Partial do
     assert_equal "Twenty Paces", results[0]["data"]
     assert_equal "Caromont", results[1]["data"]
     assert_equal({
-      "errors" => [{"message" => "Boom!", "locations" => [{"line" => 1, "column" => 11}], "path" => ["query", "farmNames", 2, TESTING_EXEC_NEXT ? nil : "farmNames"].compact}],
+      "errors" => [{"message" => "Boom!", "locations" => [{"line" => 1, "column" => 11}], "path" => ["query", "farmNames", 2, if_exec_next(nil, "farmNames")].compact}],
       "data" => nil
     }, results[2])
   end
@@ -502,7 +502,7 @@ describe GraphQL::Query::Partial do
     ])
 
     # No current path in exec-next
-    expected_path = TESTING_EXEC_NEXT ? nil : ["q1", "q2", "query", "currentPath"]
+    expected_path = if_exec_next(nil, ["q1", "q2", "query", "currentPath"])
 
     assert_equal({"q1" => { "q2" => { "query" => { "currentPath" => expected_path } } } }, results[0]["data"])
     assert_equal [], results[0].partial.path
@@ -546,11 +546,11 @@ describe GraphQL::Query::Partial do
       "data" => { "name" => nil, "__typename" => "Farm" }
     }, results[0])
     assert_equal({
-      "errors" => [{"message" => "Bang!", "locations" => [{"line" => 3, "column" => 9}], "path" => ["entity", "name", TESTING_EXEC_NEXT ? nil : "name"].compact}],
+      "errors" => [{"message" => "Bang!", "locations" => [{"line" => 3, "column" => 9}], "path" => ["entity", "name", if_exec_next(nil, "name")].compact}],
       "data" => nil
     }, results[1])
     assert_equal({
-      "errors" => [{"message" => "Blorp!", "locations" => [{"line" => 3, "column" => 9}], "path" => ["entity", "name",  TESTING_EXEC_NEXT ? nil : "name" ].compact}],
+      "errors" => [{"message" => "Blorp!", "locations" => [{"line" => 3, "column" => 9}], "path" => ["entity", "name",  if_exec_next(nil, "name" )].compact}],
       "data" => nil
     }, results[2])
   end

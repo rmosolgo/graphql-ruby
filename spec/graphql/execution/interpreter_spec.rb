@@ -297,7 +297,6 @@ describe GraphQL::Execution::Interpreter do
       mutation(Mutation)
       lazy_resolve(Box, :value)
       use GraphQL::Schema::AlwaysVisible
-      use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
 
       def self.object_from_id(id, ctx)
         OpenStruct.new(id: id)
@@ -342,12 +341,8 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
-  def exec_query(query_str, context: nil, variables: nil)
-    if TESTING_EXEC_NEXT
-      InterpreterTest::Schema.execute_next(query_str, context: context, variables: variables)
-    else
-      InterpreterTest::Schema.execute(query_str, context: context, variables: variables)
-    end
+  def exec_query(...)
+    InterpreterTest::Schema.execute(...)
   end
 
   it "runs a query" do
@@ -400,9 +395,7 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "runs a nested query and maintains proper state" do
-    if TESTING_EXEC_NEXT
-      skip "Haven't figure out if/how to implement context[:current_path]"
-    end
+    exec_next_TODO "requires context[:current_path]"
     query_str = "query($queryStr: String!) { nestedQuery(query: $queryStr) { result currentPath } }"
     result = exec_query(query_str, variables: { queryStr: "{ __typename }" })
     assert_equal '{"data":{"__typename":"Query"}}', result["data"]["nestedQuery"]["result"]
@@ -463,9 +456,7 @@ describe GraphQL::Execution::Interpreter do
 
   describe "runtime info in context" do
     it "is available" do
-      if TESTING_EXEC_NEXT
-        skip "Doesn't exist with Execution::Next"
-      end
+      exec_next_TODO "requires runtime info"
       res = exec_query <<-GRAPHQL
       {
         fieldCounter {
@@ -482,6 +473,15 @@ describe GraphQL::Execution::Interpreter do
       # These are both `field_counter_2`, but one is lazy
       assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo(0)', res["data"]["fieldCounter"]["fieldCounter"]["runtimeInfo"]
       assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "lazyRuntimeInfo"] -> FieldCounter.lazyRuntimeInfo(1)', res["data"]["fieldCounter"]["fieldCounter"]["lazyRuntimeInfo"]
+    end
+  end
+
+  describe "when a field is missing and validate: false" do
+    it "raises a useful error" do
+      err = assert_raises GraphQL::Error do
+        exec_query("{ nonsense }", validate: false)
+      end
+      assert_equal "No field definition found for Query.nonsense (at [1, 3])", err.message
     end
   end
 
@@ -650,18 +650,18 @@ describe GraphQL::Execution::Interpreter do
         def self.authorized?(obj, ctx)
           -> { true }
         end
-        field :skip, String
+        field :skip, String, resolve_legacy_instance_method: true
 
         def skip
           context.skip
         end
 
-        field :lazy_skip, String
+        field :lazy_skip, String, resolve_legacy_instance_method: true
         def lazy_skip
           -> { context.skip }
         end
 
-        field :mixed_skips, [String]
+        field :mixed_skips, [String], resolve_legacy_instance_method: true
         def mixed_skips
           [
             "a",
@@ -674,7 +674,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       class NothingSubscription < GraphQL::Schema::Subscription
-        field :nothing, String
+        field :nothing, String, hash_key: :nothing
         def authorized?(*)
           -> { true }
         end
@@ -741,24 +741,32 @@ describe GraphQL::Execution::Interpreter do
         field_class BaseField
         connection_type_class BaseConnection
         edge_type_class BaseEdge
-        field :title, String, null: false
-        field :body, String, null: false
+        field :title, String, null: false, hash_key: :title
+        field :body, String, null: false, hash_key: :body
       end
 
       class Query < GraphQL::Schema::Object
-        field :things, Thing.connection_type, null: false
+        field :things, Thing.connection_type, null: false, resolve_static: true
 
-        def things
+        def self.things(context)
           [{title: "a"}, {title: "b"}, {title: "c"}]
         end
 
-        field :thing, Thing, null: false
+        def things
+          self.class.things(context)
+        end
 
-        def thing
+        field :thing, Thing, null: false, resolve_static: true
+
+        def self.thing(context)
           {
             title: "a",
             body: "b",
           }
+        end
+
+        def thing
+          self.class.things(context)
         end
       end
 
@@ -777,6 +785,7 @@ describe GraphQL::Execution::Interpreter do
       assert_equal 1, res.context[:authorized_calls]
 
       res = ConnectionErrorTest::Schema.execute("{ thing { title body } }")
+      exec_next_TODO "should abort other branches in this case"
       assert_equal 1, res["errors"].size
       assert_equal 1, res.context[:authorized_calls]
     end
@@ -792,14 +801,18 @@ describe GraphQL::Execution::Interpreter do
 
       class Thing < GraphQL::Schema::Object
         field_class BaseField
-        field :title, String, null: false
+        field :title, String, null: false, hash_key: :title
       end
 
       class Query < GraphQL::Schema::Object
-        field :things, [Thing], null: false
+        field :things, [Thing], null: false, resolve_static: true
+
+        def self.things(context)
+          [{title: "a"}, {title: "b"}, {title: "c"}]
+        end
 
         def things
-          [{title: "a"}, {title: "b"}, {title: "c"}]
+          self.class.things(context)
         end
       end
 
@@ -823,31 +836,47 @@ describe GraphQL::Execution::Interpreter do
       end
 
       class Txn < GraphQL::Schema::Object
-        field :fails, String, null: false
+        field :fails, String, null: false, resolve_static: true
+
+        def self.fails(context)
+          raise GraphQL::ExecutionError, "boom"
+        end
 
         def fails
-          raise GraphQL::ExecutionError, "boom"
+          self.class.fails(context)
         end
       end
 
       class Concrete < GraphQL::Schema::Object
         implements Iface
 
-        field :txn, Txn
+        field :txn, Txn, resolve_static: true
+
+        def self.txn(context)
+          {}
+        end
 
         def txn
           {}
         end
 
-        field :msg, String
+        field :msg, String, resolve_static: true
+
+        def self.msg(context)
+          "THIS SHOULD SHOW UP"
+        end
 
         def msg
-          "THIS SHOULD SHOW UP"
+          self.class.msg(context)
         end
       end
 
       class Query < GraphQL::Schema::Object
-        field :iface, Iface
+        field :iface, Iface, resolve_static: true
+
+        def self.iface(context)
+          {}
+        end
 
         def iface
           {}
@@ -894,9 +923,8 @@ describe GraphQL::Execution::Interpreter do
   end
 
   it "supports extras: [:parent]" do
-    if TESTING_EXEC_NEXT
-      skip "Not possible in batching"
-    end
+    exec_next_WONTFIX "Not possible in batching"
+
     query_str = <<-GRAPHQL
     {
       card(name: "Dark Confidant") {
@@ -918,23 +946,31 @@ describe GraphQL::Execution::Interpreter do
   describe "fragment used twice in different ways" do
     class FragmentBugSchema < GraphQL::Schema
       class ProductVariant < GraphQL::Schema::Object
-        field :product, "FragmentBugSchema::Product"
+        field :product, "FragmentBugSchema::Product", hash_key: :product
       end
 
       class Product < GraphQL::Schema::Object
-        field :id, ID
-        field :variants, [ProductVariant]
+        field :id, ID, hash_key: :id
+        field :variants, [ProductVariant], resolve_static: true
+
+        def self.variants(context)
+          [{ product: { id: "1" } }]
+        end
 
         def variants
-          [{ product: { id: "1" } }]
+          self.class.variants(context)
         end
       end
 
       class Query < GraphQL::Schema::Object
-        field :variant, ProductVariant
+        field :variant, ProductVariant, resolve_static: true
+
+        def self.variant(context)
+          { product: { id: "1" } }
+        end
 
         def variant
-          { product: { id: "1" } }
+          self.class.variant(context)
         end
       end
 
@@ -972,11 +1008,7 @@ describe GraphQL::Execution::Interpreter do
 
   describe "multiplex queries" do
     def exec_multiplex(...)
-      if TESTING_EXEC_NEXT
-        InterpreterTest::Schema.multiplex_next(...)
-      else
-        InterpreterTest::Schema.multiplex(...)
-      end
+      InterpreterTest::Schema.multiplex(...)
     end
 
     it "runs multiplex queries" do
@@ -1056,6 +1088,7 @@ describe GraphQL::Execution::Interpreter do
     end
 
     it "correctly provides current_type at selections-level" do
+      exec_next_TODO("No context[:current_type] in exec-next")
       query_str = <<~GRAPHQL
       query {
         parent(name: "ABC") {

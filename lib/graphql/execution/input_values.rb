@@ -38,6 +38,7 @@ module GraphQL
       def argument_values(owner_defn, argument_nodes, field_resolve_step)
         arg_defns = @query.types.arguments(owner_defn)
         argument_values = {}
+        errors = nil
 
         arg_defns.each do |argument_definition|
           arg_ruby_key = argument_definition.keyword
@@ -52,11 +53,12 @@ module GraphQL
             arg_value = value_from_ast(arg_node.value, argument_definition.type)
             argument_value(argument_values, arg_ruby_key, argument_definition, arg_value, nil, field_resolve_step)
           end
+        rescue GraphQL::RuntimeError => exec_err
+          errors ||= []
+          errors << exec_err
         end
 
-        argument_values
-      rescue GraphQL::ExecutionError => exec_err
-        exec_err
+        return argument_values, errors
       end
 
       private
@@ -82,20 +84,43 @@ module GraphQL
         elsif type.kind.input_object?
           coerced_obj = {}
 
-          @query.types.arguments(type).each do |arg|
-            arg_key = arg.keyword
-            if value.key?(arg.graphql_name)
-              arg_value = value[arg.graphql_name]
-            elsif value.key?(sym_name = arg.graphql_name.to_sym)
-              arg_value = value[sym_name]
-            elsif arg.default_value?
-              coerced_obj[arg_key] = arg.default_value
-              next
-            else
-              next
-            end
+          if value.is_a?(Hash)
+            @query.types.arguments(type).each do |arg|
+              arg_key = arg.keyword
+              if value.key?(arg.graphql_name)
+                arg_value = value[arg.graphql_name]
+              elsif value.key?(sym_name = arg.graphql_name.to_sym)
+                arg_value = value[sym_name]
+              elsif arg.default_value?
+                coerced_obj[arg_key] = arg.default_value
+                next
+              else
+                next
+              end
 
-            coerced_obj[arg_key] = variable_value(arg_value, arg.type)
+              if arg_value.nil? && arg.replace_null_with_default?
+                arg_value = arg.default_value
+              end
+
+              coerced_obj[arg_key] = variable_value(arg_value, arg.type)
+            end
+          else
+            @query.types.arguments(type).each do |arg|
+              arg_key = arg.keyword
+              arg_name = arg.graphql_name
+              if (v_node = value.arguments.find { |a| a.name == arg_name }) # rubocop:disable Development/ContextIsPassedCop
+                arg_value = v_node.value
+                coerced_obj[arg_key] = if arg_value.nil? && arg.replace_null_with_default?
+                  arg.default_value
+                else
+                  variable_value(arg_value, arg.type)
+                end
+              elsif arg.default_value?
+                coerced_obj[arg_key] = arg.default_value
+              else
+                # Nothing
+              end
+            end
           end
 
           coerced_obj
@@ -109,11 +134,18 @@ module GraphQL
       def argument_value(argument_values, argument_key, argument_definition, arg_value, override_type, field_resolve_step)
         treat_as_type = override_type || argument_definition.type
         if treat_as_type.non_null?
+          if arg_value.nil?
+            treat_as_type.coerce_input(arg_value, @query.context)
+          end
           treat_as_type = treat_as_type.of_type
         end
 
+        if arg_value.nil? && argument_definition.replace_null_with_default?
+          arg_value = argument_definition.default_value
+        end
+
         if treat_as_type.kind.list? && !arg_value.nil?
-          inner_t = treat_as_type.unwrap
+          inner_t = treat_as_type.of_type
           arg_value = if arg_value.is_a?(Array)
             values = Array.new(arg_value.size)
             arg_value.each_with_index { |inner_v, idx| argument_value(values, idx, argument_definition, inner_v, inner_t, field_resolve_step)}
@@ -150,7 +182,7 @@ module GraphQL
           arg_value = begin
             argument_definition.prepare_value(nil, arg_value, context: @query.context)
           rescue StandardError => err
-            @runner.schema.handle_or_reraise(@query.context, err)
+            @runner.schema.handle_or_reraise(@query.context, err, object: nil, arguments: argument_values, field: field_resolve_step&.field_definition)
           end
         end
 
@@ -205,8 +237,6 @@ module GraphQL
           nil
         elsif value_node.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           variable_values[value_node.name]
-        elsif value_node.is_a?(GraphQL::Language::Nodes::NullValue)
-          nil
         elsif type.list?
           inner_type = type.of_type
           if value_node.is_a?(Array)
@@ -214,37 +244,53 @@ module GraphQL
               value_from_ast(inner_value_node, inner_type)
             end
             coerced_items.freeze
+          elsif value_node.is_a?(Language::Nodes::NullValue)
+            nil
           else
             item_value = value_from_ast(value_node, inner_type)
             [item_value].freeze
           end
-
         elsif type.kind.input_object?
           coerced_obj = {}
-          arg_nodes_by_name = value_node.arguments.each_with_object({}) do |arg_node, acc| # rubocop:disable Development/ContextIsPassedCop
-            acc[arg_node.name] = arg_node
-          end
-
-          @query.types.arguments(type).each do |arg|
-            arg_node = arg_nodes_by_name[arg.graphql_name]
-            arg_key = arg.keyword
-            if arg_node.nil? || (arg_node.value.is_a?(Language::Nodes::VariableIdentifier) && !variable_values.key?(arg_node.value.name))
-              if arg.default_value?
-                coerced_obj[arg_key] = arg.default_value
+          # TODO manually handle NullValue here?
+          if value_node.is_a?(Hash)
+            @query.types.arguments(type).each do |arg|
+              arg_value = value_node[arg.keyword]
+              arg_key = arg.keyword
+              if arg_value.nil?
+                if arg.default_value?
+                  coerced_obj[arg_key] = arg.default_value
+                end
+                next
               end
-              next
+
+              coerced_obj[arg_key] = value_from_ast(arg_value, arg.type)
+            end
+          else
+            arg_nodes_by_name = value_node.arguments.each_with_object({}) do |arg_node, acc| # rubocop:disable Development/ContextIsPassedCop
+              acc[arg_node.name] = arg_node
             end
 
-            arg_value = value_from_ast(arg_node.value, arg.type)
-            coerced_obj[arg_key] = arg_value
+            @query.types.arguments(type).each do |arg|
+              arg_node = arg_nodes_by_name[arg.graphql_name]
+              arg_key = arg.keyword
+              if arg_node.nil? || (arg_node.value.is_a?(Language::Nodes::VariableIdentifier) && !variable_values.key?(arg_node.value.name))
+                if arg.default_value?
+                  coerced_obj[arg_key] = arg.default_value
+                end
+                next
+              end
+
+              arg_value = value_from_ast(arg_node.value, arg.type)
+              coerced_obj[arg_key] = arg_value
+            end
           end
+
 
           coerced_obj
         elsif type.kind.leaf?
-          if type.kind.enum?
-            if value_node.is_a?(GraphQL::Language::Nodes::Enum)
-              value_node = value_node.name
-            end
+          if value_node.is_a?(Language::Nodes::AbstractNode) || value_node.is_a?(Array)
+            value_node = coerce_untyped_input(value_node)
           end
 
           begin
@@ -254,6 +300,32 @@ module GraphQL
           end
         else
           raise "Unexpected input type: #{type.to_type_signature}."
+        end
+      end
+
+      private
+
+      def coerce_untyped_input(input_value)
+        case input_value
+        when Language::Nodes::AbstractNode
+          case input_value
+          when Language::Nodes::NullValue
+            nil
+          when Language::Nodes::Enum
+            input_value.name
+          when Language::Nodes::InputObject
+            value_h = {}
+            input_value.arguments.each do |arg| # rubocop:disable Development/ContextIsPassedCop
+              value_h[arg.name] = coerce_untyped_input(arg.value)
+            end
+            value_h
+          else
+            raise "Unhandled untyped input AST node: #{input_value.class}"
+          end
+        when Array
+          input_value.map { |v| coerce_untyped_input(v) }
+        else
+          input_value
         end
       end
     end

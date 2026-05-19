@@ -130,7 +130,9 @@ describe GraphQL::Schema::Scalar do
           argument :arg, CustomScalar
         end
 
-        field :f2, CustomScalar
+        field :f2, CustomScalar, resolve_static: true
+
+        def self.f2(_c); "bad"; end
 
         def f2
           "bad"
@@ -245,8 +247,12 @@ describe GraphQL::Schema::Scalar do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :hello, String do
+        field :hello, String, resolve_static: true do
           argument :input, CustomScalar, required: false
+        end
+
+        def self.hello(context, input: nil)
+          "hello world"
         end
 
         def hello(input: nil)

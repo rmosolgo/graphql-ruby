@@ -102,7 +102,7 @@ module GraphQL
 
             missed_late_types_streak = 0
             while (owner, late_type = @late_bound_types.shift)
-              if (late_type.is_a?(String) && (type = Member::BuildType.constantize(type))) ||
+              if (late_type.is_a?(String) && (type = Member::BuildType.constantize(late_type))) ||
                   (late_type.is_a?(LateBoundType) && (type = @visited_types.find { |t| t.graphql_name == late_type.graphql_name }))
                 missed_late_types_streak = 0 # might succeed next round
                 update_type_owner(owner, type)

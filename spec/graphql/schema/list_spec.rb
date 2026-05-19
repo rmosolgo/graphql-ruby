@@ -41,12 +41,16 @@ describe GraphQL::Schema::List do
   describe "handling null" do
     class ListNullHandlingSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :strings, [String, null: true] do
+        field :strings, [String, null: true], resolve_static: true do
           argument :strings, [String, null: true], required: false
         end
 
-        def strings(strings:)
+        def self.strings(context, strings:)
           strings
+        end
+
+        def strings(strings:)
+          self.class.strings(context, strings: strings)
         end
       end
       query(Query)
@@ -93,34 +97,50 @@ describe GraphQL::Schema::List do
       end
 
       class Query < GraphQL::Schema::Object
-        field :echo, [Item], null: false do
+        field :echo, [Item], null: false, resolve_static: true do
           argument :items, [Item]
         end
 
-        def echo(items:)
+        def self.echo(context, items:)
           items
         end
 
-        field :echoes, [Item], null: false do
+        def echo(items:)
+          self.class.echo(context, items: items)
+        end
+
+        field :echoes, [Item], null: false, resolve_static: true do
           argument :items, [ItemInput]
         end
 
-        def echoes(items:)
+        def self.echoes(context, items:)
           items.map { |i| i[:item] }
         end
 
-        field :nil_echoes, [Item, null: true] do
+        def echoes(items:)
+          self.class.echoes(context, items: items)
+        end
+
+        field :nil_echoes, [Item, null: true], resolve_static: true do
           argument :items, [NilItemsInput], required: false
         end
 
-        def nil_echoes(items:)
+        def self.nil_echoes(context, items:)
           items.first[:items]
         end
 
-        field :invalid_result, [String], null: false
+        def nil_echoes(items:)
+          self.class.nil_echoes(context, items: items)
+        end
+
+        field :invalid_result, [String], null: false, resolve_static: true
+
+        def self.invalid_result(context)
+          ["A", "B", nil]
+        end
 
         def invalid_result
-          ["A", "B", nil]
+          self.class.invalid_result(context)
         end
       end
 
@@ -172,10 +192,6 @@ describe GraphQL::Schema::List do
       class Query < GraphQL::Schema::Object
         field :items, [Item], null: false do
           argument :ids, [Int]
-        end
-
-        def items(ids:)
-          items
         end
       end
 

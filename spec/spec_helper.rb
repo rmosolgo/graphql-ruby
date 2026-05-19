@@ -55,6 +55,40 @@ require "minitest/focus"
 require "minitest/reporters"
 require "graphql/batch"
 
+# This is a test helper when a different value should be used during a test.
+# It helps with auditing differences between the two runtime modules.
+def if_exec_next(exec_next_value, legacy_value)
+  TESTING_EXEC_NEXT ? exec_next_value : legacy_value
+end
+
+module Minitest
+  class Test
+    # These tests are skipped but should be fixed at some point
+    def exec_next_TODO(message) # rubocop:disable Naming/MethodName
+      skip("TODO: " + message) if TESTING_EXEC_NEXT
+    end
+
+    # These tests are skipped and probably won't be fixed, but they're worth reviewing
+    def exec_next_WONTFIX(message) # rubocop:disable Naming/MethodName
+      skip("WONTFIX: " + message) if TESTING_EXEC_NEXT
+    end
+
+    # These tests don't run on legacy runtime
+    def exec_next_only(message)
+      skip("Exec-next only: #{message}") unless TESTING_EXEC_NEXT
+    end
+
+    # Exec-next annotates errors; use this to help produce those different error messages for assertions
+    def exec_next_error_message(field_path, message)
+      if TESTING_EXEC_NEXT
+        "Resolving #{field_path}: #{message}"
+      else
+        message
+      end
+    end
+  end
+end
+
 running_in_rubymine = ENV["RM_INFO"]
 unless running_in_rubymine
   Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
@@ -194,6 +228,9 @@ if !USING_C_PARSER && defined?(GraphQL::CParser::Parser)
   raise "Load error: didn't opt in to C parser but GraphQL::CParser::Parser was defined"
 end
 
+if TESTING_EXEC_NEXT
+  GraphQL::Schema.use GraphQL::Execution::Next, as_default: true
+end
 def assert_warns(warning, printing = "")
   return_val = nil
   stdout, stderr = capture_io { return_val = yield }

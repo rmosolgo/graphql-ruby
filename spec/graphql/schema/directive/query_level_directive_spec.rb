@@ -16,14 +16,23 @@ describe "Query level Directive" do
         ctx[:int] = args[:val] || args[:input][:val] || 0
         yield
       end
+
+      def self.resolve_operation(ast_node, query, objects, args, context)
+        context[:int] = args[:val] || args[:input][:val] || 0
+        nil
+      end
     end
 
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
 
-      def int
+      def self.int(context)
         context[:int] ||= 0
         context[:int] += 1
+      end
+
+      def int
+        self.class.int(context)
       end
     end
 

@@ -2,7 +2,7 @@
 module GraphQL
   module Execution
     class Runner
-      def initialize(multiplex, authorization:)
+      def initialize(multiplex)
         @multiplex = multiplex
         @schema = multiplex.schema
         @steps_queue = []
@@ -32,22 +32,12 @@ module GraphQL
         end
 
         @lazy_cache = resolves_lazies ? {}.compare_by_identity : nil
-        @authorization = authorization
-        if @authorization
-          @authorizes_cache = Hash.new do |h, query_context|
-            h[query_context] = {}.compare_by_identity
-          end.compare_by_identity
-        end
+        @authorizes_cache = Hash.new do |h, query_context|
+          h[query_context] = {}.compare_by_identity
+        end.compare_by_identity
       end
 
       attr_reader :runtime_directives, :uses_runtime_directives, :finalizer_keys
-
-      def resolve_type(type, object, query)
-        query.current_trace.begin_resolve_type(type, object, query.context)
-        resolved_type, _ignored_new_value = query.resolve_type(type, object)
-        query.current_trace.end_resolve_type(type, object, query.context, resolved_type)
-        resolved_type
-      end
 
       def authorizes?(graphql_definition, query_context)
         auth_cache = @authorizes_cache[query_context]
@@ -63,7 +53,7 @@ module GraphQL
         @dataloader.append_job(step)
       end
 
-      attr_reader :authorization, :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
+      attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
 
       # @return [void]
       def add_finalizer(query, result_value, key, finalizer)
@@ -120,9 +110,13 @@ module GraphQL
             trace.execute_query(query: query) do
               begin_execute(isolated_steps, results, query, root_type, root_value)
             end
+          rescue GraphQL::RuntimeError => err
+            err.ast_node = query.selected_operation
+            err.path = query.path
+            query.context.add_error(err)
           end
 
-          trace.execute_query_lazy(query: nil, multiplex: @multiplex) do
+          trace.execute_query_lazy(query: @multiplex.queries.size == 1 ? @multiplex.queries.first : nil, multiplex: @multiplex) do
             while (next_isolated_steps = isolated_steps.shift)
               next_isolated_steps.each do |step|
                 add_step(step)
@@ -137,8 +131,10 @@ module GraphQL
             fin_result = if (!@finalizers&.key?(query) && query.context.errors.empty?) || !query.valid?
               result
             else
-              data = result["data"]
-              data = Finalize.new(query, data, self).run
+              if result
+                data = result["data"]
+                data = Finalize.new(query, data, self).run
+              end
               errors = []
               query.context.errors.each do |err|
                 if err.respond_to?(:to_h)
@@ -154,6 +150,9 @@ module GraphQL
             end
 
             query.result_values = fin_result
+            if query.context.namespace?(:__query_result_extensions__)
+              query.result_values["extensions"] = query.context.namespace(:__query_result_extensions__)
+            end
             query.result
           end
         end
@@ -228,12 +227,13 @@ module GraphQL
 
       def begin_execute(isolated_steps, results, query, root_type, root_value)
         data = {}
+        @static_type_at[data] = root_type
         selected_operation = query.selected_operation
         beginning_path = query.path
 
         case root_type.kind.name
         when "OBJECT"
-          if self.authorization && authorizes?(root_type, query.context)
+          if authorizes?(root_type, query.context)
             query.current_trace.begin_authorized(root_type, root_value, query.context)
             auth_check = schema.sync_lazy(root_type.authorized?(root_value, query.context))
             query.current_trace.end_authorized(root_type, root_value, query.context, auth_check)
@@ -265,10 +265,40 @@ module GraphQL
           objects = [root_value]
           query.current_trace.objects(root_type, objects, query.context)
 
+          if query.is_a?(GraphQL::Query) && uses_runtime_directives && (query_dirs = selected_operation.directives).any? # rubocop:disable Development/NoneWithoutBlockCop
+            continue_execution = true
+            query_dirs.each do |dir_node|
+              dir_defn = runtime_directives[dir_node.name] || raise(GraphQL::Error, "No directive definition found for: #{dir_node.name.inspect}")
+              dir_args, errors = input_values[query].argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+              if errors
+                errors.each { |e|
+                  e.ast_node = dir_node
+                  e.path = beginning_path
+                  query.context.add_error(e)
+                }
+                continue_execution = false
+                break
+              end
+              result = dir_defn.resolve_operation(selected_operation, query, objects, dir_args, query.context)
+              if result.is_a?(Finalizer)
+                result.path = path
+                add_finalizer(query, result, nil, data)
+                if result.is_a?(HaltExecution)
+                  continue_execution = false
+                  break
+                end
+              end
+            end
+
+            if !continue_execution
+              return
+            end
+          end
+
           if query.query?
             isolated_steps[0] << SelectionsStep.new(
               parent_type: root_type,
-              selections: query.selected_operation.selections,
+              selections: selected_operation.selections,
               objects: objects,
               results: [data],
               path: beginning_path,
@@ -313,17 +343,19 @@ module GraphQL
             raise ArgumentError, "Unknown operation type (not query, mutation or subscription): #{query.query_string}"
           end
         when "UNION", "INTERFACE"
-          resolved_type = resolve_type(root_type, root_value, query)
-          if resolves_lazies
+          resolved_type = ResolveTypeStep.resolve_type(root_type, root_value, query)
+          if resolves_lazies && lazy?(resolved_type)
             resolved_type = schema.sync_lazy(resolved_type)
           end
+          resolved_type, root_value = resolved_type
+          ResolveTypeStep.assert_valid_resolved_type(root_type, resolved_type, root_value, nil, query: query)
           objects = [root_value]
           query.current_trace.objects(resolved_type, objects, query.context)
           runtime_type_at[data] = resolved_type
           results << { "data" => data }
           isolated_steps[0] << SelectionsStep.new(
             parent_type: resolved_type,
-            selections: query.selected_operation.selections,
+            selections: selected_operation.selections,
             objects: objects,
             results: [data],
             path: beginning_path,
@@ -340,7 +372,7 @@ module GraphQL
             results << { "data" => list_result }
             isolated_steps[0] << SelectionsStep.new(
               parent_type: inner_type,
-              selections: query.selected_operation.selections,
+              selections: selected_operation.selections,
               objects: root_value,
               results: list_result,
               path: beginning_path,
@@ -353,18 +385,21 @@ module GraphQL
         else
           raise "Unhandled root type kind: #{root_type.kind.name.inspect}"
         end
-
-        @static_type_at[data] = root_type
       end
 
       def directives_include?(query, ast_selection)
         if ast_selection.directives.any? { |dir_node|
-              if dir_node.name == "skip"
-                skip_args = @input_values[query].argument_values(GraphQL::Schema::Directive::Skip, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+              case dir_node.name
+              when "skip"
+                skip_args, _errors = @input_values[query].argument_values(GraphQL::Schema::Directive::Skip, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
                 skip_args[:if] == true
-              elsif dir_node.name == "include"
-                include_args = @input_values[query].argument_values(GraphQL::Schema::Directive::Include, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+              when "include"
+                include_args, _errors = @input_values[query].argument_values(GraphQL::Schema::Directive::Include, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
                 include_args[:if] == false
+              else
+                dir_defn = runtime_directives[dir_node.name]
+                dir_args, _errors = @input_values[query].argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+                !dir_defn.include?(nil, dir_args, query.context)
               end
             }
           false

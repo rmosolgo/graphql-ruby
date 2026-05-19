@@ -31,7 +31,11 @@ describe GraphQL::Tracing::NewRelicTrace do
       def self.authorized?(obj, ctx)
         ctx[:lazy] ? -> { true } : true
       end
-      field :name, String
+      field :name, String, resolve_batch: :name_field
+
+      def self.name_field(objects, context)
+        context.dataload_all(EchoSource, Array.new(objects.size, "name"))
+      end
 
       def name
         dataload(EchoSource, "name")
@@ -41,21 +45,45 @@ describe GraphQL::Tracing::NewRelicTrace do
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
-      field :int, Integer, null: false
+      field :int, Integer, null: false, resolve_static: true
 
-      def int
+      def self.int(context)
         1
       end
 
-      field :other, Other
+      def int
+        self.class.int(context)
+      end
+
+      field :other, Other, resolve_batch: true
+
+      def self.other(objects, context)
+        context.dataload_all(OtherSource, Array.new(objects.size, :other))
+      end
 
       def other
         dataloader.with(OtherSource).load(:other)
       end
 
-      field :nameable, Nameable, fallback_value: :nameable
+      field :nameable, Nameable, resolve_static: true
 
-      field :lazy_nameable, Nameable, fallback_value: -> { :nameable }
+      def self.nameable(_ctx)
+        :nameable
+      end
+
+      def nameable
+        self.class.nameable(context)
+      end
+
+      field :lazy_nameable, Nameable, resolve_static: true
+
+      def self.lazy_nameable(context)
+        -> { :nameable }
+      end
+
+      def lazy_nameable
+        self.class.lazy_nameable(context)
+      end
     end
 
     class SchemaWithoutTransactionName < GraphQL::Schema
@@ -153,8 +181,8 @@ describe GraphQL::Tracing::NewRelicTrace do
           "GraphQL/validate",
         "FINISH GraphQL/analyze",
 
-        "GraphQL/Authorized/Query",
-        "FINISH GraphQL/Authorized/Query",
+        # Exec-next doesn't run no-op authorization:
+        *if_exec_next([], ["GraphQL/Authorized/Query", "FINISH GraphQL/Authorized/Query"]),
         "GraphQL/Query/other",
         "FINISH GraphQL/Query/other",
         # Here's the source run:
@@ -219,8 +247,8 @@ describe GraphQL::Tracing::NewRelicTrace do
       "GraphQL/analyze",
       "GraphQL/validate",
       "FINISH GraphQL/analyze",
-      "GraphQL/Authorized/Query",
-      "FINISH GraphQL/Authorized/Query",
+      # Exec-next doesn't run no-op authorization:
+      *if_exec_next([], ["GraphQL/Authorized/Query", "FINISH GraphQL/Authorized/Query"]),
       # Eager:
       "GraphQL/Query/lazyNameable",
       "FINISH GraphQL/Query/lazyNameable",

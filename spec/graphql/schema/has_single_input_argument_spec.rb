@@ -50,7 +50,7 @@ describe GraphQL::Schema::HasSingleInputArgument do
 
         null true
 
-        field :name, String, null: false
+        field :name, String, null: false, hash_key: :name
         def resolve
           { name: "name" }
         end
@@ -61,7 +61,7 @@ describe GraphQL::Schema::HasSingleInputArgument do
 
         argument :test, TestInput
 
-        field :name, String
+        field :name, String, hash_key: :name
 
         def resolve(test:)
           { name: test[:name] }
@@ -74,8 +74,8 @@ describe GraphQL::Schema::HasSingleInputArgument do
         argument :name, String
         extras [:ast_node]
 
-        field :node_class, String
-        field :name, String
+        field :node_class, String, hash_key: :node_class
+        field :name, String, hash_key: :name
 
         def resolve(name:, ast_node:)
           {
@@ -92,8 +92,8 @@ describe GraphQL::Schema::HasSingleInputArgument do
 
         argument :name, String, required: false
 
-        field :lookahead_class, String, null: false
-        field :name, String
+        field :lookahead_class, String, null: false, hash_key: :lookahead_class
+        field :name, String, hash_key: :name
 
         def resolve(name: nil, lookahead:)
           {
@@ -108,11 +108,18 @@ describe GraphQL::Schema::HasSingleInputArgument do
 
         extras [:lookahead]
 
-        field :name, String, null: false
+        field :name, String, null: false, hash_key: :name
 
         def resolve_with_support(lookahead: , **rest)
           context[:has_lookahead] = !!lookahead
           super(**rest)
+        end
+
+        def call
+          # This is not a very user-friendly API, but this demonstrates that a better API will be possible
+          context[:has_lookahead] = @prepared_arguments.key?(:lookahead)
+          @prepared_arguments.delete(:lookahead)
+          super
         end
 
         def authorized?

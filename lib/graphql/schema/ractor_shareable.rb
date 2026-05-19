@@ -72,6 +72,7 @@ module GraphQL
           # How to support it?
           def lazy?(_obj); false; end
           def sync_lazy(obj); obj; end
+          def resolves_lazies?; false; end
         end
       end
     end

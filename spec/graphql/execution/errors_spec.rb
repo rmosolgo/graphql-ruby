@@ -65,9 +65,13 @@ describe "GraphQL::Execution::Errors" do
         true
       end
 
-      field :string, String, null: false
-      def string
+      field :string, String, null: false, resolve_static: true
+      def self.string(context)
         "a string"
+      end
+
+      def string
+        self.class.string(context)
       end
     end
 
@@ -94,79 +98,128 @@ describe "GraphQL::Execution::Errors" do
     end
 
     class Query < GraphQL::Schema::Object
-      field :f1, Int do
+      field :f1, Int, resolve_static: true do
         argument :a1, Int, required: false
       end
 
-      def f1(a1: nil)
+      def self.f1(context, a1: nil)
         raise ErrorA, "f1 broke"
       end
 
-      field :f2, Int
-      def f2
+      def f1(a1: nil)
+        self.class.f1(context, a1: a1)
+      end
+
+      field :f2, Int, resolve_static: true
+      def self.f2(context)
         -> { raise ErrorA, "f2 broke" }
       end
 
-      field :f3, Int
+      def f2
+        self.class.f2(context)
+      end
 
-      def f3
+      field :f3, Int, resolve_static: true
+
+      def self.f3(context)
         raise ErrorB
       end
 
-      field :f4, Int, null: false
-      def f4
+      def f3
+        self.class.f3(context)
+      end
+
+      field :f4, Int, null: false, resolve_static: true
+      def self.f4(context)
         raise ErrorC.new(value: 20)
       end
 
-      field :f5, Int
-      def f5
+      def f4
+        self.class.f4(context)
+      end
+
+      field :f5, Int, resolve_static: true
+      def self.f5(context)
         raise ErrorASubclass, "raised subclass"
       end
 
-      field :f6, Int
-      def f6
+      def f5
+        self.class.f5(context)
+      end
+
+      field :f6, Int, resolve_static: true
+      def self.f6(context)
         -> { raise ErrorB }
       end
 
-      field :f7, String
-      def f7
+      def f6
+        self.class.f6(context)
+      end
+
+      field :f7, String, resolve_static: true
+      def self.f7(context)
         raise ErrorBGrandchildClass
       end
 
-      field :f8, String do
+      def f7
+        self.class.f7(context)
+      end
+
+      field :f8, String, resolve_static: true do
         argument :input, PickyString
       end
 
-      def f8(input:)
+      def self.f8(context, input:)
         input
       end
 
-      field :f9, String do
+      def f8(input:)
+        self.class.f8(context, input: input)
+      end
+
+      field :f9, String, resolve_static: true do
         argument :thing_id, ID, loads: Thing
       end
 
-      def f9(thing:)
+      def self.f9(context, thing:)
         thing[:id]
       end
 
-      field :thing, Thing
-      def thing
+      def f9(thing:)
+        self.class.f9(context, thing: thing)
+      end
+
+      field :thing, Thing, resolve_static: true
+      def self.thing(context)
         :thing
+      end
+
+      def thing
+        self.class.thing(context)
       end
 
       field :input_field, Int do
         argument :values, ValuesInput
       end
 
-      field :non_nullable_array, [String], null: false
-      def non_nullable_array
+      field :non_nullable_array, [String], null: false, resolve_static: true
+
+      def self.non_nullable_array(context)
         [nil]
       end
 
-      field :error_in_each, [Int]
+      def non_nullable_array
+        self.class.non_nullable_array(context)
+      end
+
+      field :error_in_each, [Int], resolve_static: true
+
+      def self.error_in_each(context)
+        ErrorList.new
+      end
 
       def error_in_each
-        ErrorList.new
+        self.class.error_in_each(context)
       end
     end
 
@@ -186,23 +239,12 @@ describe "GraphQL::Execution::Errors" do
     end
   end
 
-  class ErrorsTestSchemaWithoutInterpreter < GraphQL::Schema
-    class Query < GraphQL::Schema::Object
-      field :non_nullable_array, [String], null: false
-      def non_nullable_array
-        [nil]
-      end
-    end
-
-    query(Query)
-  end
-
   describe "rescue_from handling" do
     it "can replace values with `nil`" do
       ctx = { errors: [] }
       res = ErrorsTestSchema.execute "{ f1(a1: 1) }", context: ctx, root_value: :abc
       assert_equal({ "data" => { "f1" => nil } }, res)
-      assert_equal ["f1 broke (ErrorsTestSchema::Query.f1, :abc, #{{a1: 1}.inspect})"], ctx[:errors]
+      assert_equal ["f1 broke (ErrorsTestSchema::Query.f1, #{if_exec_next("nil", ":abc")}, #{{a1: 1}.inspect})"], ctx[:errors]
     end
 
     it "rescues errors from lazy code" do
@@ -278,7 +320,7 @@ describe "GraphQL::Execution::Errors" do
       it "rescues them" do
         context = { authorized: false }
         res = ErrorsTestSchema.execute(" { thing { string } } ", context: context)
-        assert_equal ["ErrorD on nil at Query.thing({})"], res["errors"].map { |e| e["message"] }
+        assert_equal ["ErrorD on #{if_exec_next(":thing", "nil")} at Query.thing({})"], res["errors"].map { |e| e["message"] }
       end
     end
 
@@ -288,7 +330,7 @@ describe "GraphQL::Execution::Errors" do
         res = ErrorsTestSchema.execute(" { inputField(values: { value: 2 }) } ", root_value: :root, context: context)
         # It would be better to have the arguments here, but since this error was raised during _creation_ of keywords,
         # so the runtime arguments aren't available now.
-        assert_equal ["ErrorD on :root at Query.inputField()"], res["errors"].map { |e| e["message"] }
+        assert_equal ["ErrorD on #{if_exec_next("nil", ":root")} at Query.inputField()"], res["errors"].map { |e| e["message"] }
       end
 
       it "rescues them from variable values" do
@@ -304,16 +346,6 @@ describe "GraphQL::Execution::Errors" do
     end
 
     describe "errors raised in non_nullable_array loads" do
-      it "outputs the appropriate error message when using non-interpreter schema" do
-        res = ErrorsTestSchemaWithoutInterpreter.execute("{ nonNullableArray }")
-        expected_error = {
-          "message" => "Cannot return null for non-nullable element of type 'String!' for Query.nonNullableArray",
-          "path" => ["nonNullableArray", 0],
-          "locations" => [{ "line" => 1, "column" => 3 }]
-        }
-        assert_equal({ "data" => nil, "errors" => [expected_error] }, res)
-      end
-
       it "outputs the appropriate error message when using interpreter schema" do
         res = ErrorsTestSchema.execute("{ nonNullableArray }")
         expected_error = {

@@ -38,8 +38,12 @@ describe GraphQL::Dataloader::AsyncDataloader do
     end
 
     class Query < GraphQL::Schema::Object
-      field :base_name, String do
+      field :base_name, String, resolve_static: true do
         argument :id, Int
+      end
+
+      def self.base_name(context, id:)
+        context.dataload(BaseSource, id)&.name
       end
 
       def base_name(id:)
@@ -47,24 +51,36 @@ describe GraphQL::Dataloader::AsyncDataloader do
         base&.name
       end
 
-      field :query, Query
+      field :query, Query, resolve_batch: true
 
-      field :inline_base_name, String do
+      field :inline_base_name, String, resolve_static: true do
         argument :id, Int
       end
 
-      def inline_base_name(id:)
+      def self.inline_base_name(context, id:)
         StarWars::Base.where(id: id).first&.name
+      end
+
+      def inline_base_name(id:)
+        self.class.inline_base_name(context, id: id)
+      end
+
+      def self.query(objects, context)
+        context.dataload_all(SelfSource, Array.new(objects.size, :query))
       end
 
       def query
         dataloader.with(SelfSource).load(:query)
       end
 
-      field :role, String
+      field :role, String, resolve_static: true
+
+      def self.role(context)
+        StarWars::StarWarsModel.current_role.to_s
+      end
 
       def role
-        StarWars::StarWarsModel.current_role.to_s
+        self.class.role(context)
       end
     end
 

@@ -31,8 +31,12 @@ describe GraphQL::Schema::Member::HasUnresolvedTypeError do
 
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
-      field :anon_union, anon_union, fallback_value: 1
-      field :anon_int, anon_int, fallback_value: 1
+      field :anon_union, anon_union, fallback_value: 1, resolve_static: :one
+      field :anon_int, anon_int, fallback_value: 1, resolve_static: :one
+
+      def self.one(ctx)
+        1
+      end
     end
 
     schema = Class.new(GraphQL::Schema) do

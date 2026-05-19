@@ -41,9 +41,11 @@ describe "GraphQL::Authorization" do
         if object == :raise
           raise GraphQL::UnauthorizedFieldError.new("raised authorized field error", object: object)
         end
-        return Box.new(value: context[:lazy_field_authorized]) if context.key?(:lazy_field_authorized)
-
-        super && object != :hide && object != :replace
+        if context.key?(:lazy_field_authorized)
+          Box.new(value: context[:lazy_field_authorized])
+        else
+          super && object != :hide && object != :replace
+        end
       end
     end
 
@@ -354,7 +356,6 @@ describe "GraphQL::Authorization" do
       mutation(Mutation)
       directive(Nothing)
       use GraphQL::Schema::Warden if ADD_WARDEN
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)
@@ -388,12 +389,9 @@ describe "GraphQL::Authorization" do
   end
 
   def auth_execute(*args, **kwargs)
-    if TESTING_EXEC_NEXT
-      AuthTest::Schema.execute_next(*args, **kwargs)
-    else
-      AuthTest::Schema.execute(*args, **kwargs)
-    end
+    AuthTest::Schema.execute(*args, **kwargs)
   end
+
 
   describe "applying the visible? method" do
     it "works in queries" do
@@ -536,12 +534,11 @@ describe "GraphQL::Authorization" do
         GRAPHQL
       end
 
-      # This switches on `context[:current_path]` which isn't implemented by Batching (yet?)
-      expected_message = if TESTING_EXEC_NEXT
-        "Resolving Query.landscapeFeature: `\"STREAM\"` was returned for `LandscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
-      else
+      # This switches on `context[:current_path]` which isn't implemented by exec-next (yet?)
+      expected_message = if_exec_next(
+        "Resolving Query.landscapeFeature: `\"STREAM\"` was returned for `LandscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`).",
         "`Query.landscapeFeature` returned `\"STREAM\"` at `landscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
-      end
+      )
       assert_equal expected_message, err.message
     end
 
@@ -912,7 +909,7 @@ describe "GraphQL::Authorization" do
         unauth_res = auth_execute(query, context: { query_unauthorized: true })
 
         assert_equal({
-          "errors" => [(TESTING_EXEC_NEXT ? {"message"=>"Unauthorized Query: nil", "path" => [] } : {"message"=>"Unauthorized Query: nil"})],
+          "errors" => [if_exec_next({"message"=>"Unauthorized Query: nil", "path" => [] }, {"message"=>"Unauthorized Query: nil"})],
           "data" => nil,
         }, unauth_res.to_h)
       end
@@ -934,7 +931,7 @@ describe "GraphQL::Authorization" do
           false
         end
 
-        field :int, Integer, null: false
+        field :int, Integer, null: false, resolve_legacy_instance_method: true
 
         def int
           1
@@ -945,7 +942,11 @@ describe "GraphQL::Authorization" do
 
     it "works out-of-the-box" do
       res = FalseSchema.execute("{ int }")
-      assert_nil res.fetch("data")
+      if TESTING_EXEC_NEXT
+        refute res.key?("data")
+      else
+        assert_nil res.fetch("data")
+      end
       refute res.key?("errors")
     end
   end
@@ -994,6 +995,7 @@ describe "GraphQL::Authorization" do
     end
 
     it "avoids calls to Object.authorized?" do
+      exec_next_WONTFIX("Doesn't work this way with exec-next")
       log = []
       res = AuthorizedNewOverrideSchema.execute("{ __typename int }", context: { log: log })
       assert_equal "Query", res["data"]["__typename"]

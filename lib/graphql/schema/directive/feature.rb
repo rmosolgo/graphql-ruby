@@ -60,6 +60,10 @@ module GraphQL
         def self.enabled?(flag_name, object, context)
           raise GraphQL::RequiredImplementationMissingError, "Implement `.enabled?(flag_name, object, context)` to return true or false for the feature flag (#{flag_name.inspect})"
         end
+
+        def self.resolve_field(...); end
+        def self.resolve_fragment_spread(...); end
+        def self.resolve_inline_fragment(...); end
       end
     end
   end

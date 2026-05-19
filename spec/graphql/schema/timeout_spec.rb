@@ -24,13 +24,13 @@ describe GraphQL::Schema::Timeout do
     nested_sleep_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "NestedSleep"
 
-      field :seconds, Float
+      field :seconds, Float, resolve_legacy_instance_method: true
 
       def seconds
         object
       end
 
-      field :nested_sleep, self do
+      field :nested_sleep, self, resolve_legacy_instance_method: true do
         argument :seconds, Float
       end
 
@@ -43,7 +43,7 @@ describe GraphQL::Schema::Timeout do
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
 
-      field :sleep_for, Float do
+      field :sleep_for, Float, resolve_legacy_instance_method: true do
         argument :seconds, Float
         argument :disable_timeout, "Boolean", default_value: false
       end
@@ -56,7 +56,7 @@ describe GraphQL::Schema::Timeout do
         seconds
       end
 
-      field :nested_sleep, nested_sleep_type do
+      field :nested_sleep, nested_sleep_type, resolve_legacy_instance_method: true do
         argument :seconds, Float
       end
 
@@ -109,7 +109,11 @@ describe GraphQL::Schema::Timeout do
       ]
       assert_graphql_equal expected_data, result["data"]
       assert_equal expected_errors, result["errors"]
-      assert_equal true, result.context[:other_trace_worked], "It works with other traces"
+      if TESTING_EXEC_NEXT
+        refute result.context.key?(:other_trace_worked), "It terminated before calling that other trace"
+      else
+        assert_equal true, result.context[:other_trace_worked], "It works with other traces"
+      end
     end
   end
 
@@ -219,7 +223,7 @@ describe GraphQL::Schema::Timeout do
 
     it "calls the block" do
       err = assert_raises(RuntimeError) { result }
-      assert_equal "Query timed out after 2s: Timeout on Query.sleepFor", err.message
+      assert_equal exec_next_error_message("Query.sleepFor", "Query timed out after 2s: Timeout on Query.sleepFor"), err.message
     end
   end
 

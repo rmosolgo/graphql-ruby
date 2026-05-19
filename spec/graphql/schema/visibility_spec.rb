@@ -59,7 +59,6 @@ describe GraphQL::Schema::Visibility do
 
     query(Query)
     use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
-    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
   end
 
   class DynVisSchema < VisSchema
@@ -71,11 +70,7 @@ describe GraphQL::Schema::Visibility do
   end
 
   def exec_query(...)
-    if TESTING_EXEC_NEXT
-      VisSchema.execute_next(...)
-    else
-      VisSchema.execute(...)
-    end
+    VisSchema.execute(...)
   end
 
   describe "top-level schema caches" do
@@ -216,16 +211,24 @@ describe GraphQL::Schema::Visibility do
       class OtherExampleExtension < GraphQL::Schema::FieldExtension; end
 
       class Query < GraphQL::Schema::Object
-        field :str, fallback_value: "Query field" do
+        field :str, fallback_value: "Query field", resolve_static: true do
           type(String)
           extension(ExampleExtension)
+        end
+
+        def self.str(_context)
+          "Query field"
         end
       end
 
       class Mutation < GraphQL::Schema::Object
-        field :str, fallback_value: "Mutation field" do
+        field :str, fallback_value: "Mutation field", resolve_static: true do
           type(String)
           extension(ExampleExtension)
+        end
+
+        def self.str(_context)
+          "Mutation field"
         end
       end
 
@@ -284,7 +287,7 @@ describe GraphQL::Schema::Visibility do
     class InterfaceSuperclassSchema < GraphQL::Schema
       module Node
         include GraphQL::Schema::Interface
-        field :id, ID
+        field :id, ID, hash_key: :id
       end
 
       class NodeObject < GraphQL::Schema::Object
@@ -292,14 +295,18 @@ describe GraphQL::Schema::Visibility do
       end
 
       class Thing < NodeObject
-        field :name, String
+        field :name, String, hash_key: :name
       end
 
       class Query < GraphQL::Schema::Object
-        field :node, Node
+        field :node, Node, resolve_static: true
+
+        def self.node(context)
+          { id: "101", name: "Hat" }
+        end
 
         def node
-          { id: "101", name: "Hat" }
+          self.class.node(context)
         end
 
         field :thing, Thing

@@ -486,14 +486,13 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     lazy_resolve Proc, :call
 
     class FieldTestError < StandardError; end
 
     rescue_from(FieldTestError) do |err, obj, args, ctx, field|
       errs = ctx[:errors] ||= []
-      errs << "FieldTestError @ #{ctx[:current_path]}, #{field.path} / #{ctx[:current_field].path}"
+      errs << "FieldTestError @ #{ctx[:current_path] || "--"}, #{field.path} / #{ctx[:current_field]&.path || "--"}"
       nil
     end
   end
@@ -565,7 +564,7 @@ describe GraphQL::Dataloader do
     end
 
     class Component < GraphQL::Schema::Object
-      field :name, String
+      field :name, String, hash_key: "name"
     end
 
     class Part < GraphQL::Schema::Object
@@ -582,7 +581,6 @@ describe GraphQL::Dataloader do
 
     query(Query)
     use GraphQL::Dataloader
-    use GraphQL::Execution::Next if TESTING_EXEC_NEXT
   end
 
   module DataloaderAssertions
@@ -638,11 +636,7 @@ describe GraphQL::Dataloader do
         let(:parts_schema) { make_schema_from(PartsSchema) }
 
         def exec_query(query_string, schema: self.schema, context: nil, variables: nil)
-          if TESTING_EXEC_NEXT
-            schema.execute_next(query_string, context: context, variables: variables)
-          else
-            schema.execute(query_string, context: context, variables: variables)
-          end
+          schema.execute(query_string, context: context, variables: variables)
         end
 
         it "Works with request(...)" do
@@ -966,7 +960,7 @@ describe GraphQL::Dataloader do
         end
 
         it "works with side-by-side top level arguments when one is a list" do
-          skip("Only supported in Execution::Next") unless TESTING_EXEC_NEXT
+          exec_next_only("Only supported in Execution::Next")
           query_str = "{ r1: recipe(id: 5) { name } recipesById(ids: [6]) { name } }"
           context = { batched_calls_counter: BatchedCallsCounter.new }
           result = exec_query(query_str, context: context)
@@ -1147,10 +1141,7 @@ describe GraphQL::Dataloader do
           err = assert_raises GraphQL::Error do
             exec_query("{ testError }")
           end
-          expected_message = "Field error"
-          if TESTING_EXEC_NEXT
-            expected_message = "Resolving Query.testError: #{expected_message}"
-          end
+          expected_message = exec_next_error_message("Query.testError", "Field error")
           assert_equal expected_message, err.message
         end
 
@@ -1158,10 +1149,7 @@ describe GraphQL::Dataloader do
           err = assert_raises GraphQL::Error do
             exec_query("{ testError(source: true) }")
           end
-          expected_message = "Source error on: [1]"
-          if TESTING_EXEC_NEXT
-            expected_message = "Resolving Query.testError: #{expected_message}"
-          end
+          expected_message = exec_next_error_message "Query.testError", "Source error on: [1]"
           assert_equal expected_message, err.message
         end
 
@@ -1255,7 +1243,6 @@ describe GraphQL::Dataloader do
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
-
             extra_shortlived_jobs_fibers = if fiber_counting_dataloader_class < GraphQL::Dataloader::AsyncDataloader
               3
             else
@@ -1271,7 +1258,7 @@ describe GraphQL::Dataloader do
             end
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal (TESTING_EXEC_NEXT ? 11 : 12) + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_fiber_count
+            assert_equal if_exec_next(11, 12) + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_fiber_count
             assert_last_max_fiber_count(4, "Limit of 4 works as expected")
 
             extra_shortlived_jobs_fibers = if fiber_counting_dataloader_class < GraphQL::Dataloader::AsyncDataloader
@@ -1379,12 +1366,16 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :foo, Example::FooType do
+        field :foo, Example::FooType, resolve_static: true do
           argument :foo_id, GraphQL::Types::ID, required: false, loads: Example::FooType
         end
 
+        def self.foo(context, foo: nil)
+          context.dataload(Example::FooSource, "load")
+        end
+
         def foo(foo: nil)
-          dataloader.with(Example::FooSource).load("load")
+          self.class.foo(context, foo: foo)
         end
       end
 
@@ -1430,27 +1421,43 @@ describe GraphQL::Dataloader do
     end
 
     class Query < GraphQL::Schema::Object
-      field :load, String, null: false
-      field :load_all, String, null: false
-      field :request, String, null: false
-      field :request_all, String, null: false
+      field :load, String, null: false, resolve_static: true
+      field :load_all, String, null: false, resolve_static: true
+      field :request, String, null: false, resolve_static: true
+      field :request_all, String, null: false, resolve_static: true
+
+      def self.load(context)
+        context.dataload(ErrorObject, 123)
+      end
 
       def load
-        dataloader.with(ErrorObject).load(123)
+        self.class.load(context)
+      end
+
+      def self.load_all(context)
+        context.dataload_all(ErrorObject, [123])
       end
 
       def load_all
-        dataloader.with(ErrorObject).load_all([123])
+        self.class.load_all(context)
+      end
+
+      def self.request(context)
+        req = context.dataloader.with(ErrorObject).request(123)
+        req.load
       end
 
       def request
-        req = dataloader.with(ErrorObject).request(123)
+        self.class.request(context)
+      end
+
+      def self.request_all(context)
+        req = context.dataloader.with(ErrorObject).request_all([123])
         req.load
       end
 
       def request_all
-        req = dataloader.with(ErrorObject).request_all([123])
-        req.load
+        self.class.request_all(context)
       end
     end
 
@@ -1482,10 +1489,13 @@ describe GraphQL::Dataloader do
   it "has proper context[:current_field]" do
     res = FiberSchema.execute("mutation { mutation1(argument1: \"abc\") { __typename } mutation2(argument2: \"def\") { __typename } }")
     assert_equal({"mutation1"=>{ "__typename" => "Mutation1Payload" }, "mutation2"=>{ "__typename" => "Mutation2Payload"} }, res["data"])
-    expected_errors = [
-      "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
-      "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
-    ]
+    expected_errors = if_exec_next(
+      # No context[:current_...] values:
+      ["FieldTestError @ --, Mutation.mutation1 / --", "FieldTestError @ --, Mutation.mutation2 / --"],
+      [
+        "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
+        "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
+      ])
     assert_equal expected_errors, res.context[:errors]
   end
 
@@ -1604,12 +1614,16 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :thread_var, ThreadVariable::Type do
+        field :thread_var, ThreadVariable::Type, resolve_static: true do
           argument :key, GraphQL::Types::String
         end
 
+        def self.thread_var(context, key:)
+          context.dataload(ThreadVariable::Source, key)
+        end
+
         def thread_var(key:)
-          dataloader.with(ThreadVariable::Source).load(key)
+          self.class.thread_var(context, key: key)
         end
       end
 
@@ -1661,12 +1675,16 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :thread_var, CustomThreadVariable::Type do
+        field :thread_var, CustomThreadVariable::Type, resolve_static: true do
           argument :key, GraphQL::Types::String
         end
 
+        def self.thread_var(context, key:)
+          context.dataload(CustomThreadVariable::Source, key)
+        end
+
         def thread_var(key:)
-          dataloader.with(CustomThreadVariable::Source).load(key)
+          self.class.thread_var(context, key: key)
         end
       end
 
@@ -1717,11 +1735,19 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :nested, String
-        field :nested2, String
+        field :nested, String, resolve_static: true
+        field :nested2, String, resolve_static: true
+
+        def self.nested(context)
+          context.dataload(Nested, "nested")
+        end
 
         def nested
           dataloader.with(Nested).load("nested")
+        end
+
+        def self.nested2(context)
+          context.dataload(Nested, "nested2")
         end
 
         def nested2
@@ -1749,11 +1775,7 @@ describe GraphQL::Dataloader do
       end
 
       class BarType < GraphQL::Schema::Object
-        field :id, Integer
-
-        def id
-          object
-        end
+        field :id, Integer, method: :itself
 
         def self.authorized?(object, context)
           -> { true }
@@ -1761,23 +1783,29 @@ describe GraphQL::Dataloader do
       end
 
       class FooType < GraphQL::Schema::Object
-        field :dataloader_value, BarType
+        field :dataloader_value, BarType, resolve_static: true
 
         def self.authorized?(object, context)
           -> { true }
         end
 
+        def self.dataloader_value(context)
+          context.dataload(Source, 1)
+        end
+
         def dataloader_value
-          dataloader.with(Source).load(1)
+          self.class.dataloader_value(context)
         end
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :foo, FooType
+        field :foo, FooType, resolve_static: true
 
-        def foo
+        def self.foo(context)
           {}
         end
+
+        def foo; {}; end
       end
 
       use GraphQL::Dataloader

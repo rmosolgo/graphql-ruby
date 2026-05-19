@@ -113,6 +113,10 @@ module GraphQL
       end
 
       class << self
+        def authorizes?(ctx)
+          self.method(:authorized?).owner != GraphQL::Schema::InputObject
+        end
+
         def authorized?(obj, value, ctx)
           # Authorize each argument (but this doesn't apply if `prepare` is implemented):
           if value.respond_to?(:key?)

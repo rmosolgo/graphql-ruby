@@ -43,11 +43,15 @@ if testing_rails?
         field :username, String
       end
       class Review < BaseObject
-        field :stars, Int
-        field :user, User
+        field :stars, Int, hash_key: :stars
+        field :user, User, resolve_batch: true
 
         def self.authorized?(obj, ctx)
           ctx.dataloader.with(Authorized).load(obj)
+        end
+
+        def self.user(objects, context)
+          context.dataload_all_records(::User, objects.map { |o| o[:user_id] })
         end
 
         def user
@@ -57,12 +61,16 @@ if testing_rails?
 
       class Book < BaseObject
         field :title, String
-        field :reviews, [Review]
-        field :average_review, Float
-        field :author, "PerfettoSchema::Author"
-        field :other_book, Book
-        def reviews
+        field :reviews, [Review], resolve_each: true
+        field :average_review, Float, dataload: AverageReview
+        field :author, "PerfettoSchema::Author", dataload: { association: true }
+        field :other_book, Book, dataload: OtherBook
+        def self.reviews(object, context)
           object.reviews.limit(2).map { |r| { stars: r.stars, user_id: r.user } }
+        end
+
+        def reviews
+          self.class.reviews(object, context)
         end
 
         def average_review
@@ -80,10 +88,14 @@ if testing_rails?
 
       class Author < BaseObject
         field :name, String
-        field :books, [Book]
+        field :books, [Book], resolve_each: true
+
+        def self.books(object, context)
+          object.books.limit(2)
+        end
 
         def books
-          object.books.limit(2)
+          self.class.books(object, context)
         end
       end
 
@@ -91,24 +103,36 @@ if testing_rails?
         possible_types(Author, Book)
       end
       class Query < BaseObject
-        field :authors, [Author]
+        field :authors, [Author], resolve_static: true
 
-        def authors
+        def self.authors(context)
           ::Author.all
         end
 
-        field :thing, Thing do
+        def authors
+          self.class.authors(context)
+        end
+
+        field :thing, Thing, resolve_static: true do
           argument :id, ID
         end
 
-        def thing(id:)
+        def self.thing(context, id:)
           model_name, db_id = id.split("-")
-          dataload_record(Object.const_get(model_name), db_id)
+          context.dataload_record(Object.const_get(model_name), db_id)
         end
 
-        field :crash, Int
-        def crash
+        def thing(id:)
+          self.class.thing(context, id: id)
+        end
+
+        field :crash, Int, resolve_static: true
+        def self.crash(context)
           raise "Crash the query"
+        end
+
+        def crash
+          self.class.crash(context)
         end
 
         class SecretInput < GraphQL::Schema::InputObject
@@ -116,22 +140,26 @@ if testing_rails?
         end
 
         class SecretThing < GraphQL::Schema::Object
-          field :greeting, String
+          field :greeting, String, hash_key: :greeting
         end
 
-        field :secret_field, SecretThing do
+        field :secret_field, SecretThing, resolve_static: true do
           argument :cipher, String, required: false
           argument :password, String, required: false
           argument :input, [[SecretInput]], required: false
         end
 
-        def secret_field(cipher: nil, password: nil, input: nil)
+        def self.secret_field(context, cipher: nil, password: nil, input: nil)
           {
             greeting: "Hello!",
             cipher: cipher || "FALLBACK_CIPHER",
             anon: Class.new.new,
             password: password || (input ? input[0][0][:password] : "FALLBACK_PASSWORD"),
           }
+        end
+
+        def secret_field(cipher: nil, password: nil, input: nil)
+          self.class.secret_field(context, cipher: cipher, password: password, input: input)
         end
       end
 
@@ -187,7 +215,7 @@ if testing_rails?
       data = JSON.parse(json)
 
 
-      check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}#{TESTING_EXEC_NEXT ? "-next" : ""}.json")
+      check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}#{if_exec_next("-next", "")}.json")
     end
 
     it "replaces nil class name with (anonymous)" do

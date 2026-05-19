@@ -53,7 +53,6 @@ describe GraphQL::Tracing::DataDogTrace do
       use GraphQL::Dataloader
       trace_with(GraphQL::Tracing::DataDogTrace)
       lazy_resolve(Box, :value)
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     end
 
     class CustomTracerTestSchema < GraphQL::Schema
@@ -66,7 +65,6 @@ describe GraphQL::Tracing::DataDogTrace do
       query(Query)
       trace_with(CustomDataDogTracing)
       lazy_resolve(Box, :value)
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     end
   end
 
@@ -75,11 +73,7 @@ describe GraphQL::Tracing::DataDogTrace do
   end
 
   def exec_query(query_str, context: {}, schema: DataDogTraceTest::TestSchema)
-    if TESTING_EXEC_NEXT
-      schema.execute_next(query_str, context: context)
-    else
-      schema.execute(query_str, context: context)
-    end
+    schema.execute(query_str, context: context)
   end
 
   it "falls back to a :tracing_fallback_transaction_name when provided" do

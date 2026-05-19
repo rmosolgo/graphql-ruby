@@ -124,15 +124,10 @@ describe GraphQL::Schema::Member::Scoped do
 
     query(Query)
     lazy_resolve(Proc, :call)
-    use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
   end
 
   def exec_query(...)
-    if TESTING_EXEC_NEXT
-      ScopeSchema.execute_next(...)
-    else
-      ScopeSchema.execute(...)
-    end
+    ScopeSchema.execute(...)
   end
 
   describe ".scope_items(items, ctx)" do
@@ -367,15 +362,10 @@ describe GraphQL::Schema::Member::Scoped do
       end
 
       query(Query)
-      use(GraphQL::Execution::Next) if TESTING_EXEC_NEXT
     end
 
     def exec_skip_auth(...)
-      if TESTING_EXEC_NEXT
-        SkipAuthSchema.execute_next(...)
-      else
-        SkipAuthSchema.execute(...)
-      end
+      SkipAuthSchema.execute(...)
     end
 
     it "runs both authorizations by default" do

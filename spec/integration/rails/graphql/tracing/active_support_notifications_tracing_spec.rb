@@ -36,25 +36,30 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
       })
     end
 
+    # Exec-next doesn't call some of the hooks that Legacy tracing uses
     expected_traces = [
       (USING_C_PARSER ? "lex.graphql" : nil),
       "parse.graphql",
       "validate.graphql",
       "analyze_query.graphql",
       "analyze_multiplex.graphql",
-      "authorized.graphql",
-      "execute_field.graphql (Query.batchedBase)",
-      "execute_field.graphql (Query.batchedBase)",
+      *if_exec_next([], [
+        "authorized.graphql",
+        "execute_field.graphql (Query.batchedBase)",
+        "execute_field.graphql (Query.batchedBase)",
+      ]),
       "execute_query.graphql",
       "lazy_loader.graphql",
-      "execute_field_lazy.graphql (Query.batchedBase)",
-      "authorized.graphql",
-      "execute_field.graphql (Base.name)",
-      "execute_field_lazy.graphql (Query.batchedBase)",
-      "authorized.graphql",
-      "execute_field.graphql (Base.name)",
-      "execute_field_lazy.graphql (Base.name)",
-      "execute_field_lazy.graphql (Base.name)",
+      *if_exec_next([], [
+        "execute_field_lazy.graphql (Query.batchedBase)",
+        "authorized.graphql",
+        "execute_field.graphql (Base.name)",
+        "execute_field_lazy.graphql (Query.batchedBase)",
+        "authorized.graphql",
+        "execute_field.graphql (Base.name)",
+        "execute_field_lazy.graphql (Base.name)",
+        "execute_field_lazy.graphql (Base.name)",
+      ]),
       "execute_query_lazy.graphql",
       "execute_multiplex.graphql",
     ].compact
