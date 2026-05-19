@@ -312,9 +312,9 @@ if RUBY_VERSION >= "3.2.0"
             result = @schema.execute(query_str)
             t2 = Time.now
             assert_equal ["a", "b", "c"], result["data"]["listWaiters"].map { |lw| lw["waiter"]["tag"]}
+            assert_equal [["a", "b", "c"]], AsyncSchema::KeyWaitForSource.fetches, "All keys were fetched at once"
             # The field itself waits 0.1
             assert_in_delta 0.3, t2 - t1, 0.06, "Wait was parallel"
-            assert_equal [["a", "b", "c"]], AsyncSchema::KeyWaitForSource.fetches, "All keys were fetched at once"
           end
 
           it 'copies fiber-local variables over to sources' do

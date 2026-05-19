@@ -1,96 +1,75 @@
 # frozen_string_literal: true
 
-
-def ts_puts(str)
-    puts "[#{Time.now.to_f.to_s.ljust(18)} | #{Async::Task.current.object_id} | #{Fiber.current.object_id}] #{str}"
-end
 module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
       def yield(source = Fiber[:__graphql_current_dataloader_source])
-        trace = Fiber[:__graphql_current_multiplex]&.current_trace
+        run = Fiber[:graphql_async_dataloader_run]
+        trace = run.trace
         trace&.dataloader_fiber_yield(source)
         task = Async::Task.current
-        working_jobs = Fiber[:graphql_dataloader_working_jobs]
-        waiting_jobs = Fiber[:graphql_dataloader_waiting_jobs]
-        working_jobs.delete(task)
-        waiting_jobs << task
-        ts_puts "Snoozing #{working_jobs.size} / #{@pending_jobs.size}"
-        if working_jobs.empty?
-          ts_puts "Yield signalling manager condition"
-          # TODO This won't properly wait for next_tick
-          Fiber[:graphql_dataloader_manager].signal
-        end
-        ts_puts "Waiting for jobs condition (#{Fiber[:graphql_dataloader_next_tick].object_id})"
-        Fiber[:graphql_dataloader_next_tick].wait
-        ts_puts "Resuming"
+        run.finished_tasks.push(task)
+        condition = Fiber[:graphql_async_dataloader_condition]
+        puts "Yield, waiting on #{source.class}"
+        condition.wait
+        puts "Resuming after signal on condition"
+        run.started_tasks.push(task)
         trace&.dataloader_fiber_resume(source)
-        waiting_jobs.delete(task)
-        working_jobs << task
         nil
+      end
+
+      class Run
+        def initialize(root_task, trace, jobs_fiber_limit)
+          @root_task = root_task
+          @trace = trace
+          @jobs_fiber_limit = jobs_fiber_limit
+          @finished_tasks = Async::Queue.new
+          @started_tasks = Async::Queue.new
+          @snoozed_jobs_condition = Async::Condition.new
+          @snoozed_sources_condition = Async::Condition.new
+        end
+
+        attr_reader :root_task, :trace, :jobs_fiber_limit, :finished_tasks, :started_tasks, :snoozed_jobs_condition, :snoozed_sources_condition
+
+        def jobs_bandwidth?
+          true # TODO implement fiber limit
+        end
+
+        def sources_bandwidth?
+          true # TODO implement fiber limit
+        end
+
+        def running?
+          @snoozed_jobs_condition.waiting? || @snoozed_sources_condition.waiting?
+        end
       end
 
       def run(trace_query_lazy: nil)
         trace = Fiber[:__graphql_current_multiplex]&.current_trace
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
-        job_fibers = []
-        next_job_fibers = []
-        source_tasks = []
-        next_source_tasks = []
         first_pass = true
-        parent_condition = Async::Condition.new
-        sources_condition = Async::Condition.new
-        jobs_condition = Async::Condition.new
         trace&.begin_dataloader(self)
         fiber_vars = get_fiber_variables
         raised_error = nil
-        loops = 0
         Sync do |root_task|
-          while first_pass || !job_fibers.empty? || !next_job_fibers.empty?
-            ts_puts "WHILE #{@pending_jobs.size} / #{job_fibers.map(&:object_id)} / #{next_job_fibers.map(&:object_id)} / #{source_tasks.map(&:object_id)} / #{next_source_tasks.map(&:object_id)}"
-            loops += 1
+          run = Run.new(root_task, trace, jobs_fiber_limit)
+          set_fiber_variables(fiber_vars)
+
+          while first_pass || run.running? || !@pending_jobs.empty?
             first_pass = false
-            set_fiber_variables(fiber_vars)
-            run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace, root_task, jobs_condition, parent_condition)
+            run_pending_steps(run)
 
-            if !source_tasks.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-              while ((job_fibers.size + next_job_fibers.size + source_tasks.size + next_source_tasks.size) < total_fiber_limit) &&
-                  @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-                ts_puts "source while"
-                spawn_source_task(root_task, sources_condition, trace, source_tasks, next_source_tasks, parent_condition)
-              end
-
-              if source_tasks.any?
-                ts_puts "WAIT for manager"
-                parent_condition.wait
-              end
-              ts_puts "SIGNAL to sources condition"
-              sources_condition.signal
-              ts_puts "END Sources run"
-            end
-            if jobs_condition.waiting?
-              ts_puts "SIGNAL to jobs condition (#{jobs_condition.object_id}, #{jobs_condition.waiting?})"
-              jobs_condition.signal
-              ts_puts "WAIT for parent_condition in main loop"
-              possible_error = parent_condition.wait
-              if possible_error
-                raise possible_error
-              end
+            if @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+              run_sources(run)
             end
 
-            if !@lazies_at_depth.empty?
-              with_trace_query_lazy(trace_query_lazy) do
-                run_next_pending_lazies(job_fibers, trace, root_task, jobs_condition, next_job_fibers, parent_condition)
-                run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace, root_task, jobs_condition, parent_condition)
-              end
-            end
-
-            ts_puts [loops:].inspect
-            if loops > 10
-              root_task.cancel
-            end
+            # if !@lazies_at_depth.empty?
+            #   with_trace_query_lazy(trace_query_lazy) do
+            #     run_next_pending_lazies(job_fibers, trace, root_task, jobs_condition, next_job_fibers, parent_condition)
+            #     run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace, root_task, jobs_condition, parent_condition)
+            #   end
+            # end
           end
-          ts_puts "END Sync { ... }"
         rescue StandardError => err
           raised_error = err
         end
@@ -99,71 +78,129 @@ module GraphQL
           raise raised_error
         end
         trace&.end_dataloader(self)
-
       rescue UncaughtThrowError => e
         throw e.tag, e.value
       end
 
       private
 
-      def run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace, parent_task, condition, parent_condition)
-        ts_puts "Run pending steps task"
-        # while (f = (job_fibers.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && spawn_job_task(trace, parent_task, condition, job_fibers, next_job_fibers))))
-        while ((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && !@pending_jobs.empty?
-          ts_puts "WHILE Spawning job tasks (#{@pending_jobs.size} jobs)"
-          spawn_job_task(trace, parent_task, condition, job_fibers, next_job_fibers, parent_condition)
-        end
-        if !job_fibers.empty?
-          ts_puts "Waiting for manager condition"
-          possible_err = parent_condition.wait
-          ts_puts "possible_err: #{possible_err}"
-          if possible_err
-            raise possible_err
+      def run_pending_steps(run)
+        finished_all_tasks = nil
+        completed_first_run = Async::Promise.new
+        started_tasks = 0
+        finished_tasks = 0
+
+        waiting_task = run.root_task.async do
+          completed_first_run.wait
+          while _t = run.finished_tasks.wait
+            finished_tasks += 1
+            if finished_tasks == started_tasks
+              finished_all_tasks.resolve(true)
+            end
           end
         end
-        ts_puts "Finished run_pending_steps task"
+
+        counting_task = run.root_task.async do
+          while _t = run.started_tasks.wait
+            started_tasks += 1
+          end
+        end
+
+        if run.snoozed_jobs_condition.waiting?
+          run.snoozed_jobs_condition.signal
+        end
+
+        while !@pending_jobs.empty? && run.jobs_bandwidth?
+          finished_all_tasks = Async::Promise.new
+          spawn_job_task(run)
+
+          if !completed_first_run.resolved?
+            completed_first_run.resolve(true)
+          end
+
+          finished_all_tasks.wait
+        end
+
+        waiting_task.cancel
+        counting_task.cancel
+
       end
 
-      def spawn_job_task(trace, parent_task, condition, job_fibers, next_job_fibers, parent_condition, prepend = false )
+      def spawn_job_task(run)
         if !@pending_jobs.empty?
           fiber_vars = get_fiber_variables
-          new_task = parent_task.async do |task|
-            ts_puts "New jobs task"
-            trace&.dataloader_spawn_execution_fiber(@pending_jobs)
-            Fiber[:graphql_dataloader_working_jobs] = job_fibers
-            Fiber[:graphql_dataloader_waiting_jobs] = next_job_fibers
-            Fiber[:graphql_dataloader_next_tick] = condition
-            Fiber[:graphql_dataloader_manager] = parent_condition
+          new_task = run.root_task.async do |task|
+            run.trace&.dataloader_spawn_execution_fiber(@pending_jobs)
+            Fiber[:graphql_async_dataloader_run] = run
+            Fiber[:graphql_async_dataloader_condition] = run.snoozed_jobs_condition
             set_fiber_variables(fiber_vars)
-            if prepend
-              job_fibers.unshift(task)
-            else
-              job_fibers.push(task)
-            end
+            run.started_tasks.push(task)
             while job = @pending_jobs.shift
-              ts_puts "Dequeued #{job.class} ##{job.object_id}"
               job.call
-              ts_puts "Finished job #{job.class}  ##{job.object_id}"
             end
           ensure
             cleanup_fiber
-            ts_puts "END JOBS TASK, #{$!}"
-            job_fibers.delete(task)
-            if job_fibers.empty? && @pending_jobs.empty?
-              ts_puts "Signal parent condition from spawn_job_task"
-              parent_condition.signal($!)
-            end
-            trace&.dataloader_fiber_exit
+            run.finished_tasks.push(task)
+            run.trace&.dataloader_fiber_exit
           end
           if !new_task.alive?
             new_task.wait # raise the error
           end
+
+          new_task
         end
+      end
+
+      def run_sources(run)
+        puts "Running sources (waiting? #{run.snoozed_sources_condition.waiting?})"
+        started_tasks = 0
+        finished_tasks = 0
+        completed_first_run = Async::Promise.new
+        finished_all_tasks = Async::Promise.new
+
+        waiting_task = run.root_task.async do
+          completed_first_run.wait
+          while _t = run.finished_tasks.wait
+            finished_tasks += 1
+            puts "Finished task #{finished_tasks}"
+            if finished_tasks == started_tasks
+              finished_all_tasks.resolve(true)
+            end
+          end
+        end
+
+
+        counting_task = run.root_task.async do
+          completed_first_run.wait
+          while _t = run.started_tasks.wait
+            started_tasks += 1
+          end
+        end
+
+        if run.snoozed_sources_condition.waiting?
+          run.snoozed_sources_condition.signal
+        end
+
+
+        while run.sources_bandwidth? &&
+            @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+          spawn_source_task(run)
+
+          if !completed_first_run.resolved?
+            completed_first_run.resolve(true)
+          end
+
+          puts "Waiting for finished_all_tasks"
+          pp [:fat, finished_all_tasks.wait]
+        end
+
+        waiting_task.cancel
+        counting_task.cancel
+
       end
 
       #### TODO DRY  Had to duplicate to remove spawn_job_fiber
       def run_next_pending_lazies(job_fibers, trace, parent_task, condition, next_job_fibers, parent_condition)
-        ts_puts "run_next_pending_lazies"
         smallest_depth = nil
         @lazies_at_depth.each_key do |depth_key|
           smallest_depth ||= depth_key
@@ -183,7 +220,7 @@ module GraphQL
         end
       end
 
-      def spawn_source_task(parent_task, condition, trace, source_tasks, next_source_tasks, parent_condition)
+      def spawn_source_task(run)
         pending_sources = nil
         @source_cache.each_value do |source_by_batch_params|
           source_by_batch_params.each_value do |source|
@@ -196,35 +233,26 @@ module GraphQL
 
         if pending_sources
           fiber_vars = get_fiber_variables
-          new_task = parent_task.async do |task|
-            ts_puts "Starting sources task"
-            source_tasks << task
-            Fiber[:graphql_dataloader_working_jobs] = source_tasks
-            Fiber[:graphql_dataloader_waiting_jobs] = next_source_tasks
-            trace&.dataloader_spawn_source_fiber(pending_sources)
-            set_fiber_variables(fiber_vars)
-            Fiber[:graphql_dataloader_next_tick] = condition
-            Fiber[:graphql_dataloader_manager] = parent_condition
-            pending_sources.each do |s|
-              ts_puts "Running #{s.class}"
-              trace&.begin_dataloader_source(s)
-              s.run_pending_keys
-              trace&.end_dataloader_source(s)
-              ts_puts "Finished #{s.class}"
+          trace = run.trace
+          pending_sources.each do |source|
+            new_task = run.root_task.async do |task|
+              Fiber[:graphql_async_dataloader_run] = run
+              Fiber[:graphql_async_dataloader_condition] = run.snoozed_sources_condition
+              trace&.dataloader_spawn_source_fiber(pending_sources)
+              set_fiber_variables(fiber_vars)
+              run.started_tasks.push(task)
+              trace&.begin_dataloader_source(source)
+              source.run_pending_keys
+              trace&.end_dataloader_source(source)
+              nil
+            ensure
+              run.finished_tasks.push(task)
+              cleanup_fiber
+              trace&.dataloader_fiber_exit
             end
-            nil
-          ensure
-            ts_puts "Ending sources task"
-            source_tasks.delete(task)
-            if source_tasks.empty?
-              ts_puts "Signaling parent condition from spawn_source_task"
-              parent_condition.signal
+            if !new_task.alive?
+              new_task.wait # raise the error
             end
-            cleanup_fiber
-            trace&.dataloader_fiber_exit
-          end
-          if !new_task.alive?
-            new_task.wait # raise the error
           end
         end
       end
