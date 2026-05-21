@@ -26,7 +26,7 @@ module GraphQL
         schema.visibility = self.new(schema, dynamic: dynamic, preload: preload, profiles: profiles, migration_errors: migration_errors)
       end
 
-      def initialize(schema, dynamic:, preload:, profiles:, migration_errors:)
+      def initialize(schema, dynamic:, preload:, profiles:, migration_errors:, configuration_inherited: false)
         @schema = schema
         schema.use_visibility_profile = true
         schema.visibility_profile_class = if migration_errors
@@ -46,6 +46,7 @@ module GraphQL
         @types = nil
         @all_references = nil
         @loaded_all = false
+        @configuration_inherited = configuration_inherited
         if preload
           self.preload
         end
@@ -100,6 +101,7 @@ module GraphQL
         # Root types may have been nil:
         types_to_visit.compact!
         ensure_all_loaded(types_to_visit)
+        @cached_profiles.clear
         @profiles.each do |profile_name, example_ctx|
           prof = profile_for(example_ctx)
           prof.preload
@@ -140,7 +142,8 @@ module GraphQL
           dynamic: @dynamic,
           preload: @preload,
           profiles: @profiles,
-          migration_errors: @migration_errors
+          migration_errors: @migration_errors,
+          configuration_inherited: true,
         )
       end
 
@@ -193,7 +196,11 @@ module GraphQL
         when false
           # Rails.env wasn't defined, so this won't try to preload unless manually set to true
         when true, nil
-          raise TypeConfigurationError.new(config_message, config_code)
+          if @configuration_inherited
+            preload
+          else
+            raise TypeConfigurationError.new(config_message, config_code)
+          end
         end
       end
 

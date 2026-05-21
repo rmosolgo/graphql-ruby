@@ -129,6 +129,21 @@ describe GraphQL::Schema::Visibility do
     end)
   end
 
+  it "doesn't raise on subclasses and preloads" do
+    base_schema = Class.new(GraphQL::Schema) do
+      query(VisSchema::Query)
+      use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
+    end
+
+    child_schema = Class.new(base_schema) do
+      query(VisSchema::Query)
+    end
+
+    assert_equal [:public, :admin], base_schema.visibility.cached_profiles.keys
+    assert_equal [:public, :admin], child_schema.visibility.cached_profiles.keys
+    assert_equal [:public, :admin], Class.new(child_schema).visibility.cached_profiles.keys
+  end
+
   it "raises when preload: nil" do
     assert_raises GraphQL::Schema::Visibility::TypeConfigurationError do
       Class.new(GraphQL::Schema) do
