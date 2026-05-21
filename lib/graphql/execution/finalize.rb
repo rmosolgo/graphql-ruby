@@ -154,12 +154,14 @@ module GraphQL
                 @runner.type_condition_applies?(@query.context, static_type_at_result, t.name)
               )
               result_h = check_object_result(result_h, parent_type, ast_selection.selections)
+              return nil if result_h.nil?
             end
           when Language::Nodes::FragmentSpread
             fragment_defn = @query.document.definitions.find { |defn| defn.is_a?(Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
             static_type_at_result = @static_type_at[result_h]
             if static_type_at_result && @runner.type_condition_applies?(@query.context, static_type_at_result, fragment_defn.type.name)
               result_h = check_object_result(result_h, parent_type, fragment_defn.selections)
+              return nil if result_h.nil?
             end
           end
         end
