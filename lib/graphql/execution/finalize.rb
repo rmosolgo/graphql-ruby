@@ -117,7 +117,7 @@ module GraphQL
               @current_exec_path << key
               @current_result_path << key
 
-              field_defn = @query.context.types.field(parent_type, ast_selection.name) || raise("Invariant: No field found for #{static_type.to_type_signature}.#{ast_selection.name}")
+              field_defn = @query.context.types.field(parent_type, ast_selection.name) || raise("Invariant: No field found for #{parent_type.to_type_signature}.#{ast_selection.name}")
               result_type = field_defn.type
               if (result_type_non_null = result_type.non_null?)
                 result_type = result_type.of_type
