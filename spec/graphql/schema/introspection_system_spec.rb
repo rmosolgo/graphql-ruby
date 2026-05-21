@@ -282,7 +282,7 @@ describe GraphQL::Schema::IntrospectionSystem do
 
         class EntryPoints < GraphQL::Introspection::EntryPoints
           field_class(BaseField)
-          field :__type, GraphQL::Introspection::TypeType, resolve_static: true do
+          field :__type, GraphQL::Schema::LateBoundType.new("__Type"), resolve_static: true do
             argument :name, String
           end
         end
@@ -294,7 +294,6 @@ describe GraphQL::Schema::IntrospectionSystem do
 
       class Query < GraphQL::Schema::Object
         field :int, Integer, null: false
-        def int; 1; end
       end
 
       query(Query)
