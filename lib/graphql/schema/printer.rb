@@ -58,8 +58,8 @@ module GraphQL
           end
         end
         schema = Class.new(GraphQL::Schema) {
-          use GraphQL::Schema::Visibility
           query(query_root)
+          use GraphQL::Schema::Visibility
           def self.visible?(member, _ctx)
             member.graphql_name != "Root"
           end

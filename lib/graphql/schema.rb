@@ -757,6 +757,7 @@ module GraphQL
           # reset this cached value:
           @introspection_system = nil
           introspection_system
+          self.visibility&.introspection_system_configured(introspection_system)
           @introspection
         else
           @introspection || find_inherited_value(:introspection)
@@ -768,7 +769,6 @@ module GraphQL
         if !@introspection_system
           @introspection_system = Schema::IntrospectionSystem.new(self)
           @introspection_system.resolve_late_bindings
-          self.visibility&.introspection_system_configured(@introspection_system)
         end
         @introspection_system
       end

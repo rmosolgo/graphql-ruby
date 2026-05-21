@@ -530,7 +530,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
   it "defers root type blocks until those types are used" do
     calls = []
     schema = Class.new(GraphQL::Schema) do
-      use(GraphQL::Schema::Visibility)
+      use(GraphQL::Schema::Visibility, preload: false)
       query { calls << :query; Class.new(GraphQL::Schema::Object) { graphql_name("Query") } }
       mutation { calls << :mutation; Class.new(GraphQL::Schema::Object) { graphql_name("Mutation") } }
       subscription { calls << :subscription; Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") } }
@@ -557,7 +557,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     assert schema.instance_variable_get(:@subscription_extension_added)
 
     schema2 = Class.new(GraphQL::Schema) do
-      use(GraphQL::Schema::Visibility)
+      use(GraphQL::Schema::Visibility, preload: false)
       use GraphQL::Subscriptions
       subscription(Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") })
     end
