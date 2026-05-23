@@ -163,6 +163,26 @@ class Types::BaseField < GraphQL::Schema::Field
 end
 ```
 
+## Caching complexity
+
+Calculating complexity can be slow in larger monolithic applications. To help with this, QueryComplexity provides a digest that can be used for caching:
+
+```ruby
+class CachedMaxQueryComplexity < GraphQL::Analyzer::MaxQueryComplexity
+  # You should use persistent cache store for production such as Rails.cache or Redis.new
+  NAIVE_CACHE = {}
+
+  def max_possible_complexity
+    # Dynamic complexities such as lambda complexity or complexity_for method are impossible to cache
+    if @complexity_digest.key?(query)
+      NAIVE_CACHE.fetch(Digest::SHA256.hexdigest(@complexity_digest[query].sort_by(&:first).to_json)) { super }
+    else
+      super
+    end
+  end
+end
+```
+
 ## How complexity scoring works
 
 GraphQL Ruby's complexity scoring algorithm is biased towards selection fairness. While highly accurate, its results are not always intuitive. Here's an example query performed on the [Shopify Admin API](https://shopify.dev/docs/api/admin-graphql):
