@@ -45,12 +45,12 @@ module GraphQL
         def validate(_object, _context, value)
           return if permitted_empty_value?(value) # pass in this case
           length = value.nil? ? 0 : value.length
-          if @maximum && length > @maximum
-            partial_format(@too_long, { count: @maximum })
-          elsif @minimum && length < @minimum
-            partial_format(@too_short, { count: @minimum })
-          elsif @is && length != @is
-            partial_format(@wrong_length, { count: @is })
+          if (current_max = validation_parameter(@maximum)) && length > current_max
+            partial_format(validation_parameter(@too_long), { count: current_max })
+          elsif (current_min = validation_parameter(@minimum)) && length < current_min
+            partial_format(validation_parameter(@too_short), { count: current_min })
+          elsif (current_is = validation_parameter(@is)) && length != current_is
+            partial_format(validation_parameter(@wrong_length), { count: current_is })
           end
         end
       end

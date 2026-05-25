@@ -9,15 +9,15 @@ module GraphQL
       #   argument :name, String, required: false, validates: { allow_null: false }
       class AllowNullValidator < Validator
         MESSAGE = "%{validated} can't be null"
-        def initialize(allow_null_positional, allow_null: nil, message: MESSAGE, **default_options)
+        def initialize(allow_null_positional = nil, allow_null: nil, message: MESSAGE, **default_options)
           @message = message
           super(**default_options)
           @allow_null = allow_null.nil? ? allow_null_positional : allow_null
         end
 
         def validate(_object, _context, value)
-          if value.nil? && !@allow_null
-            @message
+          if value.nil? && !validation_parameter(@allow_null)
+            validation_parameter(@message)
           end
         end
       end

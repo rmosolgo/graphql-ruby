@@ -20,10 +20,16 @@ describe GraphQL::Schema::Validator::AllowNullValidator do
   end
 
   it "can be used standalone" do
-    build_schema(String, { allow_null: false })
+    allow_null = false
+    msg = "can't be Null!!"
+    build_schema(String, { allow_null: { allow_null: -> { allow_null }, message: -> { msg } } })
     result = exec_query("query($str: String) { validated(value: $str) }", variables: { str: nil })
     assert_nil result["data"]["validated"]
-    assert_equal ["value can't be null"], result["errors"].map { |e| e["message"] }
+    assert_equal ["can't be Null!!"], result["errors"].map { |e| e["message"] }
+
+    allow_null = true
+    result = exec_query("query($str: String) { validated(value: $str) }", variables: { str: nil })
+    refute result.key?("errors")
   end
 
   it "allows nil when no validations are configured" do
