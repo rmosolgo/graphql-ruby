@@ -19,6 +19,7 @@ module GraphQL
       end
 
       def value
+        @field_resolve_step.set_current_field
         if @authorized_value
           query = @field_resolve_step.selections_step.query
           query.current_trace.begin_authorized(@resolved_type, @object, query.context)
@@ -36,9 +37,12 @@ module GraphQL
           ctx.query.current_trace.end_resolve_type(st, @object, ctx, @resolved_type)
         end
         @runner.add_step(self)
+      ensure
+        @field_resolve_step.set_current_field(nil)
       end
 
       def call
+        @field_resolve_step.set_current_field
         case @next_step
         when :resolve_type
           static_type = @field_resolve_step.static_type
@@ -65,6 +69,8 @@ module GraphQL
         else
           raise ArgumentError, "This is a bug, unknown step: #{@next_step.inspect}"
         end
+      ensure
+        @field_resolve_step.set_current_field(nil)
       end
 
       def authorize
