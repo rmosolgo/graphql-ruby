@@ -64,12 +64,18 @@ argument :id, ID, required: false, validates: { allow_null: true }
 
 Will permit any query that passes `id: null`.
 
+Validation options may also be passed as procs that accept no parameters, for example:
+
+```ruby
+validates :title, String, validates: { format: { with: -> { Flipper.enabled?(:new_title_format) ? NEW_TITLE_FORMAT : /.*/ }}
+```
+
 ## Custom Validators
 
 You can write custom validators, too. A validator is a class that extends `GraphQL::Schema::Validator`. It should implement:
 
 - `def initialize(..., **default_options)` to accept any validator-specific options and pass along the defaults to `super(**default_options)`
-- `def validate(object, context, value)` which is called at runtime to validate `value`. It may return a String error message or an Array of Strings. GraphQL-Ruby will add those messages to the top-level `"errors"` array along with runtime context information.
+- `def validate(_empty, context, value)` which is called at runtime to validate `value`. It may return a String error message or an Array of Strings. GraphQL-Ruby will add those messages to the top-level `"errors"` array along with runtime context information.
 
 Then, custom validators can be attached either:
 
