@@ -10,6 +10,8 @@
 
 ### Bug fixes
 
+- `Execution::Next`: don't crash when non-null propagation nullifies an object inside a fragment that has sibling selections
+
 # 2.6.2
 
 ### New features

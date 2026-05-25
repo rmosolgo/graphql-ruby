@@ -117,7 +117,7 @@ module GraphQL
               @current_exec_path << key
               @current_result_path << key
 
-              field_defn = @query.context.types.field(parent_type, ast_selection.name) || raise("Invariant: No field found for #{static_type.to_type_signature}.#{ast_selection.name}")
+              field_defn = @query.context.types.field(parent_type, ast_selection.name) || raise("Invariant: No field found for #{parent_type.to_type_signature}.#{ast_selection.name}")
               result_type = field_defn.type
               if (result_type_non_null = result_type.non_null?)
                 result_type = result_type.of_type
@@ -154,12 +154,14 @@ module GraphQL
                 @runner.type_condition_applies?(@query.context, static_type_at_result, t.name)
               )
               result_h = check_object_result(result_h, parent_type, ast_selection.selections)
+              return nil if result_h.nil?
             end
           when Language::Nodes::FragmentSpread
             fragment_defn = @query.document.definitions.find { |defn| defn.is_a?(Language::Nodes::FragmentDefinition) && defn.name == ast_selection.name }
             static_type_at_result = @static_type_at[result_h]
             if static_type_at_result && @runner.type_condition_applies?(@query.context, static_type_at_result, fragment_defn.type.name)
               result_h = check_object_result(result_h, parent_type, fragment_defn.selections)
+              return nil if result_h.nil?
             end
           end
         end
