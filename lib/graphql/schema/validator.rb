@@ -34,6 +34,15 @@ module GraphQL
         string
       end
 
+      # @return [Object] The current value to use for validation, based on `config_value` from configuration time. If a Proc is given, this calls it and returns it.
+      def validation_parameter(config_value)
+        if config_value.is_a?(Proc)
+          config_value.call
+        else
+          config_value
+        end
+      end
+
       # @return [Boolean] `true` if `value` is `nil` and this validator has `allow_null: true` or if value is `.blank?` and this validator has `allow_blank: true`
       def permitted_empty_value?(value)
         (value.nil? && @allow_null) ||

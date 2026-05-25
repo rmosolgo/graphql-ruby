@@ -12,7 +12,7 @@ describe GraphQL::Schema::Validator do
     end
 
     def validate(object, context, value)
-      if value == @equal_to
+      if value == validation_parameter(@equal_to)
         nil
       else
         "%{validated} doesn't have the right the right value"
@@ -41,7 +41,7 @@ describe GraphQL::Schema::Validator do
   build_tests(CustomValidator, Integer, [
     {
       name: "with a validator class as name",
-      config: { equal_to: 2 },
+      config: { equal_to: -> { 2 } },
       cases: [
         { query: "{ validated(value: 2) }", error_messages: [], result: 2 },
         { query: "{ validated(value: 3) }", error_messages: ["value doesn't have the right the right value"], result: nil },
@@ -49,10 +49,12 @@ describe GraphQL::Schema::Validator do
     }
   ])
 
+  THE_NUMBER_FOUR = 4
+
   build_tests(:custom, Integer, [
     {
       name: "with an installed symbol name",
-      config: { equal_to: 4 },
+      config: { equal_to: -> { THE_NUMBER_FOUR } },
       cases: [
         { query: "{ validated(value: 4) }", error_messages: [], result: 4 },
         { query: "{ validated(value: 3) }", error_messages: ["value doesn't have the right the right value"], result: nil },

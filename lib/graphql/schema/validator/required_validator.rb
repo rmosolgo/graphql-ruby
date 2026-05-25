@@ -67,7 +67,8 @@ module GraphQL
           no_visible_conditions = true
 
           if !value.nil?
-            @one_of.each do |one_of_condition|
+            validation_parameter(@one_of).each do |one_of_condition|
+              one_of_condition = validation_parameter(one_of_condition)
               case one_of_condition
               when Symbol
                 if no_visible_conditions && visible_keywords.include?(one_of_condition)
@@ -108,7 +109,7 @@ module GraphQL
           end
 
           if no_visible_conditions
-            if @allow_all_hidden
+            if validation_parameter(@allow_all_hidden)
               return nil
             else
               raise GraphQL::Error, <<~ERR
@@ -122,7 +123,7 @@ module GraphQL
           if fully_matched_conditions == 1 && partially_matched_conditions == 0
             nil # OK
           else
-            @message || build_message(context)
+            validation_parameter(@message) || build_message(context)
           end
         end
 
@@ -130,8 +131,9 @@ module GraphQL
           argument_definitions = context.types.arguments(@validated)
 
           required_names = @one_of.map do |arg_keyword|
+            arg_keyword = validation_parameter(arg_keyword)
             if arg_keyword.is_a?(Array)
-              names = arg_keyword.map { |arg| arg_keyword_to_graphql_name(argument_definitions, arg) }
+              names = arg_keyword.map { |arg| arg_keyword_to_graphql_name(argument_definitions, validation_parameter(arg)) }
               names.compact! # hidden arguments are `nil`
               "(" + names.join(" and ") + ")"
             else
