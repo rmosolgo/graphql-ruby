@@ -56,6 +56,8 @@ module GraphQL
         query.current_trace.end_execute_field(@field_definition, @arguments, @field_results, query, @field_results)
         @runner.add_step(self)
         true
+      ensure
+        set_current_field(nil)
       end
 
       def sync(lazy)
@@ -96,6 +98,8 @@ module GraphQL
         else
           raise
         end
+      ensure
+        set_current_field(nil)
       end
 
       def add_graphql_error(err)
@@ -134,6 +138,8 @@ module GraphQL
             @field_results.nil? # Make sure the arguments flow didn't already call through
           execute_field
         end
+      ensure
+        set_current_field(nil)
       end
 
       # Used for compatibility in Schema::Subscription
@@ -555,8 +561,8 @@ module GraphQL
         @runner.schema.type_error(err, @selections_step.query.context)
       end
 
-      def set_current_field
-        Fiber[:__graphql_current_field] = @field_definition
+      def set_current_field(new_value = @field_definition)
+        Fiber[:__graphql_current_field] = new_value
       end
 
       private

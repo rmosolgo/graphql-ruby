@@ -35,6 +35,8 @@ module GraphQL
           @loaded_value = ex_err
         end
         assign_value
+      ensure
+        @field_resolve_step.set_current_field(nil)
       end
 
       def call
@@ -66,6 +68,8 @@ module GraphQL
           ex_err
         end
         assign_value
+      ensure
+        @field_resolve_step.set_current_field(nil)
       end
 
       private

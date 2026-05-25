@@ -37,6 +37,8 @@ module GraphQL
           ctx.query.current_trace.end_resolve_type(st, @object, ctx, @resolved_type)
         end
         @runner.add_step(self)
+      ensure
+        @field_resolve_step.set_current_field(nil)
       end
 
       def call
@@ -67,6 +69,8 @@ module GraphQL
         else
           raise ArgumentError, "This is a bug, unknown step: #{@next_step.inspect}"
         end
+      ensure
+        @field_resolve_step.set_current_field(nil)
       end
 
       def authorize
