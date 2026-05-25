@@ -19,6 +19,7 @@ module GraphQL
       end
 
       def value
+        @field_resolve_step.set_current_field
         if @authorized_value
           query = @field_resolve_step.selections_step.query
           query.current_trace.begin_authorized(@resolved_type, @object, query.context)
@@ -39,6 +40,7 @@ module GraphQL
       end
 
       def call
+        @field_resolve_step.set_current_field
         case @next_step
         when :resolve_type
           static_type = @field_resolve_step.static_type

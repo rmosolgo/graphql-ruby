@@ -41,7 +41,13 @@ module GraphQL
     # @see GraphQL::Field#path for a string identifying this field
     # @return [GraphQL::Field, nil] The currently-running field, if there is one.
     def self.field
-      Fiber[:__graphql_runtime_info]&.values&.first&.current_field
+      if (interpreter_info = Fiber[:__graphql_runtime_info])
+        interpreter_info.values&.first&.current_field
+      elsif (field = Fiber[:__graphql_current_field])
+        field
+      else
+        nil
+      end
     end
 
     # @return [Class, nil] The currently-running {Dataloader::Source} class, if there is one.

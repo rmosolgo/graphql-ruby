@@ -50,6 +50,7 @@ module GraphQL
 
       def value
         query = @selections_step.query
+        set_current_field
         query.current_trace.begin_execute_field(@field_definition, @arguments, @field_results, query)
         sync(@field_results)
         query.current_trace.end_execute_field(@field_definition, @arguments, @field_results, query, @field_results)
@@ -76,6 +77,7 @@ module GraphQL
       end
 
       def call
+        set_current_field if @field_definition
         if @enqueued_authorization
           enqueue_next_steps
         elsif @finish_extension_idx
@@ -121,6 +123,7 @@ module GraphQL
         query = @selections_step.query
         field_name = @ast_node.name
         @field_definition = query.types.field(@parent_type, field_name) || raise(GraphQL::Error, "No field definition found for #{@parent_type.to_type_signature}.#{ast_node.name} (at #{@ast_node.position})")
+        set_current_field
         @arguments, errors = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
         if errors
           build_errors_result(errors, nil)
@@ -550,6 +553,10 @@ module GraphQL
       def add_non_null_error(is_from_array)
         err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path)
         @runner.schema.type_error(err, @selections_step.query.context)
+      end
+
+      def set_current_field
+        Fiber[:__graphql_current_field] = @field_definition
       end
 
       private
