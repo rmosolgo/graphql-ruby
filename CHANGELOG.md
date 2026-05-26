@@ -10,9 +10,25 @@
 
 ### Bug fixes
 
-- `Execution::Next`: don't crash when non-null propagation nullifies an object inside a fragment that has sibling selections
+# 2.6.3 (26 May 2026)
 
-# 2.6.2
+### Breaking changes
+
+- `Schema::Visibility`: must be attached after root type configurations to support `preload: ...`. Move the configuration down if you encounter an error from this. #5635
+
+### New features
+
+- Validators: accept procs for configuration options #5641
+
+### Bug fixes
+
+- `Execution::Next`: don't crash when non-null propagation nullifies an object inside a fragment that has sibling selections #5637
+- `Execution::Next`: Implement `GraphQL::Current.field` #5640
+- Fix `required: :nullable` when combined with `as:` #5636
+- `Execution::Next`: improve execute_query_lazy compatibility #5634
+- Analysis: Fix when skip/include argument fails coercion #5633
+
+# 2.6.2 (12 May 2026)
 
 ### New features
 
@@ -26,13 +42,13 @@
 - JRuby: fix `Dataloader#with` #5616
 - DetailedTrace: fix introspection with anonymous classes #5624
 
-# 2.6.1
+# 2.6.1 (27 Apr 2026)
 
 ### Bug fixes
 
 - Lexer: in the Ruby lexer, count comments against a schema's `max_token_count` configuration
 
-# 2.6.0
+# 2.6.0 (24 Apr 2026)
 
 ### Breaking changes
 
