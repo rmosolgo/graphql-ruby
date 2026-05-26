@@ -10,15 +10,31 @@ type SubscriptionCallbacks = {
   received?: (payload: any) => void;
 };
 
+type CreateChannelId = () => string
+
+function createChannelId() {
+  // `crypto.randomUUID()` (Web Crypto API) is used because a low-entropy
+  // identifier here can collide between simultaneously-created subscriptions,
+  // and ActionCable routes incoming payloads by identifier — colliding
+  // subscriptions would receive each other's payloads.
+  return crypto.randomUUID()
+}
+
 class ActionCableLink extends ApolloLink {
   cable: Consumer
   channelName: string
   actionName: string
   connectionParams: ConnectionParams
   callbacks: SubscriptionCallbacks
+  createChannelId: CreateChannelId
 
   constructor(options: {
-    cable: Consumer, channelName?: string, actionName?: string, connectionParams?: ConnectionParams, callbacks?: SubscriptionCallbacks
+    cable: Consumer,
+    createChannelId?: CreateChannelId,
+    channelName?: string,
+    actionName?: string,
+    connectionParams?: ConnectionParams,
+    callbacks?: SubscriptionCallbacks,
   }) {
     super()
     this.cable = options.cable
@@ -26,13 +42,14 @@ class ActionCableLink extends ApolloLink {
     this.actionName = options.actionName || "execute"
     this.connectionParams = options.connectionParams || {}
     this.callbacks = options.callbacks || {}
+    this.createChannelId = options.createChannelId || createChannelId
   }
 
   // Interestingly, this link does _not_ call through to `next` because
   // instead, it sends the request to ActionCable.
   request(operation: Operation, _next: NextLink): Observable<RequestResult> {
     return new Observable((observer) => {
-      var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
+      var channelId = this.createChannelId()
       var actionName = this.actionName
       var connectionParams = (typeof this.connectionParams === "function") ?
         this.connectionParams(operation) : this.connectionParams
