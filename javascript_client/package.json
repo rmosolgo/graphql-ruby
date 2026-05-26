@@ -19,10 +19,6 @@
       "default": "./index.js"
     },
     "./cli.js": "./cli.js",
-    "./CHANGELOG.md": "./CHANGELOG.md",
-    "./DumpPayloadExample.json": "./DumpPayloadExample.json",
-    "./LICENSE.md": "./LICENSE.md",
-    "./readme.md": "./readme.md",
     "./sync": {
       "types": "./sync/index.d.ts",
       "import": "./esm/sync/index.js",
@@ -52,8 +48,7 @@
       "import": "./esm/subscriptions/*.js",
       "require": "./subscriptions/*.js",
       "default": "./subscriptions/*.js"
-    },
-    "./package.json": "./package.json"
+    }
   },
   "typesVersions": {
     "*": {
