@@ -172,6 +172,23 @@ describe("ActionCableLink", () => {
     expect(subscription.params["test"]).toEqual(1)
   })
 
+  it("generates a unique channelId for each subscription", () => {
+    var link = new ActionCableLink(options)
+    var channelIds = new Set<string>()
+    var subscriptions: any[] = []
+
+    for (var i = 0; i < 1000; i++) {
+      var observable = link.request(operation, null as any)
+      var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+      channelIds.add(subscription.params.channelId)
+      subscriptions.push(subscription)
+    }
+
+    expect(channelIds.size).toBe(1000)
+
+    subscriptions.forEach(function(s) { s.unsubscribe() })
+  })
+
   it('allows passing custom callbacks', () => {
     var connected = jest.fn()
     var received = jest.fn()

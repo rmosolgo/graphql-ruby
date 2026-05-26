@@ -32,7 +32,11 @@ class ActionCableLink extends ApolloLink {
   // instead, it sends the request to ActionCable.
   request(operation: Operation, _next: NextLink): Observable<RequestResult> {
     return new Observable((observer) => {
-      var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
+      // `crypto.randomUUID()` (Web Crypto API) is used because a low-entropy
+      // identifier here can collide between simultaneously-created subscriptions,
+      // and ActionCable routes incoming payloads by identifier — colliding
+      // subscriptions would receive each other's payloads.
+      var channelId = crypto.randomUUID()
       var actionName = this.actionName
       var connectionParams = (typeof this.connectionParams === "function") ?
         this.connectionParams(operation) : this.connectionParams
