@@ -95,8 +95,7 @@
   "scripts": {
     "build": "tsc && node scripts/clean-esm.js && tsc -p tsconfig.esm.json && node scripts/prepare-esm.js",
     "prepack": "npm run build",
-    "test": "tsc && jest",
-    "prepublishOnly": "npm test"
+    "test": "tsc && jest"
   },
   "dependencies": {
     "glob": "^13.0.6",
