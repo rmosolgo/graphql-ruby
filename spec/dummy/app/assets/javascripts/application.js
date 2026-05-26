@@ -25,8 +25,7 @@
     var query = options.query
     var variables = options.variables
     var receivedCallback = options.received
-    // Unique-ish
-    var uuid = Math.round(Date.now() + Math.random() * 100000).toString(16)
+    var uuid = crypto.randomUUID()
     var subscription = {
       _subscribed: false,
       subscription: App.cable.subscriptions.create({
