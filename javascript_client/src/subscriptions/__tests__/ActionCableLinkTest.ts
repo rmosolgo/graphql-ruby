@@ -189,6 +189,14 @@ describe("ActionCableLink", () => {
     subscriptions.forEach(function(s) { s.unsubscribe() })
   })
 
+  it("accepts an injected channel ID function", () => {
+    var link = new ActionCableLink({...options, createChannelId: () => "Channel-ID" })
+    var observable = link.request(operation, null as any)
+    var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+    expect(subscription.params.channelId).toEqual("Channel-ID")
+    subscription.unsubscribe()
+  })
+
   it('allows passing custom callbacks', () => {
     var connected = jest.fn()
     var received = jest.fn()
