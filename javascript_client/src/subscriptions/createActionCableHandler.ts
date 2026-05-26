@@ -12,12 +12,13 @@ interface ActionCableHandlerOptions {
   operations?: { getOperationId: Function}
   channelName?: string
   clientName?: string
+  createChannelId?: () => string
 }
 
 function createActionCableHandler(options: ActionCableHandlerOptions) {
+  const createChannelId = options.createChannelId || crypto.randomUUID.bind(crypto)
   return function (operation: { text: string, name: string, id?: string }, variables: object, _cacheConfig: object, observer: {onError: Function, onNext: Function, onCompleted: Function}) {
-    // unique-ish
-    var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
+    var channelId = createChannelId()
     var cable = options.cable
     var operations = options.operations
     var subscribed = true

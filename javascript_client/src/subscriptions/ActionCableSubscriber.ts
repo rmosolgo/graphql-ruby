@@ -8,15 +8,19 @@ interface ApolloNetworkInterface {
   _opts: any
 }
 
+type CreateChannelId = () => string
+
 class ActionCableSubscriber {
   _cable: Consumer
   _networkInterface: ApolloNetworkInterface
   _channelName: string
+  _createChannelId: CreateChannelId
 
-  constructor(cable: Consumer, networkInterface: ApolloNetworkInterface, channelName?: string) {
+  constructor(cable: Consumer, networkInterface: ApolloNetworkInterface, channelName?: string, createChannelId?: CreateChannelId) {
     this._cable = cable
     this._networkInterface = networkInterface
     this._channelName = channelName || "GraphqlChannel"
+    this._createChannelId = createChannelId || crypto.randomUUID.bind(crypto)
   }
 
   /**
@@ -31,7 +35,7 @@ class ActionCableSubscriber {
   subscribe(request: any, handler: any) {
     var networkInterface = this._networkInterface
     // unique-ish
-    var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
+    var channelId = this._createChannelId()
     var channel = this._cable.subscriptions.create({
       channel: this._channelName,
       channelId: channelId,
