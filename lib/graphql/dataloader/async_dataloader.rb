@@ -66,10 +66,8 @@ module GraphQL
           while first_pass || run.running? || !@pending_jobs.empty?
             first_pass = false
             run_pending_steps(run)
+            run_sources(run)
 
-            if @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-              run_sources(run)
-            end
 
             if !@lazies_at_depth.empty?
               with_trace_query_lazy(trace_query_lazy) do
@@ -171,8 +169,12 @@ module GraphQL
         finished_all_tasks = Async::Promise.new
 
         counting_task = run.root_task.async do
+          completed_first_run.wait
           while _t = run.started_tasks.wait
             started_tasks += 1
+            if finished_tasks == started_tasks
+              finished_all_tasks.resolve(true)
+            end
           end
         end
 
@@ -193,7 +195,6 @@ module GraphQL
         if (unsnoozed = run.snoozed_sources_condition.waiting?)
           run.snoozed_sources_condition.signal
         end
-
 
         while unsnoozed || (run.sources_bandwidth? && @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
           unsnoozed = false

@@ -1154,7 +1154,6 @@ describe GraphQL::Dataloader do
         end
 
         it "works with very very large queries" do
-          skip "TODO fails"
           query_str = "{".dup
           fields = 1100
           fields.times do |i|
