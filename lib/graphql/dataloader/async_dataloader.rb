@@ -21,8 +21,14 @@ module GraphQL
           @root_task = root_task
           @trace = trace
           @jobs_fiber_limit = jobs_fiber_limit
-          @finished_tasks = Async::Queue.new
-          @started_tasks = Async::Queue.new
+
+          @finished_tasks = nil
+          @started_tasks = nil
+          @started_count_task = nil
+          @finished_count_task = nil
+          @finished_all_tasks = nil
+          @finished_first_pass = nil
+
           @snoozed_jobs_condition = Async::Condition.new
           @snoozed_sources_condition = Async::Condition.new
         end
@@ -39,12 +45,51 @@ module GraphQL
 
         def close_queues
           @finished_tasks.close
+          @finished_count_task.cancel
+
           @started_tasks.close
+          @started_count_task.cancel
+        end
+
+        def wait_for_queues
+          if !@finished_first_pass.resolved?
+            @finished_first_pass.resolve(true)
+          end
+
+          @finished_all_tasks.wait
+          @finished_all_tasks = Async::Promise.new
         end
 
         def new_queues
           @finished_tasks = Async::Queue.new
+          @finished_count = 0
           @started_tasks = Async::Queue.new
+          @started_count = 0
+          @finished_first_pass = Async::Promise.new
+          @finished_all_tasks = Async::Promise.new
+
+          @started_count_task = @root_task.async do
+            @finished_first_pass.wait
+            while _t = @started_tasks.wait
+              @started_count += 1
+              if @finished_count == @started_count
+                @finished_all_tasks.resolve(true)
+              end
+            end
+          end
+
+          @finished_count_task = @root_task.async do
+            while t_or_err = @finished_tasks.wait
+              if t_or_err.is_a?(StandardError)
+                @finished_all_tasks.reject(t_or_err)
+              else
+                @finished_count +=1
+                if @finished_count == @started_count
+                  @finished_all_tasks.resolve(true)
+                end
+              end
+            end
+          end
         end
 
         def running?
@@ -92,33 +137,7 @@ module GraphQL
       private
 
       def run_pending_steps(run)
-        finished_all_tasks = nil
-        completed_first_run = Async::Promise.new
-        started_tasks = 0
-        finished_tasks = 0
         run.new_queues
-
-        counting_task = run.root_task.async do
-          while _t = run.started_tasks.wait
-            started_tasks += 1
-            if (finished_tasks == started_tasks) && completed_first_run.resolved?
-              finished_all_tasks.resolve(true)
-            end
-          end
-        end
-
-        waiting_task = run.root_task.async do
-          while t_or_err = run.finished_tasks.wait
-            if t_or_err.is_a?(StandardError)
-              finished_all_tasks.reject(t_or_err)
-            else
-              finished_tasks += 1
-              if finished_tasks == started_tasks
-                finished_all_tasks.resolve(true)
-              end
-            end
-          end
-        end
 
         if (unsnoozed = run.snoozed_jobs_condition.waiting?)
           run.snoozed_jobs_condition.signal
@@ -126,18 +145,10 @@ module GraphQL
 
         while (!@pending_jobs.empty? && run.jobs_bandwidth?) || (unsnoozed)
           unsnoozed = false
-          finished_all_tasks = Async::Promise.new
           spawn_job_task(run)
-
-          if !completed_first_run.resolved?
-            completed_first_run.resolve(true)
-          end
-
-          finished_all_tasks.wait
+          run.wait_for_queues
         end
-
-        waiting_task.cancel
-        counting_task.cancel
+      ensure
         run.close_queues
       end
 
@@ -162,35 +173,7 @@ module GraphQL
       end
 
       def run_sources(run)
-        started_tasks = 0
-        finished_tasks = 0
         run.new_queues
-        completed_first_run = Async::Promise.new
-        finished_all_tasks = Async::Promise.new
-
-        counting_task = run.root_task.async do
-          completed_first_run.wait
-          while _t = run.started_tasks.wait
-            started_tasks += 1
-            if finished_tasks == started_tasks
-              finished_all_tasks.resolve(true)
-            end
-          end
-        end
-
-        waiting_task = run.root_task.async do
-          completed_first_run.wait
-          while t_or_err = run.finished_tasks.wait
-            if t_or_err.is_a?(StandardError)
-              finished_all_tasks.reject(t_or_err)
-            else
-              finished_tasks += 1
-              if finished_tasks == started_tasks
-                finished_all_tasks.resolve(true)
-              end
-            end
-          end
-        end
 
         if (unsnoozed = run.snoozed_sources_condition.waiting?)
           run.snoozed_sources_condition.signal
@@ -199,16 +182,9 @@ module GraphQL
         while unsnoozed || (run.sources_bandwidth? && @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
           unsnoozed = false
           spawn_source_task(run)
-
-          if !completed_first_run.resolved?
-            completed_first_run.resolve(true)
-          end
-
-          finished_all_tasks.wait
+          run.wait_for_queues
         end
       ensure
-        waiting_task.cancel
-        counting_task.cancel
         run.close_queues
       end
 
