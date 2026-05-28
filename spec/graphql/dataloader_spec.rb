@@ -611,7 +611,7 @@ describe GraphQL::Dataloader do
         result
       end
 
-      def spawn_source_task(parent_task, condition, trace)
+      def spawn_source_task(...)
         result = super
         if result
           update_fiber_counts

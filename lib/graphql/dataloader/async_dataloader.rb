@@ -37,6 +37,16 @@ module GraphQL
           true # TODO implement fiber limit
         end
 
+        def close_queues
+          @finished_tasks.close
+          @started_tasks.close
+        end
+
+        def new_queues
+          @finished_tasks = Async::Queue.new
+          @started_tasks = Async::Queue.new
+        end
+
         def running?
           @snoozed_jobs_condition.waiting? || @snoozed_sources_condition.waiting?
         end
@@ -61,15 +71,16 @@ module GraphQL
               run_sources(run)
             end
 
-            # if !@lazies_at_depth.empty?
-            #   with_trace_query_lazy(trace_query_lazy) do
-            #     run_next_pending_lazies(job_fibers, trace, root_task, jobs_condition, next_job_fibers, parent_condition)
-            #     run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace, root_task, jobs_condition, parent_condition)
-            #   end
-            # end
+            if !@lazies_at_depth.empty?
+              with_trace_query_lazy(trace_query_lazy) do
+                run_next_pending_lazies(run)
+                run_pending_steps(run)
+              end
+            end
           end
         rescue StandardError => err
           raised_error = err
+          root_task.cancel
         end
 
         if raised_error
@@ -87,29 +98,36 @@ module GraphQL
         completed_first_run = Async::Promise.new
         started_tasks = 0
         finished_tasks = 0
+        run.new_queues
 
         counting_task = run.root_task.async do
           while _t = run.started_tasks.wait
             started_tasks += 1
-          end
-        end
-
-        waiting_task = run.root_task.async do
-          completed_first_run.wait
-          while _t = run.finished_tasks.wait
-            finished_tasks += 1
-            if finished_tasks == started_tasks
+            if (finished_tasks == started_tasks) && completed_first_run.resolved?
               finished_all_tasks.resolve(true)
             end
           end
         end
 
+        waiting_task = run.root_task.async do
+          while t_or_err = run.finished_tasks.wait
+            if t_or_err.is_a?(StandardError)
+              finished_all_tasks.reject(t_or_err)
+            else
+              finished_tasks += 1
+              if finished_tasks == started_tasks
+                finished_all_tasks.resolve(true)
+              end
+            end
+          end
+        end
 
-        if run.snoozed_jobs_condition.waiting?
+        if (unsnoozed = run.snoozed_jobs_condition.waiting?)
           run.snoozed_jobs_condition.signal
         end
 
-        while !@pending_jobs.empty? && run.jobs_bandwidth?
+        while (!@pending_jobs.empty? && run.jobs_bandwidth?) || (unsnoozed)
+          unsnoozed = false
           finished_all_tasks = Async::Promise.new
           spawn_job_task(run)
 
@@ -122,6 +140,7 @@ module GraphQL
 
         waiting_task.cancel
         counting_task.cancel
+        run.close_queues
       end
 
       def spawn_job_task(run)
@@ -147,6 +166,7 @@ module GraphQL
       def run_sources(run)
         started_tasks = 0
         finished_tasks = 0
+        run.new_queues
         completed_first_run = Async::Promise.new
         finished_all_tasks = Async::Promise.new
 
@@ -158,24 +178,25 @@ module GraphQL
 
         waiting_task = run.root_task.async do
           completed_first_run.wait
-          while t = run.finished_tasks.wait
-            finished_tasks += 1
-            if t.failed?
-              raise t.wait
-            end
-            if finished_tasks == started_tasks
-              finished_all_tasks.resolve(true)
+          while t_or_err = run.finished_tasks.wait
+            if t_or_err.is_a?(StandardError)
+              finished_all_tasks.reject(t_or_err)
+            else
+              finished_tasks += 1
+              if finished_tasks == started_tasks
+                finished_all_tasks.resolve(true)
+              end
             end
           end
         end
 
-        if run.snoozed_sources_condition.waiting?
+        if (unsnoozed = run.snoozed_sources_condition.waiting?)
           run.snoozed_sources_condition.signal
         end
 
 
-        while run.sources_bandwidth? &&
-            @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+        while unsnoozed || (run.sources_bandwidth? && @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
+          unsnoozed = false
           spawn_source_task(run)
 
           if !completed_first_run.resolved?
@@ -187,10 +208,11 @@ module GraphQL
       ensure
         waiting_task.cancel
         counting_task.cancel
+        run.close_queues
       end
 
       #### TODO DRY  Had to duplicate to remove spawn_job_fiber
-      def run_next_pending_lazies(job_fibers, trace, parent_task, condition, next_job_fibers, parent_condition)
+      def run_next_pending_lazies(run)
         smallest_depth = nil
         @lazies_at_depth.each_key do |depth_key|
           smallest_depth ||= depth_key
@@ -205,7 +227,7 @@ module GraphQL
             lazies.each_with_index do |l, idx|
               append_job { l.value }
             end
-            spawn_job_task(trace, parent_task, condition, job_fibers, next_job_fibers, parent_condition, true)
+            spawn_job_task(run) # Todo what was the last `true` condition?
           end
         end
       end
@@ -225,7 +247,7 @@ module GraphQL
           fiber_vars = get_fiber_variables
           trace = run.trace
           pending_sources.each do |source|
-            new_task = run.root_task.async do |task|
+            run.root_task.async do |task|
               Fiber[:graphql_async_dataloader_run] = run
               Fiber[:graphql_async_dataloader_condition] = run.snoozed_sources_condition
               trace&.dataloader_spawn_source_fiber(pending_sources)
@@ -236,12 +258,9 @@ module GraphQL
               trace&.end_dataloader_source(source)
               nil
             ensure
-              run.finished_tasks.push(task)
+              run.finished_tasks.push($! || task)
               cleanup_fiber
               trace&.dataloader_fiber_exit
-            end
-            if !new_task.alive?
-              new_task.wait # raise the error
             end
           end
         end
