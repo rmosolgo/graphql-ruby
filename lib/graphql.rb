@@ -115,6 +115,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   autoload :Execution, "graphql/execution"
   autoload :Introspection, "graphql/introspection"
   autoload :Relay, "graphql/relay"
+  autoload :Federation, "graphql/federation"
   autoload :Subscriptions, "graphql/subscriptions"
   autoload :ParseError, "graphql/parse_error"
   autoload :Backtrace, "graphql/backtrace"
