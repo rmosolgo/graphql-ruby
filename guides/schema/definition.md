@@ -117,6 +117,7 @@ Additionally, {{ "Schema.resolve_type" | api_doc }} is called by GraphQL-Ruby to
 ## Plugins
 
 - {{ "Schema.use" | api_doc }} adds plugins to your schema. For example, {{ "GraphQL::Dataloader" | api_doc }} and {{ "GraphQL::Schema::Visibility" | api_doc }} are installed this way.
+- `GraphQL::Federation` exposes your schema as a federation subgraph. See the {% internal_link "Federation guide", "/schema/federation" %} for setup and entity resolution.
 
 ## Production Considerations
 
