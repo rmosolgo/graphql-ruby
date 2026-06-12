@@ -1,6 +1,7 @@
 import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client/core"
 import type { Consumer } from "@rails/actioncable"
 import { print } from "graphql"
+import defaultChannelId from "./defaultChannelId"
 
 type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
 type ConnectionParams = object | ((operation: Operation) => object)
@@ -33,7 +34,7 @@ class ActionCableLink extends ApolloLink {
     this.actionName = options.actionName || "execute"
     this.connectionParams = options.connectionParams || {}
     this.callbacks = options.callbacks || {}
-    this.createChannelId = options.createChannelId || crypto.randomUUID.bind(crypto)
+    this.createChannelId = options.createChannelId || defaultChannelId
   }
 
   // Interestingly, this link does _not_ call through to `next` because
