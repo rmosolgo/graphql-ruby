@@ -747,12 +747,17 @@ describe GraphQL::Execution::Interpreter do
 
       class Query < GraphQL::Schema::Object
         field :things, Thing.connection_type, null: false, resolve_static: true
+        field :other_things, Thing.connection_type, null: false, resolve_static: :things
 
         def self.things(context)
           [{title: "a"}, {title: "b"}, {title: "c"}]
         end
 
         def things
+          self.class.things(context)
+        end
+
+        def other_things
           self.class.things(context)
         end
 
@@ -775,18 +780,24 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
+    it "works on different branches" do
+      res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } otherThings { nodes { title } }  }")
+      assert_equal [["things", "nodes", 0, "title"], ["otherThings", "nodes", 0, "title"]], res["errors"].map { |e| e["path"] }
+      assert_equal 2, res.context[:authorized_calls]
+    end
+
+    focus
     it "returns only 1 error and stops resolving fields after that" do
       res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } }")
-      assert_equal 1, res["errors"].size
+      assert_equal [["things", "nodes", 0, "title"]], res["errors"].map { |e| e["path"] }
       assert_equal 1, res.context[:authorized_calls]
 
       res = ConnectionErrorTest::Schema.execute("{ things { edges { node { title } } } }")
-      assert_equal 1, res["errors"].size
+      assert_equal [["things", "edges", 0, "node", "title"]], res["errors"].map { |e| e["path"] }
       assert_equal 1, res.context[:authorized_calls]
 
       res = ConnectionErrorTest::Schema.execute("{ thing { title body } }")
-      exec_next_TODO "should abort other branches in this case"
-      assert_equal 1, res["errors"].size
+      assert_equal [["thing", "title"]], res["errors"].map { |e| e["path"] }
       assert_equal 1, res.context[:authorized_calls]
     end
   end
