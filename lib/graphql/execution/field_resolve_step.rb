@@ -51,9 +51,9 @@ module GraphQL
       def value
         query = @selections_step.query
         set_current_field
-        query.current_trace.begin_execute_field(@field_definition, @arguments, @field_results, query)
+        query.current_trace.begin_execute_field(@field_definition, @field_results, @arguments, query)
         sync(@field_results)
-        query.current_trace.end_execute_field(@field_definition, @arguments, @field_results, query, @field_results)
+        query.current_trace.end_execute_field(@field_definition, @field_results, @arguments, query, @field_results)
         @runner.add_step(self)
         true
       ensure
@@ -244,7 +244,7 @@ module GraphQL
           @was_scoped = true
         end
 
-        query.current_trace.begin_execute_field(@field_definition, @arguments, authorized_objects, query)
+        query.current_trace.begin_execute_field(@field_definition, authorized_objects, @arguments, query)
 
         if @runner.uses_runtime_directives
           if @ast_nodes.nil? || @ast_nodes.size == 1
@@ -319,7 +319,7 @@ module GraphQL
           @field_results = resolve_batch(authorized_objects, ctx, @arguments)
         end
 
-        query.current_trace.end_execute_field(@field_definition, @arguments, authorized_objects, query, @field_results)
+        query.current_trace.end_execute_field(@field_definition, authorized_objects, @arguments, query, @field_results)
 
         if any_lazy_results?
           @runner.dataloader.lazy_at_depth(path.size, self)
