@@ -18,7 +18,7 @@ class GraphqlChannelTest < ActionCable::Channel::TestCase
 
   def setup
     @prev_server = ActionCable.server
-    @server = TestServer.new(subscription_adapter: ActionCable::SubscriptionAdapter::Async)
+    @server = GraphqlTestServer.new(subscription_adapter: ActionCable::SubscriptionAdapter::Async)
     @server.config.allowed_request_origins = [ 'http://rubyonrails.com' ]
 
     ActionCable.instance_variable_set(:@server, @server)
@@ -47,20 +47,12 @@ class GraphqlChannelTest < ActionCable::Channel::TestCase
     end
   end
 
-  class Connection < ActionCable::Connection::Base
-    attr_reader :websocket
-
-    def send_async(method, *args)
-      send method, *args
-    end
-
-    public :handle_close
+  class GraphqlTestConnection < ActionCable::Connection::Base
+    public :handle_close, :socket
   end
-
-
-  module InterceptTransmit
+  class GraphqlTestSocket < ActionCable::Connection::TestSocket
     def transmit(msg)
-      intercepted_messages << JSON.parse(msg)
+      intercepted_messages << msg
       super
     end
 
@@ -71,16 +63,15 @@ class GraphqlChannelTest < ActionCable::Channel::TestCase
 
   test "it subscribes and unsubscribes" do
     run_in_eventmachine do
-      env = Rack::MockRequest.env_for "/test", "HTTP_HOST" => "localhost", "HTTP_CONNECTION" => "upgrade", "HTTP_UPGRADE" => "websocket", "HTTP_ORIGIN" => "http://rubyonrails.com"
+      socket = GraphqlTestSocket.new(GraphqlTestSocket.build_request("/graphql"))
 
-      @connection = Connection.new(ActionCable.server, env).tap do |connection|
-        connection.process
-        assert_predicate connection.websocket, :possible?
+      connection = GraphqlTestConnection.new(@server, socket)
+      connection.connect if connection.respond_to?(:connect)
 
-        wait_for_async
-        assert_predicate connection.websocket, :alive?
-        connection.websocket.singleton_class.prepend(InterceptTransmit)
-      end
+      # Only set instance variable if connected successfully
+      @connection = connection
+      wait_for_async
+
 
       @connection.subscriptions.add({"identifier" => "{\"channel\": \"GraphqlChannel\"}"})
 
@@ -107,16 +98,17 @@ class GraphqlChannelTest < ActionCable::Channel::TestCase
       wait_for_async
 
       expected_data = [
-        {"identifier"=>"{\"channel\": \"GraphqlChannel\"}", "type"=>"confirm_subscription"},
-        {"identifier"=>"{\"channel\": \"GraphqlChannel\"}", "message"=>{"result"=>{"data"=>{}}, "more"=>true}},
-        {"identifier"=>"{\"channel\": \"GraphqlChannel\"}", "message"=>{"result"=>{"data"=>{"payload"=>{"value"=>19}}}, "more"=>true}},
-        {"identifier"=>"{\"channel\": \"GraphqlChannel\"}", "message"=>{"more"=>false}},
+        {identifier: "{\"channel\": \"GraphqlChannel\"}", type: "confirm_subscription"},
+        {identifier: "{\"channel\": \"GraphqlChannel\"}", message: {result: {"data"=>{}}, more: true}},
+        {identifier: "{\"channel\": \"GraphqlChannel\"}", message: {"result" => {"data"=>{"payload"=>{"value"=>19}}}, "more" => true}},
+        {identifier: "{\"channel\": \"GraphqlChannel\"}", message: {"more" => false}},
       ]
-      assert_equal expected_data, @connection.websocket.intercepted_messages
+
+      assert_equal expected_data, @connection.socket.intercepted_messages
     end
   end
 
-  class TestServer
+  class GraphqlTestServer
     include ActionCable::Server::Connections
     include ActionCable::Server::Broadcasting
 
@@ -144,6 +136,14 @@ class GraphqlChannelTest < ActionCable::Channel::TestCase
 
     def pubsub
       @pubsub ||= @config.subscription_adapter.new(self)
+    end
+
+    def executor
+      self
+    end
+
+    def post
+      yield
     end
 
     def event_loop
