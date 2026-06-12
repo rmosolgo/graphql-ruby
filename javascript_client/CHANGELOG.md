@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.15.1 (12 Jun 2026)
+
+- ActionCable: fix for when `crypto.randomUUID` isn't present #5649
+
 # 1.15.0 (26 May 2026)
 
 - Include ESM artifacts in the published library #5621
