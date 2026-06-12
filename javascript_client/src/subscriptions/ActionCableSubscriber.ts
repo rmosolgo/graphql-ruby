@@ -1,5 +1,6 @@
 import printer from "graphql/language/printer"
 import registry from "./registry"
+import defaultChannelId from "./defaultChannelId"
 import type { Consumer } from "@rails/actioncable"
 
 interface ApolloNetworkInterface {
@@ -20,7 +21,7 @@ class ActionCableSubscriber {
     this._cable = cable
     this._networkInterface = networkInterface
     this._channelName = channelName || "GraphqlChannel"
-    this._createChannelId = createChannelId || crypto.randomUUID.bind(crypto)
+    this._createChannelId = createChannelId || defaultChannelId
   }
 
   /**

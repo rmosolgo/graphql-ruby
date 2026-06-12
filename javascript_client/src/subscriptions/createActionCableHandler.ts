@@ -1,4 +1,5 @@
 import type { Consumer } from "@rails/actioncable"
+import defaultChannelId from "./defaultChannelId"
 
 /**
  * Create a Relay Modern-compatible subscription handler.
@@ -16,7 +17,7 @@ interface ActionCableHandlerOptions {
 }
 
 function createActionCableHandler(options: ActionCableHandlerOptions) {
-  const createChannelId = options.createChannelId || crypto.randomUUID.bind(crypto)
+  const createChannelId = options.createChannelId || defaultChannelId
   return function (operation: { text: string, name: string, id?: string }, variables: object, _cacheConfig: object, observer: {onError: Function, onNext: Function, onCompleted: Function}) {
     var channelId = createChannelId()
     var cable = options.cable
