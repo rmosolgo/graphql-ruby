@@ -6,7 +6,7 @@ describe GraphQL::Schema::Validator::AllowBlankValidator do
   include ValidatorHelpers
 
   it "allows blank when configured" do
-    build_schema(String, {length: { minimum: 5 }, allow_blank: true})
+    build_schema(String, {length: { minimum: 5 }, allow_blank: -> { true } })
     result = exec_query("query($str: String) { validated(value: $str) }", variables: { str: ValidatorHelpers::BlankString.new })
     assert_equal "", result["data"]["validated"]
     refute result.key?("errors")
@@ -17,6 +17,17 @@ describe GraphQL::Schema::Validator::AllowBlankValidator do
     result = exec_query("query($str: String) { validated(value: $str) }", variables: { str: ValidatorHelpers::BlankString.new })
     assert_nil result["data"]["validated"]
     assert_equal ["value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
+  end
+
+  it "takes a custom message as a proc and calls it each time" do
+    i = 0
+    build_schema(String, {allow_blank: { allow_blank: false, message: -> { "Error ##{i += 1}"} } })
+    result = exec_query("query($str: String) { validated(value: $str) }", variables: { str: ValidatorHelpers::BlankString.new })
+    assert_nil result["data"]["validated"]
+    assert_equal ["Error #1"], result["errors"].map { |e| e["message"] }
+
+    result = exec_query("query($str: String) { validated(value: $str) }", variables: { str: ValidatorHelpers::BlankString.new })
+    assert_equal ["Error #2"], result["errors"].map { |e| e["message"] }
   end
 
   it "can be used standalone" do

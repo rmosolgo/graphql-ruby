@@ -316,6 +316,7 @@ class ExecutionFinalizeTest < Minitest::Test
 
   def test_bubble_through_inline_fragment
     schema = "type Test { req: String! opt: String } type Query { test: Test }"
+    query = "{ test { ... on Test { req opt } } }"
     source = {
       "test" => {
         "req" => nil,
@@ -329,15 +330,16 @@ class ExecutionFinalizeTest < Minitest::Test
       "errors" => [{
         "message" => "Cannot return null for non-nullable field Test.req",
         "path" => ["test", "req"],
-        "locations" => [{ "line" => 1, "column" => 10 }],
+        "locations" => [{ "line" => 1, "column" => 24 }],
       }],
     }
 
-    assert_equal expected, exec_test(schema, "{ test { req opt } }", source)
+    assert_equal expected, exec_test(schema, query, source)
   end
 
   def test_bubble_through_fragment_spreads
     schema = "type Test { req: String! opt: String } type Query { test: Test }"
+    query = "{ test { ...F } } fragment F on Test { req opt }"
     source = {
       "test" => {
         "req" => nil,
@@ -351,11 +353,57 @@ class ExecutionFinalizeTest < Minitest::Test
       "errors" => [{
         "message" => "Cannot return null for non-nullable field Test.req",
         "path" => ["test", "req"],
-        "locations" => [{ "line" => 1, "column" => 10 }],
+        "locations" => [{ "line" => 1, "column" => 40 }],
       }],
     }
 
-    assert_equal expected, exec_test(schema, "{ test { req opt } }", source)
+    assert_equal expected, exec_test(schema, query, source)
+  end
+
+  def test_bubbles_null_through_fragment_spread_with_sibling_field
+    schema = "type Test { req: String! opt: String } type Query { test: Test }"
+    query = "{ test { ...F opt } } fragment F on Test { req }"
+    source = {
+      "test" => {
+        "req" => nil,
+        "opt" => "yes"
+      },
+    }
+    expected = {
+      "data" => {
+        "test" => nil,
+      },
+      "errors" => [{
+        "message" => "Cannot return null for non-nullable field Test.req",
+        "path" => ["test", "req"],
+        "locations" => [{ "line" => 1, "column" => 44 }],
+      }],
+    }
+
+    assert_equal expected, exec_test(schema, query, source)
+  end
+
+  def test_bubbles_null_through_inline_fragment_with_sibling_field
+    schema = "type Test { req: String! opt: String } type Query { test: Test }"
+    query = "{ test { ... on Test { req } opt } }"
+    source = {
+      "test" => {
+        "req" => nil,
+        "opt" => "yes"
+      },
+    }
+    expected = {
+      "data" => {
+        "test" => nil,
+      },
+      "errors" => [{
+        "message" => "Cannot return null for non-nullable field Test.req",
+        "path" => ["test", "req"],
+        "locations" => [{ "line" => 1, "column" => 24 }],
+      }],
+    }
+
+    assert_equal expected, exec_test(schema, query, source)
   end
 
   def test_inline_errors_in_null_positions_report

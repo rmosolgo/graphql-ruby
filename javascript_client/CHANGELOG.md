@@ -1,5 +1,14 @@
 # graphql-ruby-client
 
+# 1.15.1 (12 Jun 2026)
+
+- ActionCable: fix for when `crypto.randomUUID` isn't present #5649
+
+# 1.15.0 (26 May 2026)
+
+- Include ESM artifacts in the published library #5621
+- Use `crypto` to generate channel IDs when using ActionCable. (A `createChannelId: () => string` option is available if you need to customize this.) #5642 #5643
+
 # 1.14.9 (12 Dec 2025)
 
 - Update `glob` #5472

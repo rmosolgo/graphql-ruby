@@ -290,11 +290,13 @@ module GraphQL
             end
             # Lots more to do here
           end
-          @schema.introspection_system.entry_points.each do |f|
-            arguments(f).each do |arg|
-              argument(f, arg.graphql_name)
+          if @schema.query
+            @schema.introspection_system.entry_points.each do |f|
+              arguments(f).each do |arg|
+                argument(f, arg.graphql_name)
+              end
+              field(@schema.query, f.graphql_name)
             end
-            field(@schema.query, f.graphql_name)
           end
           @schema.introspection_system.dynamic_fields.each do |f|
             arguments(f).each do |arg|

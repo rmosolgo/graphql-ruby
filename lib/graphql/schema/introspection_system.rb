@@ -105,11 +105,13 @@ module GraphQL
       end
 
       def load_constant(class_name)
-        const = @custom_namespace.const_get(class_name)
+        const = begin
+          @custom_namespace.const_get(class_name)
+        rescue NameError
+          # Dup the built-in so that the cached fields aren't shared
+          @built_in_namespace.const_get(class_name)
+        end
         dup_type_class(const)
-      rescue NameError
-        # Dup the built-in so that the cached fields aren't shared
-        dup_type_class(@built_in_namespace.const_get(class_name))
       end
 
       def get_fields_from_class(class_sym:)
@@ -131,23 +133,6 @@ module GraphQL
               add_field(dup_field)
             end
           end
-        end
-      end
-
-      class PerFieldProxyResolve
-        def initialize(object_class:, inner_resolve:)
-          @object_class = object_class
-          @inner_resolve = inner_resolve
-        end
-
-        def call(obj, args, ctx)
-          query_ctx = ctx.query.context
-          # Remove the QueryType wrapper
-          if obj.is_a?(GraphQL::Schema::Object)
-            obj = obj.object
-          end
-          wrapped_object = @object_class.wrap(obj, query_ctx)
-          @inner_resolve.call(wrapped_object, args, ctx)
         end
       end
     end

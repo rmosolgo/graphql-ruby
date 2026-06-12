@@ -37,9 +37,9 @@ module GraphQL
           if permitted_empty_value?(value)
             # Do nothing
           elsif value.nil? ||
-              (@with_pattern && !value.match?(@with_pattern)) ||
-              (@without_pattern && value.match?(@without_pattern))
-            @message
+              (@with_pattern && !value.match?(validation_parameter(@with_pattern))) ||
+              (@without_pattern && value.match?(validation_parameter(@without_pattern)))
+            validation_parameter(@message)
           end
         end
       end

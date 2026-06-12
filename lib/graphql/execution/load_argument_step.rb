@@ -14,6 +14,7 @@ module GraphQL
       end
 
       def value
+        @field_resolve_step.set_current_field
         schema = @field_resolve_step.runner.schema
         @loaded_value = schema.sync_lazy(@loaded_value)
         assign_value
@@ -34,9 +35,12 @@ module GraphQL
           @loaded_value = ex_err
         end
         assign_value
+      ensure
+        @field_resolve_step.set_current_field(nil)
       end
 
       def call
+        @field_resolve_step.set_current_field
         context = @field_resolve_step.selections_step.query.context
         @loaded_value = begin
           @load_receiver.load_and_authorize_application_object(@argument_definition, @argument_value, context)
@@ -64,6 +68,8 @@ module GraphQL
           ex_err
         end
         assign_value
+      ensure
+        @field_resolve_step.set_current_field(nil)
       end
 
       private

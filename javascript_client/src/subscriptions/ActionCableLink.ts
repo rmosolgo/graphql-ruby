@@ -1,6 +1,7 @@
 import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client/core"
 import type { Consumer } from "@rails/actioncable"
 import { print } from "graphql"
+import defaultChannelId from "./defaultChannelId"
 
 type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
 type ConnectionParams = object | ((operation: Operation) => object)
@@ -10,15 +11,22 @@ type SubscriptionCallbacks = {
   received?: (payload: any) => void;
 };
 
+type CreateChannelId = () => string
 class ActionCableLink extends ApolloLink {
   cable: Consumer
   channelName: string
   actionName: string
   connectionParams: ConnectionParams
   callbacks: SubscriptionCallbacks
+  createChannelId: CreateChannelId
 
   constructor(options: {
-    cable: Consumer, channelName?: string, actionName?: string, connectionParams?: ConnectionParams, callbacks?: SubscriptionCallbacks
+    cable: Consumer,
+    createChannelId?: CreateChannelId,
+    channelName?: string,
+    actionName?: string,
+    connectionParams?: ConnectionParams,
+    callbacks?: SubscriptionCallbacks,
   }) {
     super()
     this.cable = options.cable
@@ -26,13 +34,14 @@ class ActionCableLink extends ApolloLink {
     this.actionName = options.actionName || "execute"
     this.connectionParams = options.connectionParams || {}
     this.callbacks = options.callbacks || {}
+    this.createChannelId = options.createChannelId || defaultChannelId
   }
 
   // Interestingly, this link does _not_ call through to `next` because
   // instead, it sends the request to ActionCable.
   request(operation: Operation, _next: NextLink): Observable<RequestResult> {
     return new Observable((observer) => {
-      var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
+      var channelId = this.createChannelId()
       var actionName = this.actionName
       var connectionParams = (typeof this.connectionParams === "function") ?
         this.connectionParams(operation) : this.connectionParams

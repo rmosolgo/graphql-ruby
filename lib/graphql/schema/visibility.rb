@@ -8,11 +8,17 @@ module GraphQL
     # Use this plugin to make some parts of your schema hidden from some viewers.
     #
     class Visibility
+      class TypeConfigurationError < GraphQL::Error
+        def initialize(config_message, config_str)
+          message = "GraphQL::Schema::Visibility already preloaded, but #{config_message} added to the schema. Move this `#{config_str}` configuration above `use(GraphQL::Schema::Visibility)"
+          super(message)
+        end
+      end
       # @param schema [Class<GraphQL::Schema>]
       # @param profiles [Hash<Symbol => Hash>] A hash of `name => context` pairs for preloading visibility profiles
       # @param preload [Boolean] if `true`, load the default schema profile and all named profiles immediately (defaults to `true` for `Rails.env.production?` and `Rails.env.staging?`)
       # @param migration_errors [Boolean] if `true`, raise an error when `Visibility` and `Warden` return different results
-      def self.use(schema, dynamic: false, profiles: EmptyObjects::EMPTY_HASH, preload: (defined?(Rails.env) ? (Rails.env.production? || Rails.env.staging?) : nil), migration_errors: false)
+      def self.use(schema, dynamic: false, profiles: EmptyObjects::EMPTY_HASH, preload: (defined?(Rails.env) ? (Rails.env.production? || Rails.env.staging? || nil) : false), migration_errors: false)
         profiles&.each { |name, ctx|
           ctx[:visibility_profile] = name
           ctx.freeze
@@ -20,7 +26,7 @@ module GraphQL
         schema.visibility = self.new(schema, dynamic: dynamic, preload: preload, profiles: profiles, migration_errors: migration_errors)
       end
 
-      def initialize(schema, dynamic:, preload:, profiles:, migration_errors:)
+      def initialize(schema, dynamic:, preload:, profiles:, migration_errors:, configuration_inherited: false)
         @schema = schema
         schema.use_visibility_profile = true
         schema.visibility_profile_class = if migration_errors
@@ -40,6 +46,7 @@ module GraphQL
         @types = nil
         @all_references = nil
         @loaded_all = false
+        @configuration_inherited = configuration_inherited
         if preload
           self.preload
         end
@@ -94,6 +101,7 @@ module GraphQL
         # Root types may have been nil:
         types_to_visit.compact!
         ensure_all_loaded(types_to_visit)
+        @cached_profiles.clear
         @profiles.each do |profile_name, example_ctx|
           prof = profile_for(example_ctx)
           prof.preload
@@ -102,41 +110,27 @@ module GraphQL
 
       # @api private
       def query_configured(query_type)
-        if @preload
-          ensure_all_loaded([query_type])
-        end
+        require_if_preloaded("a query type was", "query(...)")
       end
 
       # @api private
       def mutation_configured(mutation_type)
-        if @preload
-          ensure_all_loaded([mutation_type])
-        end
+        require_if_preloaded("a mutation type was", "mutation(...)")
       end
 
       # @api private
       def subscription_configured(subscription_type)
-        if @preload
-          ensure_all_loaded([subscription_type])
-        end
+        require_if_preloaded("a mutation type was", "subscription(...)")
       end
 
       # @api private
       def orphan_types_configured(orphan_types)
-        if @preload
-          ensure_all_loaded(orphan_types)
-        end
+        require_if_preloaded("orphan types were", "orphan_types(...)")
       end
 
       # @api private
       def introspection_system_configured(introspection_system)
-        if @preload
-          introspection_types = [
-            *@schema.introspection_system.types.values,
-            *@schema.introspection_system.entry_points.map { |ep| ep.type.unwrap },
-          ]
-          ensure_all_loaded(introspection_types)
-        end
+        require_if_preloaded("custom introspection was", "introspection(...)")
       end
 
       # Make another Visibility for `schema` based on this one
@@ -148,7 +142,8 @@ module GraphQL
           dynamic: @dynamic,
           preload: @preload,
           profiles: @profiles,
-          migration_errors: @migration_errors
+          migration_errors: @migration_errors,
+          configuration_inherited: true,
         )
       end
 
@@ -195,6 +190,19 @@ module GraphQL
       end
 
       private
+
+      def require_if_preloaded(config_message, config_code)
+        case @preload
+        when false
+          # Rails.env wasn't defined, so this won't try to preload unless manually set to true
+        when true, nil
+          if @configuration_inherited
+            preload
+          else
+            raise TypeConfigurationError.new(config_message, config_code)
+          end
+        end
+      end
 
       def ensure_all_loaded(types_to_visit)
         while (type = types_to_visit.shift)

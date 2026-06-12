@@ -269,7 +269,7 @@ describe GraphQL::Query::Partial do
 
   it "works with GraphQL::Current" do
     res = run_partials("query CheckCurrentValues { query { currentValues } }", [path: ["query"], object: nil])
-    assert_equal ["CheckCurrentValues", if_exec_next(nil, "Query.currentValues"), "nil"], res[0]["data"]["currentValues"]
+    assert_equal ["CheckCurrentValues", "Query.currentValues", "nil"], res[0]["data"]["currentValues"]
   end
 
 

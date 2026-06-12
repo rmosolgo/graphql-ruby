@@ -24,11 +24,15 @@ describe GraphQL::Current do
         end
       end
       class Thing < GraphQL::Schema::Object
-        field :name, String
+        field :name, String, resolve_static: :get_name
 
-        def name
+        def self.get_name(context)
           context[:current_field] << GraphQL::Current.field.path
           context.dataload(ThingSource, context, "thing")
+        end
+
+        def name
+          self.class.get_name(context)
         end
       end
       class Query < GraphQL::Schema::Object
@@ -49,7 +53,6 @@ describe GraphQL::Current do
     end
 
     it "returns execution information" do
-      exec_next_TODO("not implemented yet")
       ctx = {
         current_field: [],
         current_source: [],

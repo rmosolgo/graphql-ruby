@@ -55,25 +55,25 @@ module GraphQL
           if permitted_empty_value?(value)
             # pass in this case
           elsif value.nil? # @allow_null is handled in the parent class
-            @null_message
-          elsif @greater_than && value <= @greater_than
-            partial_format(@message, { comparison: "greater than", target: @greater_than })
-          elsif @greater_than_or_equal_to && value < @greater_than_or_equal_to
-            partial_format(@message, { comparison: "greater than or equal to", target: @greater_than_or_equal_to })
-          elsif @less_than && value >= @less_than
-            partial_format(@message, { comparison: "less than", target: @less_than })
-          elsif @less_than_or_equal_to && value > @less_than_or_equal_to
-            partial_format(@message, { comparison: "less than or equal to", target: @less_than_or_equal_to })
-          elsif @equal_to && value != @equal_to
-            partial_format(@message, { comparison: "equal to", target: @equal_to })
-          elsif @other_than && value == @other_than
-            partial_format(@message, { comparison: "something other than", target: @other_than })
-          elsif @even && !value.even?
-            (partial_format(@message, { comparison: "even", target: "" })).strip
-          elsif @odd && !value.odd?
-            (partial_format(@message, { comparison: "odd", target: "" })).strip
-          elsif @within && !@within.include?(value)
-            partial_format(@message, { comparison: "within", target: @within })
+            validation_parameter(@null_message)
+          elsif (current_greater_than = validation_parameter(@greater_than)) && value <= current_greater_than
+            partial_format(validation_parameter(@message), { comparison: "greater than", target: current_greater_than })
+          elsif (current_greater_than_or_equal_to = validation_parameter(@greater_than_or_equal_to)) && value < current_greater_than_or_equal_to
+            partial_format(validation_parameter(@message), { comparison: "greater than or equal to", target: current_greater_than_or_equal_to })
+          elsif (current_less_than = validation_parameter(@less_than)) && value >= current_less_than
+            partial_format(validation_parameter(@message), { comparison: "less than", target: current_less_than })
+          elsif (current_less_than_or_equal_to = validation_parameter(@less_than_or_equal_to)) && value > current_less_than_or_equal_to
+            partial_format(validation_parameter(@message), { comparison: "less than or equal to", target: current_less_than_or_equal_to })
+          elsif (current_equal_to = validation_parameter(@equal_to)) && value != current_equal_to
+            partial_format(validation_parameter(@message), { comparison: "equal to", target: current_equal_to })
+          elsif (current_other_than = validation_parameter(@other_than)) && value == current_other_than
+            partial_format(validation_parameter(@message), { comparison: "something other than", target: current_other_than })
+          elsif validation_parameter(@even) && !value.even?
+            (partial_format(validation_parameter(@message), { comparison: "even", target: "" })).strip
+          elsif validation_parameter(@odd) && !value.odd?
+            (partial_format(validation_parameter(@message), { comparison: "odd", target: "" })).strip
+          elsif (current_within = validation_parameter(@within)) && !current_within.include?(value)
+            partial_format(validation_parameter(@message), { comparison: "within", target: current_within })
           end
         end
       end
