@@ -1,86 +1,215 @@
 # frozen_string_literal: true
+
 module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
       def yield(source = Fiber[:__graphql_current_dataloader_source])
-        trace = Fiber[:__graphql_current_multiplex]&.current_trace
+        run = Fiber[:graphql_async_dataloader_run]
+        trace = run.trace
         trace&.dataloader_fiber_yield(source)
-        if (condition = Fiber[:graphql_dataloader_next_tick])
-          condition.wait
-        else
-          Fiber.yield
-        end
+        task = Async::Task.current
+        run.finished_tasks.push(task)
+        condition = Fiber[:graphql_async_dataloader_condition]
+        condition.wait
+        run.started_tasks.push(task)
         trace&.dataloader_fiber_resume(source)
         nil
+      end
+
+      class Run
+        def initialize(root_task, trace, jobs_fiber_limit)
+          @root_task = root_task
+          @trace = trace
+          @jobs_fiber_limit = jobs_fiber_limit
+
+          @finished_tasks = nil
+          @started_tasks = nil
+          @started_count_task = nil
+          @finished_count_task = nil
+          @finished_all_tasks = nil
+          @finished_first_pass = nil
+
+          @snoozed_jobs_condition = Async::Condition.new
+          @snoozed_sources_condition = Async::Condition.new
+        end
+
+        attr_reader :root_task, :trace, :jobs_fiber_limit, :finished_tasks, :started_tasks, :snoozed_jobs_condition, :snoozed_sources_condition
+
+        def jobs_bandwidth?
+          true # TODO implement fiber limit
+        end
+
+        def sources_bandwidth?
+          true # TODO implement fiber limit
+        end
+
+        def close_queues
+          @finished_tasks.close
+          @finished_count_task.cancel
+
+          @started_tasks.close
+          @started_count_task.cancel
+        end
+
+        def wait_for_queues
+          if !@finished_first_pass.resolved?
+            @finished_first_pass.resolve(true)
+          end
+
+          @finished_all_tasks.wait
+          @finished_all_tasks = Async::Promise.new
+        end
+
+        def new_queues
+          @finished_tasks = Async::Queue.new
+          @finished_count = 0
+          @started_tasks = Async::Queue.new
+          @started_count = 0
+          @finished_first_pass = Async::Promise.new
+          @finished_all_tasks = Async::Promise.new
+
+          @started_count_task = @root_task.async do
+            @finished_first_pass.wait
+            while _t = @started_tasks.wait
+              @started_count += 1
+              if @finished_count == @started_count
+                @finished_all_tasks.resolve(true)
+              end
+            end
+          end
+
+          @finished_count_task = @root_task.async do
+            while t_or_err = @finished_tasks.wait
+              if t_or_err.is_a?(StandardError)
+                @finished_all_tasks.reject(t_or_err)
+              else
+                @finished_count +=1
+                if @finished_count == @started_count
+                  @finished_all_tasks.resolve(true)
+                end
+              end
+            end
+          end
+        end
+
+        def running?
+          @snoozed_jobs_condition.waiting? || @snoozed_sources_condition.waiting?
+        end
       end
 
       def run(trace_query_lazy: nil)
         trace = Fiber[:__graphql_current_multiplex]&.current_trace
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
-        job_fibers = []
-        next_job_fibers = []
-        source_tasks = []
-        next_source_tasks = []
         first_pass = true
-        sources_condition = Async::Condition.new
-        manager = spawn_fiber do
-          trace&.begin_dataloader(self)
-          while first_pass || !job_fibers.empty?
+        trace&.begin_dataloader(self)
+        fiber_vars = get_fiber_variables
+        raised_error = nil
+        Sync do |root_task|
+          run = Run.new(root_task, trace, jobs_fiber_limit)
+          set_fiber_variables(fiber_vars)
+
+          while first_pass || run.running? || !@pending_jobs.empty?
             first_pass = false
-            fiber_vars = get_fiber_variables
+            run_pending_steps(run)
+            run_sources(run)
 
-            run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
-
-            Sync do |root_task|
-              set_fiber_variables(fiber_vars)
-              while !source_tasks.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-                while (task = (source_tasks.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size + next_source_tasks.size) < total_fiber_limit) && spawn_source_task(root_task, sources_condition, trace))))
-                  if task.alive?
-                    root_task.yield # give the source task a chance to run
-                    next_source_tasks << task
-                  end
-                end
-                sources_condition.signal
-                source_tasks.concat(next_source_tasks)
-                next_source_tasks.clear
-              end
-            end
 
             if !@lazies_at_depth.empty?
               with_trace_query_lazy(trace_query_lazy) do
-                run_next_pending_lazies(job_fibers, trace)
-                run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
+                run_next_pending_lazies(run)
+                run_pending_steps(run)
               end
             end
           end
-          trace&.end_dataloader(self)
+        rescue StandardError => err
+          raised_error = err
+          root_task.cancel
         end
 
-        manager.resume
-        if manager.alive?
-          raise "Invariant: Manager didn't terminate successfully: #{manager}"
+        if raised_error
+          raise raised_error
         end
-
+        trace&.end_dataloader(self)
       rescue UncaughtThrowError => e
         throw e.tag, e.value
       end
 
       private
 
-      def run_pending_steps(job_fibers, next_job_fibers, source_tasks, jobs_fiber_limit, trace)
-        while (f = (job_fibers.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && spawn_job_fiber(trace))))
-          if f.alive?
-            finished = run_fiber(f)
-            if !finished
-              next_job_fibers << f
-            end
-          end
+      def run_pending_steps(run)
+        run.new_queues
+
+        if (unsnoozed = run.snoozed_jobs_condition.waiting?)
+          run.snoozed_jobs_condition.signal
         end
-        job_fibers.concat(next_job_fibers)
-        next_job_fibers.clear
+
+        while (!@pending_jobs.empty? && run.jobs_bandwidth?) || (unsnoozed)
+          unsnoozed = false
+          spawn_job_task(run)
+          run.wait_for_queues
+        end
+      ensure
+        run.close_queues
       end
 
-      def spawn_source_task(parent_task, condition, trace)
+      def spawn_job_task(run)
+        if !@pending_jobs.empty?
+          fiber_vars = get_fiber_variables
+          run.root_task.async do |task|
+            run.trace&.dataloader_spawn_execution_fiber(@pending_jobs)
+            Fiber[:graphql_async_dataloader_run] = run
+            Fiber[:graphql_async_dataloader_condition] = run.snoozed_jobs_condition
+            set_fiber_variables(fiber_vars)
+            run.started_tasks.push(task)
+            while job = @pending_jobs.shift
+              job.call
+            end
+          ensure
+            cleanup_fiber
+            run.finished_tasks.push($! || task)
+            run.trace&.dataloader_fiber_exit
+          end
+        end
+      end
+
+      def run_sources(run)
+        run.new_queues
+
+        if (unsnoozed = run.snoozed_sources_condition.waiting?)
+          run.snoozed_sources_condition.signal
+        end
+
+        while unsnoozed || (run.sources_bandwidth? && @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
+          unsnoozed = false
+          spawn_source_task(run)
+          run.wait_for_queues
+        end
+      ensure
+        run.close_queues
+      end
+
+      #### TODO DRY  Had to duplicate to remove spawn_job_fiber
+      def run_next_pending_lazies(run)
+        smallest_depth = nil
+        @lazies_at_depth.each_key do |depth_key|
+          smallest_depth ||= depth_key
+          if depth_key < smallest_depth
+            smallest_depth = depth_key
+          end
+        end
+
+        if smallest_depth
+          lazies = @lazies_at_depth.delete(smallest_depth)
+          if !lazies.empty?
+            lazies.each_with_index do |l, idx|
+              append_job { l.value }
+            end
+            spawn_job_task(run) # Todo what was the last `true` condition?
+          end
+        end
+      end
+
+      def spawn_source_task(run)
         pending_sources = nil
         @source_cache.each_value do |source_by_batch_params|
           source_by_batch_params.each_value do |source|
@@ -93,17 +222,23 @@ module GraphQL
 
         if pending_sources
           fiber_vars = get_fiber_variables
-          parent_task.async do
-            trace&.dataloader_spawn_source_fiber(pending_sources)
-            set_fiber_variables(fiber_vars)
-            Fiber[:graphql_dataloader_next_tick] = condition
-            pending_sources.each do |s|
-              trace&.begin_dataloader_source(s)
-              s.run_pending_keys
-              trace&.end_dataloader_source(s)
+          trace = run.trace
+          pending_sources.each do |source|
+            run.root_task.async do |task|
+              Fiber[:graphql_async_dataloader_run] = run
+              Fiber[:graphql_async_dataloader_condition] = run.snoozed_sources_condition
+              trace&.dataloader_spawn_source_fiber(pending_sources)
+              set_fiber_variables(fiber_vars)
+              run.started_tasks.push(task)
+              trace&.begin_dataloader_source(source)
+              source.run_pending_keys
+              trace&.end_dataloader_source(source)
+              nil
+            ensure
+              run.finished_tasks.push($! || task)
+              cleanup_fiber
+              trace&.dataloader_fiber_exit
             end
-            cleanup_fiber
-            trace&.dataloader_fiber_exit
           end
         end
       end
