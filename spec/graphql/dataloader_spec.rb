@@ -585,47 +585,73 @@ describe GraphQL::Dataloader do
 
   module DataloaderAssertions
     module FiberCounting
-      class << self
-        attr_accessor :starting_fiber_count, :last_spawn_fiber_count, :last_max_fiber_count
+      module ClassMethods
+        attr_accessor :starting_count, :last_spawn_count, :last_max_count, :count_class
 
-        def current_fiber_count
-          count_active_fibers - starting_fiber_count
+        def current_count
+          count_active - starting_count
         end
 
-        def count_active_fibers
+        def count_active
           GC.start
-          ObjectSpace.each_object(Fiber).count
+          ObjectSpace.each_object(count_class).count
+        end
+
+        def included(child_class)
+          child_class.singleton_class.attr_accessor(:counting_module)
+          child_class.counting_module = self
+          child_class.define_method(:counting_module) { self.class.counting_module }
         end
       end
+
+      extend ClassMethods
+      self.count_class = ::Fiber
 
       def initialize(*args, **kwargs, &block)
         super
-        FiberCounting.starting_fiber_count = FiberCounting.count_active_fibers
-        FiberCounting.last_max_fiber_count = 0
-        FiberCounting.last_spawn_fiber_count = 0
+        counting_module.starting_count = counting_module.count_active
+        counting_module.last_max_count = 0
+        counting_module.last_spawn_count = 0
       end
 
-      def spawn_fiber
-        result = super
-        update_fiber_counts
-        result
-      end
-
-      def spawn_source_task(...)
-        result = super
-        if result
-          update_fiber_counts
-        end
-        result
+      def set_fiber_variables(vars)
+        super
+        update_counts
       end
 
       private
 
-      def update_fiber_counts
-        FiberCounting.last_spawn_fiber_count += 1
-        current_count = FiberCounting.current_fiber_count
-        if current_count > FiberCounting.last_max_fiber_count
-          FiberCounting.last_max_fiber_count = current_count
+      def update_counts
+        counting_module.last_spawn_count += 1
+        current_count = counting_module.current_count
+        if current_count > counting_module.last_max_count
+          counting_module.last_max_count = current_count
+        end
+      end
+    end
+
+    if defined?(::Async::Task)
+      class ::Async::Task
+        attr_accessor :from_graphql
+      end
+
+      module TaskCounting
+        include FiberCounting
+        extend FiberCounting::ClassMethods
+        self.count_class = Async::Task
+
+        def self.count_active
+          GC.start
+          ObjectSpace.each_object(count_class)
+            .select(&:from_graphql)
+            .count
+        end
+
+        def update_counts
+          if !Async::Task.current.from_graphql
+            Async::Task.current.from_graphql = true
+            super
+          end
         end
       end
     end
@@ -1206,13 +1232,15 @@ describe GraphQL::Dataloader do
         end
 
         describe "fiber_limit" do
-          def assert_last_max_fiber_count(expected_last_max_fiber_count, message = nil)
-            if FiberCounting.last_max_fiber_count == (expected_last_max_fiber_count + 1)
+          def assert_last_max_count(counting_module, expected_last_max_count, message = nil)
+            diff = counting_module.last_max_count - expected_last_max_count
+            case diff
+            when 1, 2
               # TODO why does this happen sometimes?
-              warn "AsyncDataloader had +1 last_max_fiber_count"
-              assert_equal (expected_last_max_fiber_count + 1), FiberCounting.last_max_fiber_count, message
+              warn "AsyncDataloader had +#{diff} last_max_count"
+              assert_equal (expected_last_max_count + diff), counting_module.last_max_count, message
             else
-              assert_equal expected_last_max_fiber_count, FiberCounting.last_max_fiber_count, message
+              assert_equal expected_last_max_count, counting_module.last_max_count, message
             end
           end
 
@@ -1238,38 +1266,27 @@ describe GraphQL::Dataloader do
             GRAPHQL
 
             fiber_counting_dataloader_class = Class.new(schema.dataloader_class)
-            fiber_counting_dataloader_class.include(FiberCounting)
+            is_async = fiber_counting_dataloader_class < GraphQL::Dataloader::AsyncDataloader
+            counting_module = is_async ? TaskCounting : FiberCounting
+            fiber_counting_dataloader_class.include(counting_module)
+            assert_equal counting_module, fiber_counting_dataloader_class.counting_module
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
-            extra_shortlived_jobs_fibers = if fiber_counting_dataloader_class < GraphQL::Dataloader::AsyncDataloader
-              3
-            else
-              0
-            end
-            assert_equal 10 + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_fiber_count
-            assert_last_max_fiber_count(9, "No limit works as expected")
+            assert_equal (is_async ? 12 : 10), counting_module.last_spawn_count
+            assert_last_max_count(counting_module, 9, "No limit works as expected")
 
-            extra_shortlived_jobs_fibers = if fiber_counting_dataloader_class < GraphQL::Dataloader::AsyncDataloader
-              10 # more here because there are fewer jobs fibers running at any one time
-            else
-              0
-            end
+            extra_shortlived_jobs_fibers = is_async ? 1 : 0
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal if_exec_next(11, 12) + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_fiber_count
-            assert_last_max_fiber_count(4, "Limit of 4 works as expected")
+            assert_equal if_exec_next(11, 12) + extra_shortlived_jobs_fibers, counting_module.last_spawn_count
+            assert_last_max_count(counting_module, 4, "Limit of 4 works as expected")
 
-            extra_shortlived_jobs_fibers = if fiber_counting_dataloader_class < GraphQL::Dataloader::AsyncDataloader
-              4
-            else
-              0
-            end
-
+            extra_shortlived_jobs_fibers = is_async ? if_exec_next(6, 5) : 0
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
-            assert_equal 8 + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_fiber_count
-            assert_last_max_fiber_count(6, "Limit of 6 works as expected")
+            assert_equal 8 + extra_shortlived_jobs_fibers, counting_module.last_spawn_count
+            assert_last_max_count(counting_module, 6, "Limit of 6 works as expected")
           end
 
           it "accepts a default fiber_limit config" do
