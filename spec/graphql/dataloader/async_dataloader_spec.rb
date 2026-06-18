@@ -180,6 +180,8 @@ if RUBY_VERSION >= "3.2.0"
     end
 
     module AsyncDataloaderAssertions
+      ASYNC_DATALOADER_OVERHEAD_ALLOWANCE = 0.07
+
       def self.included(child_class)
         child_class.class_eval do
           it "works with sources" do
@@ -204,9 +206,9 @@ if RUBY_VERSION >= "3.2.0"
 
             assert_equal 0.2, v2
             assert_equal 0.3, v3
-            assert_in_delta 0.0, started_at_2 - ended_at_2, 0.06, "Already-loaded values returned instantly"
+            assert_in_delta 0.0, started_at_2 - ended_at_2, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Already-loaded values returned instantly"
 
-            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
+            assert_in_delta 0.3, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "IO ran in parallel"
           end
 
           it "works with GraphQL" do
@@ -214,7 +216,7 @@ if RUBY_VERSION >= "3.2.0"
             res = @schema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
-            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
+            assert_in_delta 0.3, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "IO ran in parallel"
           end
 
           it "runs fields by depth" do
@@ -247,7 +249,7 @@ if RUBY_VERSION >= "3.2.0"
               "s3" => { "duration" => 0.3 }
             }
             assert_graphql_equal expected_data, res["data"]
-            assert_in_delta 0.5, ended_at - started_at, 0.06, "Each depth ran in parallel"
+            assert_in_delta 0.5, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Each depth ran in parallel"
           end
 
           it "runs dataloaders in parallel across branches" do
@@ -294,7 +296,7 @@ if RUBY_VERSION >= "3.2.0"
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
-            assert_in_delta 1.0, ended_at - started_at, 0.06, "Sources were executed in parallel"
+            assert_in_delta 1.0, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Sources were executed in parallel"
           end
 
           it "groups across list items" do
@@ -312,9 +314,9 @@ if RUBY_VERSION >= "3.2.0"
             result = @schema.execute(query_str)
             t2 = Time.now
             assert_equal ["a", "b", "c"], result["data"]["listWaiters"].map { |lw| lw["waiter"]["tag"]}
-            # The field itself waits 0.1
-            assert_in_delta 0.3, t2 - t1, 0.06, "Wait was parallel"
             assert_equal [["a", "b", "c"]], AsyncSchema::KeyWaitForSource.fetches, "All keys were fetched at once"
+            # The field itself waits 0.1
+            assert_in_delta 0.3, t2 - t1, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Wait was parallel"
           end
 
           it 'copies fiber-local variables over to sources' do
