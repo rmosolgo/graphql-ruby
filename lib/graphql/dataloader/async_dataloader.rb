@@ -4,12 +4,12 @@ module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
       def yield(source = Fiber[:__graphql_current_dataloader_source])
-        run = Fiber[:graphql_async_dataloader_run]
+        run = Fiber[:__graphql_async_dataloader_run]
         trace = run.trace
         trace&.dataloader_fiber_yield(source)
         task = Async::Task.current
         run.finished_tasks.push(task)
-        condition = Fiber[:graphql_async_dataloader_condition]
+        condition = Fiber[:__graphql_async_dataloader_condition]
         condition.wait
         run.started_tasks.push(task)
         trace&.dataloader_fiber_resume(source)
@@ -173,8 +173,8 @@ module GraphQL
           fiber_vars = get_fiber_variables
           run.root_task.async do |task|
             run.trace&.dataloader_spawn_execution_fiber(@pending_jobs)
-            Fiber[:graphql_async_dataloader_run] = run
-            Fiber[:graphql_async_dataloader_condition] = run.snoozed_jobs_condition
+            Fiber[:__graphql_async_dataloader_run] = run
+            Fiber[:__graphql_async_dataloader_condition] = run.snoozed_jobs_condition
             set_fiber_variables(fiber_vars)
             run.started_tasks.push(task)
             while job = @pending_jobs.shift
@@ -247,8 +247,8 @@ module GraphQL
           trace = run.trace
           num_tasks.times do
             run.root_task.async do |task|
-              Fiber[:graphql_async_dataloader_run] = run
-              Fiber[:graphql_async_dataloader_condition] = run.snoozed_sources_condition
+              Fiber[:__graphql_async_dataloader_run] = run
+              Fiber[:__graphql_async_dataloader_condition] = run.snoozed_sources_condition
               trace&.dataloader_spawn_source_fiber(pending_sources)
               set_fiber_variables(fiber_vars)
               run.started_tasks.push(task)
