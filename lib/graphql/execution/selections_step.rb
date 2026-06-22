@@ -2,8 +2,9 @@
 module GraphQL
   module Execution
     class SelectionsStep
-      def initialize(parent_type:, selections:, objects:, results:, runner:, query:, path:, clobber: true)
+      def initialize(parent_type:, field_resolve_step:, selections:, objects:, results:, runner:, query:, path:, clobber: true)
         @path = path
+        @field_resolve_step = field_resolve_step
         @parent_type = parent_type
         @selections = selections
         @runner = runner
@@ -12,10 +13,13 @@ module GraphQL
         @query = query
         @graphql_objects = nil
         @all_selections = nil
+        @killed = false
         @clobber = clobber
       end
 
-      attr_reader :path, :query, :objects, :results
+      attr_reader :path, :query, :objects, :results, :field_resolve_step
+
+      attr_accessor :killed
 
       def graphql_objects
         @graphql_objects ||= @objects.map do |obj|

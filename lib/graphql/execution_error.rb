@@ -26,6 +26,10 @@ module GraphQL
     end
 
     def finalize_graphql_result(query, result_data, key)
+      add_this_error = !query.context.errors.any? { |e| e.eql?(self) }
+      if add_this_error
+        query.context.add_error(self)
+      end
       if ast_node.is_a?(GraphQL::Language::Nodes::Directive)
         # This is for backwards compatibility ... what does the spec say?
         result_data.delete(key)

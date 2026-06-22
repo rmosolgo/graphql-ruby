@@ -35,6 +35,8 @@ module GraphQL
         @authorizes_cache = Hash.new do |h, query_context|
           h[query_context] = {}.compare_by_identity
         end.compare_by_identity
+
+        @error_results = {}.compare_by_identity
       end
 
       attr_reader :runtime_directives, :uses_runtime_directives, :finalizer_keys
@@ -53,7 +55,7 @@ module GraphQL
         @dataloader.append_job(step)
       end
 
-      attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
+      attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values, :error_results
 
       # @return [void]
       def add_finalizer(query, result_value, key, finalizer)
@@ -128,7 +130,7 @@ module GraphQL
           queries.each_with_index.map do |query, idx|
             result = results[idx]
 
-            fin_result = if (!@finalizers&.key?(query) && query.context.errors.empty?) || !query.valid?
+            fin_result = if (!@finalizers&.key?(query) && query.context.errors.empty? && @error_results.empty?) || !query.valid?
               result
             else
               if result
@@ -298,6 +300,7 @@ module GraphQL
           if query.query?
             isolated_steps[0] << SelectionsStep.new(
               parent_type: root_type,
+              field_resolve_step: nil,
               selections: selected_operation.selections,
               objects: objects,
               results: [data],
@@ -317,6 +320,7 @@ module GraphQL
               isolated_steps << [SelectionsStep.new(
                 clobber: false, # `data` is being shared among several selections steps
                 parent_type: root_type,
+                field_resolve_step: field_resolve_step,
                 selections: field_resolve_step.ast_nodes || Array(field_resolve_step.ast_node),
                 objects: objects,
                 results: [data],
@@ -332,6 +336,7 @@ module GraphQL
             end
             isolated_steps[0] << SelectionsStep.new(
               parent_type: root_type,
+              field_resolve_step: nil,
               selections: selected_operation.selections,
               objects: objects,
               results: [data],
@@ -355,6 +360,7 @@ module GraphQL
           results << { "data" => data }
           isolated_steps[0] << SelectionsStep.new(
             parent_type: resolved_type,
+            field_resolve_step: nil,
             selections: selected_operation.selections,
             objects: objects,
             results: [data],
@@ -372,6 +378,7 @@ module GraphQL
             results << { "data" => list_result }
             isolated_steps[0] << SelectionsStep.new(
               parent_type: inner_type,
+              field_resolve_step: nil,
               selections: selected_operation.selections,
               objects: root_value,
               results: list_result,
@@ -420,6 +427,7 @@ module GraphQL
         selections = partial.ast_nodes
         dummy_ss = SelectionsStep.new(
           parent_type: nil,
+          field_resolve_step: nil,
           selections: selections,
           objects: nil,
           results: nil,

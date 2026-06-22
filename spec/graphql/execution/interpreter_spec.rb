@@ -786,7 +786,6 @@ describe GraphQL::Execution::Interpreter do
       assert_equal 2, res.context[:authorized_calls]
     end
 
-    focus
     it "returns only 1 error and stops resolving fields after that" do
       res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } }")
       assert_equal [["things", "nodes", 0, "title"]], res["errors"].map { |e| e["path"] }
