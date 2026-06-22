@@ -36,7 +36,9 @@ module GraphQL
           h[query_context] = {}.compare_by_identity
         end.compare_by_identity
 
-        @error_results = {}.compare_by_identity
+        @error_results = Hash.new do |h, query|
+          h[query] = {}.compare_by_identity
+        end.compare_by_identity
       end
 
       attr_reader :runtime_directives, :uses_runtime_directives, :finalizer_keys
@@ -130,7 +132,7 @@ module GraphQL
           queries.each_with_index.map do |query, idx|
             result = results[idx]
 
-            fin_result = if (!@finalizers&.key?(query) && query.context.errors.empty? && @error_results.empty?) || !query.valid?
+            fin_result = if (!@finalizers&.key?(query) && query.context.errors.empty? && @error_results[query].empty?) || !query.valid?
               result
             else
               if result

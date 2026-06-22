@@ -105,15 +105,23 @@ module GraphQL
         set_current_field(nil)
       end
 
-      def add_graphql_error(result, key, err)
+      def add_graphql_error(result, key, err, return_type: @field_definition.type)
         err.path = path
         if err.ast_node.nil?
           err.ast_nodes = ast_nodes
         end
-        errs = @runner.error_results[result] ||= {}
-        errs[key] = err
+        errs = @runner.error_results[@selections_step.query][result] ||= {}.compare_by_identity
+        if (existing_error = errs[key])
+          if existing_error.is_a?(Array)
+            existing_error << err
+          else
+            errs[key] = [existing_error, err]
+          end
+        else
+          errs[key] = err
+        end
         if !err.is_a?(GraphQL::Execution::Skip)
-          field_type = @field_definition.type
+          field_type = return_type
           should_propagate_null = field_type.non_null?
           while (should_propagate_null == false && field_type.kind.wraps?)
             field_type = field_type.of_type
@@ -520,7 +528,7 @@ module GraphQL
           end
         elsif field_result.is_a?(Finalizer)
           if field_result.is_a?(GraphQL::RuntimeError)
-            add_graphql_error(result_h, result_key, field_result)
+            add_graphql_error(result_h, result_key, field_result, return_type: return_type)
           else
             field_result.path = path
             @runner.add_finalizer(ctx.query, result_h, key, field_result)

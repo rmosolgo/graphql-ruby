@@ -22,9 +22,11 @@ module GraphQL
           end
         end
 
-        runner.error_results.each do |result, error_h|
-          @finalizers[result] = error_h
-          @finalizers_count += error_h.size
+        if !(error_results = runner.error_results[query]).empty?
+          error_results.each do |result, error_h|
+            @finalizers[result] = error_h
+            @finalizers_count += error_h.size
+          end
         end
 
         query.context.errors.each do |err|
