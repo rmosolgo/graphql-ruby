@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.6.4 (22 Jun 2026)
+
+### Bug fixes
+
+- AsyncDataloader: rework to avoid deadlocks with Falcon #5479
+- Execution::Next: fix tracer arguments #5650
+
 # 2.6.3 (26 May 2026)
 
 ### Breaking changes
