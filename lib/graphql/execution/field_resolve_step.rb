@@ -161,13 +161,12 @@ module GraphQL
       def build_errors_result(errors, single_error)
         first_error = errors.nil? ? single_error : errors.pop
         @field_results = [first_error]
+        @results = [@selections_step.results.first]
         if errors
-          raise "TODO this is broken"
           errors.each do |e|
-            add_graphql_error(e)
+            add_graphql_error(@results.first, key, e)
           end
         end
-        @results = [@selections_step.results.first]
         build_results
       end
 
