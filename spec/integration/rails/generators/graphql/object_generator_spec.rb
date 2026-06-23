@@ -5,6 +5,22 @@ require "generators/graphql/object_generator"
 class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::ObjectGenerator
 
+  setup do
+    @prev_rails_application = Rails.application
+    Rails.application = OpenStruct.new(
+      # Defaults from https://github.com/rails/rails/blob/main/railties/lib/rails/generators/rails/app/templates/config/initializers/filter_parameter_logging.rb.tt
+      config: OpenStruct.new(
+        filter_parameters: [
+          :passw, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn
+        ]
+      )
+    )
+  end
+
+  teardown do
+    Rails.application = @prev_rails_application
+  end
+
   # rubocop:disable Style/ClassAndModuleChildren
   class ::TestUser < ActiveRecord::Base
   end

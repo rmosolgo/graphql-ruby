@@ -6,7 +6,23 @@ module Graphql
     module FieldExtractor
       def fields
         columns = []
-        columns += (klass&.columns&.map { |c| generate_column_string(c) }  || [])
+        if (model_columns = klass&.columns)
+          filter = if defined?(ActiveSupport::ParameterFilter)
+            fp = if defined?(Rails) && Rails.application && (app_config = Rails.application.config.filter_parameters).present? && !app_config.empty?
+              app_config
+            elsif ActiveSupport.respond_to?(:filter_parameters)
+              ActiveSupport.filter_parameters
+            else
+              []
+            end
+            ActiveSupport::ParameterFilter.new(fp, mask: nil)
+          else
+            nil
+          end
+          columns += model_columns
+            .select { |c| filter ? filter.filter_param(c.name, c.name) : true }
+            .map { |c| generate_column_string(c) }
+        end
         columns + custom_fields
       end
 

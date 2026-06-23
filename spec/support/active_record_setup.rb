@@ -106,6 +106,9 @@ if testing_rails?
       t.date :birthday
       t.integer :points, null: false
       t.decimal :rating, null: false
+      t.string :password_digest
+      t.string :secret_message
+      t.string :ssn
     end
 
     create_table :graphql_detailed_traces, force: true do |t|
