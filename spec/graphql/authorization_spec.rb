@@ -620,11 +620,7 @@ describe "GraphQL::Authorization" do
     it "halts on unauthorized mutations" do
       query = "mutation { doUnauthorizedStuff(input: {}) { __typename } }"
       res = auth_execute(query, context: { unauthorized_mutation: true })
-      if TESTING_EXEC_NEXT
-        assert_equal({}, res["data"])
-      else
-        assert_nil res["data"].fetch("doUnauthorizedStuff")
-      end
+      assert_nil res["data"].fetch("doUnauthorizedStuff")
       assert_raises GraphQL::RequiredImplementationMissingError do
         auth_execute(query)
       end

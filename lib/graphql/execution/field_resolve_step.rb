@@ -49,6 +49,7 @@ module GraphQL
       end
 
       def value
+        return nil if @selections_step.killed
         query = @selections_step.query
         set_current_field
         query.current_trace.begin_execute_field(@field_definition, @field_results, @arguments, query)
@@ -79,7 +80,9 @@ module GraphQL
       end
 
       def call
+        return nil if @selections_step.killed
         set_current_field if @field_definition
+
         if @enqueued_authorization
           enqueue_next_steps
         elsif @finish_extension_idx
@@ -102,24 +105,64 @@ module GraphQL
         set_current_field(nil)
       end
 
-      def add_graphql_error(err)
+      def add_graphql_error(result, key, err, return_type: @field_definition.type)
         err.path = path
         if err.ast_node.nil?
           err.ast_nodes = ast_nodes
         end
-        @selections_step.query.context.add_error(err)
+        @runner.add_finalizer(@selections_step.query, result, key, err)
+        if !err.is_a?(GraphQL::Execution::Skip)
+          field_type = return_type
+          should_propagate_null = field_type.non_null?
+          while (should_propagate_null == false && field_type.kind.wraps?)
+            field_type = field_type.of_type
+            should_propagate_null = field_type.non_null?
+          end
+          if should_propagate_null
+            propagate_nulls
+          end
+        end
         err
+      end
+
+      def propagate_nulls
+        propagating_null = true
+        highest_nulled_depth = path.size
+        highest_list_depth = nil
+        current_field_step = self
+        while current_field_step
+          return_type = current_field_step.field_definition.type
+          if propagating_null && return_type.non_null?
+            highest_nulled_depth = current_field_step.path.size
+          else
+            propagating_null = false
+          end
+
+          if return_type.list?
+            highest_list_depth = current_field_step.path.size
+          end
+
+          current_field_step = current_field_step.selections_step.field_resolve_step
+        end
+
+        if highest_list_depth.nil? || highest_nulled_depth <= highest_list_depth
+          kill_field_step = self
+          while kill_field_step && highest_nulled_depth <= kill_field_step.path.size
+            kill_field_step.selections_step.killed = true
+            kill_field_step = kill_field_step.selections_step.field_resolve_step
+          end
+        end
       end
 
       def build_errors_result(errors, single_error)
         first_error = errors.nil? ? single_error : errors.pop
-        @field_results = error_instance_array(@selections_step.objects.size, first_error)
+        @field_results = [first_error]
+        @results = [@selections_step.results.first]
         if errors
           errors.each do |e|
-            add_graphql_error(e)
+            add_graphql_error(@results.first, key, e)
           end
         end
-        @results ||= @selections_step.results
         build_results
       end
 
@@ -226,7 +269,7 @@ module GraphQL
                   authorized_results << @results[i]
                 end
               rescue GraphQL::ExecutionError => exec_err
-                add_graphql_error(exec_err)
+                add_graphql_error(@results[i], key, exec_err)
               end
             end
             i += 1
@@ -331,12 +374,12 @@ module GraphQL
           end
         end
       rescue GraphQL::ExecutionError => err
-        add_graphql_error(err)
+        build_errors_result(nil, err)
       rescue StandardError => stderr
         begin
           @selections_step.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
         rescue GraphQL::ExecutionError => err
-          add_graphql_error(err)
+          add_graphql_error(@results[0], key, err)
         end
       end
 
@@ -458,13 +501,13 @@ module GraphQL
       end
 
       def finish_leaf_result(result_h, key, field_result, return_type, ctx)
-        final_field_result = build_leaf_result(field_result, return_type, ctx, false)
+        final_field_result = build_leaf_result(result_h, key, field_result, return_type, ctx, false)
 
         @directive_finalizers&.each { |f| @runner.add_finalizer(ctx.query, result_h, key, f) }
         result_h[@key] = final_field_result
       end
 
-      def build_leaf_result(field_result, return_type, ctx, is_from_array)
+      def build_leaf_result(result_h, result_key, field_result, return_type, ctx, is_from_array)
         if field_result.nil?
           if return_type.non_null?
             add_non_null_error(is_from_array)
@@ -473,7 +516,7 @@ module GraphQL
           end
         elsif field_result.is_a?(Finalizer)
           if field_result.is_a?(GraphQL::RuntimeError)
-            add_graphql_error(field_result)
+            add_graphql_error(result_h, result_key, field_result, return_type: return_type)
           else
             field_result.path = path
             @runner.add_finalizer(ctx.query, result_h, key, field_result)
@@ -484,7 +527,11 @@ module GraphQL
           end
 
           inner_type = return_type.of_type
-          field_result.map { |item| build_leaf_result(item, inner_type, ctx, true) }
+          result_a = Array.new(field_result.size)
+          field_result.each_with_index do |item, idx|
+            result_a[idx] = build_leaf_result(result_a, idx, item, inner_type, ctx, true)
+          end
+          result_a
         else
           return_type.coerce_result(field_result, ctx)
         end
@@ -526,6 +573,7 @@ module GraphQL
               query.current_trace.objects(obj_type, next_objects, ctx)
               @runner.add_step(SelectionsStep.new(
                 path: path,
+                field_resolve_step: self,
                 parent_type: obj_type,
                 selections: @next_selections,
                 objects: next_objects,
@@ -538,6 +586,7 @@ module GraphQL
             query.current_trace.objects(@static_type, @all_next_objects, ctx)
             @runner.add_step(SelectionsStep.new(
               path: path,
+              field_resolve_step: self,
               parent_type: @static_type,
               selections: @next_selections,
               objects: @all_next_objects,
@@ -558,7 +607,11 @@ module GraphQL
 
       def add_non_null_error(is_from_array)
         err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path)
-        @runner.schema.type_error(err, @selections_step.query.context)
+        nn_result = @runner.schema.type_error(err, @selections_step.query.context)
+        if nn_result.nil?
+          propagate_nulls
+        end
+        nn_result
       end
 
       def set_current_field(new_value = @field_definition)
@@ -576,7 +629,7 @@ module GraphQL
           end
         elsif field_result.is_a?(Finalizer)
           graphql_result[key] = if field_result.is_a?(GraphQL::RuntimeError)
-            add_graphql_error(field_result)
+            add_graphql_error(graphql_result, key, field_result)
           else
             field_result.path = path
             @runner.add_finalizer(@selections_step.query, graphql_result, key, field_result)

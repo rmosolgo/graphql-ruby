@@ -298,6 +298,7 @@ module GraphQL
           if query.query?
             isolated_steps[0] << SelectionsStep.new(
               parent_type: root_type,
+              field_resolve_step: nil,
               selections: selected_operation.selections,
               objects: objects,
               results: [data],
@@ -317,6 +318,7 @@ module GraphQL
               isolated_steps << [SelectionsStep.new(
                 clobber: false, # `data` is being shared among several selections steps
                 parent_type: root_type,
+                field_resolve_step: field_resolve_step,
                 selections: field_resolve_step.ast_nodes || Array(field_resolve_step.ast_node),
                 objects: objects,
                 results: [data],
@@ -332,6 +334,7 @@ module GraphQL
             end
             isolated_steps[0] << SelectionsStep.new(
               parent_type: root_type,
+              field_resolve_step: nil,
               selections: selected_operation.selections,
               objects: objects,
               results: [data],
@@ -355,6 +358,7 @@ module GraphQL
           results << { "data" => data }
           isolated_steps[0] << SelectionsStep.new(
             parent_type: resolved_type,
+            field_resolve_step: nil,
             selections: selected_operation.selections,
             objects: objects,
             results: [data],
@@ -372,6 +376,7 @@ module GraphQL
             results << { "data" => list_result }
             isolated_steps[0] << SelectionsStep.new(
               parent_type: inner_type,
+              field_resolve_step: nil,
               selections: selected_operation.selections,
               objects: root_value,
               results: list_result,
@@ -420,6 +425,7 @@ module GraphQL
         selections = partial.ast_nodes
         dummy_ss = SelectionsStep.new(
           parent_type: nil,
+          field_resolve_step: nil,
           selections: selections,
           objects: nil,
           results: nil,

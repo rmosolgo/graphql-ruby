@@ -73,6 +73,10 @@ module GraphQL
         @field_resolve_step.set_current_field(nil)
       end
 
+      def add_field_error(err)
+        @field_resolve_step.add_graphql_error(@graphql_result, @key, err)
+      end
+
       def authorize
         if @field_resolve_step.was_scoped && !@resolved_type.reauthorize_scoped_objects
           @authorized_value = @object
@@ -96,13 +100,13 @@ module GraphQL
           create_result
         end
       rescue GraphQL::RuntimeError => err
-        @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+        @graphql_result[@key] = add_field_error(err)
       rescue StandardError => err
         query ||= @field_resolve_step.selections_step.query
         begin
           query.handle_or_reraise(err, field: @field_resolve_step.field_definition, arguments: @field_resolve_step.arguments, object: @object) # rubocop:disable Development/ContextIsPassedCop
         rescue GraphQL::RuntimeError => err
-          @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+          @graphql_result[@key] = add_field_error(err)
         end
       end
 
@@ -120,13 +124,13 @@ module GraphQL
             elsif @is_non_null
               @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
             else
-              @graphql_result[@key] = @field_resolve_step.add_graphql_error(@authorization_error)
+              @graphql_result[@key] = add_field_error(@authorization_error)
             end
           rescue GraphQL::RuntimeError => err
             if @is_non_null
               @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
             else
-              @graphql_result[@key] = @field_resolve_step.add_graphql_error(err)
+              @graphql_result[@key] = add_field_error(err)
             end
           end
         end

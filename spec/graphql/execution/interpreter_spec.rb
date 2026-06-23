@@ -746,13 +746,28 @@ describe GraphQL::Execution::Interpreter do
       end
 
       class Query < GraphQL::Schema::Object
-        field :things, Thing.connection_type, null: false, resolve_static: true
+        field :things, Thing.connection_type, resolve_static: true
+        field :other_things, Thing.connection_type, resolve_static: :things
+        field :non_null_things, Thing.connection_type, null: false, resolve_static: :things
+        field :non_null_other_things, Thing.connection_type, null: false, resolve_static: :things
 
         def self.things(context)
           [{title: "a"}, {title: "b"}, {title: "c"}]
         end
 
         def things
+          self.class.things(context)
+        end
+
+        def other_things
+          self.class.things(context)
+        end
+
+        def non_null_other_things
+          self.class.things(context)
+        end
+
+        def non_null_things
           self.class.things(context)
         end
 
@@ -775,18 +790,37 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
+    it "works on different branches" do
+      res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } otherThings { nodes { title } }  }")
+      assert_equal({ "things" => nil, "otherThings" => nil }, res["data"])
+      assert_equal [["things", "nodes", 0, "title"], ["otherThings", "nodes", 0, "title"]], res["errors"].map { |e| e["path"] }
+      assert_equal 2, res.context[:authorized_calls]
+    end
+
+    it "Does non-null propagation across branches" do
+      res = ConnectionErrorTest::Schema.execute("{ nonNullThings { nodes { title } } nonNullOtherThings { nodes { title } }  }")
+      assert_nil res.fetch("data")
+      expected_error_paths = if_exec_next([
+        ["nonNullThings", "nodes", 0, "title"]
+      ], [
+        ["nonNullThings", "nodes", 0, "title"],
+        ["nonNullOtherThings", "nodes", 0, "title"]
+      ])
+      assert_equal expected_error_paths, res["errors"].map { |e| e["path"] }
+      assert_equal if_exec_next(1, 2), res.context[:authorized_calls]
+    end
+
     it "returns only 1 error and stops resolving fields after that" do
       res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } }")
-      assert_equal 1, res["errors"].size
+      assert_equal [["things", "nodes", 0, "title"]], res["errors"].map { |e| e["path"] }
       assert_equal 1, res.context[:authorized_calls]
 
       res = ConnectionErrorTest::Schema.execute("{ things { edges { node { title } } } }")
-      assert_equal 1, res["errors"].size
+      assert_equal [["things", "edges", 0, "node", "title"]], res["errors"].map { |e| e["path"] }
       assert_equal 1, res.context[:authorized_calls]
 
       res = ConnectionErrorTest::Schema.execute("{ thing { title body } }")
-      exec_next_TODO "should abort other branches in this case"
-      assert_equal 1, res["errors"].size
+      assert_equal [["thing", "title"]], res["errors"].map { |e| e["path"] }
       assert_equal 1, res.context[:authorized_calls]
     end
   end

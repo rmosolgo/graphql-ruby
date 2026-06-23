@@ -33,14 +33,15 @@ module GraphQL
 
           targets.each_with_index do |target, idx|
             if target.is_a?(Hash)
-              if target[key].equal?(err)
+              value_at_key = target[key]
+              if value_at_key.equal?(err)
                 tf = @finalizers[target] ||= {}.compare_by_identity
                 tf[key] = err
                 @finalizers_count += 1
-              elsif (arr = target[key]).is_a?(Array)
-                arr.each_with_index do |el, idx|
+              elsif value_at_key.is_a?(Array)
+                value_at_key.each_with_index do |el, idx|
                   if el.equal?(err)
-                    tf = @finalizers[arr] ||= {}.compare_by_identity
+                    tf = @finalizers[value_at_key] ||= {}.compare_by_identity
                     tf[idx] = err
                     @finalizers_count += 1
                   end
@@ -170,9 +171,7 @@ module GraphQL
       end
 
       def check_list_result(result_arr, inner_type, ast_selections)
-        inner_type_non_null = false
-        if inner_type.non_null?
-          inner_type_non_null = true
+        if (inner_type_non_null = inner_type.non_null?)
           inner_type = inner_type.of_type
         end
 

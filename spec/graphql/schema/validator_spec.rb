@@ -141,11 +141,13 @@ describe GraphQL::Schema::Validator do
           { "validated" => nil },
         ]
       },
-      "errors" => [
+      "errors" => if_exec_next([
+        {"message"=>"value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 0, "validated"]},
+      ],[
         {"message"=>"value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 0, "validated"]},
         {"message"=>"value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 1, "validated"]},
         {"message"=>"value must be greater than 5", "locations"=>[{"line"=>1, "column"=>10}], "path"=>["list", 2, "validated"]},
-      ]
+      ])
     }
     assert_equal expected_response, res
   end
