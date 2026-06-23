@@ -19,12 +19,8 @@ module Graphql
           else
             nil
           end
-          warn [filter, fp].inspect
           columns += model_columns
-            .select { |c|
-              warn [c.name, filter.filter_param(c.name, c.name)].inspect
-              filter ? filter.filter_param(c.name, c.name) : true
-            }
+            .select { |c| filter ? filter.filter_param(c.name, c.name) : true }
             .map { |c| generate_column_string(c) }
         end
         columns + custom_fields
