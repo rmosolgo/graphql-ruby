@@ -13,7 +13,7 @@ module Graphql
             elsif ActiveSupport.respond_to?(:filter_parameters)
               ActiveSupport.filter_parameters
             else
-              EmptyObjects::EMPTY_ARRAY
+              []
             end
             ActiveSupport::ParameterFilter.new(fp, mask: nil)
           else
