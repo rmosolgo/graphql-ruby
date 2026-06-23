@@ -792,12 +792,14 @@ describe GraphQL::Execution::Interpreter do
 
     it "works on different branches" do
       res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } otherThings { nodes { title } }  }")
+      assert_equal({ "things" => nil, "otherThings" => nil }, res["data"])
       assert_equal [["things", "nodes", 0, "title"], ["otherThings", "nodes", 0, "title"]], res["errors"].map { |e| e["path"] }
       assert_equal 2, res.context[:authorized_calls]
     end
 
     it "Does non-null propagation across branches" do
       res = ConnectionErrorTest::Schema.execute("{ nonNullThings { nodes { title } } nonNullOtherThings { nodes { title } }  }")
+      assert_nil res.fetch("data")
       expected_error_paths = if_exec_next([
         ["nonNullThings", "nodes", 0, "title"]
       ], [

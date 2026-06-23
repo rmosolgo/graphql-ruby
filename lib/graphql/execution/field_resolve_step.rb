@@ -145,10 +145,7 @@ module GraphQL
           current_field_step = current_field_step.selections_step.field_resolve_step
         end
 
-        if highest_nulled_depth == 0
-          # Actually everything should be killed here
-          raise "TODO depth of zero"
-        elsif highest_list_depth.nil? || highest_nulled_depth <= highest_list_depth
+        if highest_list_depth.nil? || highest_nulled_depth <= highest_list_depth
           kill_field_step = self
           while kill_field_step && highest_nulled_depth <= kill_field_step.path.size
             kill_field_step.selections_step.killed = true
