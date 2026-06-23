@@ -22,27 +22,6 @@ module GraphQL
           end
         end
 
-        if !(error_results = runner.error_results[query]).empty?
-          error_results.each do |result, error_h|
-            if (prev_f = @finalizers[result])
-              error_h.each do |k, v|
-                if (prev_k_f = prev_f[k])
-                  if prev_k_f.is_a?(Array)
-                    prev_k_f << v
-                  else
-                    prev_f[k] = [prev_k_f, v]
-                  end
-                else
-                  prev_f[k] = v
-                end
-              end
-            else
-              @finalizers[result] = error_h
-            end
-            @finalizers_count += error_h.size
-          end
-        end
-
         query.context.errors.each do |err|
           err_path = err.path - @current_exec_path
           key = err_path.pop

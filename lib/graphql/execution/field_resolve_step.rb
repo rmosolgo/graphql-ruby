@@ -110,16 +110,7 @@ module GraphQL
         if err.ast_node.nil?
           err.ast_nodes = ast_nodes
         end
-        errs = @runner.error_results[@selections_step.query][result] ||= {}.compare_by_identity
-        if (existing_error = errs[key])
-          if existing_error.is_a?(Array)
-            existing_error << err
-          else
-            errs[key] = [existing_error, err]
-          end
-        else
-          errs[key] = err
-        end
+        @runner.add_finalizer(@selections_step.query, result, key, err)
         if !err.is_a?(GraphQL::Execution::Skip)
           field_type = return_type
           should_propagate_null = field_type.non_null?

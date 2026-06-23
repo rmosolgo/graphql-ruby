@@ -35,10 +35,6 @@ module GraphQL
         @authorizes_cache = Hash.new do |h, query_context|
           h[query_context] = {}.compare_by_identity
         end.compare_by_identity
-
-        @error_results = Hash.new do |h, query|
-          h[query] = {}.compare_by_identity
-        end.compare_by_identity
       end
 
       attr_reader :runtime_directives, :uses_runtime_directives, :finalizer_keys
@@ -57,7 +53,7 @@ module GraphQL
         @dataloader.append_job(step)
       end
 
-      attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values, :error_results
+      attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
 
       # @return [void]
       def add_finalizer(query, result_value, key, finalizer)
@@ -132,7 +128,7 @@ module GraphQL
           queries.each_with_index.map do |query, idx|
             result = results[idx]
 
-            fin_result = if (!@finalizers&.key?(query) && query.context.errors.empty? && @error_results[query].empty?) || !query.valid?
+            fin_result = if (!@finalizers&.key?(query) && query.context.errors.empty?) || !query.valid?
               result
             else
               if result
