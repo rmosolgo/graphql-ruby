@@ -389,5 +389,63 @@ if RUBY_VERSION >= "3.2.0"
         check_snapshot(data, if_exec_next("example-next.json", "example.json"))
       end
     end
+
+    if testing_rails?
+      describe "with activerecord" do
+        class ActiveRecordAsyncSchema < GraphQL::Schema
+          class Author < GraphQL::Schema::Object
+            field :name, String
+          end
+
+          class Book < GraphQL::Schema::Object
+            field :title, String
+            field :author, Author
+          end
+
+          Author.field(:books, Book.connection_type)
+
+          class Query < GraphQL::Schema::Object
+            field :book, Book do
+              argument :title, String
+            end
+
+            def book(title:)
+              puts "Begin Book: #{title}"
+              result = dataload_record(::Book, title, find_by: :title)
+              puts "End Book: #{title}"
+              result
+            end
+
+            field :author, Author do
+              argument :name, String
+            end
+
+            def author(name:)
+              puts "Begin Author: #{name}"
+              result = dataload_record(::Author, name, find_by: :name)
+              puts "End Author: #{name}"
+              result
+            end
+          end
+
+          query(Query)
+          use GraphQL::Dataloader::AsyncDataloader
+        end
+
+        it "works with repeated queries" do
+          query_str = <<~GRAPHQL
+          {
+            author(name: "William Shakespeare") { name }
+            b1: book(title: "A Midsummer Night's Dream") { title author { name } }
+            b2: book(title: "Hamlet") { title author { name } }
+          }
+          GRAPHQL
+
+          5.times do
+            ActiveRecordAsyncSchema.execute(query_str)
+          end
+        end
+      end
+    end
   end
 end
