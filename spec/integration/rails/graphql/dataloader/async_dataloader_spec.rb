@@ -89,7 +89,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
   end
 
   before {
-    skip("Only test when isolation_level = :fiber") unless ENV["ISOLATION_LEVEL_FIBER"]
+    skip("Only test when isolation_level = :fiber") unless ISOLATION_LEVEL_FIBER
   }
 
   it "cleans up database connections" do

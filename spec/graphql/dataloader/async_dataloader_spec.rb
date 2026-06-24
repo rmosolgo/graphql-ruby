@@ -390,7 +390,7 @@ if RUBY_VERSION >= "3.2.0"
       end
     end
 
-    if testing_rails?
+    if testing_rails? && ISOLATION_LEVEL_FIBER
       describe "with activerecord" do
         class ActiveRecordAsyncSchema < GraphQL::Schema
           class Author < GraphQL::Schema::Object
@@ -410,10 +410,7 @@ if RUBY_VERSION >= "3.2.0"
             end
 
             def book(title:)
-              puts "Begin Book: #{title}"
-              result = dataload_record(::Book, title, find_by: :title)
-              puts "End Book: #{title}"
-              result
+              dataload_record(::Book, title, find_by: :title)
             end
 
             field :author, Author do
@@ -421,10 +418,7 @@ if RUBY_VERSION >= "3.2.0"
             end
 
             def author(name:)
-              puts "Begin Author: #{name}"
-              result = dataload_record(::Author, name, find_by: :name)
-              puts "End Author: #{name}"
-              result
+              dataload_record(::Author, name, find_by: :name)
             end
           end
 
@@ -441,9 +435,23 @@ if RUBY_VERSION >= "3.2.0"
           }
           GRAPHQL
 
-          5.times do
-            ActiveRecordAsyncSchema.execute(query_str)
+          results = []
+          10.times do
+            stdout, stderr = capture_io do
+              result = ActiveRecordAsyncSchema.execute(query_str)
+              results << [
+                result["data"]["author"]["name"],
+                result["data"]["b2"]["title"]
+              ]
+            end
+            assert_equal "", stdout, "Nothing to stdout"
+            assert_equal "", stderr, "Nothing to stderr (like warnings from Task errors)"
+          rescue
+            :failed
           end
+
+          p results
+          assert_equal Array.new(10, ["William Shakespeare", "Hamlet"]), results
         end
       end
     end
