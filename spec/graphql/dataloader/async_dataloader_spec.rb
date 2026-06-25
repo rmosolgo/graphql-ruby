@@ -450,7 +450,6 @@ if RUBY_VERSION >= "3.2.0"
             :failed
           end
 
-          p results
           assert_equal Array.new(10, ["William Shakespeare", "Hamlet"]), results
         end
       end
