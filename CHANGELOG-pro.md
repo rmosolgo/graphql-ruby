@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.30.1 (30 Jun 2025)
+
+- `@defer`: fix memory leak in legacy execution when used without Dataloader
+
 # 1.30.0 (24 Apr 2025)
 
 - Support GraphQL-Ruby's new `Execution::Next` runtime
