@@ -195,7 +195,7 @@ module GraphQL
             run.trace&.dataloader_fiber_exit
           end
           run.started_tasks.push(new_task)
-
+          new_task
         end
       end
 
@@ -231,10 +231,16 @@ module GraphQL
         if smallest_depth
           lazies = @lazies_at_depth.delete(smallest_depth)
           if !lazies.empty?
-            lazies.each_with_index do |l, idx|
-              append_job { l.value }
+            begin
+              run.new_queues
+              lazies.each_with_index do |l, idx|
+                append_job { l.value }
+              end
+              spawn_job_task(run) # Todo what was the last `true` condition?
+              run.wait_for_queues
+            ensure
+              run.close_queues
             end
-            spawn_job_task(run) # Todo what was the last `true` condition?
           end
         end
       end
