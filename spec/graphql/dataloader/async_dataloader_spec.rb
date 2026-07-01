@@ -436,6 +436,8 @@ if RUBY_VERSION >= "3.2.0"
           GRAPHQL
 
           results = []
+          # Emit the warning about buffer being experimental:
+          ActiveRecordAsyncSchema.execute(query_str)
           10.times do
             stdout, stderr = capture_io do
               result = ActiveRecordAsyncSchema.execute(query_str)
@@ -444,8 +446,8 @@ if RUBY_VERSION >= "3.2.0"
                 result["data"]["b2"]["title"]
               ]
             end
-            assert_equal "", stdout, "Nothing to stdout"
             assert_equal "", stderr, "Nothing to stderr (like warnings from Task errors)"
+            assert_equal "", stdout, "Nothing to stdout"
           rescue
             :failed
           end

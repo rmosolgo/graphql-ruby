@@ -3,6 +3,13 @@
 module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
+      def self.use(...)
+        if !Async::Task.method_defined?(:cancel)
+          Async::Task.alias_method(:cancel, :stop)
+        end
+        super
+      end
+
       def yield(source = Fiber[:__graphql_current_dataloader_source])
         run = Fiber[:__graphql_async_dataloader_run]
         trace = run.trace
@@ -85,8 +92,11 @@ module GraphQL
 
           @started_count_task = @root_task.async do
             @finished_first_pass.wait
-            while _t = @started_tasks.wait
+            while task = @started_tasks.wait
               @started_count += 1
+              if task.status == :initialized # could also be resumed after waiting
+                task.run
+              end
               if @finished_count == @started_count
                 @finished_all_tasks.resolve(true)
               end
@@ -171,12 +181,11 @@ module GraphQL
       def spawn_job_task(run)
         if !@pending_jobs.empty?
           fiber_vars = get_fiber_variables
-          run.root_task.async do |task|
+          new_task = Async::Task.new(run.root_task) do |task|
             run.trace&.dataloader_spawn_execution_fiber(@pending_jobs)
             Fiber[:__graphql_async_dataloader_run] = run
             Fiber[:__graphql_async_dataloader_condition] = run.snoozed_jobs_condition
             set_fiber_variables(fiber_vars)
-            run.started_tasks.push(task)
             while job = @pending_jobs.shift
               job.call
             end
@@ -185,6 +194,8 @@ module GraphQL
             run.finished_tasks.push($! || task)
             run.trace&.dataloader_fiber_exit
           end
+          run.started_tasks.push(new_task)
+
         end
       end
 
@@ -246,12 +257,11 @@ module GraphQL
           fiber_vars = get_fiber_variables
           trace = run.trace
           num_tasks.times do
-            run.root_task.async do |task|
+            new_task = Async::Task.new(run.root_task) do |task|
               Fiber[:__graphql_async_dataloader_run] = run
               Fiber[:__graphql_async_dataloader_condition] = run.snoozed_sources_condition
               trace&.dataloader_spawn_source_fiber(pending_sources)
               set_fiber_variables(fiber_vars)
-              run.started_tasks.push(task)
               while (source = pending_sources.shift)
                 trace&.begin_dataloader_source(source)
                 source.run_pending_keys
@@ -263,6 +273,8 @@ module GraphQL
               cleanup_fiber
               trace&.dataloader_fiber_exit
             end
+            run.started_tasks.push(new_task)
+            new_task
           end
         end
       end
