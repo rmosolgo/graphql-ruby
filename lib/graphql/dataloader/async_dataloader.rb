@@ -21,7 +21,7 @@ module GraphQL
 
       def create_pending_run
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
-        @pending_run = Run.new(nil, [], nil, total_fiber_limit, jobs_fiber_limit)
+        @pending_run = Run.new(total_fiber_limit, jobs_fiber_limit)
       end
 
       def yield(source = Fiber[:__graphql_current_dataloader_source])
@@ -38,10 +38,11 @@ module GraphQL
       end
 
       class Run
-        def initialize(root_task, jobs, trace, total_fiber_limit, jobs_fiber_limit)
-          @root_task = root_task
-          @jobs = jobs
-          @trace = trace
+        def initialize(total_fiber_limit, jobs_fiber_limit)
+          @root_task = nil
+          @trace = nil
+          @jobs = []
+
           @total_fiber_limit = total_fiber_limit
           @jobs_fiber_limit = jobs_fiber_limit
           @lazies_at_depth = Hash.new { |h, k| h[k] = [] }
@@ -197,7 +198,6 @@ module GraphQL
           # Make sure there's a new task instance to hold `.graphql_...` state:
           task = Async::Task.new do |root_task|
             run.root_task = root_task
-            root_task.annotate("#run root task")
             root_task.graphql_async_dataloader_run = run
             set_fiber_variables(fiber_vars)
 
@@ -258,7 +258,6 @@ module GraphQL
             run.trace&.dataloader_spawn_execution_fiber(pending_jobs)
             task.graphql_async_dataloader_run = run
             task.graphql_async_dataloader_condition = run.snoozed_jobs_condition
-            task.annotate("Jobs task, condition: #{run.snoozed_jobs_condition.object_id}")
             set_fiber_variables(fiber_vars)
             while job = pending_jobs.shift
               job.call
@@ -338,7 +337,6 @@ module GraphQL
           trace = run.trace
           num_tasks.times do
             new_task = Async::Task.new(run.root_task) do |task|
-              task.annotate("Sources task")
               task.graphql_async_dataloader_run = run
               task.graphql_async_dataloader_condition = run.snoozed_sources_condition
               trace&.dataloader_spawn_source_fiber(pending_sources)
