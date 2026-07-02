@@ -405,20 +405,28 @@ if RUBY_VERSION >= "3.2.0"
           Author.field(:books, Book.connection_type)
 
           class Query < GraphQL::Schema::Object
-            field :book, Book do
+            field :book, Book, resolve_static: true do
               argument :title, String
             end
 
-            def book(title:)
-              dataload_record(::Book, title, find_by: :title)
+            def self.book(context, title:)
+              context.dataload_record(::Book, title, find_by: :title)
             end
 
-            field :author, Author do
+            def book(title:)
+              self.class.book(context, title: title)
+            end
+
+            field :author, Author, resolve_static: true do
               argument :name, String
             end
 
+            def self.author(context, name:)
+              context.dataload_record(::Author, name, find_by: :name)
+            end
+
             def author(name:)
-              dataload_record(::Author, name, find_by: :name)
+              self.class.author(context, name: name)
             end
           end
 
