@@ -44,6 +44,7 @@ module GraphQL
           @trace = trace
           @total_fiber_limit = total_fiber_limit
           @jobs_fiber_limit = jobs_fiber_limit
+          @lazies_at_depth = Hash.new { |h, k| h[k] = [] }
 
           @finished_tasks = nil
           @started_tasks = nil
@@ -58,8 +59,7 @@ module GraphQL
 
         attr_accessor :trace, :root_task
 
-        attr_reader :jobs, :jobs_fiber_limit, :total_fiber_limit, :finished_tasks, :started_tasks, :snoozed_jobs_condition, :snoozed_sources_condition
-
+        attr_reader :jobs, :lazies_at_depth, :jobs_fiber_limit, :total_fiber_limit, :finished_tasks, :started_tasks, :snoozed_jobs_condition, :snoozed_sources_condition
 
         def jobs_bandwidth?
           running_count < jobs_fiber_limit
@@ -137,21 +137,21 @@ module GraphQL
       end
 
       def append_job(callable = nil, &block)
-        run = (@pending_run || (t = Async::Task.current?)&.graphql_async_dataloader_run || raise(GraphQL::Error, "No available Run to append to, GraphQL-Ruby bug"))
-        queue = run.jobs
-        job = callable || block
-        queue << job
+        active_run.jobs.push(callable || block)
         nil
+      end
+
+      def lazy_at_depth(depth, lazy)
+        active_run.lazies_at_depth[depth] << lazy
+      end
+
+      def active_run
+        @pending_run || Async::Task.current?&.graphql_async_dataloader_run || raise(GraphQL::Error, "No available Run to append to, GraphQL-Ruby bug")
       end
 
       def run_isolated
         previous_run = Async::Task.current?&.graphql_async_dataloader_run
         prev_pending_keys = {}
-        prev_lazies_at_depth = @lazies_at_depth
-
-        # TODO presumably at least this cache should also move to Run:
-        @lazies_at_depth = @lazies_at_depth.dup.clear
-
         # Clear pending loads but keep already-cached records
         # in case they are useful to the given block.
         @source_cache.each do |source_class, batched_sources|
@@ -171,9 +171,9 @@ module GraphQL
       ensure
         if previous_run
           Async::Task.current.graphql_async_dataloader_run = previous_run
+          # clear the one created in #run:
           @pending_run = nil
         end
-        @lazies_at_depth = prev_lazies_at_depth
         prev_pending_keys.each do |source_instance, pending|
           pending.each do |key, value|
             if !source_instance.results.key?(key)
@@ -206,7 +206,7 @@ module GraphQL
               run_pending_steps(run)
               run_sources(run)
 
-              if !@lazies_at_depth.empty?
+              if !run.lazies_at_depth.empty?
                 with_trace_query_lazy(trace_query_lazy) do
                   run_next_pending_lazies(run)
                   run_pending_steps(run)
@@ -295,7 +295,7 @@ module GraphQL
       #### TODO DRY  Had to duplicate to remove spawn_job_fiber
       def run_next_pending_lazies(run)
         smallest_depth = nil
-        @lazies_at_depth.each_key do |depth_key|
+        run.lazies_at_depth.each_key do |depth_key|
           smallest_depth ||= depth_key
           if depth_key < smallest_depth
             smallest_depth = depth_key
@@ -303,7 +303,7 @@ module GraphQL
         end
 
         if smallest_depth
-          lazies = @lazies_at_depth.delete(smallest_depth)
+          lazies = run.lazies_at_depth.delete(smallest_depth)
           if !lazies.empty?
             begin
               run.new_queues
