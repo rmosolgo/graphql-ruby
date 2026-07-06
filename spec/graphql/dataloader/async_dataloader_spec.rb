@@ -389,5 +389,80 @@ if RUBY_VERSION >= "3.2.0"
         check_snapshot(data, if_exec_next("example-next.json", "example.json"))
       end
     end
+
+    if testing_rails? && ISOLATION_LEVEL_FIBER
+      describe "with activerecord" do
+        class ActiveRecordAsyncSchema < GraphQL::Schema
+          class Author < GraphQL::Schema::Object
+            field :name, String
+          end
+
+          class Book < GraphQL::Schema::Object
+            field :title, String
+            field :author, Author
+          end
+
+          Author.field(:books, Book.connection_type)
+
+          class Query < GraphQL::Schema::Object
+            field :book, Book, resolve_static: true do
+              argument :title, String
+            end
+
+            def self.book(context, title:)
+              context.dataload_record(::Book, title, find_by: :title)
+            end
+
+            def book(title:)
+              self.class.book(context, title: title)
+            end
+
+            field :author, Author, resolve_static: true do
+              argument :name, String
+            end
+
+            def self.author(context, name:)
+              context.dataload_record(::Author, name, find_by: :name)
+            end
+
+            def author(name:)
+              self.class.author(context, name: name)
+            end
+          end
+
+          query(Query)
+          use GraphQL::Dataloader::AsyncDataloader
+        end
+
+        it "works with repeated queries" do
+          query_str = <<~GRAPHQL
+          {
+            author(name: "William Shakespeare") { name }
+            b1: book(title: "A Midsummer Night's Dream") { title author { name } }
+            b2: book(title: "Hamlet") { title author { name } }
+          }
+          GRAPHQL
+
+          results = []
+          # Emit the warning about buffer being experimental:
+          ActiveRecordAsyncSchema.execute(query_str)
+          10.times do
+            stdout, stderr = capture_io do
+              result = ActiveRecordAsyncSchema.execute(query_str)
+              results << [
+                result["data"]["author"]["name"],
+                result["data"]["b2"]["title"]
+              ]
+            end
+            assert_equal "", stderr, "Nothing to stderr (like warnings from Task errors)"
+            assert_equal "", stdout, "Nothing to stdout"
+          rescue
+            :failed
+          end
+
+          assert_equal Array.new(10, ["William Shakespeare", "Hamlet"]), results
+        end
+      end
+    end
   end
 end

@@ -10,9 +10,12 @@ else
   require "sqlite3"
 end
 
-if ENV["ISOLATION_LEVEL_FIBER"]
+ISOLATION_LEVEL_FIBER = if ENV["ISOLATION_LEVEL_FIBER"]
   ActiveSupport::IsolatedExecutionState.isolation_level = :fiber
   puts "ActiveSupport::IsolatedExecutionState: #{ActiveSupport::IsolatedExecutionState.isolation_level}"
+  true
+else
+  false
 end
 
 require_relative "generators/base_generator_test"

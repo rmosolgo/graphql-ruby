@@ -33,8 +33,8 @@ MSG
       def on_send(node)
         if (
           method_doesnt_receive_second_context_argument?(node) ||
-            method_doesnt_receive_first_context_argument?(node) ||
-            is_enum_values_call_without_arguments?(node)
+              method_doesnt_receive_first_context_argument?(node) ||
+              is_enum_values_call_without_arguments?(node)
             ) && !likely_query_specific_receiver?(node.to_a[0])
           add_offense(node)
         end

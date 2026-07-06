@@ -492,12 +492,6 @@ module GraphQL
               end
             end
           end
-          # If this field is a root mutation field, immediately resolve
-          # all of its child fields before moving on to the next root mutation field.
-          # (Subselections of this mutation will still be resolved level-by-level.)
-          if selection_result.graphql_is_eager
-            @dataloader.run
-          end
         end
 
         def set_result(selection_result, result_name, value, is_child_result, is_non_null)
