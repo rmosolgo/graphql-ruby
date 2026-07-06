@@ -10,7 +10,18 @@
 
 ### Bug fixes
 
+# 2.6.5 (6 Jul 2026)
+
+### New features
+
+- `Execution::Next`: improve non-null error propagation #5644
+- Dataloader: optimize memory usage in `Dataloader::Source` #5658
+- AsyncDataloader: fix concurrency errors #5656
+- Generators: don't generate fields for filtered parameters #5653
+
 # 2.6.4 (22 Jun 2026)
+
+**Yanked** due to problems introduced to `AsyncDataloader`.
 
 ### Bug fixes
 
