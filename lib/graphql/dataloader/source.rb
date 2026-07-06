@@ -175,7 +175,7 @@ module GraphQL
       # @param batch_kwargs [Hash]
       # @return [Object]
       def self.batch_key_for(*batch_args, **batch_kwargs)
-        if batch_kwargs.any?
+        if batch_kwargs.any? # rubocop:disable Development/NoneWithoutBlockCop
           [*batch_args, **batch_kwargs]
         else
           batch_args
