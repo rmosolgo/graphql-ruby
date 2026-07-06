@@ -151,8 +151,8 @@ module GraphQL
           when Language::Nodes::InlineFragment
             static_type_at_result = @static_type_at[result_h]
             if static_type_at_result && (
-                (t = ast_selection.type).nil? ||
-                @runner.type_condition_applies?(@query.context, static_type_at_result, t.name)
+              (t = ast_selection.type).nil? ||
+              @runner.type_condition_applies?(@query.context, static_type_at_result, t.name)
               )
               result_h = check_object_result(result_h, parent_type, ast_selection.selections)
               return nil if result_h.nil?

@@ -89,7 +89,8 @@ module GraphQL
           sync(pending_keys)
         end
 
-        result_keys.map { |k| result_for(k) }
+        result_keys.map! { |k| result_for(k) }
+        result_keys
       end
 
       # Subclasses must implement this method to return a value for each of `keys`
@@ -138,22 +139,25 @@ module GraphQL
       # @api private
       # @return [void]
       def run_pending_keys
-        if !@fetching.empty?
-          @fetching.each_key { |k| @pending.delete(k) }
-        end
+        @fetching.each_key { |k| @pending.delete(k) }
         return if @pending.empty?
         fetch_h = @pending
-        @pending = {}
         @fetching.merge!(fetch_h)
+        @pending = {}
         results = fetch(fetch_h.values)
-        fetch_h.each_with_index do |(key, _value), idx|
+        idx = 0
+
+        fetch_h.each_key do |key|
           @results[key] = results[idx]
+          @fetching.delete(key)
+          idx += 1
         end
         nil
       rescue StandardError => error
-        fetch_h.each_key { |key| @results[key] = error }
-      ensure
-        fetch_h && fetch_h.each_key { |k| @fetching.delete(k) }
+        fetch_h.each_key { |key|
+          @results[key] = error
+          @fetching.delete(key)
+        }
       end
 
       # These arguments are given to `dataloader.with(source_class, ...)`. The object
@@ -171,7 +175,11 @@ module GraphQL
       # @param batch_kwargs [Hash]
       # @return [Object]
       def self.batch_key_for(*batch_args, **batch_kwargs)
-        [*batch_args, **batch_kwargs]
+        if batch_kwargs.any? # rubocop:disable Development/NoneWithoutBlockCop
+          [*batch_args, **batch_kwargs]
+        else
+          batch_args
+        end
       end
 
       # Clear any already-loaded objects for this source

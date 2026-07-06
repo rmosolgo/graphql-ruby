@@ -58,7 +58,7 @@ module GraphQL
     end
 
     def initialize(nonblocking: self.class.default_nonblocking, fiber_limit: self.class.default_fiber_limit)
-      @source_cache = Hash.new { |h, k| h[k] = {} }
+      @source_cache = Hash.new { |h, k| h[k] = {} }.compare_by_identity
       @pending_jobs = []
       if !nonblocking.nil?
         @nonblocking = nonblocking
