@@ -215,4 +215,33 @@ describe GraphQL::Schema::List do
       assert_equal 3, res["errors"][0]["extensions"]["problems"].count
     end
   end
+
+  describe "pattern matching" do
+    it "matches the of_type" do
+      assert case list_type
+      in { of_type: of_type }
+        true
+      else
+        false
+      end
+    end
+
+    it "matches nested list" do
+      nested = GraphQL::Schema::List.new(GraphQL::Schema::List.new(Jazz::Musician))
+      inner_type = case nested
+      in { of_type: { of_type: t } }
+        t
+      end
+      assert_equal Jazz::Musician, inner_type
+    end
+
+    it "does not match missing keys" do
+      assert case list_type
+      in { z: }
+        false
+      else
+        true
+      end
+    end
+  end
 end

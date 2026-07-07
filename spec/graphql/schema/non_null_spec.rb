@@ -86,4 +86,33 @@ describe GraphQL::Schema::NonNull do
       assert_equal [nil], res["data"]["__type"]["fields"].map { |f| f["description"] }
     end
   end
+
+  describe "pattern matching" do
+    it "matches the of_type" do
+      assert case non_null_type
+      in { of_type: of_type }
+        true
+      else
+        false
+      end
+    end
+
+    it "matches nested list" do
+      nested = GraphQL::Schema::NonNull.new(GraphQL::Schema::NonNull.new(Jazz::Musician))
+      inner_type = case nested
+      in { of_type: { of_type: t } }
+        t
+      end
+      assert_equal Jazz::Musician, inner_type
+    end
+
+    it "does not match missing keys" do
+      assert case non_null_type
+      in { z: }
+        false
+      else
+        true
+      end
+    end
+  end
 end
