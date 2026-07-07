@@ -25,6 +25,10 @@ module GraphQL
       def ==(other)
         self.class == other.class && of_type == other.of_type
       end
+
+      def deconstruct_keys(_keys)
+        { of_type: of_type }
+      end
     end
   end
 end
