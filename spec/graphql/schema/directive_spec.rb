@@ -88,7 +88,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     defaulted_directive = Class.new(GraphQL::Schema::Directive) do
       graphql_name "defaulted"
       locations GraphQL::Schema::Directive::OBJECT
-      argument :enabled, GraphQL::Types::Boolean, required: true, default_value: true
+      argument :enabled, GraphQL::Types::Boolean, default_value: true
     end
 
     thing = Class.new(GraphQL::Schema::Object) do
