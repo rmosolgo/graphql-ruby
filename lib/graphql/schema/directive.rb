@@ -168,6 +168,9 @@ module GraphQL
               # Let validation handle this
               value
             end
+          elsif arg_defn.default_value?
+            value = arg_defn.default_value
+            graphql_value = arg_type.coerce_isolated_result(value) unless value.nil?
           else
             value = graphql_value = nil
           end

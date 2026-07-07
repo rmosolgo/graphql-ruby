@@ -84,6 +84,34 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     assert_equal "@secret.topSecret on Thing.something is invalid (nil): Expected value to not be null", err.message
   end
 
+  it "applies argument default values when omitted" do
+    defaulted_directive = Class.new(GraphQL::Schema::Directive) do
+      graphql_name "defaulted"
+      locations GraphQL::Schema::Directive::OBJECT
+      argument :enabled, GraphQL::Types::Boolean, default_value: true
+    end
+
+    thing = Class.new(GraphQL::Schema::Object) do
+      graphql_name "DefaultedThing"
+      field :id, GraphQL::Types::ID
+    end
+    thing.directive(defaulted_directive)
+
+    assert_equal true, thing.directives.first.arguments[:enabled]
+  end
+
+  it "applies argument default values when omitted in SDL" do
+    schema = GraphQL::Schema.from_definition <<~GRAPHQL
+      directive @flag(enabled: Boolean! = true) on OBJECT
+
+      type Query @flag {
+        id: ID
+      }
+    GRAPHQL
+
+    assert_equal true, schema.query.directives.first.arguments[:enabled]
+  end
+
   describe 'repeatable directives' do
     module RepeatDirectiveTest
       class Secret < GraphQL::Schema::Directive
