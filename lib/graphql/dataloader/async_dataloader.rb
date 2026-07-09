@@ -177,9 +177,10 @@ module GraphQL
         end
         prev_pending_keys.each do |source_instance, pending|
           pending.each do |key, value|
-            if !source_instance.results.key?(key)
-              source_instance.pending[key] = value
-            end
+            next if source_instance.results.key?(key)
+
+            queue_pending_source(source_instance) if source_instance.pending.empty?
+            source_instance.pending[key] = value
           end
         end
       end
@@ -280,11 +281,9 @@ module GraphQL
         end
 
         allowed_tasks = run.allowed_sources_tasks
-        while (has_pending = @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) } ) || unsnoozed
+        while (pending_sources = drain_pending_sources) || unsnoozed
           unsnoozed = false
-          if has_pending
-            spawn_source_task(run, allowed_tasks)
-          end
+          spawn_source_task(run, allowed_tasks, pending_sources) if pending_sources
           run.wait_for_queues
         end
       ensure
@@ -318,43 +317,31 @@ module GraphQL
         end
       end
 
-      def spawn_source_task(run, num_tasks)
-        pending_sources = nil
-        @source_cache.each_value do |source_by_batch_params|
-          source_by_batch_params.each_value do |source|
-            if source.pending?
-              pending_sources ||= []
-              pending_sources << source
-            end
-          end
+      def spawn_source_task(run, num_tasks, pending_sources)
+        if num_tasks == Float::INFINITY
+          num_tasks = pending_sources.size
         end
-
-        if pending_sources
-          if num_tasks == Float::INFINITY
-            num_tasks = pending_sources.size
-          end
-          fiber_vars = get_fiber_variables
-          trace = run.trace
-          num_tasks.times do
-            new_task = Async::Task.new(run.root_task) do |task|
-              task.graphql_async_dataloader_run = run
-              task.graphql_async_dataloader_condition = run.snoozed_sources_condition
-              trace&.dataloader_spawn_source_fiber(pending_sources)
-              set_fiber_variables(fiber_vars)
-              while (source = pending_sources.shift)
-                trace&.begin_dataloader_source(source)
-                source.run_pending_keys
-                trace&.end_dataloader_source(source)
-              end
-              nil
-            ensure
-              run.finished_tasks.push($! || task)
-              cleanup_fiber
-              trace&.dataloader_fiber_exit
+        fiber_vars = get_fiber_variables
+        trace = run.trace
+        num_tasks.times do
+          new_task = Async::Task.new(run.root_task) do |task|
+            task.graphql_async_dataloader_run = run
+            task.graphql_async_dataloader_condition = run.snoozed_sources_condition
+            trace&.dataloader_spawn_source_fiber(pending_sources)
+            set_fiber_variables(fiber_vars)
+            while (source = pending_sources.shift)
+              trace&.begin_dataloader_source(source)
+              source.run_pending_keys
+              trace&.end_dataloader_source(source)
             end
-            run.started_tasks.push(new_task)
-            new_task
+            nil
+          ensure
+            run.finished_tasks.push($! || task)
+            cleanup_fiber
+            trace&.dataloader_fiber_exit
           end
+          run.started_tasks.push(new_task)
+          new_task
         end
       end
     end

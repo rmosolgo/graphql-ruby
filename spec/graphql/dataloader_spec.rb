@@ -68,6 +68,27 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class PendingCheckSource < GraphQL::Dataloader::Source
+      class << self
+        attr_accessor :pending_checks
+      end
+
+      self.pending_checks = 0
+
+      def initialize(batch_key)
+        @batch_key = batch_key
+      end
+
+      def fetch(keys)
+        keys
+      end
+
+      def pending?
+        self.class.pending_checks += 1
+        super
+      end
+    end
+
     class NestedDataObject < GraphQL::Dataloader::Source
       def fetch(ids)
         @dataloader.with(DataObject).load_all(ids)
@@ -1496,6 +1517,21 @@ describe GraphQL::Dataloader do
     assert :world, value
   end
 
+  it "tracks pending sources without scanning the entire source cache" do
+    dataloader = GraphQL::Dataloader.new
+    100.times do |idx|
+      dataloader.with(FiberSchema::PendingCheckSource, idx)
+    end
+
+    FiberSchema::PendingCheckSource.pending_checks = 0
+    dataloader.append_job do
+      dataloader.with(FiberSchema::PendingCheckSource, 0).load(1)
+    end
+    dataloader.run
+
+    assert_operator FiberSchema::PendingCheckSource.pending_checks, :<, 100
+  end
+
   class CanaryDataloader < GraphQL::Dataloader::NullDataloader
   end
 
@@ -1557,6 +1593,23 @@ describe GraphQL::Dataloader do
       assert_equal({ d: 4, e: 3 }, result)
       dl.run
       assert_equal({ a: 1, b: 2, c: 3, d: 4, e: 3 }, result)
+    end
+
+    it "restores pending sources from the outer queue" do
+      dl = GraphQL::Dataloader.new
+      result = {}
+      outer_request = dl.with(RunIsolated::CountSource).request(1)
+
+      dl.run_isolated {
+        result[:isolated] = dl.with(RunIsolated::CountSource).load(2)
+      }
+
+      dl.append_job {
+        result[:outer] = outer_request.load
+      }
+      dl.run
+
+      assert_equal({ isolated: 1, outer: 2 }, result)
     end
 
     it "shares a cache" do
