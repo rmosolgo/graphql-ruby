@@ -45,12 +45,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "simplecov"
   s.add_development_dependency "simplecov-lcov"
   s.add_development_dependency "undercover"
-  # website stuff
-  s.add_development_dependency "jekyll"
-  s.add_development_dependency "jekyll-sass-converter", "~>2.2"
   s.add_development_dependency "yard"
-  s.add_development_dependency "jekyll-algolia"
-  s.add_development_dependency "jekyll-redirect-from"
   s.add_development_dependency "m", "~> 1.5.0"
   s.add_development_dependency "mutex_m"
   s.add_development_dependency "webrick"
