@@ -57,6 +57,7 @@ describe "GraphQL::Query::Variables" do
         res = schema.execute(query_string, variables: variables)
         assert_equal 3, res["errors"].count
         assert_match(/Too many errors processing variables/, res["errors"].last["message"])
+        assert_equal 0, res.query.variables.length
       end
     end
 
