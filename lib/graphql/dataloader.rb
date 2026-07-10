@@ -318,7 +318,8 @@ module GraphQL
       join_queues(job_fibers, next_job_fibers)
 
       while (!source_fibers.empty? || !@pending_sources.empty?)
-        while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber(trace)))
+        pending_sources = drain_pending_sources
+        while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && pending_sources && spawn_source_fiber(trace, pending_sources)))
           if f.alive?
             finished = run_fiber(f)
             if !finished
@@ -377,13 +378,11 @@ module GraphQL
       pending_sources.empty? ? nil : pending_sources
     end
 
-    def spawn_source_fiber(trace)
-      pending_sources = drain_pending_sources
-
-      if pending_sources
+    def spawn_source_fiber(trace, pending_sources)
+      if !pending_sources.empty?
         spawn_fiber do
           trace&.dataloader_spawn_source_fiber(pending_sources)
-          pending_sources.each do |source|
+          while (source = pending_sources.shift)
             Fiber[:__graphql_current_dataloader_source] = source
             trace&.begin_dataloader_source(source)
             source.run_pending_keys
