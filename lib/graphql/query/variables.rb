@@ -19,7 +19,7 @@ module GraphQL
         @storage = ast_variables.each_with_object({}) do |ast_variable, memo|
           if schema.validate_max_errors && schema.validate_max_errors <= @errors.count
             add_max_errors_reached_message
-            break
+            break memo
           end
           # Find the right value for this variable:
           # - First, use the value provided at runtime
