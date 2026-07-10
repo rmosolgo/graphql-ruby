@@ -18,6 +18,8 @@ on:
         type: string
 
 permissions: {}
+env:
+  BUNDLE_WITH: jekyll_plugins
 jobs:
   website:
     if: ${{ inputs.publish_website || github.ref_name }}
