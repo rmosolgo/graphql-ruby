@@ -60,7 +60,7 @@ module GraphQL
     def initialize(nonblocking: self.class.default_nonblocking, fiber_limit: self.class.default_fiber_limit)
       @source_cache = Hash.new { |h, k| h[k] = {} }.compare_by_identity
       @pending_sources = []
-      @pending_source_set = {}.compare_by_identity
+      @pending_source_set = Set.new.compare_by_identity
       @pending_jobs = []
       if !nonblocking.nil?
         @nonblocking = nonblocking
@@ -152,9 +152,8 @@ module GraphQL
 
     # @api private
     def queue_pending_source(source)
-      return nil if @pending_source_set.key?(source)
+      return nil if !@pending_source_set.add?(source)
 
-      @pending_source_set[source] = true
       @pending_sources << source
       nil
     end
