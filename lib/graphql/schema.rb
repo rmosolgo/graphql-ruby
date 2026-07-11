@@ -860,7 +860,7 @@ module GraphQL
       # @return [Array<GraphQL::StaticValidation::Error >]
       def validate(string_or_document, rules: nil, context: nil)
         doc = if string_or_document.is_a?(String)
-          GraphQL.parse(string_or_document)
+          GraphQL.parse(string_or_document, max_tokens: max_query_string_tokens)
         else
           string_or_document
         end
