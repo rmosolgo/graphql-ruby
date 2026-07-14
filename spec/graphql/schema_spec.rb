@@ -435,6 +435,18 @@ To add other types to your schema, you might want `extra_types`: https://graphql
 
         assert_equal(1, errors.size)
       end
+
+      it "applies max_query_string_tokens to query strings" do
+        limited_schema = Class.new(schema) do
+          max_query_string_tokens 3
+        end
+
+        error = assert_raises(GraphQL::ParseError) do
+          limited_schema.validate("{ root root }")
+        end
+
+        assert_equal "This query is too large to execute.", error.message
+      end
     end
   end
 
