@@ -223,7 +223,9 @@ module GraphQL
 
           if !@lazies_at_depth.empty?
             with_trace_query_lazy(trace_query_lazy) do
-              run_next_pending_lazies(job_fibers, trace)
+              run_next_pending_lazies(@lazies_at_depth) do
+                job_fibers.unshift(spawn_job_fiber(trace))
+              end
               run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
             end
           end
@@ -285,24 +287,17 @@ module GraphQL
 
     private
 
-    def run_next_pending_lazies(job_fibers, trace)
-      smallest_depth = nil
-      @lazies_at_depth.each_key do |depth_key|
-        smallest_depth ||= depth_key
-        if depth_key < smallest_depth
-          smallest_depth = depth_key
-        end
-      end
+    def run_next_pending_lazies(lazies_at_depth)
+      smallest_depth = lazies_at_depth.each_key.min
+      return if smallest_depth.nil?
 
-      if smallest_depth
-        lazies = @lazies_at_depth.delete(smallest_depth)
-        if !lazies.empty?
-          lazies.each_with_index do |l, idx|
-            append_job { l.value }
-          end
-          job_fibers.unshift(spawn_job_fiber(trace))
-        end
+      lazies = lazies_at_depth.delete(smallest_depth)
+      return if lazies.empty?
+
+      lazies.each do |lazy|
+        append_job { lazy.value }
       end
+      yield
     end
 
     def run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
