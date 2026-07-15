@@ -281,8 +281,8 @@ module GraphQL
               end
               result = dir_defn.resolve_operation(selected_operation, query, objects, dir_args, query.context)
               if result.is_a?(Finalizer)
-                result.path = path
-                add_finalizer(query, result, nil, data)
+                result.path = beginning_path
+                add_finalizer(query, data, nil, result)
                 if result.is_a?(HaltExecution)
                   continue_execution = false
                   break

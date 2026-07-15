@@ -7,6 +7,18 @@ describe "Query level Directive" do
       argument :val, Integer
     end
 
+    class OperationFinalizer
+      include GraphQL::Execution::Finalizer
+
+      def finalize_graphql_result(query, result_data, result_key)
+        query.context[:operation_finalizer] = {
+          path: path,
+          result_data: result_data.dup,
+          result_key: result_key,
+        }
+      end
+    end
+
     class InitInt < GraphQL::Schema::Directive
       locations(GraphQL::Schema::Directive::QUERY)
       argument(:val, Integer, "Initial integer value.", required: false)
@@ -19,7 +31,7 @@ describe "Query level Directive" do
 
       def self.resolve_operation(ast_node, query, objects, args, context)
         context[:int] = args[:val] || args[:input][:val] || 0
-        nil
+        OperationFinalizer.new
       end
     end
 
@@ -38,6 +50,7 @@ describe "Query level Directive" do
 
     directive(InitInt)
     query(Query)
+    use GraphQL::Execution::Next
   end
 
   it "returns an error if directive is not on the query level" do
@@ -67,8 +80,12 @@ describe "Query level Directive" do
     }
     '
 
-    res = QueryDirectiveSchema.execute(str)
+    res = QueryDirectiveSchema.execute_next(str)
     assert_equal({ "int1" => 11, "int2" => 12 }, res["data"])
+    assert_equal(
+      { path: [], result_data: { "int1" => 11, "int2" => 12 }, result_key: nil },
+      res.context[:operation_finalizer],
+    )
   end
 
   it "works with input object arguments" do
