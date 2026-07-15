@@ -20,9 +20,7 @@ module GraphQL
       # @return [Dataloader::Request] a pending request for a value from `key`. Call `.load` on that object to wait for the result.
       def request(value)
         res_key = result_key_for(value)
-        if !@results.key?(res_key)
-          @pending[res_key] ||= normalize_fetch_key(value)
-        end
+        add_pending_key(res_key, value)
         Dataloader::Request.new(self, value)
       end
 
@@ -51,9 +49,7 @@ module GraphQL
       def request_all(values)
         values.each do |v|
           res_key = result_key_for(v)
-          if !@results.key?(res_key)
-            @pending[res_key] ||= normalize_fetch_key(v)
-          end
+          add_pending_key(res_key, v)
         end
         Dataloader::RequestAll.new(self, values)
       end
@@ -65,7 +61,7 @@ module GraphQL
         if @results.key?(result_key)
           result_for(result_key)
         else
-          @pending[result_key] ||= normalize_fetch_key(value)
+          add_pending_key(result_key, value)
           sync([result_key])
           result_for(result_key)
         end
@@ -79,8 +75,7 @@ module GraphQL
         values.each { |v|
           k = result_key_for(v)
           result_keys << k
-          if !@results.key?(k)
-            @pending[k] ||= normalize_fetch_key(v)
+          if add_pending_key(k, v)
             pending_keys << k
           end
         }
@@ -106,6 +101,7 @@ module GraphQL
       # Then run the batch and update the cache.
       # @return [void]
       def sync(pending_result_keys)
+        @dataloader.queue_pending_source(self) if pending?
         @dataloader.yield(self)
         iterations = 0
         while pending_result_keys.any? { |key| !@results.key?(key) }
@@ -192,6 +188,15 @@ module GraphQL
       attr_reader :pending, :results
 
       private
+
+      def add_pending_key(result_key, value)
+        return false if @results.key?(result_key)
+
+        was_empty = @pending.empty?
+        @pending[result_key] ||= normalize_fetch_key(value)
+        @dataloader.queue_pending_source(self) if was_empty
+        true
+      end
 
       # Reads and returns the result for the key from the internal cache, or raises an error if the result was an error
       # @param key [Object] key passed to {#load} or {#load_all}
