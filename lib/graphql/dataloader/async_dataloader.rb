@@ -83,6 +83,12 @@ module GraphQL
           @started_count_task.cancel
         end
 
+        def mark_finished(t_or_err)
+          if !@finished_tasks.closed? # This can be closed if a previous error caused the parent task to cancel
+            @finished_tasks.push(t_or_err)
+          end
+        end
+
         def running_count
           @snoozed_jobs_condition.instance_variable_get(:@ready).num_waiting +
             @snoozed_sources_condition.instance_variable_get(:@ready).num_waiting +
@@ -110,10 +116,14 @@ module GraphQL
 
           @started_count_task = @root_task.async do |task|
             @finished_first_pass.wait
-            while task = @started_tasks.wait
-              @started_count += 1
-              if task.status == :initialized # could also be resumed after waiting
-                task.run
+            while t_or_err = @started_tasks.wait
+              if t_or_err.is_a?(StandardError)
+                @finished_all_tasks.reject(t_or_err)
+              else
+                @started_count += 1
+                if t_or_err.status == :initialized # could also be resumed after waiting
+                  t_or_err.run
+                end
               end
             end
           end
@@ -263,9 +273,12 @@ module GraphQL
             while job = pending_jobs.shift
               job.call
             end
+          rescue StandardError => err
+            run.mark_finished(err)
+          else
+            run.mark_finished(task)
           ensure
             cleanup_fiber
-            run.finished_tasks.push($! || task)
             run.trace&.dataloader_fiber_exit
           end
           run.started_tasks.push(new_task)
@@ -302,6 +315,7 @@ module GraphQL
         if num_tasks == Float::INFINITY
           num_tasks = pending_sources.size
         end
+
         fiber_vars = get_fiber_variables
         trace = run.trace
         num_tasks.times do
@@ -316,8 +330,11 @@ module GraphQL
               trace&.end_dataloader_source(source)
             end
             nil
+          rescue StandardError => err
+            run.mark_finished(err)
+          else
+            run.mark_finished(task)
           ensure
-            run.finished_tasks.push($! || task)
             cleanup_fiber
             trace&.dataloader_fiber_exit
           end
