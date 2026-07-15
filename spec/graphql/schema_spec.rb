@@ -87,6 +87,12 @@ describe GraphQL::Schema do
       assert_equal GraphQL::Query, schema.query_class
     end
 
+    it "inherits union memberships when no type is given" do
+      schema = Class.new(Dummy::Schema)
+
+      assert_equal Dummy::Schema.union_memberships, schema.union_memberships
+    end
+
     it "can override configuration from its superclass" do
       custom_query_class = Class.new(GraphQL::Query)
       extra_type_2 = Class.new(GraphQL::Schema::Enum)

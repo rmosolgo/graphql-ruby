@@ -665,8 +665,8 @@ module GraphQL
           inherited_um = find_inherited_value(:union_memberships, EMPTY_HASH).fetch(type.graphql_name, EMPTY_ARRAY)
           own_um + inherited_um
         else
-          joined_um = own_union_memberships.dup
-          find_inherited_value(:union_memberhips, EMPTY_HASH).each do |k, v|
+          joined_um = own_union_memberships.transform_values(&:dup)
+          find_inherited_value(:union_memberships, EMPTY_HASH).each do |k, v|
             um = joined_um[k] ||= []
             um.concat(v)
           end
