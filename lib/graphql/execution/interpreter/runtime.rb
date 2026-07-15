@@ -765,8 +765,7 @@ module GraphQL
 
                 response_list
               rescue NoMethodError => err
-                # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
-                if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
+                if err.name == :each && err.receiver == value
                   # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
                   raise ListResultFailedError.new(value: value, field: field, path: current_path)
                 else
