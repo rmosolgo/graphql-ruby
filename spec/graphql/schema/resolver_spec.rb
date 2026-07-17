@@ -89,6 +89,20 @@ describe GraphQL::Schema::Resolver do
     class Resolver8 < Resolver7
     end
 
+    class Resolver9 < BaseResolver
+      argument :message, String
+
+      def authorized?(message:)
+        raise GraphQL::UnauthorizedError, message
+      end
+
+      type String, null: true
+
+      def resolve
+        "Hello World"
+      end
+    end
+
     class GreetingExtension < GraphQL::Schema::FieldExtension
       def resolve(object: nil, objects: nil, arguments:, **rest)
         if objects
@@ -485,6 +499,7 @@ describe GraphQL::Schema::Resolver do
       field :resolver_6, resolver: Resolver6
       field :resolver_7, resolver: Resolver7
       field :resolver_8, resolver: Resolver8
+      field :resolver_9, resolver: Resolver9
       field :resolver_with_extension, resolver: ResolverWithExtension
       field :resolver_with_path, resolver: ResolverWithPath
 
@@ -526,6 +541,14 @@ describe GraphQL::Schema::Resolver do
         type # This will work for loaded objects well enough
       end
 
+      def self.unauthorized_object(err)
+        if err.message == "Replace Me"
+          "Replacement String"
+        else
+          super
+        end
+      end
+
       rescue_from SpecialError do |err|
         raise GraphQL::ExecutionError, "A special error was raised from #{err.id.inspect}"
       end
@@ -543,6 +566,16 @@ describe GraphQL::Schema::Resolver do
     # Test auth failure:
     res = exec_query("{ resolverWithAuthArgs(input: { numberS: \"2\", loadsId: 1 }) { result } }")
     assert_equal ["Auth failed (2)"], res["errors"].map { |e| e["message"] }
+  end
+
+  it "handles raised UnauthorizedErrors" do
+    result = exec_query "{ resolver9(message: \"Hello\") }"
+    assert_nil result["data"]["resolver9"]
+    refute result.key?("errors")
+
+    result = exec_query "{ resolver9(message: \"Replace Me\") }"
+    assert_equal "Replacement String", result["data"]["resolver9"]
+    refute result.key?("errors")
   end
 
   describe ".path" do
