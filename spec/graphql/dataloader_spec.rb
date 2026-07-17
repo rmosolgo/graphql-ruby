@@ -1270,19 +1270,19 @@ describe GraphQL::Dataloader do
 
             res = exec_query(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
-            assert_equal (is_async ? 13 : 11), FiberCounting.last_spawn_count
+            assert_equal (is_async ? 12 : 10), FiberCounting.last_spawn_count
             assert_last_max_count(9, "No limit works as expected")
 
-            extra_shortlived_jobs_fibers = is_async ? if_exec_next(8, 9) : 0
+            extra_shortlived_jobs_fibers = is_async ? (if_exec_next(0, 1)) : 0
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
             assert_equal if_exec_next(11, 12) + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_count
             assert_last_max_count(4, "Limit of 4 works as expected")
 
-            extra_shortlived_jobs_fibers = is_async ? 3 : 0
+            extra_shortlived_jobs_fibers = is_async ? if_exec_next(5, 4) : 0
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
-            assert_equal if_exec_next(9, 8) + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_count
+            assert_equal 8 + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_count
             assert_last_max_count(6, "Limit of 6 works as expected")
           end
 
