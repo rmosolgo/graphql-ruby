@@ -214,8 +214,9 @@ module GraphQL
 
               if !run.lazies_at_depth.empty?
                 with_trace_query_lazy(trace_query_lazy) do
-                  run_next_pending_lazies(run.lazies_at_depth) { run_queue(run, run.snoozed_jobs_condition, :jobs) }
-                  run_queue(run, run.snoozed_jobs_condition, :jobs)
+                  if enqueue_next_pending_lazies(run.lazies_at_depth)
+                    run_queue(run, run.snoozed_jobs_condition, :jobs)
+                  end
                 end
               end
             end
