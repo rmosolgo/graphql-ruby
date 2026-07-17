@@ -157,7 +157,7 @@ module GraphQL
                 @running_tasks.push(data)
               when :finished_task, :paused_task
                 @running_tasks.delete(data)
-                has_pending_work = mode == :jobs ? @jobs.any? : @dataloader.pending_sources.any?(&:pending?)
+                has_pending_work = mode == :jobs ? @jobs.any? : @dataloader.pending_sources.any?(&:pending?) # rubocop:disable Development/NoneWithoutBlockCop
                 if @running_tasks.empty?
                   @no_running_tasks.resolve(true)
                   has_bandwidth = mode == :jobs ? jobs_bandwidth? : sources_bandwidth?
