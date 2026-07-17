@@ -59,7 +59,6 @@ module GraphQL
 
     def initialize(nonblocking: self.class.default_nonblocking, fiber_limit: self.class.default_fiber_limit)
       @source_cache = Hash.new { |h, k| h[k] = {} }.compare_by_identity
-      @pending_sources = []
       @pending_source_set = Set.new.compare_by_identity
       @pending_jobs = []
       if !nonblocking.nil?
@@ -152,9 +151,7 @@ module GraphQL
 
     # @api private
     def queue_pending_source(source)
-      return nil if !@pending_source_set.add?(source)
-
-      @pending_sources << source
+      @pending_source_set.add(source)
       nil
     end
 
@@ -311,8 +308,9 @@ module GraphQL
       end
       join_queues(job_fibers, next_job_fibers)
 
-      while (!source_fibers.empty? || !@pending_sources.empty?)
-        while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber(trace)))
+      while (!source_fibers.empty? || !@pending_source_set.empty?)
+        pending_sources = drain_pending_sources
+        while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && (pending_sources&.any?) && spawn_source_fiber(trace, pending_sources)))
           if f.alive?
             finished = run_fiber(f)
             if !finished
@@ -363,35 +361,22 @@ module GraphQL
     end
 
     def drain_pending_sources
-      pending_sources = @pending_sources
-      @pending_sources = []
+      @pending_source_set.delete_if { |source| !source.pending }
+      pending_sources = @pending_source_set.to_a
       @pending_source_set.clear
-
-      pending_sources.select!(&:pending?)
       pending_sources.empty? ? nil : pending_sources
     end
 
-    def dequeue_pending_source
-      while (source = @pending_sources.shift)
-        @pending_source_set.delete(source)
-        return source if source.pending?
-      end
-    end
-
-    def spawn_source_fiber(trace)
-      pending_sources = @pending_sources.dup
-
-      if !pending_sources.empty?
-        spawn_fiber do
-          trace&.dataloader_spawn_source_fiber(pending_sources)
-          while (source = dequeue_pending_source)
-            Fiber[:__graphql_current_dataloader_source] = source
-            trace&.begin_dataloader_source(source)
-            source.run_pending_keys
-            trace&.end_dataloader_source(source)
-          end
-          trace&.dataloader_fiber_exit
+    def spawn_source_fiber(trace, pending_sources)
+      spawn_fiber do
+        trace&.dataloader_spawn_source_fiber(pending_sources)
+        while (source = pending_sources.shift)
+          Fiber[:__graphql_current_dataloader_source] = source
+          trace&.begin_dataloader_source(source)
+          source.run_pending_keys
+          trace&.end_dataloader_source(source)
         end
+        trace&.dataloader_fiber_exit
       end
     end
   end

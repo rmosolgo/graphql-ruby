@@ -21,7 +21,7 @@ module GraphQL
 
       def create_pending_run
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
-        @pending_run = Run.new(total_fiber_limit, jobs_fiber_limit)
+        @pending_run = Run.new(@pending_source_set, total_fiber_limit, jobs_fiber_limit)
       end
 
       def yield(source = Fiber[:__graphql_current_dataloader_source])
@@ -29,16 +29,17 @@ module GraphQL
         run = task.graphql_async_dataloader_run
         trace = run.trace
         trace&.dataloader_fiber_yield(source)
-        run.finished_tasks.push(task)
+        run.pause_task(task)
         condition = task.graphql_async_dataloader_condition
         condition.wait
-        run.started_tasks.push(task)
+        run.resume_task(task)
         trace&.dataloader_fiber_resume(source)
         nil
       end
 
       class Run
-        def initialize(total_fiber_limit, jobs_fiber_limit)
+        def initialize(pending_source_set, total_fiber_limit, jobs_fiber_limit)
+          @pending_source_set = pending_source_set
           @root_task = nil
           @trace = nil
           @jobs = []
@@ -47,12 +48,9 @@ module GraphQL
           @jobs_fiber_limit = jobs_fiber_limit
           @lazies_at_depth = Hash.new { |h, k| h[k] = [] }
 
-          @finished_tasks = nil
-          @started_tasks = nil
-          @started_count_task = nil
-          @finished_count_task = nil
+          @tasks_channel = nil
+          @tasks_channel_task = nil
           @finished_all_tasks = nil
-          @finished_first_pass = nil
 
           @snoozed_jobs_condition = Async::Condition.new
           @snoozed_sources_condition = Async::Condition.new
@@ -76,67 +74,75 @@ module GraphQL
         end
 
         def close_queues
-          @finished_tasks.close
-          @finished_count_task.cancel
-
-          @started_tasks.close
-          @started_count_task.cancel
+          @tasks_channel.close
+          @tasks_channel_task.cancel
         end
 
-        def mark_finished(t_or_err)
-          if !@finished_tasks.closed? # This can be closed if a previous error caused the parent task to cancel
-            @finished_tasks.push(t_or_err)
-          end
+        def finish_task(t)
+          @tasks_channel.push([:finished_task, t])
+        end
+
+        def task_error(err)
+          @tasks_channel.push([:task_error, err])
+        end
+
+        def start_task(t)
+          @tasks_channel.push([:new_task, t])
+        end
+
+        def pause_task(t)
+          @tasks_channel.push([:paused_task, t])
+        end
+
+        def resume_task(t)
+          @tasks_channel.push([:resumed_task, t])
         end
 
         def running_count
           @snoozed_jobs_condition.instance_variable_get(:@ready).num_waiting +
             @snoozed_sources_condition.instance_variable_get(:@ready).num_waiting +
-            @started_count +
-            @started_tasks.size -
-            @finished_count
+            (@running_tasks&.size || 0)
         end
 
         def wait_for_queues
-          if !@finished_first_pass.resolved?
-            @finished_first_pass.resolve(true)
-          end
-
           @finished_all_tasks.wait
           @finished_all_tasks = Async::Promise.new
         end
 
-        def new_queues
-          @finished_tasks = Async::Queue.new
-          @finished_count = 0
-          @started_tasks = Async::Queue.new
-          @started_count = 0
-          @finished_first_pass = Async::Promise.new
+        def wait_for_no_running_tasks
+          @no_running_tasks.wait
+          @no_running_tasks = Async::Promise.new
+        end
+
+        attr_reader :tasks_channel, :no_running_tasks
+
+        def new_queues(mode)
+          pending_work = mode == :jobs ? @jobs : @pending_source_set
+          @tasks_channel = Async::Queue.new(parent: @root_task)
+          @no_running_tasks = Async::Promise.new
           @finished_all_tasks = Async::Promise.new
-
-          @started_count_task = @root_task.async do |task|
-            @finished_first_pass.wait
-            while t_or_err = @started_tasks.wait
-              if t_or_err.is_a?(StandardError)
-                @finished_all_tasks.reject(t_or_err)
-              else
-                @started_count += 1
-                if t_or_err.status == :initialized # could also be resumed after waiting
-                  t_or_err.run
+          @running_tasks = []
+          @tasks_channel_task = @root_task.async do |_t|
+            while ((msg, data) = @tasks_channel.wait)
+              case msg
+              when :new_task
+                @running_tasks.push(data)
+                data.run
+              when :resumed_task
+                @running_tasks.push(data)
+              when :finished_task, :paused_task
+                @running_tasks.delete(data)
+                if @running_tasks.empty?
+                  @no_running_tasks.resolve(true)
+                  has_pending_work = pending_work.any? # rubocop:disable Development/NoneWithoutBlockCop
+                  has_bandwidth = mode == :jobs ? jobs_bandwidth? : true
+                  if (!has_pending_work) || (!has_bandwidth)
+                    @finished_all_tasks.resolve(true)
+                  end
                 end
-              end
-            end
-          end
-
-          @finished_count_task = @root_task.async do |task|
-            while t_or_err = @finished_tasks.wait
-              if t_or_err.is_a?(StandardError)
-                @finished_all_tasks.reject(t_or_err)
-              else
-                @finished_count += 1
-                if @finished_count == @started_count
-                  @finished_all_tasks.resolve(true)
-                end
+              when :task_error
+                @no_running_tasks.resolve(true)
+                @finished_all_tasks.reject(data)
               end
             end
           end
@@ -219,7 +225,7 @@ module GraphQL
 
               if !run.lazies_at_depth.empty?
                 with_trace_query_lazy(trace_query_lazy) do
-                  run_next_pending_lazies(run.lazies_at_depth) { run_lazy_jobs(run) }
+                  run_next_pending_lazies(run.lazies_at_depth) { run_pending_steps(run) }
                   run_pending_steps(run)
                 end
               end
@@ -244,17 +250,25 @@ module GraphQL
       private
 
       def run_pending_steps(run)
-        run.new_queues
+        pending_jobs = run.jobs
+        run.new_queues(:jobs)
+        should_wait_for_all_tasks = false
 
         if (unsnoozed = run.snoozed_jobs_condition.waiting?)
+          should_wait_for_all_tasks = true
           run.snoozed_jobs_condition.signal
         end
-        pending_jobs = run.jobs
+
         while (!pending_jobs.empty? && (has_limit = run.jobs_bandwidth?)) || (unsnoozed)
           unsnoozed = false
           if has_limit
+            should_wait_for_all_tasks = true
             spawn_job_task(run)
           end
+          run.wait_for_no_running_tasks
+        end
+
+        if should_wait_for_all_tasks
           run.wait_for_queues
         end
       ensure
@@ -263,55 +277,54 @@ module GraphQL
 
       def spawn_job_task(run)
         pending_jobs = run.jobs
-        if !pending_jobs.empty?
-          fiber_vars = get_fiber_variables
-          new_task = Async::Task.new(run.root_task) do |task|
-            run.trace&.dataloader_spawn_execution_fiber(pending_jobs)
-            task.graphql_async_dataloader_run = run
-            task.graphql_async_dataloader_condition = run.snoozed_jobs_condition
-            set_fiber_variables(fiber_vars)
-            while job = pending_jobs.shift
-              job.call
-            end
-          rescue StandardError => err
-            run.mark_finished(err)
-          else
-            run.mark_finished(task)
-          ensure
-            cleanup_fiber
-            run.trace&.dataloader_fiber_exit
+        fiber_vars = get_fiber_variables
+        new_task = Async::Task.new(run.root_task) do |task|
+          run.trace&.dataloader_spawn_execution_fiber(pending_jobs)
+          task.graphql_async_dataloader_run = run
+          task.graphql_async_dataloader_condition = run.snoozed_jobs_condition
+          set_fiber_variables(fiber_vars)
+          while job = pending_jobs.shift
+            job.call
           end
-          run.started_tasks.push(new_task)
-          new_task
+        rescue StandardError => err
+          run.task_error(err)
+        else
+          run.finish_task(task)
+        ensure
+          cleanup_fiber
+          run.trace&.dataloader_fiber_exit
         end
+        run.start_task(new_task)
+        new_task
       end
 
       def run_sources(run)
-        run.new_queues
+        run.new_queues(:sources)
+        should_wait_for_sources = false
 
         if (unsnoozed = run.snoozed_sources_condition.waiting?)
+          should_wait_for_sources = true
           run.snoozed_sources_condition.signal
         end
 
         allowed_tasks = run.allowed_sources_tasks
         while (pending_sources = drain_pending_sources) || unsnoozed
           unsnoozed = false
-          spawn_source_task(run, allowed_tasks, pending_sources) if pending_sources
+          if pending_sources
+            should_wait_for_sources = pending_sources
+            spawn_source_tasks(run, allowed_tasks, pending_sources)
+          end
+          run.wait_for_no_running_tasks
+        end
+
+        if should_wait_for_sources
           run.wait_for_queues
         end
       ensure
         run.close_queues
       end
 
-      def run_lazy_jobs(run)
-        run.new_queues
-        spawn_job_task(run)
-        run.wait_for_queues
-      ensure
-        run.close_queues
-      end
-
-      def spawn_source_task(run, num_tasks, pending_sources)
+      def spawn_source_tasks(run, num_tasks, pending_sources)
         if num_tasks == Float::INFINITY
           num_tasks = pending_sources.size
         end
@@ -331,14 +344,14 @@ module GraphQL
             end
             nil
           rescue StandardError => err
-            run.mark_finished(err)
+            run.task_error(err)
           else
-            run.mark_finished(task)
+            run.finish_task(task)
           ensure
             cleanup_fiber
             trace&.dataloader_fiber_exit
           end
-          run.started_tasks.push(new_task)
+          run.start_task(new_task)
           new_task
         end
       end
