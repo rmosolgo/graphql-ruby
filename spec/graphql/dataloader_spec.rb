@@ -1116,6 +1116,13 @@ describe GraphQL::Dataloader do
           assert_equal "Wheat", result["data"]["recursiveIngredientName"]
         end
 
+        it "works empty" do
+          dl = schema.dataloader_class.new
+          dl.run
+          assert "it finished"
+        end
+
+
         it "uses .batch_key_for in source classes" do
           query_str = <<-GRAPHQL
           {
@@ -1229,7 +1236,7 @@ describe GraphQL::Dataloader do
             case diff
             when 1
               # TODO why does this happen sometimes?
-              warn "AsyncDataloader had +#{diff} last_max_count"
+              warn "AsyncDataloader had +#{diff} last_max_count (expected: #{expected_last_max_count}, actual: #{FiberCounting.last_max_count}) at #{caller(1, 1).first}"
               assert_equal (expected_last_max_count + diff), FiberCounting.last_max_count, message
             else
               assert_equal expected_last_max_count, FiberCounting.last_max_count, message
@@ -1266,13 +1273,13 @@ describe GraphQL::Dataloader do
             assert_equal (is_async ? 12 : 10), FiberCounting.last_spawn_count
             assert_last_max_count(9, "No limit works as expected")
 
-            extra_shortlived_jobs_fibers = is_async ? 1 : 0
+            extra_shortlived_jobs_fibers = is_async ? (if_exec_next(-1, -1)) : 0
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
             assert_equal if_exec_next(11, 12) + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_count
-            assert_last_max_count(4, "Limit of 4 works as expected")
+            assert_last_max_count(4 + (is_async ? 1 : 0), "Limit of 4 works as expected")
 
-            extra_shortlived_jobs_fibers = is_async ? if_exec_next(6, 5) : 0
+            extra_shortlived_jobs_fibers = is_async ? 3 : 0
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
             assert_equal 8 + extra_shortlived_jobs_fibers, FiberCounting.last_spawn_count

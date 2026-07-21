@@ -59,8 +59,8 @@ module GraphQL
 
     def initialize(nonblocking: self.class.default_nonblocking, fiber_limit: self.class.default_fiber_limit)
       @source_cache = Hash.new { |h, k| h[k] = {} }.compare_by_identity
-      @pending_sources = []
       @pending_source_set = Set.new.compare_by_identity
+      @pending_sources = []
       @pending_jobs = []
       if !nonblocking.nil?
         @nonblocking = nonblocking
@@ -152,9 +152,9 @@ module GraphQL
 
     # @api private
     def queue_pending_source(source)
-      return nil if !@pending_source_set.add?(source)
-
-      @pending_sources << source
+      if @pending_source_set.add?(source)
+        @pending_sources << source
+      end
       nil
     end
 
@@ -223,10 +223,10 @@ module GraphQL
 
           if !@lazies_at_depth.empty?
             with_trace_query_lazy(trace_query_lazy) do
-              run_next_pending_lazies(@lazies_at_depth) do
+              if enqueue_next_pending_lazies(@lazies_at_depth)
                 job_fibers.unshift(spawn_job_fiber(trace))
+                run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
               end
-              run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
             end
           end
         end
@@ -287,17 +287,19 @@ module GraphQL
 
     private
 
-    def run_next_pending_lazies(lazies_at_depth)
+    # Returns true if anything was actually enqueued
+    def enqueue_next_pending_lazies(lazies_at_depth)
       smallest_depth = lazies_at_depth.each_key.min
-      return if smallest_depth.nil?
+      return false if smallest_depth.nil?
 
       lazies = lazies_at_depth.delete(smallest_depth)
-      return if lazies.empty?
+      return false if lazies.empty?
 
       lazies.each do |lazy|
         append_job { lazy.value }
       end
-      yield
+
+      true
     end
 
     def run_pending_steps(trace, job_fibers, next_job_fibers, jobs_fiber_limit, source_fibers, next_source_fibers, total_fiber_limit)
@@ -379,12 +381,12 @@ module GraphQL
     end
 
     def spawn_source_fiber(trace)
-      pending_sources = @pending_sources.dup
-
-      if !pending_sources.empty?
+      if !@pending_sources.empty?
         spawn_fiber do
-          trace&.dataloader_spawn_source_fiber(pending_sources)
+          trace&.dataloader_spawn_source_fiber(@pending_sources)
+          # This will find sources which were enqueued during `#fetch`:
           while (source = dequeue_pending_source)
+            next if !source.pending?
             Fiber[:__graphql_current_dataloader_source] = source
             trace&.begin_dataloader_source(source)
             source.run_pending_keys

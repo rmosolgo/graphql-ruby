@@ -19,9 +19,12 @@ module GraphQL
         create_pending_run
       end
 
+      # @api private
+      attr_reader :pending_sources
+
       def create_pending_run
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
-        @pending_run = Run.new(total_fiber_limit, jobs_fiber_limit)
+        @pending_run = Run.new(self, total_fiber_limit, jobs_fiber_limit)
       end
 
       def yield(source = Fiber[:__graphql_current_dataloader_source])
@@ -29,16 +32,17 @@ module GraphQL
         run = task.graphql_async_dataloader_run
         trace = run.trace
         trace&.dataloader_fiber_yield(source)
-        run.finished_tasks.push(task)
+        run.tasks_channel.push([:paused_task, task])
         condition = task.graphql_async_dataloader_condition
         condition.wait
-        run.started_tasks.push(task)
+        run.tasks_channel.push([:resumed_task, task])
         trace&.dataloader_fiber_resume(source)
         nil
       end
 
       class Run
-        def initialize(total_fiber_limit, jobs_fiber_limit)
+        def initialize(dataloader, total_fiber_limit, jobs_fiber_limit)
+          @dataloader = dataloader
           @root_task = nil
           @trace = nil
           @jobs = []
@@ -47,12 +51,10 @@ module GraphQL
           @jobs_fiber_limit = jobs_fiber_limit
           @lazies_at_depth = Hash.new { |h, k| h[k] = [] }
 
-          @finished_tasks = nil
-          @started_tasks = nil
-          @started_count_task = nil
-          @finished_count_task = nil
+          @running_tasks = nil
+          @tasks_channel = nil
+          @tasks_channel_task = nil
           @finished_all_tasks = nil
-          @finished_first_pass = nil
 
           @snoozed_jobs_condition = Async::Condition.new
           @snoozed_sources_condition = Async::Condition.new
@@ -60,73 +62,59 @@ module GraphQL
 
         attr_accessor :trace, :root_task
 
-        attr_reader :jobs, :lazies_at_depth, :jobs_fiber_limit, :total_fiber_limit, :finished_tasks, :started_tasks, :snoozed_jobs_condition, :snoozed_sources_condition
+        attr_reader :jobs, :lazies_at_depth, :jobs_fiber_limit,  :snoozed_jobs_condition, :snoozed_sources_condition, :tasks_channel
 
         def jobs_bandwidth?
-          running_count < jobs_fiber_limit
+          running_count < @jobs_fiber_limit
         end
 
-        def allowed_sources_tasks
-          within_limit = total_fiber_limit - running_count
-          if within_limit < 1
-            1
-          else
-            within_limit
-          end
+        def sources_bandwidth?
+          running_count < current_sources_fiber_limit
         end
 
         def close_queues
-          @finished_tasks.close
-          @finished_count_task.cancel
-
-          @started_tasks.close
-          @started_count_task.cancel
-        end
-
-        def running_count
-          @snoozed_jobs_condition.instance_variable_get(:@ready).num_waiting +
-            @snoozed_sources_condition.instance_variable_get(:@ready).num_waiting +
-            @started_count +
-            @started_tasks.size -
-            @finished_count
+          @tasks_channel.close
+          @tasks_channel_task.cancel
         end
 
         def wait_for_queues
-          if !@finished_first_pass.resolved?
-            @finished_first_pass.resolve(true)
-          end
-
           @finished_all_tasks.wait
           @finished_all_tasks = Async::Promise.new
         end
 
-        def new_queues
-          @finished_tasks = Async::Queue.new
-          @finished_count = 0
-          @started_tasks = Async::Queue.new
-          @started_count = 0
-          @finished_first_pass = Async::Promise.new
+        def wait_for_no_running_tasks
+          @no_running_tasks.wait
+          @no_running_tasks = Async::Promise.new
+        end
+
+        def new_queues(mode)
+          @tasks_channel = Async::Queue.new(parent: @root_task)
+          @no_running_tasks = Async::Promise.new
           @finished_all_tasks = Async::Promise.new
-
-          @started_count_task = @root_task.async do |task|
-            @finished_first_pass.wait
-            while task = @started_tasks.wait
-              @started_count += 1
-              if task.status == :initialized # could also be resumed after waiting
-                task.run
-              end
-            end
-          end
-
-          @finished_count_task = @root_task.async do |task|
-            while t_or_err = @finished_tasks.wait
-              if t_or_err.is_a?(StandardError)
-                @finished_all_tasks.reject(t_or_err)
-              else
-                @finished_count += 1
-                if @finished_count == @started_count
-                  @finished_all_tasks.resolve(true)
+          @running_tasks = []
+          @tasks_channel_task = @root_task.async do |_t|
+            while ((msg, data) = @tasks_channel.wait)
+              case msg
+              when :started_task
+                @running_tasks.push(data)
+                data.run
+              when :resumed_task
+                @running_tasks.push(data)
+              when :finished_task, :paused_task
+                @running_tasks.delete(data)
+                has_pending_work = mode == :jobs ? @jobs.any? : @dataloader.pending_sources.any?(&:pending?) # rubocop:disable Development/NoneWithoutBlockCop
+                if @running_tasks.empty?
+                  @no_running_tasks.resolve(true)
+                  has_bandwidth = mode == :jobs ? jobs_bandwidth? : sources_bandwidth?
+                  if (!has_pending_work) || (!has_bandwidth)
+                    @finished_all_tasks.resolve(true)
+                  end
                 end
+              when :task_error
+                @no_running_tasks.resolve(true)
+                @finished_all_tasks.reject(data)
+              else
+                raise ArgumentError, "Unknown tasks_channel action: #{msg.inspect}"
               end
             end
           end
@@ -134,6 +122,23 @@ module GraphQL
 
         def running?
           @snoozed_jobs_condition.waiting? || @snoozed_sources_condition.waiting?
+        end
+
+        def current_sources_fiber_limit
+          within_limit = @total_fiber_limit - running_count
+          if within_limit < 1
+            1
+          else
+            within_limit
+          end
+        end
+
+        private
+
+        def running_count
+          @snoozed_jobs_condition.instance_variable_get(:@ready).num_waiting +
+            @snoozed_sources_condition.instance_variable_get(:@ready).num_waiting +
+            (@running_tasks&.size || 0)
         end
       end
 
@@ -204,13 +209,14 @@ module GraphQL
 
             while first_pass || run.running? || !jobs.empty?
               first_pass = false
-              run_pending_steps(run)
-              run_sources(run)
+              run_queue(run, run.snoozed_jobs_condition, :jobs)
+              run_queue(run, run.snoozed_sources_condition, :sources)
 
               if !run.lazies_at_depth.empty?
                 with_trace_query_lazy(trace_query_lazy) do
-                  run_next_pending_lazies(run.lazies_at_depth) { run_lazy_jobs(run) }
-                  run_pending_steps(run)
+                  if enqueue_next_pending_lazies(run.lazies_at_depth)
+                    run_queue(run, run.snoozed_jobs_condition, :jobs)
+                  end
                 end
               end
             end
@@ -233,96 +239,78 @@ module GraphQL
 
       private
 
-      def run_pending_steps(run)
-        run.new_queues
+      def run_queue(run, condition, mode)
+        should_wait_for_all_tasks = false
 
-        if (unsnoozed = run.snoozed_jobs_condition.waiting?)
-          run.snoozed_jobs_condition.signal
+        if (unsnoozed = condition.waiting?)
+          should_wait_for_all_tasks = true
+          run.new_queues(mode)
+          condition.signal
         end
-        pending_jobs = run.jobs
-        while (!pending_jobs.empty? && (has_limit = run.jobs_bandwidth?)) || (unsnoozed)
+
+        while (pending_work = (mode == :jobs) ? (!run.jobs.empty? && run.jobs_bandwidth? ? run.jobs : nil) : (drain_pending_sources)) || unsnoozed
           unsnoozed = false
-          if has_limit
-            spawn_job_task(run)
-          end
-          run.wait_for_queues
-        end
-      ensure
-        run.close_queues
-      end
-
-      def spawn_job_task(run)
-        pending_jobs = run.jobs
-        if !pending_jobs.empty?
-          fiber_vars = get_fiber_variables
-          new_task = Async::Task.new(run.root_task) do |task|
-            run.trace&.dataloader_spawn_execution_fiber(pending_jobs)
-            task.graphql_async_dataloader_run = run
-            task.graphql_async_dataloader_condition = run.snoozed_jobs_condition
-            set_fiber_variables(fiber_vars)
-            while job = pending_jobs.shift
-              job.call
+          if pending_work
+            if should_wait_for_all_tasks == false
+              should_wait_for_all_tasks = true
+              run.new_queues(mode)
             end
-          ensure
-            cleanup_fiber
-            run.finished_tasks.push($! || task)
-            run.trace&.dataloader_fiber_exit
+            num_tasks = mode == :sources ? run.current_sources_fiber_limit : 1
+            if num_tasks > pending_work.size
+              num_tasks = pending_work.size
+            end
+            spawn_tasks(run, mode, condition, pending_work, num_tasks)
           end
-          run.started_tasks.push(new_task)
-          new_task
-        end
-      end
 
-      def run_sources(run)
-        run.new_queues
-
-        if (unsnoozed = run.snoozed_sources_condition.waiting?)
-          run.snoozed_sources_condition.signal
+          run.wait_for_no_running_tasks
         end
 
-        allowed_tasks = run.allowed_sources_tasks
-        while (pending_sources = drain_pending_sources) || unsnoozed
-          unsnoozed = false
-          spawn_source_task(run, allowed_tasks, pending_sources) if pending_sources
+        if should_wait_for_all_tasks
           run.wait_for_queues
         end
       ensure
-        run.close_queues
-      end
-
-      def run_lazy_jobs(run)
-        run.new_queues
-        spawn_job_task(run)
-        run.wait_for_queues
-      ensure
-        run.close_queues
-      end
-
-      def spawn_source_task(run, num_tasks, pending_sources)
-        if num_tasks == Float::INFINITY
-          num_tasks = pending_sources.size
+        if should_wait_for_all_tasks
+          run.close_queues
         end
+      end
+
+      # Use a separate method for this so that the outer loop's reassignment of `pending_work`
+      # doesn't affect already-running tasks which (would) close over that variable
+      def spawn_tasks(run, mode, condition, pending_work, num_tasks)
         fiber_vars = get_fiber_variables
         trace = run.trace
         num_tasks.times do
           new_task = Async::Task.new(run.root_task) do |task|
             task.graphql_async_dataloader_run = run
-            task.graphql_async_dataloader_condition = run.snoozed_sources_condition
-            trace&.dataloader_spawn_source_fiber(pending_sources)
+            task.graphql_async_dataloader_condition = condition
             set_fiber_variables(fiber_vars)
-            while (source = pending_sources.shift)
-              trace&.begin_dataloader_source(source)
-              source.run_pending_keys
-              trace&.end_dataloader_source(source)
+            case mode
+            when :jobs
+              trace&.dataloader_spawn_execution_fiber(pending_work)
+              while job = pending_work.shift
+                job.call
+              end
+            when :sources
+              trace&.dataloader_spawn_source_fiber(pending_work)
+              while (source = pending_work.shift)
+                Fiber[:__graphql_current_dataloader_source] = source
+                trace&.begin_dataloader_source(source)
+                source.run_pending_keys
+                trace&.end_dataloader_source(source)
+              end
+            else
+              raise ArgumentError, "Unknown mode: #{mode.inspect}"
             end
             nil
+          rescue StandardError => err
+            run.tasks_channel.push([:task_error, err])
+          else
+            run.tasks_channel.push([:finished_task, task])
           ensure
-            run.finished_tasks.push($! || task)
             cleanup_fiber
             trace&.dataloader_fiber_exit
           end
-          run.started_tasks.push(new_task)
-          new_task
+          run.tasks_channel.push([:started_task, new_task])
         end
       end
     end
