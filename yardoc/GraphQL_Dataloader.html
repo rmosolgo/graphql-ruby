@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.6.5/GraphQL/Dataloader">
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.6.6/GraphQL/Dataloader">
   </head>
   <body>
     <p>Class: GraphQL::Dataloader &lt; Object
@@ -21,11 +21,13 @@ Class methods:
 use, with_dataloading
 Instance methods:
 append_job, calculate_fiber_limit, cleanup_fiber, clear_cache,
-get_fiber_variables, initialize, join_queues, lazy_at_depth,
-merge_records, nonblocking?, run, run_fiber, run_isolated,
-run_next_pending_lazies, run_pending_steps, set_fiber_variables,
-spawn_fiber, spawn_job_fiber, spawn_source_fiber, with,
-with_trace_query_lazy, yield</p>
+dequeue_pending_source, drain_pending_sources,
+enqueue_next_pending_lazies, get_fiber_variables, initialize,
+join_queues, lazy_at_depth, merge_records, nonblocking?,
+queue_pending_source, run, run_fiber, run_isolated,
+run_pending_steps, set_fiber_variables, spawn_fiber,
+spawn_job_fiber, spawn_source_fiber, with, with_trace_query_lazy,
+yield</p>
 
 
   </body>
