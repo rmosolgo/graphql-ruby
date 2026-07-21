@@ -10,6 +10,25 @@
 
 ### Bug fixes
 
+# 2.6.6 (21 Jul 2026)
+
+- __Security__: This version includes a remediation for a security issue in `Execution::Next` (GHSA-j7xr-4g94-r9h3).
+
+### New features
+
+- Support pattern matching non-null and list type definitions #5660
+
+### Bug fixes
+
+- SDL: properly apply directive argument default values #5659
+- Dataloader: fix Ruby version compatibility check #5662
+- Validation: apply query token limit in `Schema.validate` #5668
+- Dataloader: Use a queue for more efficient Source resolution #5666
+- Remove needless compat with Ruby 2.2 #5670
+- Schema: fix union memberships lookup #5663
+- Dataloader: unify lazy resolution code #5669
+- AsyncDataloader: improve task scheduling to fix deadlocks #5672
+
 # 2.6.5 (6 Jul 2026)
 
 ### New features
