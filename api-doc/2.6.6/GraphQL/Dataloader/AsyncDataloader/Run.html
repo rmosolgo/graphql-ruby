@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Dataloader::AsyncDataloader::Run
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css">
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css">
+
+<script type="text/javascript">
+  pathId = "GraphQL::Dataloader::AsyncDataloader::Run";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (R)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Dataloader.html" title="GraphQL::Dataloader (class)">Dataloader</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../AsyncDataloader.html" title="GraphQL::Dataloader::AsyncDataloader (class)">AsyncDataloader</a></span></span>
+     &raquo; 
+    <span class="title">Run</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Dataloader::AsyncDataloader::Run
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Dataloader::AsyncDataloader::Run</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/dataloader/async_dataloader.rb
+</dd>
+  </dl>
+  
+</div>
+
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#jobs-instance_method" title="#jobs (instance method)">#<strong>jobs</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute jobs.</p></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#jobs_fiber_limit-instance_method" title="#jobs_fiber_limit (instance method)">#<strong>jobs_fiber_limit</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute jobs_fiber_limit.</p></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#lazies_at_depth-instance_method" title="#lazies_at_depth (instance method)">#<strong>lazies_at_depth</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute lazies_at_depth.</p></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#root_task-instance_method" title="#root_task (instance method)">#<strong>root_task</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute root_task.</p></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#snoozed_jobs_condition-instance_method" title="#snoozed_jobs_condition (instance method)">#<strong>snoozed_jobs_condition</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute snoozed_jobs_condition.</p></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#snoozed_sources_condition-instance_method" title="#snoozed_sources_condition (instance method)">#<strong>snoozed_sources_condition</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute snoozed_sources_condition.</p></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tasks_channel-instance_method" title="#tasks_channel (instance method)">#<strong>tasks_channel</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute tasks_channel.</p></div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#trace-instance_method" title="#trace (instance method)">#<strong>trace</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute trace.</p></div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#close_queues-instance_method" title="#close_queues (instance method)">#<strong>close_queues</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#current_sources_fiber_limit-instance_method" title="#current_sources_fiber_limit (instance method)">#<strong>current_sources_fiber_limit</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(dataloader, total_fiber_limit, jobs_fiber_limit)  &#x21d2; Run </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Run.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#jobs_bandwidth%3F-instance_method" title="#jobs_bandwidth? (instance method)">#<strong>jobs_bandwidth?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#new_queues-instance_method" title="#new_queues (instance method)">#<strong>new_queues</strong>(mode)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#running%3F-instance_method" title="#running? (instance method)">#<strong>running?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#sources_bandwidth%3F-instance_method" title="#sources_bandwidth? (instance method)">#<strong>sources_bandwidth?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait_for_no_running_tasks-instance_method" title="#wait_for_no_running_tasks (instance method)">#<strong>wait_for_no_running_tasks</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#wait_for_queues-instance_method" title="#wait_for_queues (instance method)">#<strong>wait_for_queues</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+    
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(dataloader, total_fiber_limit, jobs_fiber_limit)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Dataloader::AsyncDataloader::Run (class)">Run</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Run.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 44</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_dataloader'>dataloader</span><span class='comma'>,</span> <span class='id identifier rubyid_total_fiber_limit'>total_fiber_limit</span><span class='comma'>,</span> <span class='id identifier rubyid_jobs_fiber_limit'>jobs_fiber_limit</span><span class='rparen'>)</span>
+  <span class='ivar'>@dataloader</span> <span class='op'>=</span> <span class='id identifier rubyid_dataloader'>dataloader</span>
+  <span class='ivar'>@root_task</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@trace</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@jobs</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+
+  <span class='ivar'>@total_fiber_limit</span> <span class='op'>=</span> <span class='id identifier rubyid_total_fiber_limit'>total_fiber_limit</span>
+  <span class='ivar'>@jobs_fiber_limit</span> <span class='op'>=</span> <span class='id identifier rubyid_jobs_fiber_limit'>jobs_fiber_limit</span>
+  <span class='ivar'>@lazies_at_depth</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_h'>h</span><span class='comma'>,</span> <span class='id identifier rubyid_k'>k</span><span class='op'>|</span> <span class='id identifier rubyid_h'>h</span><span class='lbracket'>[</span><span class='id identifier rubyid_k'>k</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
+
+  <span class='ivar'>@running_tasks</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@tasks_channel</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@tasks_channel_task</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@finished_all_tasks</span> <span class='op'>=</span> <span class='kw'>nil</span>
+
+  <span class='ivar'>@snoozed_jobs_condition</span> <span class='op'>=</span> <span class='const'>Async</span><span class='op'>::</span><span class='const'>Condition</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='ivar'>@snoozed_sources_condition</span> <span class='op'>=</span> <span class='const'>Async</span><span class='op'>::</span><span class='const'>Condition</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="jobs-instance_method">
+  
+    #<strong>jobs</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute jobs.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_jobs'>jobs</span>
+  <span class='ivar'>@jobs</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="jobs_fiber_limit-instance_method">
+  
+    #<strong>jobs_fiber_limit</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute jobs_fiber_limit.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_jobs_fiber_limit'>jobs_fiber_limit</span>
+  <span class='ivar'>@jobs_fiber_limit</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="lazies_at_depth-instance_method">
+  
+    #<strong>lazies_at_depth</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute lazies_at_depth.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_lazies_at_depth'>lazies_at_depth</span>
+  <span class='ivar'>@lazies_at_depth</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="root_task=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="root_task-instance_method">
+  
+    #<strong>root_task</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute root_task.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+63
+64
+65</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 63</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_root_task'>root_task</span>
+  <span class='ivar'>@root_task</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="snoozed_jobs_condition-instance_method">
+  
+    #<strong>snoozed_jobs_condition</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute snoozed_jobs_condition.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_snoozed_jobs_condition'>snoozed_jobs_condition</span>
+  <span class='ivar'>@snoozed_jobs_condition</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="snoozed_sources_condition-instance_method">
+  
+    #<strong>snoozed_sources_condition</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute snoozed_sources_condition.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_snoozed_sources_condition'>snoozed_sources_condition</span>
+  <span class='ivar'>@snoozed_sources_condition</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="tasks_channel-instance_method">
+  
+    #<strong>tasks_channel</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute tasks_channel.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_tasks_channel'>tasks_channel</span>
+  <span class='ivar'>@tasks_channel</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="trace=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="trace-instance_method">
+  
+    #<strong>trace</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute trace.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+63
+64
+65</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 63</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_trace'>trace</span>
+  <span class='ivar'>@trace</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="close_queues-instance_method">
+  
+    #<strong>close_queues</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+75
+76
+77
+78</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 75</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_close_queues'>close_queues</span>
+  <span class='ivar'>@tasks_channel</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+  <span class='ivar'>@tasks_channel_task</span><span class='period'>.</span><span class='id identifier rubyid_cancel'>cancel</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="current_sources_fiber_limit-instance_method">
+  
+    #<strong>current_sources_fiber_limit</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+127
+128
+129
+130
+131
+132
+133
+134</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 127</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_current_sources_fiber_limit'>current_sources_fiber_limit</span>
+  <span class='id identifier rubyid_within_limit'>within_limit</span> <span class='op'>=</span> <span class='ivar'>@total_fiber_limit</span> <span class='op'>-</span> <span class='id identifier rubyid_running_count'>running_count</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_within_limit'>within_limit</span> <span class='op'>&lt;</span> <span class='int'>1</span>
+    <span class='int'>1</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_within_limit'>within_limit</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="jobs_bandwidth?-instance_method">
+  
+    #<strong>jobs_bandwidth?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+67
+68
+69</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 67</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_jobs_bandwidth?'>jobs_bandwidth?</span>
+  <span class='id identifier rubyid_running_count'>running_count</span> <span class='op'>&lt;</span> <span class='ivar'>@jobs_fiber_limit</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="new_queues-instance_method">
+  
+    #<strong>new_queues</strong>(mode)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 90</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_new_queues'>new_queues</span><span class='lparen'>(</span><span class='id identifier rubyid_mode'>mode</span><span class='rparen'>)</span>
+  <span class='ivar'>@tasks_channel</span> <span class='op'>=</span> <span class='const'>Async</span><span class='op'>::</span><span class='const'>Queue</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>parent:</span> <span class='ivar'>@root_task</span><span class='rparen'>)</span>
+  <span class='ivar'>@no_running_tasks</span> <span class='op'>=</span> <span class='const'>Async</span><span class='op'>::</span><span class='const'>Promise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='ivar'>@finished_all_tasks</span> <span class='op'>=</span> <span class='const'>Async</span><span class='op'>::</span><span class='const'>Promise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='ivar'>@running_tasks</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@tasks_channel_task</span> <span class='op'>=</span> <span class='ivar'>@root_task</span><span class='period'>.</span><span class='id identifier rubyid_async'>async</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid__t'>_t</span><span class='op'>|</span>
+    <span class='kw'>while</span> <span class='lparen'>(</span><span class='lparen'>(</span><span class='id identifier rubyid_msg'>msg</span><span class='comma'>,</span> <span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span> <span class='op'>=</span> <span class='ivar'>@tasks_channel</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span><span class='rparen'>)</span>
+      <span class='kw'>case</span> <span class='id identifier rubyid_msg'>msg</span>
+      <span class='kw'>when</span> <span class='symbol'>:started_task</span>
+        <span class='ivar'>@running_tasks</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
+      <span class='kw'>when</span> <span class='symbol'>:resumed_task</span>
+        <span class='ivar'>@running_tasks</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
+      <span class='kw'>when</span> <span class='symbol'>:finished_task</span><span class='comma'>,</span> <span class='symbol'>:paused_task</span>
+        <span class='ivar'>@running_tasks</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_has_pending_work'>has_pending_work</span> <span class='op'>=</span> <span class='id identifier rubyid_mode'>mode</span> <span class='op'>==</span> <span class='symbol'>:jobs</span> <span class='op'>?</span> <span class='ivar'>@jobs</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span> <span class='op'>:</span> <span class='ivar'>@dataloader</span><span class='period'>.</span><span class='id identifier rubyid_pending_sources'>pending_sources</span><span class='period'>.</span><span class='id identifier rubyid_any?'>any?</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:pending?</span><span class='rparen'>)</span> <span class='comment'># rubocop:disable Development/NoneWithoutBlockCop
+</span>        <span class='kw'>if</span> <span class='ivar'>@running_tasks</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+          <span class='ivar'>@no_running_tasks</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='kw'>true</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_has_bandwidth'>has_bandwidth</span> <span class='op'>=</span> <span class='id identifier rubyid_mode'>mode</span> <span class='op'>==</span> <span class='symbol'>:jobs</span> <span class='op'>?</span> <span class='id identifier rubyid_jobs_bandwidth?'>jobs_bandwidth?</span> <span class='op'>:</span> <span class='id identifier rubyid_sources_bandwidth?'>sources_bandwidth?</span>
+          <span class='kw'>if</span> <span class='lparen'>(</span><span class='op'>!</span><span class='id identifier rubyid_has_pending_work'>has_pending_work</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='lparen'>(</span><span class='op'>!</span><span class='id identifier rubyid_has_bandwidth'>has_bandwidth</span><span class='rparen'>)</span>
+            <span class='ivar'>@finished_all_tasks</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='kw'>true</span><span class='rparen'>)</span>
+          <span class='kw'>end</span>
+        <span class='kw'>end</span>
+      <span class='kw'>when</span> <span class='symbol'>:task_error</span>
+        <span class='ivar'>@no_running_tasks</span><span class='period'>.</span><span class='id identifier rubyid_resolve'>resolve</span><span class='lparen'>(</span><span class='kw'>true</span><span class='rparen'>)</span>
+        <span class='ivar'>@finished_all_tasks</span><span class='period'>.</span><span class='id identifier rubyid_reject'>reject</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unknown tasks_channel action: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_msg'>msg</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="running?-instance_method">
+  
+    #<strong>running?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+123
+124
+125</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 123</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_running?'>running?</span>
+  <span class='ivar'>@snoozed_jobs_condition</span><span class='period'>.</span><span class='id identifier rubyid_waiting?'>waiting?</span> <span class='op'>||</span> <span class='ivar'>@snoozed_sources_condition</span><span class='period'>.</span><span class='id identifier rubyid_waiting?'>waiting?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="sources_bandwidth?-instance_method">
+  
+    #<strong>sources_bandwidth?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+71
+72
+73</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 71</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_sources_bandwidth?'>sources_bandwidth?</span>
+  <span class='id identifier rubyid_running_count'>running_count</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_current_sources_fiber_limit'>current_sources_fiber_limit</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wait_for_no_running_tasks-instance_method">
+  
+    #<strong>wait_for_no_running_tasks</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+85
+86
+87
+88</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 85</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_wait_for_no_running_tasks'>wait_for_no_running_tasks</span>
+  <span class='ivar'>@no_running_tasks</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span>
+  <span class='ivar'>@no_running_tasks</span> <span class='op'>=</span> <span class='const'>Async</span><span class='op'>::</span><span class='const'>Promise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="wait_for_queues-instance_method">
+  
+    #<strong>wait_for_queues</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+80
+81
+82
+83</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/dataloader/async_dataloader.rb', line 80</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_wait_for_queues'>wait_for_queues</span>
+  <span class='ivar'>@finished_all_tasks</span><span class='period'>.</span><span class='id identifier rubyid_wait'>wait</span>
+  <span class='ivar'>@finished_all_tasks</span> <span class='op'>=</span> <span class='const'>Async</span><span class='op'>::</span><span class='const'>Promise</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Jul 21 14:06:54 2026 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.45 (ruby-3.2.11).
+</div>
+
+    </div>
+  </body>
+</html>
