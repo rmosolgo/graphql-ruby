@@ -30,10 +30,10 @@ module GraphQL
       def call
         @all_selections = [{}, (prototype_result = {})]
         @runner.gather_selections(@parent_type, @selections, self, self.query, @all_selections, @all_selections[1], into: @all_selections[0])
+        continue_selections = []
         i = 0
         l = @all_selections.length
         while i < l
-          continue_selections = []
           grouped_selections = @all_selections[i]
           selections_prototype_result = @all_selections[i + 1]
           if (directives_owner = grouped_selections.delete(:__node))
@@ -83,11 +83,11 @@ module GraphQL
             end
           end
 
-          continue_selections.each do |frs|
-            @runner.add_step(frs)
-          end
-
           i += 2
+        end
+
+        continue_selections.each do |frs|
+          @runner.add_step(frs)
         end
       end
     end
