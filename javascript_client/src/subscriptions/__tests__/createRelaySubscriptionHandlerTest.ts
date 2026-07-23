@@ -62,6 +62,37 @@ describe("createRelaySubscriptionHandler", () => {
     ]
     expect(performLog).toEqual(expectedLog)
   })
+
+  it("forwards transport errors to the Relay observer", () => {
+    var channel: any
+    var dummyActionCableConsumer = {
+      subscriptions: {
+        create: (_params: any, handlers: any) => {
+          channel = handlers
+          return { unsubscribe: () => true }
+        }
+      }
+    }
+
+    var handler = createRelaySubscriptionHandler({
+      cable: (dummyActionCableConsumer as unknown) as Consumer
+    })
+    var observable = handler(
+      { id: "abc", text: null, name: "def", operationKind: "subscription", metadata: {} },
+      {}
+    )
+    var receivedError: Error | undefined
+    observable.subscribe({
+      error: (error: Error) => {
+        receivedError = error
+      }
+    })
+
+    var error = new Error("Subscription failed")
+    channel.received({ result: { errors: error }, more: true })
+
+    expect(receivedError).toBe(error)
+  })
 })
 
 describe("createLegacyRelaySubscriptionHandler", () => {
