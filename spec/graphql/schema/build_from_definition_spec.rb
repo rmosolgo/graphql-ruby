@@ -137,6 +137,32 @@ type Word {
       assert_schema_and_compare_output(schema)
     end
 
+    it 'can build a schema with directives whose inputs have a cycle' do
+      schema = <<-SCHEMA
+schema {
+  query: Hello
+}
+
+directive @foo(arg: InputA) on FIELD
+
+input InputA {
+  value: InputB
+}
+
+input InputB {
+  value: InputA
+}
+      SCHEMA
+
+      parsed_schema = GraphQL::Schema.from_definition(schema)
+      assert_equal ["deprecated", "foo", "include", "skip"], parsed_schema.directives.keys.sort
+      parsed_schema.directives.values.each do |dir_class|
+        assert dir_class < GraphQL::Schema::Directive
+      end
+
+      assert_schema_and_compare_output(schema.chop)
+    end
+
     it 'supports descriptions and definition_line' do
       schema = <<-SCHEMA
 schema {
