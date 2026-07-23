@@ -82,6 +82,7 @@ module GraphQL
           replace_late_bound_types_with_built_in(types)
 
           schema_extensions = nil
+          definitions_by_name = nil
           document.definitions.each do |definition|
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition, GraphQL::Language::Nodes::DirectiveDefinition
@@ -101,9 +102,16 @@ module GraphQL
               if prev_type.nil? || prev_type.is_a?(Schema::LateBoundType)
                 if definition.is_a?(GraphQL::Language::Nodes::ObjectTypeDefinition) || definition.is_a?(Language::Nodes::InterfaceTypeDefinition)
                   interface_names = definition.interfaces.map(&:name)
-                  transitive_names = interface_names.map { |n| document.definitions.find { |d| d.respond_to?(:name) && d.name == n }&.interfaces&.map(&:name) }
-                  transitive_names.flatten!
-                  transitive_names.compact!
+                  if !interface_names.empty?
+                    definitions_by_name ||= document.definitions.each_with_object({}) do |d, by_name|
+                      by_name[d.name] ||= d if d.respond_to?(:name)
+                    end
+                    transitive_names = interface_names.map { |n| definitions_by_name[n]&.interfaces&.map(&:name) }
+                    transitive_names.flatten!
+                    transitive_names.compact!
+                  else
+                    transitive_names = interface_names
+                  end
                   if !(missing_transitive_interfaces = transitive_names - interface_names).empty?
                     raise GraphQL::Schema::InvalidDocumentError, "type #{definition.name} is missing one or more transitive interface names: #{missing_transitive_interfaces.join(", ")}. Add them to the type's `implements` list and try again."
                   end
