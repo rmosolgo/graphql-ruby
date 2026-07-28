@@ -10,6 +10,14 @@
 
 ### Bug fixes
 
+# 2.6.7 (28 Jul 2026)
+
+### Bug fixes
+
+- SDL: Speed up parsing interfaces #5678
+- Execution::Next: fix selection step enqueuing #5679
+- AsyncDataloader: improve pending work accounting #5675
+
 # 2.6.6 (21 Jul 2026)
 
 - __Security__: This version includes a remediation for a security issue in `Execution::Next` (GHSA-j7xr-4g94-r9h3).
