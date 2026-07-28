@@ -29,16 +29,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Checkout GitHub pages branch
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: gh-pages
           ref: gh-pages
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
           ruby-version: '3.1'
-          bundler-cache: true
+      - run: bundle install
       - name: Build HTML, reindex
         env:
           ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
@@ -50,7 +50,7 @@ jobs:
           git config --global user.email "$(git log --format="%aE" -n 1)"
           bundle exec rake site:commit_changes
       - name: Deploy to GitHub pages via gh-pages branch
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./gh-pages
@@ -63,21 +63,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.GITHUB_REF }}
       - name: Checkout GitHub pages branch
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: gh-pages
           ref: gh-pages
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
           ruby-version: '3.2'
-          bundler-cache: true
+      - run: bundle install
       - name: Build API docs
+        env:
+          PUBLISH_VERSION: ${{ inputs.publish_version || env.GITHUB_REF }}
         run: |
-          bundle exec rake site:fetch_latest apidocs:gen_version["${{ inputs.publish_version || env.GITHUB_REF }}"]
+          bundle exec rake site:fetch_latest "apidocs:gen_version[${PUBLISH_VERSION}]"
       - name: Commit changes as rmosolgo
         run: |
           git config --global user.name rmosolgo
@@ -86,7 +88,7 @@ jobs:
           bundle exec rake site:commit_changes
           git status
       - name: Deploy to GitHub pages via gh-pages branch
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./gh-pages

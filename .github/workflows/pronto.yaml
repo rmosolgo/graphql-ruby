@@ -1,22 +1,31 @@
 name: Pronto
-on:
+on: # zizmor: ignore[dangerous-triggers] Runs trusted base-branch code to report on pull requests.
   - pull_request_target
+
+permissions: {}
 
 jobs:
   pronto:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      - run: echo BUNDLE_GEMFILE=gemfiles/pronto.gemfile > $GITHUB_ENV
+      - run: echo BUNDLE_GEMFILE=gemfiles/pronto.gemfile > "$GITHUB_ENV"
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.base.sha }}
       - run: git fetch --no-tags --prune --unshallow origin +refs/heads/*:refs/remotes/origin/*
       - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
           ruby-version: 3.4
           bundler-cache: true
       - name: Run Pronto
-        run: bundle exec pronto run -f github_pr -c origin/${{ github.base_ref }}
+        run: bundle exec pronto run -f github_pr -c "origin/${BASE_REF}"
         env:
+          BASE_REF: ${{ github.base_ref }}
           PRONTO_PULL_REQUEST_ID: ${{ github.event.pull_request.number }}
           PRONTO_GITHUB_ACCESS_TOKEN: "${{ github.token }}"
