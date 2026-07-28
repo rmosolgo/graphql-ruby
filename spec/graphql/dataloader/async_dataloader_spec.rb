@@ -464,5 +464,90 @@ if RUBY_VERSION >= "3.2.0"
         end
       end
     end
+
+    describe "stress test" do
+      RNG = Random.new(20260724)
+      MAX_ITERATIONS = 2000
+      WEDGE_AFTER = 10
+      class SlowSource < GraphQL::Dataloader::Source
+        def initialize(delay)
+          @delay = delay
+        end
+
+        def fetch(keys)
+          sleep(@delay)
+          keys.map { |k| "v#{k}" }
+        end
+      end
+
+      it "works" do
+        # Standalone reproduction of graphql-ruby#5671 (AsyncDataloader hang / ClosedQueueError)
+        $stdout.sync = true
+
+        GraphQL::Dataloader::AsyncDataloader.install_graphql_methods
+
+
+        iter_started_at = nil
+        iter = nil
+        iter_finished = false
+        main = Thread.current
+
+        watchdog = Thread.new do
+          loop do
+            sleep 1
+            started = iter_started_at
+            break if iter_finished
+            next unless started
+            if Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > WEDGE_AFTER
+              puts "\n=== WEDGE: iteration #{iter} hung for >#{WEDGE_AFTER}s ==="
+              puts "--- main thread backtrace ---"
+              puts((main.backtrace || []).first(15))
+              assert false, "Failed"
+            end
+          end
+        end
+
+        MAX_ITERATIONS.times do |i|
+          iter = i
+          iter_started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          n_jobs = 4 + RNG.rand(12)
+          seed_delay = RNG.rand(0.002)
+
+          begin
+            dl = GraphQL::Dataloader::AsyncDataloader.new
+            n_jobs.times do |j|
+              dl.append_job do
+                # Everyone snoozes on the shared source first:
+                dl.with(SlowSource, seed_delay).load(j % 3)
+                case j % 3
+                when 0
+                  # finishes in its first resumed slice - pure CPU, no yields.
+                when 1
+                  # stays "running" across the generation boundary via non-dataloader IO,
+                  # then needs another source round:
+                  sleep(RNG.rand(0.002))
+                  dl.with(SlowSource, RNG.rand(0.001)).load(100 + j)
+                when 2
+                  # a second wave of snoozers to force more generations:
+                  dl.with(SlowSource, RNG.rand(0.001)).load(200 + (j % 2))
+                  sleep(RNG.rand(0.001))
+                  dl.with(SlowSource, RNG.rand(0.001)).load(300 + j)
+                end
+              end
+            end
+            dl.run
+            print "," if (i + 1) % 50 == 0
+          rescue => e
+            puts "\n=== ERROR at iteration #{i}: #{e.class}: #{e.message} ==="
+            puts e.backtrace.first(12)
+            exit!(1)
+          end
+          iter_started_at = nil
+        end
+        iter_finished = true
+        assert "completed #{MAX_ITERATIONS} iterations cleanly"
+        assert watchdog.join
+      end
+    end
   end
 end
