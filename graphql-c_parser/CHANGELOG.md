@@ -1,5 +1,9 @@
 # GraphQL::CParser
 
+## 1.1.4
+
+- Set `YYSTACK_USE_ALLOCA 1` to avoid use-after-free (GHSA-52mm-32rv-3rpg)
+
 ## 1.1.3
 
 - Fix to disallow non-null sign (`!`) in fragment conditions #5347
