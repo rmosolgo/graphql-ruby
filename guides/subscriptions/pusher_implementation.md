@@ -102,10 +102,12 @@ end
 
 That connection will be used for managing subscription state. All writes to Redis are prefixed with `graphql:sub:`.
 
-There are also two configurations for managing persistence:
+There are two configurations for managing persistence:
 
 - `stale_ttl_s:` expires subscription data after the given number of seconds without any update. After `stale_ttl_s` has passed, the data will expire from Redis. Each time a subscription receives an update, its TTL is refreshed. (Generally, this isn't required because the backend is built to clean itself up. But, if you find that Redis is collecting stale queries, you can set them to expire after some very long time as a safeguard.)
 - `cleanup_delay_s:` (default: `5`) prevents deleting a subscription during those first seconds after it's created. Usually, a longer delay isn't necessary, but if you observe latency between the subscription's initial response and the client's subscription to the delivery channel, you can set this configuration to account for it.
+
+Also, you can use `extra_webhook_tokens: [{ key: "...", secret: "..." }, ...]` when you need to roll Pusher keys. [Pusher uses the oldest active token](https://pusher.com/docs/channels/server_api/webhooks/#authentication), so you can pass the old credentials there while you're rolling over to the new one.
 
 ### Connection Pool
 
