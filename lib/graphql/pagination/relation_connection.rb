@@ -220,8 +220,19 @@ module GraphQL
       # Load nodes after applying first/last/before/after,
       # returns an array of nodes
       def load_nodes
-        # Return an array so we can consistently use `.index(node)` on it
-        @nodes ||= limited_nodes.to_a
+        return @nodes if @nodes
+
+        if @loading_nodes
+          context.dataloader.yield until @nodes
+          return @nodes
+        end
+
+        @loading_nodes = true
+        begin
+          @nodes = limited_nodes.to_a
+        ensure
+          @loading_nodes = false
+        end
       end
     end
   end
