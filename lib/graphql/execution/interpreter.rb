@@ -119,6 +119,12 @@ module GraphQL
               end
 
               results
+            rescue SystemStackError => err
+              queries.map do |query|
+                schema.query_stack_error(query, err)
+                query.result_values ||= { "errors" => query.context.errors.map(&:to_h) }
+                query.result
+              end
             rescue Exception
               # TODO rescue at a higher level so it will catch errors in analysis, too
               # Assign values here so that the query's `@executed` becomes true

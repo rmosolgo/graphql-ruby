@@ -1065,6 +1065,37 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
+  describe "when execution raises SystemStackError" do
+    class StackErrorSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :crash, String
+
+        def crash
+          raise SystemStackError, "stack level too deep"
+        end
+      end
+
+      query(Query)
+
+      def self.query_stack_error(query, err)
+        query.context[:stack_error] = err
+        super
+      end
+    end
+
+    it "returns a query error" do
+      result = GraphQL::Execution::Interpreter.run_all(
+        StackErrorSchema,
+        [{ query: "{ crash }" }]
+      ).first
+
+      assert_instance_of SystemStackError, result.context[:stack_error]
+      assert_equal \
+        [{ "message" => "This query is too large to execute." }],
+        result["errors"]
+    end
+  end
+
   describe "list items with dataloader and current_path usage" do
     class ListBugExampleSchema < GraphQL::Schema
       class PathTest < GraphQL::Schema::Directive

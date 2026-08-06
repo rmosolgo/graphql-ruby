@@ -26,7 +26,8 @@ class <%= schema_name %> < GraphQL::Schema
     raise(GraphQL::RequiredImplementationMissingError)
   end
 
-  # Limit the size of incoming queries:
+  # Limit the depth and size of incoming queries:
+  max_depth(15)
   max_query_string_tokens(5000)
 
   # Stop validating when it encounters this many errors:
