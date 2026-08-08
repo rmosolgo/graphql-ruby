@@ -25,6 +25,13 @@ api_comments:
     max_lines: 140
     required_sections:
       - "Schema configuration reference"
+      - "## Root Types"
+      - "## Object Identification"
+      - "## Error Handling"
+      - "## Default Limits"
+      - "## Introspection"
+      - "## Authorization"
+      - "## Execution Configuration"
       - "migrated from guides/schema/definition.md"
   - guide: guides/queries/executing_queries.md
     source: lib/graphql/query.rb
@@ -34,6 +41,8 @@ api_comments:
     max_lines: 220
     required_sections:
       - "API-specific portions"
+      - "## API-specific portions"
+      - "`variables:` is a `Hash`"
       - "migrated from guides/queries/executing_queries.md"
 
 # These files are generated API snapshots from the former YARD pipeline.
