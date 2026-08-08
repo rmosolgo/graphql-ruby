@@ -54,8 +54,8 @@ module GraphQL
           args
         end
 
-        # See [Argument#initialize](rdoc-ref:Argument#initialize) Argument#initialize
-        # See [HasArguments#argument](rdoc-ref:HasArguments#argument) HasArguments#argument
+        # See the [GraphQL::Schema::Argument](rdoc-ref:GraphQL::Schema::Argument) API.
+        # See [HasArguments#argument](rdoc-ref:GraphQL::Schema::Member::HasArguments#argument) for argument configuration.
         def default_argument(*argument_args, **argument_kwargs)
           configs = @own_default_argument_configurations ||= []
           configs << [argument_args, argument_kwargs]

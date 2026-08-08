@@ -38,7 +38,7 @@ end
 
 Now, built-in connection implementations will use that encoder for cursors.
 
-If you implement your own connections, you can access the encoder's encryption methods via [GraphQL::Pagination::Connection#encode](rdoc-ref:GraphQL::Pagination::Connection#encode) and [GraphQL::Pagination::Connection#decode](rdoc-ref:GraphQL::Pagination::Connection#decode).
+If you implement your own connections, you can access the encoder's encryption methods via `GraphQL::Pagination::Connection#encode` and `GraphQL::Pagination::Connection#decode`.
 
 
 ## Encrypting IDs

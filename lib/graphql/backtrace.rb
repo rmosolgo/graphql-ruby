@@ -5,7 +5,7 @@ module GraphQL
   # Wrap unhandled errors with [TracedError](rdoc-ref:TracedError).
   #
   # [TracedError](rdoc-ref:TracedError) provides a GraphQL backtrace with arguments and return values.
-  # The underlying error is available as [TracedError#cause](rdoc-ref:TracedError#cause).
+  # The underlying error is available as `TracedError#cause`.
   #
   # **Examples**
   #

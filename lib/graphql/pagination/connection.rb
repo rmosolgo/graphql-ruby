@@ -208,7 +208,7 @@ module GraphQL
         raise PaginationImplementationMissingError, "Implement #{self.class}#nodes to paginate `@items`"
       end
 
-      # A dynamic alias for compatibility with [Relay::BaseConnection](rdoc-ref:Relay::BaseConnection).
+      # A dynamic alias for compatibility with [GraphQL::Types::Relay::BaseConnection](rdoc-ref:GraphQL::Types::Relay::BaseConnection).
       # **Deprecated:** use [nodes](rdoc-ref:#nodes) instead
       def edge_nodes
         nodes

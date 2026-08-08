@@ -67,7 +67,7 @@ module GraphQL
       #
       # **Returns**
       #
-      # - `Hash` — A hash that will be added verbatim to the result hash, as `"extensions" => [...](rdoc-ref:...)`
+      # - `Hash` — A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
       def response_extensions
         namespace(:__query_result_extensions__)
       end

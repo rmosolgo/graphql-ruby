@@ -112,7 +112,7 @@ module GraphQL
       #
       # **Returns**
       #
-      # - `Numeric, false` — The number of seconds after which to interrupt query execution and call [handle error](rdoc-ref:#handle_error), or `false` to bypass the timeout.
+      # - `Numeric, false` — The number of seconds after which to interrupt query execution and call `handle_error`, or `false` to bypass the timeout.
       def max_seconds(query)
         @max_seconds
       end

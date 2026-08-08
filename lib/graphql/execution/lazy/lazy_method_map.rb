@@ -14,7 +14,7 @@ module GraphQL
       # The result of this lookup is cached for future resolutions.
       # Instances of this class are thread-safe.
       # **API:** private
-      # See [Schema#lazy?](rdoc-ref:Schema#lazy?) looks up values from this map
+      # See the schema's `lazy?` configuration to understand which values use this map.
       class LazyMethodMap
         def initialize(use_concurrent: defined?(Concurrent::Map))
           @storage = use_concurrent ? Concurrent::Map.new : ConcurrentishMap.new

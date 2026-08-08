@@ -39,11 +39,18 @@ jobs:
         with:
           ruby-version: '3.1'
       - run: bundle install
+      - run: mkdir -p tmp
+      - name: Snapshot existing versioned API docs
+        run: bundle exec ruby tool/docs/publish_check.rb snapshot --pages gh-pages --snapshot tmp/gh-pages-api-doc-before.json
       - name: Build RDoc site
         run: |
-          bundle exec rake docs:build
+          bundle exec rake docs:check
+          bundle exec rake docs:build_twice
+          bundle exec ruby tool/docs/gem_install_check.rb
           rsync -a --delete --exclude '.git' --exclude 'api-doc' tmp/rdoc-site/ gh-pages/
           touch gh-pages/.nojekyll
+      - name: Verify versioned API docs were preserved
+        run: bundle exec ruby tool/docs/publish_check.rb verify --pages gh-pages --snapshot tmp/gh-pages-api-doc-before.json
       - name: Commit changes as last committer
         run: |
           git -C gh-pages config user.name "$(git log --format="%aN" -n 1)"
@@ -76,14 +83,22 @@ jobs:
         with:
           ruby-version: '3.2'
       - run: bundle install
+      - run: mkdir -p tmp
+      - name: Snapshot existing versioned API docs
+        run: bundle exec ruby tool/docs/publish_check.rb snapshot --pages gh-pages --snapshot tmp/gh-pages-api-doc-before.json
       - name: Build versioned API docs
         env:
           PUBLISH_VERSION: ${{ inputs.publish_version || github.ref_name }}
         run: |
           VERSION="${PUBLISH_VERSION#v}"
           bundle exec rake "docs:rdoc:build_version[${VERSION}]"
+          bundle exec ruby tool/docs/version_check.rb --root "tmp/rdoc-api/${VERSION}" --version "${VERSION}"
+          bundle exec ruby tool/docs/compatibility.rb --root "tmp/rdoc-api/${VERSION}" --rdoc "tmp/rdoc-api/${VERSION}/js/search_data.js" --strict
+          bundle exec ruby tool/docs/link_checker.rb --root "tmp/rdoc-api/${VERSION}" --allow-root-links --root-links gh-pages --strict
+          bundle exec ruby tool/docs/rdoc_ref_checker.rb --root "tmp/rdoc-api/${VERSION}"
           mkdir -p "gh-pages/api-doc/${VERSION}"
           rsync -a --delete "tmp/rdoc-api/${VERSION}/" "gh-pages/api-doc/${VERSION}/"
+          bundle exec ruby tool/docs/publish_check.rb verify --pages gh-pages --snapshot tmp/gh-pages-api-doc-before.json --allow-version "${VERSION}" --expected-version "${VERSION}"
       - name: Commit changes as rmosolgo
         run: |
           git config --global user.name rmosolgo

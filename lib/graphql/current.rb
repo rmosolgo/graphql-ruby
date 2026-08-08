@@ -43,7 +43,7 @@ module GraphQL
       end
     end
 
-    # See [GraphQL::Field#path](rdoc-ref:GraphQL::Field#path) for a string identifying this field
+    # See [Schema::Member::HasPath#path](rdoc-ref:GraphQL::Schema::Member::HasPath#path) for a string identifying this field
     #
     # **Returns**
     #

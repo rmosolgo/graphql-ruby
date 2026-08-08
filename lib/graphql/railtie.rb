@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module GraphQL
-  # Support [GraphQL::Parser::Cache](rdoc-ref:GraphQL::Parser::Cache) and [GraphQL.eager_load!](rdoc-ref:GraphQL.eager_load!)
+  # Support [GraphQL::Language::Cache](rdoc-ref:GraphQL::Language::Cache) and [GraphQL.eager_load!](rdoc-ref:GraphQL.eager_load!)
   #
   # **Examples**
   #

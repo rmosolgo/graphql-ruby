@@ -2,6 +2,7 @@
 
 require "rdoc"
 require "rdoc/generator/aliki"
+require "cgi"
 require "fileutils"
 require "pathname"
 
@@ -16,10 +17,31 @@ module RDoc
       end
 
       def build_search_index
-        super + guide_search_entries
+        entries = super + guide_search_entries
+        entries = entries.filter_map { |entry| sanitize_search_entry(entry) }
+        deduplicate_search_entries(entries)
       end
 
       private
+
+      def deduplicate_search_entries(entries)
+        entries.uniq { |entry| [entry[:type] || entry["type"], entry[:full_name] || entry["full_name"]] }
+      end
+
+      def sanitize_search_entry(entry)
+        snippet = entry[:snippet] || entry["snippet"]
+        return entry unless snippet
+
+        sanitized = snippet
+          .gsub(/\[([^\]]+)\]\(rdoc-ref:[^)]+\)/, "\\1")
+          .gsub(/rdoc-ref:[A-Za-z][A-Za-z0-9_:#.?!-]*/, "")
+          .gsub(/<[^>]+>/, " ")
+          .then { |text| CGI.unescapeHTML(text) }
+          .gsub(/\s+/, " ")
+          .strip
+        key = entry.key?(:snippet) ? :snippet : "snippet"
+        entry.merge(key => CGI.escapeHTML(sanitized))
+      end
 
       def install_graphql_assets
         output = Pathname.new(@options.op_dir.to_s)
@@ -31,6 +53,7 @@ module RDoc
         Dir[output.join("**/*.html").to_s].each do |path|
           path = Pathname.new(path)
           remove_source_links(path)
+          remove_unresolved_rdoc_refs(path)
           inject_graphql_assets(path, output)
         end
       end
@@ -38,6 +61,17 @@ module RDoc
       def remove_source_links(path)
         html = File.read(path)
         cleaned = html.gsub(/<a href="[^"]*\/lib\/[^\"]*">([^<]+)<\/a>/, '<code>\\1</code>')
+        File.write(path, cleaned) if cleaned != html
+      end
+
+      # RDoc renders an unresolved `rdoc-ref:` as plain text. This is especially
+      # common in metadata and code examples, where the reference isn't a
+      # cross-reference in the first place. Keep the visible label, but never
+      # publish an unusable pseudo-URL.
+      def remove_unresolved_rdoc_refs(path)
+        html = File.read(path)
+        cleaned = html.gsub(/\[([^\]]+)\]\(rdoc-ref:[^)]+\)/, '\\1')
+        cleaned = cleaned.gsub(/rdoc-ref:([A-Za-z][A-Za-z0-9_:#.?!-]*)/, '\\1')
         File.write(path, cleaned) if cleaned != html
       end
 

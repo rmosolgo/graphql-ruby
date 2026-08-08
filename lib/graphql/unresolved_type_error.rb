@@ -20,7 +20,7 @@ module GraphQL
 
     # **Returns**
     #
-    # - `Object` — The return of [Schema#resolve_type](rdoc-ref:Schema#resolve_type) for `value`
+    # - `Object` — The return of [Schema.resolve_type](rdoc-ref:GraphQL::Schema::resolve_type) for `value`
     attr_reader :resolved_type
 
     # **Returns**

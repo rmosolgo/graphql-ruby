@@ -3,7 +3,7 @@ module GraphQL
   class Query
     # Contain the validation pipeline and expose the results.
     #
-    # 0. Checks in [Query#initialize](rdoc-ref:Query#initialize):
+    # 0. Checks in the [GraphQL::Query](rdoc-ref:GraphQL::Query) constructor:
     #   - Rescue a ParseError, halt if there is one
     #   - Check for selected operation, halt if not found
     # 1. Validate the AST, halt if errors

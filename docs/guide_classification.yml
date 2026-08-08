@@ -1,0 +1,168 @@
+version: 1
+
+# API-specific pages are owned by the implementation comments below.
+api_comments:
+  - guide: guides/fields/introduction.md
+    source: lib/graphql/schema/field.rb
+    constant: GraphQL::Schema::Field
+    required_sections:
+      - "## Field Names"
+      - "## Field Return Type"
+      - "## Field Resolution"
+      - "## Field Parameter Default Values"
+  - guide: guides/fields/arguments.md
+    source: lib/graphql/schema/argument.rb
+    constant: GraphQL::Schema::Argument
+    required_sections:
+      - "## Nullability"
+      - "## Default Values"
+      - "## Valid Argument Types"
+  - guide: guides/schema/definition.md
+    source: lib/graphql/schema.rb
+    constant: GraphQL::Schema
+    kind: hybrid
+    rationale: Keep setup, lazy-loading, and production walkthroughs as a standalone tutorial while the schema configuration contracts live in GraphQL::Schema comments.
+    max_lines: 140
+    required_sections:
+      - "Schema configuration reference"
+      - "migrated from guides/schema/definition.md"
+  - guide: guides/queries/executing_queries.md
+    source: lib/graphql/query.rb
+    constant: GraphQL::Query
+    kind: hybrid
+    rationale: Keep variables, context, scoped context, and root-value walkthroughs as a tutorial while constructor and execution options are documented on the API methods.
+    max_lines: 220
+    required_sections:
+      - "API-specific portions"
+      - "migrated from guides/queries/executing_queries.md"
+
+# These files are generated API snapshots from the former YARD pipeline.
+# They are excluded from the RDoc site; the Ruby source comments are canonical.
+generated_api:
+  - guides/yardoc/**/*.md
+
+standalone_policy: Every remaining guide is reviewed as a tutorial, integration, or cross-cutting explanation. API contracts belong in implementation comments and are linked from these pages.
+
+# Every remaining Markdown guide is intentionally a standalone tutorial or
+# cross-cutting explanation. Keep this list explicit so new pages are reviewed.
+standalone:
+  - guides/authorization/authorization.md
+  - guides/authorization/can_can_integration.md
+  - guides/authorization/overview.md
+  - guides/authorization/pundit_integration.md
+  - guides/authorization/scoping.md
+  - guides/authorization/visibility.md
+  - guides/changesets/definition.md
+  - guides/changesets/installation.md
+  - guides/changesets/overview.md
+  - guides/changesets/releases.md
+  - guides/dataloader/adopting.md
+  - guides/dataloader/async_dataloader.md
+  - guides/dataloader/dataloader.md
+  - guides/dataloader/overview.md
+  - guides/dataloader/parallelism.md
+  - guides/dataloader/sources.md
+  - guides/dataloader/testing.md
+  - guides/defer/graphiql.md
+  - guides/defer/overview.md
+  - guides/defer/setup.md
+  - guides/defer/stream.md
+  - guides/defer/usage.md
+  - guides/development.md
+  - guides/errors/error_handling.md
+  - guides/errors/execution_errors.md
+  - guides/errors/overview.md
+  - guides/errors/type_errors.md
+  - guides/execution/migration.md
+  - guides/execution/next.md
+  - guides/faq.md
+  - guides/fields/limits.md
+  - guides/fields/resolvers.md
+  - guides/fields/validation.md
+  - guides/getting_started.md
+  - guides/javascript_client/apollo_subscriptions.md
+  - guides/javascript_client/graphiql_subscriptions.md
+  - guides/javascript_client/overview.md
+  - guides/javascript_client/relay_subscriptions.md
+  - guides/javascript_client/sync.md
+  - guides/javascript_client/urql_subscriptions.md
+  - guides/language_tools/c_parser.md
+  - guides/language_tools/visitor.md
+  - guides/limiters/active_operations.md
+  - guides/limiters/deployment.md
+  - guides/limiters/overview.md
+  - guides/limiters/redis.md
+  - guides/limiters/runtime.md
+  - guides/mutations/mutation_authorization.md
+  - guides/mutations/mutation_classes.md
+  - guides/mutations/mutation_errors.md
+  - guides/mutations/mutation_root.md
+  - guides/object_cache/caching.md
+  - guides/object_cache/memcached.md
+  - guides/object_cache/overview.md
+  - guides/object_cache/redis.md
+  - guides/object_cache/runtime_considerations.md
+  - guides/object_cache/schema_setup.md
+  - guides/operation_store/access_control.md
+  - guides/operation_store/active_record_backend.md
+  - guides/operation_store/client_workflow.md
+  - guides/operation_store/getting_started.md
+  - guides/operation_store/overview.md
+  - guides/operation_store/redis_backend.md
+  - guides/operation_store/server_management.md
+  - guides/pagination/connection_concepts.md
+  - guides/pagination/cursors.md
+  - guides/pagination/custom_connections.md
+  - guides/pagination/overview.md
+  - guides/pagination/stable_relation_connections.md
+  - guides/pagination/using_connections.md
+  - guides/pro/dashboard.md
+  - guides/pro/encoders.md
+  - guides/pro/home.md
+  - guides/pro/installation.md
+  - guides/pro/privacy.md
+  - guides/queries/ast_analysis.md
+  - guides/queries/backtrace_annotations.md
+  - guides/queries/complexity_and_depth.md
+  - guides/queries/logging.md
+  - guides/queries/lookahead.md
+  - guides/queries/multiplex.md
+  - guides/queries/phases_of_execution.md
+  - guides/queries/response_extensions.md
+  - guides/queries/timeout.md
+  - guides/queries/tracing.md
+  - guides/related_projects.md
+  - guides/relay/range_add.md
+  - guides/schema/dynamic_types.md
+  - guides/schema/generators.md
+  - guides/schema/introspection.md
+  - guides/schema/lazy_execution.md
+  - guides/schema/object_identification.md
+  - guides/schema/root_types.md
+  - guides/schema/sdl.md
+  - guides/subscriptions/ably_implementation.md
+  - guides/subscriptions/action_cable_implementation.md
+  - guides/subscriptions/broadcast.md
+  - guides/subscriptions/implementation.md
+  - guides/subscriptions/multi_tenant.md
+  - guides/subscriptions/overview.md
+  - guides/subscriptions/pusher_implementation.md
+  - guides/subscriptions/subscription_classes.md
+  - guides/subscriptions/subscription_type.md
+  - guides/subscriptions/triggers.md
+  - guides/testing/helpers.md
+  - guides/testing/integration_tests.md
+  - guides/testing/overview.md
+  - guides/testing/profiling.md
+  - guides/testing/schema_structure.md
+  - guides/type_definitions/directives.md
+  - guides/type_definitions/enums.md
+  - guides/type_definitions/extensions.md
+  - guides/type_definitions/field_extensions.md
+  - guides/type_definitions/input_objects.md
+  - guides/type_definitions/interfaces.md
+  - guides/type_definitions/lists.md
+  - guides/type_definitions/non_nulls.md
+  - guides/type_definitions/objects.md
+  - guides/type_definitions/scalars.md
+  - guides/type_definitions/unions.md
