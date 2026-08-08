@@ -3,7 +3,6 @@ require "bundler/gem_helper"
 Bundler::GemHelper.install_tasks
 
 require "rake/testtask"
-require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
 require 'rake/extensiontask'
 
@@ -237,6 +236,39 @@ task :move_binary do
 end
 
 namespace :docs do
+  desc "Build the RDoc/Aliki documentation site"
+  task build: "docs:rdoc:build"
+
+  desc "Build and run documentation quality checks"
+  task check: "docs:rdoc:build" do
+    ruby "tool/docs/check.rb"
+    ruby "tool/docs/migrate_guides.rb", "--check"
+    ruby "tool/docs/compatibility.rb", "--root", "tmp/rdoc-site", "--rdoc", "tmp/rdoc-site/js/search_data.js", "--strict"
+    ruby "tool/docs/link_checker.rb", "--root", "tmp/rdoc-site", "--strict", "--json", "tmp/rdoc-link-report.json"
+    sh "node tool/docs/assets/graphql_highlighter_test.js"
+  end
+
+  desc "Build the documentation twice and compare generated files"
+  task :build_twice do
+    require_relative "tool/docs/build"
+    require "digest"
+    require "fileutils"
+    require "pathname"
+    builder = GraphQLDocs::Build.new
+    first = builder.build_site(output: "tmp/rdoc-site-first")
+    second = builder.build_site(output: "tmp/rdoc-site-second")
+    digest = lambda do |root|
+      Dir[File.join(root, "**", "*")].select { |path| File.file?(path) }.sort.to_h do |path|
+        [Pathname.new(path).relative_path_from(Pathname.new(root)).to_s, Digest::SHA256.file(path).hexdigest]
+      end
+    end
+    raise "RDoc output is not reproducible" unless digest.call(first) == digest.call(second)
+    puts "RDoc output is reproducible"
+  ensure
+    FileUtils.rm_rf("tmp/rdoc-site-first")
+    FileUtils.rm_rf("tmp/rdoc-site-second")
+  end
+
   namespace :rdoc do
     desc "Build the shadow RDoc/Aliki documentation site"
     task :build do

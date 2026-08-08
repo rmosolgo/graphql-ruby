@@ -37,7 +37,7 @@ Only changesets in the directory (or in the array) will be shown to clients. The
 
 ## Inspecting Releases
 
-To preview releases, you can create schema dumps by passing `context: { changeset_version: ... }` to [Schema.to_definition](rdoc-ref:Schema.to_definition).
+To preview releases, you can create schema dumps by passing `context: { changeset_version: ... }` to [Schema.to_definition](rdoc-ref:GraphQL::Schema.to_definition).
 
 For example, to see how the schema looks with `API-Version: 2021-06-01`:
 

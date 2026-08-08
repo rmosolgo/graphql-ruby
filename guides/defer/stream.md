@@ -15,7 +15,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-Additionally, you should update your controller to handle deferred parts of the response. See the [@defer setup guide](defer/setup#sending-streaming-responses) for details. (`@stream` uses the same deferral pipeline as `@defer`, so the same setup instructions apply.)
+Additionally, you should update your controller to handle deferred parts of the response. See the [@defer setup guide](/defer/setup#sending-streaming-responses) for details. (`@stream` uses the same deferral pipeline as `@defer`, so the same setup instructions apply.)
 
 ## Usage
 

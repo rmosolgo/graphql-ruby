@@ -160,54 +160,32 @@ Don't fret about coding style or organization.  There's a minimal Rubocop config
 
 To update the website, update the `.md` files in `guides/`.
 
-To preview your changes, you can serve the website locally:
+Install the optional documentation dependencies and build the site locally:
 
-```
-bundle exec rake site:serve
-```
-
-Then visit `http://localhost:4000`.
-
-To publish the website with GitHub pages, run the Rake task:
-
-```
-bundle exec rake site:publish
+```sh
+BUNDLE_WITH=docs bundle install
+bundle exec rake docs:build
+bundle exec rake docs:rdoc:serve
 ```
 
-### Search Index
+Then visit `http://127.0.0.1:8808`. Run the documentation checks before submitting a change:
 
-GraphQL-Ruby's search index is powered by Algolia. To update the index, you need the API key in an environment variable:
-
+```sh
+bundle exec rake docs:check
+bundle exec rake docs:build_twice
 ```
-$ export ALGOLIA_API_KEY=...
-```
 
-Without this key, the search index will fall out-of-sync with the website. Contact @rmosolgo to gain access to this key.
+See the [documentation maintenance guide](/docs/maintenance) for API links, GraphQL code blocks, redirects, and release documentation.
 
 ### API Docs
 
-The GraphQL-Ruby website has its own rendered version of the gem's API docs. They're pushed to GitHub pages with a special process.
-
-First, generate local copies of the docs you want to publish:
+The GraphQL-Ruby website has a rendered version of each published gem's API docs. Generate a local copy with:
 
 ```
-$ bundle exec rake apidocs:gen_version[1.8.0] # for example, generate docs that you want to publish
+$ bundle exec rake "docs:rdoc:build_version[1.8.0]"
 ```
 
-Then, check them out locally:
-
-```
-$ bundle exec rake site:serve
-# then visit http://localhost:4000/api-doc/1.8.0/
-```
-
-Then, publish them as part of the whole site:
-
-```
-$ bundle exec rake site:publish
-```
-
-Finally, check your work by visiting the docs on the website.
+The output is written to `tmp/rdoc-api/1.8.0/`; the release workflow publishes it under `/api-doc/1.8.0/` while preserving older versions.
 
 ## Versioning
 

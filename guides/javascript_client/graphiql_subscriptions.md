@@ -29,7 +29,7 @@ After that, you should be able to load the page in your app and see the GraphiQL
 
 ## Ably
 
-To integrate [Ably subscriptions](subscriptions/ably_implementation), use `createAblyFetcher`,  for example:
+To integrate [Ably subscriptions](/subscriptions/ably_implementation), use `createAblyFetcher`,  for example:
 
 ```js
 import Ably from "ably"
@@ -49,7 +49,7 @@ Under the hood, it will use `window.fetch` to send GraphQL operations to the ser
 
 ## Pusher
 
-To integrate [Pusher subscriptions](subscriptions/pusher_implementation), use `createPusherFetcher`,  for example:
+To integrate [Pusher subscriptions](/subscriptions/pusher_implementation), use `createPusherFetcher`,  for example:
 
 ```js
 import Pusher from "pusher-js"
@@ -68,7 +68,7 @@ Under the hood, it will use `window.fetch` to send GraphQL operations to the ser
 
 ## ActionCable
 
-To integrate [ActionCable subscriptions](subscriptions/action_cable_implementation), use `createActionCableFetcher`,  for example:
+To integrate [ActionCable subscriptions](/subscriptions/action_cable_implementation), use `createActionCableFetcher`,  for example:
 
 ```js
 import { createConsumer } from "@rails/actioncable"

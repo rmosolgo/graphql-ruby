@@ -1,0 +1,20 @@
+# Guide URLs are generated from the source tree so every existing guide has a
+# concrete redirect. Add explicit entries for pages that move into an API ref.
+guide_source: guides
+redirects:
+  - old_path: /docs/maintenance
+    destination:
+      kind: page
+      value: docs/maintenance.md
+  - old_path: /guides
+    destination:
+      kind: page
+      value: guides/getting_started.md
+  - old_path: /queries/executing_queries
+    destination:
+      kind: rdoc_ref
+      value: GraphQL::Schema.execute
+  - old_path: /getting_started
+    destination:
+      kind: page
+      value: guides/getting_started.md

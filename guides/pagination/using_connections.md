@@ -1,6 +1,6 @@
 # Using Connections
 
-GraphQL-Ruby ships with a few implementations of the [connection pattern](pagination/connection_concepts) that you can use out of the box. They support Ruby Arrays, Mongoid, Sequel, and ActiveRecord.
+GraphQL-Ruby ships with a few implementations of the [connection pattern](/pagination/connection_concepts) that you can use out of the box. They support Ruby Arrays, Mongoid, Sequel, and ActiveRecord.
 
 Additionally, connections allow you to limit the number of items returned with [`max_page_size`](#max-page-size) and set the default number of items returned with [`default_page_size`](#default-page-size).
 

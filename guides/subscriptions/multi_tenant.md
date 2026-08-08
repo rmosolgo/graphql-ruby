@@ -18,7 +18,7 @@ MySchema.execute(query_str, context: context, ...)
 
 ## Tenant-based `subscription_scope`
 
-When subscriptions are delivered, [`subscription_scope`](subscriptions/subscription_classes#scope) is one element used to route data to the right subscriber. In short, it's the _implicit_ identifier for the receiver. In a multi-tenant architecture, `subscription_scope` should reference the context key that names the tenant, for example:
+When subscriptions are delivered, [`subscription_scope`](/subscriptions/subscription_classes#scope) is one element used to route data to the right subscriber. In short, it's the _implicit_ identifier for the receiver. In a multi-tenant architecture, `subscription_scope` should reference the context key that names the tenant, for example:
 
 ```ruby
 class BudgetWasApproved < GraphQL::Schema::Subscription
@@ -54,7 +54,7 @@ There are a few places where subscriptions might need to load data:
 
 Each of these operations will need to select the right tenant in order to load data properly.
 
-For __building the payload__, use a [Trace module](queries/tracing):
+For __building the payload__, use a [Trace module](/queries/tracing):
 
 ```ruby
 module TenantSelectionTrace

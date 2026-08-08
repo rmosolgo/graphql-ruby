@@ -4,7 +4,7 @@ The [GraphQL::Subscriptions](rdoc-ref:GraphQL::Subscriptions) plugin is a base c
 
 Each method corresponds to a step in the subscription lifecycle. See the API docs for method-by-method documentation: [GraphQL::Subscriptions](rdoc-ref:GraphQL::Subscriptions).
 
-Also, see the [Pusher implementation guide](subscriptions/pusher_implementation), the [Ably implementation guide](subscriptions/ably_implementation), the [ActionCable implementation guide](subscriptions/action_cable_implementation) or [GraphQL::Subscriptions::ActionCableSubscriptions](rdoc-ref:GraphQL::Subscriptions::ActionCableSubscriptions) docs for an example implementation.
+Also, see the [Pusher implementation guide](/subscriptions/pusher_implementation), the [Ably implementation guide](/subscriptions/ably_implementation), the [ActionCable implementation guide](/subscriptions/action_cable_implementation) or [GraphQL::Subscriptions::ActionCableSubscriptions](rdoc-ref:GraphQL::Subscriptions::ActionCableSubscriptions) docs for an example implementation.
 
 ## Considerations
 
@@ -17,4 +17,4 @@ Every Ruby application is different, so consider these points when implementing 
 
 ## Broadcasts
 
-_Broadcasting_ updates to multiple subscribers is supported by GraphQL-Ruby, but requires implementation-specific work, see more in the [Broadcast guide](subscriptions/broadcast).
+_Broadcasting_ updates to multiple subscribers is supported by GraphQL-Ruby, but requires implementation-specific work, see more in the [Broadcast guide](/subscriptions/broadcast).

@@ -7,7 +7,7 @@ Here are two type errors that you can customize in GraphQL-Ruby:
 - A field with `null: false` returned `nil`
 - A field returned a value as a union or interface, but that value couldn't be resolved to a member of that union or interface.
 
-You can specify behavior in these cases by defining a [Schema.type_error](rdoc-ref:Schema.type_error) hook:
+You can specify behavior in these cases by defining a [Schema.type_error](rdoc-ref:GraphQL::Schema.type_error) hook:
 
 ```ruby
 class MySchema < GraphQL::Schema

@@ -2,7 +2,7 @@
 
 From your application, you can push updates to GraphQL clients with `.trigger`.
 
-Events are triggered _by name_, and the name must match fields on your [Subscription Type](subscriptions/subscription_type)
+Events are triggered _by name_, and the name must match fields on your [Subscription Type](/subscriptions/subscription_type)
 
 ```ruby
 # Update the system with the new blog post:
@@ -34,7 +34,7 @@ class Subscriptions::CommentAdded < Subscription::BaseSubscription
 end
 ```
 
-(Read more in the [Subscription Classes guide](subscriptions/subscription_classes#scope).)
+(Read more in the [Subscription Classes guide](/subscriptions/subscription_classes#scope).)
 
 Then, subscription operations should have a `context: { current_user_id: ... }` value, for example:
 

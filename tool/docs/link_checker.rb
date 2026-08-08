@@ -79,12 +79,18 @@ module GraphQLDocs
       File.read(path, encoding: "UTF-8").scan(FRAGMENT_PATTERN).flatten.to_set
     end
 
-    def fragment_present?(path, fragment)
+    def fragment_present?(path, fragment, visited = Set.new)
       available = fragments(path)
       return true if available.include?(fragment)
 
       normalized = fragment.gsub(/-+/, "-")
-      available.any? { |candidate| candidate.gsub(/-+/, "-") == normalized }
+      return true if available.any? { |candidate| candidate.gsub(/-+/, "-") == normalized }
+
+      return false if visited.include?(path)
+
+      visited << path
+      redirect = File.read(path, encoding: "UTF-8")[/<meta[^>]+\burl=["']?([^"'\s>]+)/i, 1]
+      redirect && fragment_present?(resolve(path, redirect), fragment, visited)
     end
 
     def report(missing)
@@ -94,15 +100,17 @@ module GraphQLDocs
   end
 end
 
-options = {}
-OptionParser.new do |parser|
-  parser.banner = "Usage: ruby tool/docs/link_checker.rb --root PATH"
-  parser.on("--root PATH", "Generated documentation root") { |path| options[:root] = path }
-  parser.on("--json PATH", "Write broken links as JSON") { |path| options[:json] = path }
-  parser.on("--strict", "Fail when broken links are found") { options[:strict] = true }
-end.parse!
+if __FILE__ == $PROGRAM_NAME
+  options = {}
+  OptionParser.new do |parser|
+    parser.banner = "Usage: ruby tool/docs/link_checker.rb --root PATH"
+    parser.on("--root PATH", "Generated documentation root") { |path| options[:root] = path }
+    parser.on("--json PATH", "Write broken links as JSON") { |path| options[:json] = path }
+    parser.on("--strict", "Fail when broken links are found") { options[:strict] = true }
+  end.parse!
 
-abort "--root is required" unless options[:root]
-missing = GraphQLDocs::LinkChecker.new(options[:root]).check
-File.write(options[:json], JSON.pretty_generate(missing.map { |source, target, kind| { "source" => source, "target" => target, "kind" => kind } }) + "\n") if options[:json]
-exit 1 if options[:strict] && !missing.empty?
+  abort "--root is required" unless options[:root]
+  missing = GraphQLDocs::LinkChecker.new(options[:root]).check
+  File.write(options[:json], JSON.pretty_generate(missing.map { |source, target, kind| { "source" => source, "target" => target, "kind" => kind } }) + "\n") if options[:json]
+  exit 1 if options[:strict] && !missing.empty?
+end

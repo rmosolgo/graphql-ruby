@@ -94,7 +94,7 @@ For authorizing return values, if an outgoing value's `#authorized?` method retu
 
 ## Handling Unauthorized Objects
 
-By default, GraphQL-Ruby silently replaces unauthorized objects with `nil`, as if they didn't exist. You can customize this behavior by implementing [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object) in your schema class, for example:
+By default, GraphQL-Ruby silently replaces unauthorized objects with `nil`, as if they didn't exist. You can customize this behavior by implementing [Schema.unauthorized_object](rdoc-ref:GraphQL::Schema.unauthorized_object) in your schema class, for example:
 
 ```ruby
 class MySchema < GraphQL::Schema

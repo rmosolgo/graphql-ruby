@@ -199,7 +199,7 @@ Visibility works exactly as before; both runtime modules call the same methods t
 
 ### Dataloader
 
-Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use [Schema::Member::HasDataloader#dataload_all](rdoc-ref:Schema::Member::HasDataloader#dataload_all) instead of `.dataload`.
+Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use [Schema::Member::HasDataloader#dataload_all](rdoc-ref:GraphQL::Schema::Member::HasDataloader#dataload_all) instead of `.dataload`.
 
 ### Tracing
 

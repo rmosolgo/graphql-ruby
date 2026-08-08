@@ -49,6 +49,6 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-See [Implementing Subscriptions](subscriptions/implementation) for more about actually delivering updates.
+See [Implementing Subscriptions](/subscriptions/implementation) for more about actually delivering updates.
 
-See [Subscription Classes](subscriptions/subscription_classes) for more about implementing subscription root fields.
+See [Subscription Classes](/subscriptions/subscription_classes) for more about implementing subscription root fields.

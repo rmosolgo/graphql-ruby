@@ -14,7 +14,7 @@ The source code is [in the graphql-ruby repository](https://github.com/rmosolgo/
 
 See detailed guides for more info about its features:
 
-- [sync CLI](javascript_client/sync) for use with [graphql-pro](https://graphql.pro)'s persisted query backend
+- [sync CLI](/javascript_client/sync) for use with [graphql-pro](https://graphql.pro)'s persisted query backend
 - Subscription support:
   - [Apollo integration](/javascript_client/apollo_subscriptions)
   - [Relay integration](/javascript_client/relay_subscriptions)
