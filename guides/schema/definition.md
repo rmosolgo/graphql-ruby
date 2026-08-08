@@ -25,14 +25,24 @@ class MyAppSchema < GraphQL::Schema
 end
 ```
 
-There are lots of schema configuration methods.
+There are lots of schema configuration methods. The complete reference is
+maintained with the implementation in [GraphQL::Schema](rdoc-ref:GraphQL::Schema),
+including root types, object identification, error hooks, limits, introspection,
+authorization, tracing, analyzers, and plugins.
+
+The API-specific portions of this page were migrated to the
+[GraphQL::Schema](rdoc-ref:GraphQL::Schema) source comments. This page keeps the
+setup, lazy-loading, and production walkthroughs.
 
 For defining GraphQL types, see the guides for those types: [object types](/type_definitions/objects), [interface types](/type_definitions/interfaces), [union types](/type_definitions/unions),  [input object types](/type_definitions/input_objects), [enum types](/type_definitions/enums), and [scalar types](/type_definitions/scalars).
 
 ## Types in the Schema
 
-- [Schema.query](rdoc-ref:GraphQL::Schema.query), [Schema.mutation](rdoc-ref:GraphQL::Schema.mutation), and [Schema.subscription](rdoc-ref:GraphQL::Schema.subscription) declare the [entry-point types](https://graphql.org/learn/schema/#the-query-mutation-and-subscription-types) of the schema.
-- [Schema.orphan_types](rdoc-ref:GraphQL::Schema.orphan_types) declares object types which implement [Interfaces](/type_definitions/interfaces) but aren't used as field return types in the schema. For more about this specific scenario, see [Orphan Types](/type_definitions/interfaces#orphan-types)
+See the [GraphQL::Schema API reference](rdoc-ref:GraphQL::Schema) for
+root types, orphan types, and extra types. For defining GraphQL types, see the
+guides for [object types](/type_definitions/objects), [interface types](/type_definitions/interfaces),
+[union types](/type_definitions/unions), [input objects](/type_definitions/input_objects),
+[enums](/type_definitions/enums), and [scalars](/type_definitions/scalars).
 
 ### Lazy-loading types
 
@@ -62,52 +72,50 @@ To enforce these patterns, you can enable two Rubocop rules that ship with Graph
 
 ## Object Identification
 
-Some GraphQL features use unique IDs to load objects:
-
-- the `node(id:)` field looks up objects by ID (See [Object Identification](/schema/object_identification) for more about Relay-style object identification.)
-- any arguments with `loads:` configurations look up objects by ID
-- the [ObjectCache](/object_cache/overview) uses IDs in its caching scheme
-
-To use these features, you must provide some methods for generating UUIDs and fetching objects with them:
-
-[Schema.object_from_id](rdoc-ref:GraphQL::Schema.object_from_id) is called by GraphQL-Ruby to load objects directly from the database. It's usually used by the `node(id: ID!): Node` field (see [GraphQL::Types::Relay::Node](rdoc-ref:GraphQL::Types::Relay::Node)), Argument [loads:](/mutations/mutation_classes#auto-loading-arguments), or the [ObjectCache](/object_cache/overview). It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
-
-[Schema.id_from_object](rdoc-ref:GraphQL::Schema.id_from_object) is used to implement `Node.id`. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
-
-Additionally, [Schema.resolve_type](rdoc-ref:GraphQL::Schema.resolve_type) is called by GraphQL-Ruby to get the runtime Object type for fields that return [interface](/type_definitions/interfaces) or [union](/type_definitions/unions) types.
+The [GraphQL::Schema API reference](rdoc-ref:GraphQL::Schema)
+documents `object_from_id`, `id_from_object`, and `resolve_type`. For Relay-style
+IDs, see [Object Identification](/schema/object_identification); for `loads:`, see
+[auto-loading arguments](/mutations/mutation_classes#auto-loading-arguments).
 
 ## Error Handling
 
-- [Schema.type_error](rdoc-ref:GraphQL::Schema.type_error) handles type errors at runtime, read more in the [Type errors guide](/errors/type_errors).
-- [Schema.rescue_from](rdoc-ref:GraphQL::Schema.rescue_from) defines error handlers for application errors. See the [error handling guide](/errors/error_handling) for more.
-- [Schema.parse_error](rdoc-ref:GraphQL::Schema.parse_error) and [Schema.query_stack_error](rdoc-ref:GraphQL::Schema.query_stack_error) provide hooks for reporting errors to your bug tracker.
+The [GraphQL::Schema API reference](rdoc-ref:GraphQL::Schema)
+describes the error hooks. See the [Type errors guide](/errors/type_errors) and
+[error handling guide](/errors/error_handling) for application-level examples.
 
 ## Default Limits
 
-- [Schema.max_depth](rdoc-ref:GraphQL::Schema.max_depth) and [Schema.max_complexity](rdoc-ref:GraphQL::Schema.max_complexity) apply some limits to incoming queries. See [Complexity and Depth](/queries/complexity_and_depth) for more.
-- [Schema.default_max_page_size](rdoc-ref:GraphQL::Schema.default_max_page_size) applies limits to [connection fields](/pagination/overview).
-- [Schema.validate_timeout](rdoc-ref:GraphQL::Schema.validate_timeout), [Schema.validate_max_errors](rdoc-ref:GraphQL::Schema.validate_max_errors) and [Schema.max_query_string_tokens](rdoc-ref:GraphQL::Schema.max_query_string_tokens) all apply limits to query execution. See [Timeout](/queries/timeout) for more.
+See the [GraphQL::Schema API reference](rdoc-ref:GraphQL::Schema)
+for depth, complexity, page-size, timeout, error-count, and query-token limits.
+The [Complexity and Depth](/queries/complexity_and_depth) and [Timeout](/queries/timeout)
+guides show deployment-oriented examples.
 
 ## Introspection
 
-- [Schema.extra_types](rdoc-ref:GraphQL::Schema.extra_types) declares types which should be printed in the SDL and returned in introspection queries, but aren't otherwise used in the schema.
-- [Schema.introspection](rdoc-ref:GraphQL::Schema.introspection) can attach a [custom introspection system](/schema/introspection) to the schema.
+The [GraphQL::Schema API reference](rdoc-ref:GraphQL::Schema)
+documents `extra_types` and custom introspection namespaces. See the
+[introspection guide](/schema/introspection) for a custom introspection system.
 
 ## Authorization
 
-- [Schema.unauthorized_object](rdoc-ref:GraphQL::Schema.unauthorized_object) and [Schema.unauthorized_field](rdoc-ref:GraphQL::Schema.unauthorized_field) are called when [authorization hooks](/authorization/authorization) return `false` during query execution.
+The [GraphQL::Schema API reference](rdoc-ref:GraphQL::Schema)
+documents the unauthorized object and field hooks. See the
+[authorization guide](/authorization/authorization) for the complete authorization flow.
 
 ## Execution Configuration
 
-- [Schema.trace_with](rdoc-ref:GraphQL::Schema.trace_with) attaches tracer modules. See [Tracing](/queries/tracing) for more.
-- [Schema.query_analyzer](rdoc-ref:GraphQL::Schema.query_analyzer) and [Schema.multiplex_analyzer](rdoc-ref:GraphQL::Schema.multiplex_analyzer) accept processors for ahead-of-time query analysis, see [Analysis](/queries/ast_analysis) for more.
-- [Schema.default_logger](rdoc-ref:GraphQL::Schema.default_logger) configures a logger for runtime. See [Logging](/queries/logging).
-- [Schema.context_class](rdoc-ref:GraphQL::Schema.context_class) and [Schema.query_class](rdoc-ref:GraphQL::Schema.query_class) attach custom subclasses to your schema to use during execution.
-- [Schema.lazy_resolve](rdoc-ref:GraphQL::Schema.lazy_resolve) registers classes with [lazy execution](/schema/lazy_execution).
+The [GraphQL::Schema API reference](rdoc-ref:GraphQL::Schema)
+documents tracing, analyzers, logging, custom execution classes, lazy values, and
+plugins. See [Tracing](/queries/tracing), [Analysis](/queries/ast_analysis),
+[Logging](/queries/logging), and [lazy execution](/schema/lazy_execution) for
+cross-cutting examples.
 
 ## Plugins
 
-- [Schema.use](rdoc-ref:GraphQL::Schema.use) adds plugins to your schema. For example, [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) and [GraphQL::Schema::Visibility](rdoc-ref:GraphQL::Schema::Visibility) are installed this way.
+Use [Schema.use](rdoc-ref:GraphQL::Schema.use) to install plugins such as
+[GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) and
+[GraphQL::Schema::Visibility](rdoc-ref:GraphQL::Schema::Visibility). The plugin
+contract is documented in the [GraphQL::Schema API reference](rdoc-ref:GraphQL::Schema).
 
 ## Production Considerations
 

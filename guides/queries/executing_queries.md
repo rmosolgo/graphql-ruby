@@ -25,17 +25,16 @@ MySchema.multiplex([
 # ]
 ```
 
-There are also several options you can use:
+The complete option contract for `variables:`, `context:`, `root_value:`,
+`operation_name:`, `document:`, validation, and query limits is maintained in the
+[GraphQL::Query](rdoc-ref:GraphQL::Query) and
+[GraphQL::Schema](rdoc-ref:GraphQL::Schema) API references. The examples below
+focus on the application-level patterns built on those options.
 
-- `variables:` provides values for `$`-named [query variables](https://graphql.org/learn/queries/#variables)
-- `context:` accepts application-specific data to pass to `resolve` functions
-- `root_value:` will be provided to root-level `resolve` functions as `obj`
-- `operation_name:` picks a [named operation](https://graphql.org/learn/queries/#operation-type-and-name) from the incoming string to execute
-- `document:` accepts an already-parsed query (instead of a string), see [GraphQL.parse](rdoc-ref:GraphQL.parse)
-- `validate:` may be `false` to skip static validation for this query
-- `max_depth:` and `max_complexity:` may override schema-level values
-
-Some of these options are described in more detail below; see the [GraphQL::Query](rdoc-ref:GraphQL::Query) API for more information.
+The API-specific portions of this page were migrated to the
+[GraphQL::Query](rdoc-ref:GraphQL::Query) and
+[GraphQL::Schema](rdoc-ref:GraphQL::Schema) source comments. This page keeps
+the variables, context, scoped-context, and root-value walkthroughs.
 
 ## Variables
 

@@ -75,6 +75,83 @@ module GraphQL
   # links each contract above to its API method. Keep method-specific behavior in
   # the comments for those methods so this page remains the source of truth.
   #
+  # ## Root Types
+  #
+  # `query`, `mutation`, and `subscription` register the entry-point object types
+  # for a schema. Each may receive a type class or a block for lazy loading:
+  #
+  # ```ruby
+  # query Types::Query
+  # mutation { Types::Mutation }
+  # subscription { Types::Subscription }
+  # ```
+  #
+  # Use [Schema.orphan_types](rdoc-ref:GraphQL::Schema.orphan_types) for object
+  # types which implement an interface but aren't reachable from a field return
+  # type. Use [Schema.extra_types](rdoc-ref:GraphQL::Schema.extra_types) when a
+  # type should be printed and included in introspection without being connected
+  # to the schema's type graph.
+  #
+  # ## Object Identification
+  #
+  # Relay-style `node(id:)` fields, arguments configured with `loads:`, and the
+  # ObjectCache use [Schema.object_from_id](rdoc-ref:GraphQL::Schema.object_from_id)
+  # to fetch an application object. Return `nil` when the object does not exist or
+  # is not visible to the current operation. Implement
+  # [Schema.id_from_object](rdoc-ref:GraphQL::Schema.id_from_object) to produce a
+  # stable ID which can be passed back to `object_from_id`.
+  #
+  # [Schema.resolve_type](rdoc-ref:GraphQL::Schema.resolve_type) maps an
+  # application object to its runtime GraphQL type when a field returns an
+  # interface or union.
+  #
+  # ## Error Handling
+  #
+  # Override [Schema.type_error](rdoc-ref:GraphQL::Schema.type_error) to handle
+  # mismatches between application values and the GraphQL type system. Register
+  # application exception handlers with [Schema.rescue_from](rdoc-ref:GraphQL::Schema.rescue_from).
+  # [Schema.parse_error](rdoc-ref:GraphQL::Schema.parse_error) handles invalid
+  # query strings, and [Schema.query_stack_error](rdoc-ref:GraphQL::Schema.query_stack_error)
+  # is called when execution encounters a `SystemStackError`.
+  #
+  # ## Default Limits
+  #
+  # [Schema.max_depth](rdoc-ref:GraphQL::Schema.max_depth) limits nested field
+  # selections and [Schema.max_complexity](rdoc-ref:GraphQL::Schema.max_complexity)
+  # limits the calculated cost of a query. [Schema.default_max_page_size](rdoc-ref:GraphQL::Schema.default_max_page_size)
+  # limits connection fields. [Schema.validate_timeout](rdoc-ref:GraphQL::Schema.validate_timeout),
+  # [Schema.validate_max_errors](rdoc-ref:GraphQL::Schema.validate_max_errors), and
+  # [Schema.max_query_string_tokens](rdoc-ref:GraphQL::Schema.max_query_string_tokens)
+  # bound validation and parsing work. These limits can be configured on a schema
+  # and, where documented, overridden for an individual execution.
+  #
+  # ## Introspection
+  #
+  # [Schema.extra_types](rdoc-ref:GraphQL::Schema.extra_types) adds otherwise
+  # unreachable types to printed SDL and introspection results. Pass a custom
+  # namespace to [Schema.introspection](rdoc-ref:GraphQL::Schema.introspection) to
+  # replace or extend the default introspection system.
+  #
+  # ## Authorization
+  #
+  # [Schema.unauthorized_object](rdoc-ref:GraphQL::Schema.unauthorized_object)
+  # and [Schema.unauthorized_field](rdoc-ref:GraphQL::Schema.unauthorized_field)
+  # run when an authorization hook returns `false`. Return a replacement value or
+  # raise [GraphQL::ExecutionError](rdoc-ref:GraphQL::ExecutionError) to add a
+  # client-facing error.
+  #
+  # ## Execution Configuration
+  #
+  # [Schema.trace_with](rdoc-ref:GraphQL::Schema.trace_with) installs tracing
+  # modules. [Schema.query_analyzer](rdoc-ref:GraphQL::Schema.query_analyzer) and
+  # [Schema.multiplex_analyzer](rdoc-ref:GraphQL::Schema.multiplex_analyzer)
+  # register analysis hooks. [Schema.default_logger](rdoc-ref:GraphQL::Schema.default_logger)
+  # configures runtime logging, while [Schema.context_class](rdoc-ref:GraphQL::Schema.context_class)
+  # and [Schema.query_class](rdoc-ref:GraphQL::Schema.query_class) select the
+  # classes used during execution. [Schema.lazy_resolve](rdoc-ref:GraphQL::Schema.lazy_resolve)
+  # registers promise-like values, and [Schema.use](rdoc-ref:GraphQL::Schema.use)
+  # installs schema plugins such as Dataloader and Visibility.
+  #
   # **Examples**
   #
   # **Example: defining a schema**

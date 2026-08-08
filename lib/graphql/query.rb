@@ -8,6 +8,34 @@ module GraphQL
   # Those APIs accept query strings or parsed documents, variables, context,
   # root values, operation names, validation controls, and depth/complexity
   # limits. The guide remains a standalone execution tutorial.
+  #
+  # ## API-specific portions
+  #
+  # [GraphQL::Schema.execute](rdoc-ref:GraphQL::Schema.execute) runs one query
+  # and [GraphQL::Schema.multiplex](rdoc-ref:GraphQL::Schema.multiplex) runs
+  # several queries with shared multiplex-level context. Both delegate to this
+  # class, so the following options have the same meaning in each API:
+  #
+  # - `query` or the positional query string is a GraphQL document to parse.
+  # - `document:` accepts an already-parsed
+  #   [GraphQL::Language::Nodes::Document](rdoc-ref:GraphQL::Language::Nodes::Document);
+  #   pass one or the other, not both.
+  # - `variables:` is a `Hash` of values for `$`-named variables. Keys omit the
+  #   leading `$`; values may contain nested input objects.
+  # - `context:` contains application values made available to field resolvers,
+  #   schema hooks, and [Query::Context](rdoc-ref:GraphQL::Query::Context).
+  # - `root_value:` is passed as `obj` to root-level fields.
+  # - `operation_name:` selects which named operation to execute when a document
+  #   contains more than one operation.
+  # - `validate: false` skips static validation. Use this only when the document
+  #   has already been validated; execution of an invalid document is undefined.
+  # - `max_depth:` and `max_complexity:` override the corresponding schema limits
+  #   for this query. `nil` uses the schema configuration.
+  #
+  # The [executing queries guide](/queries/executing_queries) keeps examples for
+  # variables, context, scoped context, and root values. This class and the
+  # `Schema#execute`/`Schema#multiplex` method comments are the source of truth
+  # for option names, defaults, and execution behavior.
   # migrated from guides/queries/executing_queries.md
   class Query
     extend Autoload
