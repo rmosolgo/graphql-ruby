@@ -7,7 +7,7 @@ on:
 permissions: {}
 
 env:
-  BUNDLE_WITH: docs:jekyll_plugins
+  BUNDLE_WITH: docs
 
 jobs:
   build:
@@ -20,12 +20,10 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true
-      - name: Build legacy YARD documentation
-        run: bundle exec rake site:build_doc
       - name: Build shadow RDoc site
         run: bundle exec rake docs:rdoc:build
-      - name: Check API compatibility
-        run: bundle exec ruby tool/docs/compatibility.rb --rdoc tmp/rdoc-site/js/search_data.js --allowlist docs/api_exceptions.yml --json tmp/rdoc-api-compatibility.json
+      - name: Check RDoc index
+        run: bundle exec ruby tool/docs/compatibility.rb --root tmp/rdoc-site --rdoc tmp/rdoc-site/js/search_data.js --strict --json tmp/rdoc-api-compatibility.json
       - name: Check generated links
         run: bundle exec ruby tool/docs/link_checker.rb --root tmp/rdoc-site --json tmp/rdoc-link-report.json
       - name: Upload RDoc artifact

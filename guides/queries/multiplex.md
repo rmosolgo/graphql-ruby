@@ -1,6 +1,6 @@
 # Multiplex
 
-Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/)). You can execute them concurrently with [Schema.multiplex](rdoc-ref:Schema.multiplex).
+Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/)). You can execute them concurrently with [Schema.multiplex](rdoc-ref:GraphQL::Schema.multiplex).
 
 Multiplex runs have their own context, analyzers and instrumentation.
 
@@ -80,7 +80,7 @@ Each query is validated and [analyzed](/queries/ast_analysis) independently. The
 
 ## Multiplex-Level Context
 
-You can add values to [Execution::Multiplex#context](rdoc-ref:Execution::Multiplex#context) by providing a `context:` hash:
+You can add values to [Execution::Multiplex#context](rdoc-ref:GraphQL::Execution::Multiplex#context) by providing a `context:` hash:
 
 ```ruby
 MySchema.multiplex(queries, context: { current_user: current_user })
@@ -107,7 +107,7 @@ Multiplex analyzers may return [AnalysisError](rdoc-ref:AnalysisError) to halt e
 
 You can add hooks for each multiplex run with [trace modules](/queries/tracing).
 
-The trace module may implement `def execute_multiplex(multiplex:)` which calls `super` to allow the multiplex to execute. See [Execution::Multiplex](rdoc-ref:Execution::Multiplex) for available methods.
+The trace module may implement `def execute_multiplex(multiplex:)` which calls `super` to allow the multiplex to execute. See [Execution::Multiplex](rdoc-ref:GraphQL::Execution::Multiplex) for available methods.
 
 For example:
 

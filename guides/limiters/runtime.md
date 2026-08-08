@@ -1,6 +1,6 @@
 # Runtime Limiter
 
-`GraphQL::Enterprise::RuntimeLimiter` applies an upper bound to processing time consumed by a single client. It uses [Redis](limiters/redis) track time with a [token bucket](https://en.wikipedia.org/wiki/Token_bucket) algorithm.
+`GraphQL::Enterprise::RuntimeLimiter` applies an upper bound to processing time consumed by a single client. It uses [Redis](/limiters/redis) track time with a [token bucket](https://en.wikipedia.org/wiki/Token_bucket) algorithm.
 
 ## Why?
 

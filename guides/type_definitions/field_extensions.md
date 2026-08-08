@@ -42,7 +42,7 @@ This way, an extension can encapsulate a behavior requiring several configuratio
 
 ## Adding default argument configurations
 
-Extensions may provide _default_ argument configurations which are applied if the field doesn't define the argument for itself. The configuration is passed to [Schema::FieldExtension.default_argument](rdoc-ref:Schema::FieldExtension.default_argument). For example, to define a `:query` argument if the field doesn't already have one:
+Extensions may provide _default_ argument configurations which are applied if the field doesn't define the argument for itself. The configuration is passed to [Schema::FieldExtension.default_argument](rdoc-ref:GraphQL::Schema::FieldExtension.default_argument). For example, to define a `:query` argument if the field doesn't already have one:
 
 ```ruby
 class SearchableExtension < GraphQL::Schema::FieldExtension
@@ -116,7 +116,7 @@ field :name, String, null: false, extensions: [LimitExtension => { limit: 20 }]
 
 ## Using `extras`
 
-Extensions can have the same `extras` as fields (see [Extra Field Metadata](fields/introduction#extra-field-metadata)). Add them by calling `extras` in the class definition:
+Extensions can have the same `extras` as fields (see [Extra Field Metadata](/fields/introduction#extra-field-metadata)). Add them by calling `extras` in the class definition:
 
 ```ruby
 class MyExtension < GraphQL::Schema::FieldExtension

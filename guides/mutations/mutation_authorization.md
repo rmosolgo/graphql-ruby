@@ -85,8 +85,8 @@ end
 It works like this: if you pass a `loads:` option, it will:
 
 - Automatically remove `_id` from the name and pass that name for the `as:` option
-- Add a prepare hook to fetch an object with the given `ID` (using [Schema.object_from_id](rdoc-ref:Schema.object_from_id))
-- Check that the fetched object's type matches the `loads:` type (using [Schema.resolve_type](rdoc-ref:Schema.resolve_type))
+- Add a prepare hook to fetch an object with the given `ID` (using [Schema.object_from_id](rdoc-ref:GraphQL::Schema.object_from_id))
+- Check that the fetched object's type matches the `loads:` type (using [Schema.resolve_type](rdoc-ref:GraphQL::Schema.resolve_type))
 - Run the fetched object through its type's `.authorized?` hook (see [Authorization](/authorization/authorization))
 - Inject it into `#resolve` using the object-style name (`employee:`)
 

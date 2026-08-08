@@ -113,7 +113,7 @@ end
 
 #### Handling Unauthorized Objects
 
-When any Policy method returns `false`, the unauthorized object is passed to [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object), as described in [Handling unauthorized objects](/authorization/authorization#handling-unauthorized-objects).
+When any Policy method returns `false`, the unauthorized object is passed to [Schema.unauthorized_object](rdoc-ref:GraphQL::Schema.unauthorized_object), as described in [Handling unauthorized objects](/authorization/authorization#handling-unauthorized-objects).
 
 ## Scopes
 

@@ -28,15 +28,15 @@ Validations can be provided with a keyword (`validates: { ... }`) or with a meth
 
 See each validator's API docs for details:
 
-- `length: { maximum: ..., minimum: ..., is: ..., within: ... }` [Schema::Validator::LengthValidator](rdoc-ref:Schema::Validator::LengthValidator)
-- `format: { with: /.../, without: /.../ }` [Schema::Validator::FormatValidator](rdoc-ref:Schema::Validator::FormatValidator)
-- `numericality: { greater_than:, greater_than_or_equal_to:, less_than:, less_than_or_equal_to:, other_than:, odd:, even: }` [Schema::Validator::NumericalityValidator](rdoc-ref:Schema::Validator::NumericalityValidator)
-- `inclusion: { in: [...] }` [Schema::Validator::InclusionValidator](rdoc-ref:Schema::Validator::InclusionValidator)
-- `exclusion: { in: [...] }` [Schema::Validator::ExclusionValidator](rdoc-ref:Schema::Validator::ExclusionValidator)
-- `required: { one_of: [...] }` [Schema::Validator::RequiredValidator](rdoc-ref:Schema::Validator::RequiredValidator)
-- `allow_blank: true|false` [Schema::Validator::AllowBlankValidator](rdoc-ref:Schema::Validator::AllowBlankValidator)
-- `allow_null: true|false` [Schema::Validator::AllowNullValidator](rdoc-ref:Schema::Validator::AllowNullValidator)
-- `all: { ... }` [Schema::Validator::AllValidator](rdoc-ref:Schema::Validator::AllValidator)
+- `length: { maximum: ..., minimum: ..., is: ..., within: ... }` [Schema::Validator::LengthValidator](rdoc-ref:GraphQL::Schema::Validator::LengthValidator)
+- `format: { with: /.../, without: /.../ }` [Schema::Validator::FormatValidator](rdoc-ref:GraphQL::Schema::Validator::FormatValidator)
+- `numericality: { greater_than:, greater_than_or_equal_to:, less_than:, less_than_or_equal_to:, other_than:, odd:, even: }` [Schema::Validator::NumericalityValidator](rdoc-ref:GraphQL::Schema::Validator::NumericalityValidator)
+- `inclusion: { in: [...] }` [Schema::Validator::InclusionValidator](rdoc-ref:GraphQL::Schema::Validator::InclusionValidator)
+- `exclusion: { in: [...] }` [Schema::Validator::ExclusionValidator](rdoc-ref:GraphQL::Schema::Validator::ExclusionValidator)
+- `required: { one_of: [...] }` [Schema::Validator::RequiredValidator](rdoc-ref:GraphQL::Schema::Validator::RequiredValidator)
+- `allow_blank: true|false` [Schema::Validator::AllowBlankValidator](rdoc-ref:GraphQL::Schema::Validator::AllowBlankValidator)
+- `allow_null: true|false` [Schema::Validator::AllowNullValidator](rdoc-ref:GraphQL::Schema::Validator::AllowNullValidator)
+- `all: { ... }` [Schema::Validator::AllValidator](rdoc-ref:GraphQL::Schema::Validator::AllValidator)
 
 Some of the validators accept customizable messages for certain validation failures; see the API docs for examples.
 

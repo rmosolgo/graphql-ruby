@@ -38,7 +38,7 @@ class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription
 end
 ```
 
-Then, hook up the new class to the [Subscription root type](subscriptions/subscription_type) with the `subscription:` option:
+Then, hook up the new class to the [Subscription root type](/subscriptions/subscription_type) with the `subscription:` option:
 
 ```ruby
 class Types::SubscriptionType < Types::BaseObject
@@ -140,7 +140,7 @@ payload_type Types::MessageType
 
 ## Scope
 
-Usually, GraphQL-Ruby uses explicitly-passed arguments to determine when a [trigger](subscriptions/triggers) applies to an active subscription. But, you can use `subscription_scope` to configure _implicit_ conditions on updates. When `subscription_scope` is configured, only triggers with a matching `scope:` value will cause clients to receive updates.
+Usually, GraphQL-Ruby uses explicitly-passed arguments to determine when a [trigger](/subscriptions/triggers) applies to an active subscription. But, you can use `subscription_scope` to configure _implicit_ conditions on updates. When `subscription_scope` is configured, only triggers with a matching `scope:` value will cause clients to receive updates.
 
 `subscription_scope` accepts a symbol and the given symbol will be looked up in `context` to find a scope value.
 
@@ -183,7 +183,7 @@ MyAppSchema.subscriptions.trigger(
  )
 ```
 
-Scope is also used for determining whether subscribers can receive the same [broadcast](subscriptions/implementation#broadcast).
+Scope is also used for determining whether subscribers can receive the same [broadcast](/subscriptions/implementation#broadcasts).
 
 ## Check Permissions with #authorized?
 

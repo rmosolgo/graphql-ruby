@@ -11,6 +11,9 @@ module GraphQL
   extend Autoload
 
   # Load all `autoload`-configured classes, and also eager-load dependents who have autoloads of their own.
+  #
+  # This is useful during application boot when autoloading is disabled or
+  # when a framework needs to eager-load its namespaces.
   def self.eager_load!
     super
     Query.eager_load!
@@ -36,6 +39,11 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   end
 
   class << self
+    # Get the parser used by `GraphQL.parse` and `GraphQL.parse_file`.
+    #
+    # **Returns**
+    #
+    # - `Class` — the configured parser class
     def default_parser
       @default_parser ||= GraphQL::Language::Parser
     end

@@ -1,6 +1,6 @@
 # Active Operation Limiter
 
-`GraphQL::Enterprise::ActiveOperationLimiter` prevents clients from running too many GraphQL operations at the same time. It uses [Redis](limiters/redis) to track currently-running operations.
+`GraphQL::Enterprise::ActiveOperationLimiter` prevents clients from running too many GraphQL operations at the same time. It uses [Redis](/limiters/redis) to track currently-running operations.
 
 ## Why?
 

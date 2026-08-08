@@ -289,7 +289,7 @@ Input types (like input objects, scalars, and enums) work the same way with argu
 
 ## Schema Dumps
 
-To dump a certain _version_ of the schema, provide the applicable `context: ...` to [Schema.to_definition](rdoc-ref:Schema.to_definition). For example:
+To dump a certain _version_ of the schema, provide the applicable `context: ...` to [Schema.to_definition](rdoc-ref:GraphQL::Schema.to_definition). For example:
 
 ```ruby
 # Legacy money schema:

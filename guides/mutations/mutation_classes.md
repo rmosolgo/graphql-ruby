@@ -153,11 +153,11 @@ In the above examples, `loads:` is provided a concrete type, but it also support
 
 ### Resolving the type of loaded objects
 
-When `loads:` gets an object from [Schema.object_from_id](rdoc-ref:Schema.object_from_id), it passes that object to [Schema.resolve_type](rdoc-ref:Schema.resolve_type) to confirm that it resolves to the same type originally configured with `loads:`.
+When `loads:` gets an object from [Schema.object_from_id](rdoc-ref:GraphQL::Schema.object_from_id), it passes that object to [Schema.resolve_type](rdoc-ref:GraphQL::Schema.resolve_type) to confirm that it resolves to the same type originally configured with `loads:`.
 
 ### Handling failed loads
 
-If `loads:` fails to find an object or if the loaded object isn't resolved to the specified `loads:` type (using [Schema.resolve_type](rdoc-ref:Schema.resolve_type)), a [GraphQL::LoadApplicationObjectFailedError](rdoc-ref:GraphQL::LoadApplicationObjectFailedError) is raised and returned to the client.
+If `loads:` fails to find an object or if the loaded object isn't resolved to the specified `loads:` type (using [Schema.resolve_type](rdoc-ref:GraphQL::Schema.resolve_type)), a [GraphQL::LoadApplicationObjectFailedError](rdoc-ref:GraphQL::LoadApplicationObjectFailedError) is raised and returned to the client.
 
 You can customize this behavior by implementing `def load_application_object_failed` in your mutation class, for example:
 
@@ -171,7 +171,7 @@ Or, if `load_application_object_failed` returns a new object, that object will b
 
 ### Handling unauthorized loaded objects
 
-When an object is _loaded_ but fails its [`.authorized?` check](/authorization/authorization#object-authorization), a [GraphQL::UnauthorizedError](rdoc-ref:GraphQL::UnauthorizedError) is raised. By default, it's passed to [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object) (see [Handling Unauthorized Objects](/authorization/authorization.html#handling-unauthorized-objects)). You can customize this behavior by implementing `def unauthorized_object(err)` in your mutation, for example:
+When an object is _loaded_ but fails its [`.authorized?` check](/authorization/authorization#object-authorization), a [GraphQL::UnauthorizedError](rdoc-ref:GraphQL::UnauthorizedError) is raised. By default, it's passed to [Schema.unauthorized_object](rdoc-ref:GraphQL::Schema.unauthorized_object) (see [Handling Unauthorized Objects](/authorization/authorization.html#handling-unauthorized-objects)). You can customize this behavior by implementing `def unauthorized_object(err)` in your mutation, for example:
 
 ```ruby
 def unauthorized_object(error)

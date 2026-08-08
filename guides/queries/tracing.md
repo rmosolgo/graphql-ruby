@@ -1,6 +1,6 @@
 # Tracing
 
-[GraphQL::Tracing::Trace](rdoc-ref:GraphQL::Tracing::Trace) provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with [Schema.trace_with](rdoc-ref:Schema.trace_with).
+[GraphQL::Tracing::Trace](rdoc-ref:GraphQL::Tracing::Trace) provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with [Schema.trace_with](rdoc-ref:GraphQL::Schema.trace_with).
 
 ```ruby
 module CustomTrace
@@ -28,23 +28,23 @@ By default, GraphQL-Ruby makes a new trace instance when it runs a query. You ca
 
 ## Detailed Traces
 
-You can capture detailed traces of query execution with [Tracing::DetailedTrace](rdoc-ref:Tracing::DetailedTrace). They can be viewed in Google's [Perfetto Trace Viewer](https://ui.perfetto.dev). They include a per-Fiber breakdown with links between fields and Dataloader sources.
+You can capture detailed traces of query execution with [Tracing::DetailedTrace](rdoc-ref:GraphQL::Tracing::DetailedTrace). They can be viewed in Google's [Perfetto Trace Viewer](https://ui.perfetto.dev). They include a per-Fiber breakdown with links between fields and Dataloader sources.
 
 ![GraphQL-Ruby Dataloader Perfetto Trace](/queries/perfetto_example.png)
 
-Learn how to set it up in the [Tracing::DetailedTrace](rdoc-ref:Tracing::DetailedTrace) docs.
+Learn how to set it up in the [Tracing::DetailedTrace](rdoc-ref:GraphQL::Tracing::DetailedTrace) docs.
 
 ## External Monitoring Platforms
 
 There integrations for GraphQL-Ruby with several other monitoring systems:
 
-- `ActiveSupport::Notifications`: See [Tracing::ActiveSupportNotificationsTrace](rdoc-ref:Tracing::ActiveSupportNotificationsTrace).
+- `ActiveSupport::Notifications`: See [Tracing::ActiveSupportNotificationsTrace](rdoc-ref:GraphQL::Tracing::ActiveSupportNotificationsTrace).
 - [AppOptics](https://appoptics.com/) instrumentation is automatic in `appoptics_apm` v4.11.0+.
-- [AppSignal](https://appsignal.com/): See [Tracing::AppsignalTrace](rdoc-ref:Tracing::AppsignalTrace).
-- [Datadog](https://www.datadoghq.com): See [Tracing::DataDogTrace](rdoc-ref:Tracing::DataDogTrace).
-- [NewRelic](https://newrelic.com/): See [Tracing::NewRelicTrace](rdoc-ref:Tracing::NewRelicTrace).
-- [Prometheus](https://prometheus.io): See [Tracing::PrometheusTrace](rdoc-ref:Tracing::PrometheusTrace).
-- [Scout APM](https://www.scoutapm.com/): See [Tracing::ScoutTrace](rdoc-ref:Tracing::ScoutTrace).
-- [Sentry](https://sentry.io): See [Tracing::SentryTrace](rdoc-ref:Tracing::SentryTrace).
-- [Skylight](https://www.skylight.io):  either enable the [GraphQL probe](https://www.skylight.io/support/getting-more-from-skylight#graphql) or use [Tracing::ActiveSupportNotificationsTrace](rdoc-ref:Tracing::ActiveSupportNotificationsTrace).
-- Statsd: See [Tracing::StatsdTrace](rdoc-ref:Tracing::StatsdTrace).
+- [AppSignal](https://appsignal.com/): See [Tracing::AppsignalTrace](rdoc-ref:GraphQL::Tracing::AppsignalTrace).
+- [Datadog](https://www.datadoghq.com): See [Tracing::DataDogTrace](rdoc-ref:GraphQL::Tracing::DataDogTrace).
+- [NewRelic](https://newrelic.com/): See [Tracing::NewRelicTrace](rdoc-ref:GraphQL::Tracing::NewRelicTrace).
+- [Prometheus](https://prometheus.io): See [Tracing::PrometheusTrace](rdoc-ref:GraphQL::Tracing::PrometheusTrace).
+- [Scout APM](https://www.scoutapm.com/): See [Tracing::ScoutTrace](rdoc-ref:GraphQL::Tracing::ScoutTrace).
+- [Sentry](https://sentry.io): See [Tracing::SentryTrace](rdoc-ref:GraphQL::Tracing::SentryTrace).
+- [Skylight](https://www.skylight.io):  either enable the [GraphQL probe](https://www.skylight.io/support/getting-more-from-skylight#graphql) or use [Tracing::ActiveSupportNotificationsTrace](rdoc-ref:GraphQL::Tracing::ActiveSupportNotificationsTrace).
+- Statsd: See [Tracing::StatsdTrace](rdoc-ref:GraphQL::Tracing::StatsdTrace).

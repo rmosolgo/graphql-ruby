@@ -1,0 +1,18 @@
+/* graphql-ruby: graphql highlighter */
+pre.graphql .graphql-keyword { color: #8250df; font-weight: 600; }
+pre.graphql .graphql-literal { color: #cf222e; }
+pre.graphql .graphql-variable { color: #0550ae; }
+pre.graphql .graphql-directive { color: #953800; }
+pre.graphql .graphql-number { color: #0550ae; }
+pre.graphql .graphql-string { color: #0a3069; }
+pre.graphql .graphql-comment { color: #6e7781; font-style: italic; }
+pre.graphql .graphql-punctuation { color: #57606a; }
+@media (prefers-color-scheme: dark) {
+  pre.graphql .graphql-keyword { color: #d2a8ff; }
+  pre.graphql .graphql-literal { color: #ff7b72; }
+  pre.graphql .graphql-variable, pre.graphql .graphql-number { color: #79c0ff; }
+  pre.graphql .graphql-directive { color: #ffa657; }
+  pre.graphql .graphql-string { color: #a5d6ff; }
+  pre.graphql .graphql-comment { color: #8b949e; }
+  pre.graphql .graphql-punctuation { color: #c9d1d9; }
+}

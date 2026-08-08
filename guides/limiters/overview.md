@@ -11,6 +11,6 @@ There's some overlap in these limiters; both of them constrain the amount of _ti
 
 To get started, read on:
 
-- [Configure Redis](limiters/redis) for the limiters' backend
-- [Active Operation Limiter](limiters/active_operations)
-- [Runtime Limiter](limiters/runtime)
+- [Configure Redis](/limiters/redis) for the limiters' backend
+- [Active Operation Limiter](/limiters/active_operations)
+- [Runtime Limiter](/limiters/runtime)

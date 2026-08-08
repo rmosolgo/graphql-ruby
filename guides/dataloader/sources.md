@@ -129,7 +129,7 @@ See the [parallelism guide](/dataloader/parallelism) for details about this appr
 
 ## Filling the Dataloader Cache
 
-If you load records from the database, you can use them to populate a source's cache by using [Dataloader::Source#merge](rdoc-ref:Dataloader::Source#merge). For example:
+If you load records from the database, you can use them to populate a source's cache by using [Dataloader::Source#merge](rdoc-ref:GraphQL::Dataloader::Source#merge). For example:
 
 ```ruby
 # Build a `{ key => value }` map to populate the cache

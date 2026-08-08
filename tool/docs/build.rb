@@ -5,7 +5,10 @@ require "rubygems/package"
 require "open3"
 require "rdoc"
 require "tmpdir"
+require "pathname"
 require_relative "generator"
+require_relative "legacy"
+require_relative "redirects"
 
 module GraphQLDocs
   class Build
@@ -18,7 +21,11 @@ module GraphQLDocs
     end
 
     def build_site(output: "tmp/rdoc-site")
-      build(source_root: root, source_files: site_sources(root), output: output)
+      output_path = build(source_root: root, source_files: site_sources(root), output: output)
+      copy_guide_assets(output_path)
+      GraphQLDocs::LegacyAnchors.install(root: output_path)
+      GraphQLDocs::Redirects.generate(root: root, output: output_path)
+      output_path
     end
 
     def build_version(version, output: "tmp/rdoc-api/#{version}")
@@ -28,12 +35,14 @@ module GraphQLDocs
         gem_path = fetch_gem(version, directory)
         extracted = File.join(directory, "graphql-#{version}")
         Gem::Package.new(gem_path).extract_files(extracted)
-        build(
+        output_path = build(
           source_root: extracted,
           source_files: gem_sources(extracted),
           output: output,
           title: "GraphQL Ruby #{version} API Documentation",
         )
+        GraphQLDocs::LegacyAnchors.install(root: output_path)
+        output_path
       end
     end
 
@@ -54,17 +63,37 @@ module GraphQLDocs
         options.generator = RDoc::Generator::GraphQLRuby
         RDoc::RDoc.new.document(options)
       end
+      # RDoc writes a timestamped cache beside the generated site. It is not
+      # part of the published output and would make reproducibility checks
+      # fail on every build.
+      FileUtils.rm_f(File.join(output_path, "created.rid"))
       output_path
     end
 
     def site_sources(source_root)
       docs_root = File.join(source_root, "docs")
-      guides_root = Dir[File.join(docs_root, "**", "*.md")].empty? ? "guides" : "docs"
+      docs = Dir[File.join(docs_root, "**", "*.md")].reject { |path| generated_guide?(path) }
+      guides = Dir[File.join(source_root, "guides", "**", "*.md")].reject { |path| generated_guide?(path) }
       [
         "readme.md",
         *Dir[File.join("lib", "**", "*.rb")],
-        *Dir[File.join(guides_root, "**", "*.md")].reject { |path| generated_guide?(path) },
+        *docs,
+        *guides,
       ]
+    end
+
+    def copy_guide_assets(output_path)
+      extensions = %w[png gif jpg jpeg svg webp]
+      Dir[File.join(root, "guides", "**", "*")].select do |path|
+        File.file?(path) && extensions.include?(File.extname(path).delete_prefix(".").downcase)
+      end.each do |path|
+        relative = Pathname.new(path).relative_path_from(Pathname.new(root).join("guides")).to_s
+        destination = Pathname.new(output_path).join(relative)
+        FileUtils.mkdir_p(destination.dirname)
+        FileUtils.cp(path, destination)
+      end
+      cname = Pathname.new(root).join("guides/CNAME")
+      FileUtils.cp(cname, Pathname.new(output_path).join("CNAME")) if cname.file?
     end
 
     def gem_sources(source_root)
@@ -75,7 +104,8 @@ module GraphQLDocs
     end
 
     def generated_guide?(path)
-      path.match?(%r{\A(?:guides|docs)/(?:_site|yardoc|_includes|_layouts|_plugins)/})
+      relative = Pathname.new(path).expand_path.relative_path_from(Pathname.new(root)).to_s
+      relative.match?(%r{\A(?:guides|docs)/(?:_site|yardoc|_includes|_layouts|_plugins)(?:/|\z)})
     end
 
     def absolute_path(path)

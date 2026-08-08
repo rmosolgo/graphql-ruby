@@ -113,9 +113,9 @@ field :salary, Integer, null: false,
 After that:
 
 - the configured object's `.directives` method will return an array containing an instance of the specified directive
-- IDL dumps (from [Schema.to_definition](rdoc-ref:Schema.to_definition)) will include the configured directives
+- IDL dumps (from [Schema.to_definition](rdoc-ref:GraphQL::Schema.to_definition)) will include the configured directives
 
-Similarly, [Schema.from_definition](rdoc-ref:Schema.from_definition) parses directives from IDL strings.
+Similarly, [Schema.from_definition](rdoc-ref:GraphQL::Schema.from_definition) parses directives from IDL strings.
 
 For a couple of built-in examples, check out:
 

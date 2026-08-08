@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
     "rubygems_mfa_required" => "true",
   }
 
-  s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".rdoc_options", ".yardopts"]
+  s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".rdoc_options"]
 
   s.add_runtime_dependency "base64"
   s.add_runtime_dependency "fiber-storage"
@@ -45,7 +45,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "simplecov"
   s.add_development_dependency "simplecov-lcov"
   s.add_development_dependency "undercover"
-  s.add_development_dependency "yard"
   s.add_development_dependency "m", "~> 1.5.0"
   s.add_development_dependency "mutex_m"
   s.add_development_dependency "webrick"
