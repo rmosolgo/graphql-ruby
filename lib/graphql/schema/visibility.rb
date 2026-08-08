@@ -14,10 +14,12 @@ module GraphQL
           super(message)
         end
       end
-      # @param schema [Class<GraphQL::Schema>]
-      # @param profiles [Hash<Symbol => Hash>] A hash of `name => context` pairs for preloading visibility profiles
-      # @param preload [Boolean] if `true`, load the default schema profile and all named profiles immediately (defaults to `true` for `Rails.env.production?` and `Rails.env.staging?`)
-      # @param migration_errors [Boolean] if `true`, raise an error when `Visibility` and `Warden` return different results
+      # **Parameters**
+      #
+      # - `schema` (`Class<GraphQL::Schema>`)
+      # - `profiles` (`Hash<Symbol => Hash>`) — A hash of `name => context` pairs for preloading visibility profiles
+      # - `preload` (`Boolean`) — if `true`, load the default schema profile and all named profiles immediately (defaults to `true` for `Rails.env.production?` and `Rails.env.staging?`)
+      # - `migration_errors` (`Boolean`) — if `true`, raise an error when `Visibility` and `Warden` return different results
       def self.use(schema, dynamic: false, profiles: EmptyObjects::EMPTY_HASH, preload: (defined?(Rails.env) ? (Rails.env.production? || Rails.env.staging? || nil) : false), migration_errors: false)
         profiles&.each { |name, ctx|
           ctx[:visibility_profile] = name
@@ -108,34 +110,37 @@ module GraphQL
         end
       end
 
-      # @api private
+      # **API:** private
       def query_configured(query_type)
         require_if_preloaded("a query type was", "query(...)")
       end
 
-      # @api private
+      # **API:** private
       def mutation_configured(mutation_type)
         require_if_preloaded("a mutation type was", "mutation(...)")
       end
 
-      # @api private
+      # **API:** private
       def subscription_configured(subscription_type)
         require_if_preloaded("a mutation type was", "subscription(...)")
       end
 
-      # @api private
+      # **API:** private
       def orphan_types_configured(orphan_types)
         require_if_preloaded("orphan types were", "orphan_types(...)")
       end
 
-      # @api private
+      # **API:** private
       def introspection_system_configured(introspection_system)
         require_if_preloaded("custom introspection was", "introspection(...)")
       end
 
       # Make another Visibility for `schema` based on this one
-      # @return [Visibility]
-      # @api private
+      # **API:** private
+      #
+      # **Returns**
+      #
+      # - `Visibility`
       def dup_for(other_schema)
         self.class.new(
           other_schema,
@@ -179,7 +184,7 @@ module GraphQL
 
       attr_reader :top_level
 
-      # @api private
+      # **API:** private
       attr_reader :unfiltered_interface_type_memberships
 
       def top_level_profile(refresh: false)

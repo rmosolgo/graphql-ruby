@@ -6,17 +6,25 @@ module GraphQL
     #
     # Attach as a plugin.
     #
-    # @example Adding a custom wrapper
-    #   class MySchema < GraphQL::Schema
-    #     connections.add(MyApp::SearchResults, MyApp::SearchResultsConnection)
-    #   end
+    # See [Schema.connections](rdoc-ref:Schema.connections)
     #
-    # @example Removing default connection support for arrays (they can still be manually wrapped)
-    #   class MySchema < GraphQL::Schema
-    #     connections.delete(Array)
-    #   end
+    # **Examples**
     #
-    # @see {Schema.connections}
+    # **Example: Adding a custom wrapper**
+    #
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   connections.add(MyApp::SearchResults, MyApp::SearchResultsConnection)
+    # end
+    # ```
+    #
+    # **Example: Removing default connection support for arrays (they can still be manually wrapped)**
+    #
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   connections.delete(Array)
+    # end
+    # ```
     class Connections
       class ImplementationMissingError < GraphQL::Error
       end
@@ -57,7 +65,7 @@ module GraphQL
       end
 
       # Used by the runtime to wrap values in connection wrappers.
-      # @api Private
+      # **API:** Private
       def wrap(field, parent, items, arguments, context)
         return items if GraphQL::Execution::Interpreter::RawValue === items
         wrappers = context ? context.namespace(:connections)[:all_wrappers] : all_wrappers
@@ -114,7 +122,7 @@ module GraphQL
         end
       end
       # use an override if there is one
-      # @api private
+      # **API:** private
       def edge_class_for_field(field)
         conn_type = field.type.unwrap
         conn_type_edge_type = conn_type.respond_to?(:edge_class) && conn_type.edge_class

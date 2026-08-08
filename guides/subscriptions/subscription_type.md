@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Subscriptions
-title: Subscription Type
-desc: The root type for subscriptions
-index: 1
----
+# Subscription Type
 
 `Subscription` is the entry point for all subscriptions in a GraphQL system. Each field corresponds to an event which may be subscribed to:
 
@@ -57,6 +49,6 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-See {% internal_link "Implementing Subscriptions","subscriptions/implementation" %} for more about actually delivering updates.
+See [Implementing Subscriptions](subscriptions/implementation) for more about actually delivering updates.
 
-See {% internal_link "Subscription Classes", "subscriptions/subscription_classes" %} for more about implementing subscription root fields.
+See [Subscription Classes](subscriptions/subscription_classes) for more about implementing subscription root fields.

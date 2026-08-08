@@ -6,13 +6,16 @@ module GraphQL
     module GraphQL
       # Identify (and auto-correct) any root types in your schema file.
       #
-      # @example
-      #   # bad, immediately causes Rails to load `app/graphql/types/query.rb`
-      #   query Types::Query
+      # **Examples**
       #
-      #   # good, defers loading until the file is needed
-      #   query { Types::Query }
+      # **Example: # bad, immediately causes Rails to load `app/graphql/types/query.rb`**
       #
+      # ```ruby
+      # query Types::Query
+      #
+      # # good, defers loading until the file is needed
+      # query { Types::Query }
+      # ```
       class RootTypesInBlock < BaseCop
         MSG = "type configuration can be moved to a block to defer loading the type's file"
 

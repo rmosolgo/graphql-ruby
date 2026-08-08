@@ -122,10 +122,14 @@ module GraphQL
         end
       end
 
-      # @return [GraphQL::Schema::Field, GraphQL::Schema::Argument, Class, Module]
+      # **Returns**
+      #
+      # - `GraphQL::Schema::Field, GraphQL::Schema::Argument, Class, Module`
       attr_reader :owner
 
-      # @return [GraphQL::Interpreter::Arguments]
+      # **Returns**
+      #
+      # - `GraphQL::Interpreter::Arguments`
       attr_reader :arguments
 
       class InvalidArgumentError < GraphQL::Error

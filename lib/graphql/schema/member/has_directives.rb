@@ -18,7 +18,9 @@ module GraphQL
         #
         # It removes a previously-attached instance of `dir_class`, if there is one.
         #
-        # @return [void]
+        # **Returns**
+        #
+        # - `void`
         def directive(dir_class, **options)
           @own_directives ||= []
           HasDirectives.add_directive(self, @own_directives, dir_class, options)
@@ -26,8 +28,14 @@ module GraphQL
         end
 
         # Remove an attached instance of `dir_class`, if there is one
-        # @param dir_class [Class<GraphQL::Schema::Directive>]
-        # @return [viod]
+        #
+        # **Parameters**
+        #
+        # - `dir_class` (`Class<GraphQL::Schema::Directive>`)
+        #
+        # **Returns**
+        #
+        # - `viod`
         def remove_directive(dir_class)
           HasDirectives.remove_directive(@own_directives, dir_class)
           nil
@@ -93,9 +101,15 @@ module GraphQL
           # Modify `target` by adding items from `dirs` such that:
           # - Any name conflict is overridden by the incoming member of `dirs`
           # - Any other member of `dirs` is appended
-          # @param target [Array<GraphQL::Schema::Directive>]
-          # @param dirs [Array<GraphQL::Schema::Directive>]
-          # @return [void]
+          #
+          # **Parameters**
+          #
+          # - `target` (`Array<GraphQL::Schema::Directive>`)
+          # - `dirs` (`Array<GraphQL::Schema::Directive>`)
+          #
+          # **Returns**
+          #
+          # - `void`
           def merge_directives(target, dirs)
             dirs.each do |dir|
               if (idx = target.find_index { |d| d.graphql_name == dir.graphql_name })

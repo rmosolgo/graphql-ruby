@@ -1,11 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-title: Getting Started
-section: Other
-desc: Start here!
----
+# Getting Started
 
 ## Installation
 
@@ -106,7 +99,7 @@ class Schema < GraphQL::Schema
 end
 ```
 
-This schema is ready to serve GraphQL queries! {% internal_link "Browse the guides","/guides" %} to learn about other GraphQL Ruby features.
+This schema is ready to serve GraphQL queries! [Browse the guides](/guides) to learn about other GraphQL Ruby features.
 
 ### Execute queries
 
@@ -133,14 +126,14 @@ result_hash = Schema.execute(query_string)
 # }
 ```
 
-See {% internal_link "Executing Queries","/queries/executing_queries" %} for more information about running queries on your schema.
+See [Executing Queries](/queries/executing_queries) for more information about running queries on your schema.
 
 ## Use with Relay
 
 If you're building a backend for [Relay](https://facebook.github.io/relay/), you'll need:
 
 - A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
-- Relay-specific helpers for GraphQL, see the {% internal_link "Connection guide", "/pagination/connection_concepts" %}, {% internal_link "Mutation guide", "mutations/mutation_classes" %}, and {% internal_link "Object Identification guide", "/schema/object_identification" %}.
+- Relay-specific helpers for GraphQL, see the [Connection guide](/pagination/connection_concepts), [Mutation guide](mutations/mutation_classes), and [Object Identification guide](/schema/object_identification).
 
 ## Use with Apollo Client
 

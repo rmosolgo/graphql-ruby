@@ -16,7 +16,9 @@ module GraphQL
         'execute_query_lazy' => "graphql.execute_query_lazy",
       }
 
-      # @param statsd [Object] A statsd client
+      # **Parameters**
+      #
+      # - `statsd` (`Object`) — A statsd client
       def initialize(statsd:, **rest)
         @statsd = statsd
         super(**rest)

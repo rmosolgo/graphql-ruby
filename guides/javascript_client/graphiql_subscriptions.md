@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: JavaScript Client
-title: GraphiQL Subscriptions
-desc: Testing GraphQL subscriptions in the GraphiQL IDE
-index: 5
----
+# GraphiQL Subscriptions
 
 After setting up your server, you can integrate subscriptions into [GraphiQL](https://github.com/graphql/graphiql/tree/main/packages/graphiql#readme), the in-browser GraphQL IDE.
 
@@ -37,7 +29,7 @@ After that, you should be able to load the page in your app and see the GraphiQL
 
 ## Ably
 
-To integrate {% internal_link "Ably subscriptions", "subscriptions/ably_implementation" %}, use `createAblyFetcher`,  for example:
+To integrate [Ably subscriptions](subscriptions/ably_implementation), use `createAblyFetcher`,  for example:
 
 ```js
 import Ably from "ably"
@@ -57,7 +49,7 @@ Under the hood, it will use `window.fetch` to send GraphQL operations to the ser
 
 ## Pusher
 
-To integrate {% internal_link "Pusher subscriptions", "subscriptions/pusher_implementation" %}, use `createPusherFetcher`,  for example:
+To integrate [Pusher subscriptions](subscriptions/pusher_implementation), use `createPusherFetcher`,  for example:
 
 ```js
 import Pusher from "pusher-js"
@@ -76,7 +68,7 @@ Under the hood, it will use `window.fetch` to send GraphQL operations to the ser
 
 ## ActionCable
 
-To integrate {% internal_link "ActionCable subscriptions", "subscriptions/action_cable_implementation" %}, use `createActionCableFetcher`,  for example:
+To integrate [ActionCable subscriptions](subscriptions/action_cable_implementation), use `createActionCableFetcher`,  for example:
 
 ```js
 import { createConsumer } from "@rails/actioncable"

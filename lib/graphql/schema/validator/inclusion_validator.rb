@@ -5,16 +5,21 @@ module GraphQL
     class Validator
       # You can use this to allow certain values for an argument.
       #
-      # Usually, a {GraphQL::Schema::Enum} is better for this, because it's self-documenting.
+      # Usually, a [GraphQL::Schema::Enum](rdoc-ref:GraphQL::Schema::Enum) is better for this, because it's self-documenting.
       #
-      # @example only allow certain values for an argument
+      # **Examples**
       #
-      #   argument :favorite_prime, Integer, required: true,
-      #     validates: { inclusion: { in: [2, 3, 5, 7, 11, ... ] } }
+      # **Example: only allow certain values for an argument**
       #
+      # ```ruby
+      # argument :favorite_prime, Integer, required: true,
+      #   validates: { inclusion: { in: [2, 3, 5, 7, 11, ... ] } }
+      # ```
       class InclusionValidator < Validator
-        # @param message [String]
-        # @param in [Array] The values to allow
+        # **Parameters**
+        #
+        # - `message` (`String`)
+        # - `in` (`Array`) — The values to allow
         def initialize(in:, message: "%{validated} is not included in the list", **default_options)
           # `in` is a reserved word, so work around that
           @in_list = binding.local_variable_get(:in)

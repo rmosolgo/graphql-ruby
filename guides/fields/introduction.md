@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Fields
-title: Introduction
-desc: Implement fields and resolvers with the Ruby DSL
-index: 0
----
-
+# Introduction
 
 Object fields expose data about that object or connect the object to other objects. You can add fields to your object types with the `field(...)` class method, for example:
 
@@ -15,7 +6,7 @@ Object fields expose data about that object or connect the object to other objec
 field :name, String, "The unique name of this list", null: false
 ```
 
-{% internal_link "Objects", "/type_definitions/objects" %} and {% internal_link "Interfaces", "/type_definitions/interfaces" %} have fields.
+[Objects](/type_definitions/objects) and [Interfaces](/type_definitions/interfaces) have fields.
 
 The different elements of field definition are addressed below:
 
@@ -47,9 +38,9 @@ The second argument to `field(...)` is the return type. This can be:
 
 - A built-in GraphQL type (`Integer`, `Float`, `String`, `ID`, or `Boolean`)
 - A GraphQL type from your application
-- An _array_ of any of the above, which denotes a {% internal_link "list type", "/type_definitions/lists" %}.
+- An _array_ of any of the above, which denotes a [list type](/type_definitions/lists).
 
-{% internal_link "Nullability", "/type_definitions/non_nulls" %} is expressed with the `null:` keyword:
+[Nullability](/type_definitions/non_nulls) is expressed with the `null:` keyword:
 
 - `null: true` (default) means that the field _may_ return `nil`
 - `null: false` means the field is non-nullable; it may not return `nil`. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
@@ -220,7 +211,7 @@ _Arguments_ allow fields to take input to their resolution. For example:
 - A `user()` field may take an `id:` argument, which specifies which user to find, eg `user(id: 1)`
 - An `attachments()` field may take a `type:` argument, which filters the result by file type, eg `attachments(type: PHOTO)`
 
-Read more in the {% internal_link "Arguments guide", "/fields/arguments" %}
+Read more in the [Arguments guide](/fields/arguments)
 
 ## Extra Field Metadata
 
@@ -231,9 +222,9 @@ A few `extras` are available:
 - `ast_node`
 - `graphql_name` (the field's name)
 - `owner` (the type that this field belongs to)
-- `lookahead` (see {% internal_link "Lookahead", "/queries/lookahead" %})
+- `lookahead` (see [Lookahead](/queries/lookahead))
 - `execution_errors`, whose `#add(err_or_msg)` method should be used for adding errors
-- `argument_details` (Interpreter only), an instance of {{ "GraphQL::Execution::Interpreter::Arguments" | api_doc }} with argument metadata
+- `argument_details` (Interpreter only), an instance of [GraphQL::Execution::Interpreter::Arguments](rdoc-ref:GraphQL::Execution::Interpreter::Arguments) with argument metadata
 - `parent` (the previous `object` in the query)
 - Custom extras, see below
 

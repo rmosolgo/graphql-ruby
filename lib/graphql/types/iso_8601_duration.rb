@@ -16,20 +16,32 @@ module GraphQL
     class ISO8601Duration < GraphQL::Schema::Scalar
       description "An ISO 8601-encoded duration"
 
-      # @return [Integer, nil]
+      # **Returns**
+      #
+      # - `Integer, nil`
       def self.seconds_precision
         # ActiveSupport::Duration precision defaults to whatever input was given
         @seconds_precision
       end
 
-      # @param [Integer, nil] value
+      # **Parameters**
+      #
+      # - `value` (`Integer, nil`)
       def self.seconds_precision=(value)
         @seconds_precision = value
       end
 
-      # @param value [ActiveSupport::Duration, String]
-      # @return [String]
-      # @raise [GraphQL::Error] if ActiveSupport::Duration is not defined or if an incompatible object is passed
+      # **Parameters**
+      #
+      # - `value` (`ActiveSupport::Duration, String`)
+      #
+      # **Returns**
+      #
+      # - `String`
+      #
+      # **Raises**
+      #
+      # - `GraphQL::Error` — if ActiveSupport::Duration is not defined or if an incompatible object is passed
       def self.coerce_result(value, _ctx)
         unless defined?(ActiveSupport::Duration)
           raise GraphQL::Error, "ActiveSupport >= 5.0 must be loaded to use the built-in ISO8601Duration type."
@@ -50,10 +62,18 @@ module GraphQL
         end
       end
 
-      # @param value [String, ActiveSupport::Duration]
-      # @return [ActiveSupport::Duration, nil]
-      # @raise [GraphQL::Error] if ActiveSupport::Duration is not defined
-      # @raise [GraphQL::DurationEncodingError] if duration cannot be parsed
+      # **Parameters**
+      #
+      # - `value` (`String, ActiveSupport::Duration`)
+      #
+      # **Returns**
+      #
+      # - `ActiveSupport::Duration, nil`
+      #
+      # **Raises**
+      #
+      # - `GraphQL::Error` — if ActiveSupport::Duration is not defined
+      # - `GraphQL::DurationEncodingError` — if duration cannot be parsed
       def self.coerce_input(value, ctx)
         unless defined?(ActiveSupport::Duration)
           raise GraphQL::Error, "ActiveSupport >= 5.0 must be loaded to use the built-in ISO8601Duration type."

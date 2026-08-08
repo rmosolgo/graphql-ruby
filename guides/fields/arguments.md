@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Fields
-title: Arguments
-desc: Fields may take arguments as inputs
-index: 1
----
+# Arguments
 
 Fields can take **arguments** as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in `MutationType`).
 
@@ -169,8 +161,8 @@ end
 
 Only certain types are valid for arguments:
 
-- {{ "GraphQL::Schema::Scalar" | api_doc }}, including built-in scalars (string, int, float, boolean, ID)
-- {{ "GraphQL::Schema::Enum" | api_doc }}
-- {{ "GraphQL::Schema::InputObject" | api_doc }}, which allows key-value pairs as input
-- {{ "GraphQL::Schema::List" | api_doc }}s of a valid input type, configured using `[...]`
-- {{ "GraphQL::Schema::NonNull" | api_doc }}s of a valid input type (arguments are non-null by default; use `required: false` to make optional arguments)
+- [GraphQL::Schema::Scalar](rdoc-ref:GraphQL::Schema::Scalar), including built-in scalars (string, int, float, boolean, ID)
+- [GraphQL::Schema::Enum](rdoc-ref:GraphQL::Schema::Enum)
+- [GraphQL::Schema::InputObject](rdoc-ref:GraphQL::Schema::InputObject), which allows key-value pairs as input
+- [GraphQL::Schema::List](rdoc-ref:GraphQL::Schema::List)s of a valid input type, configured using `[...]`
+- [GraphQL::Schema::NonNull](rdoc-ref:GraphQL::Schema::NonNull)s of a valid input type (arguments are non-null by default; use `required: false` to make optional arguments)

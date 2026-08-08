@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Mutations
-title: Mutation errors
-desc: Tips for handling and returning errors from mutations
-index: 2
----
+# Mutation errors
 
 How can you handle errors inside mutations? Let's explore a couple of options.
 

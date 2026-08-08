@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Schema
-title: Root Types
-desc: Root types are the entry points for queries, mutations and subscriptions.
-index: 2
----
+# Root Types
 
 GraphQL queries begin from [root types](https://graphql.org/learn/schema/#the-query-mutation-and-subscription-types): `query`, `mutation`, and `subscription`.
 

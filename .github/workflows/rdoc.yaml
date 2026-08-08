@@ -1,0 +1,38 @@
+name: RDoc Documentation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  BUNDLE_WITH: docs:jekyll_plugins
+
+jobs:
+  build:
+    name: Build and verify RDoc documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - name: Build legacy YARD documentation
+        run: bundle exec rake site:build_doc
+      - name: Build shadow RDoc site
+        run: bundle exec rake docs:rdoc:build
+      - name: Check API compatibility
+        run: bundle exec ruby tool/docs/compatibility.rb --rdoc tmp/rdoc-site/js/search_data.js --allowlist docs/api_exceptions.yml --json tmp/rdoc-api-compatibility.json
+      - name: Check generated links
+        run: bundle exec ruby tool/docs/link_checker.rb --root tmp/rdoc-site --json tmp/rdoc-link-report.json
+      - name: Upload RDoc artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rdoc-site
+          path: |
+            tmp/rdoc-site
+            tmp/rdoc-api-compatibility.json
+            tmp/rdoc-link-report.json

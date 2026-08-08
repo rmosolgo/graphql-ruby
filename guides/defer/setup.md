@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro - Defer
-title: Server Setup
-desc: Configuring the schema and server to use @defer
-index: 1
-pro: true
----
+# Server Setup
 
 Before using `@defer` in queries, you have to:
 
@@ -45,7 +36,7 @@ end
 
 This will:
 
-- Attach a {% internal_link "custom directive", "/type_definitions/directives" %} called `@defer`
+- Attach a [custom directive](/type_definitions/directives) called `@defer`
 - Add instrumentation to queries to track deferred work and execute it later
 
 ## Sending streaming responses
@@ -58,7 +49,7 @@ Many web frameworks have support for streaming responses, for example:
 
 See below for how to integrate GraphQL's deferred patches with a streaming response API.
 
-To investigate support with a web framework, please {% open_an_issue "Server support for @defer with ..." %} or email `support@graphql.pro`.
+To investigate support with a web framework, please [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?title=Server+support+for+%40defer+with+...&body=) or email `support@graphql.pro`.
 
 ### Checking for deferrals
 
@@ -166,4 +157,4 @@ use Directives::Defer
 ```
 ## Next Steps
 
-Read about {% internal_link "client usage", "/defer/usage" %} of `@defer`.
+Read about [client usage](/defer/usage) of `@defer`.

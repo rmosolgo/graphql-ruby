@@ -2,13 +2,18 @@
 module GraphQL
   class Schema
     class Member
-      # @api private
+      # **API:** private
       module BuildType
         LIST_TYPE_ERROR = "Use an array of [T] or [T, null: true] for list types; other arrays are not supported"
 
         module_function
-        # @param type_expr [String, Class, GraphQL::BaseType]
-        # @return [GraphQL::BaseType]
+        # **Parameters**
+        #
+        # - `type_expr` (`String, Class, GraphQL::BaseType`)
+        #
+        # **Returns**
+        #
+        # - `GraphQL::BaseType`
         def parse_type(type_expr, null:)
           list_type = false
 

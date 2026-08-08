@@ -3,8 +3,8 @@
 module GraphQL
   class Dataloader
     class Source
-      # Called by {Dataloader} to prepare the {Source}'s internal state
-      # @api private
+      # Called by [Dataloader](rdoc-ref:Dataloader) to prepare the [Source](rdoc-ref:Source)'s internal state
+      # **API:** private
       def setup(dataloader)
         # These keys have been requested but haven't been fetched yet
         @pending = {}
@@ -17,7 +17,9 @@ module GraphQL
 
       attr_reader :dataloader
 
-      # @return [Dataloader::Request] a pending request for a value from `key`. Call `.load` on that object to wait for the result.
+      # **Returns**
+      #
+      # - `Dataloader::Request` — a pending request for a value from `key`. Call `.load` on that object to wait for the result.
       def request(value)
         res_key = result_key_for(value)
         add_pending_key(res_key, value)
@@ -27,25 +29,37 @@ module GraphQL
       # Implement this method to return a stable identifier if different
       # key objects should load the same data value.
       #
-      # @param value [Object] A value passed to `.request` or `.load`, for which a value will be loaded
-      # @return [Object] The key for tracking this pending data
+      # **Parameters**
+      #
+      # - `value` (`Object`) — A value passed to `.request` or `.load`, for which a value will be loaded
+      #
+      # **Returns**
+      #
+      # - `Object` — The key for tracking this pending data
       def result_key_for(value)
         value
       end
 
-      # Implement this method if varying values given to {load} (etc) should be consolidated
-      # or normalized before being handed off to your {fetch} implementation.
+      # Implement this method if varying values given to [load](rdoc-ref:load) (etc) should be consolidated
+      # or normalized before being handed off to your [fetch](rdoc-ref:fetch) implementation.
       #
-      # This is different than {result_key_for} because _that_ method handles unification inside Dataloader's cache,
-      # but this method changes the value passed into {fetch}.
+      # This is different than [result_key_for](rdoc-ref:result_key_for) because _that_ method handles unification inside Dataloader's cache,
+      # but this method changes the value passed into [fetch](rdoc-ref:fetch).
       #
-      # @param value [Object] The value passed to {load}, {load_all}, {request}, or {request_all}
-      # @return [Object] The value given to {fetch}
+      # **Parameters**
+      #
+      # - `value` (`Object`) — The value passed to [load](rdoc-ref:load), [load_all](rdoc-ref:load_all), [request](rdoc-ref:request), or [request_all](rdoc-ref:request_all)
+      #
+      # **Returns**
+      #
+      # - `Object` — The value given to [fetch](rdoc-ref:fetch)
       def normalize_fetch_key(value)
         value
       end
 
-      # @return [Dataloader::Request] a pending request for a values from `keys`. Call `.load` on that object to wait for the results.
+      # **Returns**
+      #
+      # - `Dataloader::Request` — a pending request for a values from `keys`. Call `.load` on that object to wait for the results.
       def request_all(values)
         values.each do |v|
           res_key = result_key_for(v)
@@ -54,8 +68,13 @@ module GraphQL
         Dataloader::RequestAll.new(self, values)
       end
 
-      # @param value [Object] A loading value which will be passed to {#fetch} if it isn't already in the internal cache.
-      # @return [Object] The result from {#fetch} for `key`. If `key` hasn't been loaded yet, the Fiber will yield until it's loaded.
+      # **Parameters**
+      #
+      # - `value` (`Object`) — A loading value which will be passed to [fetch](rdoc-ref:#fetch) if it isn't already in the internal cache.
+      #
+      # **Returns**
+      #
+      # - `Object` — The result from [fetch](rdoc-ref:#fetch) for `key`. If `key` hasn't been loaded yet, the Fiber will yield until it's loaded.
       def load(value)
         result_key = result_key_for(value)
         if @results.key?(result_key)
@@ -67,8 +86,13 @@ module GraphQL
         end
       end
 
-      # @param values [Array<Object>] Loading keys which will be passed to `#fetch` (or read from the internal cache).
-      # @return [Object] The result from {#fetch} for `keys`. If `keys` haven't been loaded yet, the Fiber will yield until they're loaded.
+      # **Parameters**
+      #
+      # - `values` (`Array<Object>`) — Loading keys which will be passed to `#fetch` (or read from the internal cache).
+      #
+      # **Returns**
+      #
+      # - `Object` — The result from [fetch](rdoc-ref:#fetch) for `keys`. If `keys` haven't been loaded yet, the Fiber will yield until they're loaded.
       def load_all(values)
         result_keys = []
         pending_keys = []
@@ -89,8 +113,14 @@ module GraphQL
       end
 
       # Subclasses must implement this method to return a value for each of `keys`
-      # @param keys [Array<Object>] keys passed to {#load}, {#load_all}, {#request}, or {#request_all}
-      # @return [Array<Object>] A loaded value for each of `keys`. The array must match one-for-one to the list of `keys`.
+      #
+      # **Parameters**
+      #
+      # - `keys` (`Array<Object>`) — keys passed to [load](rdoc-ref:#load), [load all](rdoc-ref:#load_all), [request](rdoc-ref:#request), or [request all](rdoc-ref:#request_all)
+      #
+      # **Returns**
+      #
+      # - `Array<Object>` — A loaded value for each of `keys`. The array must match one-for-one to the list of `keys`.
       def fetch(keys)
         # somehow retrieve these from the backend
         raise "Implement `#{self.class}#fetch(#{keys.inspect}) to return a record for each of the keys"
@@ -99,7 +129,10 @@ module GraphQL
       MAX_ITERATIONS = 1000
       # Wait for a batch, if there's anything to batch.
       # Then run the batch and update the cache.
-      # @return [void]
+      #
+      # **Returns**
+      #
+      # - `void`
       def sync(pending_result_keys)
         @dataloader.queue_pending_source(self) if pending?
         @dataloader.yield(self)
@@ -114,15 +147,23 @@ module GraphQL
         nil
       end
 
-      # @return [Boolean] True if this source has any pending requests for data.
+      # **Returns**
+      #
+      # - `Boolean` — True if this source has any pending requests for data.
       def pending?
         !@pending.empty?
       end
 
       # Add these key-value pairs to this source's cache
       # (future loads will use these merged values).
-      # @param new_results [Hash<Object => Object>] key-value pairs to cache in this source
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `new_results` (`Hash<Object => Object>`) — key-value pairs to cache in this source
+      #
+      # **Returns**
+      #
+      # - `void`
       def merge(new_results)
         new_results.each do |new_k, new_v|
           key = result_key_for(new_k)
@@ -131,9 +172,12 @@ module GraphQL
         nil
       end
 
-      # Called by {GraphQL::Dataloader} to resolve and pending requests to this source.
-      # @api private
-      # @return [void]
+      # Called by [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) to resolve and pending requests to this source.
+      # **API:** private
+      #
+      # **Returns**
+      #
+      # - `void`
       def run_pending_keys
         @fetching.each_key { |k| @pending.delete(k) }
         return if @pending.empty?
@@ -167,9 +211,14 @@ module GraphQL
       # this method to call `.to_sql` on them, thus merging `.load(...)` calls when they apply
       # to equivalent relations.
       #
-      # @param batch_args [Array<Object>]
-      # @param batch_kwargs [Hash]
-      # @return [Object]
+      # **Parameters**
+      #
+      # - `batch_args` (`Array<Object>`)
+      # - `batch_kwargs` (`Hash`)
+      #
+      # **Returns**
+      #
+      # - `Object`
       def self.batch_key_for(*batch_args, **batch_kwargs)
         if batch_kwargs.any? # rubocop:disable Development/NoneWithoutBlockCop
           [*batch_args, **batch_kwargs]
@@ -179,7 +228,10 @@ module GraphQL
       end
 
       # Clear any already-loaded objects for this source
-      # @return [void]
+      #
+      # **Returns**
+      #
+      # - `void`
       def clear_cache
         @results.clear
         nil
@@ -199,9 +251,15 @@ module GraphQL
       end
 
       # Reads and returns the result for the key from the internal cache, or raises an error if the result was an error
-      # @param key [Object] key passed to {#load} or {#load_all}
-      # @return [Object] The result from {#fetch} for `key`.
-      # @api private
+      # **API:** private
+      #
+      # **Parameters**
+      #
+      # - `key` (`Object`) — key passed to [load](rdoc-ref:#load) or [load all](rdoc-ref:#load_all)
+      #
+      # **Returns**
+      #
+      # - `Object` — The result from [fetch](rdoc-ref:#fetch) for `key`.
       def result_for(key)
         if !@results.key?(key)
           raise GraphQL::InvariantError, <<-ERR

@@ -16,9 +16,9 @@ module GraphQL
         "execute_query_lazy" => "execute.graphql",
       }
 
-      # @param set_action_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
-      #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
-      #   It can also be specified per-query with `context[:set_appsignal_action_name]`.
+      # **Parameters**
+      #
+      # - `set_action_name` (`Boolean`) — If true, the GraphQL operation name will be used as the transaction name. This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing. It can also be specified per-query with `context[:set_appsignal_action_name]`.
       def initialize(options = {})
         @set_action_name = options.fetch(:set_action_name, false)
         super

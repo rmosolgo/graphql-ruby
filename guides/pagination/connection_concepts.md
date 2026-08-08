@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Pagination
-title: Connection Concepts
-desc: Introduction to Connections
-index: 1
----
+# Connection Concepts
 
 __Connections__ are a pagination solution which started with [Relay JS](https://facebook.github.io/relay), but now it's used for almost any GraphQL API.
 
@@ -52,7 +44,7 @@ Connections are often generated from object types. Their list items, called _nod
 
 ##### Connection metadata
 
-Connections can tell you about the list in general. For example, if you {% internal_link "add a total count field", "type_definitions/extensions#customizing-connections" %}, they can tell you the count:
+Connections can tell you about the list in general. For example, if you [add a total count field](type_definitions/extensions#customizing-connections), they can tell you the count:
 
 ```ruby
 {

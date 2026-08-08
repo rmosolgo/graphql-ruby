@@ -76,7 +76,9 @@ module GraphQL
 
       private
 
-      # @return [Array<Integer>] Positions of each line break in the original string
+      # **Returns**
+      #
+      # - `Array<Integer>` — Positions of each line break in the original string
       def lines_at
         @lines_at ||= begin
           la = []

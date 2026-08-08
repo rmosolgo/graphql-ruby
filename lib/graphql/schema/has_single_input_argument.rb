@@ -111,8 +111,14 @@ module GraphQL
         end
 
         # The base class for generated input object types
-        # @param new_class [Class] The base class to use for generating input object definitions
-        # @return [Class] The base class for this mutation's generated input object (default is {GraphQL::Schema::InputObject})
+        #
+        # **Parameters**
+        #
+        # - `new_class` (`Class`) — The base class to use for generating input object definitions
+        #
+        # **Returns**
+        #
+        # - `Class` — The base class for this mutation's generated input object (default is [GraphQL::Schema::InputObject](rdoc-ref:GraphQL::Schema::InputObject))
         def input_object_class(new_class = nil)
           if new_class
             @input_object_class = new_class
@@ -120,8 +126,13 @@ module GraphQL
           @input_object_class || (superclass.respond_to?(:input_object_class) ? superclass.input_object_class : GraphQL::Schema::InputObject)
         end
 
-        # @param new_input_type [Class, nil] If provided, it configures this mutation to accept `new_input_type` instead of generating an input type
-        # @return [Class] The generated {Schema::InputObject} class for this mutation's `input`
+        # **Parameters**
+        #
+        # - `new_input_type` (`Class, nil`) — If provided, it configures this mutation to accept `new_input_type` instead of generating an input type
+        #
+        # **Returns**
+        #
+        # - `Class` — The generated [Schema::InputObject](rdoc-ref:Schema::InputObject) class for this mutation's `input`
         def input_type(new_input_type = nil)
           if new_input_type
             @input_type = new_input_type
@@ -133,7 +144,10 @@ module GraphQL
 
         # Generate the input type for the `input:` argument
         # To customize how input objects are generated, override this method
-        # @return [Class] a subclass of {.input_object_class}
+        #
+        # **Returns**
+        #
+        # - `Class` — a subclass of [.input_object_class](rdoc-ref:.input_object_class)
         def generate_input_type
           mutation_args = all_argument_definitions
           mutation_class = self

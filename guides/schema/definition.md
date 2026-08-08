@@ -1,17 +1,8 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Schema
-title: Definition
-desc: Defining your schema
-index: 1
----
+# Definition
 
+A GraphQL system is called a _schema_. The schema contains all the types and fields in the system. The schema executes queries and publishes an [introspection system](/schema/introspection).
 
-A GraphQL system is called a _schema_. The schema contains all the types and fields in the system. The schema executes queries and publishes an {% internal_link "introspection system","/schema/introspection" %}.
-
-Your GraphQL schema is a class that extends {{ "GraphQL::Schema" | api_doc }}, for example:
+Your GraphQL schema is a class that extends [GraphQL::Schema](rdoc-ref:GraphQL::Schema), for example:
 
 ```ruby
 class MyAppSchema < GraphQL::Schema
@@ -36,18 +27,18 @@ end
 
 There are lots of schema configuration methods.
 
-For defining GraphQL types, see the guides for those types: {% internal_link "object types", "/type_definitions/objects" %}, {% internal_link "interface types", "/type_definitions/interfaces" %}, {% internal_link "union types", "/type_definitions/unions" %},  {% internal_link "input object types", "/type_definitions/input_objects" %}, {% internal_link "enum types", "/type_definitions/enums" %}, and {% internal_link "scalar types", "/type_definitions/scalars" %}.
+For defining GraphQL types, see the guides for those types: [object types](/type_definitions/objects), [interface types](/type_definitions/interfaces), [union types](/type_definitions/unions),  [input object types](/type_definitions/input_objects), [enum types](/type_definitions/enums), and [scalar types](/type_definitions/scalars).
 
 ## Types in the Schema
 
-- {{ "Schema.query" | api_doc }}, {{ "Schema.mutation" | api_doc }}, and {{ "Schema.subscription" | api_doc}} declare the [entry-point types](https://graphql.org/learn/schema/#the-query-mutation-and-subscription-types) of the schema.
-- {{ "Schema.orphan_types" | api_doc }} declares object types which implement {% internal_link "Interfaces", "/type_definitions/interfaces" %} but aren't used as field return types in the schema. For more about this specific scenario, see {% internal_link "Orphan Types", "/type_definitions/interfaces#orphan-types" %}
+- [Schema.query](rdoc-ref:Schema.query), [Schema.mutation](rdoc-ref:Schema.mutation), and [Schema.subscription](rdoc-ref:Schema.subscription) declare the [entry-point types](https://graphql.org/learn/schema/#the-query-mutation-and-subscription-types) of the schema.
+- [Schema.orphan_types](rdoc-ref:Schema.orphan_types) declares object types which implement [Interfaces](/type_definitions/interfaces) but aren't used as field return types in the schema. For more about this specific scenario, see [Orphan Types](/type_definitions/interfaces#orphan-types)
 
 ### Lazy-loading types
 
 In development, GraphQL-Ruby can defer loading your type definitions until they're needed. This requires some configuration to opt in:
 
-- Add `use GraphQL::Schema::Visibility` to your schema. ({{ "GraphQL::Schema::Visibility" | api_doc }} supports lazy loading and will be the default in a future GraphQL-Ruby version. See {% internal_link "Migration Notes", "/authorization/visibility#migration-notes" %} if you have an existing visibility implementation.)
+- Add `use GraphQL::Schema::Visibility` to your schema. ([GraphQL::Schema::Visibility](rdoc-ref:GraphQL::Schema::Visibility) supports lazy loading and will be the default in a future GraphQL-Ruby version. See [Migration Notes](/authorization/visibility#migration-notes) if you have an existing visibility implementation.)
 - Move your entry-point type definitions into a block, for example:
 
   ```diff
@@ -73,54 +64,54 @@ To enforce these patterns, you can enable two Rubocop rules that ship with Graph
 
 Some GraphQL features use unique IDs to load objects:
 
-- the `node(id:)` field looks up objects by ID (See {% internal_link "Object Identification", "/schema/object_identification" %} for more about Relay-style object identification.)
+- the `node(id:)` field looks up objects by ID (See [Object Identification](/schema/object_identification) for more about Relay-style object identification.)
 - any arguments with `loads:` configurations look up objects by ID
-- the {% internal_link "ObjectCache", "/object_cache/overview" %} uses IDs in its caching scheme
+- the [ObjectCache](/object_cache/overview) uses IDs in its caching scheme
 
 To use these features, you must provide some methods for generating UUIDs and fetching objects with them:
 
-{{ "Schema.object_from_id" | api_doc }} is called by GraphQL-Ruby to load objects directly from the database. It's usually used by the `node(id: ID!): Node` field (see {{ "GraphQL::Types::Relay::Node" | api_doc }}), Argument {% internal_link "loads:", "/mutations/mutation_classes#auto-loading-arguments" %}, or the {% internal_link "ObjectCache", "/object_cache/overview" %}. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
+[Schema.object_from_id](rdoc-ref:Schema.object_from_id) is called by GraphQL-Ruby to load objects directly from the database. It's usually used by the `node(id: ID!): Node` field (see [GraphQL::Types::Relay::Node](rdoc-ref:GraphQL::Types::Relay::Node)), Argument [loads:](/mutations/mutation_classes#auto-loading-arguments), or the [ObjectCache](/object_cache/overview). It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
 
-{{ "Schema.id_from_object" | api_doc }} is used to implement `Node.id`. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
+[Schema.id_from_object](rdoc-ref:Schema.id_from_object) is used to implement `Node.id`. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
 
-Additionally, {{ "Schema.resolve_type" | api_doc }} is called by GraphQL-Ruby to get the runtime Object type for fields that return {% internal_link "interface", "/type_definitions/interfaces" %} or {% internal_link "union", "/type_definitions/unions" %} types.
+Additionally, [Schema.resolve_type](rdoc-ref:Schema.resolve_type) is called by GraphQL-Ruby to get the runtime Object type for fields that return [interface](/type_definitions/interfaces) or [union](/type_definitions/unions) types.
 
 ## Error Handling
 
-- {{ "Schema.type_error" | api_doc }} handles type errors at runtime, read more in the {% internal_link "Type errors guide", "/errors/type_errors" %}.
-- {{ "Schema.rescue_from" | api_doc }} defines error handlers for application errors. See the {% internal_link "error handling guide", "/errors/error_handling" %} for more.
-- {{ "Schema.parse_error" | api_doc }} and {{ "Schema.query_stack_error" | api_doc }} provide hooks for reporting errors to your bug tracker.
+- [Schema.type_error](rdoc-ref:Schema.type_error) handles type errors at runtime, read more in the [Type errors guide](/errors/type_errors).
+- [Schema.rescue_from](rdoc-ref:Schema.rescue_from) defines error handlers for application errors. See the [error handling guide](/errors/error_handling) for more.
+- [Schema.parse_error](rdoc-ref:Schema.parse_error) and [Schema.query_stack_error](rdoc-ref:Schema.query_stack_error) provide hooks for reporting errors to your bug tracker.
 
 ## Default Limits
 
-- {{ "Schema.max_depth" | api_doc }} and {{ "Schema.max_complexity" | api_doc }} apply some limits to incoming queries. See {% internal_link "Complexity and Depth", "/queries/complexity_and_depth" %} for more.
-- {{ "Schema.default_max_page_size" | api_doc }} applies limits to {% internal_link "connection fields", "/pagination/overview" %}.
-- {{ "Schema.validate_timeout" | api_doc }}, {{ "Schema.validate_max_errors" | api_doc }} and {{ "Schema.max_query_string_tokens" | api_doc }} all apply limits to query execution. See {% internal_link "Timeout", "/queries/timeout" %} for more.
+- [Schema.max_depth](rdoc-ref:Schema.max_depth) and [Schema.max_complexity](rdoc-ref:Schema.max_complexity) apply some limits to incoming queries. See [Complexity and Depth](/queries/complexity_and_depth) for more.
+- [Schema.default_max_page_size](rdoc-ref:Schema.default_max_page_size) applies limits to [connection fields](/pagination/overview).
+- [Schema.validate_timeout](rdoc-ref:Schema.validate_timeout), [Schema.validate_max_errors](rdoc-ref:Schema.validate_max_errors) and [Schema.max_query_string_tokens](rdoc-ref:Schema.max_query_string_tokens) all apply limits to query execution. See [Timeout](/queries/timeout) for more.
 
 ## Introspection
 
-- {{ "Schema.extra_types" | api_doc }} declares types which should be printed in the SDL and returned in introspection queries, but aren't otherwise used in the schema.
-- {{ "Schema.introspection" | api_doc }} can attach a {% internal_link "custom introspection system", "/schema/introspection" %} to the schema.
+- [Schema.extra_types](rdoc-ref:Schema.extra_types) declares types which should be printed in the SDL and returned in introspection queries, but aren't otherwise used in the schema.
+- [Schema.introspection](rdoc-ref:Schema.introspection) can attach a [custom introspection system](/schema/introspection) to the schema.
 
 ## Authorization
 
-- {{ "Schema.unauthorized_object" | api_doc }} and {{ "Schema.unauthorized_field" | api_doc }} are called when {% internal_link "authorization hooks", "/authorization/authorization" %} return `false` during query execution.
+- [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object) and [Schema.unauthorized_field](rdoc-ref:Schema.unauthorized_field) are called when [authorization hooks](/authorization/authorization) return `false` during query execution.
 
 ## Execution Configuration
 
-- {{ "Schema.trace_with" | api_doc }} attaches tracer modules. See {% internal_link "Tracing", "/queries/tracing" %} for more.
-- {{ "Schema.query_analyzer" | api_doc }} and {{ "Schema.multiplex_analyzer" }} accept processors for ahead-of-time query analysis, see {% internal_link "Analysis", "/queries/ast_analysis" %} for more.
-- {{ "Schema.default_logger" | api_doc }} configures a logger for runtime. See {% internal_link "Logging", "/queries/logging" %}.
-- {{ "Schema.context_class" | api_doc }} and {{ "Schema.query_class" | api_doc }} attach custom subclasses to your schema to use during execution.
-- {{ "Schema.lazy_resolve" | api_doc }} registers classes with {% internal_link "lazy execution", "/schema/lazy_execution" %}.
+- [Schema.trace_with](rdoc-ref:Schema.trace_with) attaches tracer modules. See [Tracing](/queries/tracing) for more.
+- [Schema.query_analyzer](rdoc-ref:Schema.query_analyzer) and [Schema.multiplex_analyzer](rdoc-ref:Schema.multiplex_analyzer) accept processors for ahead-of-time query analysis, see [Analysis](/queries/ast_analysis) for more.
+- [Schema.default_logger](rdoc-ref:Schema.default_logger) configures a logger for runtime. See [Logging](/queries/logging).
+- [Schema.context_class](rdoc-ref:Schema.context_class) and [Schema.query_class](rdoc-ref:Schema.query_class) attach custom subclasses to your schema to use during execution.
+- [Schema.lazy_resolve](rdoc-ref:Schema.lazy_resolve) registers classes with [lazy execution](/schema/lazy_execution).
 
 ## Plugins
 
-- {{ "Schema.use" | api_doc }} adds plugins to your schema. For example, {{ "GraphQL::Dataloader" | api_doc }} and {{ "GraphQL::Schema::Visibility" | api_doc }} are installed this way.
+- [Schema.use](rdoc-ref:Schema.use) adds plugins to your schema. For example, [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) and [GraphQL::Schema::Visibility](rdoc-ref:GraphQL::Schema::Visibility) are installed this way.
 
 ## Production Considerations
 
-- __Parser caching__: if your application parses GraphQL _files_ (queries or schema definition), it may benefit from enabling {{ "GraphQL::Language::Cache" | api_doc }}.
+- __Parser caching__: if your application parses GraphQL _files_ (queries or schema definition), it may benefit from enabling [GraphQL::Language::Cache](rdoc-ref:GraphQL::Language::Cache).
 - __Eager loading the library__: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be eager loaded instead, using `GraphQL.eager_load!`.
 
   - Rails: enabled automatically. (ActiveSupport calls `.eager_load!`.)
@@ -128,4 +119,4 @@ Additionally, {{ "Schema.resolve_type" | api_doc }} is called by GraphQL-Ruby to
   - Hanami: add `environment(:production) { GraphQL.eager_load! }` to your application file.
   - Other frameworks: call `GraphQL.eager_load!` when your application is booting in production mode.
 
-  See {{"GraphQL::Autoload#eager_load!" | api_doc }} for more details.
+  See [GraphQL::Autoload#eager_load!](rdoc-ref:GraphQL::Autoload#eager_load!) for more details.

@@ -1,15 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Mutations
-title: Mutation Classes
-desc: Use mutation classes to implement behavior, then hook them up to your schema.
-index: 1
-redirect_from:
-  - /queries/mutations/
-  - /relay/mutations/
----
+# Mutation Classes
 
 GraphQL _mutations_ are special fields: instead of reading data or performing calculations, they may _modify_ the application state. For example, mutation fields may:
 
@@ -28,14 +17,14 @@ Like all GraphQL fields, mutation fields:
 
 GraphQL-Ruby includes two classes to help you write mutations:
 
-- {{ "GraphQL::Schema::Mutation" | api_doc }}, a bare-bones base class
-- {{ "GraphQL::Schema::RelayClassicMutation" | api_doc }}, a base class with a set of nice conventions that also supports the Relay Classic mutation specification.
+- [GraphQL::Schema::Mutation](rdoc-ref:GraphQL::Schema::Mutation), a bare-bones base class
+- [GraphQL::Schema::RelayClassicMutation](rdoc-ref:GraphQL::Schema::RelayClassicMutation), a base class with a set of nice conventions that also supports the Relay Classic mutation specification.
 
-Besides those, you can also use the plain {% internal_link "field API", "/type_definitions/objects#fields" %} to write mutation fields.
+Besides those, you can also use the plain [field API](/type_definitions/objects#fields) to write mutation fields.
 
 ## Example mutation class
 
-If you used the {% internal_link "install generator", "/schema/generators#graphqlinstall" %}, a base mutation class will already have been generated for you. If that's not the case, you should add a base class to your application, for example:
+If you used the [install generator](/schema/generators#graphqlinstall), a base mutation class will already have been generated for you. If that's not the case, you should add a base class to your application, for example:
 
 ```ruby
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -82,7 +71,7 @@ end
 
 The `#resolve` method should return a hash whose symbols match the `field` names.
 
-(See {% internal_link "Mutation Errors", "/mutations/mutation_errors" %} for more information about returning errors.)
+(See [Mutation Errors](/mutations/mutation_errors) for more information about returning errors.)
 
 Also, you can configure `null(false)` in your mutation class to make the generated payload class non-null.
 
@@ -118,7 +107,7 @@ class Mutations::AddStar < Mutations::BaseMutation
 end
 ```
 
-By specifying that the `post_id` argument loads a `Types::Post` object type, a `Post` object will be loaded via {% internal_link "`Schema.object_from_id`", "/schema/definition.html#object-identification" %} with the provided `post_id`.
+By specifying that the `post_id` argument loads a `Types::Post` object type, a `Post` object will be loaded via [`Schema.object_from_id`](/schema/definition.html#object-identification) with the provided `post_id`.
 
 All arguments that end in `_id` and use the `loads:` method will have their `_id` suffix removed. For example, the mutation resolver above receives a `post` argument which contains the loaded object, instead of a `post_id` argument.
 
@@ -164,11 +153,11 @@ In the above examples, `loads:` is provided a concrete type, but it also support
 
 ### Resolving the type of loaded objects
 
-When `loads:` gets an object from {{ "Schema.object_from_id" | api_doc }}, it passes that object to {{ "Schema.resolve_type" | api_doc }} to confirm that it resolves to the same type originally configured with `loads:`.
+When `loads:` gets an object from [Schema.object_from_id](rdoc-ref:Schema.object_from_id), it passes that object to [Schema.resolve_type](rdoc-ref:Schema.resolve_type) to confirm that it resolves to the same type originally configured with `loads:`.
 
 ### Handling failed loads
 
-If `loads:` fails to find an object or if the loaded object isn't resolved to the specified `loads:` type (using {{ "Schema.resolve_type" | api_doc }}), a {{ "GraphQL::LoadApplicationObjectFailedError" | api_doc }} is raised and returned to the client.
+If `loads:` fails to find an object or if the loaded object isn't resolved to the specified `loads:` type (using [Schema.resolve_type](rdoc-ref:Schema.resolve_type)), a [GraphQL::LoadApplicationObjectFailedError](rdoc-ref:GraphQL::LoadApplicationObjectFailedError) is raised and returned to the client.
 
 You can customize this behavior by implementing `def load_application_object_failed` in your mutation class, for example:
 
@@ -182,7 +171,7 @@ Or, if `load_application_object_failed` returns a new object, that object will b
 
 ### Handling unauthorized loaded objects
 
-When an object is _loaded_ but fails its {% internal_link "`.authorized?` check", "/authorization/authorization#object-authorization" %}, a {{ "GraphQL::UnauthorizedError" | api_doc }} is raised. By default, it's passed to {{ "Schema.unauthorized_object" | api_doc }} (see {% internal_link "Handling Unauthorized Objects", "/authorization/authorization.html#handling-unauthorized-objects" %}). You can customize this behavior by implementing `def unauthorized_object(err)` in your mutation, for example:
+When an object is _loaded_ but fails its [`.authorized?` check](/authorization/authorization#object-authorization), a [GraphQL::UnauthorizedError](rdoc-ref:GraphQL::UnauthorizedError) is raised. By default, it's passed to [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object) (see [Handling Unauthorized Objects](/authorization/authorization.html#handling-unauthorized-objects)). You can customize this behavior by implementing `def unauthorized_object(err)` in your mutation, for example:
 
 ```ruby
 def unauthorized_object(error)

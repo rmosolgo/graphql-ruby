@@ -4,46 +4,58 @@ module GraphQL
     # A stub implementation of ActionCable.
     # Any methods to support the mock backend have `mock` in the name.
     #
-    # @example Configuring your schema to use MockActionCable in the test environment
-    #   class MySchema < GraphQL::Schema
-    #     # Use MockActionCable in test:
-    #     use GraphQL::Subscriptions::ActionCableSubscriptions,
-    #       action_cable: Rails.env.test? ? GraphQL::Testing::MockActionCable : ActionCable
-    #   end
+    # **Examples**
     #
-    # @example Clearing old data before each test
-    #   setup do
-    #     GraphQL::Testing::MockActionCable.clear_mocks
-    #   end
+    # **Example: Configuring your schema to use MockActionCable in the test environment**
     #
-    # @example Using MockActionCable in a test case
-    #   # Create a channel to use in the test, pass it to GraphQL
-    #   mock_channel = GraphQL::Testing::MockActionCable.get_mock_channel
-    #   ActionCableTestSchema.execute("subscription { newsFlash { text } }", context: { channel: mock_channel })
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   # Use MockActionCable in test:
+    #   use GraphQL::Subscriptions::ActionCableSubscriptions,
+    #     action_cable: Rails.env.test? ? GraphQL::Testing::MockActionCable : ActionCable
+    # end
+    # ```
     #
-    #   # Trigger a subscription update
-    #   ActionCableTestSchema.subscriptions.trigger(:news_flash, {}, {text: "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"})
+    # **Example: Clearing old data before each test**
     #
-    #   # Check messages on the channel
-    #   expected_msg = {
-    #     result: {
-    #       "data" => {
-    #         "newsFlash" => {
-    #           "text" => "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"
-    #         }
+    # ```ruby
+    # setup do
+    #   GraphQL::Testing::MockActionCable.clear_mocks
+    # end
+    # ```
+    #
+    # **Example: Using MockActionCable in a test case**
+    #
+    # ```ruby
+    # # Create a channel to use in the test, pass it to GraphQL
+    # mock_channel = GraphQL::Testing::MockActionCable.get_mock_channel
+    # ActionCableTestSchema.execute("subscription { newsFlash { text } }", context: { channel: mock_channel })
+    #
+    # # Trigger a subscription update
+    # ActionCableTestSchema.subscriptions.trigger(:news_flash, {}, {text: "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"})
+    #
+    # # Check messages on the channel
+    # expected_msg = {
+    #   result: {
+    #     "data" => {
+    #       "newsFlash" => {
+    #         "text" => "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"
     #       }
-    #     },
-    #     more: true,
-    #   }
-    #   assert_equal [expected_msg], mock_channel.mock_broadcasted_messages
-    #
+    #     }
+    #   },
+    #   more: true,
+    # }
+    # assert_equal [expected_msg], mock_channel.mock_broadcasted_messages
+    # ```
     class MockActionCable
       class MockChannel
         def initialize
           @mock_broadcasted_messages = []
         end
 
-        # @return [Array<Hash>] Payloads "sent" to this channel by GraphQL-Ruby
+        # **Returns**
+        #
+        # - `Array<Hash>` — Payloads "sent" to this channel by GraphQL-Ruby
         attr_reader :mock_broadcasted_messages
 
         # Called by ActionCableSubscriptions. Implements a Rails API.
@@ -55,7 +67,7 @@ module GraphQL
       end
 
       # Used by mock code
-      # @api private
+      # **API:** private
       class MockStream
         def initialize
           @mock_channels = {}
@@ -96,12 +108,16 @@ module GraphQL
 
         # Use this as `context[:channel]` to simulate an ActionCable channel
         #
-        # @return [GraphQL::Testing::MockActionCable::MockChannel]
+        # **Returns**
+        #
+        # - `GraphQL::Testing::MockActionCable::MockChannel`
         def get_mock_channel
           MockChannel.new
         end
 
-        # @return [Array<String>] Streams that currently have subscribers
+        # **Returns**
+        #
+        # - `Array<String>` — Streams that currently have subscribers
         def mock_stream_names
           @mock_streams.keys
         end

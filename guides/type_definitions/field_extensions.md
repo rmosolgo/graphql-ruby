@@ -1,18 +1,10 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Type Definitions
-title: Field Extensions
-desc: Programmatically modify field configuration and resolution
-index: 10
----
+# Field Extensions
 
-{{ "GraphQL::Schema::FieldExtension" | api_doc }} provides a way to modify user-defined fields in a programmatic way. For example, Relay connections are implemented as a field extension ({{ "GraphQL::Schema::Field::ConnectionExtension" | api_doc }}).
+[GraphQL::Schema::FieldExtension](rdoc-ref:GraphQL::Schema::FieldExtension) provides a way to modify user-defined fields in a programmatic way. For example, Relay connections are implemented as a field extension ([GraphQL::Schema::Field::ConnectionExtension](rdoc-ref:GraphQL::Schema::Field::ConnectionExtension)).
 
 ## Making a new extension
 
-Field extensions are subclasses of {{ "GraphQL::Schema::FieldExtension" | api_doc }}:
+Field extensions are subclasses of [GraphQL::Schema::FieldExtension](rdoc-ref:GraphQL::Schema::FieldExtension):
 
 ```ruby
 class MyExtension < GraphQL::Schema::FieldExtension
@@ -50,7 +42,7 @@ This way, an extension can encapsulate a behavior requiring several configuratio
 
 ## Adding default argument configurations
 
-Extensions may provide _default_ argument configurations which are applied if the field doesn't define the argument for itself. The configuration is passed to {{ "Schema::FieldExtension.default_argument" | api_doc }}. For example, to define a `:query` argument if the field doesn't already have one:
+Extensions may provide _default_ argument configurations which are applied if the field doesn't define the argument for itself. The configuration is passed to [Schema::FieldExtension.default_argument](rdoc-ref:Schema::FieldExtension.default_argument). For example, to define a `:query` argument if the field doesn't already have one:
 
 ```ruby
 class SearchableExtension < GraphQL::Schema::FieldExtension
@@ -66,9 +58,9 @@ Additionally, extensions may implement `def after_define` which is called _after
 
 Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks _might not_ be called back-to-back.
 
-First, {{ "GraphQL::Schema::FieldExtension#resolve" | api_doc }} is called. `resolve` should `yield(object, arguments)` to continue execution. If it doesn't `yield`, then the underlying field won't be called. Whatever `#resolve` returns will be used for continuing execution.
+First, [GraphQL::Schema::FieldExtension#resolve](rdoc-ref:GraphQL::Schema::FieldExtension#resolve) is called. `resolve` should `yield(object, arguments)` to continue execution. If it doesn't `yield`, then the underlying field won't be called. Whatever `#resolve` returns will be used for continuing execution.
 
-After resolution and _after_ syncing lazy values (like `Promise`s from `graphql-batch`), {{ "GraphQL::Schema::FieldExtension#after_resolve" | api_doc }} is called. Whatever that method returns will be used as the field's return value.
+After resolution and _after_ syncing lazy values (like `Promise`s from `graphql-batch`), [GraphQL::Schema::FieldExtension#after_resolve](rdoc-ref:GraphQL::Schema::FieldExtension#after_resolve) is called. Whatever that method returns will be used as the field's return value.
 
 See the linked API docs for the parameters of those methods.
 
@@ -124,7 +116,7 @@ field :name, String, null: false, extensions: [LimitExtension => { limit: 20 }]
 
 ## Using `extras`
 
-Extensions can have the same `extras` as fields (see {% internal_link "Extra Field Metadata", "fields/introduction#extra-field-metadata" %}). Add them by calling `extras` in the class definition:
+Extensions can have the same `extras` as fields (see [Extra Field Metadata](fields/introduction#extra-field-metadata)). Add them by calling `extras` in the class definition:
 
 ```ruby
 class MyExtension < GraphQL::Schema::FieldExtension
@@ -136,7 +128,7 @@ Any configured `extras` will be present in the given `arguments`, but removed be
 
 ## Adding an extension by default
 
-If you want to apply an extension to _all_ your fields, you can do this in your {% internal_link "BaseField", "/type_definitions/extensions.html#customizing-fields" %}'s `def initialize`, for example:
+If you want to apply an extension to _all_ your fields, you can do this in your [BaseField](/type_definitions/extensions.html#customizing-fields)'s `def initialize`, for example:
 
 ```ruby
 class Types::BaseField < GraphQL::Schema::Field

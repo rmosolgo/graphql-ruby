@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro
-title: Encrypted, Versioned Cursors and IDs
-desc: Increased opacity and configurability for Relay identifiers
-index: 6
-pro: true
----
+# Encrypted, Versioned Cursors and IDs
 
 `GraphQL::Pro` includes a mechanism for serving encrypted, versioned cursors and IDs.  This provides some benefits:
 
@@ -47,7 +38,7 @@ end
 
 Now, built-in connection implementations will use that encoder for cursors.
 
-If you implement your own connections, you can access the encoder's encryption methods via {{ "GraphQL::Pagination::Connection#encode" | api_doc }} and {{ "GraphQL::Pagination::Connection#decode" | api_doc }}.
+If you implement your own connections, you can access the encoder's encryption methods via [GraphQL::Pagination::Connection#encode](rdoc-ref:GraphQL::Pagination::Connection#encode) and [GraphQL::Pagination::Connection#decode](rdoc-ref:GraphQL::Pagination::Connection#decode).
 
 
 ## Encrypting IDs

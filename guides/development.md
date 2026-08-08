@@ -1,11 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-title: Development
-section: Other
-desc: Hacking on GraphQL Ruby
----
+# Development
 
 So, you want to hack on GraphQL Ruby! Here are some tips for getting started.
 

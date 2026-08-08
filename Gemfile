@@ -20,3 +20,7 @@ group :jekyll_plugins, optional: true do
   gem 'jekyll-algolia', '~> 1.0'
   gem 'jekyll-redirect-from'
 end
+
+group :docs, optional: true do
+  gem "rdoc", "~> 7.2"
+end

@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Type Definitions
-title: Objects
-desc: Objects expose data and link to other objects
-index: 0
----
+# Objects
 
 GraphQL object types are the bread and butter of GraphQL APIs. Each object has _fields_ which expose data and may be queried by name. For example, we can query a `User` like this:
 
@@ -58,7 +50,7 @@ The rest of this guide will describe how to define GraphQL object types in Ruby.
 
 ## Object classes
 
-Classes extending {{ "GraphQL::Schema::Object" | api_doc }} describe [Object types](https://graphql.org/learn/schema/#object-types-and-fields) and customize their behavior.
+Classes extending [GraphQL::Schema::Object](rdoc-ref:GraphQL::Schema::Object) describe [Object types](https://graphql.org/learn/schema/#object-types-and-fields) and customize their behavior.
 
 Object fields can be created with the `field(...)` class method, [described in detail below](#fields)
 
@@ -91,7 +83,7 @@ end
 
 Object fields expose data about that object or connect the object to other objects. You can add fields to your object types with the `field(...)` class method.
 
-See the {% internal_link "Fields guide", "/fields/introduction" %} for details about object fields.
+See the [Fields guide](/fields/introduction) for details about object fields.
 
 ## Implementing interfaces
 
@@ -108,4 +100,4 @@ When an object `implements` interfaces, it:
 - inherits the GraphQL field definitions from that object
 - includes that module into the object definition
 
-Read more about interfaces in the {% internal_link "Interfaces guide", "/type_definitions/interfaces" %}
+Read more about interfaces in the [Interfaces guide](/type_definitions/interfaces)

@@ -16,7 +16,7 @@ require "strscan"
 
 module GraphQL
   module Language
-    # @api private
+    # **API:** private
     def self.serialize(value)
       if value.is_a?(Hash)
         serialized_hash = value.map do |k, v|
@@ -43,7 +43,10 @@ module GraphQL
 
     # Returns a new string if any single-quoted newlines were escaped.
     # Otherwise, returns `query_str` unchanged.
-    # @return [String]
+    #
+    # **Returns**
+    #
+    # - `String`
     def self.escape_single_quoted_newlines(query_str)
       scanner = StringScanner.new(query_str)
       inside_single_quoted_string = false

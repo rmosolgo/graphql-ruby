@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Schema
-title: Dynamic types and fields
-desc: Using different schema members for each request
-index: 8
----
+# Dynamic types and fields
 
 You can use different versions of your GraphQL schema for each operation. To do this, add `use GraphQL::Schema::Visibility` and implement `visible?(context)` on the parts of your schema that will be conditionally accessible. Additionally, many schema elements have definition methods which are called at runtime by GraphQL-Ruby. You can re-implement those to return any valid schema objects.
 
@@ -23,7 +15,7 @@ You can customize which field definitions are used for each operation.
 
 ### Using `#visible?(context)`
 
-To serve different fields to different clients, implement `def visible?(context)` in your {% internal_link "base field class", "/type_definitions/extensions#customizing-fields" %}:
+To serve different fields to different clients, implement `def visible?(context)` in your [base field class](/type_definitions/extensions#customizing-fields):
 
 ```ruby
 class Types::BaseField < GraphQL::Schema::Field
@@ -98,7 +90,7 @@ As with fields, you can use different sets of argument definitions for different
 
 ### Using `#visible?(context)`
 
-To serve different arguments to different clients, implement `def visible?(context)` in your {% internal_link "base argument class", "/type_definitions/extensions#customizing-arguments" %}:
+To serve different arguments to different clients, implement `def visible?(context)` in your [base argument class](/type_definitions/extensions#customizing-arguments):
 
 ```ruby
 class Types::BaseArgument < GraphQL::Schema::Argument
@@ -140,7 +132,7 @@ That way, any staff client will have the option of `id` or `databaseId` while no
 
 ### Using `def arguments(context)` and `def get_argument(name, context)`
 
-Also, you can implement `def arguments(context)` on your base field class to return a Hash of `{ String => GraphQL::Schema::Argument }` and `def get_argument(name, context)` to return a {{ "GraphQL::Schema::Argument" | api_doc }} or `nil`. . If you take this approach, you might want some custom field classes for any types or resolvers that use these methods. That way, you don't have to reimplement the method for _all_ the fields in the schema.
+Also, you can implement `def arguments(context)` on your base field class to return a Hash of `{ String => GraphQL::Schema::Argument }` and `def get_argument(name, context)` to return a [GraphQL::Schema::Argument](rdoc-ref:GraphQL::Schema::Argument) or `nil`. . If you take this approach, you might want some custom field classes for any types or resolvers that use these methods. That way, you don't have to reimplement the method for _all_ the fields in the schema.
 
 ### Hidden Input Types
 
@@ -150,7 +142,7 @@ Besides argument visibility described above, if an argument's input type is hidd
 
 ### Using `#visible?(context)`
 
-You can implement `def visible?(context)` in your {% internal_link "base enum value class", "/type_definitions/extensions#customizing-enum-values" %} to hide some enum values from some clients. For example:
+You can implement `def visible?(context)` in your [base enum value class](/type_definitions/extensions#customizing-enum-values) to hide some enum values from some clients. For example:
 
 ```ruby
 class BaseEnumValue < GraphQL::Schema::EnumValue
@@ -189,7 +181,7 @@ end
 
 ### Using `.enum_values(context)`
 
-Alternatively, you can implement `def self.enum_values(context)` in your enum types to return an Array of {{ "GraphQL::Schema::EnumValue" | api_doc }}s. For example, to return a dynamic set of enum values:
+Alternatively, you can implement `def self.enum_values(context)` in your enum types to return an Array of [GraphQL::Schema::EnumValue](rdoc-ref:GraphQL::Schema::EnumValue)s. For example, to return a dynamic set of enum values:
 
 ```ruby
 class ProjectStatus < Types::BaseEnum
@@ -297,7 +289,7 @@ Input types (like input objects, scalars, and enums) work the same way with argu
 
 ## Schema Dumps
 
-To dump a certain _version_ of the schema, provide the applicable `context: ...` to {{ "Schema.to_definition" | api_doc }}. For example:
+To dump a certain _version_ of the schema, provide the applicable `context: ...` to [Schema.to_definition](rdoc-ref:Schema.to_definition). For example:
 
 ```ruby
 # Legacy money schema:

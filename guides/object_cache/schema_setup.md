@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Object Cache
-title: Schema Setup
-desc: Prepare your schema to serve cached responses
-index: 1
----
+# Schema Setup
 
 To prepare the schema to serve cached responses, you have to add `GraphQL::Enterprise::ObjectCache` and implement a few hooks.
 
@@ -21,13 +12,13 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-See the {% internal_link "Redis guide", "/object_cache/redis" %} or {% internal_link "Memcached guide", "/object_cache/memcached" %} for details about configuring cache storage.
+See the [Redis guide](/object_cache/redis) or [Memcached guide](/object_cache/memcached) for details about configuring cache storage.
 
-Additionally, it accepts some options for customizing how introspection is cached, see {% internal_link "Caching Introspection", "/object_cache/caching#caching-introspection" %}
+Additionally, it accepts some options for customizing how introspection is cached, see [Caching Introspection](/object_cache/caching#caching-introspection)
 
 ## Context Fingerprint
 
-Additionally, you should implement `def self.private_context_fingerprint_for(context)` to return a string identifying the private scope of the given context. This method will be called whenever a query includes a {% internal_link "`public: false` type or field", "/object_cache/caching#public" %}. For example:
+Additionally, you should implement `def self.private_context_fingerprint_for(context)` to return a string identifying the private scope of the given context. This method will be called whenever a query includes a [`public: false` type or field](/object_cache/caching#public). For example:
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -73,7 +64,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-The returned strings are used as cache keys in the database -- whenever they change, stale data is left to be {% internal_link "cleaned up by Redis", "/object_cache/redis#memory-management" %}.
+The returned strings are used as cache keys in the database -- whenever they change, stale data is left to be [cleaned up by Redis](/object_cache/redis#memory-management).
 
 ## Object Identification
 
@@ -83,7 +74,7 @@ The returned strings are used as cache keys in the database -- whenever they cha
 - `def self.object_from_id(id, context)` which returns the application object for the given globally-unique `id`
 - `def self.resolve_type(abstract_type, object, context)` which returns a GraphQL object type definition to use for `object`
 
-After your schema is setup, you can {% internal_link "configure caching on your types and fields", "/object_cache/caching", %}.
+After your schema is setup, you can [configure caching on your types and fields](/object_cache/caching).
 
 ## Schema Fingerprint
 

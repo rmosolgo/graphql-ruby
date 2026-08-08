@@ -1,11 +1,4 @@
----
-layout: guide
-search: true
-section: Authorization
-title: Authorization
-desc: During execution, check if the current user has permission to access retrieved objects.
-index: 3
----
+# Authorization
 
 While a query is running, you can check each object to see whether the current user is authorized to interact with that object. If the user is _not_ authorized, you can handle the case with an error.
 
@@ -62,7 +55,7 @@ class Types::BaseField < GraphQL::Schema::Field
 end
 ```
 
-For this to work, the base field class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-fields" %}.
+For this to work, the base field class must be [configured with other GraphQL types](/type_definitions/extensions.html#customizing-fields).
 
 #### Argument Authorization
 
@@ -85,23 +78,23 @@ class Types::BaseArgument < GraphQL::Schema::Argument
 end
 ```
 
-For this to work, the base argument class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-arguments" %}.
+For this to work, the base argument class must be [configured with other GraphQL types](/type_definitions/extensions.html#customizing-arguments).
 
 ## Mutation Authorization
 
-See {% internal_link "Mutation Authorization", "/mutations/mutation_authorization.html#can-this-user-perform-this-action" %} in the Mutation Guides.
+See [Mutation Authorization](/mutations/mutation_authorization.html#can-this-user-perform-this-action) in the Mutation Guides.
 
 ## Enum Value Authorization
 
-{{ "GraphQL::Schema::EnumValue#authorized?" | api_doc }} is called when client input is received and when the schema returns values to the client.
+[GraphQL::Schema::EnumValue#authorized?](rdoc-ref:GraphQL::Schema::EnumValue#authorized?) is called when client input is received and when the schema returns values to the client.
 
-For authorizing input, if a value's `#authorized?` method returns false, then a {{ "GraphQL::UnauthorizedEnumValueError" | api_doc }} is raised. It passed to your schema's `.unauthorized_object` hook, where you can handle it another way if you want.
+For authorizing input, if a value's `#authorized?` method returns false, then a [GraphQL::UnauthorizedEnumValueError](rdoc-ref:GraphQL::UnauthorizedEnumValueError) is raised. It passed to your schema's `.unauthorized_object` hook, where you can handle it another way if you want.
 
-For authorizing return values, if an outgoing value's `#authorized?` method returns false, then a {{ "GraphQL::Schema::Enum::UnresolvedValueError" | api_doc }} is raised, which crashes the query. In this case, you should modify your field or resolver to _not_ return this value to an unauthorized viewer. (In this case, the error isn't returned to the viewer because the viewer can't do anything about it -- it's a developer-facing issue instead.)
+For authorizing return values, if an outgoing value's `#authorized?` method returns false, then a [GraphQL::Schema::Enum::UnresolvedValueError](rdoc-ref:GraphQL::Schema::Enum::UnresolvedValueError) is raised, which crashes the query. In this case, you should modify your field or resolver to _not_ return this value to an unauthorized viewer. (In this case, the error isn't returned to the viewer because the viewer can't do anything about it -- it's a developer-facing issue instead.)
 
 ## Handling Unauthorized Objects
 
-By default, GraphQL-Ruby silently replaces unauthorized objects with `nil`, as if they didn't exist. You can customize this behavior by implementing {{ "Schema.unauthorized_object" | api_doc }} in your schema class, for example:
+By default, GraphQL-Ruby silently replaces unauthorized objects with `nil`, as if they didn't exist. You can customize this behavior by implementing [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object) in your schema class, for example:
 
 ```ruby
 class MySchema < GraphQL::Schema

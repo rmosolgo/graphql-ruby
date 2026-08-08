@@ -13,10 +13,14 @@ module GraphQL
         @to_h = values
       end
 
-      # @return [GraphQL::Query] The query that was executed
+      # **Returns**
+      #
+      # - `GraphQL::Query` — The query that was executed
       attr_reader :query
 
-      # @return [Hash] The resulting hash of "data" and/or "errors"
+      # **Returns**
+      #
+      # - `Hash` — The resulting hash of "data" and/or "errors"
       attr_reader :to_h
 
       def_delegators :@query, :context, :mutation?, :query?, :subscription?
@@ -47,7 +51,9 @@ module GraphQL
       #
       # (The query is ignored for comparing result equality.)
       #
-      # @return [Boolean]
+      # **Returns**
+      #
+      # - `Boolean`
       def ==(other)
         case other
         when Hash

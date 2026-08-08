@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro
-title: Installation
-desc: Get started with GraphQL::Pro
-index: 1
-pro: true
----
+# Installation
 
 `GraphQL::Pro` is distributed as a Ruby gem. When you buy `GraphQL::Pro`, you'll receive credentials, which you can register with bundler:
 
@@ -71,7 +62,7 @@ Validating graphql-pro v1.0.0
 ✔ graphql-pro 1.0.0 validated successfully!
 ```
 
-In case of a failure, please {% open_an_issue "GraphQL Pro installation failure" %}:
+In case of a failure, please [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?title=GraphQL+Pro+installation+failure&body=):
 
 ```
 Validating graphql-pro v1.4.800

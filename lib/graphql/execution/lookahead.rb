@@ -9,28 +9,35 @@ module GraphQL
     # A field may get access to its lookahead by adding `extras: [:lookahead]`
     # to its configuration.
     #
-    # @example looking ahead in a field
-    #   field :articles, [Types::Article], null: false,
-    #     extras: [:lookahead]
+    # **Examples**
     #
-    #   # For example, imagine a faster database call
-    #   # may be issued when only some fields are requested.
-    #   #
-    #   # Imagine that _full_ fetch must be made to satisfy `fullContent`,
-    #   # we can look ahead to see if we need that field. If we do,
-    #   # we make the expensive database call instead of the cheap one.
-    #   def articles(lookahead:)
-    #     if lookahead.selects?(:full_content)
-    #       fetch_full_articles(object)
-    #     else
-    #       fetch_preview_articles(object)
-    #     end
+    # **Example: looking ahead in a field**
+    #
+    # ```ruby
+    # field :articles, [Types::Article], null: false,
+    #   extras: [:lookahead]
+    #
+    # # For example, imagine a faster database call
+    # # may be issued when only some fields are requested.
+    # #
+    # # Imagine that _full_ fetch must be made to satisfy `fullContent`,
+    # # we can look ahead to see if we need that field. If we do,
+    # # we make the expensive database call instead of the cheap one.
+    # def articles(lookahead:)
+    #   if lookahead.selects?(:full_content)
+    #     fetch_full_articles(object)
+    #   else
+    #     fetch_preview_articles(object)
     #   end
+    # end
+    # ```
     class Lookahead
-      # @param query [GraphQL::Query]
-      # @param ast_nodes [Array<GraphQL::Language::Nodes::Field>, Array<GraphQL::Language::Nodes::OperationDefinition>]
-      # @param field [GraphQL::Schema::Field] if `ast_nodes` are fields, this is the field definition matching those nodes
-      # @param root_type [Class] if `ast_nodes` are operation definition, this is the root type for that operation
+      # **Parameters**
+      #
+      # - `query` (`GraphQL::Query`)
+      # - `ast_nodes` (`Array<GraphQL::Language::Nodes::Field>, Array<GraphQL::Language::Nodes::OperationDefinition>`)
+      # - `field` (`GraphQL::Schema::Field`) — if `ast_nodes` are fields, this is the field definition matching those nodes
+      # - `root_type` (`Class`) — if `ast_nodes` are operation definition, this is the root type for that operation
       def initialize(query:, ast_nodes:, field: nil, root_type: nil, owner_type: nil)
         @ast_nodes = ast_nodes.freeze
         @field = field
@@ -40,16 +47,24 @@ module GraphQL
         @owner_type = owner_type
       end
 
-      # @return [Array<GraphQL::Language::Nodes::Field>]
+      # **Returns**
+      #
+      # - `Array<GraphQL::Language::Nodes::Field>`
       attr_reader :ast_nodes
 
-      # @return [GraphQL::Schema::Field]
+      # **Returns**
+      #
+      # - `GraphQL::Schema::Field`
       attr_reader :field
 
-      # @return [GraphQL::Schema::Object, GraphQL::Schema::Union, GraphQL::Schema::Interface]
+      # **Returns**
+      #
+      # - `GraphQL::Schema::Object, GraphQL::Schema::Union, GraphQL::Schema::Interface`
       attr_reader :owner_type
 
-      # @return [Hash<Symbol, Object>]
+      # **Returns**
+      #
+      # - `Hash<Symbol, Object>`
       def arguments
         if defined?(@arguments)
           @arguments
@@ -80,9 +95,15 @@ module GraphQL
       # against the arguments in the next selection. This method will return false
       # if any of the given `arguments:` are not present and matching in the next selection.
       # (But, the next selection may contain _more_ than the given arguments.)
-      # @param field_name [String, Symbol]
-      # @param arguments [Hash] Arguments which must match in the selection
-      # @return [Boolean]
+      #
+      # **Parameters**
+      #
+      # - `field_name` (`String, Symbol`)
+      # - `arguments` (`Hash`) — Arguments which must match in the selection
+      #
+      # **Returns**
+      #
+      # - `Boolean`
       def selects?(field_name, selected_type: @selected_type, arguments: nil)
         selection(field_name, selected_type: selected_type, arguments: arguments).selected?
       end
@@ -96,22 +117,36 @@ module GraphQL
       # against the arguments in the next selection. This method will return false
       # if any of the given `arguments:` are not present and matching in the next selection.
       # (But, the next selection may contain _more_ than the given arguments.)
-      # @param alias_name [String, Symbol]
-      # @param arguments [Hash] Arguments which must match in the selection
-      # @return [Boolean]
+      #
+      # **Parameters**
+      #
+      # - `alias_name` (`String, Symbol`)
+      # - `arguments` (`Hash`) — Arguments which must match in the selection
+      #
+      # **Returns**
+      #
+      # - `Boolean`
       def selects_alias?(alias_name, arguments: nil)
         alias_selection(alias_name, arguments: arguments).selected?
       end
 
-      # @return [Boolean] True if this lookahead represents a field that was requested
+      # **Returns**
+      #
+      # - `Boolean` — True if this lookahead represents a field that was requested
       def selected?
         true
       end
 
-      # Like {#selects?}, but can be used for chaining.
-      # It returns a null object (check with {#selected?})
-      # @param field_name [String, Symbol]
-      # @return [GraphQL::Execution::Lookahead]
+      # Like [selects?](rdoc-ref:#selects?), but can be used for chaining.
+      # It returns a null object (check with [selected?](rdoc-ref:#selected?))
+      #
+      # **Parameters**
+      #
+      # - `field_name` (`String, Symbol`)
+      #
+      # **Returns**
+      #
+      # - `GraphQL::Execution::Lookahead`
       def selection(field_name, selected_type: @selected_type, arguments: nil)
         next_field_defn = case field_name
         when String
@@ -141,9 +176,12 @@ module GraphQL
         lookahead_for_selection(next_field_defn, selected_type, arguments)
       end
 
-      # Like {#selection}, but for aliases.
-      # It returns a null object (check with {#selected?})
-      # @return [GraphQL::Execution::Lookahead]
+      # Like [selection](rdoc-ref:#selection), but for aliases.
+      # It returns a null object (check with [selected?](rdoc-ref:#selected?))
+      #
+      # **Returns**
+      #
+      # - `GraphQL::Execution::Lookahead`
       def alias_selection(alias_name, selected_type: @selected_type, arguments: nil)
         alias_cache_key = [alias_name, arguments]
         return alias_selections[key] if alias_selections.key?(alias_name)
@@ -163,21 +201,31 @@ module GraphQL
         alias_selections[alias_cache_key] = lookahead_for_selection(next_field_defn, selected_type, alias_arguments, alias_name)
       end
 
-      # Like {#selection}, but for all nodes.
+      # Like [selection](rdoc-ref:#selection), but for all nodes.
       # It returns a list of Lookaheads for all Selections
       #
       # If `arguments:` is provided, each provided key/value will be matched
       # against the arguments in each selection. This method will filter the selections
       # if any of the given `arguments:` do not match the given selection.
       #
-      # @example getting the name of a selection
-      #   def articles(lookahead:)
-      #     next_lookaheads = lookahead.selections # => [#<GraphQL::Execution::Lookahead ...>, ...]
-      #     next_lookaheads.map(&:name) #=> [:full_content, :title]
-      #   end
+      # **Examples**
       #
-      # @param arguments [Hash] Arguments which must match in the selection
-      # @return [Array<GraphQL::Execution::Lookahead>]
+      # **Example: getting the name of a selection**
+      #
+      # ```ruby
+      # def articles(lookahead:)
+      #   next_lookaheads = lookahead.selections # => [#<GraphQL::Execution::Lookahead ...>, ...]
+      #   next_lookaheads.map(&:name) #=> [:full_content, :title]
+      # end
+      # ```
+      #
+      # **Parameters**
+      #
+      # - `arguments` (`Hash`) — Arguments which must match in the selection
+      #
+      # **Returns**
+      #
+      # - `Array<GraphQL::Execution::Lookahead>`
       def selections(arguments: nil)
         subselections_by_type = {}
         subselections_on_type = subselections_by_type[@selected_type] = {}
@@ -202,13 +250,20 @@ module GraphQL
       # The method name of the field.
       # It returns the method_sym of the Lookahead's field.
       #
-      # @example getting the name of a selection
-      #   def articles(lookahead:)
-      #     article.selection(:full_content).name # => :full_content
-      #     # ...
-      #   end
+      # **Examples**
       #
-      # @return [Symbol]
+      # **Example: getting the name of a selection**
+      #
+      # ```ruby
+      # def articles(lookahead:)
+      #   article.selection(:full_content).name # => :full_content
+      #   # ...
+      # end
+      # ```
+      #
+      # **Returns**
+      #
+      # - `Symbol`
       def name
         @field && @field.original_name
       end

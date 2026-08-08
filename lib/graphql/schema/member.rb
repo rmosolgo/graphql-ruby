@@ -20,7 +20,7 @@ module GraphQL
     # The base class for things that make up the schema,
     # eg objects, enums, scalars.
     #
-    # @api private
+    # **API:** private
     class Member
       include GraphQLTypeNames
       extend BaseDSLMethods

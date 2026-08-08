@@ -43,9 +43,11 @@ module GraphQL
 
           # Get or set the Object type that this edge wraps.
           #
-          # @param node_type [Class] A `Schema::Object` subclass
-          # @param null [Boolean]
-          # @param field_options [Hash] Any extra arguments to pass to the `field :node` configuration
+          # **Parameters**
+          #
+          # - `node_type` (`Class`) — A `Schema::Object` subclass
+          # - `null` (`Boolean`)
+          # - `field_options` (`Hash`) — Any extra arguments to pass to the `field :node` configuration
           def node_type(node_type = nil, null: self.node_nullable, field_options: nil)
             if node_type
               @node_type = node_type

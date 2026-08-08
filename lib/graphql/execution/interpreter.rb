@@ -13,14 +13,19 @@ module GraphQL
     class Interpreter
       class << self
         # Used internally to signal that the query shouldn't be executed
-        # @api private
+        # **API:** private
         NO_OPERATION = GraphQL::EmptyObjects::EMPTY_HASH
 
-        # @param schema [GraphQL::Schema]
-        # @param queries [Array<GraphQL::Query, Hash>]
-        # @param context [Hash]
-        # @param max_complexity [Integer, nil]
-        # @return [Array<GraphQL::Query::Result>] One result per query
+        # **Parameters**
+        #
+        # - `schema` (`GraphQL::Schema`)
+        # - `queries` (`Array<GraphQL::Query, Hash>`)
+        # - `context` (`Hash`)
+        # - `max_complexity` (`Integer, nil`)
+        #
+        # **Returns**
+        #
+        # - `Array<GraphQL::Query::Result>` — One result per query
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
           queries = query_options.map do |opts|
             query = case opts

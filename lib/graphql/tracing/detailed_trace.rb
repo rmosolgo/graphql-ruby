@@ -13,8 +13,8 @@ module GraphQL
     # overriding the one in `context[:trace_mode]`.
     #
     # By default, the detailed tracer calls `.inspect` on application objects returned from fields. You can customize
-    # this behavior by extending {DetailedTrace} and overriding {#inspect_object}. You can opt out of debug annotations
-    # entirely with `use ..., debug: false` or for a single query with `context: { detailed_trace_debug: false }`.
+    # this behavior by extending [DetailedTrace](rdoc-ref:DetailedTrace) and overriding [inspect object](rdoc-ref:#inspect_object). You can opt out of debug annotations
+    # entirely with `use ..., debug: false` or for a single query with `context: [false](rdoc-ref:detailed_trace_debug:)`.
     #
     # You can store saved traces in two ways:
     #
@@ -26,46 +26,64 @@ module GraphQL
     #
     # If you need to save traces indefinitely, you can download them from Perfetto after opening them there.
     #
-    # @example Installing with Rails
-    #   rails generate graphql:detailed_trace # optional: --redis
+    # See [Graphql::Dashboard](rdoc-ref:Graphql::Dashboard) GraphQL::Dashboard for viewing stored results
     #
-    # @example Adding the sampler to your schema
-    #   class MySchema < GraphQL::Schema
-    #     # Add the sampler:
-    #     use GraphQL::Tracing::DetailedTrace, redis: Redis.new(...), limit: 100
+    # **Examples**
     #
-    #     # And implement this hook to tell it when to take a sample:
-    #     def self.detailed_trace?(query)
-    #       # Could use `query.context`, `query.selected_operation_name`, `query.query_string` here
-    #       # Could call out to Flipper, etc
-    #       rand <= 0.000_1 # one in ten thousand
-    #     end
+    # **Example: Installing with Rails**
+    #
+    # ```ruby
+    # rails generate graphql:detailed_trace # optional: --redis
+    # ```
+    #
+    # **Example: Adding the sampler to your schema**
+    #
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   # Add the sampler:
+    #   use GraphQL::Tracing::DetailedTrace, redis: Redis.new(...), limit: 100
+    #
+    #   # And implement this hook to tell it when to take a sample:
+    #   def self.detailed_trace?(query)
+    #     # Could use `query.context`, `query.selected_operation_name`, `query.query_string` here
+    #     # Could call out to Flipper, etc
+    #     rand <= 0.000_1 # one in ten thousand
     #   end
+    # end
+    # ```
     #
-    # @see Graphql::Dashboard GraphQL::Dashboard for viewing stored results
+    # **Example: Customizing debug output in traces**
     #
-    # @example Customizing debug output in traces
-    #   class CustomDetailedTrace < GraphQL::Tracing::DetailedTrace
-    #     def inspect_object(object)
-    #       if object.is_a?(SomeThing)
-    #         # handle it specially ...
-    #       else
-    #         super
-    #        end
-    #     end
+    # ```ruby
+    # class CustomDetailedTrace < GraphQL::Tracing::DetailedTrace
+    #   def inspect_object(object)
+    #     if object.is_a?(SomeThing)
+    #       # handle it specially ...
+    #     else
+    #       super
+    #      end
     #   end
+    # end
+    # ```
     #
-    # @example disabling debug annotations completely
-    #    use DetailedTrace, debug: false, ...
+    # **Example: disabling debug annotations completely**
     #
-    # @example disabling debug annotations for one query
-    #    MySchema.execute(query_str, context: { detailed_trace_debug: false })
+    # ```ruby
+    # use DetailedTrace, debug: false, ...
+    # ```
     #
+    # **Example: disabling debug annotations for one query**
+    #
+    # ```ruby
+    # MySchema.execute(query_str, context: { detailed_trace_debug: false })
+    # ```
     class DetailedTrace
-      # @param redis [Redis] If provided, profiles will be stored in Redis for later review
-      # @param limit [Integer] A maximum number of profiles to store
-      # @param debug [Boolean] if `false`, it won't create `debug` annotations in Perfetto traces (reduces overhead)
-      # @param model_class [Class<ActiveRecord::Base>] Overrides {ActiveRecordBackend::GraphqlDetailedTrace} if present
+      # **Parameters**
+      #
+      # - `redis` (`Redis`) — If provided, profiles will be stored in Redis for later review
+      # - `limit` (`Integer`) — A maximum number of profiles to store
+      # - `debug` (`Boolean`) — if `false`, it won't create `debug` annotations in Perfetto traces (reduces overhead)
+      # - `model_class` (`Class<ActiveRecord::Base>`) — Overrides [ActiveRecordBackend::GraphqlDetailedTrace](rdoc-ref:ActiveRecordBackend::GraphqlDetailedTrace) if present
       def self.use(schema, trace_mode: :profile_sample, memory: false, debug: debug?, redis: nil, limit: nil, model_class: nil)
         storage = if redis
           RedisBackend.new(redis: redis, limit: limit)
@@ -87,37 +105,54 @@ module GraphQL
         @debug = debug
       end
 
-      # @return [Symbol] The trace mode to use when {Schema.detailed_trace?} returns `true`
+      # **Returns**
+      #
+      # - `Symbol` — The trace mode to use when [Schema.detailed_trace?](rdoc-ref:Schema.detailed_trace?) returns `true`
       attr_reader :trace_mode
 
-      # @return [String] ID of saved trace
+      # **Returns**
+      #
+      # - `String` — ID of saved trace
       def save_trace(operation_name, duration_ms, begin_ms, trace_data)
         @storage.save_trace(operation_name, duration_ms, begin_ms, trace_data)
       end
 
-      # @return [Boolean]
+      # **Returns**
+      #
+      # - `Boolean`
       def debug?
         @debug
       end
 
-      # @param last [Integer]
-      # @param before [Integer] Timestamp in milliseconds since epoch
-      # @return [Enumerable<StoredTrace>]
+      # **Parameters**
+      #
+      # - `last` (`Integer`)
+      # - `before` (`Integer`) — Timestamp in milliseconds since epoch
+      #
+      # **Returns**
+      #
+      # - `Enumerable<StoredTrace>`
       def traces(last: nil, before: nil)
         @storage.traces(last: last, before: before)
       end
 
-      # @return [StoredTrace, nil]
+      # **Returns**
+      #
+      # - `StoredTrace, nil`
       def find_trace(id)
         @storage.find_trace(id)
       end
 
-      # @return [void]
+      # **Returns**
+      #
+      # - `void`
       def delete_trace(id)
         @storage.delete_trace(id)
       end
 
-      # @return [void]
+      # **Returns**
+      #
+      # - `void`
       def delete_all_traces
         @storage.delete_all_traces
       end
@@ -135,7 +170,10 @@ module GraphQL
       end
 
       # Default debug setting
-      # @return [true]
+      #
+      # **Returns**
+      #
+      # - `true`
       def self.debug?
         true
       end

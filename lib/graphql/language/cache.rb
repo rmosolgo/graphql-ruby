@@ -8,7 +8,7 @@ require 'tempfile'
 
 module GraphQL
   module Language
-    # This cache is used by {GraphQL::Language::Parser.parse_file} when it's enabled.
+    # This cache is used by [GraphQL::Language::Parser.parse_file](rdoc-ref:GraphQL::Language::Parser.parse_file) when it's enabled.
     #
     # With Rails, parser caching may enabled by setting `config.graphql.parser_cache = true` in your Rails application.
     #
@@ -23,7 +23,7 @@ module GraphQL
     # You will need to clear the cache directory for each new deployment of your application.
     # Also note that the parser cache will grow as your schema is loaded, so the cache directory must be writable.
     #
-    # @see GraphQL::Railtie for simple Rails integration
+    # See [GraphQL::Railtie](rdoc-ref:GraphQL::Railtie) for simple Rails integration
     class Cache
       # @param path [Pathname] The directory where cache entries are stored.
       # @param secret [String, nil] A stable secret for verifying cache entries. When omitted,

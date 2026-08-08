@@ -2,8 +2,13 @@
 module GraphQL
   module Testing
     module Helpers
-      # @param schema_class [Class<GraphQL::Schema>]
-      # @return [Module] A helpers module which always uses the given schema
+      # **Parameters**
+      #
+      # - `schema_class` (`Class<GraphQL::Schema>`)
+      #
+      # **Returns**
+      #
+      # - `Module` — A helpers module which always uses the given schema
       def self.for(schema_class)
         SchemaHelpers.for(schema_class)
       end
