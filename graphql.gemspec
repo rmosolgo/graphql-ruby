@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
     "rubygems_mfa_required" => "true",
   }
 
-  s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
+  s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".rdoc_options", ".yardopts"]
 
   s.add_runtime_dependency "base64"
   s.add_runtime_dependency "fiber-storage"

@@ -5,23 +5,30 @@ module GraphQL
     class Validator
       # Use this to enforce a `.length` restriction on incoming values. It works for both Strings and Lists.
       #
-      # @example Allow no more than 10 IDs
+      # **Examples**
       #
-      #   argument :ids, [ID], required: true, validates: { length: { maximum: 10 } }
+      # **Example: Allow no more than 10 IDs**
       #
-      # @example Require three selections
+      # ```ruby
+      # argument :ids, [ID], required: true, validates: { length: { maximum: 10 } }
+      # ```
       #
-      #   argument :ice_cream_preferences, [ICE_CREAM_FLAVOR], required: true, validates: { length: { is: 3 } }
+      # **Example: Require three selections**
       #
+      # ```ruby
+      # argument :ice_cream_preferences, [ICE_CREAM_FLAVOR], required: true, validates: { length: { is: 3 } }
+      # ```
       class LengthValidator < Validator
-        # @param maximum [Integer]
-        # @param too_long [String] Used when `maximum` is exceeded or value is greater than `within`
-        # @param minimum [Integer]
-        # @param too_short [String] Used with value is less than `minimum` or less than `within`
-        # @param is [Integer] Exact length requirement
-        # @param wrong_length [String] Used when value doesn't match `is`
-        # @param within [Range] An allowed range (becomes `minimum:` and `maximum:` under the hood)
-        # @param message [String]
+        # **Parameters**
+        #
+        # - `maximum` (`Integer`)
+        # - `too_long` (`String`) — Used when `maximum` is exceeded or value is greater than `within`
+        # - `minimum` (`Integer`)
+        # - `too_short` (`String`) — Used with value is less than `minimum` or less than `within`
+        # - `is` (`Integer`) — Exact length requirement
+        # - `wrong_length` (`String`) — Used when value doesn't match `is`
+        # - `within` (`Range`) — An allowed range (becomes `minimum:` and `maximum:` under the hood)
+        # - `message` (`String`)
         def initialize(
           maximum: nil, too_long: "%{validated} is too long (maximum is %{count})",
           minimum: nil, too_short: "%{validated} is too short (minimum is %{count})",

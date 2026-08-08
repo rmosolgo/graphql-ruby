@@ -35,14 +35,18 @@ module GraphQL
 
         # Instance methods defined in this block will become class methods on objects that implement this interface.
         # Use it to implement `resolve_each:`, `resolve_batch:`, and `resolve_static:` fields.
-        # @example
-        #   field :thing, String, resolve_static: true
         #
-        #   resolver_methods do
-        #     def thing
-        #       Somehow.get.thing
-        #     end
+        # **Examples**
+        #
+        # **Example: field :thing, String, resolve_static: true**
+        #
+        # ```ruby
+        # resolver_methods do
+        #   def thing
+        #     Somehow.get.thing
         #   end
+        # end
+        # ```
         def resolver_methods(&block)
           if !defined?(@_resolver_methods)
             resolver_methods_module = Module.new
@@ -53,7 +57,7 @@ module GraphQL
           self::ResolverMethods.module_exec(&block)
         end
 
-        # @see {Schema::Warden} hides interfaces without visible implementations
+        # See [Schema::Warden](rdoc-ref:Schema::Warden) hides interfaces without visible implementations
         def visible?(context)
           true
         end
@@ -114,8 +118,14 @@ module GraphQL
         #
         # When those Interfaces or Objects aren't used as the return values of fields,
         # they may have to be registered using this method so that GraphQL-Ruby can find them.
-        # @param types [Class, Module]
-        # @return [Array<Module, Class>] Implementers of this interface, if they're registered
+        #
+        # **Parameters**
+        #
+        # - `types` (`Class, Module`)
+        #
+        # **Returns**
+        #
+        # - `Array<Module, Class>` — Implementers of this interface, if they're registered
         def orphan_types(*types)
           if !types.empty?
             @orphan_types ||= []

@@ -1,14 +1,6 @@
----
-title: Multiplex
-layout: guide
-doc_stub: false
-search: true
-section: Queries
-desc: Run multiple queries concurrently
-index: 10
----
+# Multiplex
 
-Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/)). You can execute them concurrently with {{ "Schema.multiplex" | api_doc }}.
+Some clients may send _several_ queries to the server at once (for example, [Apollo Client's query batching](https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/)). You can execute them concurrently with [Schema.multiplex](rdoc-ref:Schema.multiplex).
 
 Multiplex runs have their own context, analyzers and instrumentation.
 
@@ -84,11 +76,11 @@ end
 
 ## Validation and Error Handling
 
-Each query is validated and {% internal_link "analyzed","/queries/ast_analysis" %} independently. The `results` array may include a mix of successful results and failed results.
+Each query is validated and [analyzed](/queries/ast_analysis) independently. The `results` array may include a mix of successful results and failed results.
 
 ## Multiplex-Level Context
 
-You can add values to {{ "Execution::Multiplex#context" | api_doc }} by providing a `context:` hash:
+You can add values to [Execution::Multiplex#context](rdoc-ref:Execution::Multiplex#context) by providing a `context:` hash:
 
 ```ruby
 MySchema.multiplex(queries, context: { current_user: current_user })
@@ -107,15 +99,15 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-The API is the same as {% internal_link "query analyzers","/queries/ast_analysis#analyzing-multiplexes" %}.
+The API is the same as [query analyzers](/queries/ast_analysis#analyzing-multiplexes).
 
-Multiplex analyzers may return {{ "AnalysisError" | api_doc }} to halt execution of the whole multiplex.
+Multiplex analyzers may return [AnalysisError](rdoc-ref:AnalysisError) to halt execution of the whole multiplex.
 
 ## Multiplex Tracing
 
-You can add hooks for each multiplex run with {% internal_link "trace modules", "/queries/tracing" %}.
+You can add hooks for each multiplex run with [trace modules](/queries/tracing).
 
-The trace module may implement `def execute_multiplex(multiplex:)` which calls `super` to allow the multiplex to execute. See {{ "Execution::Multiplex" | api_doc }} for available methods.
+The trace module may implement `def execute_multiplex(multiplex:)` which calls `super` to allow the multiplex to execute. See [Execution::Multiplex](rdoc-ref:Execution::Multiplex) for available methods.
 
 For example:
 

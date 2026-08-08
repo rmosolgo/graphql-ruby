@@ -1,15 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Rate Limiters
-title: Active Operation Limiter
-desc: Limit the number of concurrent GraphQL operations
-index: 2
----
+# Active Operation Limiter
 
-`GraphQL::Enterprise::ActiveOperationLimiter` prevents clients from running too many GraphQL operations at the same time. It uses {% internal_link "Redis", "limiters/redis" %} to track currently-running operations.
+`GraphQL::Enterprise::ActiveOperationLimiter` prevents clients from running too many GraphQL operations at the same time. It uses [Redis](limiters/redis) to track currently-running operations.
 
 ## Why?
 
@@ -39,7 +30,7 @@ end
 
 It also accepts a `stale_request_seconds:` option. The limiter uses that value to clean up request data in case of a crash or other unexpected scenario.
 
-Before requests will actually be halted, {% internal_link "soft mode", "/limiters/deployment#soft-limits" %} must be disabled.
+Before requests will actually be halted, [soft mode](/limiters/deployment#soft-limits) must be disabled.
 
 #### Query Setup
 

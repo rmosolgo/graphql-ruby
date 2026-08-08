@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Subscriptions
-title: Ably Implementation
-desc: GraphQL subscriptions over Ably
-index: 7
-pro: true
----
+# Ably Implementation
 
 [GraphQL Pro](https://graphql.pro) includes a subscription system based on [Redis](https://redis.io) and [Ably](https://ably.io) which works with any Ruby web framework.
 
@@ -130,7 +121,7 @@ For better performance reading and writing to Redis, you can pass a `connection_
 
 ### Broadcasts
 
-If you set up {% internal_link "Broadcasts", "/subscriptions/broadcast" %}, then you can update many clients over a single Ably channel.
+If you set up [Broadcasts](/subscriptions/broadcast), then you can update many clients over a single Ably channel.
 
 Broadcast channels have stable, predictable IDs. To prevent unauthorized clients from "listening in," use [token authorization](#authorization) for transport. Broadcasts channels use the namespace `gqlbdcst:`, so you can provide capabilities to receive them using `"gqlbdcst:*" => [ ... ]` in your authorization code. (If you're using [encryption](#encryption), the prefix will be `ablyencr-gqlbdcst:` instead.)
 
@@ -266,7 +257,7 @@ __Backwards compatibility:__ `GraphQL::Pro::AblySubscriptions` will only encrypt
 
 Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query `context`.
 
-By default, this is done with {{ "GraphQL::Subscriptions::Serialize" | api_doc }}'s `dump` and `load` methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of `GraphQL::Pro::AblySubscriptions` and override `#dump_context(ctx)` and `#load_context(ctx_string)`:
+By default, this is done with [GraphQL::Subscriptions::Serialize](rdoc-ref:GraphQL::Subscriptions::Serialize)'s `dump` and `load` methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of `GraphQL::Pro::AblySubscriptions` and override `#dump_context(ctx)` and `#load_context(ctx_string)`:
 
 ```ruby
 class CustomSubscriptions < GraphQL::Pro::AblySubscriptions
@@ -296,17 +287,17 @@ That gives you fine-grained control of context reloading.
 
 ## Dashboard
 
-You can monitor subscription state in the {% internal_link "GraphQL-Pro Dashboard", "/pro/dashboard" %}:
+You can monitor subscription state in the [GraphQL-Pro Dashboard](/pro/dashboard):
 
-{{ "/subscriptions/redis_dashboard_1.png" | link_to_img:"Redis Subscription Dashboard" }}
+![Redis Subscription Dashboard](/subscriptions/redis_dashboard_1.png)
 
-{{ "/subscriptions/redis_dashboard_2.png" | link_to_img:"Redis Subscription Detail" }}
+![Redis Subscription Detail](/subscriptions/redis_dashboard_2.png)
 
 ## Development Tips
 
 #### Clear subscription data
 
-At any time, you can reset your subscription database with the __"Reset"__ button in the {% internal_link "GraphQL-Pro Dashboard", "/pro/dashboard" %}, or in Ruby:
+At any time, you can reset your subscription database with the __"Reset"__ button in the [GraphQL-Pro Dashboard](/pro/dashboard), or in Ruby:
 
 ```ruby
 # Wipe all subscription data from the DB:
@@ -321,6 +312,6 @@ To receive webhooks in development, you can [use ngrok](https://www.ably.io/tuto
 
 Install the [Ably JS client](https://github.com/ably/ably-js) then see docs for:
 
-- {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}
-- {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}.
-- {% internal_link "GraphiQL", "/javascript_client/graphiql_subscriptions" %}
+- [Apollo Client](/javascript_client/apollo_subscriptions)
+- [Relay Modern](/javascript_client/relay_subscriptions).
+- [GraphiQL](/javascript_client/graphiql_subscriptions)

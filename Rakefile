@@ -236,5 +236,34 @@ task :move_binary do
   `mv graphql-c_parser/lib/*.bundle graphql-c_parser/lib/graphql`
 end
 
+namespace :docs do
+  namespace :rdoc do
+    desc "Build the shadow RDoc/Aliki documentation site"
+    task :build do
+      require_relative "tool/docs/build"
+      GraphQLDocs::Build.new.build_site
+    end
+
+    desc "Build versioned RDoc/Aliki API documentation"
+    task :build_version, [:version] do |_task, args|
+      require_relative "tool/docs/build"
+      version = args[:version] || ENV["GRAPHQL_VERSION"] || raise(ArgumentError, "A version is required")
+      GraphQLDocs::Build.new.build_version(version)
+    end
+
+    desc "Build the shadow RDoc site and serve it locally"
+    task :serve => :build do
+      require "webrick"
+      server = WEBrick::HTTPServer.new(
+        Port: Integer(ENV.fetch("PORT", "8808")),
+        DocumentRoot: File.expand_path("tmp/rdoc-site"),
+      )
+      trap("INT") { server.shutdown }
+      puts "Serving RDoc documentation at http://127.0.0.1:#{server.config[:Port]}"
+      server.start
+    end
+  end
+end
+
 desc "Build the C Extension"
 task build_ext: [:build_c_lexer, :build_yacc_parser, "compile:graphql_c_parser_ext", :move_binary]

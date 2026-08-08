@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Subscriptions
-title: Overview
-desc: Introduction to Subscriptions in GraphQL-Ruby
-index: 0
----
+# Overview
 
 _Subscriptions_ allow GraphQL clients to observe specific events and receive updates from the server when those events occur. This supports live updates, such as websocket pushes. Subscriptions introduce several new concepts:
 
@@ -20,19 +12,19 @@ _Subscriptions_ allow GraphQL clients to observe specific events and receive upd
 
 `subscription` is an entry point to your GraphQL schema, like `query` or `mutation`. It is defined by your `SubscriptionType`, a root-level `GraphQL::Schema::Object`.
 
-Read more in the {% internal_link "Subscription Type guide", "subscriptions/subscription_type" %}.
+Read more in the [Subscription Type guide](subscriptions/subscription_type).
 
 ## Subscription Classes
 
-{{ "GraphQL::Schema::Subscription" | api_doc }} is a resolver class with subscription-specific behaviors. Each subscription field should be implemented by a subscription class.
+[GraphQL::Schema::Subscription](rdoc-ref:GraphQL::Schema::Subscription) is a resolver class with subscription-specific behaviors. Each subscription field should be implemented by a subscription class.
 
-Read more in the {% internal_link "Subscription Classes guide", "subscriptions/subscription_classes" %}
+Read more in the [Subscription Classes guide](subscriptions/subscription_classes)
 
 ## Triggers
 
 After an event occurs in our application, _triggers_ begin the update process by sending a name and payload to GraphQL.
 
-Read more in the {% internal_link "Triggers guide","subscriptions/triggers" %}.
+Read more in the [Triggers guide](subscriptions/triggers).
 
 ## Implementation
 
@@ -42,12 +34,12 @@ Besides the GraphQL component, your application must provide some subscription-r
 - __transport__: How does your application deliver payloads to clients?
 - __queueing__: How does your application distribute the work of re-running subscription queries?
 
-Read more in the {% internal_link "Implementation guide", "subscriptions/implementation" %} or check out the {% internal_link "ActionCable implementation", "subscriptions/action_cable_implementation" %}, {% internal_link "Pusher implementation", "subscriptions/pusher_implementation" %} or {% internal_link "Ably implementation", "subscriptions/ably_implementation" %}.
+Read more in the [Implementation guide](subscriptions/implementation) or check out the [ActionCable implementation](subscriptions/action_cable_implementation), [Pusher implementation](subscriptions/pusher_implementation) or [Ably implementation](subscriptions/ably_implementation).
 
 ## Broadcasts
 
-By default, the subscription implementations listed above handle each subscription in total isolation. However, this behavior can be optimized by setting up broadcasts. Read more in the {% internal_link "Broadcast guide", "subscriptions/broadcast" %}.
+By default, the subscription implementations listed above handle each subscription in total isolation. However, this behavior can be optimized by setting up broadcasts. Read more in the [Broadcast guide](subscriptions/broadcast).
 
 ## Multi-Tenant
 
-See the {% internal_link "Multi-tenant guide", "subscriptions/multi_tenant" %} for supporting multi-tenancy in GraphQL subscriptions.
+See the [Multi-tenant guide](subscriptions/multi_tenant) for supporting multi-tenancy in GraphQL subscriptions.

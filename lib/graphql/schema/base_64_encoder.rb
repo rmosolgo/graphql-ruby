@@ -2,7 +2,7 @@
 require "base64"
 module GraphQL
   class Schema
-    # @api private
+    # **API:** private
     module Base64Encoder
       def self.encode(unencoded_text, nonce: false)
         Base64.urlsafe_encode64(unencoded_text, padding: false)

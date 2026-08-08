@@ -3,10 +3,14 @@ module GraphQL
   class Backtrace
     # When {Backtrace} is enabled, raised errors are wrapped with {TracedError}.
     class TracedError < GraphQL::Error
-      # @return [Array<String>] Printable backtrace of GraphQL error context
+      # **Returns**
+      #
+      # - `Array<String>` — Printable backtrace of GraphQL error context
       attr_reader :graphql_backtrace
 
-      # @return [GraphQL::Query::Context] The context at the field where the error was raised
+      # **Returns**
+      #
+      # - `GraphQL::Query::Context` — The context at the field where the error was raised
       attr_reader :context
 
       MESSAGE_TEMPLATE = <<-MESSAGE

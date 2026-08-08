@@ -9,7 +9,7 @@ require "graphql/execution/errors"
 
 module GraphQL
   module Execution
-    # @api private
+    # **API:** private
     class Skip < GraphQL::RuntimeError
       attr_accessor :path
       def ast_nodes=(_ignored); end

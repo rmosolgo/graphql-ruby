@@ -2,7 +2,7 @@
 module GraphQL
   class Schema
     class Visibility
-      # You can use this to see how {GraphQL::Schema::Warden} and {GraphQL::Schema::Visibility::Profile}
+      # You can use this to see how [GraphQL::Schema::Warden](rdoc-ref:GraphQL::Schema::Warden) and [GraphQL::Schema::Visibility::Profile](rdoc-ref:GraphQL::Schema::Visibility::Profile)
       # handle `.visible?` differently in your schema.
       #
       # It runs the same method on both implementations and raises an error when the results diverge.
@@ -15,17 +15,20 @@ module GraphQL
       # This plugin adds two keys to `context` when running:
       #
       # - `visibility_migration_running: true`
-      # - For the {Schema::Warden} which it instantiates, it adds `visibility_migration_warden_running: true`.
+      # - For the [Schema::Warden](rdoc-ref:Schema::Warden) which it instantiates, it adds `visibility_migration_warden_running: true`.
       #
       # Use those keys to modify your `visible?` behavior as needed.
       #
       # Also, in a pinch, you can set `skip_visibility_migration_error: true` in context to turn off this behavior per-query.
-      # (In that case, it uses {Profile} directly.)
+      # (In that case, it uses [Profile](rdoc-ref:Profile) directly.)
       #
-      # @example Adding this plugin
+      # **Examples**
       #
-      #   use GraphQL::Schema::Visibility, migration_errors: true
+      # **Example: Adding this plugin**
       #
+      # ```ruby
+      # use GraphQL::Schema::Visibility, migration_errors: true
+      # ```
       class Migration < GraphQL::Schema::Visibility::Profile
         class RuntimeTypesMismatchError < GraphQL::Error
           def initialize(method_called, warden_result, profile_result, method_args)

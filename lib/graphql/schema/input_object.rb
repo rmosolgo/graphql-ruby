@@ -18,9 +18,13 @@ module GraphQL
         end
       end
 
-      # @return [GraphQL::Query::Context] The context for this query
+      # **Returns**
+      #
+      # - `GraphQL::Query::Context` — The context for this query
       attr_reader :context
-      # @return [GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
+      # **Returns**
+      #
+      # - `GraphQL::Execution::Interpereter::Arguments` — The underlying arguments instance
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
@@ -84,7 +88,10 @@ module GraphQL
 
       # Lookup a key on this object, it accepts new-style underscored symbols
       # Or old-style camelized identifiers.
-      # @param key [Symbol, String]
+      #
+      # **Parameters**
+      #
+      # - `key` (`Symbol, String`)
       def [](key)
         if @ruby_style_hash.key?(key)
           @ruby_style_hash[key]
@@ -104,7 +111,7 @@ module GraphQL
         @ruby_style_hash.dup
       end
 
-      # @api private
+      # **API:** private
       def validate_for(context)
         object = context[:current_object]
         # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
@@ -165,7 +172,7 @@ module GraphQL
           GraphQL::TypeKinds::INPUT_OBJECT
         end
 
-        # @api private
+        # **API:** private
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object."
 
         def validate_non_null_input(input, ctx, max_errors: nil)
@@ -270,14 +277,21 @@ module GraphQL
           result
         end
 
-        # @param new_has_no_arguments [Boolean] Call with `true` to make this InputObject type ignore the requirement to have any defined arguments.
-        # @return [void]
+        # **Parameters**
+        #
+        # - `new_has_no_arguments` (`Boolean`) — Call with `true` to make this InputObject type ignore the requirement to have any defined arguments.
+        #
+        # **Returns**
+        #
+        # - `void`
         def has_no_arguments(new_has_no_arguments)
           @has_no_arguments = new_has_no_arguments
           nil
         end
 
-        # @return [Boolean] `true` if `has_no_arguments(true)` was configued
+        # **Returns**
+        #
+        # - `Boolean` — `true` if `has_no_arguments(true)` was configued
         def has_no_arguments?
           @has_no_arguments
         end

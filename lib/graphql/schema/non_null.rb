@@ -3,22 +3,28 @@
 module GraphQL
   class Schema
     # Represents a non null type in the schema.
-    # Wraps a {Schema::Member} when it is required.
-    # @see {Schema::Member::TypeSystemHelpers#to_non_null_type}
+    # Wraps a [Schema::Member](rdoc-ref:Schema::Member) when it is required.
+    # See [Schema::Member::TypeSystemHelpers#to_non_null_type](rdoc-ref:Schema::Member::TypeSystemHelpers#to_non_null_type)
     class NonNull < GraphQL::Schema::Wrapper
       include Schema::Member::ValidatesInput
 
-      # @return [GraphQL::TypeKinds::NON_NULL]
+      # **Returns**
+      #
+      # - `GraphQL::TypeKinds::NON_NULL`
       def kind
         GraphQL::TypeKinds::NON_NULL
       end
 
-      # @return [true]
+      # **Returns**
+      #
+      # - `true`
       def non_null?
         true
       end
 
-      # @return [Boolean] True if this type wraps a list type
+      # **Returns**
+      #
+      # - `Boolean` — True if this type wraps a list type
       def list?
         @of_type.list?
       end

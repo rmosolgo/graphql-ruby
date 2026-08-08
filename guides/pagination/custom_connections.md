@@ -1,14 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Pagination
-title: Custom Connections
-desc: Building & using cursor-based connections in GraphQL-Ruby
-index: 3
----
+# Custom Connections
 
-GraphQL-Ruby ships with built-in connection support for ActiveRecord, Sequel, Mongoid, and Ruby Arrays. You can read more in the {% internal_link "Using Connections", "/pagination/using_connections" %} guide.
+GraphQL-Ruby ships with built-in connection support for ActiveRecord, Sequel, Mongoid, and Ruby Arrays. You can read more in the [Using Connections](/pagination/using_connections) guide.
 
 When you want to serve a connection based on your _own_ data object, you can create a custom connection. The implementation will have several components:
 
@@ -30,7 +22,7 @@ Your application probably has other list objects that you want to paginate via G
 
 A connection wrapper is an adapter between a plain-Ruby list object (like an Array, Relation, or something application-specific, like `SearchEngine::Result`) and a GraphQL connection type. The connection wrapper implements methods which the GraphQL connection type requires, and it implements those methods based on the underlying list object.
 
-You can extend {{ "GraphQL::Pagination::Connection" | api_doc }} to get started on a custom connection wrapper, for example:
+You can extend [GraphQL::Pagination::Connection](rdoc-ref:GraphQL::Pagination::Connection) to get started on a custom connection wrapper, for example:
 
 ```ruby
 # app/graphql/connections/search_results_connection.rb
@@ -48,10 +40,10 @@ The methods you must implement are:
 
 How to implement these methods (efficiently!) depends on your backend and how you communicate with it. For inspiration, you can see the built-in connections:
 
-- {{ "GraphQL::Pagination::ArrayConnection" | api_doc }}
-- {{ "GraphQL::Pagination::ActiveRecordRelationConnection" | api_doc }}
-- {{ "GraphQL::Pagination::SequelDatasetConnection" | api_doc }}
-- {{ "GraphQL::Pagination::MongoidRelationConnection" | api_doc }}
+- [GraphQL::Pagination::ArrayConnection](rdoc-ref:GraphQL::Pagination::ArrayConnection)
+- [GraphQL::Pagination::ActiveRecordRelationConnection](rdoc-ref:GraphQL::Pagination::ActiveRecordRelationConnection)
+- [GraphQL::Pagination::SequelDatasetConnection](rdoc-ref:GraphQL::Pagination::SequelDatasetConnection)
+- [GraphQL::Pagination::MongoidRelationConnection](rdoc-ref:GraphQL::Pagination::MongoidRelationConnection)
 
 ### Using a Custom Connection
 
@@ -73,7 +65,7 @@ end
 
 Now, any time a field returns an instance of `SearchEngine::Result`, it will be wrapped with `Connections::SearchResultsConnection`
 
-Alternatively, you can apply a connection wrapper on a case-by-case basis by applying it during the resolver (method or {{ "GraphQL::Schema::Resolver" | api_doc }}):
+Alternatively, you can apply a connection wrapper on a case-by-case basis by applying it during the resolver (method or [GraphQL::Schema::Resolver](rdoc-ref:GraphQL::Schema::Resolver)):
 
 ```ruby
 field :search, Types::SearchResult.connection_type, null: false do
@@ -94,7 +86,7 @@ GraphQL-Ruby will use the provided connection wrapper in that case. You can use 
 
 Connection types are GraphQL object types which comply to the [Relay connection specification](https://relay.dev/graphql/connections.htm). GraphQL-Ruby ships with some tools to help you create those object types:
 
-- {{ "GraphQL::Types::Relay::BaseConnection" | api_doc }} and {{ "GraphQL::Types::Relay::BaseEdge" | api_doc }} are example implementations of the spec. They don't inherit from your application's base object class though, so you might not be able to use them out of the box.
+- [GraphQL::Types::Relay::BaseConnection](rdoc-ref:GraphQL::Types::Relay::BaseConnection) and [GraphQL::Types::Relay::BaseEdge](rdoc-ref:GraphQL::Types::Relay::BaseEdge) are example implementations of the spec. They don't inherit from your application's base object class though, so you might not be able to use them out of the box.
 - Type classes respond to `.connection_type` which returns a generated connection type based on that class. By default, it inherits from the provided `GraphQL::Types::Relay::BaseConnection`, but you can override that by setting `connection_type_class(Types::MyBaseConnectionObject)` in your base classes.
 
 For example, you could implement a base connection class:

@@ -5,7 +5,7 @@ module GraphQL
     # This module is the basis for Ruby-level integration with third-party monitoring platforms.
     # Platform-specific traces include this module and implement an adapter.
     #
-    # @see ActiveSupportNotificationsTrace Integration via ActiveSupport::Notifications, an alternative approach.
+    # See [ActiveSupportNotificationsTrace](rdoc-ref:ActiveSupportNotificationsTrace) Integration via ActiveSupport::Notifications, an alternative approach.
     module MonitorTrace
       class Monitor
         def initialize(trace:, set_transaction_name:, **_rest)
@@ -147,10 +147,12 @@ module GraphQL
       end
 
       MODULE_TEMPLATE = <<~RUBY
-        # @param set_transaction_name [Boolean] If `true`, use the GraphQL operation name as the request name on the monitoring platform
-        # @param trace_scalars [Boolean] If `true`, leaf fields will be traced too (Scalars _and_ Enums)
-        # @param trace_authorized [Boolean] If `false`, skip tracing `authorized?` calls
-        # @param trace_resolve_type [Boolean] If `false`, skip tracing `resolve_type?` calls
+        # **Parameters**
+        #
+        # - `set_transaction_name` (`Boolean`) — If `true`, use the GraphQL operation name as the request name on the monitoring platform
+        # - `trace_scalars` (`Boolean`) — If `true`, leaf fields will be traced too (Scalars _and_ Enums)
+        # - `trace_authorized` (`Boolean`) — If `false`, skip tracing `authorized?` calls
+        # - `trace_resolve_type` (`Boolean`) — If `false`, skip tracing `resolve_type?` calls
         def initialize(...)
           setup_%{monitor}_monitor(...)
           super

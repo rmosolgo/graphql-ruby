@@ -1,13 +1,6 @@
----
-layout: guide
-search: true
-section: Dataloader
-title: Sources
-desc: Batch-loading objects for GraphQL::Dataloader
-index: 1
----
+# Sources
 
-_Sources_ are what {{ "GraphQL::Dataloader" | api_doc }} uses to fetch data from external services.
+_Sources_ are what [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) uses to fetch data from external services.
 
 ## Source Concepts
 
@@ -27,7 +20,7 @@ Sources will receive two kinds of inputs from `GraphQL::Dataloader`:
 
   (`dataloader.with(source_class, *batch_parameters)` returns an instance of `source_class` with the given batch parameters -- but it might be an instance which was cached by `dataloader`.)
 
-  Additionally, batch parameters are used to de-duplicate Source initializations during a query run. `.with(...)` calls that have the same batch parameters will use the same Source instance under the hood. To customize how Sources are de-duplicated, see {{ "GraphQL::Dataloader::Source.batch_key_for" | api_doc }}.
+  Additionally, batch parameters are used to de-duplicate Source initializations during a query run. `.with(...)` calls that have the same batch parameters will use the same Source instance under the hood. To customize how Sources are de-duplicated, see [GraphQL::Dataloader::Source.batch_key_for](rdoc-ref:GraphQL::Dataloader::Source.batch_key_for).
 
 ## Example: Loading Strings from Redis by Key
 
@@ -132,11 +125,11 @@ def fetch(keys)
 end
 ```
 
-See the {% internal_link "parallelism guide", "/dataloader/parallelism" %} for details about this approach.
+See the [parallelism guide](/dataloader/parallelism) for details about this approach.
 
 ## Filling the Dataloader Cache
 
-If you load records from the database, you can use them to populate a source's cache by using {{ "Dataloader::Source#merge" | api_doc }}. For example:
+If you load records from the database, you can use them to populate a source's cache by using [Dataloader::Source#merge](rdoc-ref:Dataloader::Source#merge). For example:
 
 ```ruby
 # Build a `{ key => value }` map to populate the cache

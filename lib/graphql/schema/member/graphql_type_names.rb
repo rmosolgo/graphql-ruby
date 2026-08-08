@@ -5,12 +5,16 @@ module GraphQL
     class Member
       # These constants are interpreted as GraphQL types when defining fields or arguments
       #
-      # @example
-      #   field :is_draft, Boolean, null: false
-      #   field :id, ID, null: false
-      #   field :score, Int, null: false
+      # **API:** private
       #
-      # @api private
+      # **Examples**
+      #
+      # **Example: field :is_draft, Boolean, null: false**
+      #
+      # ```ruby
+      # field :id, ID, null: false
+      # field :score, Int, null: false
+      # ```
       module GraphQLTypeNames
         Boolean = "Boolean"
         ID = "ID"

@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Testing
-title: Helpers
-desc: Running GraphQL fields in isolation
-index: 3
----
+# Helpers
 
 GraphQL-Ruby ships with a test helper method, `run_graphql_field`, that can execute a GraphQL field in isolation. To use it in your test suite, include the module with your schema class:
 
@@ -15,7 +7,7 @@ GraphQL-Ruby ships with a test helper method, `run_graphql_field`, that can exec
 include GraphQL::Testing::Helpers.for(MySchema)
 ```
 
-Then, you can run fields using {{ "Testing::Helpers#run_graphql_field" | api_doc }}:
+Then, you can run fields using [Testing::Helpers#run_graphql_field](rdoc-ref:Testing::Helpers#run_graphql_field):
 
 ```ruby
 post = Post.first
@@ -37,16 +29,16 @@ Additionally, it accepts some keyword arguments:
 
 - Checks `.visible?` on the named Object Type, raising an error if it isn't visible
 - Wraps the given runtime object in the GraphQL Object Type
-- Checks `.authorized?` on the type, calling {{ "Schema.unauthorized_object" | api_doc }} if authorization fails
+- Checks `.authorized?` on the type, calling [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object) if authorization fails
 - Prepares arguments for field resolution
 - Checks `#visible?` on the field, raising an error if the field isn't visible
-- Checks `#authorized?` on the field, calling {{ "Schema.unauthorized_field" | api_doc }} if it fails
-- Calls any {% internal_link "field extensions", "/type_definitions/field_extensions" %}
-- Runs {% internal_link "Dataloader", "/dataloader/overview" %} and/or GraphQL-Batch, as needed
+- Checks `#authorized?` on the field, calling [Schema.unauthorized_field](rdoc-ref:Schema.unauthorized_field) if it fails
+- Calls any [field extensions](/type_definitions/field_extensions)
+- Runs [Dataloader](/dataloader/overview) and/or GraphQL-Batch, as needed
 
 ## Resolving fields on the same object
 
-You can use {{ "Testing::Helpers#with_resolution_context" | api_doc }} to use the same type, runtime object, and GraphQL context for multiple field resolutions. For example:
+You can use [Testing::Helpers#with_resolution_context](rdoc-ref:Testing::Helpers#with_resolution_context) to use the same type, runtime object, and GraphQL context for multiple field resolutions. For example:
 
 ```ruby
 # Assuming `include GraphQL::Testing::Helpers.for(MySchema)`

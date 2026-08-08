@@ -1,14 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Execution
-title: New Execution Module
-desc: Background on GraphQL-Ruby's new execution approach
-index: 1
----
+# New Execution Module
 
-GraphQL-Ruby has a new execution engine, {{ "GraphQL::Execution::Next" | api_doc }}. It's much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.
+GraphQL-Ruby has a new execution engine, [GraphQL::Execution::Next](rdoc-ref:GraphQL::Execution::Next). It's much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.
 
 This feature is in heavy development, so if you give it a try and run into any problems, please open an issue on GitHub!
 
@@ -37,7 +29,7 @@ The new execution engine is enabled with two steps:
 - Add the plugin to your schema with `use GraphQL::Execution::Next`
 - Call `MySchema.execute_next(...)` instead of `MySchema.execute(...)`. It takes the same arguments.
 
-See {% internal_link "compatibility notes", "/execution/migration#compatibility-notes" %} for updating your schema to run queries with the new engine.
+See [compatibility notes](/execution/migration#compatibility-notes) for updating your schema to run queries with the new engine.
 
 You can also add `..., as_default: true` to use `execute_next` by default. In that case, call `execute_legacy` if you need the old runtime.
 
@@ -188,7 +180,7 @@ class Types::CommentType
 
 #### Rails Associations
 
-Load ActiveRecord associations using {{ "GraphQL::Dataloader::ActiveRecordAssociationSource" | api_doc }}:
+Load ActiveRecord associations using [GraphQL::Dataloader::ActiveRecordAssociationSource](rdoc-ref:GraphQL::Dataloader::ActiveRecordAssociationSource):
 
 ```ruby
 class Types::CommentType < Types::BaseObject
@@ -201,7 +193,7 @@ end
 
 #### Rails Records
 
-Load ActiveRecord associations using {{ "GraphQL::Dataloader::ActiveRecordSource" | api_doc }}.
+Load ActiveRecord associations using [GraphQL::Dataloader::ActiveRecordSource](rdoc-ref:GraphQL::Dataloader::ActiveRecordSource).
 
 ```ruby
 class Types::SearchResult < Types::BaseObject
@@ -248,4 +240,4 @@ end
 
 ## Migration
 
-Read about migrating in the {% internal_link "Migration Doc", "/execution/migration" %}.
+Read about migrating in the [Migration Doc](/execution/migration).

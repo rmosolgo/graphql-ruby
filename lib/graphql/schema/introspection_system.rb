@@ -64,8 +64,11 @@ module GraphQL
       # Replace those with the objects that they refer to, since LateBoundTypes
       # aren't handled at runtime.
       #
-      # @api private
-      # @return void
+      # **API:** private
+      #
+      # **Returns**
+      #
+      # - `Object` — void
       def resolve_late_bindings
         @types.each do |name, t|
           if t.kind.fields?

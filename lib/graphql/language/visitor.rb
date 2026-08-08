@@ -3,35 +3,40 @@ module GraphQL
   module Language
     # Depth-first traversal through the tree, calling hooks at each stop.
     #
-    # @example Create a visitor counting certain field names
-    #   class NameCounter < GraphQL::Language::Visitor
-    #     def initialize(document, field_name)
-    #       super(document)
-    #       @field_name = field_name
-    #       @count = 0
-    #     end
+    # See [GraphQL::Language::StaticVisitor](rdoc-ref:GraphQL::Language::StaticVisitor) for a faster visitor that doesn't support modifying the document
     #
-    #     attr_reader :count
+    # **Examples**
     #
-    #     def on_field(node, parent)
-    #       # if this field matches our search, increment the counter
-    #       if node.name == @field_name
-    #         @count += 1
-    #       end
-    #       # Continue visiting subfields:
-    #       super
-    #     end
+    # **Example: Create a visitor counting certain field names**
+    #
+    # ```ruby
+    # class NameCounter < GraphQL::Language::Visitor
+    #   def initialize(document, field_name)
+    #     super(document)
+    #     @field_name = field_name
+    #     @count = 0
     #   end
     #
-    #   # Initialize a visitor
-    #   visitor = NameCounter.new(document, "name")
-    #   # Run it
-    #   visitor.visit
-    #   # Check the result
-    #   visitor.count
-    #   # => 3
+    #   attr_reader :count
     #
-    # @see GraphQL::Language::StaticVisitor for a faster visitor that doesn't support modifying the document
+    #   def on_field(node, parent)
+    #     # if this field matches our search, increment the counter
+    #     if node.name == @field_name
+    #       @count += 1
+    #     end
+    #     # Continue visiting subfields:
+    #     super
+    #   end
+    # end
+    #
+    # # Initialize a visitor
+    # visitor = NameCounter.new(document, "name")
+    # # Run it
+    # visitor.visit
+    # # Check the result
+    # visitor.count
+    # # => 3
+    # ```
     class Visitor
       class DeleteNode; end
 
@@ -44,11 +49,16 @@ module GraphQL
         @result = nil
       end
 
-      # @return [GraphQL::Language::Nodes::Document] The document with any modifications applied
+      # **Returns**
+      #
+      # - `GraphQL::Language::Nodes::Document` — The document with any modifications applied
       attr_reader :result
 
       # Visit `document` and all children
-      # @return [void]
+      #
+      # **Returns**
+      #
+      # - `void`
       def visit
         # `@document` may be any kind of node:
         visit_method = :"#{@document.visit_method}_with_modifications"
@@ -175,9 +185,14 @@ module GraphQL
           # To customize this hook, override one of its make_visit_methods (or the base method?)
           # in your subclasses.
           #
-          # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
-          # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
-          # @return [Array, nil] If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
+          # **Parameters**
+          #
+          # - `node` (`GraphQL::Language::Nodes::AbstractNode`) — the node being visited
+          # - `parent` (`GraphQL::Language::Nodes::AbstractNode, nil`) — the previously-visited node, or `nil` if this is the root node.
+          #
+          # **Returns**
+          #
+          # - `Array, nil` — If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
           def #{node_method}(node, parent)
             if node.equal?(DELETE_NODE)
               # This might be passed to `super(DELETE_NODE, ...)`

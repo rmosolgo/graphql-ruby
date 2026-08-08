@@ -1,13 +1,19 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    # @api private
+    # **API:** private
     module TypeExpression
       # Fetch a type from a type map by its AST specification.
       # Return `nil` if not found.
-      # @param type_owner [#type] A thing for looking up types by name
-      # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
-      # @return [Class, GraphQL::Schema::NonNull, GraphQL::Schema:List]
+      #
+      # **Parameters**
+      #
+      # - `type_owner` (`#type`) — A thing for looking up types by name
+      # - `ast_node` (`GraphQL::Language::Nodes::AbstractNode`)
+      #
+      # **Returns**
+      #
+      # - `Class, GraphQL::Schema::NonNull, GraphQL::Schema:List`
       def self.build_type(type_owner, ast_node)
         case ast_node
         when GraphQL::Language::Nodes::TypeName

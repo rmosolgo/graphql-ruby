@@ -21,15 +21,23 @@ module GraphQL
 
       attr_reader :context
 
-      # @return [Array<String>] The nesting of the current position in the AST
+      # **Returns**
+      #
+      # - `Array<String>` — The nesting of the current position in the AST
       def path
         @path[0, @path_depth]
       end
 
       # Build a class to visit the AST and perform validation,
       # or use a pre-built class if rules is `ALL_RULES` or empty.
-      # @param rules [Array<Module, Class>]
-      # @return [Class] A class for validating `rules` during visitation
+      #
+      # **Parameters**
+      #
+      # - `rules` (`Array<Module, Class>`)
+      #
+      # **Returns**
+      #
+      # - `Class` — A class for validating `rules` during visitation
       def self.including_rules(rules)
         if rules.empty?
           # It's not doing _anything?!?_
@@ -180,27 +188,37 @@ module GraphQL
           end
         end
 
-        # @return [GraphQL::BaseType] The current object type
+        # **Returns**
+        #
+        # - `GraphQL::BaseType` — The current object type
         def type_definition
           @current_object_type
         end
 
-        # @return [GraphQL::BaseType] The type which the current type came from
+        # **Returns**
+        #
+        # - `GraphQL::BaseType` — The type which the current type came from
         def parent_type_definition
           @parent_object_type
         end
 
-        # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one
+        # **Returns**
+        #
+        # - `GraphQL::Field, nil` — The most-recently-entered GraphQL::Field, if currently inside one
         def field_definition
           @current_field_definition
         end
 
-        # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one
+        # **Returns**
+        #
+        # - `GraphQL::Directive, nil` — The most-recently-entered GraphQL::Directive, if currently inside one
         def directive_definition
           @current_directive_definition
         end
 
-        # @return [GraphQL::Argument, nil] The most-recently-entered GraphQL::Argument, if currently inside one
+        # **Returns**
+        #
+        # - `GraphQL::Argument, nil` — The most-recently-entered GraphQL::Argument, if currently inside one
         def argument_definition
           # Return the parent argument definition (not the current one).
           @parent_argument_definition

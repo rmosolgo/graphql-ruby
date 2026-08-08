@@ -5,21 +5,28 @@ module GraphQL
     class Validator
       # Use this to validate each member of an array value.
       #
-      # @example validate format of all strings in an array
+      # **Examples**
       #
-      #   argument :handles, [String],
-      #     validates: { all: { format: { with: /\A[a-z0-9_]+\Z/ } } }
+      # **Example: validate format of all strings in an array**
       #
-      # @example multiple validators can be combined
+      # ```ruby
+      # argument :handles, [String],
+      #   validates: { all: { format: { with: /\A[a-z0-9_]+\Z/ } } }
+      # ```
       #
-      #   argument :handles, [String],
-      #     validates: { all: { format: { with: /\A[a-z0-9_]+\Z/ }, length: { maximum: 32 } } }
+      # **Example: multiple validators can be combined**
       #
-      # @example any type can be used
+      # ```ruby
+      # argument :handles, [String],
+      #   validates: { all: { format: { with: /\A[a-z0-9_]+\Z/ }, length: { maximum: 32 } } }
+      # ```
       #
-      #   argument :choices, [Integer],
-      #     validates: { all: { inclusion: { in: 1..12 } } }
+      # **Example: any type can be used**
       #
+      # ```ruby
+      # argument :choices, [Integer],
+      #   validates: { all: { inclusion: { in: 1..12 } } }
+      # ```
       class AllValidator < Validator
         def initialize(validated:, allow_blank: false, allow_null: false, **validators)
           super(validated: validated, allow_blank: allow_blank, allow_null: allow_null)

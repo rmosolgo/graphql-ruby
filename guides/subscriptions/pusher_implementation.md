@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Subscriptions
-title: Pusher Implementation
-desc: GraphQL subscriptions over Pusher
-index: 6
-pro: true
----
+# Pusher Implementation
 
 [GraphQL Pro](https://graphql.pro) includes a subscription system based on [Redis](https://redis.io) and [Pusher](https://pusher.com) which works with any Ruby web framework.
 
@@ -120,7 +111,7 @@ For better performance reading and writing to Redis, you can pass a `connection_
 
 ### Broadcasts
 
-If you set up {% internal_link "Broadcasts", "/subscriptions/broadcast" %}, then you can update many clients over a single Pusher channel.
+If you set up [Broadcasts](/subscriptions/broadcast), then you can update many clients over a single Pusher channel.
 
 Broadcast channels have stable, predictable IDs. To prevent unauthorized clients from "listening in," use an [authorized Pusher channel](#authorization) for transport. In your authorization code, you can check for a broadcast using `.broadcast_subscription_id?`:
 
@@ -177,7 +168,7 @@ def execute
 end
 ```
 
-This will cause subscription payloads to include `compressed_result: "..."` instead of `result: "..."` when they're sent over Pusher. See docs for {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %} or {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %} to read about preparing clients for compressed payloads.
+This will cause subscription payloads to include `compressed_result: "..."` instead of `result: "..."` when they're sent over Pusher. See docs for [Apollo Client](/javascript_client/apollo_subscriptions) or [Relay Modern](/javascript_client/relay_subscriptions) to read about preparing clients for compressed payloads.
 
 By configuring `compress_pusher_payload: true` on a query-by-query basis, the subscription backend can continue to support clients running _old_ client code (by not compressing) while upgrading new clients to compressed payloads.
 
@@ -197,7 +188,7 @@ Your server needs to receive webhooks from Pusher when clients disconnect. This 
 
 In the Pusher web UI, Add a webhook for "Channel existence"
 
-{{ "/subscriptions/pusher_webhook_configuration.png" | link_to_img:"Pusher Webhook Configuration" }}
+![Pusher Webhook Configuration](/subscriptions/pusher_webhook_configuration.png)
 
 Then, mount the Rack app for handling webhooks from Pusher. For example, on Rails:
 
@@ -258,7 +249,7 @@ end
 
 Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query `context`.
 
-By default, this is done with {{ "GraphQL::Subscriptions::Serialize" | api_doc }}'s `dump` and `load` methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of `GraphQL::Pro::PusherSubscriptions` and override `#dump_context(ctx)` and `#load_context(ctx_string)`:
+By default, this is done with [GraphQL::Subscriptions::Serialize](rdoc-ref:GraphQL::Subscriptions::Serialize)'s `dump` and `load` methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of `GraphQL::Pro::PusherSubscriptions` and override `#dump_context(ctx)` and `#load_context(ctx_string)`:
 
 ```ruby
 class CustomSubscriptions < GraphQL::Pro::PusherSubscriptions
@@ -288,17 +279,17 @@ That gives you fine-grained control of context reloading.
 
 ## Dashboard
 
-You can monitor subscription state in the {% internal_link "GraphQL-Pro Dashboard", "/pro/dashboard" %}:
+You can monitor subscription state in the [GraphQL-Pro Dashboard](/pro/dashboard):
 
-{{ "/subscriptions/redis_dashboard_1.png" | link_to_img:"Redis Subscription Dashboard" }}
+![Redis Subscription Dashboard](/subscriptions/redis_dashboard_1.png)
 
-{{ "/subscriptions/redis_dashboard_2.png" | link_to_img:"Redis Subscription Detail" }}
+![Redis Subscription Detail](/subscriptions/redis_dashboard_2.png)
 
 ## Development Tips
 
 #### Clear subscription data
 
-At any time, you can reset your subscription database with the __"Reset"__ button in the {% internal_link "GraphQL-Pro Dashboard", "/pro/dashboard" %}, or in Ruby:
+At any time, you can reset your subscription database with the __"Reset"__ button in the [GraphQL-Pro Dashboard](/pro/dashboard), or in Ruby:
 
 ```ruby
 # Wipe all subscription data from the DB:
@@ -313,7 +304,7 @@ To receive Pusher's webhooks in development, Pusher [suggests using ngrok](https
 
 Install the [Pusher JS client](https://github.com/pusher/pusher-js) then see docs for:
 
-- {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}
-- {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}
-- {% internal_link "GraphiQL", "/javascript_client/graphiql_subscriptions" %}
-- {% internal_link "urql", "/javascript_client/urql_subscriptions" %}
+- [Apollo Client](/javascript_client/apollo_subscriptions)
+- [Relay Modern](/javascript_client/relay_subscriptions)
+- [GraphiQL](/javascript_client/graphiql_subscriptions)
+- [urql](/javascript_client/urql_subscriptions)

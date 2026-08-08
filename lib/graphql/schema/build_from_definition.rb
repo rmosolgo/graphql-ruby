@@ -5,7 +5,7 @@ module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        # @see {Schema.from_definition}
+        # See [Schema.from_definition](rdoc-ref:Schema.from_definition)
         def from_definition(schema_superclass, definition_string, parser: GraphQL.default_parser, **kwargs)
           if defined?(parser::SchemaParser)
             parser = parser::SchemaParser
@@ -25,7 +25,7 @@ module GraphQL
         end
       end
 
-      # @api private
+      # **API:** private
       module Builder
         include GraphQL::EmptyObjects
         extend self
@@ -293,7 +293,10 @@ module GraphQL
         # with their actual definitions.
         #
         # (Schema definitions are allowed to reference those built-ins without redefining them.)
-        # @return void
+        #
+        # **Returns**
+        #
+        # - `Object` — void
         def replace_late_bound_types_with_built_in(types)
           GraphQL::Schema::BUILT_IN_TYPES.each do |scalar_name, built_in_scalar|
             existing_type = types[scalar_name]

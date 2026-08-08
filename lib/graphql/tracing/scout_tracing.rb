@@ -18,9 +18,9 @@ module GraphQL
         "execute_query_lazy" => "execute.graphql",
       }
 
-      # @param set_transaction_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
-      #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
-      #   It can also be specified per-query with `context[:set_scout_transaction_name]`.
+      # **Parameters**
+      #
+      # - `set_transaction_name` (`Boolean`) — If true, the GraphQL operation name will be used as the transaction name. This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing. It can also be specified per-query with `context[:set_scout_transaction_name]`.
       def initialize(options = {})
         self.class.include ScoutApm::Tracer
         @set_transaction_name = options.fetch(:set_transaction_name, false)

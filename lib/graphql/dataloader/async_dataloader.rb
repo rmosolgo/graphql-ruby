@@ -23,7 +23,7 @@ module GraphQL
         create_pending_run
       end
 
-      # @api private
+      # **API:** private
       attr_reader :pending_sources
 
       def create_pending_run

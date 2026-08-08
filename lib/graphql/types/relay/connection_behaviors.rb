@@ -47,10 +47,14 @@ module GraphQL
             @default_broadcastable = new_value
           end
 
-          # @return [Class]
+          # **Returns**
+          #
+          # - `Class`
           attr_reader :node_type
 
-          # @return [Class]
+          # **Returns**
+          #
+          # - `Class`
           attr_reader :edge_class
 
           # Configure this connection to return `edges` and `nodes` based on `edge_type_class`.
@@ -63,7 +67,10 @@ module GraphQL
           # It's called when you subclass this base connection, trying to use the
           # class name to set defaults. You can call it again in the class definition
           # to override the default (or provide a value, if the default lookup failed).
-          # @param field_options [Hash] Any extra keyword arguments to pass to the `field :edges, ...` and `field :nodes, ...` configurations
+          #
+          # **Parameters**
+          #
+          # - `field_options` (`Hash`) — Any extra keyword arguments to pass to the `field :edges, ...` and `field :nodes, ...` configurations
           def edge_type(edge_type_class, edge_class: GraphQL::Pagination::Connection::Edge, node_type: edge_type_class.node_type, nodes_field: self.has_nodes_field, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable, field_options: nil)
             # Set this connection's graphql name
             node_type_name = node_type.graphql_name

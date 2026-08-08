@@ -1,17 +1,16 @@
 # frozen_string_literal: true
 module GraphQL
   module Language
-    # @api private
+    # **API:** private [GraphQL::Language::DocumentFromSchemaDefinition](rdoc-ref:GraphQL::Language::DocumentFromSchemaDefinition) is used to convert a [GraphQL::Schema](rdoc-ref:GraphQL::Schema) object To a [GraphQL::Language::Document](rdoc-ref:GraphQL::Language::Document) AST node.
     #
-    # {GraphQL::Language::DocumentFromSchemaDefinition} is used to convert a {GraphQL::Schema} object
-    # To a {GraphQL::Language::Document} AST node.
+    # **Parameters**
     #
-    # @param context [Hash]
-    # @param only [<#call(member, ctx)>]
-    # @param except [<#call(member, ctx)>]
-    # @param include_introspection_types [Boolean] Whether or not to include introspection types in the AST
-    # @param include_built_in_scalars [Boolean] Whether or not to include built in scalars in the AST
-    # @param include_built_in_directives [Boolean] Whether or not to include built in directives in the AST
+    # - `context` (`Hash`)
+    # - `only` (`<#call(member, ctx)>`)
+    # - `except` (`<#call(member, ctx)>`)
+    # - `include_introspection_types` (`Boolean`) — Whether or not to include introspection types in the AST
+    # - `include_built_in_scalars` (`Boolean`) — Whether or not to include built in scalars in the AST
+    # - `include_built_in_directives` (`Boolean`) — Whether or not to include built in directives in the AST
     class DocumentFromSchemaDefinition
       def initialize(
         schema, context: nil, include_introspection_types: false,

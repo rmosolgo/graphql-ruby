@@ -11,8 +11,10 @@ module GraphQL
     # to continue any tracing hooks and call the actual runtime behavior.
     #
     class Trace
-      # @param multiplex [GraphQL::Execution::Multiplex, nil]
-      # @param query [GraphQL::Query, nil]
+      # **Parameters**
+      #
+      # - `multiplex` (`GraphQL::Execution::Multiplex, nil`)
+      # - `query` (`GraphQL::Query, nil`)
       def initialize(multiplex: nil, query: nil, **_options)
         @multiplex = multiplex
         @query = query
@@ -23,8 +25,13 @@ module GraphQL
         yield
       end
 
-      # @param query_string [String]
-      # @return [void]
+      # **Parameters**
+      #
+      # - `query_string` (`String`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def parse(query_string:)
         yield
       end
@@ -39,16 +46,31 @@ module GraphQL
       def end_validate(query, validate, errors)
       end
 
-      # @param multiplex [GraphQL::Execution::Multiplex]
-      # @param analyzers [Array<Class>]
-      # @return [void]
+      # **Parameters**
+      #
+      # - `multiplex` (`GraphQL::Execution::Multiplex`)
+      # - `analyzers` (`Array<Class>`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def begin_analyze_multiplex(multiplex, analyzers); end
-      # @param multiplex [GraphQL::Execution::Multiplex]
-      # @param analyzers [Array<Class>]
-      # @return [void]
+      # **Parameters**
+      #
+      # - `multiplex` (`GraphQL::Execution::Multiplex`)
+      # - `analyzers` (`Array<Class>`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def end_analyze_multiplex(multiplex, analyzers); end
-      # @param multiplex [GraphQL::Execution::Multiplex]
-      # @return [void]
+      # **Parameters**
+      #
+      # - `multiplex` (`GraphQL::Execution::Multiplex`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def analyze_multiplex(multiplex:)
         yield
       end
@@ -58,8 +80,14 @@ module GraphQL
       end
 
       # This wraps an entire `.execute` call.
-      # @param multiplex [GraphQL::Execution::Multiplex]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `multiplex` (`GraphQL::Execution::Multiplex`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def execute_multiplex(multiplex:)
         yield
       end
@@ -73,17 +101,23 @@ module GraphQL
       end
 
       # GraphQL is about to resolve this field
-      # @param field [GraphQL::Schema::Field]
-      # @param object [GraphQL::Schema::Object]
-      # @param arguments [Hash]
-      # @param query [GraphQL::Query]
+      #
+      # **Parameters**
+      #
+      # - `field` (`GraphQL::Schema::Field`)
+      # - `object` (`GraphQL::Schema::Object`)
+      # - `arguments` (`Hash`)
+      # - `query` (`GraphQL::Query`)
       def begin_execute_field(field, object, arguments, query); end
       # GraphQL just finished resolving this field
-      # @param field [GraphQL::Schema::Field]
-      # @param object [GraphQL::Schema::Object]
-      # @param arguments [Hash]
-      # @param query [GraphQL::Query]
-      # @param result [Object]
+      #
+      # **Parameters**
+      #
+      # - `field` (`GraphQL::Schema::Field`)
+      # - `object` (`GraphQL::Schema::Object`)
+      # - `arguments` (`Hash`)
+      # - `query` (`GraphQL::Query`)
+      # - `result` (`Object`)
       def end_execute_field(field, object, arguments, query, result); end
 
       def execute_field(field:, query:, ast_node:, arguments:, object:)
@@ -105,18 +139,30 @@ module GraphQL
       end
 
       # A call to `.authorized?` is starting
-      # @param type [Class<GraphQL::Schema::Object>]
-      # @param object [Object]
-      # @param context [GraphQL::Query::Context]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `type` (`Class<GraphQL::Schema::Object>`)
+      # - `object` (`Object`)
+      # - `context` (`GraphQL::Query::Context`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def begin_authorized(type, object, context)
       end
       # A call to `.authorized?` just finished
-      # @param type [Class<GraphQL::Schema::Object>]
-      # @param object [Object]
-      # @param context [GraphQL::Query::Context]
-      # @param authorized_result [Boolean]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `type` (`Class<GraphQL::Schema::Object>`)
+      # - `object` (`Object`)
+      # - `context` (`GraphQL::Query::Context`)
+      # - `authorized_result` (`Boolean`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def end_authorized(type, object, context, authorized_result)
       end
 
@@ -133,59 +179,122 @@ module GraphQL
       end
 
       # A call to `.resolve_type` is starting
-      # @param type [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
-      # @param value [Object]
-      # @param context [GraphQL::Query::Context]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `type` (`Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>`)
+      # - `value` (`Object`)
+      # - `context` (`GraphQL::Query::Context`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def begin_resolve_type(type, value, context)
       end
 
       # A call to `.resolve_type` just ended
-      # @param type [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
-      # @param value [Object]
-      # @param context [GraphQL::Query::Context]
-      # @param resolved_type [Class<GraphQL::Schema::Object>]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `type` (`Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>`)
+      # - `value` (`Object`)
+      # - `context` (`GraphQL::Query::Context`)
+      # - `resolved_type` (`Class<GraphQL::Schema::Object>`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def end_resolve_type(type, value, context, resolved_type)
       end
 
       # A dataloader run is starting
-      # @param dataloader [GraphQL::Dataloader]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `dataloader` (`GraphQL::Dataloader`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def begin_dataloader(dataloader); end
       # A dataloader run has ended
-      # @param dataloder [GraphQL::Dataloader]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `dataloder` (`GraphQL::Dataloader`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def end_dataloader(dataloader); end
 
       # A source with pending keys is about to fetch
-      # @param source [GraphQL::Dataloader::Source]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `source` (`GraphQL::Dataloader::Source`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def begin_dataloader_source(source); end
       # A fetch call has just ended
-      # @param source [GraphQL::Dataloader::Source]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `source` (`GraphQL::Dataloader::Source`)
+      #
+      # **Returns**
+      #
+      # - `void`
       def end_dataloader_source(source); end
 
       # Called when Dataloader spins up a new fiber for GraphQL execution
-      # @param jobs [Array<#call>] Execution steps to run
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `jobs` (`Array<#call>`) — Execution steps to run
+      #
+      # **Returns**
+      #
+      # - `void`
       def dataloader_spawn_execution_fiber(jobs); end
       # Called when Dataloader spins up a new fiber for fetching data
-      # @param pending_sources [GraphQL::Dataloader::Source] Instances with pending keys
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `pending_sources` (`GraphQL::Dataloader::Source`) — Instances with pending keys
+      #
+      # **Returns**
+      #
+      # - `void`
       def dataloader_spawn_source_fiber(pending_sources); end
       # Called when an execution or source fiber terminates
-      # @return [void]
+      #
+      # **Returns**
+      #
+      # - `void`
       def dataloader_fiber_exit; end
 
       # Called when a Dataloader fiber is paused to wait for data
-      # @param source [GraphQL::Dataloader::Source] The Source whose `load` call initiated this `yield`
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `source` (`GraphQL::Dataloader::Source`) — The Source whose `load` call initiated this `yield`
+      #
+      # **Returns**
+      #
+      # - `void`
       def dataloader_fiber_yield(source); end
       # Called when a Dataloader fiber is resumed because data has been loaded
-      # @param source [GraphQL::Dataloader::Source] The Source whose `load` call previously caused this Fiber to wait
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `source` (`GraphQL::Dataloader::Source`) — The Source whose `load` call previously caused this Fiber to wait
+      #
+      # **Returns**
+      #
+      # - `void`
       def dataloader_fiber_resume(source); end
     end
   end

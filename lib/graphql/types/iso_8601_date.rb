@@ -16,14 +16,24 @@ module GraphQL
       description "An ISO 8601-encoded date"
       specified_by_url "https://tools.ietf.org/html/rfc3339"
 
-      # @param value [Date,Time,DateTime,String]
-      # @return [String]
+      # **Parameters**
+      #
+      # - `value` (`Date, Time, DateTime, String`)
+      #
+      # **Returns**
+      #
+      # - `String`
       def self.coerce_result(value, _ctx)
         Date.parse(value.to_s).iso8601
       end
 
-      # @param str_value [String, Date, DateTime, Time]
-      # @return [Date, nil]
+      # **Parameters**
+      #
+      # - `str_value` (`String, Date, DateTime, Time`)
+      #
+      # **Returns**
+      #
+      # - `Date, nil`
       def self.coerce_input(value, ctx)
         if value.is_a?(::Date)
           value

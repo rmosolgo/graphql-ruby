@@ -8,7 +8,7 @@ module GraphQL
     # only the selected operation, providing helpers for common use cases such
     # as skipped fields and visiting fragment spreads.
     #
-    # @see {GraphQL::Analysis::Analyzer} AST Analyzers for queries
+    # See [GraphQL::Analysis::Analyzer](rdoc-ref:GraphQL::Analysis::Analyzer) AST Analyzers for queries
     class Visitor < GraphQL::Language::StaticVisitor
       def initialize(query:, analyzers:, timeout:)
         @analyzers = analyzers
@@ -32,13 +32,19 @@ module GraphQL
         super(query.selected_operation)
       end
 
-      # @return [GraphQL::Query] the query being visited
+      # **Returns**
+      #
+      # - `GraphQL::Query` — the query being visited
       attr_reader :query
 
-      # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
+      # **Returns**
+      #
+      # - `Array<GraphQL::ObjectType>` — Types whose scope we've entered
       attr_reader :object_types
 
-      # @return [Array<GraphQL::AnalysisError]
+      # **Returns**
+      #
+      # - `Array<GraphQL::AnalysisError]` — Array<GraphQL::AnalysisError]
       attr_reader :rescued_errors
 
       def visit
@@ -48,23 +54,32 @@ module GraphQL
 
       # Visit Helpers
 
-      # @return [GraphQL::Execution::Interpreter::Arguments] Arguments for this node, merging default values, literal values and query variables
-      # @see {GraphQL::Query#arguments_for}
+      # See [GraphQL::Query#arguments_for](rdoc-ref:GraphQL::Query#arguments_for)
+      #
+      # **Returns**
+      #
+      # - `GraphQL::Execution::Interpreter::Arguments` — Arguments for this node, merging default values, literal values and query variables
       def arguments_for(ast_node, field_definition)
         @query.arguments_for(ast_node, field_definition)
       end
 
-      # @return [Boolean] If the visitor is currently inside a fragment definition
+      # **Returns**
+      #
+      # - `Boolean` — If the visitor is currently inside a fragment definition
       def visiting_fragment_definition?
         @in_fragment_def
       end
 
-      # @return [Boolean] If the current node should be skipped because of a skip or include directive
+      # **Returns**
+      #
+      # - `Boolean` — If the current node should be skipped because of a skip or include directive
       def skipping?
         @skipping
       end
 
-      # @return [Array<String>] The path to the response key for the current field
+      # **Returns**
+      #
+      # - `Array<String>` — The path to the response key for the current field
       def response_path
         @response_path.dup
       end
@@ -206,37 +221,51 @@ module GraphQL
         @path.pop
       end
 
-      # @return [GraphQL::BaseType] The current object type
+      # **Returns**
+      #
+      # - `GraphQL::BaseType` — The current object type
       def type_definition
         @object_types.last
       end
 
-      # @return [GraphQL::BaseType] The type which the current type came from
+      # **Returns**
+      #
+      # - `GraphQL::BaseType` — The type which the current type came from
       def parent_type_definition
         @object_types[-2]
       end
 
-      # @return [GraphQL::Field, nil] The most-recently-entered GraphQL::Field, if currently inside one
+      # **Returns**
+      #
+      # - `GraphQL::Field, nil` — The most-recently-entered GraphQL::Field, if currently inside one
       def field_definition
         @field_definitions.last
       end
 
-      # @return [GraphQL::Field, nil] The GraphQL field which returned the object that the current field belongs to
+      # **Returns**
+      #
+      # - `GraphQL::Field, nil` — The GraphQL field which returned the object that the current field belongs to
       def previous_field_definition
         @field_definitions[-2]
       end
 
-      # @return [GraphQL::Directive, nil] The most-recently-entered GraphQL::Directive, if currently inside one
+      # **Returns**
+      #
+      # - `GraphQL::Directive, nil` — The most-recently-entered GraphQL::Directive, if currently inside one
       def directive_definition
         @directive_definitions.last
       end
 
-      # @return [GraphQL::Argument, nil] The most-recently-entered GraphQL::Argument, if currently inside one
+      # **Returns**
+      #
+      # - `GraphQL::Argument, nil` — The most-recently-entered GraphQL::Argument, if currently inside one
       def argument_definition
         @argument_definitions.last
       end
 
-      # @return [GraphQL::Argument, nil] The previous GraphQL argument
+      # **Returns**
+      #
+      # - `GraphQL::Argument, nil` — The previous GraphQL argument
       def previous_argument_definition
         @argument_definitions[-2]
       end

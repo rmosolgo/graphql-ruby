@@ -4,14 +4,20 @@ require 'digest/sha2'
 
 module GraphQL
   class Query
-    # @api private
-    # @see Query#query_fingerprint
-    # @see Query#variables_fingerprint
-    # @see Query#fingerprint
+    # **API:** private
+    # See [Query#query_fingerprint](rdoc-ref:Query#query_fingerprint) Query#query_fingerprint
+    # See [Query#variables_fingerprint](rdoc-ref:Query#variables_fingerprint) Query#variables_fingerprint
+    # See [Query#fingerprint](rdoc-ref:Query#fingerprint) Query#fingerprint
     module Fingerprint
       # Make an obfuscated hash of the given string (either a query string or variables JSON)
-      # @param string [String]
-      # @return [String] A normalized, opaque hash
+      #
+      # **Parameters**
+      #
+      # - `string` (`String`)
+      #
+      # **Returns**
+      #
+      # - `String` — A normalized, opaque hash
       def self.generate(input_str)
         # Implemented to be:
         # - Short (and uniform) length

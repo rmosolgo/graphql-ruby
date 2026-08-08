@@ -13,7 +13,9 @@ module GraphQL
       # - It checks `.visible?` on root introspection types
       # - It can be used to cache profiles by name for re-use across queries
       class Profile
-        # @return [Schema::Visibility::Profile]
+        # **Returns**
+        #
+        # - `Schema::Visibility::Profile`
         def self.from_context(ctx, schema)
           if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
             types
@@ -28,7 +30,9 @@ module GraphQL
           profile
         end
 
-        # @return [Symbol, nil]
+        # **Returns**
+        #
+        # - `Symbol, nil`
         attr_reader :name
 
         def freeze

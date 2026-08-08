@@ -11,8 +11,14 @@ module GraphQL
         # Call this method to get the derived return type of the mutation,
         # or use it as a configuration method to assign a return type
         # instead of generating one.
-        # @param new_payload_type [Class, nil] If a type definition class is provided, it will be used as the return type of the mutation field
-        # @return [Class] The object type which this mutation returns.
+        #
+        # **Parameters**
+        #
+        # - `new_payload_type` (`Class, nil`) — If a type definition class is provided, it will be used as the return type of the mutation field
+        #
+        # **Returns**
+        #
+        # - `Class` — The object type which this mutation returns.
         def payload_type(new_payload_type = nil)
           if new_payload_type
             @payload_type = new_payload_type
@@ -44,8 +50,14 @@ module GraphQL
         end
 
         # An object class to use for deriving return types
-        # @param new_class [Class, nil] Defaults to {GraphQL::Schema::Object}
-        # @return [Class]
+        #
+        # **Parameters**
+        #
+        # - `new_class` (`Class, nil`) — Defaults to [GraphQL::Schema::Object](rdoc-ref:GraphQL::Schema::Object)
+        #
+        # **Returns**
+        #
+        # - `Class`
         def object_class(new_class = nil)
           if new_class
             if defined?(@payload_type)

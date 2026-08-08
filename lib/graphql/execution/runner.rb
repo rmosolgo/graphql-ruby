@@ -55,7 +55,9 @@ module GraphQL
 
       attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
 
-      # @return [void]
+      # **Returns**
+      #
+      # - `void`
       def add_finalizer(query, result_value, key, finalizer)
         @finalizers ||= {}.compare_by_identity
         f_for_query = @finalizers[query] ||= {}.compare_by_identity

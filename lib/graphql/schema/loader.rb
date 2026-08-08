@@ -1,18 +1,24 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    # You can use the result of {GraphQL::Introspection::INTROSPECTION_QUERY}
+    # You can use the result of [GraphQL::Introspection::INTROSPECTION_QUERY](rdoc-ref:GraphQL::Introspection::INTROSPECTION_QUERY)
     # to make a schema. This schema is missing some important details like
     # `resolve` functions, but it does include the full type system,
     # so you can use it to validate queries.
     #
-    # @see GraphQL::Schema.from_introspection for a public API
+    # See [GraphQL::Schema.from_introspection](rdoc-ref:GraphQL::Schema.from_introspection) for a public API
     module Loader
       extend self
 
       # Create schema with the result of an introspection query.
-      # @param introspection_result [Hash] A response from {GraphQL::Introspection::INTROSPECTION_QUERY}
-      # @return [Class] the schema described by `input`
+      #
+      # **Parameters**
+      #
+      # - `introspection_result` (`Hash`) — A response from [GraphQL::Introspection::INTROSPECTION_QUERY](rdoc-ref:GraphQL::Introspection::INTROSPECTION_QUERY)
+      #
+      # **Returns**
+      #
+      # - `Class` — the schema described by `input`
       def load(introspection_result)
         schema = introspection_result.fetch("data").fetch("__schema")
 
