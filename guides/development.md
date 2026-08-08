@@ -2,15 +2,15 @@
 
 So, you want to hack on GraphQL Ruby! Here are some tips for getting started.
 
-- [Setup](#setup) your development environment
-- [Run the tests](#running-the-tests) to verify your setup
-- [Debug](#debugging-with-pry) with pry
-- [Run the benchmarks](#running-the-benchmarks) to test performance in your environment
-- [Coding guidelines](#coding-guidelines) for working on your contribution
+- [Setup your development environment](#setup)
+- [Run the tests to verify your setup](#running-the-tests)
+- [Debug with pry](#debugging-with-pry)
+- [Run the benchmarks to test performance in your environment](#running-the-benchmarks)
+- [Coding guidelines for working on your contribution](#coding-guidelines)
 - Special tools for building the lexer and parser
-- Building and publishing the [GraphQL Ruby website](#website)
-- [Versioning](#versioning) describes how changes are managed and released
-- [Releasing](#releasing) Gem versions
+- [Building and publishing the GraphQL Ruby website](#website)
+- [Versioning describes how changes are managed and released](#versioning)
+- [Releasing Gem versions](#releasing)
 
 ## Setup
 
