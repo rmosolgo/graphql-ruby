@@ -19,5 +19,7 @@ class DashboardLandingsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "<code>DummySchema</code>"
     get graphql_dashboard.root_path, params: { schema: "NotInstalledSchema" }
     assert_includes response.body, "<code>NotInstalledSchema</code>"
+    get graphql_dashboard.root_path, params: { schema: "Kernel" }
+    assert_includes response.body, "<code>DummySchema</code>"
   end
 end
