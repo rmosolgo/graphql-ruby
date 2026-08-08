@@ -2,6 +2,13 @@
 
 module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
+  #
+  # The API-specific portions of `guides/queries/executing_queries.md` were
+  # migrated to `Schema#execute`, `Schema#multiplex`, and this initializer.
+  # Those APIs accept query strings or parsed documents, variables, context,
+  # root values, operation names, validation controls, and depth/complexity
+  # limits. The guide remains a standalone execution tutorial.
+  # migrated from guides/queries/executing_queries.md
   class Query
     extend Autoload
     include Tracing::Traceable
@@ -151,7 +158,7 @@ module GraphQL
     #
     # - `schema` (`GraphQL::Schema`)
     # - `query_string` (`String`)
-    # - `context` (`#[]`) — an arbitrary hash of values which you can access in [GraphQL::Field#resolve](rdoc-ref:GraphQL::Field#resolve)
+    # - `context` (`#[]`) — an arbitrary hash of values which you can access in [Schema::Field#resolve](rdoc-ref:GraphQL::Schema::Field#resolve)
     # - `variables` (`Hash`) — values for `$variables` in the query
     # - `operation_name` (`String`) — if the query string contains many operations, this is the one which should be executed
     # - `root_value` (`Object`) — the object used to resolve fields on the root type
@@ -354,7 +361,7 @@ module GraphQL
     # Determine the values for variables of this query, using default values
     # if a value isn't provided at runtime.
     #
-    # If some variable is invalid, errors are added to [validation errors](rdoc-ref:#validation_errors).
+    # If some variable is invalid, errors are added to the query's validation errors.
     #
     # **Returns**
     #
@@ -393,8 +400,7 @@ module GraphQL
     #
     # This fingerprint can be used to track runs of the same operation-variables combination over time.
     #
-    # See [operation_fingerprint](rdoc-ref:operation_fingerprint) operation_fingerprint
-    # See [variables_fingerprint](rdoc-ref:variables_fingerprint) variables_fingerprint
+    # See `operation_fingerprint` and `variables_fingerprint` for the components.
     #
     # **Returns**
     #
@@ -475,7 +481,7 @@ module GraphQL
     #
     # **Returns**
     #
-    # - `GraphQL::ObjectType, nil` — The runtime type of `value` from [Schema#resolve_type](rdoc-ref:Schema#resolve_type)
+    # - `GraphQL::ObjectType, nil` — The runtime type of `value` from [Schema.resolve_type](rdoc-ref:GraphQL::Schema::resolve_type)
     def resolve_type(abstract_type, value = NOT_CONFIGURED)
       if value.is_a?(Symbol) && value == NOT_CONFIGURED
         # Old method signature

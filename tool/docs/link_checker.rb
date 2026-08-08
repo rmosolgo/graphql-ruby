@@ -13,8 +13,10 @@ module GraphQLDocs
     FRAGMENT_PATTERN = /(?:id|name)\s*=\s*["']([^"']+)["']/i.freeze
     EXTERNAL_SCHEMES = %w[data file http https javascript mailto].freeze
 
-    def initialize(root)
+    def initialize(root, allow_root_links: false, root_links: nil)
       @root = File.expand_path(root)
+      @allow_root_links = allow_root_links
+      @root_links = root_links && File.expand_path(root_links)
       @files = Find.find(@root).select { |path| File.file?(path) }.to_set
     end
 
@@ -24,6 +26,19 @@ module GraphQLDocs
         File.read(source, encoding: "UTF-8").scan(LINK_PATTERN).flatten.each do |raw_target|
           target, fragment = split_target(raw_target)
           next if external?(target)
+          if target.start_with?("/") && @allow_root_links
+            if @root_links
+              destination = resolve_root_link(target)
+              unless destination && File.file?(destination)
+                missing << [source, raw_target, "file"]
+                next
+              end
+              if fragment && !fragment_present?(destination, fragment)
+                missing << [source, raw_target, "fragment"]
+              end
+            end
+            next
+          end
           next unless document_link?(target, fragment)
 
           destination = resolve(source, target)
@@ -75,6 +90,12 @@ module GraphQLDocs
       path
     end
 
+    def resolve_root_link(target)
+      path = File.join(@root_links, target.delete_prefix("/"))
+      candidates = [path, "#{path}.html", File.join(path, "index.html")]
+      candidates.find { |candidate| File.file?(candidate) }
+    end
+
     def fragments(path)
       File.read(path, encoding: "UTF-8").scan(FRAGMENT_PATTERN).flatten.to_set
     end
@@ -106,11 +127,13 @@ if __FILE__ == $PROGRAM_NAME
     parser.banner = "Usage: ruby tool/docs/link_checker.rb --root PATH"
     parser.on("--root PATH", "Generated documentation root") { |path| options[:root] = path }
     parser.on("--json PATH", "Write broken links as JSON") { |path| options[:json] = path }
+    parser.on("--allow-root-links", "Skip links to the published site's root") { options[:allow_root_links] = true }
+    parser.on("--root-links PATH", "Published site root used to validate absolute links") { |path| options[:root_links] = path }
     parser.on("--strict", "Fail when broken links are found") { options[:strict] = true }
   end.parse!
 
   abort "--root is required" unless options[:root]
-  missing = GraphQLDocs::LinkChecker.new(options[:root]).check
+  missing = GraphQLDocs::LinkChecker.new(options[:root], allow_root_links: options[:allow_root_links], root_links: options[:root_links]).check
   File.write(options[:json], JSON.pretty_generate(missing.map { |source, target, kind| { "source" => source, "target" => target, "kind" => kind } }) + "\n") if options[:json]
   exit 1 if options[:strict] && !missing.empty?
 end

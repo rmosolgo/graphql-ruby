@@ -12,7 +12,7 @@ module GraphQL
       class AbstractNode
 
         module DefinitionNode
-          # This AST node's [line](rdoc-ref:#line) returns the first line, which may be the description.
+          # This AST node's [line](rdoc-ref:GraphQL::Language::Nodes::AbstractNode#line) returns the first line, which may be the description.
           #
           # **Returns**
           #

@@ -21,7 +21,7 @@ module GraphQL
       attr_reader :options
 
       # Called when an object is hooked up to an abstract type, such as [Schema::Union.possible_types](rdoc-ref:Schema::Union.possible_types)
-      # or [Schema::Object.implements](rdoc-ref:Schema::Object.implements) (for interfaces).
+      # or `Schema::Object.implements` (for interfaces).
       #
       # **Parameters**
       #

@@ -28,10 +28,10 @@ module GraphQL
         # - `kwargs.:hash_key` (`String, Symbol`) — The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
         # - `kwargs.:dig` (`Array<String, Symbol>`) — The nested hash keys to lookup on the underlying hash to resolve this field using dig
         # - `kwargs.:resolver_method` (`Symbol, true`) — The method on the type to call to resolve this field (defaults to `name`)
-        # - `kwargs.:resolve_static` (`Symbol, true`) — Used by [Schema.execute_next](rdoc-ref:Schema.execute_next) to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
-        # - `kwargs.:resolve_batch` (`Symbol, true`) — Used by [Schema.execute_next](rdoc-ref:Schema.execute_next) map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
-        # - `kwargs.:resolve_each` (`Symbol, true`) — Used by [Schema.execute_next](rdoc-ref:Schema.execute_next) to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
-        # - `kwargs.:resolve_legacy_instance_method` (`Symbol, true`) — Used by [Schema.execute_next](rdoc-ref:Schema.execute_next) to get a value value for each item. Calls an instance method on the object type class.
+        # - `kwargs.:resolve_static` (`Symbol, true`) — Used by `Schema.execute_next` to produce a single value, shared by all objects which resolve this field. Called on the owner type class with `context, **arguments`
+        # - `kwargs.:resolve_batch` (`Symbol, true`) — Used by `Schema.execute_next` map `objects` to a same-sized Array of results. Called on the owner type class with `objects, context, **arguments`.
+        # - `kwargs.:resolve_each` (`Symbol, true`) — Used by `Schema.execute_next` to get a value value for each item. Called on the owner type class with `object, context, **arguments`.
+        # - `kwargs.:resolve_legacy_instance_method` (`Symbol, true`) — Used by `Schema.execute_next` to get a value value for each item. Calls an instance method on the object type class.
         # - `kwargs.:connection` (`Boolean`) — `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
         # - `kwargs.:connection_extension` (`Class`) — The extension to add, to implement connections. If `nil`, no extension is added.
         # - `kwargs.:max_page_size` (`Integer, nil`) — For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
@@ -42,7 +42,7 @@ module GraphQL
         # - `kwargs.:complexity` (`Numeric`) — When provided, set the complexity for this field
         # - `kwargs.:scope` (`Boolean`) — If true, the return type's `.scope_items` method will be called on the return value
         # - `kwargs.:subscription_scope` (`Symbol, String`) — A key in `context` which will be used to scope subscription payloads
-        # - `kwargs.:extensions` (`Array<Class, Hash<Class => Object>>`) — Named extensions to apply to this field (see also [extension](rdoc-ref:#extension))
+        # - `kwargs.:extensions` (`Array<Class, Hash<Class => Object>>`) — Named extensions to apply to this field (see also [Field#extension](rdoc-ref:GraphQL::Schema::Field#extension))
         # - `kwargs.:directives` (`Hash{Class => Hash}`) — Directives to apply to this field
         # - `kwargs.:trace` (`Boolean`) — If true, a [GraphQL::Tracing](rdoc-ref:GraphQL::Tracing) tracer will measure this scalar field
         # - `kwargs.:broadcastable` (`Boolean`) — Whether or not this field can be distributed in subscription broadcasts

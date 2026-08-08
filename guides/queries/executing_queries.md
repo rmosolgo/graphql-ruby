@@ -35,7 +35,7 @@ There are also several options you can use:
 - `validate:` may be `false` to skip static validation for this query
 - `max_depth:` and `max_complexity:` may override schema-level values
 
-Some of these options are described in more detail below, see [GraphQL::Query#initialize](rdoc-ref:GraphQL::Query#initialize) for more information.
+Some of these options are described in more detail below; see the [GraphQL::Query](rdoc-ref:GraphQL::Query) API for more information.
 
 ## Variables
 

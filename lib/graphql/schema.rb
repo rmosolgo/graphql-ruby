@@ -56,12 +56,24 @@ module GraphQL
   #  - query analyzers for assessing incoming queries (including max depth & max complexity restrictions)
   #  - execution strategies for running incoming queries
   #
-  # Schemas start with root types, [Schema#query](rdoc-ref:Schema#query), [Schema#mutation](rdoc-ref:Schema#mutation) and [Schema#subscription](rdoc-ref:Schema#subscription).
+  # Schemas start with root types, [Schema.query](rdoc-ref:GraphQL::Schema::query), [Schema.mutation](rdoc-ref:GraphQL::Schema::mutation) and [Schema.subscription](rdoc-ref:GraphQL::Schema::subscription).
   # The schema will traverse the tree of fields & types, using those as starting points.
   # Any undiscoverable types may be provided with the `types` configuration.
   #
   # Schemas can restrict large incoming queries with `max_depth` and `max_complexity` configurations.
   # (These configurations can be overridden by specific calls to [Schema.execute](rdoc-ref:Schema.execute))
+  #
+  # **Schema configuration reference**
+  #
+  # - Root types are registered with `query`, `mutation`, and `subscription`; use `orphan_types` for interface-only object types.
+  # - `object_from_id`, `id_from_object`, and `resolve_type` implement Relay object identification and abstract-type resolution.
+  # - `type_error`, `rescue_from`, `parse_error`, and `query_stack_error` provide execution error hooks.
+  # - `max_depth`, `max_complexity`, `validate_timeout`, `validate_max_errors`, and `max_query_string_tokens` limit incoming work.
+  # - `extra_types`, `introspection`, `trace_with`, analyzers, `context_class`, `query_class`, `lazy_resolve`, and `use` configure execution.
+  #
+  # The [schema definition guide](/schema/definition) contains setup examples and
+  # links each contract above to its API method. Keep method-specific behavior in
+  # the comments for those methods so this page remains the source of truth.
   #
   # **Examples**
   #
@@ -74,6 +86,10 @@ module GraphQL
   #   orphan_types ImageType, AudioType
   # end
   # ```
+  #
+  # The API-specific portions of `guides/schema/definition.md` were migrated
+  # here; the guide remains a standalone setup tutorial.
+  # migrated from guides/schema/definition.md
   class Schema
     extend GraphQL::Schema::Member::HasAstNode
     extend GraphQL::Schema::FindInheritedValue
@@ -168,7 +184,7 @@ module GraphQL
 
       # **Parameters**
       #
-      # - `new_mode` (`Symbol`) — If configured, this will be used when `context: [...](rdoc-ref:trace_mode:)` isn't set.
+      # - `new_mode` (`Symbol`) — If configured, this will be used when `context: { trace_mode: ... }` isn't set.
       def default_trace_mode(new_mode = NOT_CONFIGURED)
         if !NOT_CONFIGURED.equal?(new_mode)
           @default_trace_mode = new_mode
@@ -210,8 +226,8 @@ module GraphQL
         end
       end
 
-      # Configure `trace_class` to be used whenever `context: [mode_name](rdoc-ref:trace_mode:)` is requested.
-      # [default_trace_mode](rdoc-ref:default_trace_mode) is used when no `trace_mode: ...` is requested.
+      # Configure `trace_class` to be used whenever `context: { trace_mode: mode_name }` is requested.
+      # `default_trace_mode` is used when no `trace_mode: ...` is requested.
       #
       # When a `trace_class` is added this way, it will _not_ receive other modules added with `trace_with(...)`
       # unless `trace_mode` is explicitly given. (This class will not receive any default trace modules.)
@@ -281,7 +297,7 @@ module GraphQL
 
 
       # Returns the JSON response of [Introspection::INTROSPECTION_QUERY](rdoc-ref:Introspection::INTROSPECTION_QUERY).
-      # See [as_json](rdoc-ref:#as_json) Return a Hash representation of the schema
+      # See [as_json](rdoc-ref:GraphQL::Schema::as_json) Return a Hash representation of the schema
       #
       # **Returns**
       #
@@ -391,8 +407,8 @@ module GraphQL
         @null_context || GraphQL::Query::NullContext.instance
       end
 
-      # Build a map of `[=> type](rdoc-ref:name)` and return it
-      # See [get_type](rdoc-ref:get_type) Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
+      # Build a map of `{ name => type }` and return it.
+      # `get_type` is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       #
       # **Returns**
       #
@@ -502,7 +518,7 @@ module GraphQL
         end
       end
 
-      # Get or set the root `query [...](rdoc-ref:...)` object for this schema.
+      # Get or set the root `query` object for this schema.
       #
       # **Examples**
       #
@@ -551,7 +567,7 @@ module GraphQL
         end
       end
 
-      # Get or set the root `mutation [...](rdoc-ref:...)` object for this schema.
+      # Get or set the root `mutation` object for this schema.
       #
       # **Examples**
       #
@@ -600,7 +616,7 @@ module GraphQL
         end
       end
 
-      # Get or set the root `subscription [...](rdoc-ref:...)` object for this schema.
+      # Get or set the root `subscription` object for this schema.
       #
       # **Examples**
       #
@@ -1836,7 +1852,12 @@ module GraphQL
       end
 
       # Execute a query on itself.
-      # See [Query#initialize](rdoc-ref:Query#initialize) for arguments.
+      # See the [GraphQL::Query](rdoc-ref:GraphQL::Query) constructor for arguments.
+      #
+      # `query_str` may be a query string; alternatively pass `document:` with a
+      # parsed document. The common options are `variables:`, `context:`,
+      # `root_value:`, `operation_name:`, `validate:`, `max_depth:`, and
+      # `max_complexity:`. The returned result can be serialized directly as JSON.
       #
       # **Returns**
       #
@@ -1872,8 +1893,9 @@ module GraphQL
 
       # Execute several queries on itself, concurrently.
       #
-      # See [Query#initialize](rdoc-ref:Query#initialize) for query keyword arguments
-      # See [Execution::Multiplex#run_all](rdoc-ref:Execution::Multiplex#run_all) for multiplex keyword arguments
+      # See the [GraphQL::Query](rdoc-ref:GraphQL::Query) constructor for query keyword arguments.
+      # Multiplex-level execution is handled by the interpreter's
+      # [run_all](rdoc-ref:GraphQL::Execution::Interpreter::run_all) method.
       #
       # **Examples**
       #
@@ -2257,7 +2279,7 @@ module GraphQL
       # Implement this method in your schema to handle mismatches when `:compare` is used.
       #
       # See [Query::Context#add_error](rdoc-ref:Query::Context#add_error) Adding an error to the response to notify the client
-      # See [Query::Context#response_extensions](rdoc-ref:Query::Context#response_extensions) Adding key-value pairs to the response `"extensions" => [...](rdoc-ref:...)`
+      # See [Query::Context#response_extensions](rdoc-ref:Query::Context#response_extensions) Adding key-value pairs to the response `"extensions" => { ... }`
       #
       # **Examples**
       #

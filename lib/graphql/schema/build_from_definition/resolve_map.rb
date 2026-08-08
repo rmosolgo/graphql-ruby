@@ -7,7 +7,7 @@ module GraphQL
       # Wrap a user-provided hash of resolution behavior for easy access at runtime.
       #
       # Coerce scalar values by:
-      # - Checking for a function in the map like `{ Date: { coerce_input: ->(val, ctx) [...](rdoc-ref:...), coerce_result: ->(val, ctx) [...](rdoc-ref:...) } }`
+      # - Checking for a function in the map like `{ Date: { coerce_input: ->(val, ctx) { ... }, coerce_result: ->(val, ctx) { ... } } }`
       # - Falling back to a passthrough
       #
       # Interface/union resolution can be provided as a `resolve_type:` key.

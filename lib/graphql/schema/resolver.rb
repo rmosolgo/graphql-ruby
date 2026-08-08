@@ -17,7 +17,7 @@ module GraphQL
     # A resolver's configuration may be overridden with other keywords in the `field(...)` call.
     #
     # See [GraphQL::Schema::Mutation](rdoc-ref:GraphQL::Schema::Mutation) for a concrete subclass of `Resolver`.
-    # See [GraphQL::Function](rdoc-ref:GraphQL::Function) `Resolver` is a replacement for `GraphQL::Function`
+    # `Resolver` is a replacement for the former `GraphQL::Function` API.
     class Resolver
       include Schema::Member::GraphQLTypeNames
       # Really we only need description & comment from here, but:
@@ -364,7 +364,7 @@ module GraphQL
         # If `true` (default), then the return type for this resolver will be nullable.
         # If `false`, then the return type is non-null.
         #
-        # See [type](rdoc-ref:#type) which sets the return type of this field and accepts a `null:` option
+        # See [type](rdoc-ref:GraphQL::Schema::Resolver::type) which sets the return type of this field and accepts a `null:` option
         #
         # **Parameters**
         #
@@ -388,7 +388,7 @@ module GraphQL
         # Call this method to get the return type of the field,
         # or use it as a configuration method to assign a return type
         # instead of generating one.
-        # TODO unify with [null](rdoc-ref:#null)
+        # TODO unify with [null](rdoc-ref:GraphQL::Schema::Resolver::null)
         #
         # **Parameters**
         #
@@ -508,7 +508,7 @@ module GraphQL
 
         # Add an argument to this field's signature, but
         # also add some preparation hook methods which will be used for this argument
-        # See [GraphQL::Schema::Argument#initialize](rdoc-ref:GraphQL::Schema::Argument#initialize) for the signature
+        # See [GraphQL::Schema::Argument](rdoc-ref:GraphQL::Schema::Argument) for the signature
         def argument(*args, **kwargs, &block)
           # Use `from_resolver: true` to short-circuit the InputObject's own `loads:` implementation
           # so that we can support `#load_{x}` methods below.

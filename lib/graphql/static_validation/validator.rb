@@ -3,7 +3,7 @@ require "timeout"
 
 module GraphQL
   module StaticValidation
-    # Initialized with a [GraphQL::Schema](rdoc-ref:GraphQL::Schema), then it can validate [GraphQL::Language::Nodes::Documents](rdoc-ref:GraphQL::Language::Nodes::Documents)s based on that schema.
+    # Initialized with a [GraphQL::Schema](rdoc-ref:GraphQL::Schema), then it can validate [GraphQL::Language::Nodes::Document](rdoc-ref:GraphQL::Language::Nodes::Document) nodes based on that schema.
     #
     # By default, it's used by [GraphQL::Query](rdoc-ref:GraphQL::Query)
     #

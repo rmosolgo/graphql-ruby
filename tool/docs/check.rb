@@ -17,7 +17,7 @@ module GraphQLDocs
       end
       markdown_files.each do |path|
         text = File.read(path)
-        errors << "#{path}: Liquid tag" if text.match?(/\{%|\{%{2}/)
+        errors << "#{path}: Liquid tag" if text.match?(/\{%|\{\{/)
       end
       errors.each { |error| warn error }
       errors

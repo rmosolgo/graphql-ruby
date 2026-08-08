@@ -5,7 +5,7 @@ require "graphql/tracing/monitor_trace"
 module GraphQL
   module Tracing
     # A tracer for reporting GraphQL-Ruby times to Statsd.
-    # Passing any Statsd client that implements `.time(name) [...](rdoc-ref:...)`
+    # Passing any Statsd client that implements `.time(name) { ... }`
     # and `.timing(name, ms)` will work.
     #
     # **Examples**

@@ -81,7 +81,7 @@ See below for the different kind of modifications you can make in a changeset:
 
 ### Fields
 
-To add or redefine a field, use `field(..., added_in: ...)`, including all configuration values for the new implementation (see [GraphQL::Schema::Field#initialize](rdoc-ref:GraphQL::Schema::Field#initialize)). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.
+To add or redefine a field, use `field(..., added_in: ...)`, including all configuration values for the new implementation (see the [GraphQL::Schema::Field](rdoc-ref:GraphQL::Schema::Field) API). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.
 
 ```ruby
 class Types::Recipe < Types::BaseObject

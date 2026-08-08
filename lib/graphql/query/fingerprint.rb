@@ -5,9 +5,8 @@ require 'digest/sha2'
 module GraphQL
   class Query
     # **API:** private
-    # See [Query#query_fingerprint](rdoc-ref:Query#query_fingerprint) Query#query_fingerprint
-    # See [Query#variables_fingerprint](rdoc-ref:Query#variables_fingerprint) Query#variables_fingerprint
-    # See [Query#fingerprint](rdoc-ref:Query#fingerprint) Query#fingerprint
+    # The resulting hashes are exposed by `Query#operation_fingerprint`,
+    # `Query#variables_fingerprint`, and `Query#fingerprint`.
     module Fingerprint
       # Make an obfuscated hash of the given string (either a query string or variables JSON)
       #

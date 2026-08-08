@@ -21,7 +21,7 @@ module GraphQL
     class SubscriptionScopeMissingError < GraphQL::Error
     end
 
-    # See [Subscriptions#initialize](rdoc-ref:Subscriptions#initialize) for options, concrete implementations may add options.
+    # See [GraphQL::Subscriptions](rdoc-ref:GraphQL::Subscriptions) for the base options; concrete implementations may add options.
     def self.use(defn, options = {})
       schema = defn.is_a?(Class) ? defn : defn.target
 

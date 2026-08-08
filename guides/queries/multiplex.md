@@ -101,7 +101,7 @@ end
 
 The API is the same as [query analyzers](/queries/ast_analysis#analyzing-multiplexes).
 
-Multiplex analyzers may return [AnalysisError](rdoc-ref:AnalysisError) to halt execution of the whole multiplex.
+Multiplex analyzers may return [GraphQL::AnalysisError](rdoc-ref:GraphQL::AnalysisError) to halt execution of the whole multiplex.
 
 ## Multiplex Tracing
 

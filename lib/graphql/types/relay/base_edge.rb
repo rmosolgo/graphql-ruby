@@ -10,7 +10,7 @@ module GraphQL
       # For example, you may want to extend your own `BaseObject` instead of the
       # built-in `GraphQL::Schema::Object`.
       #
-      # See [Relay::BaseConnection](rdoc-ref:Relay::BaseConnection) for connection types
+      # See [GraphQL::Types::Relay::BaseConnection](rdoc-ref:GraphQL::Types::Relay::BaseConnection) for connection types
       #
       # **Examples**
       #

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Language
-    # **API:** private [GraphQL::Language::DocumentFromSchemaDefinition](rdoc-ref:GraphQL::Language::DocumentFromSchemaDefinition) is used to convert a [GraphQL::Schema](rdoc-ref:GraphQL::Schema) object To a [GraphQL::Language::Document](rdoc-ref:GraphQL::Language::Document) AST node.
+    # **API:** private [GraphQL::Language::DocumentFromSchemaDefinition](rdoc-ref:GraphQL::Language::DocumentFromSchemaDefinition) is used to convert a [GraphQL::Schema](rdoc-ref:GraphQL::Schema) object to a [GraphQL::Language::Nodes::Document](rdoc-ref:GraphQL::Language::Nodes::Document) AST node.
     #
     # **Parameters**
     #

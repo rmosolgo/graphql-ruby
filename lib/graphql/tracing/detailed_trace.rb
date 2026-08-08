@@ -14,7 +14,7 @@ module GraphQL
     #
     # By default, the detailed tracer calls `.inspect` on application objects returned from fields. You can customize
     # this behavior by extending [DetailedTrace](rdoc-ref:DetailedTrace) and overriding [inspect object](rdoc-ref:#inspect_object). You can opt out of debug annotations
-    # entirely with `use ..., debug: false` or for a single query with `context: [false](rdoc-ref:detailed_trace_debug:)`.
+    # entirely with `use ..., debug: false` or for a single query with `context: { detailed_trace_debug: false }`.
     #
     # You can store saved traces in two ways:
     #

@@ -4,7 +4,7 @@ module GraphQL
   # Raised when a argument is configured with `loads:` and the client provides an `ID`,
   # but no object is loaded for that ID.
   #
-  # See [GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader#load_application_object_failed,](rdoc-ref:GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader#load_application_object_failed,) A hook which you can override in resolvers, mutations and input objects.
+  # See [GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader#load_application_object_failed](rdoc-ref:GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader#load_application_object_failed) A hook which you can override in resolvers, mutations and input objects.
   class LoadApplicationObjectFailedError < GraphQL::ExecutionError
     # **Returns**
     #

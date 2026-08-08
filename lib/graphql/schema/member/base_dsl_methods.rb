@@ -7,7 +7,7 @@ module GraphQL
     class Member
       # DSL methods shared by lots of things in the GraphQL Schema.
       # **API:** private
-      # See [Classes](rdoc-ref:Classes) that extend this, eg [GraphQL::Schema::Object](rdoc-ref:GraphQL::Schema::Object)
+      # See classes that extend this, eg [GraphQL::Schema::Object](rdoc-ref:GraphQL::Schema::Object)
       module BaseDSLMethods
         include GraphQL::Schema::FindInheritedValue
 

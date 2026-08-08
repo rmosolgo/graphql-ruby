@@ -20,7 +20,7 @@ module GraphQL
     # Validation errors and [GraphQL::ExecutionError](rdoc-ref:GraphQL::ExecutionError)s are handled in isolation:
     # one of these errors in one query will not affect the other queries.
     #
-    # See [Schema#multiplex](rdoc-ref:Schema#multiplex) for public API
+    # See [Schema.multiplex](rdoc-ref:GraphQL::Schema::multiplex) for the public API
     # **API:** private
     class Multiplex
       include Tracing::Traceable
