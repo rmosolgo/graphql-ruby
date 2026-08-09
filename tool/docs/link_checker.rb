@@ -11,7 +11,7 @@ module GraphQLDocs
   class LinkChecker
     LINK_PATTERN = /(?:href|src)\s*=\s*["']([^"']+)["']/i.freeze
     FRAGMENT_PATTERN = /(?:id|name)\s*=\s*["']([^"']+)["']/i.freeze
-    EXTERNAL_SCHEMES = %w[data file http https javascript mailto].freeze
+    EXTERNAL_SCHEMES = ["data", "file", "http", "https", "javascript", "mailto"].freeze
 
     def initialize(root, allow_root_links: false, root_links: nil)
       @root = File.expand_path(root)

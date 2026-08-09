@@ -83,7 +83,7 @@ module GraphQLDocs
     end
 
     def copy_guide_assets(output_path)
-      extensions = %w[png gif jpg jpeg svg webp]
+      extensions = ["png", "gif", "jpg", "jpeg", "svg", "webp"]
       Dir[File.join(root, "guides", "**", "*")].select do |path|
         File.file?(path) && extensions.include?(File.extname(path).delete_prefix(".").downcase)
       end.each do |path|

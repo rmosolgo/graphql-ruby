@@ -15,11 +15,11 @@ module GraphQLDocs
     CALLOUT = /\{%\s*callout\s+(\w+)\s*%\}\s*\n(.*?)\{%\s*endcallout\s*%\}/m.freeze
     GUIDE_LINK = /\]\((?![\/#]|https?:|mailto:|rdoc-ref:)([A-Za-z][\w-]*(?:\/[A-Za-z0-9_.-]+)*(?:#[^)]+)?)\)/.freeze
     RDOC_REFERENCE = /rdoc-ref:([A-Za-z][\w:#.?!-]*)/.freeze
-    GUIDE_ROOTS = %w[
-      authorization changesets dataloader defer development errors execution faq fields
-      getting_started javascript_client language_tools limiters mutations object_cache
-      operation_store pagination pro queries related_projects relay schema subscriptions
-      testing type_definitions
+    GUIDE_ROOTS = [
+      "authorization", "changesets", "dataloader", "defer", "development", "errors", "execution", "faq", "fields",
+      "getting_started", "javascript_client", "language_tools", "limiters", "mutations", "object_cache",
+      "operation_store", "pagination", "pro", "queries", "related_projects", "relay", "schema", "subscriptions",
+      "testing", "type_definitions",
     ].freeze
 
     attr_reader :paths
@@ -78,9 +78,9 @@ module GraphQLDocs
       end
     end
 
-    GUIDE_API_ROOTS = %w[
-      Analysis Authorization Dataloader Defer Error Execution Field Language Limiters Mutation
-      ObjectCache Pagination Parser Query Relay Schema Subscriptions Testing Trace Tracing Types
+    GUIDE_API_ROOTS = [
+      "Analysis", "Authorization", "Dataloader", "Defer", "Error", "Execution", "Field", "Language", "Limiters", "Mutation",
+      "ObjectCache", "Pagination", "Parser", "Query", "Relay", "Schema", "Subscriptions", "Testing", "Trace", "Tracing", "Types",
     ].freeze
 
     def issue_link(title, body)
