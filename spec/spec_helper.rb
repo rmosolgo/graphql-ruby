@@ -61,6 +61,24 @@ def if_exec_next(exec_next_value, legacy_value)
   TESTING_EXEC_NEXT ? exec_next_value : legacy_value
 end
 
+def rdoc_parameter_names(comment, include_options: false)
+  section = nil
+  comment.lines.filter_map do |line|
+    if line.include?("**Parameters**")
+      section = :parameters
+      nil
+    elsif line.include?("**Options**")
+      section = :options
+      nil
+    elsif line.match?(/\*\*(?:Yields|Returns)\*\*/)
+      section = nil
+      nil
+    elsif section == :parameters || (include_options && section == :options)
+      line[/^\s*# - `([^`]+)`/, 1]&.sub(/\Akwargs\.:/, "")
+    end
+  end
+end
+
 module Minitest
   class Test
     # These tests are skipped but should be fixed at some point

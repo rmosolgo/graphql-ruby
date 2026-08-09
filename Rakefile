@@ -18,8 +18,17 @@ Rake::TestTask.new do |t|
     end
   end
 
+  exclude_docs = begin
+    require "rdoc"
+    require "rdoc/generator/aliki"
+    false
+  rescue LoadError
+    true
+  end
+
   t.test_files = FileList.new("spec/**/*_spec.rb") do |fl|
     fl.exclude(*exclude_integrations.map { |int| "spec/integration/#{int}/**/*" })
+    fl.exclude("spec/docs/**/*") if exclude_docs
   end
 
   # After 2.7, there were not warnings for uninitialized ivars anymore

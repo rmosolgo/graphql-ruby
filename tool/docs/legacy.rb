@@ -16,7 +16,7 @@ module GraphQLDocs
 
     def install
       entries.each do |entry|
-        next unless %w[instance_method class_method].include?(entry.fetch("type"))
+        next unless ["instance_method", "class_method"].include?(entry.fetch("type"))
 
         path, current_fragment = entry.fetch("path").split("#", 2)
         next unless current_fragment

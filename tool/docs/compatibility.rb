@@ -12,7 +12,7 @@ module GraphQLDocs
   # YARD registry would keep the retired documentation toolchain as a runtime
   # dependency after the migration.
   class Compatibility
-    API_TYPES = %w[class module constant instance_method class_method].freeze
+    API_TYPES = ["class", "module", "constant", "instance_method", "class_method"].freeze
 
     def initialize(root: Dir.pwd)
       @root = File.expand_path(root)
@@ -134,6 +134,6 @@ if __FILE__ == $PROGRAM_NAME
   result = checker.check(rdoc_index: options.fetch(:rdoc), baseline: options[:baseline])
   checker.report(result)
   File.write(options.fetch(:json), JSON.pretty_generate(result) + "\n") if options[:json]
-  strict_keys = %w[duplicate_entries invalid_entries unexpected_baseline_missing unexpected_baseline_extra]
+  strict_keys = ["duplicate_entries", "invalid_entries", "unexpected_baseline_missing", "unexpected_baseline_extra"]
   exit 1 if options[:strict] && strict_keys.any? { |key| result.fetch(key, []).any? }
 end
