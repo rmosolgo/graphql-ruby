@@ -1,6 +1,17 @@
 # frozen_string_literal: true
 require "spec_helper"
 
+class GraphQLSubscriptionsSerializeTimestampGadget
+  class << self
+    attr_accessor :called
+
+    def strptime(*_args)
+      self.called = true
+      :unexpected_result
+    end
+  end
+end
+
 describe GraphQL::Subscriptions::Serialize do
   def serialize_dump(v)
     GraphQL::Subscriptions::Serialize.dump(v)
@@ -68,6 +79,18 @@ describe GraphQL::Subscriptions::Serialize do
       reloaded = serialize_load(serialized)
       assert_equal timestamp, reloaded, "#{timestamp.inspect} is serialized to #{serialized.inspect} and reloaded"
     end
+  end
+
+  it "doesn't invoke methods on arbitrary timestamp classes" do
+    GraphQLSubscriptionsSerializeTimestampGadget.called = false
+    serialized = JSON.generate(GraphQL::Subscriptions::Serialize::TIMESTAMP_KEY => [
+      "GraphQLSubscriptionsSerializeTimestampGadget",
+      "2020-01-03 10:11:12.000000000+0000",
+    ])
+
+    error = assert_raises(ArgumentError) { serialize_load(serialized) }
+    assert_equal "Unsupported timestamp class: \"GraphQLSubscriptionsSerializeTimestampGadget\"", error.message
+    refute GraphQLSubscriptionsSerializeTimestampGadget.called
   end
 
   if defined?(ActiveSupport::TimeWithZone) && defined?(Rails) && Rails.version.split(".").first.to_i >= 7
