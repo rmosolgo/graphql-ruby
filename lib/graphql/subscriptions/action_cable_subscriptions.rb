@@ -96,8 +96,11 @@ module GraphQL
 
       # **Parameters**
       #
-      # - `serializer` (`<#dump(obj), #load(string)] Used for serializing messages before handing them to `.broadcast(msg)``) — erializer [<#dump(obj), #load(string)] Used for serializing messages before handing them to `.broadcast(msg)`
+      # - `serializer` (`<#dump(obj), #load(string)>`) — Used for serializing messages before handing them to `.broadcast(msg)`
       # - `namespace` (`string`) — Used to namespace events and subscriptions (default: '')
+      #
+      # :call-seq:
+      #   initialize(#dump(obj), #load(string) serializer:, string namespace:, action_cable:, action_cable_coder:, **rest)
       def initialize(serializer: Serialize, namespace: '', action_cable: ActionCable, action_cable_coder: ActiveSupport::JSON, **rest)
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
@@ -209,6 +212,9 @@ module GraphQL
       #
       # - `message` (`String`) — n ActionCable-broadcasted string (JSON)
       # - `context` (`GraphQL::Query::Context`) — the context of the first event for a given subscription fingerprint
+      #
+      # :call-seq:
+      #   load_action_cable_message(String message, GraphQL::Query::Context context)
       def load_action_cable_message(message, context)
         if @serialize_with_context
           @serializer.load(message, context)

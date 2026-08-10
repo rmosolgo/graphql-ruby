@@ -17,6 +17,9 @@ module GraphQL
         # **Returns**
         #
         # - `Object` — Another list-like object, scoped to the current context
+        #
+        # :call-seq:
+        #   scope_items(Object items, GraphQL::Query::Context context) -> Object
         def scope_items(items, context)
           items
         end

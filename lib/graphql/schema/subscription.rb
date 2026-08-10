@@ -17,8 +17,7 @@ module GraphQL
       NO_UPDATE = :no_update
       null false
 
-      # **API:** private
-      def initialize(object:, context:, field:)
+      def initialize(object:, context:, field:) # :nodoc:
         super
         # Figure out whether this is an update or an initial subscription
         @mode = context.query.subscription_update? ? :update : :subscribe
@@ -30,8 +29,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      def call_resolve(args_hash)
+      def call_resolve(args_hash) # :nodoc:
         if @field_resolve_step.nil?
           super
         else
@@ -60,8 +58,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      def resolve_with_support(**args)
+      def resolve_with_support(**args) # :nodoc:
         @original_arguments = args # before `loads:` have been run
         result = nil
         unsubscribed = true
@@ -96,8 +93,7 @@ module GraphQL
       end
 
       # Wrap the user-defined `#subscribe` hook
-      # **API:** private
-      def resolve_subscribe(**args)
+      def resolve_subscribe(**args) # :nodoc:
         ret_val = !args.empty? ? subscribe(**args) : subscribe
         if ret_val == :no_response
           context.skip
@@ -114,8 +110,7 @@ module GraphQL
       end
 
       # Wrap the user-provided `#update` hook
-      # **API:** private
-      def resolve_update(**args)
+      def resolve_update(**args) # :nodoc:
         ret_val = !args.empty? ? update(**args) : update
         if ret_val == NO_UPDATE
           context.namespace(:subscriptions)[:no_update] = true
@@ -151,6 +146,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   unsubscribe(Object update_value) -> void
       def unsubscribe(update_value = nil)
         context.namespace(:subscriptions)[:unsubscribed] = true
         err = EarlyUnsubscribe.new
@@ -173,6 +171,9 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol`
+      #
+      # :call-seq:
+      #   subscription_scope(Symbol new_scope, bool optional:) -> Symbol
       def self.subscription_scope(new_scope = NOT_CONFIGURED, optional: false)
         if new_scope != NOT_CONFIGURED
           @subscription_scope = new_scope
@@ -214,6 +215,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — An identifier corresponding to a stream of updates
+      #
+      # :call-seq:
+      #   topic_for(Hash[String, Object] arguments:, GraphQL::Schema::Field field:, Object | nil scope:) -> String
       def self.topic_for(arguments:, field:, scope:)
         Subscriptions::Serialize.dump_recursive([scope, field.graphql_name, arguments])
       end
@@ -230,6 +234,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   write_subscription() -> void
       def write_subscription
         if subscription_written?
           raise GraphQL::Error, "`write_subscription` was called but `#{self.class}#subscription_written?` is already true. Remove a call to `write subscription`."
@@ -243,6 +250,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — `true` if [write subscription](rdoc-ref:#write_subscription) was called already
+      #
+      # :call-seq:
+      #   subscription_written?() -> bool
       def subscription_written?
         @subscription_written
       end
@@ -250,6 +260,9 @@ module GraphQL
       # **Returns**
       #
       # - `Subscriptions::Event` — This object is used as a representation of this subscription for the backend
+      #
+      # :call-seq:
+      #   event() -> Subscriptions::Event
       def event
         @event ||= begin
           if @original_arguments.nil? && @field_resolve_step

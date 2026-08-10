@@ -19,6 +19,9 @@ module GraphQL
         # **Returns**
         #
         # - `Class` — The object type which this mutation returns.
+        #
+        # :call-seq:
+        #   payload_type(Class | nil new_payload_type) -> Class
         def payload_type(new_payload_type = nil)
           if new_payload_type
             @payload_type = new_payload_type
@@ -58,6 +61,9 @@ module GraphQL
         # **Returns**
         #
         # - `Class`
+        #
+        # :call-seq:
+        #   object_class(Class | nil new_class) -> Class
         def object_class(new_class = nil)
           if new_class
             if defined?(@payload_type)

@@ -77,6 +77,9 @@ module GraphQL
     # **Returns**
     #
     # - `Integer, nil`
+    #
+    # :call-seq:
+    #   fiber_limit -> Integer | nil
     attr_reader :fiber_limit
 
     def nonblocking?
@@ -89,6 +92,9 @@ module GraphQL
     # **Returns**
     #
     # - `Hash<Symbol, Object>` — Current fiber-local variables
+    #
+    # :call-seq:
+    #   get_fiber_variables() -> Hash[Symbol, Object]
     def get_fiber_variables
       fiber_vars = {}
       Thread.current.keys.each do |fiber_var_key|
@@ -108,6 +114,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   set_fiber_variables(Hash[Symbol, Object] vars) -> void
     def set_fiber_variables(vars)
       vars.each { |k, v| Thread.current[k] = v }
       nil
@@ -122,7 +131,7 @@ module GraphQL
     #
     # **Parameters**
     #
-    # - `source_class` (`Class<GraphQL::Dataloader::Source]`) — ource_class [Class<GraphQL::Dataloader::Source]
+    # - `source_class` (`Class<GraphQL::Dataloader::Source>`) — The source class to load
     # - `batch_parameters` (`Array<Object>`)
     #
     # **Returns**
@@ -154,6 +163,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   yield(source:) -> void
     def yield(source = Fiber[:__graphql_current_dataloader_source])
       trace = Fiber[:__graphql_current_multiplex]&.current_trace
       trace&.dataloader_fiber_yield(source)
@@ -162,16 +174,14 @@ module GraphQL
       nil
     end
 
-    # **API:** private Nothing to see here
-    def append_job(callable = nil, &job)
+    def append_job(callable = nil, &job) # :nodoc:
       # Given a block, queue it up to be worked through when `#run` is called.
       # (If the dataloader is already running, then a Fiber will pick this up later.)
       @pending_jobs.push(callable || job)
       nil
     end
 
-    # **API:** private
-    def queue_pending_source(source)
+    def queue_pending_source(source) # :nodoc:
       if @pending_source_set.add?(source)
         @pending_sources << source
       end
@@ -183,6 +193,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   clear_cache() -> void
     def clear_cache
       @source_cache.each do |_source_class, batched_sources|
         batched_sources.each_value(&:clear_cache)
@@ -231,6 +244,9 @@ module GraphQL
     # **Parameters**
     #
     # - `trace_query_lazy` (`nil, Execution::Multiplex`)
+    #
+    # :call-seq:
+    #   run(nil | Execution::Multiplex trace_query_lazy:)
     def run(trace_query_lazy: nil)
       trace = Fiber[:__graphql_current_multiplex]&.current_trace
       jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
@@ -280,8 +296,7 @@ module GraphQL
       f.resume
     end
 
-    # **API:** private
-    def lazy_at_depth(depth, lazy)
+    def lazy_at_depth(depth, lazy) # :nodoc:
       @lazies_at_depth[depth] << lazy
     end
 
@@ -306,6 +321,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   merge_records(Array[ActiveRecord::Base] records, Symbol index_by:) -> void
     def merge_records(records, index_by: :id)
       records_by_class = Hash.new { |h, k| h[k] = {} }
       records.each do |r|

@@ -44,6 +44,9 @@ module Graphql
       # **Returns**
       #
       # - `(String, Boolean)` — The type expression, followed by `null:` value
+      #
+      # :call-seq:
+      #   normalize_type_expression(type_expression, Symbol mode:, bool null:) -> (String, bool)
       def self.normalize_type_expression(type_expression, mode:, null: true)
         if type_expression.start_with?("!")
           normalize_type_expression(type_expression[1..-1], mode: mode, null: false)
@@ -82,6 +85,9 @@ module Graphql
       # **Returns**
       #
       # - `String` — The user-provided type name, normalized to Ruby code
+      #
+      # :call-seq:
+      #   type_ruby_name() -> String
       def type_ruby_name
         @type_ruby_name ||= self.class.normalize_type_expression(name, mode: :ruby)[0]
       end
@@ -89,6 +95,9 @@ module Graphql
       # **Returns**
       #
       # - `String` — The user-provided type name, as a GraphQL name
+      #
+      # :call-seq:
+      #   type_graphql_name() -> String
       def type_graphql_name
         @type_graphql_name ||= self.class.normalize_type_expression(name, mode: :graphql)[0]
       end
@@ -96,6 +105,9 @@ module Graphql
       # **Returns**
       #
       # - `String` — The user-provided type name, as a file name (without extension)
+      #
+      # :call-seq:
+      #   type_file_name() -> String
       def type_file_name
         @type_file_name ||= "#{type_graphql_name}Type".underscore
       end
@@ -103,6 +115,9 @@ module Graphql
       # **Returns**
       #
       # - `Array<NormalizedField>` — User-provided fields, in `(name, Ruby type name)` pairs
+      #
+      # :call-seq:
+      #   normalized_fields() -> Array[NormalizedField]
       def normalized_fields
         @normalized_fields ||= fields.map { |f|
           name, raw_type = f.split(":", 2)

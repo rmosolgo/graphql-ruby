@@ -8,16 +8,25 @@ module GraphQL
     # **Returns**
     #
     # - `Object` — the application object that failed the authorization check
+    #
+    # :call-seq:
+    #   object -> Object
     attr_reader :object
 
     # **Returns**
     #
     # - `Class` — the GraphQL object type whose `.authorized?` method was called (and returned false)
+    #
+    # :call-seq:
+    #   type -> Class
     attr_reader :type
 
     # **Returns**
     #
     # - `GraphQL::Query::Context` — the context for the current query
+    #
+    # :call-seq:
+    #   context -> GraphQL::Query::Context
     attr_accessor :context
 
     def initialize(message = nil, object: nil, type: nil, context: nil)

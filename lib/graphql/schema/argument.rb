@@ -185,12 +185,18 @@ module GraphQL
       # **Returns**
       #
       # - `String` — the GraphQL name for this argument, camelized unless `camelize: false` is provided
+      #
+      # :call-seq:
+      #   name -> String
       attr_reader :name
       alias :graphql_name :name
 
       # **Returns**
       #
       # - `GraphQL::Schema::Field, Class` — The field or input object this argument belongs to
+      #
+      # :call-seq:
+      #   owner -> GraphQL::Schema::Field | Class
       attr_reader :owner
 
       # **Parameters**
@@ -200,6 +206,9 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — A method or proc to call to transform this value before sending it to field resolution method
+      #
+      # :call-seq:
+      #   prepare(Method | Proc new_prepare) -> Symbol
       def prepare(new_prepare = NOT_CONFIGURED)
         if new_prepare != NOT_CONFIGURED
           @prepare = new_prepare
@@ -210,16 +219,25 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — This argument's name in Ruby keyword arguments
+      #
+      # :call-seq:
+      #   keyword -> Symbol
       attr_reader :keyword
 
       # **Returns**
       #
       # - `Class, Module, nil` — If this argument should load an application object, this is the type of object to load
+      #
+      # :call-seq:
+      #   loads -> Class | Module | nil
       attr_reader :loads
 
       # **Returns**
       #
       # - `Boolean` — true if a resolver defined this argument
+      #
+      # :call-seq:
+      #   from_resolver?() -> bool
       def from_resolver?
         @from_resolver
       end
@@ -230,7 +248,7 @@ module GraphQL
       # - `type_expr`
       # - `desc` (`String`)
       # - `type` (`Class, Array<Class>`) — Input type; positional argument also accepted
-      # - `name` (`Symbol`) — positional argument also accepted        # @param loads [Class, Array<Class>] A GraphQL type to load for the given ID when one is present
+      # - `name` (`Symbol`) — positional argument also accepted
       # - `definition_block` (`Proc`) — Called with the newly-created [Argument](rdoc-ref:Argument)
       # - `owner` (`Class`) — Private, used by GraphQL-Ruby during schema definition
       # - `required` (`Boolean, :nullable`) — if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
@@ -247,6 +265,9 @@ module GraphQL
       # - `replace_null_with_default` (`Boolean`) — if `true`, incoming values of `null` will be replaced with the configured `default_value`
       # - `comment` (`String`) — Private, used by GraphQL-Ruby when parsing GraphQL schema files
       # - `ast_node` (`GraphQL::Language::Nodes::InputValueDefinition`) — Private, used by GraphQL-Ruby when parsing schema files
+      #
+      # :call-seq:
+      #   initialize(Symbol arg_name, type_expr, String desc, bool | :nullable required:, Class | Array[Class] type:, Symbol name:, Class | Array[Class] loads:, String description:, String comment:, GraphQL::Language::Nodes::InputValueDefinition ast_node:, Object default_value:, Symbol as:, bool from_resolver:, bool camelize:, Symbol prepare:, Class owner:, Hash | nil validates:, Hash[Class, Hash] directives:, String deprecation_reason:, bool replace_null_with_default:, Proc &definition_block)
       def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, comment: nil, ast_node: nil, default_value: NOT_CONFIGURED, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
@@ -303,6 +324,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — the value used when the client doesn't provide a value for this argument
+      #
+      # :call-seq:
+      #   default_value(new_default_value) -> Object
       def default_value(new_default_value = NOT_CONFIGURED)
         if new_default_value != NOT_CONFIGURED
           @default_value = new_default_value
@@ -313,6 +337,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if this argument has a default value
+      #
+      # :call-seq:
+      #   default_value?() -> bool
       def default_value?
         @default_value != NOT_CONFIGURED
       end
@@ -326,6 +353,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — Documentation for this argument
+      #
+      # :call-seq:
+      #   description(text) -> String
       def description(text = nil)
         if text
           @description = text
@@ -339,6 +369,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — Comment for this argument
+      #
+      # :call-seq:
+      #   comment(text) -> String
       def comment(text = nil)
         if text
           @comment = text
@@ -350,6 +383,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — Deprecation reason for this argument
+      #
+      # :call-seq:
+      #   deprecation_reason(text) -> String
       def deprecation_reason(text = nil)
         if text
           self.deprecation_reason = text
@@ -433,8 +469,7 @@ module GraphQL
 
       # Apply the [prepare](rdoc-ref:prepare) configuration to `value`, using methods from `obj`.
       # Used by the runtime.
-      # **API:** private
-      def prepare_value(obj, value, context: nil)
+      def prepare_value(obj, value, context: nil) # :nodoc:
         if type.unwrap.kind.input_object?
           value = recursively_prepare_input_object(value, type, context)
         end
@@ -465,8 +500,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      def coerce_into_values(parent_object, values, context, argument_values)
+      def coerce_into_values(parent_object, values, context, argument_values) # :nodoc:
         arg_name = graphql_name
         arg_key = keyword
         default_used = false
@@ -579,8 +613,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      def validate_default_value
+      def validate_default_value # :nodoc:
         return unless default_value?
         coerced_default_value = begin
           # This is weird, but we should accept single-item default values for list-type arguments.

@@ -8,6 +8,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Schema::Argument, GraphQL::Schema::Field, GraphQL::Schema::Resolver, Class<GraphQL::Schema::InputObject>`
+      #
+      # :call-seq:
+      #   validated -> GraphQL::Schema::Argument | GraphQL::Schema::Field | GraphQL::Schema::Resolver | Class[GraphQL::Schema::InputObject]
       attr_reader :validated
 
       # **Parameters**
@@ -15,6 +18,9 @@ module GraphQL
       # - `validated` (`GraphQL::Schema::Argument, GraphQL::Schema::Field, GraphQL::Schema::Resolver, Class<GraphQL::Schema::InputObject>`) — The argument or argument owner this validator is attached to
       # - `allow_blank` (`Boolean`) — if `true`, then objects that respond to `.blank?` and return true for `.blank?` will skip this validation
       # - `allow_null` (`Boolean`) — if `true`, then incoming `null`s will skip this validation
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Schema::Argument | GraphQL::Schema::Field | GraphQL::Schema::Resolver | Class[GraphQL::Schema::InputObject] validated:, bool allow_blank:, bool allow_null:)
       def initialize(validated:, allow_blank: false, allow_null: false)
         @validated = validated
         @allow_blank = allow_blank
@@ -30,6 +36,9 @@ module GraphQL
       # **Returns**
       #
       # - `nil, Array<String>, String` — Error message or messages to add
+      #
+      # :call-seq:
+      #   validate(Object object, GraphQL::Query::Context context, Object value) -> nil | Array[String] | String
       def validate(object, context, value)
         raise GraphQL::RequiredImplementationMissingError, "Validator classes should implement #validate"
       end
@@ -47,6 +56,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The current value to use for validation, based on `config_value` from configuration time. If a Proc is given, this calls it and returns it.
+      #
+      # :call-seq:
+      #   validation_parameter(config_value) -> Object
       def validation_parameter(config_value)
         if config_value.is_a?(Proc)
           config_value.call
@@ -58,6 +70,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — `true` if `value` is `nil` and this validator has `allow_null: true` or if value is `.blank?` and this validator has `allow_blank: true`
+      #
+      # :call-seq:
+      #   permitted_empty_value?(value) -> bool
       def permitted_empty_value?(value)
         (value.nil? && @allow_null) ||
           (@allow_blank && value.respond_to?(:blank?) && value.blank?)
@@ -71,6 +86,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Validator>`
+      #
+      # :call-seq:
+      #   from_config(GraphQL::Schema::Field | GraphQL::Schema::Argument | Class[GraphQL::Schema::InputObject] schema_member, Hash[Symbol, Hash] | Hash[Class, Hash] nil validates_hash) -> Array[Validator]
       def self.from_config(schema_member, validates_hash)
         if validates_hash.nil? || validates_hash.empty?
           EMPTY_ARRAY
@@ -117,6 +135,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   install(Symbol name, Class validator_class) -> void
       def self.install(name, validator_class)
         all_validators[name] = validator_class
         nil
@@ -131,6 +152,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   uninstall(Symbol name) -> void
       def self.uninstall(name)
         all_validators.delete(name)
         nil
@@ -167,6 +191,9 @@ module GraphQL
       # **Raises**
       #
       # - `ValidationFailedError`
+      #
+      # :call-seq:
+      #   validate!(Array[Validator] validators, Object object, Query::Context context, Object value, as:) -> void | ValidationFailedError
       def self.validate!(validators, object, context, value, as: nil)
         # Assuming the default case is no errors, reduce allocations in that case.
         # This will be replaced with a mutable array if we actually get any errors.

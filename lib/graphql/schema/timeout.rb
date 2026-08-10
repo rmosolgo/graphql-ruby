@@ -53,6 +53,9 @@ module GraphQL
         # **Parameters**
         #
         # - `max_seconds` (`Numeric`) — how many seconds the query should be allowed to resolve new fields
+        #
+        # :call-seq:
+        #   initialize(timeout:, **rest)
         def initialize(timeout:, **rest)
           @timeout = timeout
           super
@@ -113,6 +116,9 @@ module GraphQL
       # **Returns**
       #
       # - `Numeric, false` — The number of seconds after which to interrupt query execution and call `handle_error`, or `false` to bypass the timeout.
+      #
+      # :call-seq:
+      #   max_seconds(GraphQL::Query query) -> Numeric | false
       def max_seconds(query)
         @max_seconds
       end
@@ -123,6 +129,9 @@ module GraphQL
       #
       # - `error` (`GraphQL::Schema::Timeout::TimeoutError`)
       # - `query` (`GraphQL::Error`)
+      #
+      # :call-seq:
+      #   handle_timeout(GraphQL::Schema::Timeout::TimeoutError error, GraphQL::Error query)
       def handle_timeout(error, query)
         # override to do something interesting
       end
@@ -137,6 +146,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   disable_timeout(GraphQL::Query query) -> void
       def disable_timeout(query)
         query.context.namespace(self)[:state] = false
         nil

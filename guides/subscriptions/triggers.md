@@ -20,7 +20,7 @@ The arguments are:
 
 To send updates to _certain clients only_, you can use `scope:` to narrow the trigger's reach.
 
-Scopes are based on query context: a value in `context:` is used as the scope; an equivalent value must be passed with `.trigger(... scope:)` to update that client. (The value is serialized with [GraphQL::Subscriptions::Serialize](rdoc-ref:GraphQL::Subscriptions::Serialize))
+Scopes are based on query context: a value in `context:` is used as the scope; an equivalent value must be passed with `.trigger(... scope:)` to update that client. (The value is serialized with `GraphQL::Subscriptions::Serialize`.)
 
 To specify that a topic is scoped, add a `subscription_scope` option to the Subscription class:
 

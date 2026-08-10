@@ -13,6 +13,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Object>` — One object for each of `keys`
+      #
+      # :call-seq:
+      #   load() -> Array[Object]
       def load
         @source.load_all(@keys)
       end

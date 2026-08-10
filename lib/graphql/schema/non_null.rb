@@ -11,6 +11,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::TypeKinds::NON_NULL`
+      #
+      # :call-seq:
+      #   kind() -> GraphQL::TypeKinds::NON_NULL
       def kind
         GraphQL::TypeKinds::NON_NULL
       end
@@ -18,6 +21,9 @@ module GraphQL
       # **Returns**
       #
       # - `true`
+      #
+      # :call-seq:
+      #   non_null?() -> true
       def non_null?
         true
       end
@@ -25,6 +31,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if this type wraps a list type
+      #
+      # :call-seq:
+      #   list?() -> bool
       def list?
         @of_type.list?
       end

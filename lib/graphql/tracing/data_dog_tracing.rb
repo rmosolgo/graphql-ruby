@@ -55,6 +55,9 @@ module GraphQL
       # - `key` (`String`) — The event being traced
       # - `data` (`Hash`) — The runtime data for this event (@see GraphQL::Tracing for keys for each event)
       # - `span` (`Datadog::Tracing::SpanOperation`) — The datadog span for this event
+      #
+      # :call-seq:
+      #   prepare_span(String key, Hash data, Datadog::Tracing::SpanOperation span)
       def prepare_span(key, data, span)
       end
 

@@ -21,6 +21,9 @@ module GraphQL
         # **Returns**
         #
         # - `void`
+        #
+        # :call-seq:
+        #   directive(dir_class, **options) -> void
         def directive(dir_class, **options)
           @own_directives ||= []
           HasDirectives.add_directive(self, @own_directives, dir_class, options)
@@ -35,7 +38,10 @@ module GraphQL
         #
         # **Returns**
         #
-        # - `viod`
+        # - `void`
+        #
+        # :call-seq:
+        #   remove_directive(Class[GraphQL::Schema::Directive] dir_class) -> void
         def remove_directive(dir_class)
           HasDirectives.remove_directive(@own_directives, dir_class)
           nil
@@ -110,6 +116,9 @@ module GraphQL
           # **Returns**
           #
           # - `void`
+          #
+          # :call-seq:
+          #   merge_directives(Array[GraphQL::Schema::Directive] target, Array[GraphQL::Schema::Directive] dirs) -> void
           def merge_directives(target, dirs)
             dirs.each do |dir|
               if (idx = target.find_index { |d| d.graphql_name == dir.graphql_name })

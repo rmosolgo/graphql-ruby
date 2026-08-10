@@ -205,6 +205,9 @@ module GraphQL
       # **Returns**
       #
       # - `Class<GraphQL::Schema>` — the schema described by `input`
+      #
+      # :call-seq:
+      #   from_introspection(Hash introspection_result) -> Class[GraphQL::Schema]
       def from_introspection(introspection_result)
         GraphQL::Schema::Loader.load(introspection_result)
       end
@@ -221,6 +224,9 @@ module GraphQL
       # **Returns**
       #
       # - `Class` — the schema described by `document`
+      #
+      # :call-seq:
+      #   from_definition(String definition_or_path, #call(type, field, obj, args, ctx) default_resolve:, Object parser:, Hash using:, base_types:) -> Class
       def from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {}, base_types: {})
         # If the file ends in `.graphql` or `.graphqls`, treat it like a filepath
         if definition_or_path.end_with?(".graphql") || definition_or_path.end_with?(".graphqls")
@@ -251,6 +257,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Subscriptions`
+      #
+      # :call-seq:
+      #   subscriptions(inherited:) -> GraphQL::Subscriptions
       def subscriptions(inherited: true)
         defined?(@subscriptions) ? @subscriptions : (inherited ? find_inherited_value(:subscriptions, nil) : nil)
       end
@@ -262,6 +271,9 @@ module GraphQL
       # **Parameters**
       #
       # - `new_mode` (`Symbol`) — If configured, this will be used when `context: { trace_mode: ... }` isn't set.
+      #
+      # :call-seq:
+      #   default_trace_mode(Symbol new_mode)
       def default_trace_mode(new_mode = NOT_CONFIGURED)
         if !NOT_CONFIGURED.equal?(new_mode)
           @default_trace_mode = new_mode
@@ -291,6 +303,9 @@ module GraphQL
       # **Returns**
       #
       # - `Class` — Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
+      #
+      # :call-seq:
+      #   trace_class_for(mode, build:) -> Class
       def trace_class_for(mode, build: false)
         if (trace_class = own_trace_modes[mode])
           trace_class
@@ -320,6 +335,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — void
+      #
+      # :call-seq:
+      #   trace_mode(Symbol mode_name, Class trace_class) -> Object
       def trace_mode(mode_name, trace_class)
         own_trace_modes[mode_name] = trace_class
         nil
@@ -364,6 +382,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Module>` — Modules added for tracing in `trace_mode`, including inherited ones
+      #
+      # :call-seq:
+      #   trace_modules_for(trace_mode) -> Array[Module]
       def trace_modules_for(trace_mode)
         modules = own_trace_modules[trace_mode]
         if superclass.respond_to?(:trace_modules_for)
@@ -379,6 +400,9 @@ module GraphQL
       # **Returns**
       #
       # - `String`
+      #
+      # :call-seq:
+      #   to_json(**args) -> String
       def to_json(**args)
         JSON.pretty_generate(as_json(**args))
       end
@@ -397,6 +421,9 @@ module GraphQL
       # **Returns**
       #
       # - `Hash` — GraphQL result
+      #
+      # :call-seq:
+      #   as_json(Hash context:, bool include_deprecated_args:, bool include_schema_description:, bool include_is_repeatable:, bool include_specified_by_url:, bool include_is_one_of:) -> Hash
       def as_json(context: {}, include_deprecated_args: true, include_schema_description: false, include_is_repeatable: false, include_specified_by_url: false, include_is_one_of: false)
         introspection_query = Introspection.query(
           include_deprecated_args: include_deprecated_args,
@@ -418,6 +445,9 @@ module GraphQL
       # **Returns**
       #
       # - `String`
+      #
+      # :call-seq:
+      #   to_definition(Hash context:) -> String
       def to_definition(context: {})
         GraphQL::Schema::Printer.print_schema(self, context: context)
       end
@@ -427,6 +457,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Language::Document`
+      #
+      # :call-seq:
+      #   to_document() -> GraphQL::Language::Document
       def to_document
         GraphQL::Language::DocumentFromSchemaDefinition.new(self).document
       end
@@ -434,6 +467,9 @@ module GraphQL
       # **Returns**
       #
       # - `String, nil`
+      #
+      # :call-seq:
+      #   description(new_description) -> String | nil
       def description(new_description = nil)
         if new_description
           @description = new_description
@@ -465,6 +501,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — void
+      #
+      # :call-seq:
+      #   use(#use plugin, **kwargs) -> Object
       def use(plugin, **kwargs)
         if !kwargs.empty?
           plugin.use(self, **kwargs)
@@ -490,6 +529,9 @@ module GraphQL
       # **Returns**
       #
       # - `Hash<String => Class>` — A dictionary of type classes by their GraphQL name
+      #
+      # :call-seq:
+      #   types(context) -> Hash[String, Class]
       def types(context = null_context)
         if use_visibility_profile?
           types = Visibility::Profile.from_context(context, self)
@@ -528,6 +570,9 @@ module GraphQL
       # **Returns**
       #
       # - `Module, nil` — A type, or nil if there's no type called `type_name`
+      #
+      # :call-seq:
+      #   get_type(String type_name, GraphQL::Query::Context context, use_visibility_profile) -> Module | nil
       def get_type(type_name, context = null_context, use_visibility_profile = use_visibility_profile?)
         if use_visibility_profile
           profile = Visibility::Profile.from_context(context, self)
@@ -570,16 +615,21 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — Does this schema have _any_ definition for a type named `type_name`, regardless of visibility?
+      #
+      # :call-seq:
+      #   has_defined_type?(type_name) -> bool
       def has_defined_type?(type_name)
         own_types.key?(type_name) || introspection_system.types.key?(type_name) || (superclass.respond_to?(:has_defined_type?) ? superclass.has_defined_type?(type_name) : false)
       end
 
-      # **API:** private
-      attr_writer :connections
+      attr_writer :connections # :nodoc:
 
       # **Returns**
       #
       # - `GraphQL::Pagination::Connections` — if installed
+      #
+      # :call-seq:
+      #   connections() -> GraphQL::Pagination::Connections
       def connections
         if defined?(@connections)
           @connections
@@ -613,6 +663,9 @@ module GraphQL
       # **Returns**
       #
       # - `Class<GraphQL::Schema::Object>, nil` — The configured query root type, if there is one.
+      #
+      # :call-seq:
+      #   query(Class[GraphQL::Schema::Object] new_query_object, &lazy_load_block) -> Class[GraphQL::Schema::Object] | nil
       def query(new_query_object = nil, &lazy_load_block)
         if new_query_object || block_given?
           if @query_object
@@ -662,6 +715,9 @@ module GraphQL
       # **Returns**
       #
       # - `Class<GraphQL::Schema::Object>, nil` — The configured mutation root type, if there is one.
+      #
+      # :call-seq:
+      #   mutation(Class[GraphQL::Schema::Object] new_mutation_object, &lazy_load_block) -> Class[GraphQL::Schema::Object] | nil
       def mutation(new_mutation_object = nil, &lazy_load_block)
         if new_mutation_object || block_given?
           if @mutation_object
@@ -711,6 +767,9 @@ module GraphQL
       # **Returns**
       #
       # - `Class<GraphQL::Schema::Object>, nil` — The configured subscription root type, if there is one.
+      #
+      # :call-seq:
+      #   subscription(Class[GraphQL::Schema::Object] new_subscription_object, &lazy_load_block) -> Class[GraphQL::Schema::Object] | nil
       def subscription(new_subscription_object = nil, &lazy_load_block)
         if new_subscription_object || block_given?
           if @subscription_object
@@ -745,8 +804,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      def root_type_for_operation(operation)
+      def root_type_for_operation(operation) # :nodoc:
         case operation
         when "query"
           query
@@ -762,6 +820,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Class>` — The root types (query, mutation, subscription) defined for this schema
+      #
+      # :call-seq:
+      #   root_types() -> Array[Class]
       def root_types
         if use_visibility_profile?
           [query, mutation, subscription].compact
@@ -770,8 +831,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      def warden_class
+      def warden_class # :nodoc:
         if defined?(@warden_class)
           @warden_class
         elsif superclass.respond_to?(:warden_class)
@@ -781,11 +841,9 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      attr_writer :warden_class
+      attr_writer :warden_class # :nodoc:
 
-      # **API:** private
-      def visibility_profile_class
+      def visibility_profile_class # :nodoc:
         if defined?(@visibility_profile_class)
           @visibility_profile_class
         elsif superclass.respond_to?(:visibility_profile_class)
@@ -795,12 +853,9 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      attr_writer :visibility_profile_class, :use_visibility_profile
-      # **API:** private
-      attr_accessor :visibility
-      # **API:** private
-      def use_visibility_profile?
+      attr_writer :visibility_profile_class, :use_visibility_profile # :nodoc:
+      attr_accessor :visibility # :nodoc:
+      def use_visibility_profile? # :nodoc:
         if defined?(@use_visibility_profile)
           @use_visibility_profile
         elsif superclass.respond_to?(:use_visibility_profile?)
@@ -820,6 +875,9 @@ module GraphQL
       #
       # - `Hash<String, Module>` — All possible types, if no `type` is given.
       # - `Array<Module>` — Possible types for `type`, if it's given.
+      #
+      # :call-seq:
+      #   possible_types(Module type, GraphQL::Query::Context context, use_visibility_profile) -> Hash[String, Module] | Array[Module]
       def possible_types(type = nil, context = null_context, use_visibility_profile = use_visibility_profile?)
         if use_visibility_profile
           if type
@@ -871,9 +929,8 @@ module GraphQL
         end
       end
 
-      # **API:** private
       # See [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) GraphQL::Dataloader
-      def dataloader_class
+      def dataloader_class # :nodoc:
         @dataloader_class || GraphQL::Dataloader::NullDataloader
       end
 
@@ -954,6 +1011,9 @@ module GraphQL
       # **Returns**
       #
       # - `Module, nil` — The configured namespace, if there is one
+      #
+      # :call-seq:
+      #   introspection(Module new_introspection_namespace) -> Module | nil
       def introspection(new_introspection_namespace = nil)
         if new_introspection_namespace
           @introspection = new_introspection_namespace
@@ -970,6 +1030,9 @@ module GraphQL
       # **Returns**
       #
       # - `Schema::IntrospectionSystem` — Based on [introspection](rdoc-ref:introspection)
+      #
+      # :call-seq:
+      #   introspection_system() -> Schema::IntrospectionSystem
       def introspection_system
         if !@introspection_system
           @introspection_system = Schema::IntrospectionSystem.new(self)
@@ -999,6 +1062,9 @@ module GraphQL
       # **Returns**
       #
       # - `nil, Integer`
+      #
+      # :call-seq:
+      #   max_query_string_tokens(new_max_tokens) -> nil | Integer
       def max_query_string_tokens(new_max_tokens = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_max_tokens)
           defined?(@max_query_string_tokens) ? @max_query_string_tokens : find_inherited_value(:max_query_string_tokens)
@@ -1072,6 +1138,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::StaticValidation::Error >`
+      #
+      # :call-seq:
+      #   validate(String | GraphQL::Language::Nodes::Document string_or_document, rules:, context:) -> Array[GraphQL::StaticValidation::Error]
       def validate(string_or_document, rules: nil, context: nil)
         doc = if string_or_document.is_a?(String)
           GraphQL.parse(string_or_document, max_tokens: max_query_string_tokens)
@@ -1089,6 +1158,9 @@ module GraphQL
       # **Parameters**
       #
       # - `new_query_class` (`Class<GraphQL::Query>`) — A subclass to use when executing queries
+      #
+      # :call-seq:
+      #   query_class(Class[GraphQL::Query] new_query_class)
       def query_class(new_query_class = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_query_class)
           @query_class || (superclass.respond_to?(:query_class) ? superclass.query_class : GraphQL::Query)
@@ -1215,6 +1287,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Module>` — Type definitions added to this schema
+      #
+      # :call-seq:
+      #   extra_types(Module *new_extra_types) -> Array[Module]
       def extra_types(*new_extra_types)
         if !new_extra_types.empty?
           new_extra_types = new_extra_types.flatten
@@ -1245,6 +1320,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Class<GraphQL::Schema::Object>>` — All previously-registered orphan types for this schema
+      #
+      # :call-seq:
+      #   orphan_types(Array[Class[GraphQL::Schema::Object]] *new_orphan_types) -> Array[Class[GraphQL::Schema::Object]]
       def orphan_types(*new_orphan_types)
         if !new_orphan_types.empty?
           new_orphan_types = new_orphan_types.flatten
@@ -1296,6 +1374,9 @@ module GraphQL
       # **Parameters**
       #
       # - `new_default_logger` (`#log`) — Something to use for logging messages
+      #
+      # :call-seq:
+      #   default_logger(#log new_default_logger)
       def default_logger(new_default_logger = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_default_logger)
           if defined?(@default_logger)
@@ -1323,6 +1404,9 @@ module GraphQL
       # **Returns**
       #
       # - `Logger` — A logger to use for this context configuration, falling back to [.default_logger](rdoc-ref:.default_logger)
+      #
+      # :call-seq:
+      #   logger_for(GraphQL::Query::Context | nil context) -> Logger
       def logger_for(context)
         if context && context[:logger] == false
           Logger.new(IO::NULL)
@@ -1336,6 +1420,9 @@ module GraphQL
       # **Parameters**
       #
       # - `new_context_class` (`Class<GraphQL::Query::Context>`) — A subclass to use when executing queries
+      #
+      # :call-seq:
+      #   context_class(Class[GraphQL::Query::Context] new_context_class)
       def context_class(new_context_class = nil)
         if new_context_class
           @context_class = new_context_class
@@ -1371,6 +1458,9 @@ module GraphQL
       #
       # - `GraphQL::ExecutionError` — In the handler, raise to add a client-facing error to the response
       # - `StandardError` — In the handler, raise to crash the query with a developer-facing error
+      #
+      # :call-seq:
+      #   rescue_from(Array[StandardError] *err_classes, &handler_block)
       def rescue_from(*err_classes, &handler_block)
         err_classes.each do |err_class|
           Execution::Errors.register_rescue_from(err_class, error_handlers[:subclass_handlers], handler_block)
@@ -1394,11 +1484,9 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      attr_accessor :using_backtrace
+      attr_accessor :using_backtrace # :nodoc:
 
-      # **API:** private
-      def handle_or_reraise(context, err, object: context[:current_object], arguments: context[:current_arguments], field: context[:current_field])
+      def handle_or_reraise(context, err, object: context[:current_object], arguments: context[:current_arguments], field: context[:current_field]) # :nodoc:
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
           arguments = arguments.respond_to?(:keyword_arguments) ? arguments.keyword_arguments : arguments
@@ -1468,7 +1556,10 @@ module GraphQL
       #
       # **Returns**
       #
-      # - `Class<GraphQL::Schema::Object] The Object type definition to use for `obj`` — Class<GraphQL::Schema::Object] The Object type definition to use for `obj`
+      # - `Class<GraphQL::Schema::Object>` — The Object type definition to use for `obj`
+      #
+      # :call-seq:
+      #   resolve_type(Class | Module | nil abstract_type, Object application_object, GraphQL::Query::Context context) -> Class[GraphQL::Schema::Object]
       def resolve_type(abstract_type, application_object, context)
         raise GraphQL::RequiredImplementationMissingError, "#{self.name}.resolve_type(abstract_type, application_object, context) must be implemented to use Union types, Interface types, `loads:`, or `run_partials` (tried to resolve: #{abstract_type.name})"
       end
@@ -1518,6 +1609,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object, nil` — The application which `object_id` references, or `nil` if there is no object or the current operation shouldn't have access to the object
+      #
+      # :call-seq:
+      #   object_from_id(String object_id, GraphQL::Query::Context context) -> Object | nil
       def object_from_id(object_id, context)
         raise GraphQL::RequiredImplementationMissingError, "#{self.name}.object_from_id(object_id, context) must be implemented to load by ID (tried to load from id `#{object_id}`)"
       end
@@ -1545,6 +1639,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — A stable identifier which can be passed to [.object_from_id](rdoc-ref:.object_from_id) later to re-fetch `application_object`
+      #
+      # :call-seq:
+      #   id_from_object(Object application_object, Class | Module graphql_type, GraphQL::Query::Context context) -> String
       def id_from_object(application_object, graphql_type, context)
         raise GraphQL::RequiredImplementationMissingError, "#{self.name}.id_from_object(application_object, graphql_type, context) must be implemented to create global ids (tried to create an id for `#{application_object.inspect}`)"
       end
@@ -1586,6 +1683,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The returned object will be put in the GraphQL response
+      #
+      # :call-seq:
+      #   unauthorized_object(GraphQL::UnauthorizedError unauthorized_error) -> Object
       def unauthorized_object(unauthorized_error)
         nil
       end
@@ -1607,6 +1707,9 @@ module GraphQL
       # **Returns**
       #
       # - `Field` — The returned field will be put in the GraphQL response
+      #
+      # :call-seq:
+      #   unauthorized_field(GraphQL::UnauthorizedFieldError unauthorized_error) -> Field
       def unauthorized_field(unauthorized_error)
         unauthorized_object(unauthorized_error)
       end
@@ -1630,6 +1733,9 @@ module GraphQL
       #
       # - `GraphQL::ExecutionError` — to return this error to the client
       # - `GraphQL::Error` — to crash the query and raise a developer-facing error
+      #
+      # :call-seq:
+      #   type_error(GraphQL::Error type_error, GraphQL::Query::Context context) -> void | GraphQL::ExecutionError | GraphQL::Error
       def type_error(type_error, context)
         case type_error
         when GraphQL::InvalidNullError
@@ -1657,6 +1763,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — void
+      #
+      # :call-seq:
+      #   parse_error(GraphQL::ParseError parse_err, GraphQL::Query::Context ctx) -> Object
       def parse_error(parse_err, ctx)
         ctx.errors.push(parse_err)
       end
@@ -1690,6 +1799,9 @@ module GraphQL
       # **Parameters**
       #
       # - `new_directives` (`Class`)
+      #
+      # :call-seq:
+      #   directives(Class *new_directives)
       def directives(*new_directives)
         if !new_directives.empty?
           new_directives.flatten.each { |d| directive(d) }
@@ -1712,6 +1824,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — void
+      #
+      # :call-seq:
+      #   directive(Class new_directive) -> Object
       def directive(new_directive)
         if use_visibility_profile?
           own_directives[new_directive.graphql_name] = new_directive
@@ -1733,6 +1848,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Tracing::DetailedTrace` — if it has been configured for this schema
+      #
+      # :call-seq:
+      #   detailed_trace -> GraphQL::Tracing::DetailedTrace
       attr_accessor :detailed_trace
 
       # See [Tracing::DetailedTrace](rdoc-ref:Tracing::DetailedTrace) DetailedTrace saves traces when this method returns true
@@ -1744,6 +1862,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — When `true`, save a detailed trace for this query.
+      #
+      # :call-seq:
+      #   detailed_trace?(GraphQL::Query | GraphQL::Execution::Multiplex query) -> bool
       def detailed_trace?(query)
         raise "#{self} must implement `def.detailed_trace?(query)` to use DetailedTrace. Implement this method in your schema definition."
       end
@@ -1801,6 +1922,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   trace_with(Module trace_mod, Symbol mode:, Hash **options) -> void
       def trace_with(trace_mod, mode: :default, **options)
         if mode.is_a?(Array)
           mode.each { |m| trace_with(trace_mod, mode: m, **options) }
@@ -1834,6 +1958,9 @@ module GraphQL
       # **Returns**
       #
       # - `Hash`
+      #
+      # :call-seq:
+      #   trace_options_for(mode) -> Hash
       def trace_options_for(mode)
         @trace_options_for_mode ||= {}
         @trace_options_for_mode[mode] ||= begin
@@ -1864,6 +1991,9 @@ module GraphQL
       # **Returns**
       #
       # - `Tracing::Trace`
+      #
+      # :call-seq:
+      #   new_trace(Symbol mode:, Hash **options) -> Tracing::Trace
       def new_trace(mode: nil, **options)
         should_sample = if detailed_trace
           if (query = options[:query])
@@ -1898,6 +2028,9 @@ module GraphQL
       # **Parameters**
       #
       # - `new_analyzer` (`Class<GraphQL::Analysis::Analyzer>`) — An analyzer to run on queries to this schema
+      #
+      # :call-seq:
+      #   query_analyzer(Class[GraphQL::Analysis::Analyzer] new_analyzer)
       def query_analyzer(new_analyzer)
         own_query_analyzers << new_analyzer
       end
@@ -1912,6 +2045,9 @@ module GraphQL
       # **Parameters**
       #
       # - `new_analyzer` (`Class<GraphQL::Analysis::Analyzer>`) — An analyzer to run on multiplexes to this schema
+      #
+      # :call-seq:
+      #   multiplex_analyzer(Class[GraphQL::Analysis::Analyzer] new_analyzer)
       def multiplex_analyzer(new_analyzer)
         own_multiplex_analyzers << new_analyzer
       end
@@ -1939,6 +2075,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Query::Result` — query result, ready to be serialized as JSON
+      #
+      # :call-seq:
+      #   execute(query_str, **kwargs) -> GraphQL::Query::Result
       def execute(query_str = nil, **kwargs)
         if default_execution_next
           execute_next(query_str, **kwargs)
@@ -1972,7 +2111,7 @@ module GraphQL
       #
       # See the [GraphQL::Query](rdoc-ref:GraphQL::Query) constructor for query keyword arguments.
       # Multiplex-level execution is handled by the interpreter's
-      # [run_all](rdoc-ref:GraphQL::Execution::Interpreter::run_all) method.
+      # `GraphQL::Execution::Interpreter.run_all` method.
       #
       # **Examples**
       #
@@ -2003,6 +2142,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::Query::Result>` — One result for each query in the input
+      #
+      # :call-seq:
+      #   multiplex(Array[Hash] queries, **kwargs) -> Array[GraphQL::Query::Result]
       def multiplex(queries, **kwargs)
         if @default_execution_next
           multiplex_next(queries, **kwargs)
@@ -2030,8 +2172,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      def add_subscription_extension_if_necessary
+      def add_subscription_extension_if_necessary # :nodoc:
         # TODO: when there's a proper API for extending root types, migrat this to use it.
         if !defined?(@subscription_extension_added) && @subscription_object.is_a?(Class) && self.subscriptions
           @subscription_extension_added = true
@@ -2054,6 +2195,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   query_stack_error(GraphQL::Query query, SystemStackError err) -> void
       def query_stack_error(query, err)
         query.context.errors.push(GraphQL::ExecutionError.new("This query is too large to execute."))
       end
@@ -2061,8 +2205,7 @@ module GraphQL
       # Call the given block at the right time, either:
       # - Right away, if `value` is not registered with `lazy_resolve`
       # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
-      # **API:** private
-      def after_lazy(value, &block)
+      def after_lazy(value, &block) # :nodoc:
         if lazy?(value)
           GraphQL::Execution::Lazy.new do
             result = sync_lazy(value)
@@ -2075,7 +2218,6 @@ module GraphQL
       end
 
       # Override this method to handle lazy objects in a custom way.
-      # **API:** private
       #
       # **Parameters**
       #
@@ -2084,7 +2226,7 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — A GraphQL-ready (non-lazy) object
-      def sync_lazy(value)
+      def sync_lazy(value) # :nodoc:
         lazy_method = lazy_method_name(value)
         if lazy_method
           synced_value = value.public_send(lazy_method)
@@ -2097,6 +2239,9 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol, nil` — The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered with [.lazy_resolve](rdoc-ref:.lazy_resolve).
+      #
+      # :call-seq:
+      #   lazy_method_name(obj) -> Symbol | nil
       def lazy_method_name(obj)
         lazy_methods.get(obj)
       end
@@ -2104,18 +2249,20 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if this object should be lazily resolved
+      #
+      # :call-seq:
+      #   lazy?(obj) -> bool
       def lazy?(obj)
         !!lazy_method_name(obj)
       end
 
       # Return a lazy if any of `maybe_lazies` are lazy,
       # otherwise, call the block eagerly and return the result.
-      # **API:** private
       #
       # **Parameters**
       #
       # - `maybe_lazies` (`Array`)
-      def after_any_lazies(maybe_lazies)
+      def after_any_lazies(maybe_lazies) # :nodoc:
         if maybe_lazies.any? { |l| lazy?(l) }
           GraphQL::Execution::Lazy.all(maybe_lazies).then do |result|
             yield result
@@ -2157,6 +2304,9 @@ module GraphQL
       # **Returns**
       #
       # - `true, false, nil`
+      #
+      # :call-seq:
+      #   allow_legacy_invalid_empty_selections_on_union(bool new_value) -> true | false | nil
       def allow_legacy_invalid_empty_selections_on_union(new_value = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_value)
           if defined?(@allow_legacy_invalid_empty_selections_on_union)
@@ -2187,6 +2337,9 @@ module GraphQL
       # - `:return_validation_error` — Let GraphQL-Ruby return the (new) normal validation error for this query
       # - `String` — A validation error to return for this query
       # - `nil` — Don't send the client an error, continue the legacy behavior (allow this query to execute)
+      #
+      # :call-seq:
+      #   legacy_invalid_empty_selections_on_union(GraphQL::Query query) -> :return_validation_error | String | nil
       def legacy_invalid_empty_selections_on_union(query)
         raise "Implement `def self.legacy_invalid_empty_selections_on_union_with_type(query, type)` or `def self.legacy_invalid_empty_selections_on_union(query)` to handle this scenario"
       end
@@ -2208,6 +2361,9 @@ module GraphQL
       # - `:return_validation_error` — Let GraphQL-Ruby return the (new) normal validation error for this query
       # - `String` — A validation error to return for this query
       # - `nil` — Don't send the client an error, continue the legacy behavior (allow this query to execute)
+      #
+      # :call-seq:
+      #   legacy_invalid_empty_selections_on_union_with_type(GraphQL::Query query, Module type) -> :return_validation_error | String | nil
       def legacy_invalid_empty_selections_on_union_with_type(query, type)
         legacy_invalid_empty_selections_on_union(query)
       end
@@ -2226,6 +2382,9 @@ module GraphQL
       # **Returns**
       #
       # - `true, false, nil`
+      #
+      # :call-seq:
+      #   allow_legacy_invalid_return_type_conflicts(bool new_value) -> true | false | nil
       def allow_legacy_invalid_return_type_conflicts(new_value = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_value)
           if defined?(@allow_legacy_invalid_return_type_conflicts)
@@ -2259,6 +2418,9 @@ module GraphQL
       # - `:return_validation_error` — Let GraphQL-Ruby return the (new) normal validation error for this query
       # - `String` — A validation error to return for this query
       # - `nil` — Don't send the client an error, continue the legacy behavior (allow this query to execute)
+      #
+      # :call-seq:
+      #   legacy_invalid_return_type_conflicts(GraphQL::Query query, Module type1, Module type2, GraphQL::Language::Nodes::Field node1, GraphQL::Language::Nodes::Field node2) -> :return_validation_error | String | nil
       def legacy_invalid_return_type_conflicts(query, type1, type2, node1, node2)
         raise "Implement #{self}.legacy_invalid_return_type_conflicts to handle this invalid selection"
       end
@@ -2342,13 +2504,16 @@ module GraphQL
       #
       # **Parameters**
       #
-      # - `multiplex_context` (`Hash`) — The context for the currently-running [Execution::Multiplex](rdoc-ref:Execution::Multiplex) (which contains one or more queries)
+      # - `multiplex_context` (`Hash`) — The context for the currently-running `Execution::Multiplex` (which contains one or more queries)
       #
       # **Returns**
       #
       # - `:future` — Use the new calculation algorithm -- may be higher than `:legacy`
       # - `:legacy` — Use the legacy calculation algorithm, warts and all
       # - `:compare` — Run both algorithms and call [.legacy_complexity_cost_calculation_mismatch](rdoc-ref:.legacy_complexity_cost_calculation_mismatch) if they don't match
+      #
+      # :call-seq:
+      #   complexity_cost_calculation_mode_for(Hash multiplex_context) -> :future | :legacy | :compare
       def complexity_cost_calculation_mode_for(multiplex_context)
         complexity_cost_calculation_mode
       end
@@ -2380,6 +2545,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer` — the cost to use for this query (probably one of `future_complexity_cost` or `legacy_complexity_cost`)
+      #
+      # :call-seq:
+      #   legacy_complexity_cost_calculation_mismatch(GraphQL::Execution::Multiplex multiplex, Integer future_complexity_cost, Integer legacy_complexity_cost) -> Integer
       def legacy_complexity_cost_calculation_mismatch(multiplex, future_complexity_cost, legacy_complexity_cost)
         raise "Implement #{self}.legacy_complexity_cost(multiplex, future_complexity_cost, legacy_complexity_cost) to handle this mismatch (#{future_complexity_cost} vs. #{legacy_complexity_cost}) and return a value to use"
       end
@@ -2408,6 +2576,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   add_type_and_traverse(Module | Array[Module] t, root:) -> void
       def add_type_and_traverse(t, root:)
         if root
           @root_types ||= []
@@ -2547,8 +2718,7 @@ module GraphQL
     # Install these here so that subclasses will also install it.
     self.connections = GraphQL::Pagination::Connections.new(schema: self)
 
-    # **API:** private
-    module DefaultTraceClass
+    module DefaultTraceClass # :nodoc:
     end
   end
 end

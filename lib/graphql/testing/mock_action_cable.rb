@@ -56,6 +56,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<Hash>` — Payloads "sent" to this channel by GraphQL-Ruby
+        #
+        # :call-seq:
+        #   mock_broadcasted_messages -> Array[Hash]
         attr_reader :mock_broadcasted_messages
 
         # Called by ActionCableSubscriptions. Implements a Rails API.
@@ -67,8 +70,7 @@ module GraphQL
       end
 
       # Used by mock code
-      # **API:** private
-      class MockStream
+      class MockStream # :nodoc:
         def initialize
           @mock_channels = {}
         end
@@ -111,6 +113,9 @@ module GraphQL
         # **Returns**
         #
         # - `GraphQL::Testing::MockActionCable::MockChannel`
+        #
+        # :call-seq:
+        #   get_mock_channel() -> GraphQL::Testing::MockActionCable::MockChannel
         def get_mock_channel
           MockChannel.new
         end
@@ -118,6 +123,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<String>` — Streams that currently have subscribers
+        #
+        # :call-seq:
+        #   mock_stream_names() -> Array[String]
         def mock_stream_names
           @mock_streams.keys
         end

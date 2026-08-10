@@ -66,8 +66,7 @@ module GraphQL
       extend GraphQL::Schema::Member::HasFields
       extend GraphQL::Schema::Resolver::HasPayloadType
 
-      # **API:** private
-      def call_resolve(_args_hash)
+      def call_resolve(_args_hash) # :nodoc:
         # Clear any cached values from `loads` or authorization:
         dataloader.clear_cache
         super

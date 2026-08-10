@@ -13,6 +13,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — the object loaded for `key`
+      #
+      # :call-seq:
+      #   load() -> Object
       def load
         @source.load(@key)
       end

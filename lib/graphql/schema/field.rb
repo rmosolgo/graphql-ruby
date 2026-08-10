@@ -291,6 +291,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — the GraphQL name for this field, camelized unless `camelize: false` is provided
+      #
+      # :call-seq:
+      #   name -> String
       attr_reader :name
       alias :graphql_name :name
 
@@ -299,11 +302,17 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — Method or hash key on the underlying object to look up
+      #
+      # :call-seq:
+      #   method_sym -> Symbol
       attr_reader :method_sym
 
       # **Returns**
       #
       # - `String` — Method or hash key on the underlying object to look up
+      #
+      # :call-seq:
+      #   method_str -> String
       attr_reader :method_str
 
       attr_reader :hash_key
@@ -312,6 +321,9 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — The method on the type to look up
+      #
+      # :call-seq:
+      #   resolver_method() -> Symbol
       def resolver_method
         if @resolver_class
           @resolver_class.resolver_method
@@ -323,6 +335,9 @@ module GraphQL
       # **Returns**
       #
       # - `String, nil`
+      #
+      # :call-seq:
+      #   deprecation_reason() -> String | nil
       def deprecation_reason
         super || @resolver_class&.deprecation_reason
       end
@@ -351,11 +366,17 @@ module GraphQL
       # **Returns**
       #
       # - `Class` — The thing this field was defined on (type, mutation, resolver)
+      #
+      # :call-seq:
+      #   owner -> Class
       attr_accessor :owner
 
       # **Returns**
       #
       # - `Class` — The GraphQL type this field belongs to. (For fields defined on mutations, it's the payload type)
+      #
+      # :call-seq:
+      #   owner_type() -> Class
       def owner_type
         @owner_type ||= if owner.nil?
           raise GraphQL::InvariantError, "Field #{original_name.inspect} (graphql name: #{graphql_name.inspect}) has no owner, but all fields should have an owner. How did this happen?!"
@@ -369,11 +390,17 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — the original name of the field, passed in by the user
+      #
+      # :call-seq:
+      #   original_name -> Symbol
       attr_reader :original_name
 
       # **Returns**
       #
       # - `Class, nil` — The [Schema::Resolver](rdoc-ref:Schema::Resolver) this field was derived from, if there is one
+      #
+      # :call-seq:
+      #   resolver() -> Class | nil
       def resolver
         @resolver_class
       end
@@ -381,6 +408,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — Is this field a predefined introspection field?
+      #
+      # :call-seq:
+      #   introspection?() -> bool
       def introspection?
         @introspection
       end
@@ -394,11 +424,17 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — Apply tracing to this field? (Default: skip scalars, this is the override value)
+      #
+      # :call-seq:
+      #   trace -> bool
       attr_reader :trace
 
       # **Returns**
       #
       # - `String, nil`
+      #
+      # :call-seq:
+      #   subscription_scope() -> String | nil
       def subscription_scope
         @subscription_scope || (@resolver_class.respond_to?(:subscription_scope) ? @resolver_class.subscription_scope : nil)
       end
@@ -409,6 +445,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — if true, this field will be wrapped with Relay connection behavior
+      #
+      # :call-seq:
+      #   connection?() -> bool
       def connection?
         if @connection.nil?
           # Provide default based on type name
@@ -434,6 +473,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — if true, the return type's `.scope_items` method will be applied to this field's return value
+      #
+      # :call-seq:
+      #   scoped?() -> bool
       def scoped?
         if !@scope.nil?
           # The default was overridden
@@ -470,6 +512,9 @@ module GraphQL
       #   connection_extension(MyCustomExtension)
       # end
       # ```
+      #
+      # :call-seq:
+      #   connection_extension(new_extension_class) -> Class
       def self.connection_extension(new_extension_class = nil)
         if new_extension_class
           @connection_extension = new_extension_class
@@ -481,15 +526,24 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — Boolean
+      #
+      # :call-seq:
+      #   relay_node_field -> Object
       attr_reader :relay_node_field
       # **Returns**
       #
       # - `Object` — Boolean
+      #
+      # :call-seq:
+      #   relay_nodes_field -> Object
       attr_reader :relay_nodes_field
 
       # **Returns**
       #
       # - `Boolean` — Should we warn if this field's name conflicts with a built-in method?
+      #
+      # :call-seq:
+      #   method_conflict_warning?() -> bool
       def method_conflict_warning?
         @method_conflict_warning
       end
@@ -536,6 +590,9 @@ module GraphQL
       # - `relay_nodes_field` (`Boolean`) — (Private, used by GraphQL-Ruby)
       # - `extras` (`Array<:ast_node, :parent, :lookahead, :owner, :execution_errors, :graphql_name, :argument_details, Symbol>`) — Extra arguments to be injected into the resolver for this field
       # - `definition_block` (`Proc`) — an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new [Field](rdoc-ref:Field).
+      #
+      # :call-seq:
+      #   initialize(Class | GraphQL::BaseType | Array type:, Symbol name:, Class owner:, bool null:, String description:, String comment:, String deprecation_reason:, Symbol method:, Symbol | true | nil resolve_legacy_instance_method:, Symbol | true | nil resolve_static:, Symbol | true | nil resolve_each:, Symbol | true | nil resolve_batch:, String | Symbol hash_key:, Array[String | Symbol] dig:, Symbol resolver_method:, bool connection:, Integer | nil max_page_size:, Integer | nil default_page_size:, bool scope:, bool introspection:, bool camelize:, bool trace:, Numeric complexity:, Class | Hash dataload:, Language::Nodes::FieldDefinition | nil ast_node:, Array[:ast_node | :parent | :lookahead | :owner | :execution_errors | :graphql_name | :argument_details | Symbol] extras:, Array[Class | Hash[Class, Object]] extensions:, Class connection_extension:, Class resolver_class:, Symbol | String subscription_scope:, bool relay_node_field:, bool relay_nodes_field:, bool method_conflict_warning:, bool broadcastable:, {String=>GraphQL::Schema::Argument | Hash} arguments:, Hash[Class, Hash] directives:, Array[Hash] validates:, Object fallback_value:, bool dynamic_introspection:, Proc &definition_block)
       def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, resolve_legacy_instance_method: nil, resolve_static: nil, resolve_each: nil, resolve_batch: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, dataload: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
@@ -684,18 +741,16 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      attr_reader :execution_mode_key, :execution_mode
+      attr_reader :execution_mode_key, :execution_mode # :nodoc:
 
       # Calls the definition block, if one was given.
       # This is deferred so that references to the return type
       # can be lazily evaluated, reducing Rails boot time.
-      # **API:** private
       #
       # **Returns**
       #
       # - `self`
-      def ensure_loaded
+      def ensure_loaded # :nodoc:
         if @definition_block
           if @definition_block.arity == 1
             @definition_block.call(self)
@@ -712,11 +767,14 @@ module GraphQL
       attr_accessor :dynamic_introspection
 
       # If true, subscription updates with this field can be shared between viewers
-      # See [GraphQL::Subscriptions::BroadcastAnalyzer](rdoc-ref:GraphQL::Subscriptions::BroadcastAnalyzer) GraphQL::Subscriptions::BroadcastAnalyzer
+      # See `GraphQL::Subscriptions::BroadcastAnalyzer`.
       #
       # **Returns**
       #
       # - `Boolean, nil`
+      #
+      # :call-seq:
+      #   broadcastable?() -> bool | nil
       def broadcastable?
         if !NOT_CONFIGURED.equal?(@broadcastable)
           @broadcastable
@@ -734,6 +792,9 @@ module GraphQL
       # **Returns**
       #
       # - `String`
+      #
+      # :call-seq:
+      #   description(String text) -> String
       def description(text = nil)
         if text
           @description = text
@@ -753,6 +814,9 @@ module GraphQL
       # **Returns**
       #
       # - `String, nil`
+      #
+      # :call-seq:
+      #   comment(String text) -> String | nil
       def comment(text = nil)
         if text
           @comment = text
@@ -796,6 +860,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::Schema::FieldExtension>` — extensions to apply to this field
+      #
+      # :call-seq:
+      #   extensions(new_extensions) -> Array[GraphQL::Schema::FieldExtension]
       def extensions(new_extensions = nil)
         if new_extensions
           new_extensions.each do |extension_config|
@@ -834,6 +901,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   extension(Class extension_class, Hash **options) -> void
       def extension(extension_class, **options)
         extension_inst = extension_class.new(field: self, options: options)
         if @extensions.frozen?
@@ -856,6 +926,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Symbol>`
+      #
+      # :call-seq:
+      #   extras(Array[Symbol] new_extras) -> Array[Symbol]
       def extras(new_extras = nil)
         if new_extras.nil?
           # Read the value
@@ -951,6 +1024,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if this field's [max page size](rdoc-ref:#max_page_size) should override the schema default.
+      #
+      # :call-seq:
+      #   has_max_page_size?() -> bool
       def has_max_page_size?
         !NOT_CONFIGURED.equal?(@max_page_size) || (@resolver_class && @resolver_class.has_max_page_size?)
       end
@@ -958,6 +1034,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer, nil` — Applied to connections if [has max page size?](rdoc-ref:#has_max_page_size?)
+      #
+      # :call-seq:
+      #   max_page_size() -> Integer | nil
       def max_page_size
         if !NOT_CONFIGURED.equal?(@max_page_size)
           @max_page_size
@@ -971,6 +1050,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if this field's [default page size](rdoc-ref:#default_page_size) should override the schema default.
+      #
+      # :call-seq:
+      #   has_default_page_size?() -> bool
       def has_default_page_size?
         !NOT_CONFIGURED.equal?(@default_page_size) || (@resolver_class && @resolver_class.has_default_page_size?)
       end
@@ -978,6 +1060,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer, nil` — Applied to connections if [has default page size?](rdoc-ref:#has_default_page_size?)
+      #
+      # :call-seq:
+      #   default_page_size() -> Integer | nil
       def default_page_size
         if !NOT_CONFIGURED.equal?(@default_page_size)
           @default_page_size
@@ -1010,6 +1095,9 @@ module GraphQL
       # **Returns**
       #
       # - `Module, GraphQL::Schema::NonNull, GraphQL::Schema::List, nil` — the configured type for this field
+      #
+      # :call-seq:
+      #   type(Module | GraphQL::Schema::NonNull | GraphQL::Schema::List new_type) -> Module | GraphQL::Schema::NonNull | GraphQL::Schema::List | nil
       def type(new_type = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_type)
           if @resolver_class
@@ -1102,6 +1190,9 @@ module GraphQL
       # - `object` (`GraphQL::Schema::Object`) — An instance of some type class, wrapping an application object
       # - `args` (`Hash`) — A symbol-keyed hash of Ruby keyword arguments. (Empty if no args)
       # - `ctx` (`GraphQL::Query::Context`)
+      #
+      # :call-seq:
+      #   resolve(GraphQL::Schema::Object object, Hash args, query_ctx)
       def resolve(object, args, query_ctx)
         # Unwrap the GraphQL object to get the application object.
         application_object = object.object
@@ -1210,6 +1301,9 @@ module GraphQL
       # **Parameters**
       #
       # - `ctx` (`GraphQL::Query::Context`)
+      #
+      # :call-seq:
+      #   fetch_extra(extra_name, GraphQL::Query::Context ctx)
       def fetch_extra(extra_name, ctx)
         if extra_name != :path && extra_name != :ast_node && respond_to?(extra_name)
           self.public_send(extra_name)
@@ -1279,6 +1373,9 @@ ERR
       # **Returns**
       #
       # - `Object` — Whatever the
+      #
+      # :call-seq:
+      #   with_extensions(obj, args, ctx) -> Object
       def with_extensions(obj, args, ctx)
         if @extensions.empty?
           yield(obj, args)

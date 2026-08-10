@@ -67,6 +67,9 @@ module GraphQL
         # **Returns**
         #
         # - `GraphQL::Schema::Field`
+        #
+        # :call-seq:
+        #   field(Symbol name_positional, Class | GraphQL::BaseType | Array type_positional, String desc_positional, Hash **kwargs, Proc &definition_block) -> GraphQL::Schema::Field
         def field(name_positional = nil, type_positional = nil, desc_positional = nil, **kwargs, &definition_block)
           resolver = kwargs.delete(:resolver)
           mutation = kwargs.delete(:mutation)
@@ -105,18 +108,18 @@ module GraphQL
 
         # A list of Ruby keywords.
         #
-        # **API:** private
+        # :nodoc:
         RUBY_KEYWORDS = [:class, :module, :def, :undef, :begin, :rescue, :ensure, :end, :if, :unless, :then, :elsif, :else, :case, :when, :while, :until, :for, :break, :next, :redo, :retry, :in, :do, :return, :yield, :super, :self, :nil, :true, :false, :and, :or, :not, :alias, :defined?, :BEGIN, :END, :__LINE__, :__FILE__]
 
         # A list of GraphQL-Ruby keywords.
         #
-        # **API:** private
+        # :nodoc:
         GRAPHQL_RUBY_KEYWORDS = [:context, :object, :raw_value]
 
         # A list of field names that we should advise users to pick a different
         # resolve method name.
         #
-        # **API:** private
+        # :nodoc:
         CONFLICT_FIELD_NAMES = Set.new(GRAPHQL_RUBY_KEYWORDS + RUBY_KEYWORDS + Object.instance_methods)
 
         # Register this field with the class, overriding a previous one if needed.
@@ -128,6 +131,9 @@ module GraphQL
         # **Returns**
         #
         # - `void`
+        #
+        # :call-seq:
+        #   add_field(GraphQL::Schema::Field field_defn, method_conflict_warning:) -> void
         def add_field(field_defn, method_conflict_warning: field_defn.method_conflict_warning?)
           # Check that `field_defn.original_name` equals `resolver_method` and `method_sym` --
           # that shows that no override value was given manually.
@@ -158,6 +164,9 @@ module GraphQL
         # **Returns**
         #
         # - `Class` — The class to initialize when adding fields to this kind of schema member
+        #
+        # :call-seq:
+        #   field_class(new_field_class) -> Class
         def field_class(new_field_class = nil)
           if new_field_class
             @field_class = new_field_class
@@ -187,6 +196,9 @@ module GraphQL
         # **Returns**
         #
         # - `void`
+        #
+        # :call-seq:
+        #   has_no_fields(bool new_has_no_fields) -> void
         def has_no_fields(new_has_no_fields)
           @has_no_fields = new_has_no_fields
           nil
@@ -195,6 +207,9 @@ module GraphQL
         # **Returns**
         #
         # - `Boolean` — `true` if `has_no_fields(true)` was configued
+        #
+        # :call-seq:
+        #   has_no_fields?() -> bool
         def has_no_fields?
           @has_no_fields
         end
@@ -202,6 +217,9 @@ module GraphQL
         # **Returns**
         #
         # - `Hash<String => GraphQL::Schema::Field, Array<GraphQL::Schema::Field>>` — Fields defined on this class _specifically_, not parent classes
+        #
+        # :call-seq:
+        #   own_fields() -> Hash[String, GraphQL::Schema::Field | Array[GraphQL::Schema::Field]]
         def own_fields
           @own_fields ||= {}
         end
@@ -235,6 +253,9 @@ module GraphQL
           # **Returns**
           #
           # - `Hash<String => GraphQL::Schema::Field>` — Fields on this object, keyed by name, including inherited fields
+          #
+          # :call-seq:
+          #   fields(context:) -> Hash[String, GraphQL::Schema::Field]
           def fields(context = GraphQL::Query::NullContext.instance)
             warden = Warden.from_context(context)
             # Local overrides take precedence over inherited fields
@@ -276,6 +297,9 @@ module GraphQL
           # **Returns**
           #
           # - `Hash<String => GraphQL::Schema::Field>` — Fields on this object, keyed by name, including inherited fields
+          #
+          # :call-seq:
+          #   fields(context:) -> Hash[String, GraphQL::Schema::Field]
           def fields(context = GraphQL::Query::NullContext.instance)
             # Objects need to check that the interface implementation is visible, too
             warden = Warden.from_context(context)
@@ -353,6 +377,9 @@ module GraphQL
         # **Returns**
         #
         # - `String` — A warning to give when this field definition might conflict with a built-in method
+        #
+        # :call-seq:
+        #   conflict_field_name_warning(GraphQL::Schema::Field field_defn) -> String
         def conflict_field_name_warning(field_defn)
           "#{self.graphql_name}'s `field :#{field_defn.original_name}` conflicts with a built-in method, use `resolver_method:` to pick a different resolver method for this field (for example, `resolver_method: :resolve_#{field_defn.resolver_method}` and `def resolve_#{field_defn.resolver_method}`). Or use `method_conflict_warning: false` to suppress this warning."
         end

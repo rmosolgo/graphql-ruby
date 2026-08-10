@@ -49,6 +49,9 @@ module GraphQL
       # - `schema` (`GraphQL::Schema`)
       # - `context` (`Hash`)
       # - `introspection` (`Boolean`) — Should include the introspection types in the string?
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Schema schema, Hash context:, bool introspection:)
       def initialize(schema, context: nil, introspection: false)
         @document_from_schema = GraphQL::Language::DocumentFromSchemaDefinition.new(
           schema,
@@ -94,6 +97,9 @@ module GraphQL
       # - `context` (`Hash`)
       # - `only` (`<#call(member, ctx)>`)
       # - `except` (`<#call(member, ctx)>`)
+      #
+      # :call-seq:
+      #   print_schema(GraphQL::Schema schema, **args)
       def self.print_schema(schema, **args)
         printer = new(schema, **args)
         printer.print_schema

@@ -23,8 +23,7 @@ module GraphQL
         create_pending_run
       end
 
-      # **API:** private
-      attr_reader :pending_sources
+      attr_reader :pending_sources # :nodoc:
 
       def create_pending_run
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit

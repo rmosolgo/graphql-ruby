@@ -79,6 +79,9 @@ module GraphQL
         # **Returns**
         #
         # - `void`
+        #
+        # :call-seq:
+        #   value(*args, Symbol | false value_method:, **kwargs, &block) -> void
         def value(*args, value_method: nil, **kwargs, &block)
           kwargs[:owner] = self
           value = enum_value_class.new(*args, **kwargs, &block)
@@ -105,6 +108,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<GraphQL::Schema::EnumValue>` — Possible values of this enum
+        #
+        # :call-seq:
+        #   enum_values(context:) -> Array[GraphQL::Schema::EnumValue]
         def enum_values(context = GraphQL::Query::NullContext.instance)
           inherited_values = superclass.respond_to?(:enum_values) ? superclass.enum_values(context) : nil
           visible_values = []
@@ -144,6 +150,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<Schema::EnumValue>` — An unfiltered list of all definitions
+        #
+        # :call-seq:
+        #   all_enum_value_definitions() -> Array[Schema::EnumValue]
         def all_enum_value_definitions
           all_defns = if superclass.respond_to?(:all_enum_value_definitions)
             superclass.all_enum_value_definitions
@@ -165,6 +174,9 @@ module GraphQL
         # **Returns**
         #
         # - `Hash<String => GraphQL::Schema::EnumValue>` — Possible values of this enum, keyed by name.
+        #
+        # :call-seq:
+        #   values(context:) -> Hash[String, GraphQL::Schema::EnumValue]
         def values(context = GraphQL::Query::NullContext.instance)
           enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }
         end
@@ -172,6 +184,9 @@ module GraphQL
         # **Returns**
         #
         # - `Class` — for handling `value(...)` inputs and building `GraphQL::Enum::EnumValue`s out of them
+        #
+        # :call-seq:
+        #   enum_value_class(new_enum_value_class) -> Class
         def enum_value_class(new_enum_value_class = nil)
           if new_enum_value_class
             @enum_value_class = new_enum_value_class
@@ -226,6 +241,9 @@ module GraphQL
         # **Returns**
         #
         # - `String` — The GraphQL-ready string for [value](rdoc-ref:value)
+        #
+        # :call-seq:
+        #   coerce_result(Object value, GraphQL::Query::Context ctx) -> String
         def coerce_result(value, ctx)
           types = ctx.types
           all_values = types ? types.enum_values(self) : values.each_value
@@ -252,6 +270,9 @@ module GraphQL
         # **Returns**
         #
         # - `Object` — The Ruby value for the matched [GraphQL::Schema::EnumValue](rdoc-ref:GraphQL::Schema::EnumValue)
+        #
+        # :call-seq:
+        #   coerce_input(String | Object value_name, GraphQL::Query::Context ctx) -> Object
         def coerce_input(value_name, ctx)
           all_values = ctx.types ? ctx.types.enum_values(self) : values.each_value
 

@@ -26,6 +26,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer`
+      #
+      # :call-seq:
+      #   time_precision() -> Integer
       def self.time_precision
         @time_precision || DEFAULT_TIME_PRECISION
       end
@@ -33,6 +36,9 @@ module GraphQL
       # **Parameters**
       #
       # - `value` (`Integer`)
+      #
+      # :call-seq:
+      #   time_precision=(Integer value)
       def self.time_precision=(value)
         @time_precision = value
       end
@@ -44,6 +50,9 @@ module GraphQL
       # **Returns**
       #
       # - `String`
+      #
+      # :call-seq:
+      #   coerce_result(Time | Date | DateTime | String value, _ctx) -> String
       def self.coerce_result(value, _ctx)
         case value
         when Date
@@ -65,6 +74,9 @@ module GraphQL
       # **Returns**
       #
       # - `Time`
+      #
+      # :call-seq:
+      #   coerce_input(String str_value, _ctx) -> Time
       def self.coerce_input(str_value, _ctx)
         Time.iso8601(str_value)
       rescue ArgumentError, TypeError

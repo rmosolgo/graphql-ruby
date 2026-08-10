@@ -116,6 +116,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer` — Returns the max depth of `array`, or `0` if it isn't an array at all
+      #
+      # :call-seq:
+      #   depth_of_array(array) -> Integer
       def depth_of_array(array)
         case array
         when Array

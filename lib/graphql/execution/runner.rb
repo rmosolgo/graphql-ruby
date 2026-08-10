@@ -57,6 +57,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   add_finalizer(query, result_value, key, finalizer) -> void
       def add_finalizer(query, result_value, key, finalizer)
         @finalizers ||= {}.compare_by_identity
         f_for_query = @finalizers[query] ||= {}.compare_by_identity

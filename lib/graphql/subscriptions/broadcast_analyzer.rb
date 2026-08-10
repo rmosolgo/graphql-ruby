@@ -7,9 +7,8 @@ module GraphQL
     # - Is completely broadcastable
     #
     # Assign the result to `context.namespace(:subscriptions)[:subscription_broadcastable]`
-    # **API:** private
     # See [Subscriptions#broadcastable?](rdoc-ref:Subscriptions#broadcastable?) for a public API
-    class BroadcastAnalyzer < GraphQL::Analysis::Analyzer
+    class BroadcastAnalyzer < GraphQL::Analysis::Analyzer # :nodoc:
       def initialize(subject)
         super
         @default_broadcastable = subject.schema.subscriptions.default_broadcastable
@@ -49,6 +48,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   result() -> void
       def result
         query.context.namespace(:subscriptions)[:subscription_broadcastable] = @subscription_broadcastable
         nil

@@ -19,6 +19,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — a unique, opaque ID generated as a function of the two inputs
+      #
+      # :call-seq:
+      #   encode(String type_name, Any object_value, separator:) -> String
       def encode(type_name, object_value, separator: self.default_id_separator)
         object_value_str = object_value.to_s
 
@@ -36,6 +39,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<(String, String)>` — The type name & value passed to [.encode](rdoc-ref:.encode)
+      #
+      # :call-seq:
+      #   decode(String node_id, separator:) -> Array[(String, String)]
       def decode(node_id, separator: self.default_id_separator)
         GraphQL::Schema::Base64Encoder.decode(node_id).split(separator, 2)
       end

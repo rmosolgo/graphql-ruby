@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
   module Language
-    # **API:** private [GraphQL::Language::DocumentFromSchemaDefinition](rdoc-ref:GraphQL::Language::DocumentFromSchemaDefinition) is used to convert a [GraphQL::Schema](rdoc-ref:GraphQL::Schema) object to a [GraphQL::Language::Nodes::Document](rdoc-ref:GraphQL::Language::Nodes::Document) AST node.
     #
     # **Parameters**
     #
@@ -11,7 +10,7 @@ module GraphQL
     # - `include_introspection_types` (`Boolean`) — Whether or not to include introspection types in the AST
     # - `include_built_in_scalars` (`Boolean`) — Whether or not to include built in scalars in the AST
     # - `include_built_in_directives` (`Boolean`) — Whether or not to include built in directives in the AST
-    class DocumentFromSchemaDefinition
+    class DocumentFromSchemaDefinition # :nodoc:
       def initialize(
         schema, context: nil, include_introspection_types: false,
         include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false

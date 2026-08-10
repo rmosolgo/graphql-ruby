@@ -6,8 +6,7 @@ module GraphQL
     # - `.platform_keys`
     # - `#platform_trace`
     # - `#platform_field_key(type, field)`
-    # **API:** private
-    class PlatformTracing
+    class PlatformTracing # :nodoc:
       class << self
         attr_accessor :platform_keys
 
@@ -132,6 +131,9 @@ module GraphQL
       # **Returns**
       #
       # - `String`
+      #
+      # :call-seq:
+      #   cached_platform_key(GraphQL::Query::Context ctx, Class | GraphQL::Field key, Symbol trace_phase) -> String
       def cached_platform_key(ctx, key, trace_phase)
         cache = ctx.namespace(self.class)[:platform_key_cache] ||= {}
         cache.fetch(key) { cache[key] = yield }

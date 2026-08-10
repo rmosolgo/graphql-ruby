@@ -15,6 +15,9 @@ module GraphQL
         # **Returns**
         #
         # - `void`
+        #
+        # :call-seq:
+        #   validates(Hash[Symbol, Hash] validation_config) -> void
         def validates(validation_config)
           new_validators = GraphQL::Schema::Validator.from_config(self, validation_config)
           @own_validators ||= []
@@ -25,6 +28,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<GraphQL::Schema::Validator>`
+        #
+        # :call-seq:
+        #   validators() -> Array[GraphQL::Schema::Validator]
         def validators
           @own_validators || EMPTY_ARRAY
         end

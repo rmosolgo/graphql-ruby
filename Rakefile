@@ -251,6 +251,7 @@ namespace :docs do
   desc "Build and run documentation quality checks"
   task check: "docs:rdoc:build" do
     ruby "tool/docs/check.rb"
+    ruby "tool/docs/type_signatures.rb", "--check"
     ruby "tool/docs/migrate_guides.rb", "--check"
     ruby "tool/docs/guide_audit.rb"
     ruby "tool/docs/compatibility.rb", "--root", "tmp/rdoc-site", "--rdoc", "tmp/rdoc-site/js/search_data.js", "--baseline", "docs/yard_api_baseline.yml", "--strict", "--json", "tmp/rdoc-api-compatibility.json"

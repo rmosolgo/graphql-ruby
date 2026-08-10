@@ -21,8 +21,7 @@ module GraphQL
     # one of these errors in one query will not affect the other queries.
     #
     # See [Schema.multiplex](rdoc-ref:GraphQL::Schema::multiplex) for the public API
-    # **API:** private
-    class Multiplex
+    class Multiplex # :nodoc:
       include Tracing::Traceable
 
       attr_reader :context, :queries, :schema, :max_complexity, :dataloader, :current_trace

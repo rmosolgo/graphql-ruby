@@ -19,6 +19,9 @@ module GraphQL
       # **Parameters**
       #
       # - `statsd` (`Object`) — A statsd client
+      #
+      # :call-seq:
+      #   initialize(Object statsd:, **rest)
       def initialize(statsd:, **rest)
         @statsd = statsd
         super(**rest)

@@ -10,6 +10,9 @@ module GraphQL
         # **Returns**
         #
         # - `void`
+        #
+        # :call-seq:
+        #   resolve_all(results, dataloader) -> void
         def self.resolve_all(results, dataloader)
           warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{caller(1, 5).map { |l| "\n    #{l}"}.join}"
           dataloader.append_job { resolve(results, dataloader) }

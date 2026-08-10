@@ -10,8 +10,7 @@ module GraphQL
     # should go through a warden. If you access the schema directly,
     # you may show a client something that it shouldn't be allowed to see.
     #
-    # **API:** private
-    class Warden
+    class Warden # :nodoc:
       def self.from_context(context)
         context.warden || PassThruWarden
       rescue NoMethodError
@@ -41,6 +40,9 @@ module GraphQL
       #
       # - `Object` — `entry` or one of `entry`'s items if exactly one of them is visible for this context
       # - `nil` — If neither `entry` nor any of `entry`'s items are visible for this context
+      #
+      # :call-seq:
+      #   visible_entry?(Symbol visibility_method, Object | Array[Object] entry, GraphQL::Query::Context context, Warden warden) -> Object | nil
       def self.visible_entry?(visibility_method, entry, context, warden = Warden.from_context(context))
         if entry.is_a?(Array)
           visible_item = nil
@@ -204,6 +206,9 @@ module GraphQL
       #
       # - `context` (`GraphQL::Query::Context`)
       # - `schema` (`GraphQL::Schema`)
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Query::Context context:, GraphQL::Schema schema:)
       def initialize(context:, schema:)
         @schema = schema
         # Cache these to avoid repeated hits to the inheritance chain when one isn't present
@@ -227,6 +232,9 @@ module GraphQL
       # **Returns**
       #
       # - `Hash<String, GraphQL::BaseType>` — Visible types in the schema
+      #
+      # :call-seq:
+      #   types() -> Hash[String, GraphQL::BaseType]
       def types
         @types ||= begin
           vis_types = {}
@@ -242,6 +250,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if this type is used for `loads:` but not in the schema otherwise and not _explicitly_ hidden.
+      #
+      # :call-seq:
+      #   loadable?(type, _ctx) -> bool
       def loadable?(type, _ctx)
         visible_type?(type) &&
           !referenced?(type) &&
@@ -264,6 +275,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::BaseType, nil` — The type named `type_name`, if it exists (else `nil`)
+      #
+      # :call-seq:
+      #   get_type(type_name) -> GraphQL::BaseType | nil
       def get_type(type_name)
         @visible_types ||= read_through do |name|
           type_defn = @schema.get_type(name, @context, false)
@@ -280,6 +294,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::BaseType>` — Visible and reachable types in the schema
+      #
+      # :call-seq:
+      #   reachable_types() -> Array[GraphQL::BaseType]
       def reachable_types
         @reachable_types ||= reachable_type_set.to_a
       end
@@ -287,6 +304,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — Boolean True if the type is visible and reachable in the schema
+      #
+      # :call-seq:
+      #   reachable_type?(type_name) -> Object
       def reachable_type?(type_name)
         type = get_type(type_name) # rubocop:disable Development/ContextIsPassedCop -- `self` is query-aware
         type && reachable_type_set.include?(type)
@@ -295,6 +315,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Field, nil` — The field named `field_name` on `parent_type`, if it exists
+      #
+      # :call-seq:
+      #   get_field(parent_type, field_name) -> GraphQL::Field | nil
       def get_field(parent_type, field_name)
         @visible_parent_fields ||= read_through do |type|
           read_through do |f_name|
@@ -313,6 +336,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Argument, nil` — The argument named `argument_name` on `parent_type`, if it exists and is visible
+      #
+      # :call-seq:
+      #   get_argument(parent_type, argument_name) -> GraphQL::Argument | nil
       def get_argument(parent_type, argument_name)
         argument = parent_type.get_argument(argument_name, @context)
         return argument if argument && visible_argument?(argument, @context)
@@ -321,6 +347,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::BaseType>` — The types which may be member of `type_defn`
+      #
+      # :call-seq:
+      #   possible_types(type_defn) -> Array[GraphQL::BaseType]
       def possible_types(type_defn)
         @visible_possible_types ||= read_through { |type_defn|
           pt = @schema.possible_types(type_defn, @context, false)
@@ -336,6 +365,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::Field>` — Fields on `type_defn`
+      #
+      # :call-seq:
+      #   fields(GraphQL::ObjectType | GraphQL::InterfaceType type_defn) -> Array[GraphQL::Field]
       def fields(type_defn)
         @visible_fields ||= read_through { |t| @schema.get_fields(t, @context).values }
         @visible_fields[type_defn]
@@ -348,6 +380,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::Argument>` — Visible arguments on `argument_owner`
+      #
+      # :call-seq:
+      #   arguments(GraphQL::Field | GraphQL::InputObjectType argument_owner, ctx) -> Array[GraphQL::Argument]
       def arguments(argument_owner, ctx = nil)
         @visible_arguments ||= read_through { |o|
           args = o.arguments(@context)
@@ -365,6 +400,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::EnumType::EnumValue>` — Visible members of `enum_defn`
+      #
+      # :call-seq:
+      #   enum_values(enum_defn) -> Array[GraphQL::EnumType::EnumValue]
       def enum_values(enum_defn)
         @visible_enum_arrays ||= read_through { |e|
           values = e.enum_values(@context)
@@ -384,6 +422,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::InterfaceType>` — Visible interfaces implemented by `obj_type`
+      #
+      # :call-seq:
+      #   interfaces(obj_type) -> Array[GraphQL::InterfaceType]
       def interfaces(obj_type)
         @visible_interfaces ||= read_through { |t|
           ints = t.interfaces(@context)
@@ -411,6 +452,9 @@ module GraphQL
       # **Parameters**
       #
       # - `owner` (`Class, Module`) — If provided, confirm that field has the given owner.
+      #
+      # :call-seq:
+      #   visible_field?(field_defn, _ctx, Class | Module owner)
       def visible_field?(field_defn, _ctx = nil, owner = field_defn.owner)
         # This field is visible in its own right
         visible?(field_defn) &&

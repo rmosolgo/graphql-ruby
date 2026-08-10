@@ -28,6 +28,9 @@ module GraphQL
         # - `with` (`RegExp, nil`)
         # - `without` (`Regexp, nil`)
         # - `message` (`String`)
+        #
+        # :call-seq:
+        #   initialize(RegExp | nil with:, Regexp | nil without:, String message:, **default_options)
         def initialize(
           with: nil,
           without: nil,

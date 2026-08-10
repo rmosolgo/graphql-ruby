@@ -34,16 +34,25 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::ExecutionError>` — errors returned during execution
+      #
+      # :call-seq:
+      #   errors -> Array[GraphQL::ExecutionError]
       attr_reader :errors
 
       # **Returns**
       #
       # - `GraphQL::Query` — The query whose context this is
+      #
+      # :call-seq:
+      #   query -> GraphQL::Query
       attr_reader :query
 
       # **Returns**
       #
       # - `GraphQL::Schema`
+      #
+      # :call-seq:
+      #   schema -> GraphQL::Schema
       attr_reader :schema
 
       # Make a new context which delegates key lookup to `values`
@@ -52,6 +61,9 @@ module GraphQL
       #
       # - `query` (`GraphQL::Query`) — the query who owns this context
       # - `values` (`Hash`) — A hash of arbitrary values which will be accessible at query-time
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Query query:, schema:, Hash values:)
       def initialize(query:, schema: query.schema, values:)
         @query = query
         @schema = schema
@@ -68,6 +80,9 @@ module GraphQL
       # **Returns**
       #
       # - `Hash` — A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
+      #
+      # :call-seq:
+      #   response_extensions() -> Hash
       def response_extensions
         namespace(:__query_result_extensions__)
       end
@@ -76,14 +91,11 @@ module GraphQL
         @dataloader ||= self[:dataloader] || (query.multiplex ? query.multiplex.dataloader : schema.dataloader_class.new)
       end
 
-      # **API:** private
-      attr_writer :interpreter
+      attr_writer :interpreter # :nodoc:
 
-      # **API:** private
-      attr_writer :value
+      attr_writer :value # :nodoc:
 
-      # **API:** private
-      attr_reader :scoped_context
+      attr_reader :scoped_context # :nodoc:
 
       def []=(key, value)
         @provided_values[key] = value
@@ -135,6 +147,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   add_error(GraphQL::ExecutionError error) -> void
       def add_error(error)
         if !error.is_a?(GraphQL::RuntimeError)
           raise TypeError, "expected error to be a GraphQL::RuntimeError, but was #{error.class}"
@@ -150,6 +165,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Execution::Interpreter::RawValue` — Return this from the field
+      #
+      # :call-seq:
+      #   raw_value(Object value) -> GraphQL::Execution::Interpreter::RawValue
       def raw_value(value)
         GraphQL::Execution::Interpreter::RawValue.new(value)
       end
@@ -165,6 +183,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Backtrace` — The backtrace for this point in query execution
+      #
+      # :call-seq:
+      #   backtrace() -> GraphQL::Backtrace
       def backtrace
         GraphQL::Backtrace.new(self)
       end
@@ -249,12 +270,14 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Schema::Warden`
+      #
+      # :call-seq:
+      #   warden() -> GraphQL::Schema::Warden
       def warden
         @warden ||= (@query && @query.warden)
       end
 
-      # **API:** private
-      attr_writer :warden
+      attr_writer :warden # :nodoc:
 
       # Get an isolated hash for `ns`. Doesn't affect user-provided storage.
       #
@@ -265,6 +288,9 @@ module GraphQL
       # **Returns**
       #
       # - `Hash` — namespaced storage
+      #
+      # :call-seq:
+      #   namespace(Object ns) -> Hash
       def namespace(ns)
         if ns == :interpreter
           self
@@ -276,6 +302,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — true if this namespace was accessed before
+      #
+      # :call-seq:
+      #   namespace?(ns) -> bool
       def namespace?(ns)
         @storage.key?(ns)
       end
@@ -315,6 +344,9 @@ module GraphQL
       # **Returns**
       #
       # - `Context::Scoped`
+      #
+      # :call-seq:
+      #   scoped() -> Context::Scoped
       def scoped
         Scoped.new(@scoped_context, current_path)
       end

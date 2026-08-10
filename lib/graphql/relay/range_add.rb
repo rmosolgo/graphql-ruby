@@ -41,6 +41,9 @@ module GraphQL
       # - `context` (`GraphQL::Query::Context`) — The surrounding `ctx`, will be passed to the connection
       # - `parent` (`Object`) — The owner of `collection`, will be passed to the connection if provided
       # - `edge_class` (`Class`) — The class to wrap `item` with (defaults to the connection's edge class)
+      #
+      # :call-seq:
+      #   initialize(Object collection:, Object item:, GraphQL::Query::Context context:, Object parent:, Class edge_class:)
       def initialize(collection:, item:, context:, parent: nil, edge_class: nil)
         conn_class = context.schema.connections.wrapper_for(collection)
         # The rest will be added by ConnectionExtension

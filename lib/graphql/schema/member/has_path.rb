@@ -7,6 +7,9 @@ module GraphQL
         # **Returns**
         #
         # - `String` — A description of this member's place in the GraphQL schema
+        #
+        # :call-seq:
+        #   path() -> String
         def path
           path_str = if self.respond_to?(:graphql_name)
             self.graphql_name

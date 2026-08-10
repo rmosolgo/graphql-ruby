@@ -17,6 +17,9 @@ module GraphQL
           # **Returns**
           #
           # - `Integer` — The first line of the definition (not the description)
+          #
+          # :call-seq:
+          #   definition_line -> Integer
           attr_reader :definition_line
 
           def initialize(definition_line: nil, **_rest)
@@ -53,6 +56,9 @@ module GraphQL
         # **Returns**
         #
         # - `Boolean` — True if `self` is equivalent to `other`
+        #
+        # :call-seq:
+        #   ==(other) -> bool
         def ==(other)
           return true if equal?(other)
           other.kind_of?(self.class) &&
@@ -65,6 +71,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<GraphQL::Language::Nodes::AbstractNode>` — all nodes in the tree below this one
+        #
+        # :call-seq:
+        #   children() -> Array[GraphQL::Language::Nodes::AbstractNode]
         def children
           NO_CHILDREN
         end
@@ -72,6 +81,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<Integer, Float, String, Boolean, Array>` — Scalar values attached to this node
+        #
+        # :call-seq:
+        #   scalars() -> Array[Integer | Float | String | bool | Array]
         def scalars
           NO_CHILDREN
         end
@@ -112,6 +124,9 @@ module GraphQL
         # **Returns**
         #
         # - `AbstractNode` — a shallow copy of `self`
+        #
+        # :call-seq:
+        #   merge(Hash new_options) -> AbstractNode
         def merge(new_options)
           dup.merge!(new_options)
         end
@@ -539,6 +554,9 @@ module GraphQL
         # **Returns**
         #
         # - `Hash<String, Any>` — Recursively turn this input object into a Ruby Hash
+        #
+        # :call-seq:
+        #   to_h(options=) -> Hash[String, Any]
         def to_h(options={})
           arguments.inject({}) do |memo, pair|
             v = pair.value

@@ -13,6 +13,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   visit() -> void
       def visit
         # `@document` may be any kind of node:
         visit_method = @document.visit_method
@@ -115,6 +118,9 @@ module GraphQL
           # **Returns**
           #
           # - `void`
+          #
+          # :call-seq:
+          #   #{node_method}(GraphQL::Language::Nodes::AbstractNode node, GraphQL::Language::Nodes::AbstractNode | nil parent) -> void
           def #{node_method}(node, parent)
             #{
               if method_defined?(child_visit_method)

@@ -8,11 +8,14 @@ module GraphQL
     # **Parameters**
     #
     # - `own_key` (`String, Symbol`) — A key to retrieve
-    # - `rest_keys` (`Array<[String, Symbol>] Retrieves the value object corresponding to the each key objects repeatedly`) — est_keys [Array<[String, Symbol>] Retrieves the value object corresponding to the each key objects repeatedly
+    # - `rest_keys` (`Array<[String, Symbol]>`) — Keys to use for retrieving nested values
     #
     # **Returns**
     #
     # - `Object`
+    #
+    # :call-seq:
+    #   dig(String | Symbol own_key, Array[[String, Symbol]] *rest_keys) -> Object
     def dig(own_key, *rest_keys)
       val = self[own_key]
       if val.nil? || rest_keys.empty?

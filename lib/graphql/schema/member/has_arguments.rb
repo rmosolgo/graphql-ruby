@@ -44,6 +44,9 @@ module GraphQL
         # **Returns**
         #
         # - `GraphQL::Schema::Argument` — An instance of [argument_class](rdoc-ref:argument_class) created from these arguments
+        #
+        # :call-seq:
+        #   argument(Symbol arg_name, type_expr, String desc, Hash **kwargs, Proc &definition_block) -> GraphQL::Schema::Argument
         def argument(arg_name = nil, type_expr = nil, desc = nil, **kwargs, &definition_block)
           if kwargs[:loads]
             loads_name = arg_name || kwargs[:name]
@@ -81,6 +84,9 @@ module GraphQL
         # **Returns**
         #
         # - `GraphQL::Schema::Argument`
+        #
+        # :call-seq:
+        #   add_argument(GraphQL::Schema::Argument arg_defn) -> GraphQL::Schema::Argument
         def add_argument(arg_defn)
           @own_arguments ||= {}
           prev_defn = @own_arguments[arg_defn.name]
@@ -114,7 +120,10 @@ module GraphQL
 
         # **Returns**
         #
-        # - `Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions` — Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
+        # - `Hash<String => GraphQL::Schema::Argument>` — Arguments defined on this thing, keyed by name. Includes inherited definitions
+        #
+        # :call-seq:
+        #   arguments(context:, _require_defined_arguments) -> Hash[String, GraphQL::Schema::Argument]
         def arguments(context = GraphQL::Query::NullContext.instance, _require_defined_arguments = nil)
           if !own_arguments.empty?
             own_arguments_that_apply = {}
@@ -249,6 +258,9 @@ module GraphQL
         # **Returns**
         #
         # - `GraphQL::Schema::Argument, nil` — Argument defined on this thing, fetched by name.
+        #
+        # :call-seq:
+        #   get_argument(argument_name, context:) -> GraphQL::Schema::Argument | nil
         def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
           warden = Warden.from_context(context)
           if (arg_config = own_arguments[argument_name]) && ((context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Profile)) || (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden)))
@@ -263,11 +275,13 @@ module GraphQL
         # **Parameters**
         #
         # - `new_arg_class` (`Class`) — A class to use for building argument definitions
+        #
+        # :call-seq:
+        #   argument_class(Class new_arg_class)
         def argument_class(new_arg_class = nil)
           self.class.argument_class(new_arg_class)
         end
 
-        # **API:** private If given a block, it will eventually yield the loaded args to the block. If no block is given, it will immediately dataload (but might return a Lazy).
         # **Yields:** [Interpreter::Arguments, Execution::Lazy<Interpreter::Arguments>]
         #
         # **Parameters**
@@ -278,7 +292,7 @@ module GraphQL
         # **Returns**
         #
         # - `Interpreter::Arguments, Execution::Lazy<Interpreter::Arguments>`
-        def coerce_arguments(parent_object, values, context, &block)
+        def coerce_arguments(parent_object, values, context, &block) # :nodoc:
           # Cache this hash to avoid re-merging it
           arg_defns = context.types.arguments(self)
           total_args_count = arg_defns.size
@@ -378,6 +392,9 @@ module GraphQL
           # - `type` (`Class, Module`) — A GraphQL type definition
           # - `id` (`String`) — A client-provided to look up
           # - `context` (`GraphQL::Query::Context`) — the current context
+          #
+          # :call-seq:
+          #   object_from_id(Class | Module type, String id, GraphQL::Query::Context context)
           def object_from_id(type, id, context)
             context.schema.object_from_id(id, context)
           end
@@ -472,6 +489,9 @@ module GraphQL
           # **Returns**
           #
           # - `Object, nil` — If a value is returned, it will be used instead of the failed load
+          #
+          # :call-seq:
+          #   load_application_object_failed(GraphQL::LoadApplicationObjectFailedError err) -> Object | nil
           def load_application_object_failed(err)
             raise err
           end

@@ -82,6 +82,9 @@ module GraphQL
       # **Parameters**
       #
       # - `active_support_notifications_pattern` (`String, RegExp, false`) — A filter for `ActiveSupport::Notifications`, if it's present. Or `false` to skip subscribing.
+      #
+      # :call-seq:
+      #   initialize(String | RegExp | false active_support_notifications_pattern:, save_profile:, **_rest)
       def initialize(active_support_notifications_pattern: nil, save_profile: false, **_rest)
         super
         @active_support_notifications_pattern = active_support_notifications_pattern
@@ -587,6 +590,9 @@ module GraphQL
       # **Returns**
       #
       # - `nil, String, Hash` — If `file` was given, `nil`. If `file` was `nil`, a Hash if `debug_json: true`, else binary data.
+      #
+      # :call-seq:
+      #   write(String file:, bool debug_json:) -> nil | String | Hash
       def write(file:, debug_json: false)
         trace = Trace.new(
           packet: @packets,

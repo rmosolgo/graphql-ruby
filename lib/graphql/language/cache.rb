@@ -25,9 +25,14 @@ module GraphQL
     #
     # See [GraphQL::Railtie](rdoc-ref:GraphQL::Railtie) for simple Rails integration
     class Cache
-      # @param path [Pathname] The directory where cache entries are stored.
-      # @param secret [String, nil] A stable secret for verifying cache entries. When omitted,
+      # **Parameters**
+      #
+      # - `path` (`Pathname`) — The directory where cache entries are stored.
+      # - `secret` (`String, nil`) — A stable secret for verifying cache entries. When omitted,
       #   a process-local secret is generated. Pass `nil` to disable cache signing.
+      #
+      # :call-seq:
+      #   initialize(Pathname path, String | nil secret:)
       def initialize(path, secret: SecureRandom.random_bytes(32))
         @path = path
         @secret = secret

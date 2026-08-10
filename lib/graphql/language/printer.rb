@@ -62,6 +62,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — Valid GraphQL for `node`
+      #
+      # :call-seq:
+      #   print(Nodes::AbstractNode node, String indent:, Integer | nil truncate_size:) -> String
       def print(node, indent: "", truncate_size: nil)
         truncate_size = truncate_size ? [truncate_size - OMISSION.size, 0].max : nil
         @out = TruncatableBuffer.new(truncate_size: truncate_size)

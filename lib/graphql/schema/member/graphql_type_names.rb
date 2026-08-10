@@ -5,7 +5,6 @@ module GraphQL
     class Member
       # These constants are interpreted as GraphQL types when defining fields or arguments
       #
-      # **API:** private
       #
       # **Examples**
       #
@@ -15,7 +14,7 @@ module GraphQL
       # field :id, ID, null: false
       # field :score, Int, null: false
       # ```
-      module GraphQLTypeNames
+      module GraphQLTypeNames # :nodoc:
         Boolean = "Boolean"
         ID = "ID"
         Int = "Int"

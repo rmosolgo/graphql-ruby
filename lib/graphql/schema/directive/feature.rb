@@ -70,6 +70,9 @@ module GraphQL
         # **Returns**
         #
         # - `Boolean` — If truthy, execution will continue
+        #
+        # :call-seq:
+        #   enabled?(String flag_name, GraphQL::Schema::Objct object, GraphQL::Query::Context context) -> bool
         def self.enabled?(flag_name, object, context)
           raise GraphQL::RequiredImplementationMissingError, "Implement `.enabled?(flag_name, object, context)` to return true or false for the feature flag (#{flag_name.inspect})"
         end

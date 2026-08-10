@@ -16,21 +16,33 @@ module GraphQL
         # **Returns**
         #
         # - `Object` — The Ruby-ready value for this Argument
+        #
+        # :call-seq:
+        #   value -> Object
         attr_reader :value
 
         # **Returns**
         #
         # - `Object` — The value of this argument _before_ `prepare` is applied.
+        #
+        # :call-seq:
+        #   original_value -> Object
         attr_reader :original_value
 
         # **Returns**
         #
         # - `GraphQL::Schema::Argument` — The definition instance for this argument
+        #
+        # :call-seq:
+        #   definition -> GraphQL::Schema::Argument
         attr_reader :definition
 
         # **Returns**
         #
         # - `Boolean` — `true` if the schema-defined `default_value:` was applied in this case. (No client-provided value was present.)
+        #
+        # :call-seq:
+        #   default_used?() -> bool
         def default_used?
           @default_used
         end

@@ -21,16 +21,25 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — the application object this type is wrapping
+      #
+      # :call-seq:
+      #   object -> Object
       attr_reader :object
 
       # **Returns**
       #
       # - `GraphQL::Query::Context` — the context instance for this query
+      #
+      # :call-seq:
+      #   context -> GraphQL::Query::Context
       attr_reader :context
 
       # **Returns**
       #
       # - `GraphQL::Dataloader`
+      #
+      # :call-seq:
+      #   dataloader() -> GraphQL::Dataloader
       def dataloader
         context.dataloader
       end
@@ -80,6 +89,9 @@ module GraphQL
         # **Raises**
         #
         # - `GraphQL::UnauthorizedError` — if the user-provided hook returns `false`
+        #
+        # :call-seq:
+        #   authorized_new(Object object, GraphQL::Query::Context context) -> GraphQL::Schema::Object | GraphQL::Execution::Lazy | GraphQL::UnauthorizedError
         def authorized_new(object, context)
           context.query.current_trace.begin_authorized(self, object, context)
           begin

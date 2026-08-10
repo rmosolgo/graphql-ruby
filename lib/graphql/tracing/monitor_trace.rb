@@ -153,6 +153,9 @@ module GraphQL
         # - `trace_scalars` (`Boolean`) — If `true`, leaf fields will be traced too (Scalars _and_ Enums)
         # - `trace_authorized` (`Boolean`) — If `false`, skip tracing `authorized?` calls
         # - `trace_resolve_type` (`Boolean`) — If `false`, skip tracing `resolve_type?` calls
+        #
+        # :call-seq:
+        #   initialize(...)
         def initialize(...)
           setup_%{monitor}_monitor(...)
           super

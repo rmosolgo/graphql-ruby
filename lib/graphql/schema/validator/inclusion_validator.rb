@@ -20,6 +20,9 @@ module GraphQL
         #
         # - `message` (`String`)
         # - `in` (`Array`) — The values to allow
+        #
+        # :call-seq:
+        #   initialize(Array in:, String message:, **default_options)
         def initialize(in:, message: "%{validated} is not included in the list", **default_options)
           # `in` is a reserved word, so work around that
           @in_list = binding.local_variable_get(:in)

@@ -57,6 +57,9 @@ module GraphQL
           # **Returns**
           #
           # - `Hash` — Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
+          #
+          # :call-seq:
+          #   graphql_result_data -> Hash
           attr_accessor :graphql_result_data
         end
 

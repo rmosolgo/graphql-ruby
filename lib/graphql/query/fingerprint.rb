@@ -4,10 +4,9 @@ require 'digest/sha2'
 
 module GraphQL
   class Query
-    # **API:** private
     # The resulting hashes are exposed by `Query#operation_fingerprint`,
     # `Query#variables_fingerprint`, and `Query#fingerprint`.
-    module Fingerprint
+    module Fingerprint # :nodoc:
       # Make an obfuscated hash of the given string (either a query string or variables JSON)
       #
       # **Parameters**
@@ -17,6 +16,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — A normalized, opaque hash
+      #
+      # :call-seq:
+      #   generate(input_str) -> String
       def self.generate(input_str)
         # Implemented to be:
         # - Short (and uniform) length

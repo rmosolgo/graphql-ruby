@@ -36,6 +36,9 @@ module GraphQL
         # - `even` (`Boolean`)
         # - `within` (`Range`)
         # - `message` (`String`) — used for all validation failures
+        #
+        # :call-seq:
+        #   initialize(Integer greater_than:, Integer greater_than_or_equal_to:, Integer less_than:, Integer less_than_or_equal_to:, Integer equal_to:, Integer other_than:, bool odd:, bool even:, Range within:, String message:, null_message:, **default_options)
         def initialize(
             greater_than: nil, greater_than_or_equal_to: nil,
             less_than: nil, less_than_or_equal_to: nil,
