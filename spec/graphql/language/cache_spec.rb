@@ -48,6 +48,17 @@ describe GraphQL::Language::Cache do
     end
   end
 
+  it "supports unsigned cache entries when the secret is nil" do
+    with_cache do |source, cache_path, _cache|
+      cache = GraphQL::Language::Cache.new(cache_path, secret: nil)
+      cache.fetch(source.to_s) { :parsed }
+
+      cache_file = cache_path.children.first
+      assert_equal :parsed, Marshal.load(cache_file.binread)
+      assert_equal :parsed, GraphQL::Language::Cache.new(cache_path, secret: nil).fetch(source.to_s) { flunk("cache was not reused") }
+    end
+  end
+
   it "doesn't reuse a cache entry with a different secret" do
     with_cache do |source, cache_path, _cache|
       GraphQL::Language::Cache.new(cache_path, secret: "first-secret").fetch(source.to_s) { :parsed }

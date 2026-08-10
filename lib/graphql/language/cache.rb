@@ -15,7 +15,8 @@ module GraphQL
     # The cache may be manually built by assigning `GraphQL::Language::Parser.cache = GraphQL::Language::Cache.new(Pathname.new("some_dir"), secret: ENV.fetch("GRAPHQL_CACHE_SECRET"))`.
     # The `secret` should be a stable value stored outside of the cache directory.
     # When it isn't provided, a process-local secret is generated and cache entries
-    # are rebuilt after the process restarts.
+    # are rebuilt after the process restarts. Pass `secret: nil` to disable cache
+    # signing. This should only be used when the cache directory is trusted.
     # This will create a directory (`tmp/cache/graphql` by default) that stores a cache of parsed files.
     #
     # Much like [bootsnap](https://github.com/Shopify/bootsnap), the parser cache needs to be cleaned up manually.
@@ -26,10 +27,10 @@ module GraphQL
     class Cache
       # @param path [Pathname] The directory where cache entries are stored.
       # @param secret [String, nil] A stable secret for verifying cache entries. When omitted,
-      #   a process-local secret is generated.
-      def initialize(path, secret: nil)
+      #   a process-local secret is generated. Pass `nil` to disable cache signing.
+      def initialize(path, secret: SecureRandom.random_bytes(32))
         @path = path
-        @secret = secret || SecureRandom.random_bytes(32)
+        @secret = secret
       end
 
       DIGEST = Digest::SHA256.new << GraphQL::VERSION
@@ -69,6 +70,8 @@ module GraphQL
 
       def load_cache(cache_path, cache_key)
         cache_data = cache_path.binread
+        return Marshal.load(cache_data) unless @secret
+
         signature = cache_data.byteslice(0, HMAC_SIZE)
         payload = cache_data.byteslice(HMAC_SIZE..-1)
         raise InvalidCache unless signature && payload
@@ -83,7 +86,11 @@ module GraphQL
       def write_cache(cache_path, cache_key, payload)
         @path.mkpath
         serialized_payload = Marshal.dump(payload)
-        cache_data = signature_for(cache_key, serialized_payload) + serialized_payload
+        cache_data = if @secret
+          signature_for(cache_key, serialized_payload) + serialized_payload
+        else
+          serialized_payload
+        end
 
         Tempfile.create(['graphql-cache-', '.tmp'], @path.to_s) do |tempfile|
           tempfile.binmode
