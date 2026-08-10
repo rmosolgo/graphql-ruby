@@ -10,6 +10,9 @@ module Graphql
   # @example Mounting the Dashboard in your app
   #   mount GraphQL::Dashboard, at: "graphql_dashboard", schema: "MySchema"
   #
+  # Pass an array to allow selecting from multiple schemas with the `schema` query parameter.
+  #   mount GraphQL::Dashboard, at: "graphql_dashboard", schema: ["MySchema", "OtherSchema"]
+  #
   # @example Authenticating the Dashboard with HTTP Basic Auth
   #   # config/initializers/graphql_dashboard.rb
   #   GraphQL::Dashboard.middleware.use(Rack::Auth::Basic) do |username, password|
