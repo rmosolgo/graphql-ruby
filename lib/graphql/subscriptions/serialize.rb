@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "date"
 require "set"
 module GraphQL
   class Subscriptions
@@ -10,6 +11,7 @@ module GraphQL
       SYMBOL_KEYS_KEY = "__sym_keys__"
       TIMESTAMP_KEY = "__timestamp__"
       TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%N%z" # eg '2020-01-01 23:59:59.123456789+05:00'
+      TIMESTAMP_CLASS_NAMES = ["Date", "DateTime", "Time"].freeze
       OPEN_STRUCT_KEY = "__ostruct__"
 
       module_function
@@ -72,15 +74,19 @@ module GraphQL
                 value[SYMBOL_KEY].to_sym
               when TIMESTAMP_KEY
                 timestamp_class_name, *timestamp_args = value[TIMESTAMP_KEY]
-                timestamp_class = Object.const_get(timestamp_class_name)
-                if defined?(ActiveSupport::TimeWithZone) && timestamp_class <= ActiveSupport::TimeWithZone
+                timestamp_class = if TIMESTAMP_CLASS_NAMES.include?(timestamp_class_name)
+                  Object.const_get(timestamp_class_name, false)
+                end
+                if defined?(ActiveSupport::TimeWithZone) && timestamp_class_name == ActiveSupport::TimeWithZone.name
                   zone_name, timestamp_s = timestamp_args
                   zone = ActiveSupport::TimeZone[zone_name]
                   raise "Zone #{zone_name} not found, unable to deserialize" unless zone
                   zone.strptime(timestamp_s, TIMESTAMP_FORMAT)
-                else
+                elsif timestamp_class
                   timestamp_s = timestamp_args.first
                   timestamp_class.strptime(timestamp_s, TIMESTAMP_FORMAT)
+                else
+                  raise ArgumentError, "Unsupported timestamp class: #{timestamp_class_name.inspect}"
                 end
               when OPEN_STRUCT_KEY
                 ostruct_values = load_value(value[OPEN_STRUCT_KEY])
