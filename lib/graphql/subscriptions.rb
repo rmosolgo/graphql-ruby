@@ -39,6 +39,9 @@ module GraphQL
     #
     # - `schema` (`Class`) — the GraphQL schema this manager belongs to
     # - `validate_update` (`Boolean`) — If false, then validation is skipped when executing updates
+    #
+    # :call-seq:
+    #   initialize(Class schema:, bool validate_update:, broadcast:, default_broadcastable:, **rest)
     def initialize(schema:, validate_update: true, broadcast: false, default_broadcastable: false, **rest)
       if broadcast
         schema.query_analyzer(Subscriptions::BroadcastAnalyzer)
@@ -51,6 +54,9 @@ module GraphQL
     # **Returns**
     #
     # - `Boolean` — Used when fields don't have `broadcastable:` explicitly set
+    #
+    # :call-seq:
+    #   default_broadcastable -> bool
     attr_reader :default_broadcastable
 
     # Fetch subscriptions matching this field + arguments pair
@@ -59,7 +65,7 @@ module GraphQL
     # **Parameters**
     #
     # - `event_name` (`String`)
-    # - `args` (`Hash<String, Symbol => Object]`) — rgs [Hash<String, Symbol => Object]
+    # - `args` (`Hash<String, Symbol => Object>`) — Arguments passed to the subscription resolver
     # - `object` (`Object`)
     # - `scope` (`Symbol, String`)
     # - `context` (`Hash`)
@@ -67,6 +73,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   trigger(String event_name, Hash[String | Symbol, Object] args, Object object, Symbol | String scope:, Hash context:) -> void
     def trigger(event_name, args, object, scope: nil, context: {})
       # Make something as context-like as possible, even though there isn't a current query:
       dummy_query = @schema.query_class.new(@schema, "{ __typename }", validate: false, context: context)
@@ -116,6 +125,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Query::Result`
+    #
+    # :call-seq:
+    #   execute_update(String subscription_id, GraphQL::Subscriptions::Event event, Object object) -> GraphQL::Query::Result
     def execute_update(subscription_id, event, object)
       # Lookup the saved data for this subscription
       query_data = read_subscription(subscription_id)
@@ -164,6 +176,9 @@ module GraphQL
     # **Returns**
     #
     # - `Boolean` — defaults to `true`, or false if `validate: false` is provided.
+    #
+    # :call-seq:
+    #   validate_update?(query:, context:, root_value:, subscription_topic:, operation_name:, variables:) -> bool
     def validate_update?(query:, context:, root_value:, subscription_topic:, operation_name:, variables:)
       @validate_update
     end
@@ -175,6 +190,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   execute(subscription_id, event, object) -> void
     def execute(subscription_id, event, object)
       res = execute_update(subscription_id, event, object)
       if !res.nil?
@@ -200,6 +218,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   execute_all(Subscriptions::Event event, Object object) -> void
     def execute_all(event, object)
       raise GraphQL::RequiredImplementationMissingError
     end
@@ -214,6 +235,9 @@ module GraphQL
     # **Returns**
     #
     # - `Hash` — Containing required keys
+    #
+    # :call-seq:
+    #   read_subscription(String subscription_id) -> Hash
     def read_subscription(subscription_id)
       raise GraphQL::RequiredImplementationMissingError
     end
@@ -229,6 +253,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   deliver(String subscription_id, Hash result) -> void
     def deliver(subscription_id, result)
       raise GraphQL::RequiredImplementationMissingError
     end
@@ -244,6 +271,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   write_subscription(GraphQL::Query query, Array[GraphQL::Subscriptions::Event] events) -> void
     def write_subscription(query, events)
       raise GraphQL::RequiredImplementationMissingError
     end
@@ -258,6 +288,9 @@ module GraphQL
     # **Returns**
     #
     # - `Object` — void.
+    #
+    # :call-seq:
+    #   delete_subscription(String subscription_id) -> Object
     def delete_subscription(subscription_id)
       raise GraphQL::RequiredImplementationMissingError
     end
@@ -265,6 +298,9 @@ module GraphQL
     # **Returns**
     #
     # - `String` — A new unique identifier for a subscription
+    #
+    # :call-seq:
+    #   build_id() -> String
     def build_id
       SecureRandom.uuid
     end
@@ -282,6 +318,9 @@ module GraphQL
     # **Returns**
     #
     # - `String`
+    #
+    # :call-seq:
+    #   normalize_name(String | Symbol event_or_arg_name) -> String
     def normalize_name(event_or_arg_name)
       Schema::Member::BuildType.camelize(event_or_arg_name.to_s)
     end
@@ -289,6 +328,9 @@ module GraphQL
     # **Returns**
     #
     # - `Boolean` — if true, then a query like this one would be broadcasted
+    #
+    # :call-seq:
+    #   broadcastable?(query_str, **query_options) -> bool
     def broadcastable?(query_str, **query_options)
       query = @schema.query_class.new(@schema, query_str, **query_options)
       if !query.valid?
@@ -307,6 +349,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   initialize_subscriptions(GraphQL::Query query) -> void
     def initialize_subscriptions(query)
       subs_namespace = query.context.namespace(:subscriptions)
       subs_namespace[:events] = []
@@ -323,6 +368,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   finish_subscriptions(GraphQL::Query query) -> void
     def finish_subscriptions(query)
       if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
         write_subscription(query, events)
@@ -359,6 +407,9 @@ module GraphQL
     # **Returns**
     #
     # - `Any` — normalized arguments value
+    #
+    # :call-seq:
+    #   normalize_arguments(event_name, GraphQL::Field | GraphQL::BaseType arg_owner, Hash | Array | Any args, context) -> Any
     def normalize_arguments(event_name, arg_owner, args, context)
       case arg_owner
       when GraphQL::Schema::Field, Class

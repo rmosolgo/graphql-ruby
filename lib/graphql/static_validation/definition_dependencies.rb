@@ -69,6 +69,9 @@ module GraphQL
       # **Returns**
       #
       # - `DependencyMap`
+      #
+      # :call-seq:
+      #   dependency_map(&block) -> DependencyMap
       def dependency_map(&block)
         @dependency_map ||= resolve_dependencies(&block)
       end
@@ -79,16 +82,25 @@ module GraphQL
         # **Returns**
         #
         # - `Array<GraphQL::Language::Nodes::FragmentDefinition>`
+        #
+        # :call-seq:
+        #   cyclical_definitions -> Array[GraphQL::Language::Nodes::FragmentDefinition]
         attr_reader :cyclical_definitions
 
         # **Returns**
         #
         # - `Hash<Node, Array<GraphQL::Language::Nodes::FragmentSpread>>`
+        #
+        # :call-seq:
+        #   unmet_dependencies -> Hash[Node, Array[GraphQL::Language::Nodes::FragmentSpread]]
         attr_reader :unmet_dependencies
 
         # **Returns**
         #
         # - `Array<GraphQL::Language::Nodes::FragmentDefinition>`
+        #
+        # :call-seq:
+        #   unused_dependencies -> Array[GraphQL::Language::Nodes::FragmentDefinition]
         attr_reader :unused_dependencies
 
         def initialize
@@ -101,6 +113,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<GraphQL::Language::Nodes::AbstractNode>` — dependencies for `definition_node`
+        #
+        # :call-seq:
+        #   [](definition_node) -> Array[GraphQL::Language::Nodes::AbstractNode]
         def [](definition_node)
           @dependencies[definition_node]
         end

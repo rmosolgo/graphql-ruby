@@ -126,6 +126,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<Module, Class>` — Implementers of this interface, if they're registered
+        #
+        # :call-seq:
+        #   orphan_types(Class | Module *types) -> Array[Module | Class]
         def orphan_types(*types)
           if !types.empty?
             @orphan_types ||= []

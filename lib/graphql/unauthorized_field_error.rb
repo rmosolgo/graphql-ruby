@@ -4,6 +4,9 @@ module GraphQL
     # **Returns**
     #
     # - `Field` — the field that failed the authorization check
+    #
+    # :call-seq:
+    #   field -> Field
     attr_accessor :field
 
     def initialize(message = nil, object: nil, type: nil, context: nil, field: nil)

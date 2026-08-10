@@ -12,16 +12,25 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Schema::Field`
+      #
+      # :call-seq:
+      #   field -> GraphQL::Schema::Field
       attr_reader :field
 
       # **Returns**
       #
       # - `Object`
+      #
+      # :call-seq:
+      #   options -> Object
       attr_reader :options
 
       # **Returns**
       #
       # - `Array<Symbol>, nil` — `default_argument`s added, if any were added (otherwise, `nil`)
+      #
+      # :call-seq:
+      #   added_default_arguments -> Array[Symbol] | nil
       attr_reader :added_default_arguments
 
       # Called when the extension is mounted with `extension(name, options)`.
@@ -31,6 +40,9 @@ module GraphQL
       #
       # - `field` (`GraphQL::Schema::Field`) — The field where this extension was mounted
       # - `options` (`Object`) — The second argument to `extension`, or `{}` if nothing was passed.
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Schema::Field field:, Object options:)
       def initialize(field:, options:)
         @field = field
         @options = options || {}
@@ -42,6 +54,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array(Array, Hash), nil` — A list of default argument configs, or `nil` if there aren't any
+        #
+        # :call-seq:
+        #   default_argument_configurations() -> Array(Array, Hash) | nil
         def default_argument_configurations
           args = superclass.respond_to?(:default_argument_configurations) ? superclass.default_argument_configurations : nil
           if @own_default_argument_configurations
@@ -72,6 +87,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<Symbol>` — any extras assigned to this extension
+        #
+        # :call-seq:
+        #   extras(Array[Symbol] new_extras) -> Array[Symbol]
         def extras(new_extras = nil)
           if new_extras
             @own_extras = new_extras
@@ -98,6 +116,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   apply() -> void
       def apply
       end
 
@@ -107,11 +128,13 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   after_define() -> void
       def after_define
       end
 
-      # **API:** private
-      def after_define_apply
+      def after_define_apply # :nodoc:
         after_define
         if (configs = self.class.default_argument_configurations)
           existing_keywords = field.all_argument_definitions.map(&:keyword)
@@ -135,8 +158,7 @@ module GraphQL
         freeze
       end
 
-      # **API:** private
-      attr_reader :added_extras
+      attr_reader :added_extras # :nodoc:
 
       # Called before resolving [field](rdoc-ref:#field). It should either:
       #
@@ -161,6 +183,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The return value for this field.
+      #
+      # :call-seq:
+      #   resolve(Object object:, Array[Object] objects:, Hash arguments:, Query::Context context:) -> Object
       def resolve(object: nil, objects: nil, arguments:, context:)
         yield(object.nil? ? objects : object, arguments, nil)
       end
@@ -183,6 +208,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The return value for this field.
+      #
+      # :call-seq:
+      #   after_resolve(Object object:, Array[Object] objects:, Hash arguments:, Query::Context context:, Array[Object] values:, Object value:, Object memo:) -> Object
       def after_resolve(object: nil, objects: nil, arguments:, context:, values: nil, value: nil, memo:)
         value.nil? ? values : value
       end

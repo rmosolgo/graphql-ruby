@@ -16,11 +16,17 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Query` — The query that was executed
+      #
+      # :call-seq:
+      #   query -> GraphQL::Query
       attr_reader :query
 
       # **Returns**
       #
       # - `Hash` — The resulting hash of "data" and/or "errors"
+      #
+      # :call-seq:
+      #   to_h -> Hash
       attr_reader :to_h
 
       def_delegators :@query, :context, :mutation?, :query?, :subscription?
@@ -54,6 +60,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean`
+      #
+      # :call-seq:
+      #   ==(other) -> bool
       def ==(other)
         case other
         when Hash

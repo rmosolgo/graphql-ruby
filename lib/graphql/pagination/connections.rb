@@ -65,8 +65,7 @@ module GraphQL
       end
 
       # Used by the runtime to wrap values in connection wrappers.
-      # **API:** Private
-      def wrap(field, parent, items, arguments, context)
+      def wrap(field, parent, items, arguments, context) # :nodoc:
         return items if GraphQL::Execution::Interpreter::RawValue === items
         wrappers = context ? context.namespace(:connections)[:all_wrappers] : all_wrappers
         impl = wrapper_for(items, wrappers: wrappers)
@@ -122,8 +121,7 @@ module GraphQL
         end
       end
       # use an override if there is one
-      # **API:** private
-      def edge_class_for_field(field)
+      def edge_class_for_field(field) # :nodoc:
         conn_type = field.type.unwrap
         conn_type_edge_type = conn_type.respond_to?(:edge_class) && conn_type.edge_class
         if conn_type_edge_type && conn_type_edge_type != Pagination::Connection::Edge

@@ -9,21 +9,33 @@ module GraphQL
       # **Returns**
       #
       # - `String` — Corresponds to the Subscription root field name
+      #
+      # :call-seq:
+      #   name -> String
       attr_reader :name
 
       # **Returns**
       #
       # - `GraphQL::Execution::Interpreter::Arguments`
+      #
+      # :call-seq:
+      #   arguments -> GraphQL::Execution::Interpreter::Arguments
       attr_reader :arguments
 
       # **Returns**
       #
       # - `GraphQL::Query::Context`
+      #
+      # :call-seq:
+      #   context -> GraphQL::Query::Context
       attr_reader :context
 
       # **Returns**
       #
       # - `String` — An opaque string which identifies this event, derived from `name` and `arguments`
+      #
+      # :call-seq:
+      #   topic -> String
       attr_reader :topic
 
       def initialize(name:, arguments:, field: nil, context: nil, scope: nil)
@@ -47,6 +59,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — an identifier for this unit of subscription
+      #
+      # :call-seq:
+      #   serialize(_name, arguments, field, scope:, context:) -> String
       def self.serialize(_name, arguments, field, scope:, context: GraphQL::Query::NullContext.instance)
         subscription = field.resolver || GraphQL::Schema::Subscription
         arguments = arguments_without_field_extras(field: field, arguments: arguments)
@@ -57,6 +72,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — a logical identifier for this event. (Stable when the query is broadcastable.)
+      #
+      # :call-seq:
+      #   fingerprint() -> String
       def fingerprint
         @fingerprint ||= begin
           # When this query has been flagged as broadcastable,

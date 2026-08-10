@@ -29,6 +29,9 @@ module GraphQL
         # - `wrong_length` (`String`) — Used when value doesn't match `is`
         # - `within` (`Range`) — An allowed range (becomes `minimum:` and `maximum:` under the hood)
         # - `message` (`String`)
+        #
+        # :call-seq:
+        #   initialize(Integer maximum:, String too_long:)
         def initialize(
           maximum: nil, too_long: "%{validated} is too long (maximum is %{count})",
           minimum: nil, too_short: "%{validated} is too short (minimum is %{count})",

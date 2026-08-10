@@ -8,6 +8,9 @@ module GraphQL
         # **Returns**
         #
         # - `GraphQL::Dataloader` — The dataloader for the currently-running query
+        #
+        # :call-seq:
+        #   dataloader() -> GraphQL::Dataloader
         def dataloader
           context.dataloader
         end
@@ -20,6 +23,9 @@ module GraphQL
         # - `source_class` (`Class<GraphQL::Dataloader::Source>`)
         # - `source_args` (`Array<Object>`) — Any extra parameters defined in `source_class`'s `initialize` method
         # - `load_key` (`Object`) — The key to look up using `def fetch`
+        #
+        # :call-seq:
+        #   dataload(Class[GraphQL::Dataloader::Source] source_class, Array[Object] *source_args, Object load_key)
         def dataload(source_class, *source_args, load_key)
           dataloader.with(source_class, *source_args).load(load_key)
         end
@@ -42,6 +48,9 @@ module GraphQL
         # - `source_class` (`Class<GraphQL::Dataloader::Source>`)
         # - `source_args` (`Array<Object>`) — Any extra parameters defined in `source_class`'s `initialize` method
         # - `load_keys` (`Array<Object>`) — The keys to look up using `def fetch`
+        #
+        # :call-seq:
+        #   dataload_all(Class[GraphQL::Dataloader::Source] source_class, Array[Object] *source_args, Array[Object] load_keys)
         def dataload_all(source_class, *source_args, load_keys)
           dataloader.with(source_class, *source_args).load_all(load_keys)
         end
@@ -71,6 +80,9 @@ module GraphQL
         # ```ruby
         # dataload_record(User, "matz", find_by: :handle) # Like `User.find_by(handle: "matz")`, but dataloaded
         # ```
+        #
+        # :call-seq:
+        #   dataload_record(Class[ActiveRecord::Base] model, Object find_by_value, Symbol | String find_by:) -> ActiveRecord::Base | nil
         def dataload_record(model, find_by_value, find_by: nil)
           source = if find_by
             dataloader.with(Dataloader::ActiveRecordSource, model, find_by: find_by)
@@ -116,6 +128,9 @@ module GraphQL
         # ```ruby
         # dataload_association(comment, :post) # Equivalent to `comment.post`, but dataloaded
         # ```
+        #
+        # :call-seq:
+        #   dataload_association(ActiveRecord::Base record, Symbol association_name, ActiveRecord::Relation scope:) -> ActiveRecord::Base | nil
         def dataload_association(record = object, association_name, scope: nil)
           source = if scope
             dataloader.with(Dataloader::ActiveRecordAssociationSource, association_name, scope)

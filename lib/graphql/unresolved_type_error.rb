@@ -6,26 +6,41 @@ module GraphQL
     # **Returns**
     #
     # - `Object` — The runtime value which couldn't be successfully resolved with `resolve_type`
+    #
+    # :call-seq:
+    #   value -> Object
     attr_reader :value
 
     # **Returns**
     #
     # - `GraphQL::Field` — The field whose value couldn't be resolved (`field.type` is type which couldn't be resolved)
+    #
+    # :call-seq:
+    #   field -> GraphQL::Field
     attr_reader :field
 
     # **Returns**
     #
     # - `GraphQL::BaseType` — The owner of `field`
+    #
+    # :call-seq:
+    #   parent_type -> GraphQL::BaseType
     attr_reader :parent_type
 
     # **Returns**
     #
     # - `Object` — The return of [Schema.resolve_type](rdoc-ref:GraphQL::Schema::resolve_type) for `value`
+    #
+    # :call-seq:
+    #   resolved_type -> Object
     attr_reader :resolved_type
 
     # **Returns**
     #
     # - `Array<GraphQL::BaseType>` — The allowed options for resolving `value` to `field.type`
+    #
+    # :call-seq:
+    #   possible_types -> Array[GraphQL::BaseType]
     attr_reader :possible_types
 
     def initialize(value, field, parent_type, resolved_type, possible_types)

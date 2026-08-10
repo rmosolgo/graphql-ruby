@@ -37,8 +37,7 @@ module GraphQL
 
     # Objects may include traceable to gain a `.trace(...)` method.
     # The object must have a `@tracers` ivar of type `Array<<#trace(k, d, &b)>>`.
-    # **API:** private
-    module Traceable
+    module Traceable # :nodoc:
       # **Parameters**
       #
       # - `key` (`String`) — The name of the event in GraphQL internals
@@ -47,6 +46,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — Must return the value of the block
+      #
+      # :call-seq:
+      #   trace(String key, Hash metadata, &block) -> Object
       def trace(key, metadata, &block)
         return yield if @tracers.empty?
         call_tracers(0, key, metadata, &block)
@@ -66,6 +68,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — Whatever the block returns
+      #
+      # :call-seq:
+      #   call_tracers(Integer idx, String key, Object metadata, &block) -> Object
       def call_tracers(idx, key, metadata, &block)
         if idx == @tracers.length
           yield

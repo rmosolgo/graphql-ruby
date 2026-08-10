@@ -35,16 +35,25 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Query` — the query being visited
+      #
+      # :call-seq:
+      #   query -> GraphQL::Query
       attr_reader :query
 
       # **Returns**
       #
       # - `Array<GraphQL::ObjectType>` — Types whose scope we've entered
+      #
+      # :call-seq:
+      #   object_types -> Array[GraphQL::ObjectType]
       attr_reader :object_types
 
       # **Returns**
       #
-      # - `Array<GraphQL::AnalysisError]` — Array<GraphQL::AnalysisError]
+      # - `Array<GraphQL::AnalysisError>` — Array of errors rescued during analysis
+      #
+      # :call-seq:
+      #   rescued_errors -> Array[GraphQL::AnalysisError]
       attr_reader :rescued_errors
 
       def visit
@@ -59,6 +68,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Execution::Interpreter::Arguments` — Arguments for this node, merging default values, literal values and query variables
+      #
+      # :call-seq:
+      #   arguments_for(ast_node, field_definition) -> GraphQL::Execution::Interpreter::Arguments
       def arguments_for(ast_node, field_definition)
         @query.arguments_for(ast_node, field_definition)
       end
@@ -66,6 +78,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — If the visitor is currently inside a fragment definition
+      #
+      # :call-seq:
+      #   visiting_fragment_definition?() -> bool
       def visiting_fragment_definition?
         @in_fragment_def
       end
@@ -73,6 +88,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — If the current node should be skipped because of a skip or include directive
+      #
+      # :call-seq:
+      #   skipping?() -> bool
       def skipping?
         @skipping
       end
@@ -80,6 +98,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<String>` — The path to the response key for the current field
+      #
+      # :call-seq:
+      #   response_path() -> Array[String]
       def response_path
         @response_path.dup
       end
@@ -224,6 +245,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::BaseType` — The current object type
+      #
+      # :call-seq:
+      #   type_definition() -> GraphQL::BaseType
       def type_definition
         @object_types.last
       end
@@ -231,6 +255,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::BaseType` — The type which the current type came from
+      #
+      # :call-seq:
+      #   parent_type_definition() -> GraphQL::BaseType
       def parent_type_definition
         @object_types[-2]
       end
@@ -238,6 +265,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Field, nil` — The most-recently-entered GraphQL::Field, if currently inside one
+      #
+      # :call-seq:
+      #   field_definition() -> GraphQL::Field | nil
       def field_definition
         @field_definitions.last
       end
@@ -245,6 +275,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Field, nil` — The GraphQL field which returned the object that the current field belongs to
+      #
+      # :call-seq:
+      #   previous_field_definition() -> GraphQL::Field | nil
       def previous_field_definition
         @field_definitions[-2]
       end
@@ -252,6 +285,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Directive, nil` — The most-recently-entered GraphQL::Directive, if currently inside one
+      #
+      # :call-seq:
+      #   directive_definition() -> GraphQL::Directive | nil
       def directive_definition
         @directive_definitions.last
       end
@@ -259,6 +295,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Argument, nil` — The most-recently-entered GraphQL::Argument, if currently inside one
+      #
+      # :call-seq:
+      #   argument_definition() -> GraphQL::Argument | nil
       def argument_definition
         @argument_definitions.last
       end
@@ -266,6 +305,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Argument, nil` — The previous GraphQL argument
+      #
+      # :call-seq:
+      #   previous_argument_definition() -> GraphQL::Argument | nil
       def previous_argument_definition
         @argument_definitions[-2]
       end

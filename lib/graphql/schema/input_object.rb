@@ -21,10 +21,16 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Query::Context` — The context for this query
+      #
+      # :call-seq:
+      #   context -> GraphQL::Query::Context
       attr_reader :context
       # **Returns**
       #
       # - `GraphQL::Execution::Interpereter::Arguments` — The underlying arguments instance
+      #
+      # :call-seq:
+      #   arguments -> GraphQL::Execution::Interpereter::Arguments
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
@@ -92,6 +98,9 @@ module GraphQL
       # **Parameters**
       #
       # - `key` (`Symbol, String`)
+      #
+      # :call-seq:
+      #   [](Symbol | String key)
       def [](key)
         if @ruby_style_hash.key?(key)
           @ruby_style_hash[key]
@@ -111,8 +120,7 @@ module GraphQL
         @ruby_style_hash.dup
       end
 
-      # **API:** private
-      def validate_for(context)
+      def validate_for(context) # :nodoc:
         object = context[:current_object]
         # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
         Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
@@ -172,7 +180,7 @@ module GraphQL
           GraphQL::TypeKinds::INPUT_OBJECT
         end
 
-        # **API:** private
+        # :nodoc:
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object."
 
         def validate_non_null_input(input, ctx, max_errors: nil)
@@ -284,6 +292,9 @@ module GraphQL
         # **Returns**
         #
         # - `void`
+        #
+        # :call-seq:
+        #   has_no_arguments(bool new_has_no_arguments) -> void
         def has_no_arguments(new_has_no_arguments)
           @has_no_arguments = new_has_no_arguments
           nil
@@ -292,6 +303,9 @@ module GraphQL
         # **Returns**
         #
         # - `Boolean` — `true` if `has_no_arguments(true)` was configued
+        #
+        # :call-seq:
+        #   has_no_arguments?() -> bool
         def has_no_arguments?
           @has_no_arguments
         end

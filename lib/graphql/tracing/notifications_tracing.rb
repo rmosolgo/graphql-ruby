@@ -34,6 +34,9 @@ module GraphQL
       # **Parameters**
       #
       # - `notifications_engine` (`Object`) — The notifications engine to use
+      #
+      # :call-seq:
+      #   initialize(Object notifications_engine)
       def initialize(notifications_engine)
         @notifications_engine = notifications_engine
       end
@@ -55,6 +58,9 @@ module GraphQL
       #
       # - `key` (`string`) — The key for the event
       # - `metadata` (`Hash`) — The metadata for the event
+      #
+      # :call-seq:
+      #   trace(string key, Hash metadata, &blk)
       def trace(key, metadata, &blk)
         prefixed_key = KEYS[key] || "#{key}.graphql"
 

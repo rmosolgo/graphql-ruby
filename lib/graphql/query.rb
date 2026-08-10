@@ -77,6 +77,9 @@ module GraphQL
       # **Returns**
       #
       # - `Hash{Symbol => Object}`
+      #
+      # :call-seq:
+      #   arguments_for(GraphQL::Language::Nodes::AbstractNode ast_node, GraphQL::Schema::Field definition, GraphQL::Schema::Object parent_object:) -> Hash[Symbol, Object]
       def arguments_for(ast_node, definition, parent_object: nil)
         arguments_cache.fetch(ast_node, definition, parent_object)
       end
@@ -85,8 +88,7 @@ module GraphQL
         @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
       end
 
-      # **API:** private
-      def handle_or_reraise(err, **kwargs)
+      def handle_or_reraise(err, **kwargs) # :nodoc:
         @schema.handle_or_reraise(context, err, **kwargs)
       end
     end
@@ -111,16 +113,25 @@ module GraphQL
     # **Returns**
     #
     # - `nil, String` — The operation name provided by client or the one inferred from the document. Used to determine which operation to run.
+    #
+    # :call-seq:
+    #   operation_name -> nil | String
     attr_accessor :operation_name
 
     # **Returns**
     #
     # - `Boolean` — if false, static validation is skipped (execution behavior for invalid queries is undefined)
+    #
+    # :call-seq:
+    #   validate -> bool
     attr_reader :validate
 
     # **Parameters**
     #
     # - `new_validate` (`Boolean`) — if false, static validation is skipped. This can't be reasssigned after validation.
+    #
+    # :call-seq:
+    #   validate=(bool new_validate)
     def validate=(new_validate)
       if defined?(@validation_pipeline) && @validation_pipeline && @validation_pipeline.has_validated?
         raise ArgumentError, "Can't reassign Query#validate= after validation has run, remove this assignment."
@@ -132,11 +143,17 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::StaticValidation::Validator` — if present, the query will validate with these rules.
+    #
+    # :call-seq:
+    #   static_validator -> GraphQL::StaticValidation::Validator
     attr_reader :static_validator
 
     # **Parameters**
     #
     # - `new_validator` (`GraphQL::StaticValidation::Validator`) — if present, the query will validate with these rules. This can't be reasssigned after validation.
+    #
+    # :call-seq:
+    #   static_validator=(GraphQL::StaticValidation::Validator new_validator)
     def static_validator=(new_validator)
       if defined?(@validation_pipeline) && @validation_pipeline && @validation_pipeline.has_validated?
         raise ArgumentError, "Can't reassign Query#static_validator= after validation has run, remove this assignment."
@@ -152,6 +169,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Language::Nodes::Document`
+    #
+    # :call-seq:
+    #   document() -> GraphQL::Language::Nodes::Document
     def document
       # It's ok if this hasn't been assigned yet
       if @query_string || @document
@@ -168,6 +188,9 @@ module GraphQL
     # **Returns**
     #
     # - `String, nil` — The name of the operation to run (may be inferred)
+    #
+    # :call-seq:
+    #   selected_operation_name() -> String | nil
     def selected_operation_name
       return nil unless selected_operation
       selected_operation.name
@@ -176,6 +199,9 @@ module GraphQL
     # **Returns**
     #
     # - `String, nil` — the triggered event, if this query is a subscription update
+    #
+    # :call-seq:
+    #   subscription_topic -> String | nil
     attr_reader :subscription_topic
 
     attr_reader :tracers
@@ -193,6 +219,9 @@ module GraphQL
     # - `max_depth` (`Numeric`) — the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # - `max_complexity` (`Numeric`) — the maximum field complexity for this query (falls back to schema-level value)
     # - `visibility_profile` (`Symbol`) — Another way to assign `context[:visibility_profile]`
+    #
+    # :call-seq:
+    #   initialize(GraphQL::Schema schema, String query_string, query:, document:, #[] context:, Hash variables:, multiplex:, validate:, static_validator:, Symbol visibility_profile:, subscription_topic:, String operation_name:, Object root_value:, Numeric max_depth:, Numeric max_complexity:, warden:, use_visibility_profile:)
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, multiplex: nil, validate: true, static_validator: nil, visibility_profile: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_visibility_profile: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
@@ -279,6 +308,9 @@ module GraphQL
     # **Returns**
     #
     # - `Symbol, nil`
+    #
+    # :call-seq:
+    #   visibility_profile -> Symbol | nil
     attr_reader :visibility_profile
 
     attr_accessor :multiplex
@@ -286,6 +318,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Tracing::Trace`
+    #
+    # :call-seq:
+    #   current_trace() -> GraphQL::Tracing::Trace
     def current_trace
       @current_trace ||= context[:trace] || (multiplex ? multiplex.current_trace : schema.new_trace(multiplex: multiplex, query: self))
     end
@@ -299,6 +334,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Execution::Lookahead`
+    #
+    # :call-seq:
+    #   lookahead() -> GraphQL::Execution::Lookahead
     def lookahead
       @lookahead ||= begin
         if selected_operation.nil?
@@ -309,8 +347,7 @@ module GraphQL
       end
     end
 
-    # **API:** private
-    def result_values=(result_hash)
+    def result_values=(result_hash) # :nodoc:
       if @executed
         raise "Invariant: Can't reassign result"
       else
@@ -319,8 +356,7 @@ module GraphQL
       end
     end
 
-    # **API:** private
-    attr_reader :result_values
+    attr_reader :result_values # :nodoc:
 
     def fragments
       with_prepared_ast { @fragments }
@@ -347,6 +383,9 @@ module GraphQL
     # **Returns**
     #
     # - `Array<GraphQL::Query::Result>`
+    #
+    # :call-seq:
+    #   run_partials(Array[Hash[Symbol, Object]] partials_hashes) -> Array[GraphQL::Query::Result]
     def run_partials(partials_hashes)
       partials = partials_hashes.map { |partial_options| Partial.new(query: self, **partial_options) }
       if context[:__graphql_execute_next]
@@ -361,6 +400,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Query::Result` — A Hash-like GraphQL response, with `"data"` and/or `"errors"` keys
+    #
+    # :call-seq:
+    #   result() -> GraphQL::Query::Result
     def result
       if !@executed
         Execution::Interpreter.run_all(@schema, [self], context: @context)
@@ -382,6 +424,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Language::Nodes::OperationDefinition, nil`
+    #
+    # :call-seq:
+    #   selected_operation() -> GraphQL::Language::Nodes::OperationDefinition | nil
     def selected_operation
       with_prepared_ast { @selected_operation }
     end
@@ -394,6 +439,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Query::Variables` — Variables to apply to this query
+    #
+    # :call-seq:
+    #   variables() -> GraphQL::Query::Variables
     def variables
       @variables ||= begin
         with_prepared_ast {
@@ -413,6 +461,9 @@ module GraphQL
     # **Returns**
     #
     # - `String, nil` — Returns nil if the query is invalid.
+    #
+    # :call-seq:
+    #   sanitized_query_string(inline_variables:) -> String | nil
     def sanitized_query_string(inline_variables: true)
       with_prepared_ast {
         schema.sanitized_printer.new(self, inline_variables: inline_variables).sanitized_query_string
@@ -433,6 +484,9 @@ module GraphQL
     # **Returns**
     #
     # - `String` — An opaque hash identifying this operation-variables combination
+    #
+    # :call-seq:
+    #   fingerprint() -> String
     def fingerprint
       @fingerprint ||= "#{operation_fingerprint}/#{variables_fingerprint}"
     end
@@ -440,6 +494,9 @@ module GraphQL
     # **Returns**
     #
     # - `String` — An opaque hash for identifying this query's given query string and selected operation
+    #
+    # :call-seq:
+    #   operation_fingerprint() -> String
     def operation_fingerprint
       @operation_fingerprint ||= "#{selected_operation_name || "anonymous"}/#{Fingerprint.generate(query_string || "")}"
     end
@@ -447,6 +504,9 @@ module GraphQL
     # **Returns**
     #
     # - `String` — An opaque hash for identifying this query's given a variable values (not including defaults)
+    #
+    # :call-seq:
+    #   variables_fingerprint() -> String
     def variables_fingerprint
       @variables_fingerprint ||= "#{provided_variables.size}/#{Fingerprint.generate(provided_variables.to_json)}"
     end
@@ -510,6 +570,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::ObjectType, nil` — The runtime type of `value` from [Schema.resolve_type](rdoc-ref:GraphQL::Schema::resolve_type)
+    #
+    # :call-seq:
+    #   resolve_type(GraphQL::UnionType | GraphQL::InterfaceType abstract_type, Object value) -> GraphQL::ObjectType | nil
     def resolve_type(abstract_type, value = NOT_CONFIGURED)
       if value.is_a?(Symbol) && value == NOT_CONFIGURED
         # Old method signature

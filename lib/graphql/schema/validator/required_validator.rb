@@ -56,6 +56,9 @@ module GraphQL
         # - `argument` (`Symbol`) — An argument that is required for this field
         # - `allow_all_hidden` (`Boolean`) — If `true`, then this validator won't run if all the `one_of: ...` arguments have been hidden
         # - `message` (`String`)
+        #
+        # :call-seq:
+        #   initialize(Array[Symbol] one_of:, Symbol argument:, bool allow_all_hidden:, String message:, **default_options)
         def initialize(one_of: nil, argument: nil, allow_all_hidden: nil, message: nil, **default_options)
           @one_of = if one_of
             one_of

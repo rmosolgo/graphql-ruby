@@ -10,8 +10,7 @@ module GraphQL
     # This is an itty-bitty promise-like object, with key differences:
     # - It has only two states, not-resolved and resolved
     # - It has no error-catching functionality
-    # **API:** private
-    class Lazy
+    class Lazy # :nodoc:
       attr_reader :field
 
       # Create a [Lazy](rdoc-ref:Lazy) which will get its inner value by calling the block
@@ -20,6 +19,9 @@ module GraphQL
       #
       # - `field` (`GraphQL::Schema::Field`)
       # - `get_value_func` (`Proc`) — a block to get the inner value (later)
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Schema::Field field:, Proc &get_value_func)
       def initialize(field: nil, &get_value_func)
         @get_value_func = get_value_func
         @resolved = false
@@ -29,6 +31,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The wrapped value, calling the lazy block if necessary
+      #
+      # :call-seq:
+      #   value() -> Object
       def value
         if !@resolved
           @resolved = true
@@ -53,6 +58,9 @@ module GraphQL
       # **Returns**
       #
       # - `Lazy` — A [Lazy](rdoc-ref:Lazy) whose value depends on another [Lazy](rdoc-ref:Lazy), plus any transformations in `block`
+      #
+      # :call-seq:
+      #   then() -> Lazy
       def then
         self.class.new {
           yield(value)
@@ -66,6 +74,9 @@ module GraphQL
       # **Returns**
       #
       # - `Lazy` — A lazy which will sync all of `lazies`
+      #
+      # :call-seq:
+      #   all(Array[Object] lazies) -> Lazy
       def self.all(lazies)
         self.new {
           lazies.map { |l| l.is_a?(Lazy) ? l.value : l }
@@ -73,7 +84,7 @@ module GraphQL
       end
 
       # This can be used for fields which _had no_ lazy results
-      # **API:** private
+      # :nodoc:
       NullResult = Lazy.new(){}
       NullResult.value
     end

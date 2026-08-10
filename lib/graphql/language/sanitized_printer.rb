@@ -35,6 +35,9 @@ module GraphQL
       # **Returns**
       #
       # - `String, nil` — A scrubbed query string, if the query was valid.
+      #
+      # :call-seq:
+      #   sanitized_query_string() -> String | nil
       def sanitized_query_string
         if query.valid?
           print(query.document)

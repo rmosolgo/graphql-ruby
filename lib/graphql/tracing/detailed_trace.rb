@@ -84,6 +84,9 @@ module GraphQL
       # - `limit` (`Integer`) — A maximum number of profiles to store
       # - `debug` (`Boolean`) — if `false`, it won't create `debug` annotations in Perfetto traces (reduces overhead)
       # - `model_class` (`Class<ActiveRecord::Base>`) — Overrides [ActiveRecordBackend::GraphqlDetailedTrace](rdoc-ref:ActiveRecordBackend::GraphqlDetailedTrace) if present
+      #
+      # :call-seq:
+      #   use(schema, trace_mode:, memory:, bool debug:, Redis redis:, Integer limit:, Class[ActiveRecord::Base] model_class:)
       def self.use(schema, trace_mode: :profile_sample, memory: false, debug: debug?, redis: nil, limit: nil, model_class: nil)
         storage = if redis
           RedisBackend.new(redis: redis, limit: limit)
@@ -108,11 +111,17 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — The trace mode to use when [Schema.detailed_trace?](rdoc-ref:Schema.detailed_trace?) returns `true`
+      #
+      # :call-seq:
+      #   trace_mode -> Symbol
       attr_reader :trace_mode
 
       # **Returns**
       #
       # - `String` — ID of saved trace
+      #
+      # :call-seq:
+      #   save_trace(operation_name, duration_ms, begin_ms, trace_data) -> String
       def save_trace(operation_name, duration_ms, begin_ms, trace_data)
         @storage.save_trace(operation_name, duration_ms, begin_ms, trace_data)
       end
@@ -120,6 +129,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean`
+      #
+      # :call-seq:
+      #   debug?() -> bool
       def debug?
         @debug
       end
@@ -132,6 +144,9 @@ module GraphQL
       # **Returns**
       #
       # - `Enumerable<StoredTrace>`
+      #
+      # :call-seq:
+      #   traces(Integer last:, Integer before:) -> Enumerable[StoredTrace]
       def traces(last: nil, before: nil)
         @storage.traces(last: last, before: before)
       end
@@ -139,6 +154,9 @@ module GraphQL
       # **Returns**
       #
       # - `StoredTrace, nil`
+      #
+      # :call-seq:
+      #   find_trace(id) -> StoredTrace | nil
       def find_trace(id)
         @storage.find_trace(id)
       end
@@ -146,6 +164,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   delete_trace(id) -> void
       def delete_trace(id)
         @storage.delete_trace(id)
       end
@@ -153,6 +174,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   delete_all_traces() -> void
       def delete_all_traces
         @storage.delete_all_traces
       end
@@ -174,6 +198,9 @@ module GraphQL
       # **Returns**
       #
       # - `true`
+      #
+      # :call-seq:
+      #   debug?() -> true
       def self.debug?
         true
       end

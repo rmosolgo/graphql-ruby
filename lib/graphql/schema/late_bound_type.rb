@@ -3,8 +3,7 @@ module GraphQL
   class Schema
     # A stand-in for a type which will be resolved in a given schema, by name.
     # TODO: support argument types too, make this a public API somehow
-    # **API:** Private
-    class LateBoundType
+    class LateBoundType # :nodoc:
       attr_reader :name
       alias :graphql_name :name
       def initialize(local_name)

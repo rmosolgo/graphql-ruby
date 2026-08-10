@@ -19,6 +19,9 @@ module GraphQL
       # **Returns**
       #
       # - `Class` — the schema described by `input`
+      #
+      # :call-seq:
+      #   load(Hash introspection_result) -> Class
       def load(introspection_result)
         schema = introspection_result.fetch("data").fetch("__schema")
 

@@ -29,6 +29,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — If the query should be analyzed or not
+      #
+      # :call-seq:
+      #   analyze?() -> bool
       def analyze?
         true
       end
@@ -39,6 +42,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — If analysis requires visitation or not
+      #
+      # :call-seq:
+      #   visit?() -> bool
       def visit?
         true
       end
@@ -49,6 +55,9 @@ module GraphQL
       # **Returns**
       #
       # - `Any` — The analyzer result
+      #
+      # :call-seq:
+      #   result() -> Any
       def result
         raise GraphQL::RequiredImplementationMissingError
       end
@@ -90,16 +99,25 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Query, GraphQL::Execution::Multiplex` — Whatever this analyzer is analyzing
+      #
+      # :call-seq:
+      #   subject -> GraphQL::Query | GraphQL::Execution::Multiplex
       attr_reader :subject
 
       # **Returns**
       #
       # - `GraphQL::Query, nil` — `nil` if this analyzer is visiting a multiplex (When this is `nil`, use `visitor.query` inside visit methods to get the current query)
+      #
+      # :call-seq:
+      #   query -> GraphQL::Query | nil
       attr_reader :query
 
       # **Returns**
       #
       # - `GraphQL::Execution::Multiplex, nil` — `nil` if this analyzer is visiting a query
+      #
+      # :call-seq:
+      #   multiplex -> GraphQL::Execution::Multiplex | nil
       attr_reader :multiplex
     end
   end

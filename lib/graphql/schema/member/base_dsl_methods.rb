@@ -6,9 +6,8 @@ module GraphQL
   class Schema
     class Member
       # DSL methods shared by lots of things in the GraphQL Schema.
-      # **API:** private
       # See classes that extend this, eg [GraphQL::Schema::Object](rdoc-ref:GraphQL::Schema::Object)
-      module BaseDSLMethods
+      module BaseDSLMethods # :nodoc:
         include GraphQL::Schema::FindInheritedValue
 
         # Call this with a new name to override the default name for this schema member; OR
@@ -23,6 +22,9 @@ module GraphQL
         # **Returns**
         #
         # - `String`
+        #
+        # :call-seq:
+        #   graphql_name(String new_name) -> String
         def graphql_name(new_name = nil)
           if new_name
             GraphQL::NameValidator.validate!(new_name)
@@ -42,6 +44,9 @@ module GraphQL
         # **Returns**
         #
         # - `String`
+        #
+        # :call-seq:
+        #   description(String new_description) -> String
         def description(new_description = nil)
           if new_description
             @description = new_description
@@ -62,6 +67,9 @@ module GraphQL
         # **Returns**
         #
         # - `String, nil`
+        #
+        # :call-seq:
+        #   comment(String new_comment) -> String | nil
         def comment(new_comment = NOT_CONFIGURED)
           if !NOT_CONFIGURED.equal?(new_comment)
             @comment = new_comment
@@ -93,6 +101,9 @@ module GraphQL
         # **Returns**
         #
         # - `Boolean` — If true, this object is part of the introspection system
+        #
+        # :call-seq:
+        #   introspection(new_introspection) -> bool
         def introspection(new_introspection = nil)
           if !new_introspection.nil?
             @introspection = new_introspection
@@ -112,6 +123,9 @@ module GraphQL
         # **Returns**
         #
         # - `Class`
+        #
+        # :call-seq:
+        #   mutation(mutation_class) -> Class
         def mutation(mutation_class = nil)
           if mutation_class
             @mutation = mutation_class

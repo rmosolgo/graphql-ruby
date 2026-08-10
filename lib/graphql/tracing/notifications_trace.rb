@@ -7,8 +7,7 @@ module GraphQL
     #
     # See [ActiveSupportNotificationsTrace](rdoc-ref:ActiveSupportNotificationsTrace) ActiveSupport::Notifications integration
     module NotificationsTrace
-      # **API:** private
-      class Adapter
+      class Adapter # :nodoc:
         def instrument(keyword, payload, &block)
           raise "Implement #{self.class}#instrument to measure the block"
         end
@@ -37,8 +36,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      class DryMonitorAdapter < Adapter
+      class DryMonitorAdapter < Adapter # :nodoc:
         def instrument(...)
           Dry::Monitor.instrument(...)
         end
@@ -54,8 +52,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      class ActiveSupportNotificationsAdapter < Adapter
+      class ActiveSupportNotificationsAdapter < Adapter # :nodoc:
         def instrument(...)
           ActiveSupport::Notifications.instrument(...)
         end
@@ -76,6 +73,9 @@ module GraphQL
       # **Parameters**
       #
       # - `engine` (`Class`) — The notifications engine to use, eg `Dry::Monitor` or `ActiveSupport::Notifications`
+      #
+      # :call-seq:
+      #   initialize(Class engine:, **rest)
       def initialize(engine:, **rest)
         adapter = if defined?(Dry::Monitor) && engine == Dry::Monitor
           DryMonitoringAdapter

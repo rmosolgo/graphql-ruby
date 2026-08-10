@@ -38,6 +38,9 @@ module GraphQL
       # - `ast_nodes` (`Array<GraphQL::Language::Nodes::Field>, Array<GraphQL::Language::Nodes::OperationDefinition>`)
       # - `field` (`GraphQL::Schema::Field`) — if `ast_nodes` are fields, this is the field definition matching those nodes
       # - `root_type` (`Class`) — if `ast_nodes` are operation definition, this is the root type for that operation
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Query query:, Array[GraphQL::Language::Nodes::Field] | Array[GraphQL::Language::Nodes::OperationDefinition] ast_nodes:, GraphQL::Schema::Field field:, Class root_type:, owner_type:)
       def initialize(query:, ast_nodes:, field: nil, root_type: nil, owner_type: nil)
         @ast_nodes = ast_nodes.freeze
         @field = field
@@ -50,21 +53,33 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::Language::Nodes::Field>`
+      #
+      # :call-seq:
+      #   ast_nodes -> Array[GraphQL::Language::Nodes::Field]
       attr_reader :ast_nodes
 
       # **Returns**
       #
       # - `GraphQL::Schema::Field`
+      #
+      # :call-seq:
+      #   field -> GraphQL::Schema::Field
       attr_reader :field
 
       # **Returns**
       #
       # - `GraphQL::Schema::Object, GraphQL::Schema::Union, GraphQL::Schema::Interface`
+      #
+      # :call-seq:
+      #   owner_type -> GraphQL::Schema::Object | GraphQL::Schema::Union | GraphQL::Schema::Interface
       attr_reader :owner_type
 
       # **Returns**
       #
       # - `Hash<Symbol, Object>`
+      #
+      # :call-seq:
+      #   arguments() -> Hash[Symbol, Object]
       def arguments
         if defined?(@arguments)
           @arguments
@@ -104,6 +119,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean`
+      #
+      # :call-seq:
+      #   selects?(String | Symbol field_name, selected_type:, Hash arguments:) -> bool
       def selects?(field_name, selected_type: @selected_type, arguments: nil)
         selection(field_name, selected_type: selected_type, arguments: arguments).selected?
       end
@@ -126,6 +144,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean`
+      #
+      # :call-seq:
+      #   selects_alias?(String | Symbol alias_name, Hash arguments:) -> bool
       def selects_alias?(alias_name, arguments: nil)
         alias_selection(alias_name, arguments: arguments).selected?
       end
@@ -133,6 +154,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if this lookahead represents a field that was requested
+      #
+      # :call-seq:
+      #   selected?() -> bool
       def selected?
         true
       end
@@ -147,6 +171,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Execution::Lookahead`
+      #
+      # :call-seq:
+      #   selection(String | Symbol field_name, selected_type:, arguments:) -> GraphQL::Execution::Lookahead
       def selection(field_name, selected_type: @selected_type, arguments: nil)
         next_field_defn = case field_name
         when String
@@ -182,6 +209,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Execution::Lookahead`
+      #
+      # :call-seq:
+      #   alias_selection(alias_name, selected_type:, arguments:) -> GraphQL::Execution::Lookahead
       def alias_selection(alias_name, selected_type: @selected_type, arguments: nil)
         alias_cache_key = [alias_name, arguments]
         return alias_selections[key] if alias_selections.key?(alias_name)
@@ -226,6 +256,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::Execution::Lookahead>`
+      #
+      # :call-seq:
+      #   selections(Hash arguments:) -> Array[GraphQL::Execution::Lookahead]
       def selections(arguments: nil)
         subselections_by_type = {}
         subselections_on_type = subselections_by_type[@selected_type] = {}
@@ -264,6 +297,9 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol`
+      #
+      # :call-seq:
+      #   name() -> Symbol
       def name
         @field && @field.original_name
       end

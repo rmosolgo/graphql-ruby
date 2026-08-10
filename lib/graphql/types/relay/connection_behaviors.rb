@@ -50,11 +50,17 @@ module GraphQL
           # **Returns**
           #
           # - `Class`
+          #
+          # :call-seq:
+          #   node_type -> Class
           attr_reader :node_type
 
           # **Returns**
           #
           # - `Class`
+          #
+          # :call-seq:
+          #   edge_class -> Class
           attr_reader :edge_class
 
           # Configure this connection to return `edges` and `nodes` based on `edge_type_class`.
@@ -71,6 +77,9 @@ module GraphQL
           # **Parameters**
           #
           # - `field_options` (`Hash`) — Any extra keyword arguments to pass to the `field :edges, ...` and `field :nodes, ...` configurations
+          #
+          # :call-seq:
+          #   edge_type(edge_type_class, edge_class:, node_type:, nodes_field:, node_nullable:, edges_nullable:, edge_nullable:, Hash field_options:)
           def edge_type(edge_type_class, edge_class: GraphQL::Pagination::Connection::Edge, node_type: edge_type_class.node_type, nodes_field: self.has_nodes_field, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable, field_options: nil)
             # Set this connection's graphql name
             node_type_name = node_type.graphql_name

@@ -4,8 +4,7 @@ module GraphQL
   class Dataloader
     class Source
       # Called by [Dataloader](rdoc-ref:Dataloader) to prepare the [Source](rdoc-ref:Source)'s internal state
-      # **API:** private
-      def setup(dataloader)
+      def setup(dataloader) # :nodoc:
         # These keys have been requested but haven't been fetched yet
         @pending = {}
         # These keys have been passed to `fetch` but haven't been finished yet
@@ -20,6 +19,9 @@ module GraphQL
       # **Returns**
       #
       # - `Dataloader::Request` — a pending request for a value from `key`. Call `.load` on that object to wait for the result.
+      #
+      # :call-seq:
+      #   request(value) -> Dataloader::Request
       def request(value)
         res_key = result_key_for(value)
         add_pending_key(res_key, value)
@@ -36,6 +38,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The key for tracking this pending data
+      #
+      # :call-seq:
+      #   result_key_for(Object value) -> Object
       def result_key_for(value)
         value
       end
@@ -53,6 +58,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The value given to [fetch](rdoc-ref:fetch)
+      #
+      # :call-seq:
+      #   normalize_fetch_key(Object value) -> Object
       def normalize_fetch_key(value)
         value
       end
@@ -60,6 +68,9 @@ module GraphQL
       # **Returns**
       #
       # - `Dataloader::Request` — a pending request for a values from `keys`. Call `.load` on that object to wait for the results.
+      #
+      # :call-seq:
+      #   request_all(values) -> Dataloader::Request
       def request_all(values)
         values.each do |v|
           res_key = result_key_for(v)
@@ -75,6 +86,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The result from [fetch](rdoc-ref:#fetch) for `key`. If `key` hasn't been loaded yet, the Fiber will yield until it's loaded.
+      #
+      # :call-seq:
+      #   load(Object value) -> Object
       def load(value)
         result_key = result_key_for(value)
         if @results.key?(result_key)
@@ -93,6 +107,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The result from [fetch](rdoc-ref:#fetch) for `keys`. If `keys` haven't been loaded yet, the Fiber will yield until they're loaded.
+      #
+      # :call-seq:
+      #   load_all(Array[Object] values) -> Object
       def load_all(values)
         result_keys = []
         pending_keys = []
@@ -121,6 +138,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Object>` — A loaded value for each of `keys`. The array must match one-for-one to the list of `keys`.
+      #
+      # :call-seq:
+      #   fetch(Array[Object] keys) -> Array[Object]
       def fetch(keys)
         # somehow retrieve these from the backend
         raise "Implement `#{self.class}#fetch(#{keys.inspect}) to return a record for each of the keys"
@@ -133,6 +153,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   sync(pending_result_keys) -> void
       def sync(pending_result_keys)
         @dataloader.queue_pending_source(self) if pending?
         @dataloader.yield(self)
@@ -150,6 +173,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if this source has any pending requests for data.
+      #
+      # :call-seq:
+      #   pending?() -> bool
       def pending?
         !@pending.empty?
       end
@@ -164,6 +190,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   merge(Hash[Object, Object] new_results) -> void
       def merge(new_results)
         new_results.each do |new_k, new_v|
           key = result_key_for(new_k)
@@ -173,12 +202,11 @@ module GraphQL
       end
 
       # Called by [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) to resolve and pending requests to this source.
-      # **API:** private
       #
       # **Returns**
       #
       # - `void`
-      def run_pending_keys
+      def run_pending_keys # :nodoc:
         @fetching.each_key { |k| @pending.delete(k) }
         return if @pending.empty?
         fetch_h = @pending
@@ -219,6 +247,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object`
+      #
+      # :call-seq:
+      #   batch_key_for(Array[Object] *batch_args, Hash **batch_kwargs) -> Object
       def self.batch_key_for(*batch_args, **batch_kwargs)
         if batch_kwargs.any? # rubocop:disable Development/NoneWithoutBlockCop
           [*batch_args, **batch_kwargs]
@@ -232,6 +263,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   clear_cache() -> void
       def clear_cache
         @results.clear
         nil
@@ -251,7 +285,6 @@ module GraphQL
       end
 
       # Reads and returns the result for the key from the internal cache, or raises an error if the result was an error
-      # **API:** private
       #
       # **Parameters**
       #
@@ -260,7 +293,7 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The result from [fetch](rdoc-ref:#fetch) for `key`.
-      def result_for(key)
+      def result_for(key) # :nodoc:
         if !@results.key?(key)
           raise GraphQL::InvariantError, <<-ERR
 Fetching result for a key on #{self.class} that hasn't been loaded yet (#{key.inspect}, loaded: #{@results.keys})

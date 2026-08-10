@@ -19,12 +19,18 @@ module GraphQL
         # **Returns**
         #
         # - `Hash<Symbol, Object>`
+        #
+        # :call-seq:
+        #   keyword_arguments -> Hash[Symbol, Object]
         attr_reader :keyword_arguments
 
         # **Parameters**
         #
         # - `argument_values` (`nil, Hash{Symbol => ArgumentValue}`)
         # - `keyword_arguments` (`nil, Hash{Symbol => Object}`)
+        #
+        # :call-seq:
+        #   initialize(nil | Hash[Symbol, Object] keyword_arguments:, nil | Hash[Symbol, ArgumentValue] argument_values:)
         def initialize(keyword_arguments: nil, argument_values:)
           @empty = argument_values.nil? || argument_values.empty?
           # This is only present when `extras` have been merged in:
@@ -59,6 +65,9 @@ module GraphQL
         # **Returns**
         #
         # - `Hash{Symbol => ArgumentValue}`
+        #
+        # :call-seq:
+        #   argument_values -> Hash[Symbol, ArgumentValue]
         attr_reader :argument_values
 
         def empty?
@@ -76,7 +85,6 @@ module GraphQL
         #
         # This is called by the runtime to implement field `extras: [...]`
         #
-        # **API:** private
         #
         # **Parameters**
         #
@@ -85,7 +93,7 @@ module GraphQL
         # **Returns**
         #
         # - `Interpreter::Arguments`
-        def merge_extras(extra_args)
+        def merge_extras(extra_args) # :nodoc:
           self.class.new(
             argument_values: argument_values,
             keyword_arguments: keyword_arguments.merge(extra_args)

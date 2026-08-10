@@ -18,11 +18,17 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — A list object, from the application. This is the unpaginated value passed into the connection.
+      #
+      # :call-seq:
+      #   items -> Object
       attr_reader :items
 
       # **Returns**
       #
       # - `GraphQL::Query::Context`
+      #
+      # :call-seq:
+      #   context -> GraphQL::Query::Context
       attr_reader :context
 
       def context=(new_ctx)
@@ -36,6 +42,9 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — the object this collection belongs to
+      #
+      # :call-seq:
+      #   parent -> Object
       attr_accessor :parent
 
       # Raw access to client-provided values. (`max_page_size` not applied to first or last.)
@@ -44,6 +53,9 @@ module GraphQL
       # **Returns**
       #
       # - `String, nil` — the client-provided cursor. `""` is treated as `nil`.
+      #
+      # :call-seq:
+      #   before() -> String | nil
       def before
         if defined?(@before)
           @before
@@ -55,6 +67,9 @@ module GraphQL
       # **Returns**
       #
       # - `String, nil` — the client-provided cursor. `""` is treated as `nil`.
+      #
+      # :call-seq:
+      #   after() -> String | nil
       def after
         if defined?(@after)
           @after
@@ -66,6 +81,9 @@ module GraphQL
       # **Returns**
       #
       # - `Hash<Symbol => Object>` — The field arguments from the field that returned this connection
+      #
+      # :call-seq:
+      #   arguments -> Hash[Symbol, Object]
       attr_accessor :arguments
 
       # **Parameters**
@@ -80,6 +98,9 @@ module GraphQL
       # - `arguments` (`Hash`) — The arguments to the field that returned the collection wrapped by this connection
       # - `max_page_size` (`Integer, nil`) — A configured value to cap the result size. Applied as `first` if neither first or last are given and no `default_page_size` is set.
       # - `default_page_size` (`Integer, nil`) — A configured value to determine the result size when neither first or last are given.
+      #
+      # :call-seq:
+      #   initialize(Object items, Object parent:, field:, Query::Context context:, Integer | nil first:, String | nil after:, Integer | nil max_page_size:, Integer | nil default_page_size:, Integer | nil last:, String | nil before:, edge_class:, Hash arguments:)
       def initialize(items, parent: nil, field: nil, context: nil, first: nil, after: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, last: nil, before: nil, edge_class: nil, arguments: nil)
         @items = items
         @parent = parent
@@ -152,6 +173,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer, nil` — A clamped `first` value. (The underlying instance variable doesn't have limits on it.) If neither `first` nor `last` is given, but `default_page_size` is present, default_page_size is used for first. If `default_page_size` is greater than `max_page_size``, it'll be clamped down to `max_page_size`. If `default_page_size` is nil, use `max_page_size`.
+      #
+      # :call-seq:
+      #   first() -> Integer | nil
       def first
         @first ||= begin
           capped = limit_pagination_argument(@first_value, max_page_size)
@@ -172,6 +196,9 @@ module GraphQL
       # **Returns**
       #
       # - `Edge`
+      #
+      # :call-seq:
+      #   range_add_edge(Object item) -> Edge
       def range_add_edge(item)
         edge_class.new(item, self)
       end
@@ -180,6 +207,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer, nil` — A clamped `last` value. (The underlying instance variable doesn't have limits on it)
+      #
+      # :call-seq:
+      #   last() -> Integer | nil
       def last
         @last ||= limit_pagination_argument(@last_value, max_page_size)
       end
@@ -187,6 +217,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Edge>` — [nodes](rdoc-ref:nodes), but wrapped with Edge instances
+      #
+      # :call-seq:
+      #   edges() -> Array[Edge]
       def edges
         @edges ||= nodes.map { |n| @edge_class.new(n, self) }
       end
@@ -194,16 +227,25 @@ module GraphQL
       # **Returns**
       #
       # - `Class` — A wrapper class for edges of this connection
+      #
+      # :call-seq:
+      #   edge_class -> Class
       attr_accessor :edge_class
 
       # **Returns**
       #
       # - `GraphQL::Schema::Field` — The field this connection was returned by
+      #
+      # :call-seq:
+      #   field -> GraphQL::Schema::Field
       attr_accessor :field
 
       # **Returns**
       #
       # - `Array<Object>` — A slice of [items](rdoc-ref:items), constrained by `@first_value`/`@after_value`/`@last_value`/`@before_value`
+      #
+      # :call-seq:
+      #   nodes() -> Array[Object]
       def nodes
         raise PaginationImplementationMissingError, "Implement #{self.class}#nodes to paginate `@items`"
       end
@@ -222,6 +264,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if there are more items after this page
+      #
+      # :call-seq:
+      #   has_next_page() -> bool
       def has_next_page
         raise PaginationImplementationMissingError, "Implement #{self.class}#has_next_page to return the next-page check"
       end
@@ -229,6 +274,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — True if there were items before these items
+      #
+      # :call-seq:
+      #   has_previous_page() -> bool
       def has_previous_page
         raise PaginationImplementationMissingError, "Implement #{self.class}#has_previous_page to return the previous-page check"
       end
@@ -236,6 +284,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — The cursor of the first item in [nodes](rdoc-ref:nodes)
+      #
+      # :call-seq:
+      #   start_cursor() -> String
       def start_cursor
         nodes.first && cursor_for(nodes.first)
       end
@@ -243,6 +294,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — The cursor of the last item in [nodes](rdoc-ref:nodes)
+      #
+      # :call-seq:
+      #   end_cursor() -> String
       def end_cursor
         nodes.last && cursor_for(nodes.last)
       end
@@ -256,6 +310,9 @@ module GraphQL
       # **Returns**
       #
       # - `String`
+      #
+      # :call-seq:
+      #   cursor_for(Object item) -> String
       def cursor_for(item)
         raise PaginationImplementationMissingError, "Implement #{self.class}#cursor_for(item) to return the cursor for #{item.inspect}"
       end
@@ -280,6 +337,9 @@ module GraphQL
       # **Returns**
       #
       # - `nil, Integer` — `nil` if the input was `nil`, otherwise a value between `0` and `max_page_size`
+      #
+      # :call-seq:
+      #   limit_pagination_argument(nil | Integer argument, nil | Integer max_page_size) -> nil | Integer
       def limit_pagination_argument(argument, max_page_size)
         if argument
           if argument < 0

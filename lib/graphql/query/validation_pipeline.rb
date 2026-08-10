@@ -12,8 +12,7 @@ module GraphQL
     #
     # [valid?](rdoc-ref:#valid?) is false if any of the above checks halted the pipeline.
     #
-    # **API:** private
-    class ValidationPipeline
+    class ValidationPipeline # :nodoc:
       attr_reader :max_depth, :max_complexity, :validate_timeout_remaining
 
       def initialize(query:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
@@ -31,6 +30,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — does this query have errors that should prevent it from running?
+      #
+      # :call-seq:
+      #   valid?() -> bool
       def valid?
         ensure_has_validated
         @valid
@@ -39,6 +41,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::StaticValidation::Error, GraphQL::Query::VariableValidationError>` — Static validation errors for the query string
+      #
+      # :call-seq:
+      #   validation_errors() -> Array[GraphQL::StaticValidation::Error | GraphQL::Query::VariableValidationError]
       def validation_errors
         ensure_has_validated
         @validation_errors

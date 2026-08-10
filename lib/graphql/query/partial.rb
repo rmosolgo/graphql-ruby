@@ -21,6 +21,9 @@ module GraphQL
       # - `query` (`GraphQL::Query`) — A full query instance that this partial is based on. Caches are shared.
       # - `context` (`Hash`) — Extra context values to merge into `query.context`, if provided
       # - `fragment_node` (`GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition`)
+      #
+      # :call-seq:
+      #   initialize(Array[String | Integer] path:, Object object:, GraphQL::Query query:, Hash context:, GraphQL::Language::Nodes::InlineFragment | GraphQL::Language::Nodes::FragmentDefinition fragment_node:, type:)
       def initialize(path: nil, object:, query:, context: nil, fragment_node: nil, type: nil)
         @path = path
         @object = object
@@ -70,6 +73,9 @@ module GraphQL
         # **Returns**
         #
         # - `GraphQL::Query::Partial`
+        #
+        # :call-seq:
+        #   partial() -> GraphQL::Query::Partial
         def partial
           @query
         end

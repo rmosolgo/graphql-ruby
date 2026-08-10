@@ -26,6 +26,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — Valid GraphQL for `node`
+      #
+      # :call-seq:
+      #   generate(GraphQL::Language::Nodes::AbstractNode node, String indent:, GraphQL::Language::Printer printer:) -> String
       def generate(node, indent: "", printer: GraphQL::Language::Printer.new)
         printer.print(node, indent: indent)
       end

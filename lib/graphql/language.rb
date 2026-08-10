@@ -16,8 +16,7 @@ require "strscan"
 
 module GraphQL
   module Language
-    # **API:** private
-    def self.serialize(value)
+    def self.serialize(value) # :nodoc:
       if value.is_a?(Hash)
         serialized_hash = value.map do |k, v|
           "#{k}:#{serialize v}"
@@ -47,6 +46,9 @@ module GraphQL
     # **Returns**
     #
     # - `String`
+    #
+    # :call-seq:
+    #   escape_single_quoted_newlines(query_str) -> String
     def self.escape_single_quoted_newlines(query_str)
       scanner = StringScanner.new(query_str)
       inside_single_quoted_string = false

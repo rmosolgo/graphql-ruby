@@ -61,6 +61,9 @@ module GraphQL
         # **Returns**
         #
         # - `Hash<GraphQL::BaseType, Hash<String, ScopedTypeComplexity>>`
+        #
+        # :call-seq:
+        #   initialize(Class parent_type, GraphQL::Field | GraphQL::Schema::Field field_definition, GraphQL::Query query, Array[String] response_path) -> Hash[GraphQL::BaseType, Hash[String, ScopedTypeComplexity]]
         def initialize(parent_type, field_definition, query, response_path)
           super(&DEFAULT_PROC)
           @parent_type = parent_type
@@ -73,6 +76,9 @@ module GraphQL
         # **Returns**
         #
         # - `Array<GraphQL::Language::Nodes::Field>`
+        #
+        # :call-seq:
+        #   nodes -> Array[GraphQL::Language::Nodes::Field]
         attr_reader :nodes
 
         def own_complexity(child_complexity)
@@ -117,6 +123,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer`
+      #
+      # :call-seq:
+      #   max_possible_complexity(mode:) -> Integer
       def max_possible_complexity(mode: :future)
         @complexities_on_type_by_query.reduce(0) do |total, (query, scopes_stack)|
           total + merged_max_complexity_for_scopes(query, [scopes_stack.first], mode)
@@ -132,6 +141,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer`
+      #
+      # :call-seq:
+      #   merged_max_complexity_for_scopes(GraphQL::Query query, Array[ScopedTypeComplexity] scopes, :future | :legacy mode) -> Integer
       def merged_max_complexity_for_scopes(query, scopes, mode)
         # Aggregate a set of all possible scope types encountered (scope keys).
         # Use a hash, but ignore the values; it's just a fast way to work with the keys.
@@ -201,6 +213,9 @@ module GraphQL
       # - `scoped_type_complexity` (`ScopedTypeComplexity`)
       # - `max_complexity` (`Numeric`) — Field's maximum complexity including child complexity
       # - `child_complexity` (`Numeric, nil`) — Field's child complexity
+      #
+      # :call-seq:
+      #   field_complexity(ScopedTypeComplexity scoped_type_complexity, Numeric max_complexity:, Numeric | nil child_complexity:)
       def field_complexity(scoped_type_complexity, max_complexity:, child_complexity: nil)
       end
 
@@ -211,6 +226,9 @@ module GraphQL
       # **Returns**
       #
       # - `Integer` — Total complexity value for all these selections in the parent scope
+      #
+      # :call-seq:
+      #   merged_max_complexity(query, Array[Hash[String, ScopedTypeComplexity]] inner_selections) -> Integer
       def merged_max_complexity(query, inner_selections)
         child_scopes_by_key = {}
         inner_selections.each do |inner_selection|

@@ -52,6 +52,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Language::Nodes::Document` — The document with any modifications applied
+      #
+      # :call-seq:
+      #   result -> GraphQL::Language::Nodes::Document
       attr_reader :result
 
       # Visit `document` and all children
@@ -59,6 +62,9 @@ module GraphQL
       # **Returns**
       #
       # - `void`
+      #
+      # :call-seq:
+      #   visit() -> void
       def visit
         # `@document` may be any kind of node:
         visit_method = :"#{@document.visit_method}_with_modifications"
@@ -193,6 +199,9 @@ module GraphQL
           # **Returns**
           #
           # - `Array, nil` — If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
+          #
+          # :call-seq:
+          #   #{node_method}(GraphQL::Language::Nodes::AbstractNode node, GraphQL::Language::Nodes::AbstractNode | nil parent) -> Array | nil
           def #{node_method}(node, parent)
             if node.equal?(DELETE_NODE)
               # This might be passed to `super(DELETE_NODE, ...)`

@@ -119,6 +119,9 @@ module GraphQL
         # **Returns**
         #
         # - `Class` — The base class for this mutation's generated input object (default is [GraphQL::Schema::InputObject](rdoc-ref:GraphQL::Schema::InputObject))
+        #
+        # :call-seq:
+        #   input_object_class(Class new_class) -> Class
         def input_object_class(new_class = nil)
           if new_class
             @input_object_class = new_class
@@ -133,6 +136,9 @@ module GraphQL
         # **Returns**
         #
         # - `Class` — The generated [Schema::InputObject](rdoc-ref:Schema::InputObject) class for this mutation's `input`
+        #
+        # :call-seq:
+        #   input_type(Class | nil new_input_type) -> Class
         def input_type(new_input_type = nil)
           if new_input_type
             @input_type = new_input_type
@@ -148,6 +154,9 @@ module GraphQL
         # **Returns**
         #
         # - `Class` — a subclass of [.input_object_class](rdoc-ref:.input_object_class)
+        #
+        # :call-seq:
+        #   generate_input_type() -> Class
         def generate_input_type
           mutation_args = all_argument_definitions
           mutation_class = self

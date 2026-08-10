@@ -51,8 +51,7 @@ module GraphQL
         # Update a type membership whose `.object_type` is a string or late-bound type
         # so that the type membership's `.object_type` is the given `object_type`.
         # (This is used for updating the union after the schema as lazily loaded the union member.)
-        # **API:** private
-        def assign_type_membership_object_type(object_type)
+        def assign_type_membership_object_type(object_type) # :nodoc:
           assert_valid_union_member(object_type)
           type_memberships.each { |tm|
             possible_type = tm.object_type

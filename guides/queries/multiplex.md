@@ -80,7 +80,7 @@ Each query is validated and [analyzed](/queries/ast_analysis) independently. The
 
 ## Multiplex-Level Context
 
-You can add values to [Execution::Multiplex#context](rdoc-ref:GraphQL::Execution::Multiplex#context) by providing a `context:` hash:
+You can add values to `Execution::Multiplex#context` by providing a `context:` hash:
 
 ```ruby
 MySchema.multiplex(queries, context: { current_user: current_user })
@@ -107,7 +107,7 @@ Multiplex analyzers may return [GraphQL::AnalysisError](rdoc-ref:GraphQL::Analys
 
 You can add hooks for each multiplex run with [trace modules](/queries/tracing).
 
-The trace module may implement `def execute_multiplex(multiplex:)` which calls `super` to allow the multiplex to execute. See [Execution::Multiplex](rdoc-ref:GraphQL::Execution::Multiplex) for available methods.
+The trace module may implement `def execute_multiplex(multiplex:)` which calls `super` to allow the multiplex to execute. See `Execution::Multiplex` for available methods.
 
 For example:
 

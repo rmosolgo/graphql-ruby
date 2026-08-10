@@ -27,7 +27,10 @@ module GraphQL
   module Current
     # **Returns**
     #
-    # - `String, nil` — Comma-joined operation names for the currently-running [Execution::Multiplex](rdoc-ref:Execution::Multiplex). `nil` if all operations are anonymous.
+    # - `String, nil` — Comma-joined operation names for the currently-running `Execution::Multiplex`. `nil` if all operations are anonymous.
+    #
+    # :call-seq:
+    #   operation_name() -> String | nil
     def self.operation_name
       if (m = Fiber[:__graphql_current_multiplex])
         m.context[:__graphql_current_operation_name] ||= begin
@@ -48,6 +51,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Field, nil` — The currently-running field, if there is one.
+    #
+    # :call-seq:
+    #   field() -> GraphQL::Field | nil
     def self.field
       if (interpreter_info = Fiber[:__graphql_runtime_info])
         interpreter_info.values&.first&.current_field
@@ -61,6 +67,9 @@ module GraphQL
     # **Returns**
     #
     # - `Class, nil` — The currently-running [Dataloader::Source](rdoc-ref:Dataloader::Source) class, if there is one.
+    #
+    # :call-seq:
+    #   dataloader_source_class() -> Class | nil
     def self.dataloader_source_class
       Fiber[:__graphql_current_dataloader_source]&.class
     end
@@ -68,6 +77,9 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Dataloader::Source, nil` — The currently-running source, if there is one
+    #
+    # :call-seq:
+    #   dataloader_source() -> GraphQL::Dataloader::Source | nil
     def self.dataloader_source
       Fiber[:__graphql_current_dataloader_source]
     end

@@ -6,16 +6,25 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::BaseType` — The owner of [field](rdoc-ref:#field)
+    #
+    # :call-seq:
+    #   parent_type -> GraphQL::BaseType
     attr_reader :parent_type
 
     # **Returns**
     #
     # - `GraphQL::Field` — The field which failed to return a value
+    #
+    # :call-seq:
+    #   field -> GraphQL::Field
     attr_reader :field
 
     # **Returns**
     #
     # - `GraphQL::Language::Nodes::Field` — the field where the error occurred
+    #
+    # :call-seq:
+    #   ast_node() -> GraphQL::Language::Nodes::Field
     def ast_node
       @ast_nodes.first
     end
@@ -25,6 +34,9 @@ module GraphQL
     # **Returns**
     #
     # - `Boolean` — indicates an array result caused the error
+    #
+    # :call-seq:
+    #   is_from_array -> bool
     attr_reader :is_from_array
 
     attr_accessor :path

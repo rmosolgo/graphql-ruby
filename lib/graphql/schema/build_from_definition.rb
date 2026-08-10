@@ -25,8 +25,7 @@ module GraphQL
         end
       end
 
-      # **API:** private
-      module Builder
+      module Builder # :nodoc:
         include GraphQL::EmptyObjects
         extend self
 
@@ -297,6 +296,9 @@ module GraphQL
         # **Returns**
         #
         # - `Object` — void
+        #
+        # :call-seq:
+        #   replace_late_bound_types_with_built_in(types) -> Object
         def replace_late_bound_types_with_built_in(types)
           GraphQL::Schema::BUILT_IN_TYPES.each do |scalar_name, built_in_scalar|
             existing_type = types[scalar_name]

@@ -11,6 +11,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::TypeKinds::LIST`
+      #
+      # :call-seq:
+      #   kind() -> GraphQL::TypeKinds::LIST
       def kind
         GraphQL::TypeKinds::LIST
       end
@@ -18,6 +21,9 @@ module GraphQL
       # **Returns**
       #
       # - `true`
+      #
+      # :call-seq:
+      #   list?() -> true
       def list?
         true
       end

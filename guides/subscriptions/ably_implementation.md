@@ -257,7 +257,7 @@ __Backwards compatibility:__ `GraphQL::Pro::AblySubscriptions` will only encrypt
 
 Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query `context`.
 
-By default, this is done with [GraphQL::Subscriptions::Serialize](rdoc-ref:GraphQL::Subscriptions::Serialize)'s `dump` and `load` methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of `GraphQL::Pro::AblySubscriptions` and override `#dump_context(ctx)` and `#load_context(ctx_string)`:
+By default, this is done with `GraphQL::Subscriptions::Serialize`'s `dump` and `load` methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of `GraphQL::Pro::AblySubscriptions` and override `#dump_context(ctx)` and `#load_context(ctx_string)`:
 
 ```ruby
 class CustomSubscriptions < GraphQL::Pro::AblySubscriptions

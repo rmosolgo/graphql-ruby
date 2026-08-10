@@ -44,6 +44,9 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     # **Returns**
     #
     # - `Class` — the configured parser class
+    #
+    # :call-seq:
+    #   default_parser() -> Class
     def default_parser
       @default_parser ||= GraphQL::Language::Parser
     end
@@ -60,6 +63,9 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # **Returns**
   #
   # - `GraphQL::Language::Nodes::Document`
+  #
+  # :call-seq:
+  #   parse(String graphql_string, trace:, filename:, max_tokens:) -> GraphQL::Language::Nodes::Document
   def self.parse(graphql_string, trace: GraphQL::Tracing::NullTrace, filename: nil, max_tokens: nil)
     default_parser.parse(graphql_string, trace: trace, filename: filename, max_tokens: max_tokens)
   end
@@ -73,6 +79,9 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # **Returns**
   #
   # - `GraphQL::Language::Nodes::Document`
+  #
+  # :call-seq:
+  #   parse_file(String filename) -> GraphQL::Language::Nodes::Document
   def self.parse_file(filename)
     content = File.read(filename)
     default_parser.parse(content, filename: filename)
@@ -81,6 +90,9 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # **Returns**
   #
   # - `Array<Array>`
+  #
+  # :call-seq:
+  #   scan(graphql_string) -> Array[Array]
   def self.scan(graphql_string)
     default_parser.scan(graphql_string)
   end

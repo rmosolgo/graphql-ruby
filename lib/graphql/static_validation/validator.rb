@@ -21,6 +21,9 @@ module GraphQL
       #
       # - `schema` (`GraphQL::Schema`)
       # - `rules` (`Array<#validate(context)>`) — a list of rules to use when validating
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Schema schema:, Array[#validate(context)] rules:)
       def initialize(schema:, rules: GraphQL::StaticValidation::ALL_RULES)
         @schema = schema
         @rules = rules
@@ -38,6 +41,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<Hash>`
+      #
+      # :call-seq:
+      #   validate(GraphQL::Query query, bool validate:, Float timeout:, Integer max_errors:) -> Array[Hash]
       def validate(query, validate: true, timeout: nil, max_errors: nil)
         errors = nil
         query.current_trace.begin_validate(query, validate)
@@ -87,6 +93,9 @@ module GraphQL
       #
       # - `query` (`GraphQL::Query`)
       # - `context` (`GraphQL::StaticValidation::ValidationContext`)
+      #
+      # :call-seq:
+      #   handle_timeout(GraphQL::Query query, GraphQL::StaticValidation::ValidationContext context)
       def handle_timeout(query, context)
         context.errors << GraphQL::StaticValidation::ValidationTimeoutError.new(
           "Timeout on validation of query"

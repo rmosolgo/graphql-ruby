@@ -14,6 +14,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   autoload(Symbol const_name, String path) -> void
     def autoload(const_name, path)
       @_eagerloaded_constants ||= []
       @_eagerloaded_constants << const_name
@@ -26,6 +29,9 @@ module GraphQL
     # **Returns**
     #
     # - `void`
+    #
+    # :call-seq:
+    #   eager_load!() -> void
     def eager_load!
       @_eager_loading = true
       if @_eagerloaded_constants
@@ -42,6 +48,9 @@ module GraphQL
     # **Returns**
     #
     # - `Boolean` — `true` if GraphQL-Ruby is currently eager-loading its constants
+    #
+    # :call-seq:
+    #   eager_loading?() -> bool
     def eager_loading?
       @_eager_loading ||= false
     end

@@ -21,6 +21,9 @@ module GraphQL
       # **Returns**
       #
       # - `String` — A table layout of backtrace with metadata
+      #
+      # :call-seq:
+      #   to_table() -> String
       def to_table
         @to_table ||= render_table(rows)
       end
@@ -28,6 +31,9 @@ module GraphQL
       # **Returns**
       #
       # - `Array<String>` — An array of position + field name entries
+      #
+      # :call-seq:
+      #   to_backtrace() -> Array[String]
       def to_backtrace
         @to_backtrace ||= begin
           backtrace = rows.map { |r| "#{r[0]}: #{r[1]}" }
@@ -141,6 +147,9 @@ module GraphQL
       # **Returns**
       #
       # - `String`
+      #
+      # :call-seq:
+      #   render_table(rows) -> String
       def render_table(rows)
         max = Array.new(HEADERS.length, MIN_COL_WIDTH)
 

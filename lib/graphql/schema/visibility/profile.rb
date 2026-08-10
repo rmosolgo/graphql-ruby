@@ -16,6 +16,9 @@ module GraphQL
         # **Returns**
         #
         # - `Schema::Visibility::Profile`
+        #
+        # :call-seq:
+        #   from_context(ctx, schema) -> Schema::Visibility::Profile
         def self.from_context(ctx, schema)
           if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
             types
@@ -33,6 +36,9 @@ module GraphQL
         # **Returns**
         #
         # - `Symbol, nil`
+        #
+        # :call-seq:
+        #   name -> Symbol | nil
         attr_reader :name
 
         def freeze
