@@ -209,14 +209,13 @@ module GraphQL
           if argument_definition.type.list?
             results = Array.new(arg_value.size, nil)
             argument_values[argument_key] = results
-            arg_value.each_with_index do |inner_v, idx|
-              loads_step = LoadArgumentStep.new(
+            if !arg_value.empty?
+              loads_step = LoadArgumentsStep.new(
                 field_resolve_step: field_resolve_step,
                 load_receiver: load_receiver,
-                argument_value: inner_v,
+                argument_values: arg_value,
                 argument_definition: argument_definition,
                 arguments: results,
-                argument_key: idx,
               )
               ps.push(loads_step)
               @runner.add_step(loads_step)
