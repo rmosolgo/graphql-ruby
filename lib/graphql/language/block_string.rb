@@ -21,17 +21,12 @@ module GraphQL
             next
           end
           line_length = line.size
-          line_indent = if line.match?(/\A  [^ ]/)
-            2
-          elsif line.match?(/\A    [^ ]/)
-            4
-          elsif line.match?(/\A[^ ]/)
-            0
-          else
-            line[/\A */].size
+          leading = 0
+          while leading < line_length && line.getbyte(leading) == 32
+            leading += 1
           end
-          if line_indent < line_length && (common_indent.nil? || line_indent < common_indent)
-            common_indent = line_indent
+          if leading < line_length && (common_indent.nil? || leading < common_indent)
+            common_indent = leading
           end
         end
 
@@ -41,7 +36,7 @@ module GraphQL
             if idx == 0
               next
             else
-              line.slice!(0, common_indent)
+              line[0, common_indent] = ""
             end
           end
         end
