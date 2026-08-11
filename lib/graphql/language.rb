@@ -31,7 +31,7 @@ module GraphQL
 
         "[#{serialized_array}]"
       else
-        JSON.generate(value, quirks_mode: true)
+        JSON.generate(value)
       end
     rescue JSON::GeneratorError
       if Float::INFINITY == value
