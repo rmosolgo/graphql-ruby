@@ -16,7 +16,7 @@ jobs:
   system_tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: shogo82148/actions-setup-redis@3e38d435ea02619c76909c929ecc501806c7145e # v1.56.0
+    - uses: shogo82148/actions-setup-redis@260698946aaa92b2a6858999fccb1a4444981d56 # v1.56.1
       with:
         redis-version: "7.x"
     - run: redis-cli ping
@@ -69,7 +69,7 @@ jobs:
       if: ${{ !!matrix.graphql_future }}
     - run: echo ISOLATION_LEVEL_FIBER=1 > "$GITHUB_ENV"
       if: ${{ !!matrix.isolation_level_fiber }}
-    - uses: shogo82148/actions-setup-redis@3e38d435ea02619c76909c929ecc501806c7145e # v1.56.0
+    - uses: shogo82148/actions-setup-redis@260698946aaa92b2a6858999fccb1a4444981d56 # v1.56.1
       with:
         redis-version: "7.x"
       if: ${{ !!matrix.redis }}
