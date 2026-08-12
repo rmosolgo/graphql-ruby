@@ -130,7 +130,7 @@ module GraphQL
         highest_nulled_depth = path.size
         highest_list_depth = nil
         current_field_step = self
-        while current_field_step
+        while current_field_step && current_field_step.field_definition
           return_type = current_field_step.field_definition.type
           if propagating_null && return_type.non_null?
             highest_nulled_depth = current_field_step.path.size
@@ -147,7 +147,7 @@ module GraphQL
 
         if highest_list_depth.nil? || highest_nulled_depth <= highest_list_depth
           kill_field_step = self
-          while kill_field_step && highest_nulled_depth <= kill_field_step.path.size
+          while kill_field_step && kill_field_step.field_definition && highest_nulled_depth <= kill_field_step.path.size
             kill_field_step.selections_step.killed = true
             kill_field_step = kill_field_step.selections_step.field_resolve_step
           end

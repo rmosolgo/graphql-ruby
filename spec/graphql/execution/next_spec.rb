@@ -210,6 +210,65 @@ describe "Next Execution" do
     assert_graphql_equal(expected_result, result)
   end
 
+  describe "non-null root mutation fields" do
+    class NonNullMutationSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :i, Integer, null: false, resolve_static: :resolve_i
+
+        def self.resolve_i(_ctx)
+          1
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        RESOLVED_ARGUMENTS = []
+
+        field :do_something, Integer, null: false, resolve_static: :resolve_do_something do
+          argument :ok, Boolean
+        end
+
+        def self.resolve_do_something(_ctx, ok:)
+          RESOLVED_ARGUMENTS << ok
+          if ok
+            5
+          else
+            raise GraphQL::ExecutionError, "something went wrong"
+          end
+        end
+      end
+
+      query(Query)
+      mutation(Mutation)
+      use GraphQL::Execution::Next
+    end
+
+    it "returns errors when a non-null root mutation field errors" do
+      result = NonNullMutationSchema.execute_next("mutation { doSomething(ok: false) }")
+      expected_result = {
+        "errors" => [{ "message" => "something went wrong", "locations" => [{ "line" => 1, "column" => 12 }], "path" => ["doSomething"] }],
+        "data" => nil,
+      }
+      assert_graphql_equal(expected_result, result)
+    end
+
+    it "runs sibling root mutation fields when one errors" do
+      NonNullMutationSchema::Mutation::RESOLVED_ARGUMENTS.clear
+      result = NonNullMutationSchema.execute_next(<<~GRAPHQL)
+        mutation {
+          m1: doSomething(ok: true)
+          m2: doSomething(ok: false)
+          m3: doSomething(ok: true)
+        }
+      GRAPHQL
+      expected_result = {
+        "errors" => [{ "message" => "something went wrong", "locations" => [{ "line" => 3, "column" => 3 }], "path" => ["m2"] }],
+        "data" => nil,
+      }
+      assert_graphql_equal(expected_result, result)
+      assert_equal [true, false, true], NonNullMutationSchema::Mutation::RESOLVED_ARGUMENTS
+    end
+  end
+
   it "runs introspection" do
     result = run_next(GraphQL::Introspection::INTROSPECTION_QUERY)
     new_schema = GraphQL::Schema.from_introspection(result)
