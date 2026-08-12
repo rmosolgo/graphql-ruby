@@ -5,7 +5,6 @@ module GraphQL
       def initialize(multiplex)
         @multiplex = multiplex
         @schema = multiplex.schema
-        @steps_queue = []
         @runtime_type_at = {}.compare_by_identity
         @static_type_at = {}.compare_by_identity
         @finalizers = nil
