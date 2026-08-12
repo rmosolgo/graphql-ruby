@@ -304,7 +304,8 @@ module GraphQL
                 children_method_names.map { |m| "#{m}: NO_CHILDREN" } +
                 DEFAULT_INITIALIZE_OPTIONS
 
-              assignments = scalar_method_names.map { |m| "@#{m} = #{m}"} +
+              # Intern descriptions so identical strings across SDL documents share one frozen object.
+              assignments = scalar_method_names.map { |m| m == :description ? "@#{m} = #{m} && -#{m}" : "@#{m} = #{m}" } +
                 children_method_names.map { |m| "@#{m} = #{m}.freeze" }
 
               if name.end_with?("Definition") && name != "FragmentDefinition"

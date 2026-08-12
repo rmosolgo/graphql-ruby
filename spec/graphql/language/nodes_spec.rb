@@ -224,4 +224,138 @@ type Query {
       assert_equal expected_errs, result[:errors].map(&:to_h)
     end
   end
+
+  describe "description interning" do
+    SDL = <<~GRAPHQL
+      """
+      A container for things.
+      """
+      type Query {
+        """
+        A unique identifier for the client performing the mutation.
+        """
+        clientMutationId: ID
+        items(
+          """
+          Returns the first _n_ elements from the list.
+          """
+          first: Int
+        ): String
+      }
+
+      enum Color {
+        """
+        A cursor for use in pagination.
+        """
+        RED
+      }
+    GRAPHQL
+
+    ALL_DEFINITION_SDL = <<~GRAPHQL
+      """A scalar type."""
+      scalar Foo
+
+      """An object type."""
+      type Query {
+        """A field."""
+        field("""An argument.""" arg: String): String
+      }
+
+      """An interface type."""
+      interface Node { id: ID! }
+
+      """A union type."""
+      union SearchResult = Query
+
+      """An enum type."""
+      enum Status {
+        """An enum value."""
+        ACTIVE
+      }
+
+      """An input object type."""
+      input Input { value: String }
+
+      """A directive."""
+      directive @skip(if: Boolean!) on FIELD
+    GRAPHQL
+
+    it "deduplicates field descriptions across parse calls" do
+      first = GraphQL.parse(SDL).definitions.first.fields.first.description
+      second = GraphQL.parse(SDL).definitions.first.fields.first.description
+      assert_equal("A unique identifier for the client performing the mutation.", first)
+      assert_predicate(first, :frozen?)
+      assert_same(first, second)
+    end
+
+    it "deduplicates argument descriptions across parse calls" do
+      first = GraphQL.parse(SDL).definitions.first.fields[1].arguments.first.description
+      second = GraphQL.parse(SDL).definitions.first.fields[1].arguments.first.description
+      assert_equal("Returns the first _n_ elements from the list.", first)
+      assert_same(first, second)
+    end
+
+    it "deduplicates type descriptions across parse calls" do
+      first = GraphQL.parse(SDL).definitions.first.description
+      second = GraphQL.parse(SDL).definitions.first.description
+      assert_equal("A container for things.", first)
+      assert_same(first, second)
+    end
+
+    it "deduplicates enum value descriptions across parse calls" do
+      first = GraphQL.parse(SDL).definitions[1].values.first.description
+      second = GraphQL.parse(SDL).definitions[1].values.first.description
+      assert_equal("A cursor for use in pagination.", first)
+      assert_same(first, second)
+    end
+
+    it "freezes multi-line descriptions with interior newlines and stripped indentation" do
+      sdl = "type Query {\n  \"\"\"\n  first line\n    second line\n  \"\"\"\n  field: ID\n}"
+      description = GraphQL.parse(sdl).definitions.first.fields.first.description
+      assert_equal("first line\n  second line", description)
+      assert_predicate(description, :frozen?)
+    end
+
+    it "shares the description object between AST node and SDL-built schema member" do
+      document = GraphQL.parse(SDL)
+      schema = GraphQL::Schema.from_definition(SDL)
+      assert_same(document.definitions.first.fields.first.description, schema.query.fields["clientMutationId"].description)
+    end
+
+    it "does not freeze block-string argument literals in executable documents" do
+      document = GraphQL.parse('{ domain(host: """Example.COM""") }')
+      host = document.definitions.first.selections.first.arguments.first.value
+      assert_equal("Example.COM", host)
+      refute_predicate(host, :frozen?)
+      assert_equal("example.com", host.downcase!)
+    end
+
+    it "freezes descriptions on every definition node class that exposes one" do
+      doc = GraphQL.parse(ALL_DEFINITION_SDL)
+      visited = []
+      doc.definitions.each do |defn|
+        if defn.respond_to?(:description) && defn.description
+          assert_predicate(defn.description, :frozen?, "#{defn.class} description should be frozen")
+          visited << defn.class
+        end
+        defn.children.each { |c| visited.concat(check_description_frozen(c)) } if defn.respond_to?(:children)
+      end
+      # At minimum, we should have seen type definitions, field definitions, argument definitions,
+      # and enum value definitions.
+      assert_includes(visited, GraphQL::Language::Nodes::FieldDefinition)
+      assert_includes(visited, GraphQL::Language::Nodes::InputValueDefinition)
+      assert_includes(visited, GraphQL::Language::Nodes::EnumValueDefinition)
+    end
+
+    def check_description_frozen(node)
+      visited = []
+      return visited unless node.is_a?(GraphQL::Language::Nodes::AbstractNode)
+      if node.respond_to?(:description) && node.description
+        assert_predicate(node.description, :frozen?, "#{node.class} description should be frozen")
+        visited << node.class
+      end
+      node.children.each { |c| visited.concat(check_description_frozen(c)) } if node.respond_to?(:children)
+      visited
+    end
+  end
 end
