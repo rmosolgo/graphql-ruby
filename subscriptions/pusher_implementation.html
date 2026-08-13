@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.6.7/">API</a>
+            <a href="/api-doc/2.6.8/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -278,12 +278,14 @@ appendonly <span class="nb">yes</span>
 
 <p>That connection will be used for managing subscription state. All writes to Redis are prefixed with <code class="language-plaintext highlighter-rouge">graphql:sub:</code>.</p>
 
-<p>There are also two configurations for managing persistence:</p>
+<p>There are two configurations for managing persistence:</p>
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">stale_ttl_s:</code> expires subscription data after the given number of seconds without any update. After <code class="language-plaintext highlighter-rouge">stale_ttl_s</code> has passed, the data will expire from Redis. Each time a subscription receives an update, its TTL is refreshed. (Generally, this isn’t required because the backend is built to clean itself up. But, if you find that Redis is collecting stale queries, you can set them to expire after some very long time as a safeguard.)</li>
   <li><code class="language-plaintext highlighter-rouge">cleanup_delay_s:</code> (default: <code class="language-plaintext highlighter-rouge">5</code>) prevents deleting a subscription during those first seconds after it’s created. Usually, a longer delay isn’t necessary, but if you observe latency between the subscription’s initial response and the client’s subscription to the delivery channel, you can set this configuration to account for it.</li>
 </ul>
+
+<p>Also, you can use <code class="language-plaintext highlighter-rouge">extra_webhook_tokens: [{ key: "...", secret: "..." }, ...]</code> when you need to roll Pusher keys. <a href="https://pusher.com/docs/channels/server_api/webhooks/#authentication">Pusher uses the oldest active token</a>, so you can pass the old credentials there while you’re rolling over to the new one.</p>
 
 <h3 id="connection-pool">Connection Pool</h3>
 
@@ -426,7 +428,7 @@ appendonly <span class="nb">yes</span>
 
 <p>Since subscription state is stored in the database, then reloaded for pushing updates, you have to serialize and reload your query <code class="language-plaintext highlighter-rouge">context</code>.</p>
 
-<p>By default, this is done with <a href="/api-doc/2.6.7/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="language-plaintext highlighter-rouge">dump</code> and <code class="language-plaintext highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="language-plaintext highlighter-rouge">GraphQL::Pro::PusherSubscriptions</code> and override <code class="language-plaintext highlighter-rouge">#dump_context(ctx)</code> and <code class="language-plaintext highlighter-rouge">#load_context(ctx_string)</code>:</p>
+<p>By default, this is done with <a href="/api-doc/2.6.8/GraphQL/Subscriptions/Serialize" target="_blank" title="API docs for GraphQL::Subscriptions::Serialize"><code>GraphQL::Subscriptions::Serialize</code></a>’s <code class="language-plaintext highlighter-rouge">dump</code> and <code class="language-plaintext highlighter-rouge">load</code> methods, but you can provide custom implementations as well. To customize the serialization logic, create a subclass of <code class="language-plaintext highlighter-rouge">GraphQL::Pro::PusherSubscriptions</code> and override <code class="language-plaintext highlighter-rouge">#dump_context(ctx)</code> and <code class="language-plaintext highlighter-rouge">#load_context(ctx_string)</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomSubscriptions</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PusherSubscriptions</span>
   <span class="k">def</span> <span class="nf">dump_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>

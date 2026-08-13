@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.6.7/">API</a>
+            <a href="/api-doc/2.6.8/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -159,7 +159,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p><a href="/api-doc/2.6.7/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> solves the same problem as <a href="https://github.com/shopify/graphql-batch"><code class="language-plaintext highlighter-rouge">GraphQL::Batch</code></a>. There are a few major differences between the modules:</p>
+  <p><a href="/api-doc/2.6.8/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> solves the same problem as <a href="https://github.com/shopify/graphql-batch"><code class="language-plaintext highlighter-rouge">GraphQL::Batch</code></a>. There are a few major differences between the modules:</p>
 
 <ul>
   <li><strong>Concurrency Primitive:</strong> GraphQL-Batch uses <code class="language-plaintext highlighter-rouge">Promise</code>s from <a href="https://github.com/lgierth/promise.rb"><code class="language-plaintext highlighter-rouge">promise.rb</code></a>; GraphQL::Dataloader uses Ruby’s <a href="https://ruby-doc.org/core-3.0.0/Fiber.html"><code class="language-plaintext highlighter-rouge">Fiber</code> API</a>. These primitives dictate how batch loading code is written (see below for comparisons).</li>
@@ -222,7 +222,7 @@
 
 <ul>
   <li>
-    <p>With <strong>GraphQL-Batch</strong>, <code class="language-plaintext highlighter-rouge">Promise.all(...)</code> is used to to wait for several pending loads:</p>
+    <p>With <strong>GraphQL-Batch</strong>, <code class="language-plaintext highlighter-rouge">Promise.all(...)</code> is used to wait for several pending loads:</p>
 
     <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">promise_1</span> <span class="o">=</span> <span class="no">Loaders</span><span class="o">::</span><span class="no">Record</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">promise_2</span> <span class="o">=</span> <span class="no">Loaders</span><span class="o">::</span><span class="no">OtherRecord</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>

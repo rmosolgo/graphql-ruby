@@ -1,13 +1,17 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.6.7/Graphql/Dashboard">
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.6.8/Graphql/Dashboard">
   </head>
   <body>
     <p>Class: Graphql::Dashboard &lt; Rails::Engine
 <code class="language-plaintext highlighter-rouge">GraphQL::Dashboard</code> is a <code class="language-plaintext highlighter-rouge">Rails::Engine</code>-based dashboard for
 viewing metadata about your GraphQL schema. 
-Pass the class name of your schema when mounting it. 
+Pass the class name of your schema when mounting it. Pass an array
+to allow selecting from multiple schemas with the <code class="language-plaintext highlighter-rouge">schema</code> query
+parameter.
+mount GraphQL::Dashboard, at: “graphql_dashboard”, schema:
+[“MySchema”, “OtherSchema”]
 Examples:</p>
 <h1 id="mounting-the-dashboard-in-your-app">Mounting the Dashboard in your app</h1>
 <p>mount GraphQL::Dashboard, at: “graphql_dashboard”, schema: “MySchema”</p>
