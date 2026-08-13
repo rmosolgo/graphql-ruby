@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.6.8 (13 Aug 2026)
+
+### New features
+
+- Support JSON 3 (remove `quirks_mode: true`) #5699
+
+### Bug fixes
+
+- Handle SystemStackError during execution #5683
+- Restrict dashboard schema selection #5688
+- Reduce allocations in block string parsing #5695
+- Fix lexer position in multibyte input #5692 #5697
+- `Execution::Next`: fix no-method error in mutations #5698
+- SDL: reduce memory use in description strings #5701
+
 # 2.6.7 (28 Jul 2026)
 
 ### Bug fixes
