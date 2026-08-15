@@ -69,7 +69,7 @@ module GraphQL
 
         attr_accessor :trace, :root_task
 
-        attr_reader :jobs, :lazies_at_depth, :jobs_fiber_limit,  :snoozed_jobs_condition, :snoozed_sources_condition, :tasks_channel
+        attr_reader :dataloader, :jobs, :lazies_at_depth, :jobs_fiber_limit,  :snoozed_jobs_condition, :snoozed_sources_condition, :tasks_channel
 
         def jobs_bandwidth?
           running_count < @jobs_fiber_limit
@@ -175,11 +175,19 @@ module GraphQL
       end
 
       def active_run
-        @pending_run || Async::Task.current?&.graphql_async_dataloader_run || raise(GraphQL::Error, "No available Run to append to, GraphQL-Ruby bug")
+        @pending_run || current_task_run || raise(GraphQL::Error, "No available Run to append to, GraphQL-Ruby bug")
+      end
+
+      # The current task's run, but only if it belongs to this dataloader. A different
+      # dataloader may be running inside one of our tasks (or vice versa), e.g. a query
+      # executed from a resolver or a subscription trigger; its run must not be reused.
+      def current_task_run
+        run = Async::Task.current?&.graphql_async_dataloader_run
+        run if run&.dataloader.equal?(self)
       end
 
       def run_isolated
-        previous_run = Async::Task.current?&.graphql_async_dataloader_run
+        previous_run = current_task_run
         prev_pending_keys = {}
         # Clear pending loads but keep already-cached records
         # in case they are useful to the given block.
@@ -215,7 +223,7 @@ module GraphQL
 
       def run(trace_query_lazy: nil)
         trace = Fiber[:__graphql_current_multiplex]&.current_trace
-        run = @pending_run || Async::Task.current?&.graphql_async_dataloader_run || raise(GraphQL::Error, "No available Run, GraphQL-Ruby internal bug")
+        run = @pending_run || current_task_run || raise(GraphQL::Error, "No available Run, GraphQL-Ruby internal bug")
         @pending_run = nil
         run.trace = trace
         first_pass = true
