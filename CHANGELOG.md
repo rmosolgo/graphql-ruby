@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.6.9 (17 Aug 2026)
+
+### Security
+
+- Parser cache: validate payloads before loading them (GHSA-rmxg-5p3r-j6hh)
+
 # 2.6.8 (13 Aug 2026)
 
 ### New features
