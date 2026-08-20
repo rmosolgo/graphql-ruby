@@ -744,7 +744,8 @@ module GraphQL
         when :dig
           objects.map { |o| o.dig(*@field_definition.execution_mode_key) }
         when :dataload
-          if (k = @field_definition.execution_mode_key).is_a?(Class)
+          k = @field_definition.execution_mode_key
+          results = if k.is_a?(Class)
             context.dataload_all(k, objects)
           elsif (source_class = k[:with])
             if (batch_args = k[:by])
@@ -763,6 +764,12 @@ module GraphQL
             context.dataload_all_associations(objects, assoc, scope: k[:scope])
           else
             raise ArgumentError, "Unexpected `dataload: ...` configuration: #{k.inspect}"
+          end
+          method = k.is_a?(Hash) ? k[:method] : nil
+          if method
+            results.map { |r| r&.public_send(method) }
+          else
+            results
           end
         when :resolver_class
           results = Array.new(objects.size, nil)

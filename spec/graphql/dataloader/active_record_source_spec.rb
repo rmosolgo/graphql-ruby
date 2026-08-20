@@ -11,6 +11,13 @@ describe GraphQL::Dataloader::ActiveRecordSource do
       assert_equal "Chon", exec_query(query_str, root_value: OpenStruct.new(band_name: "Chon"))["data"]["rootBand"]["name"]
     end
 
+    it "works with method on model and with dataload shorthands" do
+      exec_next_only("Only exec-next uses these configs")
+      result = exec_query "{ rootBandName bandsCountString }", root_value: OpenStruct.new(band_name: "Wilco")
+      assert_equal "Wilco", result["data"]["rootBandName"]
+      assert_equal "4", result["data"]["bandsCountString"]
+    end
+
     describe "finding by ID" do
       it_dataloads "loads once, then returns from a cache when available" do |d|
         log = with_active_record_log(colorize: false) do
