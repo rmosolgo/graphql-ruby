@@ -48,6 +48,21 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
       assert_equal ["Vulfpeck", "Vulfpeck"], result["data"]["band"]["allAlbums"].map { |a| a["band"]["name"] }
     end
 
+    it "loads a method result through an association dataload" do
+      exec_next_only("Only exec-next uses these configs")
+      result = exec_query <<-GRAPHQL
+        {
+          band(name: "Vulfpeck") {
+            allAlbums {
+              bandName
+            }
+          }
+        }
+      GRAPHQL
+
+      assert_equal ["Vulfpeck", "Vulfpeck"], result["data"]["band"]["allAlbums"].map { |a| a["bandName"] }
+    end
+
     it_dataloads "queries for associated records when the association isn't already loaded" do |d|
       my_first_car = ::Album.find(2)
       homey = ::Album.find(4)

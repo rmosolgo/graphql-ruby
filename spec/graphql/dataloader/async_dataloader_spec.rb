@@ -576,5 +576,48 @@ if RUBY_VERSION >= "3.2.0"
         assert watchdog.join
       end
     end
+
+    describe "when a job errors while sibling tasks are parked in non-dataloader IO" do
+      # When a job errors, `run_queue` closes the tasks_channel while sibling tasks are still
+      # parked in non-Dataloader IO; a straggler's next push used to leak
+      # `Async::Queue::ClosedError` into resolver code and lose its own error report.
+      it "doesn't leak Async::Queue::ClosedError into straggler fibers or lose the original error" do
+        rng = Random.new(20260814)
+        leaked_error = nil
+
+        250.times do |i|
+          break if leaked_error
+
+          dataloader = GraphQL::Dataloader::AsyncDataloader.new
+
+          3.times do |j|
+            io_delay = rng.rand(0.003)
+            fetch_delay = rng.rand(0.002)
+            dataloader.append_job do
+              sleep(io_delay)
+              begin
+                dataloader.with(SlowSource, fetch_delay).load([i, j])
+              rescue Async::Queue::ClosedError => err
+                leaked_error = err
+                raise
+              end
+            end
+          end
+
+          err_delay = rng.rand(0.003)
+          dataloader.append_job do
+            sleep(err_delay)
+            raise "boom-#{i}"
+          end
+
+          err = assert_raises(RuntimeError) do
+            Timeout.timeout(15) { dataloader.run }
+          end
+          assert_equal "boom-#{i}", err.message
+        end
+
+        assert_nil leaked_error, "Async::Queue::ClosedError leaked into straggler fibers"
+      end
+    end
   end
 end

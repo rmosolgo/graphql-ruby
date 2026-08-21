@@ -36,10 +36,14 @@ module GraphQL
         run = task.graphql_async_dataloader_run
         trace = run.trace
         trace&.dataloader_fiber_yield(source)
-        run.tasks_channel.push([:paused_task, task])
+        if !run.push_task_message(:paused_task, task)
+          task.stop
+        end
         condition = task.graphql_async_dataloader_condition
         condition.wait
-        run.tasks_channel.push([:resumed_task, task])
+        if !run.push_task_message(:resumed_task, task)
+          task.stop
+        end
         trace&.dataloader_fiber_resume(source)
         nil
       end
@@ -69,7 +73,7 @@ module GraphQL
 
         attr_accessor :trace, :root_task
 
-        attr_reader :dataloader, :jobs, :lazies_at_depth, :jobs_fiber_limit,  :snoozed_jobs_condition, :snoozed_sources_condition, :tasks_channel
+        attr_reader :dataloader, :jobs, :lazies_at_depth, :jobs_fiber_limit,  :snoozed_jobs_condition, :snoozed_sources_condition
 
         def jobs_bandwidth?
           running_count < @jobs_fiber_limit
@@ -82,6 +86,20 @@ module GraphQL
         def close_queues
           @tasks_channel.close
           @tasks_channel_task.cancel
+        end
+
+        # Push to the tasks_channel, tolerating a closed channel: on the error path, `run_queue`
+        # closes the channel while sibling tasks can still run one more slice before
+        # `root_task.cancel` reaches them. Record `:task_error` payloads so they aren't lost, and
+        # return false so the caller can stop the task instead of raising `ClosedError` into user code.
+        def push_task_message(msg, data)
+          @tasks_channel.push([msg, data])
+          true
+        rescue Async::Queue::ClosedError
+          if msg == :task_error
+            @task_error ||= data
+          end
+          false
         end
 
         def wait_for_activity
@@ -344,14 +362,14 @@ module GraphQL
             end
             nil
           rescue StandardError => err
-            run.tasks_channel.push([:task_error, err])
+            run.push_task_message(:task_error, err)
           else
-            run.tasks_channel.push([:finished_task, task])
+            run.push_task_message(:finished_task, task)
           ensure
             cleanup_fiber
             trace&.dataloader_fiber_exit
           end
-          run.tasks_channel.push([:started_task, new_task])
+          run.push_task_message(:started_task, new_task)
         end
       end
     end
