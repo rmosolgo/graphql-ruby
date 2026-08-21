@@ -466,6 +466,32 @@ if RUBY_VERSION >= "3.2.0"
       end
     end
 
+    describe "when another dataloader runs inside a job" do
+      class EchoSource < GraphQL::Dataloader::Source
+        def fetch(keys)
+          keys.map { |k| "v#{k}" }
+        end
+      end
+
+      # A query executed from inside a resolver (or a subscription trigger) gets its own
+      # dataloader, but shares the outer dataloader's task tree. `run_isolated` used to
+      # mistake the outer task's run for its own and clear `@pending_run`, so the inner
+      # `run` took over the outer run's queues and the outer run never finished.
+      it "doesn't take over the outer dataloader's run" do
+        outer = GraphQL::Dataloader::AsyncDataloader.new
+        inner_result = nil
+        outer.append_job do
+          inner = GraphQL::Dataloader::AsyncDataloader.new
+          inner.run_isolated { inner.with(EchoSource).load(1) }
+          inner.append_job { inner_result = inner.with(EchoSource).load(2) }
+          inner.run
+        end
+
+        Timeout.timeout(5) { outer.run }
+        assert_equal "v2", inner_result
+      end
+    end
+
     describe "stress test" do
       RNG = Random.new(20260724)
       MAX_ITERATIONS = 2000
