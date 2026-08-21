@@ -7,15 +7,28 @@ module GraphQL
 
       # Turn an AST node back into a string.
       #
-      # @example Turning a document into a query
-      #    document = GraphQL.parse(query_string)
-      #    GraphQL::Language::Generation.generate(document)
-      #    # => "{ ... }"
+      # **Examples**
       #
-      # @param node [GraphQL::Language::Nodes::AbstractNode] an AST node to recursively stringify
-      # @param indent [String] Whitespace to add to each printed node
-      # @param printer [GraphQL::Language::Printer] An optional custom printer for printing AST nodes. Defaults to GraphQL::Language::Printer
-      # @return [String] Valid GraphQL for `node`
+      # **Example: Turning a document into a query**
+      #
+      # ```ruby
+      # document = GraphQL.parse(query_string)
+      # GraphQL::Language::Generation.generate(document)
+      # # => "{ ... }"
+      # ```
+      #
+      # **Parameters**
+      #
+      # - `node` (`GraphQL::Language::Nodes::AbstractNode`) — an AST node to recursively stringify
+      # - `indent` (`String`) — Whitespace to add to each printed node
+      # - `printer` (`GraphQL::Language::Printer`) — An optional custom printer for printing AST nodes. Defaults to GraphQL::Language::Printer
+      #
+      # **Returns**
+      #
+      # - `String` — Valid GraphQL for `node`
+      #
+      # :call-seq:
+      #   generate(GraphQL::Language::Nodes::AbstractNode node, String indent:, GraphQL::Language::Printer printer:) -> String
       def generate(node, indent: "", printer: GraphQL::Language::Printer.new)
         printer.print(node, indent: indent)
       end

@@ -12,27 +12,35 @@ module GraphQL
       #
       # To use it, you have to implement `.enabled?`, for example:
       #
-      # @example Implementing the Feature directive
-      #   # app/graphql/directives/feature.rb
-      #   class Directives::Feature < GraphQL::Schema::Directive::Feature
-      #     def self.enabled?(flag_name, _obj, context)
-      #       # Translate some GraphQL data for Ruby:
-      #       flag_key = flag_name.underscore
-      #       current_user = context[:viewer]
-      #       # Check the feature flag however your app does it:
-      #       MyFeatureFlags.enabled?(current_user, flag_key)
-      #     end
-      #   end
+      # **Examples**
       #
-      # @example Flagging a part of the query
-      #   viewer {
-      #     # This field only runs if `.enabled?("recommendationEngine", obj, context)`
-      #     # returns true. Otherwise, it's treated as if it didn't exist.
-      #     recommendations @feature(flag: "recommendationEngine") {
-      #       name
-      #       rating
-      #     }
+      # **Example: Implementing the Feature directive**
+      #
+      # ```ruby
+      # # app/graphql/directives/feature.rb
+      # class Directives::Feature < GraphQL::Schema::Directive::Feature
+      #   def self.enabled?(flag_name, _obj, context)
+      #     # Translate some GraphQL data for Ruby:
+      #     flag_key = flag_name.underscore
+      #     current_user = context[:viewer]
+      #     # Check the feature flag however your app does it:
+      #     MyFeatureFlags.enabled?(current_user, flag_key)
+      #   end
+      # end
+      # ```
+      #
+      # **Example: Flagging a part of the query**
+      #
+      # ```ruby
+      # viewer {
+      #   # This field only runs if `.enabled?("recommendationEngine", obj, context)`
+      #   # returns true. Otherwise, it's treated as if it didn't exist.
+      #   recommendations @feature(flag: "recommendationEngine") {
+      #     name
+      #     rating
       #   }
+      # }
+      # ```
       class Feature < Schema::Directive
         description "Directs the executor to run this only if a certain server-side feature is enabled."
 
@@ -53,10 +61,18 @@ module GraphQL
 
         # Override this method in your app's subclass of this directive.
         #
-        # @param flag_name [String] The client-provided string of a feature to check
-        # @param object [GraphQL::Schema::Objct] The currently-evaluated GraphQL object instance
-        # @param context [GraphQL::Query::Context]
-        # @return [Boolean] If truthy, execution will continue
+        # **Parameters**
+        #
+        # - `flag_name` (`String`) — The client-provided string of a feature to check
+        # - `object` (`GraphQL::Schema::Objct`) — The currently-evaluated GraphQL object instance
+        # - `context` (`GraphQL::Query::Context`)
+        #
+        # **Returns**
+        #
+        # - `Boolean` — If truthy, execution will continue
+        #
+        # :call-seq:
+        #   enabled?(String flag_name, GraphQL::Schema::Objct object, GraphQL::Query::Context context) -> bool
         def self.enabled?(flag_name, object, context)
           raise GraphQL::RequiredImplementationMissingError, "Implement `.enabled?(flag_name, object, context)` to return true or false for the feature flag (#{flag_name.inspect})"
         end

@@ -1,11 +1,4 @@
----
-layout: guide
-search: true
-section: Authorization
-title: Overview
-desc: Overview of GraphQL authorization in general and an intro to the built-in framework.
-index: 0
----
+# Overview
 
 Here's a conceptual approach to GraphQL authorization, followed by an introduction to the built-in authorization framework. Each part of the framework is described in detail in its own guide.
 
@@ -131,7 +124,7 @@ Despite the advantages of authorization at the application layer, as described a
 
 To accomplish these, you can use GraphQL-Ruby's authorization framework. The framework has three levels, each of which is described in its own guide:
 
-- {% internal_link "Visibility", "/authorization/visibility" %} hides parts of the GraphQL schema from users who don't have full permission.
-- {% internal_link "Authorization", "/authorization/authorization" %} checks application objects during execution to be sure the user has permission to access them.
+- [Visibility](/authorization/visibility) hides parts of the GraphQL schema from users who don't have full permission.
+- [Authorization](/authorization/authorization) checks application objects during execution to be sure the user has permission to access them.
 
-Also, [GraphQL::Pro](https://graphql.pro) has integrations for {% internal_link "CanCan", "/authorization/can_can_integration" %} and {% internal_link "Pundit", "/authorization/pundit_integration" %}.
+Also, [GraphQL::Pro](https://graphql.pro) has integrations for [CanCan](/authorization/can_can_integration) and [Pundit](/authorization/pundit_integration).

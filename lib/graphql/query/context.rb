@@ -31,18 +31,39 @@ module GraphQL
       extend Forwardable
       include Schema::Member::HasDataloader
 
-      # @return [Array<GraphQL::ExecutionError>] errors returned during execution
+      # **Returns**
+      #
+      # - `Array<GraphQL::ExecutionError>` — errors returned during execution
+      #
+      # :call-seq:
+      #   errors -> Array[GraphQL::ExecutionError]
       attr_reader :errors
 
-      # @return [GraphQL::Query] The query whose context this is
+      # **Returns**
+      #
+      # - `GraphQL::Query` — The query whose context this is
+      #
+      # :call-seq:
+      #   query -> GraphQL::Query
       attr_reader :query
 
-      # @return [GraphQL::Schema]
+      # **Returns**
+      #
+      # - `GraphQL::Schema`
+      #
+      # :call-seq:
+      #   schema -> GraphQL::Schema
       attr_reader :schema
 
       # Make a new context which delegates key lookup to `values`
-      # @param query [GraphQL::Query] the query who owns this context
-      # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
+      #
+      # **Parameters**
+      #
+      # - `query` (`GraphQL::Query`) — the query who owns this context
+      # - `values` (`Hash`) — A hash of arbitrary values which will be accessible at query-time
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Query query:, schema:, Hash values:)
       def initialize(query:, schema: query.schema, values:)
         @query = query
         @schema = schema
@@ -55,7 +76,13 @@ module GraphQL
       end
 
       # Modify this hash to return extensions to client.
-      # @return [Hash] A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
+      #
+      # **Returns**
+      #
+      # - `Hash` — A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
+      #
+      # :call-seq:
+      #   response_extensions() -> Hash
       def response_extensions
         namespace(:__query_result_extensions__)
       end
@@ -64,14 +91,11 @@ module GraphQL
         @dataloader ||= self[:dataloader] || (query.multiplex ? query.multiplex.dataloader : schema.dataloader_class.new)
       end
 
-      # @api private
-      attr_writer :interpreter
+      attr_writer :interpreter # :nodoc:
 
-      # @api private
-      attr_writer :value
+      attr_writer :value # :nodoc:
 
-      # @api private
-      attr_reader :scoped_context
+      attr_reader :scoped_context # :nodoc:
 
       def []=(key, value)
         @provided_values[key] = value
@@ -86,8 +110,7 @@ module GraphQL
       attr_writer :types
 
       RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path]).freeze
-      # @!method []=(key, value)
-      #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
+      # **Method:** `[]=(key, value)` — Reassign `key` to the hash passed to [Schema#execute](rdoc-ref:Schema#execute) as `context:`
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`
       def [](key)
@@ -116,8 +139,17 @@ module GraphQL
       end
 
       # Add error at query-level.
-      # @param error [GraphQL::ExecutionError] an execution error
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `error` (`GraphQL::ExecutionError`) — an execution error
+      #
+      # **Returns**
+      #
+      # - `void`
+      #
+      # :call-seq:
+      #   add_error(GraphQL::ExecutionError error) -> void
       def add_error(error)
         if !error.is_a?(GraphQL::RuntimeError)
           raise TypeError, "expected error to be a GraphQL::RuntimeError, but was #{error.class}"
@@ -126,16 +158,34 @@ module GraphQL
         nil
       end
 
-      # @param value [Object] Any object to be inserted directly into the final response
-      # @return [GraphQL::Execution::Interpreter::RawValue] Return this from the field
+      # **Parameters**
+      #
+      # - `value` (`Object`) — Any object to be inserted directly into the final response
+      #
+      # **Returns**
+      #
+      # - `GraphQL::Execution::Interpreter::RawValue` — Return this from the field
+      #
+      # :call-seq:
+      #   raw_value(Object value) -> GraphQL::Execution::Interpreter::RawValue
       def raw_value(value)
         GraphQL::Execution::Interpreter::RawValue.new(value)
       end
 
-      # @example Print the GraphQL backtrace during field resolution
-      #   puts ctx.backtrace
+      # **Examples**
       #
-      # @return [GraphQL::Backtrace] The backtrace for this point in query execution
+      # **Example: Print the GraphQL backtrace during field resolution**
+      #
+      # ```ruby
+      # puts ctx.backtrace
+      # ```
+      #
+      # **Returns**
+      #
+      # - `GraphQL::Backtrace` — The backtrace for this point in query execution
+      #
+      # :call-seq:
+      #   backtrace() -> GraphQL::Backtrace
       def backtrace
         GraphQL::Backtrace.new(self)
       end
@@ -217,17 +267,30 @@ module GraphQL
         @scoped_context.key?(key) || @provided_values.key?(key)
       end
 
-      # @return [GraphQL::Schema::Warden]
+      # **Returns**
+      #
+      # - `GraphQL::Schema::Warden`
+      #
+      # :call-seq:
+      #   warden() -> GraphQL::Schema::Warden
       def warden
         @warden ||= (@query && @query.warden)
       end
 
-      # @api private
-      attr_writer :warden
+      attr_writer :warden # :nodoc:
 
       # Get an isolated hash for `ns`. Doesn't affect user-provided storage.
-      # @param ns [Object] a usage-specific namespace identifier
-      # @return [Hash] namespaced storage
+      #
+      # **Parameters**
+      #
+      # - `ns` (`Object`) — a usage-specific namespace identifier
+      #
+      # **Returns**
+      #
+      # - `Hash` — namespaced storage
+      #
+      # :call-seq:
+      #   namespace(Object ns) -> Hash
       def namespace(ns)
         if ns == :interpreter
           self
@@ -236,7 +299,12 @@ module GraphQL
         end
       end
 
-      # @return [Boolean] true if this namespace was accessed before
+      # **Returns**
+      #
+      # - `Boolean` — true if this namespace was accessed before
+      #
+      # :call-seq:
+      #   namespace?(ns) -> bool
       def namespace?(ns)
         @storage.key?(ns)
       end
@@ -261,13 +329,24 @@ module GraphQL
       # Use this when you need to do a scoped set _inside_ a lazy-loaded (or batch-loaded)
       # block of code.
       #
-      # @example using scoped context inside a promise
-      #   scoped_ctx = context.scoped
-      #   SomeBatchLoader.load(...).then do |thing|
-      #     # use a scoped_ctx which was created _before_ dataloading:
-      #     scoped_ctx.set!(:thing, thing)
-      #   end
-      # @return [Context::Scoped]
+      # **Examples**
+      #
+      # **Example: using scoped context inside a promise**
+      #
+      # ```ruby
+      # scoped_ctx = context.scoped
+      # SomeBatchLoader.load(...).then do |thing|
+      #   # use a scoped_ctx which was created _before_ dataloading:
+      #   scoped_ctx.set!(:thing, thing)
+      # end
+      # ```
+      #
+      # **Returns**
+      #
+      # - `Context::Scoped`
+      #
+      # :call-seq:
+      #   scoped() -> Context::Scoped
       def scoped
         Scoped.new(@scoped_context, current_path)
       end

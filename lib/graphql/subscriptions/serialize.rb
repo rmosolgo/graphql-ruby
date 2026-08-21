@@ -4,8 +4,7 @@ require "set"
 module GraphQL
   class Subscriptions
     # Serialization helpers for passing subscription data around.
-    # @api private
-    module Serialize
+    module Serialize # :nodoc:
       GLOBALID_KEY = "__gid__"
       SYMBOL_KEY = "__sym__"
       SYMBOL_KEYS_KEY = "__sym_keys__"
@@ -16,23 +15,48 @@ module GraphQL
 
       module_function
 
-      # @param str [String] A serialized object from {.dump}
-      # @return [Object] An object equivalent to the one passed to {.dump}
+      # **Parameters**
+      #
+      # - `str` (`String`) — A serialized object from [.dump](rdoc-ref:.dump)
+      #
+      # **Returns**
+      #
+      # - `Object` — An object equivalent to the one passed to [.dump](rdoc-ref:.dump)
+      #
+      # :call-seq:
+      #   load(String str) -> Object
       def load(str)
         parsed_obj = JSON.parse(str)
         load_value(parsed_obj)
       end
 
-      # @param obj [Object] Some subscription-related data to dump
-      # @return [String] The stringified object
+      # **Parameters**
+      #
+      # - `obj` (`Object`) — Some subscription-related data to dump
+      #
+      # **Returns**
+      #
+      # - `String` — The stringified object
+      #
+      # :call-seq:
+      #   dump(Object obj) -> String
       def dump(obj)
         JSON.generate(dump_value(obj))
       end
 
       # This is for turning objects into subscription scopes.
       # It's a one-way transformation, can't reload this :'(
-      # @param obj [Object]
-      # @return [String]
+      #
+      # **Parameters**
+      #
+      # - `obj` (`Object`)
+      #
+      # **Returns**
+      #
+      # - `String`
+      #
+      # :call-seq:
+      #   dump_recursive(Object obj) -> String
       def dump_recursive(obj)
         case
         when obj.is_a?(Array)
@@ -53,8 +77,16 @@ module GraphQL
       class << self
         private
 
-        # @param value [Object] A parsed JSON object
-        # @return [Object] An object that load Global::Identification recursive
+        # **Parameters**
+        #
+        # - `value` (`Object`) — A parsed JSON object
+        #
+        # **Returns**
+        #
+        # - `Object` — An object that load Global::Identification recursive
+        #
+        # :call-seq:
+        #   load_value(Object value) -> Object
         def load_value(value)
           if value.is_a?(Array)
             is_gids = (v1 = value[0]).is_a?(Hash) && v1.size == 1 && v1[GLOBALID_KEY]
@@ -114,8 +146,16 @@ module GraphQL
           end
         end
 
-        # @param obj [Object] Some subscription-related data to dump
-        # @return [Object] The object that converted Global::Identification
+        # **Parameters**
+        #
+        # - `obj` (`Object`) — Some subscription-related data to dump
+        #
+        # **Returns**
+        #
+        # - `Object` — The object that converted Global::Identification
+        #
+        # :call-seq:
+        #   dump_value(Object obj) -> Object
         def dump_value(obj)
           if obj.is_a?(Array)
             obj.map{|item| dump_value(item)}

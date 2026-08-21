@@ -1,24 +1,29 @@
 # frozen_string_literal: true
 module GraphQL
   class Query
-    # This class is _like_ a {GraphQL::Query}, except it can run on an arbitrary path within a query string.
+    # This class is _like_ a [GraphQL::Query](rdoc-ref:GraphQL::Query), except it can run on an arbitrary path within a query string.
     #
-    # It depends on a "parent" {Query}.
+    # It depends on a "parent" [Query](rdoc-ref:Query).
     #
     # During execution, it calls query-related tracing hooks but passes itself as `query:`.
     #
-    # The {Partial} will use your {Schema.resolve_type} hook to find the right GraphQL type to use for
+    # The [Partial](rdoc-ref:Partial) will use your [Schema.resolve_type](rdoc-ref:Schema.resolve_type) hook to find the right GraphQL type to use for
     # `object` in some cases.
     #
-    # @see Query#run_partials Run via {Query#run_partials}
+    # See [Query#run_partials](rdoc-ref:Query#run_partials) Run via [Query#run_partials](rdoc-ref:Query#run_partials)
     class Partial
       include Query::Runnable
 
-      # @param path [Array<String, Integer>] A path in `query.query_string` to start executing from
-      # @param object [Object] A starting object for execution
-      # @param query [GraphQL::Query] A full query instance that this partial is based on. Caches are shared.
-      # @param context [Hash] Extra context values to merge into `query.context`, if provided
-      # @param fragment_node [GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition]
+      # **Parameters**
+      #
+      # - `path` (`Array<String, Integer>`) — A path in `query.query_string` to start executing from
+      # - `object` (`Object`) — A starting object for execution
+      # - `query` (`GraphQL::Query`) — A full query instance that this partial is based on. Caches are shared.
+      # - `context` (`Hash`) — Extra context values to merge into `query.context`, if provided
+      # - `fragment_node` (`GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition`)
+      #
+      # :call-seq:
+      #   initialize(Array[String | Integer] path:, Object object:, GraphQL::Query query:, Hash context:, GraphQL::Language::Nodes::InlineFragment | GraphQL::Language::Nodes::FragmentDefinition fragment_node:, type:)
       def initialize(path: nil, object:, query:, context: nil, fragment_node: nil, type: nil)
         @path = path
         @object = object
@@ -65,7 +70,12 @@ module GraphQL
           @query.path
         end
 
-        # @return [GraphQL::Query::Partial]
+        # **Returns**
+        #
+        # - `GraphQL::Query::Partial`
+        #
+        # :call-seq:
+        #   partial() -> GraphQL::Query::Partial
         def partial
           @query
         end

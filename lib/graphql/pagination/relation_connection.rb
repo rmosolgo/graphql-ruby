@@ -53,39 +53,84 @@ module GraphQL
 
       private
 
-      # @param relation [Object] A database query object
-      # @param _initial_offset [Integer] The number of items already excluded from the relation
-      # @param size [Integer] The value against which we check the relation size
-      # @return [Boolean] True if the number of items in this relation is larger than `size`
+      # **Parameters**
+      #
+      # - `relation` (`Object`) — A database query object
+      # - `_initial_offset` (`Integer`) — The number of items already excluded from the relation
+      # - `size` (`Integer`) — The value against which we check the relation size
+      #
+      # **Returns**
+      #
+      # - `Boolean` — True if the number of items in this relation is larger than `size`
+      #
+      # :call-seq:
+      #   relation_larger_than(Object relation, Integer _initial_offset, Integer size) -> bool
       def relation_larger_than(relation, _initial_offset, size)
         relation_count(set_limit(relation, size + 1)) == size + 1
       end
 
-      # @param relation [Object] A database query object
-      # @return [Integer, nil] The offset value, or nil if there isn't one
+      # **Parameters**
+      #
+      # - `relation` (`Object`) — A database query object
+      #
+      # **Returns**
+      #
+      # - `Integer, nil` — The offset value, or nil if there isn't one
+      #
+      # :call-seq:
+      #   relation_offset(Object relation) -> Integer | nil
       def relation_offset(relation)
         raise "#{self.class}#relation_offset(relation) must return the offset value for a #{relation.class} (#{relation.inspect})"
       end
 
-      # @param relation [Object] A database query object
-      # @return [Integer, nil] The limit value, or nil if there isn't one
+      # **Parameters**
+      #
+      # - `relation` (`Object`) — A database query object
+      #
+      # **Returns**
+      #
+      # - `Integer, nil` — The limit value, or nil if there isn't one
+      #
+      # :call-seq:
+      #   relation_limit(Object relation) -> Integer | nil
       def relation_limit(relation)
         raise "#{self.class}#relation_limit(relation) must return the limit value for a #{relation.class} (#{relation.inspect})"
       end
 
-      # @param relation [Object] A database query object
-      # @return [Integer, nil] The number of items in this relation (hopefully determined without loading all records into memory!)
+      # **Parameters**
+      #
+      # - `relation` (`Object`) — A database query object
+      #
+      # **Returns**
+      #
+      # - `Integer, nil` — The number of items in this relation (hopefully determined without loading all records into memory!)
+      #
+      # :call-seq:
+      #   relation_count(Object relation) -> Integer | nil
       def relation_count(relation)
         raise "#{self.class}#relation_count(relation) must return the count of records for a #{relation.class} (#{relation.inspect})"
       end
 
-      # @param relation [Object] A database query object
-      # @return [Object] A modified query object which will return no records
+      # **Parameters**
+      #
+      # - `relation` (`Object`) — A database query object
+      #
+      # **Returns**
+      #
+      # - `Object` — A modified query object which will return no records
+      #
+      # :call-seq:
+      #   null_relation(Object relation) -> Object
       def null_relation(relation)
         raise "#{self.class}#null_relation(relation) must return an empty relation for a #{relation.class} (#{relation.inspect})"
       end
 
-      # @return [Integer]
+      # **Returns**
+      #
+      # - `Integer`
+      #
+      # :call-seq:
+      #   offset_from_cursor(cursor) -> Integer
       def offset_from_cursor(cursor)
         decode(cursor).to_i
       end
@@ -165,12 +210,22 @@ module GraphQL
         end
       end
 
-      # @return [Integer, nil]
+      # **Returns**
+      #
+      # - `Integer, nil`
+      #
+      # :call-seq:
+      #   before_offset() -> Integer | nil
       def before_offset
         @before_offset ||= before && offset_from_cursor(before)
       end
 
-      # @return [Integer, nil]
+      # **Returns**
+      #
+      # - `Integer, nil`
+      #
+      # :call-seq:
+      #   after_offset() -> Integer | nil
       def after_offset
         @after_offset ||= after && offset_from_cursor(after)
       end

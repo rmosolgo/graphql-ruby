@@ -5,13 +5,28 @@ module GraphQL
   #
   # Alternatively, custom code in `authorized?` may raise this error. It will be routed the same way.
   class UnauthorizedError < GraphQL::RuntimeError
-    # @return [Object] the application object that failed the authorization check
+    # **Returns**
+    #
+    # - `Object` — the application object that failed the authorization check
+    #
+    # :call-seq:
+    #   object -> Object
     attr_reader :object
 
-    # @return [Class] the GraphQL object type whose `.authorized?` method was called (and returned false)
+    # **Returns**
+    #
+    # - `Class` — the GraphQL object type whose `.authorized?` method was called (and returned false)
+    #
+    # :call-seq:
+    #   type -> Class
     attr_reader :type
 
-    # @return [GraphQL::Query::Context] the context for the current query
+    # **Returns**
+    #
+    # - `GraphQL::Query::Context` — the context for the current query
+    #
+    # :call-seq:
+    #   context -> GraphQL::Query::Context
     attr_accessor :context
 
     def initialize(message = nil, object: nil, type: nil, context: nil)

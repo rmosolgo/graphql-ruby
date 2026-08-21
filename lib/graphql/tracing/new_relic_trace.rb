@@ -6,16 +6,24 @@ module GraphQL
   module Tracing
     # A tracer for reporting GraphQL-Ruby time to New Relic
     #
-    # @example Installing the tracer
-    #   class MySchema < GraphQL::Schema
-    #     trace_with GraphQL::Tracing::NewRelicTrace
+    # **Examples**
     #
-    #     # Optional, use the operation name to set the new relic transaction name:
-    #     # trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true
-    #   end
+    # **Example: Installing the tracer**
     #
-    # @example Installing without trace events for `authorized?` or `resolve_type` calls
-    #   trace_with GraphQL::Tracing::NewRelicTrace, trace_authorized: false, trace_resolve_type: false
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   trace_with GraphQL::Tracing::NewRelicTrace
+    #
+    #   # Optional, use the operation name to set the new relic transaction name:
+    #   # trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true
+    # end
+    # ```
+    #
+    # **Example: Installing without trace events for `authorized?` or `resolve_type` calls**
+    #
+    # ```ruby
+    # trace_with GraphQL::Tracing::NewRelicTrace, trace_authorized: false, trace_resolve_type: false
+    # ```
     NewRelicTrace = MonitorTrace.create_module("newrelic")
     module NewRelicTrace
       class NewrelicMonitor < MonitorTrace::Monitor

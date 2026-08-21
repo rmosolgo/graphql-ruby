@@ -4,15 +4,35 @@ module GraphQL
   # Raised when a argument is configured with `loads:` and the client provides an `ID`,
   # but no object is loaded for that ID.
   #
-  # @see GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader#load_application_object_failed, A hook which you can override in resolvers, mutations and input objects.
+  # See [GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader#load_application_object_failed](rdoc-ref:GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader#load_application_object_failed) A hook which you can override in resolvers, mutations and input objects.
   class LoadApplicationObjectFailedError < GraphQL::ExecutionError
-    # @return [GraphQL::Schema::Argument] the argument definition for the argument that was looked up
+    # **Returns**
+    #
+    # - `GraphQL::Schema::Argument` — the argument definition for the argument that was looked up
+    #
+    # :call-seq:
+    #   argument -> GraphQL::Schema::Argument
     attr_reader :argument
-    # @return [String] The ID provided by the client
+    # **Returns**
+    #
+    # - `String` — The ID provided by the client
+    #
+    # :call-seq:
+    #   id -> String
     attr_reader :id
-    # @return [Object] The value found with this ID
+    # **Returns**
+    #
+    # - `Object` — The value found with this ID
+    #
+    # :call-seq:
+    #   object -> Object
     attr_reader :object
-    # @return [GraphQL::Query::Context]
+    # **Returns**
+    #
+    # - `GraphQL::Query::Context`
+    #
+    # :call-seq:
+    #   context -> GraphQL::Query::Context
     attr_reader :context
 
     def initialize(argument:, id:, object:, context:)

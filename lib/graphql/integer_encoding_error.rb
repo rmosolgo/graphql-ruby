@@ -7,15 +7,25 @@ module GraphQL
   # - `ID` for database primary keys or other identifiers
   # - `GraphQL::Types::BigInt` for really big integer values
   #
-  # @see GraphQL::Types::Int which raises this error
+  # See [GraphQL::Types::Int](rdoc-ref:GraphQL::Types::Int) which raises this error
   class IntegerEncodingError < GraphQL::RuntimeTypeError
     # The value which couldn't be encoded
     attr_reader :integer_value
 
-    # @return [GraphQL::Schema::Field] The field that returned a too-big integer
+    # **Returns**
+    #
+    # - `GraphQL::Schema::Field` — The field that returned a too-big integer
+    #
+    # :call-seq:
+    #   field -> GraphQL::Schema::Field
     attr_reader :field
 
-    # @return [Array<String, Integer>] Where the field appeared in the GraphQL response
+    # **Returns**
+    #
+    # - `Array<String, Integer>` — Where the field appeared in the GraphQL response
+    #
+    # :call-seq:
+    #   path -> Array[String | Integer]
     attr_reader :path
 
     def initialize(value, context:)

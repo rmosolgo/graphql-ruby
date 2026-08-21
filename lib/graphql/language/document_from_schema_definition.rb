@@ -1,18 +1,16 @@
 # frozen_string_literal: true
 module GraphQL
   module Language
-    # @api private
     #
-    # {GraphQL::Language::DocumentFromSchemaDefinition} is used to convert a {GraphQL::Schema} object
-    # To a {GraphQL::Language::Document} AST node.
+    # **Parameters**
     #
-    # @param context [Hash]
-    # @param only [<#call(member, ctx)>]
-    # @param except [<#call(member, ctx)>]
-    # @param include_introspection_types [Boolean] Whether or not to include introspection types in the AST
-    # @param include_built_in_scalars [Boolean] Whether or not to include built in scalars in the AST
-    # @param include_built_in_directives [Boolean] Whether or not to include built in directives in the AST
-    class DocumentFromSchemaDefinition
+    # - `context` (`Hash`)
+    # - `only` (`<#call(member, ctx)>`)
+    # - `except` (`<#call(member, ctx)>`)
+    # - `include_introspection_types` (`Boolean`) — Whether or not to include introspection types in the AST
+    # - `include_built_in_scalars` (`Boolean`) — Whether or not to include built in scalars in the AST
+    # - `include_built_in_directives` (`Boolean`) — Whether or not to include built in directives in the AST
+    class DocumentFromSchemaDefinition # :nodoc:
       def initialize(
         schema, context: nil, include_introspection_types: false,
         include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false

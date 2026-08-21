@@ -30,27 +30,41 @@ module GraphQL
 
       # Turn an arbitrary AST node back into a string.
       #
-      # @example Turning a document into a query string
-      #    document = GraphQL.parse(query_string)
-      #    GraphQL::Language::Printer.new.print(document)
-      #    # => "{ ... }"
+      # **Examples**
       #
+      # **Example: Turning a document into a query string**
       #
-      # @example Building a custom printer
+      # ```ruby
+      # document = GraphQL.parse(query_string)
+      # GraphQL::Language::Printer.new.print(document)
+      # # => "{ ... }"
+      # ```
       #
-      #  class MyPrinter < GraphQL::Language::Printer
-      #    def print_argument(arg)
-      #      print_string("#{arg.name}: <HIDDEN>")
-      #    end
-      #  end
+      # **Example: Building a custom printer**
       #
-      #  MyPrinter.new.print(document)
-      #  # => "mutation { pay(creditCard: <HIDDEN>) { success } }"
+      # ```ruby
+      # class MyPrinter < GraphQL::Language::Printer
+      #   def print_argument(arg)
+      #     print_string("#{arg.name}: <HIDDEN>")
+      #   end
+      # end
       #
-      # @param node [Nodes::AbstractNode]
-      # @param indent [String] Whitespace to add to the printed node
-      # @param truncate_size [Integer, nil] The size to truncate to.
-      # @return [String] Valid GraphQL for `node`
+      # MyPrinter.new.print(document)
+      # # => "mutation { pay(creditCard: <HIDDEN>) { success } }"
+      # ```
+      #
+      # **Parameters**
+      #
+      # - `node` (`Nodes::AbstractNode`)
+      # - `indent` (`String`) — Whitespace to add to the printed node
+      # - `truncate_size` (`Integer, nil`) — The size to truncate to.
+      #
+      # **Returns**
+      #
+      # - `String` — Valid GraphQL for `node`
+      #
+      # :call-seq:
+      #   print(Nodes::AbstractNode node, String indent:, Integer | nil truncate_size:) -> String
       def print(node, indent: "", truncate_size: nil)
         truncate_size = truncate_size ? [truncate_size - OMISSION.size, 0].max : nil
         @out = TruncatableBuffer.new(truncate_size: truncate_size)

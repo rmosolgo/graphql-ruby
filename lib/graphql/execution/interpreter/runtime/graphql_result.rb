@@ -54,7 +54,12 @@ module GraphQL
           attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent,
             :graphql_application_value, :graphql_result_type, :graphql_selections, :graphql_is_eager, :ast_node, :graphql_arguments, :graphql_field
 
-          # @return [Hash] Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
+          # **Returns**
+          #
+          # - `Hash` — Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
+          #
+          # :call-seq:
+          #   graphql_result_data -> Hash
           attr_accessor :graphql_result_data
         end
 

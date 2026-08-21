@@ -1,13 +1,6 @@
----
-layout: guide
-search: true
-section: Dataloader
-title: Testing
-desc: Tips for testing Dataloader implementation
-index: 4
----
+# Testing
 
-There are a few techniques for testing your {{ "GraphQL::Dataloader" | api_doc }} setup.
+There are a few techniques for testing your [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) setup.
 
 ## Integration Tests
 
@@ -43,7 +36,7 @@ You could also make specific assertions on the queries that are run (see the [`s
 
 ## Testing Dataloader Sources
 
-You can also test `Dataloader` behavior outside of GraphQL using {{ "GraphQL::Dataloader.with_dataloading" | api_doc }}. For example, let's say you have a `Sources::ActiveRecord` source defined like so:
+You can also test `Dataloader` behavior outside of GraphQL using [GraphQL::Dataloader.with_dataloading](rdoc-ref:GraphQL::Dataloader.with_dataloading). For example, let's say you have a `Sources::ActiveRecord` source defined like so:
 
 ```ruby
 

@@ -4,7 +4,7 @@ module GraphQL
   #
   # For really big integer values, consider `GraphQL::Types::BigInt`
   #
-  # @see GraphQL::Types::Int which raises this error
+  # See [GraphQL::Types::Int](rdoc-ref:GraphQL::Types::Int) which raises this error
   class IntegerDecodingError < GraphQL::RuntimeTypeError
     # The value which couldn't be decoded
     attr_reader :integer_value

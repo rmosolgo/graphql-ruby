@@ -2,23 +2,28 @@
 
 module GraphQL
   class Schema
-    # A possible value for an {Enum}.
+    # A possible value for an [Enum](rdoc-ref:Enum).
     #
     # You can extend this class to customize enum values in your schema.
     #
-    # @example custom enum value class
-    #   # define a custom class:
-    #   class CustomEnumValue < GraphQL::Schema::EnumValue
-    #     def initialize(*args)
-    #       # arguments to `value(...)` in Enum classes are passed here
-    #       super
-    #     end
-    #   end
+    # **Examples**
     #
-    #   class BaseEnum < GraphQL::Schema::Enum
-    #     # use it for these enums:
-    #     enum_value_class CustomEnumValue
+    # **Example: custom enum value class**
+    #
+    # ```ruby
+    # # define a custom class:
+    # class CustomEnumValue < GraphQL::Schema::EnumValue
+    #   def initialize(*args)
+    #     # arguments to `value(...)` in Enum classes are passed here
+    #     super
     #   end
+    # end
+    #
+    # class BaseEnum < GraphQL::Schema::Enum
+    #   # use it for these enums:
+    #   enum_value_class CustomEnumValue
+    # end
+    # ```
     class EnumValue < GraphQL::Schema::Member
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
@@ -27,7 +32,12 @@ module GraphQL
 
       attr_reader :graphql_name
 
-      # @return [Class] The enum type that owns this value
+      # **Returns**
+      #
+      # - `Class` — The enum type that owns this value
+      #
+      # :call-seq:
+      #   owner -> Class
       attr_reader :owner
 
       def initialize(graphql_name, desc = nil, owner:, ast_node: nil, directives: nil, description: nil, comment: nil, value: NOT_CONFIGURED, deprecation_reason: nil, &block)

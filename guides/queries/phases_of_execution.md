@@ -1,18 +1,10 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Queries
-title: Phases of Execution
-desc: The steps GraphQL takes to run your query
-index: 2
----
+# Phases of Execution
 
 When GraphQL receives a query string, it goes through these steps:
 
-- Tokenize: {{ "GraphQL::Language::Lexer" | api_doc }} splits the string into a stream of tokens
-- Parse: {{ "GraphQL::Language::Parser" | api_doc }} builds an abstract syntax tree (AST) out of the stream of tokens
-- Validate: {{ "GraphQL::StaticValidation::Validator" | api_doc }} validates the incoming AST as a valid query for the schema
-- Analyze: If there are any query analyzers, they are run with {{ "GraphQL::Analysis.analyze_query" | api_doc }}
+- Tokenize: [GraphQL::Language::Lexer](rdoc-ref:GraphQL::Language::Lexer) splits the string into a stream of tokens
+- Parse: [GraphQL::Language::Parser](rdoc-ref:GraphQL::Language::Parser) builds an abstract syntax tree (AST) out of the stream of tokens
+- Validate: [GraphQL::StaticValidation::Validator](rdoc-ref:GraphQL::StaticValidation::Validator) validates the incoming AST as a valid query for the schema
+- Analyze: If there are any query analyzers, they are run with [GraphQL::Analysis.analyze_query](rdoc-ref:GraphQL::Analysis.analyze_query)
 - Execute: The query is traversed, `resolve` functions are called and the response is built
-- Respond: The response is returned as a {{ "GraphQL::Query::Result" | api_doc }}
+- Respond: The response is returned as a [GraphQL::Query::Result](rdoc-ref:GraphQL::Query::Result)

@@ -7,7 +7,9 @@ module GraphQL
     # When an analyzer is initialized with a Multiplex, you can always get the current query from
     # `visitor.query` in the visit methods.
     #
-    # @param [GraphQL::Query, GraphQL::Execution::Multiplex] The query or multiplex to analyze
+    # **Parameters**
+    #
+    # - `The` (`GraphQL::Query, GraphQL::Execution::Multiplex`) — query or multiplex to analyze
     class Analyzer
       def initialize(subject)
         @subject = subject
@@ -23,21 +25,39 @@ module GraphQL
 
       # Analyzer hook to decide at analysis time whether a query should
       # be analyzed or not.
-      # @return [Boolean] If the query should be analyzed or not
+      #
+      # **Returns**
+      #
+      # - `Boolean` — If the query should be analyzed or not
+      #
+      # :call-seq:
+      #   analyze?() -> bool
       def analyze?
         true
       end
 
       # Analyzer hook to decide at analysis time whether analysis
       # requires a visitor pass; can be disabled for precomputed results.
-      # @return [Boolean] If analysis requires visitation or not
+      #
+      # **Returns**
+      #
+      # - `Boolean` — If analysis requires visitation or not
+      #
+      # :call-seq:
+      #   visit?() -> bool
       def visit?
         true
       end
 
-      # The result for this analyzer. Returning {GraphQL::AnalysisError} results
+      # The result for this analyzer. Returning [GraphQL::AnalysisError](rdoc-ref:GraphQL::AnalysisError) results
       # in a query error.
-      # @return [Any] The analyzer result
+      #
+      # **Returns**
+      #
+      # - `Any` — The analyzer result
+      #
+      # :call-seq:
+      #   result() -> Any
       def result
         raise GraphQL::RequiredImplementationMissingError
       end
@@ -76,14 +96,28 @@ module GraphQL
       # rubocop:enable Development/NoEvalCop
       protected
 
-      # @return [GraphQL::Query, GraphQL::Execution::Multiplex] Whatever this analyzer is analyzing
+      # **Returns**
+      #
+      # - `GraphQL::Query, GraphQL::Execution::Multiplex` — Whatever this analyzer is analyzing
+      #
+      # :call-seq:
+      #   subject -> GraphQL::Query | GraphQL::Execution::Multiplex
       attr_reader :subject
 
-      # @return [GraphQL::Query, nil] `nil` if this analyzer is visiting a multiplex
-      #  (When this is `nil`, use `visitor.query` inside visit methods to get the current query)
+      # **Returns**
+      #
+      # - `GraphQL::Query, nil` — `nil` if this analyzer is visiting a multiplex (When this is `nil`, use `visitor.query` inside visit methods to get the current query)
+      #
+      # :call-seq:
+      #   query -> GraphQL::Query | nil
       attr_reader :query
 
-      # @return [GraphQL::Execution::Multiplex, nil] `nil` if this analyzer is visiting a query
+      # **Returns**
+      #
+      # - `GraphQL::Execution::Multiplex, nil` — `nil` if this analyzer is visiting a query
+      #
+      # :call-seq:
+      #   multiplex -> GraphQL::Execution::Multiplex | nil
       attr_reader :multiplex
     end
   end

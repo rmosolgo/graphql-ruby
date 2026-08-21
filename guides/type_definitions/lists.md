@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Type Definitions
-title: Lists
-desc: Ordered lists containing other types
-index: 6
----
+# Lists
 
 GraphQL has _list types_ which are ordered lists containing items of other types. The following examples use the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#list) (SDL).
 

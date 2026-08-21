@@ -1,14 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Changesets
-title: API Versioning for GraphQL-Ruby
-desc: Evolve your schema over time, feature-by-feature
-index: 0
----
-
+# API Versioning for GraphQL-Ruby
 
 Out-of-the-box, GraphQL is [versionless by design](https://graphql.org/learn/schema-design/). GraphQL's openness to extension paves the way for continuously expanding and improving an API. You can _always_ add new fields, new arguments, and new types to implement new features and customize existing behavior.
 
@@ -47,6 +37,6 @@ Then, only clients requesting API versions _before_  this changeset would be abl
 
 To start using Changesets, read on:
 
-- {% internal_link "Installing Changesets", "/changesets/installation" %}
-- {% internal_link "Writing Changesets", "/changesets/definition" %}
-- {% internal_link "Releasing Changesets", "/changesets/releases" %}
+- [Installing Changesets](/changesets/installation)
+- [Writing Changesets](/changesets/definition)
+- [Releasing Changesets](/changesets/releases)
