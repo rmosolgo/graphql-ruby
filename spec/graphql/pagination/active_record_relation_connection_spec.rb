@@ -253,5 +253,25 @@ if testing_rails?
 
       include ConnectionAssertions
     end
+
+    if RUBY_VERSION >= "3.2.0"
+      require "async"
+
+      describe "when Fibers share a connection" do
+        it "loads the page only once when several Fibers resolve it" do
+          connection = GraphQL::Pagination::ActiveRecordRelationConnection.new(Food.all, first: 2, max_page_size: 10, context: { dataloader: GraphQL::Dataloader::AsyncDataloader.new })
+          results = []
+
+          log = with_active_record_log do
+            Sync do
+              3.times.map { Async { results << connection.nodes } }.each(&:wait)
+            end
+          end
+
+          assert_equal 1, log.split("\n").size, "It runs one query"
+          assert_equal [2, 2, 2], results.map(&:size)
+        end
+      end
+    end
   end
 end
