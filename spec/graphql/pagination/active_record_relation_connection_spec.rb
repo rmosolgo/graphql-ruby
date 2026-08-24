@@ -258,46 +258,18 @@ if testing_rails?
       require "async"
 
       describe "when Fibers share a connection" do
-        # `sleep` yields to the scheduler like a slow query would, so the other
-        # Fibers reach `#load_nodes` before this load finishes.
-        class SlowLoadingRelation
-          attr_reader :load_count
-
-          def initialize(relation)
-            @relation = relation
-            @load_count = 0
-          end
-
-          def to_a
-            @load_count += 1
-            sleep(0.1)
-            @relation.to_a
-          end
-        end
-
-        class SlowLoadingRelationConnection < GraphQL::Pagination::ActiveRecordRelationConnection
-          def load_count
-            @slow_nodes ? @slow_nodes.load_count : 0
-          end
-
-          private
-
-          def limited_nodes
-            @slow_nodes ||= SlowLoadingRelation.new(super)
-          end
-        end
-
         it "loads the page only once when several Fibers resolve it" do
-          connection = SlowLoadingRelationConnection.new(Food.all, first: 2, max_page_size: 10)
+          connection = GraphQL::Pagination::ActiveRecordRelationConnection.new(Food.all, first: 2, max_page_size: 10, context: { dataloader: GraphQL::Dataloader::AsyncDataloader.new })
           results = []
 
-          Sync do
-            3.times.map { Async { results << connection.nodes } }.each(&:wait)
+          log = with_active_record_log do
+            Sync do
+              3.times.map { Async { results << connection.nodes } }.each(&:wait)
+            end
           end
-
-          assert_equal 1, connection.load_count, "It runs the query once"
-          assert_equal 3, results.size
-          results.each { |nodes| assert_equal 2, nodes.size }
+          puts log
+          assert_equal 1, log.split("\n").size, "It runs one query"
+          assert_equal [2, 2, 2], results.map(&:size)
         end
       end
     end

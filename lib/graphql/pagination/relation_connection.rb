@@ -222,14 +222,14 @@ module GraphQL
       def load_nodes
         # Return an array so we can consistently use `.index(node)` on it
         return @nodes if @nodes
-        # `AsyncDataloader` may resolve sibling fields (eg, `edges` and `pageInfo`)
-        # in separate Fibers, so several callers can get here before `@nodes` is set.
-        # The lock makes the later ones wait and reuse the result instead of loading
-        # the same relation again -- with ActiveRecord, that second load can raise
-        # `UnmodifiableRelation`. `Mutex` is Fiber-aware: waiting yields to the
-        # scheduler rather than blocking the thread.
-        (@load_lock ||= Mutex.new).synchronize do
-          @nodes ||= limited_nodes.to_a
+        if (@context[:dataloader].is_a?(GraphQL::Dataloader::AsyncDataloader))
+          # `AsyncDataloader` may resolve sibling fields (eg, `edges` and `pageInfo`)
+          # in separate Fibers, so several callers can get here before `@nodes` is set.
+          (@load_lock ||= Mutex.new).synchronize do
+            @nodes ||= limited_nodes.to_a
+          end
+        else
+          @nodes = limited_nodes.to_a
         end
       end
     end
