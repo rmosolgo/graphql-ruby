@@ -267,7 +267,7 @@ if testing_rails?
               3.times.map { Async { results << connection.nodes } }.each(&:wait)
             end
           end
-          puts log
+
           assert_equal 1, log.split("\n").size, "It runs one query"
           assert_equal [2, 2, 2], results.map(&:size)
         end
