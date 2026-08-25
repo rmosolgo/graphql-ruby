@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.15.2 (23 Jul 2026)
+
+- Correctly forward errors with `createRelaySubscriptionHandler` #5674
+
 # 1.15.1 (12 Jun 2026)
 
 - ActionCable: fix for when `crypto.randomUUID` isn't present #5649

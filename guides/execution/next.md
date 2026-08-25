@@ -170,6 +170,8 @@ end
 
 `Execution::Next` supports field configuration shorthands for common dataloader usage. Under the hood, these make sure data fetching is batched and cached.
 
+`method:` can be added to any hash-style `dataload:` config to call a public method on the loaded value.
+
 #### Sources
 
 Use a custom dataloader source from your application:
@@ -184,6 +186,11 @@ class Types::CommentType
   #
   # Equivalent to `dataload(Sources::ReadingDuration, :comment, object.body)
   field :reading_duration, Integer, dataload: { with: Sources::ReadingDuration, using: :body, by: [:comment] }
+
+  # `method:`: A method to call on the loaded value
+  #
+  # Equivalent to `dataload(Sources::CommentRating, object).to_s`
+  field :rating_string, String, dataload: { with: Sources::CommentRating, method: :to_s }
 ```
 
 #### Rails Associations
@@ -196,6 +203,8 @@ class Types::CommentType < Types::BaseObject
   field :post, Types::Post, dataload: { association: true }
   # Equivalent to `dataload_association(:user)
   field :author, Types::Post, dataload: { association: :user }
+  # Equivalent to `dataload_association(:author)&.name`
+  field :author_name, String, null: true, dataload: { association: :author, method: :name }
 end
 ```
 
@@ -209,6 +218,8 @@ class Types::SearchResult < Types::BaseObject
   field :post, Types::Post, dataload: { model: Post, using: :post_id }
   # Equivalent to `dataload_record(User, object.created_by_handle, find_by: :handle)`
   field :author, Types::User, dataload: { model: User, using: :created_by_handle, find_by: :handle }
+  # Equivalent to `dataload_record(Post, object.post_id)&.title`
+  field :post_title, String, null: true, dataload: { model: Post, using: :post_id, method: :title }
 end
 ```
 

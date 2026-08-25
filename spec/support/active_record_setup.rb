@@ -182,6 +182,7 @@ if testing_rails?
 
       class Album < GraphQL::Schema::Object
         field :name, String
+        field :band_name, String, dataload: { association: :band, method: :name }
         field :band, "VulfpeckSchemaHelpers::VulfpeckSchema::Band", dataload: { association: true }
       end
       class Band < GraphQL::Schema::Object
@@ -223,7 +224,9 @@ if testing_rails?
         end
 
         field :root_band, Band, dataload: { model: ::Band, using: :band_name, find_by: :name }
+        field :root_band_name, String, dataload: { model: ::Band, using: :band_name, find_by: :name, method: :name }
         field :bands_count, Integer, dataload: { with: ModelCountSource, by: [::Band]}
+        field :bands_count_string, String, dataload: { with: ModelCountSource, by: [::Band], method: :to_s }
         field :albums_count, Integer, dataload: { with: ModelCountSource, by: [::Album]}
       end
 

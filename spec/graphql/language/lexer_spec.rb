@@ -11,4 +11,20 @@ describe GraphQL::Language::Lexer do
     end
     assert_equal expected_err_message, err.message
   end
+
+  it "reports positions correctly after multibyte input" do
+    err = assert_raises(GraphQL::ParseError) do
+      subject.tokenize("{\n  # 日本語\n  field(arg: -foo)\n}")
+    end
+
+    assert_equal 3, err.line
+    assert_equal 14, err.col
+  end
+
+  it "reports column one after a newline" do
+    tokens = subject.tokenize("{ field }\n# 日本語\nfragment F on Type { field }")
+    fragment_token = tokens.find { |token| token.first == :FRAGMENT }
+
+    assert_equal [:FRAGMENT, 3, 1, "fragment"], fragment_token
+  end
 end

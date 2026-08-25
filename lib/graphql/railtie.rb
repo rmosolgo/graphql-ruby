@@ -15,7 +15,8 @@ module GraphQL
     initializer("graphql.cache") do |app|
       if config.graphql.parser_cache
         Language::Parser.cache ||= Language::Cache.new(
-          app.root.join("tmp/cache/graphql")
+          app.root.join("tmp/cache/graphql"),
+          secret: app.secret_key_base
         )
       end
     end

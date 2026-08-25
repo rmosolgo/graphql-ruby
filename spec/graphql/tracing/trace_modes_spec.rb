@@ -127,39 +127,24 @@ describe "Trace modes for schemas" do
     assert_equal :was_configured, res.context[:configured_option]
   end
 
-  describe "inheriting from GraphQL::Schema" do
+  describe "inheriting from a base schema" do
     it "gets CallLegacyTracers" do
-      # Use a new base trace mode class to avoid polluting the base class
-      # which already-initialized schemas have in their inheritance chain
-      # (It causes `CallLegacyTracers` to end up in the chain twice otherwise)
-      GraphQL::Schema.send(:remove_const, :DefaultTrace)
-      GraphQL::Schema.own_trace_modes[:default] = GraphQL::Schema.build_trace_mode(:default)
-
-      child_class = Class.new(GraphQL::Schema)
+      base_schema = Class.new(GraphQL::Schema)
+      child_class = Class.new(base_schema)
 
       # Initialize the trace class, make sure no legacy tracers are present at this point:
       refute_includes child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
       tracer_class = Class.new
 
       # add a legacy tracer
-      GraphQL::Schema.tracer(tracer_class, silence_deprecation_warning: true)
+      base_schema.tracer(tracer_class, silence_deprecation_warning: true)
       # A newly created child class gets the right setup:
-      new_child_class = Class.new(GraphQL::Schema)
+      new_child_class = Class.new(base_schema)
       assert_includes new_child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
       # But what about an already-created child class?
       assert_includes child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
 
-      # Reset GraphQL::Schema tracer state:
-      GraphQL::Schema.send(:remove_const, :DefaultTrace)
-      GraphQL::Schema.send(:own_tracers).delete(tracer_class)
-      GraphQL::Schema.own_trace_modes[:default] = GraphQL::Schema.build_trace_mode(:default)
       refute_includes GraphQL::Schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
-    ensure
-      # Since this modifies the base class, make sure it's undone for future test cases
-      GraphQL::Schema.instance_variable_get(:@own_tracers).clear
-      GraphQL::Schema.own_trace_modes.clear
-      GraphQL::Schema.own_trace_modules.clear
-      GraphQL::Schema.instance_variable_get(:@trace_options_for_mode).clear
     end
   end
 

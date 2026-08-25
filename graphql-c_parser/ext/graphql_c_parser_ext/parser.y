@@ -6,6 +6,8 @@
 // C Declarations
 #include <ruby.h>
 #define YYSTYPE VALUE
+#define YYSTACK_USE_ALLOCA 1
+
 int yylex(YYSTYPE *, VALUE, VALUE);
 void yyerror(VALUE, VALUE, const char*);
 

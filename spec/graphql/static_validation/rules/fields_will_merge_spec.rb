@@ -1491,6 +1491,37 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "many identical sub-selections from a shared fragment" do
+    let(:query_string) do
+      repeated_fields = "toys { ...ToyFields }\n" * 400
+      repeated_fragment_fields = "name\n" * 20
+
+      <<~GRAPHQL
+        {
+          dog {
+            #{repeated_fields}
+            toys { ...OtherToyFields }
+          }
+        }
+
+        fragment ToyFields on Toy {
+          #{repeated_fragment_fields}
+        }
+
+        fragment OtherToyFields on Toy {
+          name: image(maxWidth: 1)
+        }
+      GRAPHQL
+    end
+
+    it "finds a divergent conflict before the validation timeout" do
+      validation_errors = schema.validate(query_string)
+
+      refute validation_errors.any? { |error| error.is_a?(GraphQL::StaticValidation::ValidationTimeoutError) }
+      assert validation_errors.any? { |error| error.message.include?("Field 'name' has a field conflict") && error.message.include?("image") }
+    end
+  end
+
   describe "boundary at exactly 4 and 5 fields" do
     describe "4 fields uses O(n^2) path and catches conflict" do
       let(:query_string) {%|

@@ -15,6 +15,8 @@ module GraphQL
       # separately (which leads to exponential recursion through nested fragments),
       # we flatten all fragment spreads into a single field map and compare within it.
       NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
+      EXCLUSIVE_COMPARISON = 1
+      NONEXCLUSIVE_COMPARISON = 2
 
       class Field
         attr_reader :node, :definition, :owner_type, :parents
@@ -33,6 +35,10 @@ module GraphQL
         def unwrapped_return_type
           @unwrapped_return_type ||= return_type&.unwrap
         end
+
+        def comparison_key
+          @comparison_key ||= [@node, @parents]
+        end
       end
 
       def initialize(*)
@@ -43,6 +49,9 @@ module GraphQL
         # Track which sub-selection node pairs have been compared to prevent
         # infinite recursion with cyclic fragments
         @compared_sub_selections = {}.compare_by_identity
+        @compared_field_groups = {}
+        @field_group_signatures = {}.compare_by_identity
+        @field_selection_signatures = {}.compare_by_identity
         # Cache mutually_exclusive? results for type pairs
         @mutually_exclusive_cache = {}.compare_by_identity
         # Cache collect_fields results for sub-selection comparison
@@ -215,21 +224,7 @@ module GraphQL
             end
 
             if all_same
-              # All fields share a signature, so they can only conflict on
-              # sub-selections. Deduplicate by AST node identity — fields from
-              # the same node always have identical sub-selections.
-              unique_nodes = fields.uniq { |f| f.node.object_id }
-              i = 0
-              while i < unique_nodes.size
-                j = i + 1
-                while j < unique_nodes.size
-                  if unique_nodes[i].node.selections.size > 0 || unique_nodes[j].node.selections.size > 0
-                    find_conflict(key, unique_nodes[i], unique_nodes[j])
-                  end
-                  j += 1
-                end
-                i += 1
-              end
+              find_conflicts_between_selection_groups(key, fields)
             else
               groups = fields.group_by { |f| field_signature(f) }
               unique_groups = groups.values
@@ -243,22 +238,10 @@ module GraphQL
                   gj += 1
                 end
 
-                # Within same group, deduplicate by AST node and compare all
-                # pairs for sub-selection conflicts
+                # Within the same group, fields can only conflict on sub-selections.
                 group = unique_groups[gi]
                 if group.size >= 2
-                  unique_in_group = group.uniq { |f| f.node.object_id }
-                  ui = 0
-                  while ui < unique_in_group.size
-                    uj = ui + 1
-                    while uj < unique_in_group.size
-                      if unique_in_group[ui].node.selections.size > 0 || unique_in_group[uj].node.selections.size > 0
-                        find_conflict(key, unique_in_group[ui], unique_in_group[uj])
-                      end
-                      uj += 1
-                    end
-                    ui += 1
-                  end
+                  find_conflicts_between_selection_groups(key, group)
                 end
 
                 gi += 1
@@ -277,6 +260,29 @@ module GraphQL
             end
           end
         end
+      end
+
+      def find_conflicts_between_selection_groups(response_key, fields)
+        fields_by_selection = {}
+        fields.each do |field|
+          fields_by_selection[field_selection_signature(field)] ||= field
+        end
+
+        representatives = fields_by_selection.values
+        i = 0
+        while i < representatives.size
+          j = i + 1
+          while j < representatives.size
+            find_conflict(response_key, representatives[i], representatives[j])
+            j += 1
+          end
+          i += 1
+        end
+      end
+
+      def field_selection_signature(field)
+        node = field.node
+        @field_selection_signatures[node] ||= node.selections.map(&:to_query_string)
       end
 
       def fields_same_signature?(f1, f2)
@@ -458,6 +464,7 @@ module GraphQL
         response_keys.each do |key, fields|
           fields2 = response_keys2[key]
           next unless fields2
+          next if field_groups_already_compared?(fields, fields2, mutually_exclusive)
 
           fields_arr = fields.is_a?(Field) ? [fields] : fields
           fields2_arr = fields2.is_a?(Field) ? [fields2] : fields2
@@ -472,6 +479,36 @@ module GraphQL
               )
             end
           end
+        end
+      end
+
+      def field_groups_already_compared?(fields, fields2, mutually_exclusive)
+        signature1 = field_group_signature(fields)
+        signature2 = field_group_signature(fields2)
+        previous_comparisons = @compared_field_groups[signature1]
+        comparison_state = previous_comparisons && previous_comparisons[signature2]
+
+        if mutually_exclusive
+          return true if comparison_state
+          new_state = EXCLUSIVE_COMPARISON
+        else
+          return true if comparison_state == NONEXCLUSIVE_COMPARISON
+          new_state = NONEXCLUSIVE_COMPARISON
+        end
+
+        previous_comparisons ||= (@compared_field_groups[signature1] = {})
+        previous_comparisons[signature2] = new_state
+
+        reverse_comparisons = @compared_field_groups[signature2] ||= {}
+        reverse_comparisons[signature1] = new_state
+        false
+      end
+
+      def field_group_signature(fields)
+        if fields.is_a?(Field)
+          fields.comparison_key
+        else
+          @field_group_signatures[fields] ||= fields.map(&:comparison_key)
         end
       end
 

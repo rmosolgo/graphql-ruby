@@ -4,6 +4,11 @@ module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
       def self.use(...)
+        install_graphql_methods
+        super
+      end
+
+      def self.install_graphql_methods
         if !Async::Task.method_defined?(:cancel)
           Async::Task.alias_method(:cancel, :stop)
         end
@@ -11,7 +16,6 @@ module GraphQL
           Async::Task.attr_accessor(:graphql_async_dataloader_run)
           Async::Task.attr_accessor(:graphql_async_dataloader_condition)
         end
-        super
       end
 
       def initialize(...)
@@ -32,10 +36,14 @@ module GraphQL
         run = task.graphql_async_dataloader_run
         trace = run.trace
         trace&.dataloader_fiber_yield(source)
-        run.tasks_channel.push([:paused_task, task])
+        if !run.push_task_message(:paused_task, task)
+          task.stop
+        end
         condition = task.graphql_async_dataloader_condition
         condition.wait
-        run.tasks_channel.push([:resumed_task, task])
+        if !run.push_task_message(:resumed_task, task)
+          task.stop
+        end
         trace&.dataloader_fiber_resume(source)
         nil
       end
@@ -54,7 +62,10 @@ module GraphQL
           @running_tasks = nil
           @tasks_channel = nil
           @tasks_channel_task = nil
-          @finished_all_tasks = nil
+          @activity = nil
+          @task_error = nil
+          @expected_resumes = 0
+          @mode = nil
 
           @snoozed_jobs_condition = Async::Condition.new
           @snoozed_sources_condition = Async::Condition.new
@@ -62,7 +73,7 @@ module GraphQL
 
         attr_accessor :trace, :root_task
 
-        attr_reader :jobs, :lazies_at_depth, :jobs_fiber_limit,  :snoozed_jobs_condition, :snoozed_sources_condition, :tasks_channel
+        attr_reader :dataloader, :jobs, :lazies_at_depth, :jobs_fiber_limit,  :snoozed_jobs_condition, :snoozed_sources_condition
 
         def jobs_bandwidth?
           running_count < @jobs_fiber_limit
@@ -77,20 +88,55 @@ module GraphQL
           @tasks_channel_task.cancel
         end
 
-        def wait_for_queues
-          @finished_all_tasks.wait
-          @finished_all_tasks = Async::Promise.new
+        # Push to the tasks_channel, tolerating a closed channel: on the error path, `run_queue`
+        # closes the channel while sibling tasks can still run one more slice before
+        # `root_task.cancel` reaches them. Record `:task_error` payloads so they aren't lost, and
+        # return false so the caller can stop the task instead of raising `ClosedError` into user code.
+        def push_task_message(msg, data)
+          @tasks_channel.push([msg, data])
+          true
+        rescue Async::Queue::ClosedError
+          if msg == :task_error
+            @task_error ||= data
+          end
+          false
         end
 
-        def wait_for_no_running_tasks
-          @no_running_tasks.wait
-          @no_running_tasks = Async::Promise.new
+        def wait_for_activity
+          @activity.wait
+        end
+
+        def quiesced?
+          @running_tasks.empty? && @tasks_channel.empty? && @expected_resumes == 0
+        end
+
+        def has_pending_work?
+          @mode == :jobs ? @jobs.any? : @dataloader.pending_sources.any?(&:pending?) # rubocop:disable Development/NoneWithoutBlockCop
+        end
+
+        def has_bandwidth?
+          @mode == :jobs ? jobs_bandwidth? : sources_bandwidth?
+        end
+
+        # Signalled tasks don't appear in any accounting until their first slice
+        # pushes `:resumed_task`, so they have to be counted at signal time:
+        def expect_resumes(count)
+          @expected_resumes = count
+        end
+
+        def check_error!
+          if (err = @task_error)
+            @task_error = nil
+            raise err
+          end
         end
 
         def new_queues(mode)
+          @mode = mode
           @tasks_channel = Async::Queue.new(parent: @root_task)
-          @no_running_tasks = Async::Promise.new
-          @finished_all_tasks = Async::Promise.new
+          @activity = Async::Condition.new
+          @task_error = nil
+          @expected_resumes = 0
           @running_tasks = []
           @tasks_channel_task = @root_task.async do |_t|
             while ((msg, data) = @tasks_channel.wait)
@@ -99,23 +145,18 @@ module GraphQL
                 @running_tasks.push(data)
                 data.run
               when :resumed_task
+                if @expected_resumes > 0
+                  @expected_resumes -= 1
+                end
                 @running_tasks.push(data)
               when :finished_task, :paused_task
                 @running_tasks.delete(data)
-                has_pending_work = mode == :jobs ? @jobs.any? : @dataloader.pending_sources.any?(&:pending?) # rubocop:disable Development/NoneWithoutBlockCop
-                if @running_tasks.empty?
-                  @no_running_tasks.resolve(true)
-                  has_bandwidth = mode == :jobs ? jobs_bandwidth? : sources_bandwidth?
-                  if (!has_pending_work) || (!has_bandwidth)
-                    @finished_all_tasks.resolve(true)
-                  end
-                end
               when :task_error
-                @no_running_tasks.resolve(true)
-                @finished_all_tasks.reject(data)
+                @task_error ||= data
               else
                 raise ArgumentError, "Unknown tasks_channel action: #{msg.inspect}"
               end
+              @activity.signal
             end
           end
         end
@@ -152,11 +193,19 @@ module GraphQL
       end
 
       def active_run
-        @pending_run || Async::Task.current?&.graphql_async_dataloader_run || raise(GraphQL::Error, "No available Run to append to, GraphQL-Ruby bug")
+        @pending_run || current_task_run || raise(GraphQL::Error, "No available Run to append to, GraphQL-Ruby bug")
+      end
+
+      # The current task's run, but only if it belongs to this dataloader. A different
+      # dataloader may be running inside one of our tasks (or vice versa), e.g. a query
+      # executed from a resolver or a subscription trigger; its run must not be reused.
+      def current_task_run
+        run = Async::Task.current?&.graphql_async_dataloader_run
+        run if run&.dataloader.equal?(self)
       end
 
       def run_isolated
-        previous_run = Async::Task.current?&.graphql_async_dataloader_run
+        previous_run = current_task_run
         prev_pending_keys = {}
         # Clear pending loads but keep already-cached records
         # in case they are useful to the given block.
@@ -192,7 +241,7 @@ module GraphQL
 
       def run(trace_query_lazy: nil)
         trace = Fiber[:__graphql_current_multiplex]&.current_trace
-        run = @pending_run || Async::Task.current?&.graphql_async_dataloader_run || raise(GraphQL::Error, "No available Run, GraphQL-Ruby internal bug")
+        run = @pending_run || current_task_run || raise(GraphQL::Error, "No available Run, GraphQL-Ruby internal bug")
         @pending_run = nil
         run.trace = trace
         first_pass = true
@@ -240,19 +289,20 @@ module GraphQL
       private
 
       def run_queue(run, condition, mode)
-        should_wait_for_all_tasks = false
+        opened_queues = false
 
-        if (unsnoozed = condition.waiting?)
-          should_wait_for_all_tasks = true
+        if condition.waiting?
+          opened_queues = true
           run.new_queues(mode)
+          run.expect_resumes(condition.instance_variable_get(:@ready).num_waiting)
           condition.signal
         end
 
-        while (pending_work = (mode == :jobs) ? (!run.jobs.empty? && run.jobs_bandwidth? ? run.jobs : nil) : (drain_pending_sources)) || unsnoozed
-          unsnoozed = false
+        loop do
+          pending_work = (mode == :jobs) ? (!run.jobs.empty? && run.jobs_bandwidth? ? run.jobs : nil) : (drain_pending_sources)
           if pending_work
-            if should_wait_for_all_tasks == false
-              should_wait_for_all_tasks = true
+            if opened_queues == false
+              opened_queues = true
               run.new_queues(mode)
             end
             num_tasks = mode == :sources ? run.current_sources_fiber_limit : 1
@@ -262,14 +312,23 @@ module GraphQL
             spawn_tasks(run, mode, condition, pending_work, num_tasks)
           end
 
-          run.wait_for_no_running_tasks
-        end
+          if !opened_queues
+            break
+          end
 
-        if should_wait_for_all_tasks
-          run.wait_for_queues
+          run.check_error!
+
+          if run.quiesced?
+            if !run.has_pending_work? || !run.has_bandwidth?
+              break
+            end
+            # Quiesced, but more work appeared - loop around to drain it.
+          else
+            run.wait_for_activity
+          end
         end
       ensure
-        if should_wait_for_all_tasks
+        if opened_queues
           run.close_queues
         end
       end
@@ -303,14 +362,14 @@ module GraphQL
             end
             nil
           rescue StandardError => err
-            run.tasks_channel.push([:task_error, err])
+            run.push_task_message(:task_error, err)
           else
-            run.tasks_channel.push([:finished_task, task])
+            run.push_task_message(:finished_task, task)
           ensure
             cleanup_fiber
             trace&.dataloader_fiber_exit
           end
-          run.tasks_channel.push([:started_task, new_task])
+          run.push_task_message(:started_task, new_task)
         end
       end
     end

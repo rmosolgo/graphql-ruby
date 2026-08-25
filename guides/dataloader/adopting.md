@@ -61,7 +61,7 @@ In this example, one object is loaded, then another object is loaded _based on_ 
 
 Sometimes, you need multiple _independent_ records to perform a calculation. Each record is loaded, then they're combined in some bit of work.
 
-- With __GraphQL-Batch__, `Promise.all(...)` is used to to wait for several pending loads:
+- With __GraphQL-Batch__, `Promise.all(...)` is used to wait for several pending loads:
 
   ```ruby
   promise_1 = Loaders::Record.load(1)

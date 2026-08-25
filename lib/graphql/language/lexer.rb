@@ -175,11 +175,14 @@ module GraphQL
       end
 
       def line_number
-        @scanner.string[0..@pos].count("\n") + 1
+        @scanner.string.byteslice(0, @pos).b.count("\n".b) + 1
       end
 
       def column_number
-        @scanner.string[0..@pos].split("\n").last.length
+        line_prefix = @scanner.string.byteslice(0, @pos)
+        line_prefix = line_prefix.b unless line_prefix.valid_encoding?
+        newline_index = line_prefix.rindex("\n")
+        newline_index ? line_prefix.length - newline_index : line_prefix.length + 1
       end
 
       def raise_parse_error(message, line = line_number, col = column_number)

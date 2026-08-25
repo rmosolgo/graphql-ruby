@@ -5,7 +5,6 @@ module GraphQL
       def initialize(multiplex)
         @multiplex = multiplex
         @schema = multiplex.schema
-        @steps_queue = []
         @runtime_type_at = {}.compare_by_identity
         @static_type_at = {}.compare_by_identity
         @finalizers = nil
@@ -53,7 +52,7 @@ module GraphQL
         @dataloader.append_job(step)
       end
 
-      attr_reader :steps_queue, :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
+      attr_reader :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
 
       # @return [void]
       def add_finalizer(query, result_value, key, finalizer)

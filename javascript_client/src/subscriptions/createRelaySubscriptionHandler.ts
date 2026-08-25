@@ -52,8 +52,8 @@ function createRelaySubscriptionHandler(options: ActionCableHandlerOptions | Pus
           variables,
           {},
           {
-            onError: (_error: Error) => {
-              observer.error;
+            onError: (error: Error) => {
+              observer.error(error);
             },
             onNext: (res: any) => {
               if (!res || !res.data) {

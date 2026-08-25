@@ -10,6 +10,35 @@
 
 ### Bug fixes
 
+# 2.6.9 (17 Aug 2026)
+
+### Security
+
+- Parser cache: validate payloads before loading them (GHSA-rmxg-5p3r-j6hh)
+
+# 2.6.8 (13 Aug 2026)
+
+### New features
+
+- Support JSON 3 (remove `quirks_mode: true`) #5699
+
+### Bug fixes
+
+- Handle SystemStackError during execution #5683
+- Restrict dashboard schema selection #5688
+- Reduce allocations in block string parsing #5695
+- Fix lexer position in multibyte input #5692 #5697
+- `Execution::Next`: fix no-method error in mutations #5698
+- SDL: reduce memory use in description strings #5701
+
+# 2.6.7 (28 Jul 2026)
+
+### Bug fixes
+
+- SDL: Speed up parsing interfaces #5678
+- Execution::Next: fix selection step enqueuing #5679
+- AsyncDataloader: improve pending work accounting #5675
+
 # 2.6.6 (21 Jul 2026)
 
 - __Security__: This version includes a remediation for a security issue in `Execution::Next` (GHSA-j7xr-4g94-r9h3).

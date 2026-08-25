@@ -6,8 +6,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
         ruby-version: 3.4
         bundler-cache: true
@@ -16,12 +16,12 @@ jobs:
   system_tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: shogo82148/actions-setup-redis@v1
+    - uses: shogo82148/actions-setup-redis@260698946aaa92b2a6858999fccb1a4444981d56 # v1.56.1
       with:
         redis-version: "7.x"
     - run: redis-cli ping
-    - uses: actions/checkout@v7
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
         ruby-version: 3.4
         bundler-cache: true
@@ -64,19 +64,19 @@ jobs:
             redis: 1
     runs-on: ubuntu-latest
     steps:
-    - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
-    - run: echo GRAPHQL_FUTURE=1 > $GITHUB_ENV
+    - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > "$GITHUB_ENV"
+    - run: echo GRAPHQL_FUTURE=1 > "$GITHUB_ENV"
       if: ${{ !!matrix.graphql_future }}
-    - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
+    - run: echo ISOLATION_LEVEL_FIBER=1 > "$GITHUB_ENV"
       if: ${{ !!matrix.isolation_level_fiber }}
-    - uses: shogo82148/actions-setup-redis@v1
+    - uses: shogo82148/actions-setup-redis@260698946aaa92b2a6858999fccb1a4444981d56 # v1.56.1
       with:
         redis-version: "7.x"
       if: ${{ !!matrix.redis }}
     - run: redis-cli ping
       if: ${{ !!matrix.redis }}
-    - uses: actions/checkout@v7
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
@@ -85,8 +85,8 @@ jobs:
   javascript_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
-    - uses: actions/setup-node@v6
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: latest
     - run: npm ci
@@ -105,7 +105,7 @@ jobs:
           ruby: 3.3
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:18.4@sha256:3a82e1f56c8f0f5616a11103ac3d47e632c3938698946a7ad26da0df1334744a
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -119,14 +119,14 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-    - run: echo BUNDLE_GEMFILE='' > $GITHUB_ENV
-    - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
-    - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
-    - run: echo GRAPHQL_CPARSER=1 > $GITHUB_ENV
-    - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
+    - run: echo BUNDLE_GEMFILE='' > "$GITHUB_ENV"
+    - run: echo DATABASE='POSTGRESQL' > "$GITHUB_ENV"
+    - run: echo PGPASSWORD='postgres' > "$GITHUB_ENV"
+    - run: echo GRAPHQL_CPARSER=1 > "$GITHUB_ENV"
+    - run: echo ISOLATION_LEVEL_FIBER=1 > "$GITHUB_ENV"
       if: ${{ !!matrix.isolation_level_fiber }}
-    - uses: actions/checkout@v7
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
         ruby-version: "3.3"
         bundler-cache: true
@@ -141,13 +141,13 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mongodb:
-        image: mongo
+        image: mongo:8.2.12@sha256:e0ce8c35124d4a9f9785532d1f268f39e9728ffa1cb38f46fa482436424c4bd3
         ports:
         - 27017:27017
     steps:
-    - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
-    - uses: actions/checkout@v7
-    - uses: ruby/setup-ruby@v1
+    - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > "$GITHUB_ENV"
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
         ruby-version: 3.4
         bundler-cache: true

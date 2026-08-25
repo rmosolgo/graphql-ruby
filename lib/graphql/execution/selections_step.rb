@@ -83,11 +83,11 @@ module GraphQL
             end
           end
 
-          continue_selections.each do |frs|
-            @runner.add_step(frs)
-          end
-
           i += 2
+        end
+
+        continue_selections.each do |frs|
+          @runner.add_step(frs)
         end
       end
     end

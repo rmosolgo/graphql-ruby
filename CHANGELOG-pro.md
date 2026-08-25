@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.30.2 (3 Aug 2025)
+
+- `PusherSubscriptions`: accept `extra_webhook_tokens:` to use when rolling credentials
+
 # 1.30.1 (30 Jun 2025)
 
 - `@defer`: fix memory leak in legacy execution when used without Dataloader
