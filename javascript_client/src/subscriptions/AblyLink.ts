@@ -141,7 +141,6 @@ class AblyLink extends ApolloLink {
         } else {
           ablyChannel.presence.leaveClient("graphql-subscriber")
         }
-        ablyChannel.unsubscribe()
         observer.complete()
       }
     })

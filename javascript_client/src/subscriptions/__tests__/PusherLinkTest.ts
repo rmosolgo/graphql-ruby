@@ -262,7 +262,7 @@ describe("PusherLink", () => {
     }
 
     expect(() => {
-      link._onUpdate("abc", observer, payload)
+      link._onUpdate(observer, payload)
     }).toThrow("Received compressed_result but PusherLink wasn't configured with `decompress: (result: string) => any`. Add this configuration.")
   })
 
@@ -291,8 +291,8 @@ describe("PusherLink", () => {
     }
 
     // Send a dummy payload and then terminate the subscription
-    link._onUpdate("abc", observer, payload)
-    link._onUpdate("abc", observer, { more: false })
+    link._onUpdate(observer, payload)
+    link._onUpdate(observer, { more: false })
     expect(results).toEqual([{a: 1, b: 2}, "complete"])
   })
 })

@@ -78,7 +78,7 @@ class PusherLink extends ApolloLink {
             }
             // Subscribe for more update
             pusherChannel.bind("update", (payload: any) => {
-              this._onUpdate(subscriptionChannel, observer, payload)
+              this._onUpdate(observer, payload)
             })
           } else {
             // This isn't a subscription,
@@ -102,7 +102,7 @@ class PusherLink extends ApolloLink {
 
   }
 
-  _onUpdate(subscriptionChannel: string, observer: { next: Function, complete: Function }, payload: {more: boolean, compressed_result?: string, result?: object}): void {
+  _onUpdate(observer: { next: Function, complete: Function }, payload: {more: boolean, compressed_result?: string, result?: object}): void {
     let result: any
     if (payload.compressed_result) {
       result = this.decompress(payload.compressed_result)
@@ -115,7 +115,6 @@ class PusherLink extends ApolloLink {
     }
     if (!payload.more) {
       // This is the end, the server says to unsubscribe
-      this.pusher.unsubscribe(subscriptionChannel)
       observer.complete()
     }
   }
