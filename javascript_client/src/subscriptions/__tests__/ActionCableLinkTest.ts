@@ -65,7 +65,7 @@ describe("ActionCableLink", () => {
     // unpack the underlying subscription
     var subscription: any = (observable.subscribe(function(result: any) {
       log.push(["received", result])
-    }) as any)._cleanup
+    }) as any)._finalizers[0]
 
     subscription.received({
       result: {
@@ -112,7 +112,7 @@ describe("ActionCableLink", () => {
     // unpack the underlying subscription
     var subscription: any = (observable.subscribe(function(result: any) {
       log.push(["received", result])
-    }) as any)._cleanup
+    }) as any)._finalizers[0]
 
     subscription.received({
       result: {
@@ -152,7 +152,7 @@ describe("ActionCableLink", () => {
       request(operation, null as any)
 
     // unpack the underlying subscription
-    var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+    var subscription: any = (observable.subscribe(() => null) as any)._finalizers[0]
 
     subscription.unsubscribe()
 
@@ -165,7 +165,7 @@ describe("ActionCableLink", () => {
     ).request(operation, null as any)
 
     // unpack the underlying subscription
-    var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+    var subscription: any = (observable.subscribe(() => null) as any)._finalizers[0]
 
     subscription.unsubscribe()
 
@@ -179,7 +179,7 @@ describe("ActionCableLink", () => {
 
     for (var i = 0; i < 1000; i++) {
       var observable = link.request(operation, null as any)
-      var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+      var subscription: any = (observable.subscribe(() => null) as any)._finalizers[0]
       channelIds.add(subscription.params.channelId)
       subscriptions.push(subscription)
     }
@@ -192,7 +192,7 @@ describe("ActionCableLink", () => {
   it("accepts an injected channel ID function", () => {
     var link = new ActionCableLink({...options, createChannelId: () => "Channel-ID" })
     var observable = link.request(operation, null as any)
-    var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+    var subscription: any = (observable.subscribe(() => null) as any)._finalizers[0]
     expect(subscription.params.channelId).toEqual("Channel-ID")
     subscription.unsubscribe()
   })
@@ -207,7 +207,7 @@ describe("ActionCableLink", () => {
     ).request(operation, null as any)
 
     // unpack the underlying subscription
-    var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+    var subscription: any = (observable.subscribe(() => null) as any)._finalizers[0]
 
     subscription.received({ result: { data: "data 1" }, more: true })
     subscription.received({ result: { data: "data 2" }, more: false })
