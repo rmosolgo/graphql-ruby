@@ -1,10 +1,11 @@
-import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client/core"
+import { Observable } from "@apollo/client"
+import { ApolloLink } from "@apollo/client/link"
 import type { Consumer } from "@rails/actioncable"
 import { print } from "graphql"
 import defaultChannelId from "./defaultChannelId"
 
-type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
-type ConnectionParams = object | ((operation: Operation) => object)
+type RequestResult = ApolloLink.Result<Record<string, any>, Record<string, any>>
+type ConnectionParams = object | ((operation: ApolloLink.Operation) => object)
 type SubscriptionCallbacks = {
   connected?: (args?: { reconnected: boolean }) => void;
   disconnected?: () => void;
@@ -37,9 +38,8 @@ class ActionCableLink extends ApolloLink {
     this.createChannelId = options.createChannelId || defaultChannelId
   }
 
-  // Interestingly, this link does _not_ call through to `next` because
-  // instead, it sends the request to ActionCable.
-  request(operation: Operation, _next: NextLink): Observable<RequestResult> {
+  // This link does _not_ call through to `next` because it sends the request to ActionCable.
+  request(operation: ApolloLink.Operation, _next: ApolloLink.ForwardFunction): Observable<RequestResult> {
     return new Observable((observer) => {
       var channelId = this.createChannelId()
       var actionName = this.actionName

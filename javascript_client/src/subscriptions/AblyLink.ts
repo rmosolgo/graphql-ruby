@@ -36,26 +36,11 @@
 //     // Do something with `data` and/or `errors`
 //   }})
 //
-import {
-  ApolloLink,
-  Observable,
-  FetchResult,
-  NextLink,
-  Operation,
-  Observer
-} from "@apollo/client/core"
+import { Observable } from "@apollo/client"
+import { ApolloLink } from "@apollo/client/link"
 import { Realtime, Types } from "ably"
 
-type RequestResult = FetchResult<
-  { [key: string]: any },
-  Record<string, any>,
-  Record<string, any>
->
-
-type Subscription = {
-  closed: boolean
-  unsubscribe(): void
-}
+type RequestResult = ApolloLink.Result<Record<string, any>, Record<string, any>>
 
 class AblyLink extends ApolloLink {
   ably: Realtime
@@ -66,43 +51,16 @@ class AblyLink extends ApolloLink {
     this.ably = options.ably
   }
 
-  request(operation: Operation, forward: NextLink): Observable<RequestResult> {
-    const subscribeObservable = new Observable<RequestResult>(_observer => {})
-
-    // Capture the super method
-    const prevSubscribe = subscribeObservable.subscribe.bind(
-      subscribeObservable
-    )
-
-    // Override subscribe to return an `unsubscribe` object, see
-    // https://github.com/apollographql/subscriptions-transport-ws/blob/master/src/client.ts#L182-L212
-    subscribeObservable.subscribe = (
-      observerOrNext:
-        | Observer<RequestResult>
-        | ((value: RequestResult) => void),
-      onError?: (error: any) => void,
-      onComplete?: () => void
-    ): Subscription => {
-      // Call super
-      if (typeof observerOrNext == "function") {
-        prevSubscribe(observerOrNext, onError, onComplete)
-      } else {
-        prevSubscribe(observerOrNext)
-      }
-
-      const observer = getObserver(observerOrNext, onError, onComplete)
+  request(operation: ApolloLink.Operation, forward: ApolloLink.ForwardFunction): Observable<RequestResult> {
+    return new Observable((observer) => {
       let ablyChannel: Types.RealtimeChannelCallbacks | null = null
       let subscriptionChannelId: string | null = null
-
       // Check the result of the operation
-      const resultObservable = forward(operation)
-      // When the operation is done, try to get the subscription ID from the server
-      const resultSubscription = resultObservable.subscribe({
+      const resultObserver = forward(operation)
+      const resultSubscription = resultObserver.subscribe({
         next: (data: any) => {
           // If the operation has the subscription header, it's a subscription
-          const subscriptionChannelConfig = this._getSubscriptionChannel(
-            operation
-          )
+          const subscriptionChannelConfig = this._getSubscriptionChannel(operation)
           if (subscriptionChannelConfig.channel) {
             subscriptionChannelId = subscriptionChannelConfig.channel
             // This will keep pushing to `.next`
@@ -139,12 +97,10 @@ class AblyLink extends ApolloLink {
           }
         }
       }
-    }
-
-    return subscribeObservable
+    });
   }
 
-  _getSubscriptionChannel(operation: Operation) {
+  _getSubscriptionChannel(operation: ApolloLink.Operation) {
     const response = operation.getContext().response
     // Check to see if the response has the header
     const subscriptionChannel = response.headers.get("X-Subscription-ID")
@@ -190,30 +146,6 @@ class AblyLink extends ApolloLink {
       }
     })
     return ablyChannel
-  }
-}
-
-// Turn `subscribe` arguments into an observer-like thing, see getObserver
-// https://github.com/apollographql/subscriptions-transport-ws/blob/master/src/client.ts#L347-L361
-function getObserver<T>(
-  observerOrNext: Function | Observer<T>,
-  onError?: (e: Error) => void,
-  onComplete?: () => void
-) {
-  if (typeof observerOrNext === "function") {
-    // Duck-type an observer
-    return {
-      next: (v: T) => observerOrNext(v),
-      error: (e: Error) => onError && onError(e),
-      complete: () => onComplete && onComplete()
-    }
-  } else {
-    // Make an object that calls to the given object, with safety checks
-    return {
-      next: (v: T) => observerOrNext.next && observerOrNext.next(v),
-      error: (e: Error) => observerOrNext.error && observerOrNext.error(e),
-      complete: () => observerOrNext.complete && observerOrNext.complete()
-    }
   }
 }
 

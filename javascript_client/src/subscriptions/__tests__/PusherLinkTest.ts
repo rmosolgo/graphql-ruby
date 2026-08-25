@@ -1,8 +1,10 @@
 import PusherLink from "../PusherLink"
 import { parse } from "graphql"
 import Pusher from "pusher-js"
-import { Operation } from "@apollo/client/core"
+import { ApolloLink } from "@apollo/client/link"
 import pako from 'pako'
+
+type Operation = ApolloLink.Operation
 
 type MockChannel = {
   bind: (action: string, handler: Function) => void,
@@ -82,14 +84,17 @@ describe("PusherLink", () => {
   it("forwards errors to error handlers", () => {
     let passedErrorHandler: Function = () => {}
 
-    var observable = link.request(operation, function(_operation: Operation): any {
+    const forwardFunction = function(_operation: Operation): any {
       return {
         subscribe: (options: { next: Function, error: Function, complete: Function }): void => {
-          passedErrorHandler = options.error
+          console.log("options", options)
+          passedErrorHandler = options.error.bind(options)
           {}
         }
       }
-    })
+    }
+
+    var observable = link.request(operation, forwardFunction)
 
     let errorHandlerWasCalled = false
     function createdErrorHandler(_err: Error) {
