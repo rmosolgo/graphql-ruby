@@ -3,6 +3,7 @@ import { parse } from "graphql"
 import Pusher from "pusher-js"
 import { ApolloLink } from "@apollo/client/link"
 import pako from 'pako'
+import { Observable } from "rxjs"
 
 type Operation = ApolloLink.Operation
 
@@ -83,15 +84,12 @@ describe("PusherLink", () => {
 
   it("forwards errors to error handlers", () => {
     let passedErrorHandler: Function = () => {}
-
     const forwardFunction = function(_operation: Operation): any {
-      return {
-        subscribe: (options: { next: Function, error: Function, complete: Function }): void => {
-          console.log("options", options)
-          passedErrorHandler = options.error.bind(options)
-          {}
+      return new Observable((observer) => {
+        passedErrorHandler = (err: any) => {
+          observer.error(err)
         }
-      }
+      })
     }
 
     var observable = link.request(operation, forwardFunction)
@@ -101,13 +99,12 @@ describe("PusherLink", () => {
       errorHandlerWasCalled = true
     }
 
-    observable.subscribe(function(result: any) {
-      log.push(["received", result])
-    }, createdErrorHandler)
+    observable.subscribe({
+      next: function(_result: any) {},
+      error: createdErrorHandler,
+    })
 
-    if (passedErrorHandler) {
-      passedErrorHandler(new Error)
-    }
+    passedErrorHandler(new Error)
 
     expect(errorHandlerWasCalled).toBe(true)
   })

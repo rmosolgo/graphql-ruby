@@ -77,7 +77,7 @@ class AblyLink extends ApolloLink {
             observer.complete()
           }
         },
-        error: observer.error
+        error: observer.error.bind(observer)
         // complete: observer.complete Don't pass this because Apollo unsubscribes if you do
       })
 
