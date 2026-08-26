@@ -3,7 +3,8 @@
   "exclude": ["**/*.js", "src/**/__tests__/**"],
   "compilerOptions": {
     "module": "ES2020",
-    "moduleResolution": "node",
-    "outDir": "./esm"
+    "moduleResolution": "node10",
+    "outDir": "./esm",
+    "ignoreDeprecations": "6.0"
   }
 }

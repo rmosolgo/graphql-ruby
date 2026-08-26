@@ -113,7 +113,8 @@ describe("AblyLink", () => {
       ["received", { data: null }],
       ["received", { data: "data 1" }],
       ["received", { data: "data 2" }],
-      ["unsubscribe", "sub-1234"]
+      ["unsubscribe", "sub-1234"],
+      ["request unsubscribed"]
     ])
   })
 

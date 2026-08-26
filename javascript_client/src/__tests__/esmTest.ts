@@ -2,7 +2,7 @@ var childProcess = require("child_process")
 
 function runCommand(commandStr: string) {
   var buffer = childProcess.execSync(commandStr, {stdio: "pipe"})
-  return buffer.toString().replace(/\033\[[0-9;]*m/g, "")
+  return buffer.toString().replace(/\x1b\[[0-9;]*m/g, "")
 }
 describe("ESM build", () => {
   beforeAll(() => {
