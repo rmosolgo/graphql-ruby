@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.16.0 (25 Aug 2026)
+
+- `AblyLink`, `ActionCableLink`, `PusherLink`: Update imports and usage for Apollo Client 4 #5677
+
 # 1.15.2 (23 Jul 2026)
 
 - Correctly forward errors with `createRelaySubscriptionHandler` #5674
