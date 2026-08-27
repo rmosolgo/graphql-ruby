@@ -28,7 +28,7 @@ module GraphQL
           targets = [data]
           while (part = err_path.shift)
             targets.map! { |t| t[part] }
-            targets.flatten!
+            targets = targets.flatten
           end
 
           targets.each_with_index do |target, idx|
