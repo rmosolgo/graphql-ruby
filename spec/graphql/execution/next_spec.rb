@@ -442,4 +442,52 @@ describe "Next Execution" do
     }
     assert_graphql_equal expected_result, result
   end
+
+  describe "when execution raises SystemStackError" do
+    class NextStackErrorSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :crash, String, resolve_static: :resolve_crash
+        field :ok, String, resolve_static: :resolve_ok
+
+        def self.resolve_crash(_context)
+          raise SystemStackError, "stack level too deep"
+        end
+
+        def self.resolve_ok(_context)
+          "ok"
+        end
+      end
+
+      query(Query)
+      use GraphQL::Execution::Next
+
+      def self.query_stack_error(query, err)
+        query.context[:stack_error] = err
+        super
+      end
+    end
+
+    it "returns a query error" do
+      result = NextStackErrorSchema.execute_next("{ crash }")
+
+      assert_instance_of SystemStackError, result.context[:stack_error]
+      assert_equal \
+        [{ "message" => "This query is too large to execute." }],
+        result["errors"]
+    end
+
+    it "returns query errors for all queries in a multiplex" do
+      results = NextStackErrorSchema.multiplex_next([
+        { query: "{ ok }" },
+        { query: "{ crash }" },
+      ])
+
+      expected_result = {
+        "errors" => [{ "message" => "This query is too large to execute." }]
+      }
+      assert_equal [expected_result, expected_result], results.map(&:to_h)
+      assert_equal [SystemStackError, SystemStackError], results.map { |result| result.context[:stack_error].class }
+      assert_nil Fiber[:__graphql_current_multiplex]
+    end
+  end
 end
