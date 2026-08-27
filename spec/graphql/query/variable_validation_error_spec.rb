@@ -47,5 +47,13 @@ describe GraphQL::Query::VariableValidationError do
       }
       assert_equal error.to_h, as_hash
     end
+
+    it 'makes non-finite values JSON-safe' do
+      error = subject.new(ast, type, { "values" => [Float::NAN, Float::INFINITY] }, validation_result)
+      value = error.to_h.dig("extensions", "value")
+
+      assert_equal({ "values" => ["NaN", "Infinity"] }, value)
+      JSON.generate(error.to_h)
+    end
   end
 end

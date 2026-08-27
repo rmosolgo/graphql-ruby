@@ -1338,9 +1338,9 @@ module GraphQL
 
           context.errors << execution_error
           execution_error
-        when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
+        when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::FloatEncodingError, GraphQL::IntegerEncodingError
           raise type_error
-        when GraphQL::IntegerDecodingError
+        when GraphQL::FloatDecodingError, GraphQL::IntegerDecodingError
           nil
         end
       end

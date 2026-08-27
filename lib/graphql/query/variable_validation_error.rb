@@ -22,7 +22,7 @@ module GraphQL
         # It is possible there are other extension items in this error, so handle
         # a one level deep merge explicitly. However beyond that only show the
         # latest value and problems.
-        super.merge({ "extensions" => { "value" => value, "problems" => validation_result.problems }}) do |key, oldValue, newValue|
+        super.merge({ "extensions" => { "value" => value_for_extensions, "problems" => validation_result.problems }}) do |key, oldValue, newValue|
           if oldValue.respond_to?(:merge)
             oldValue.merge(newValue)
           else
@@ -32,6 +32,21 @@ module GraphQL
       end
 
       private
+
+      def value_for_extensions(value = @value)
+        case value
+        when Array
+          value.map { |item| value_for_extensions(item) }
+        when Hash
+          value.each_with_object({}) do |(key, item), result|
+            result[key] = value_for_extensions(item)
+          end
+        when Float
+          value.finite? ? value : value.to_s
+        else
+          value
+        end
+      end
 
       def problem_fields
         @problem_fields ||= @validation_result

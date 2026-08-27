@@ -34,8 +34,8 @@ module GraphQL
         JSON.generate(value)
       end
     rescue JSON::GeneratorError
-      if Float::INFINITY == value
-        "Infinity"
+      if value.is_a?(Float) && !value.finite?
+        value.to_s
       else
         raise
       end
