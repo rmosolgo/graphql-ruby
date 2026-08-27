@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.6.8/GraphQL/Language/Cache">
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.6.10/GraphQL/Language/Cache">
   </head>
   <body>
     <p>Class: GraphQL::Language::Cache &lt; Object
@@ -11,9 +11,14 @@ With Rails, parser caching may enabled by setting
 <code class="language-plaintext highlighter-rouge">config.graphql.parser_cache = true</code> in your Rails application. 
 The cache may be manually built by assigning
 <code class="language-plaintext highlighter-rouge">GraphQL::Language::Parser.cache =
-GraphQL::Language::Cache.new("some_dir")</code>. This will create a
-directory (<code class="language-plaintext highlighter-rouge">tmp/cache/graphql</code> by default) that stores a cache of
-parsed files. 
+GraphQL::Language::Cache.new(Pathname.new("some_dir"), secret:
+ENV.fetch("GRAPHQL_CACHE_SECRET"))</code>. The <code class="language-plaintext highlighter-rouge">secret</code> should be a stable
+value stored outside of the cache directory. When it isn’t provided,
+a process-local secret is generated and cache entries are rebuilt
+after the process restarts. Pass <code class="language-plaintext highlighter-rouge">secret: nil</code> to disable cache
+signing. This should only be used when the cache directory is
+trusted. This will create a directory (<code class="language-plaintext highlighter-rouge">tmp/cache/graphql</code> by
+default) that stores a cache of parsed files. 
 Much like <a href="https://github.com/Shopify/bootsnap">bootsnap</a>, the
 parser cache needs to be cleaned up manually. You will need to clear
 the cache directory for each new deployment of your application.
@@ -23,7 +28,8 @@ See Also:</p>
 <ul>
   <li>GraphQL::Railtie - for simple Rails integration
 Instance methods:
-fetch, initialize</li>
+cache_key_for, fetch, initialize, load_cache, secure_compare,
+signature_for, write_cache</li>
 </ul>
 
 

@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.6.8/">API</a>
+            <a href="/api-doc/2.6.10/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -161,7 +161,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>GraphQL-Ruby has a new execution engine, <a href="/api-doc/2.6.8/GraphQL/Execution/Next" target="_blank" title="API docs for GraphQL::Execution::Next"><code>GraphQL::Execution::Next</code></a>. It’s much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.</p>
+  <p>GraphQL-Ruby has a new execution engine, <a href="/api-doc/2.6.10/GraphQL/Execution/Next" target="_blank" title="API docs for GraphQL::Execution::Next"><code>GraphQL::Execution::Next</code></a>. It’s much faster and less memory-consuming than the existing execution engine, but requires some care in migrating.</p>
 
 <p>This feature is in heavy development, so if you give it a try and run into any problems, please open an issue on GitHub!</p>
 
@@ -316,6 +316,8 @@
 
 <p><code class="language-plaintext highlighter-rouge">Execution::Next</code> supports field configuration shorthands for common dataloader usage. Under the hood, these make sure data fetching is batched and cached.</p>
 
+<p><code class="language-plaintext highlighter-rouge">method:</code> can be added to any hash-style <code class="language-plaintext highlighter-rouge">dataload:</code> config to call a public method on the loaded value.</p>
+
 <h4 id="sources">Sources</h4>
 
 <p>Use a custom dataloader source from your application:</p>
@@ -329,29 +331,38 @@
   <span class="c1">#</span>
   <span class="c1"># Equivalent to `dataload(Sources::ReadingDuration, :comment, object.body)</span>
   <span class="n">field</span> <span class="ss">:reading_duration</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">with: </span><span class="no">Sources</span><span class="o">::</span><span class="no">ReadingDuration</span><span class="p">,</span> <span class="ss">using: :body</span><span class="p">,</span> <span class="ss">by: </span><span class="p">[</span><span class="ss">:comment</span><span class="p">]</span> <span class="p">}</span>
+
+  <span class="c1"># `method:`: A method to call on the loaded value</span>
+  <span class="c1">#</span>
+  <span class="c1"># Equivalent to `dataload(Sources::CommentRating, object).to_s`</span>
+  <span class="n">field</span> <span class="ss">:rating_string</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">with: </span><span class="no">Sources</span><span class="o">::</span><span class="no">CommentRating</span><span class="p">,</span> <span class="ss">method: :to_s</span> <span class="p">}</span>
 </code></pre></div></div>
 
 <h4 id="rails-associations">Rails Associations</h4>
 
-<p>Load ActiveRecord associations using <a href="/api-doc/2.6.8/GraphQL/Dataloader/ActiveRecordAssociationSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordAssociationSource"><code>GraphQL::Dataloader::ActiveRecordAssociationSource</code></a>:</p>
+<p>Load ActiveRecord associations using <a href="/api-doc/2.6.10/GraphQL/Dataloader/ActiveRecordAssociationSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordAssociationSource"><code>GraphQL::Dataloader::ActiveRecordAssociationSource</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::CommentType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Equivalent to `dataload_association(:post)`</span>
   <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">association: </span><span class="kp">true</span> <span class="p">}</span>
   <span class="c1"># Equivalent to `dataload_association(:user)</span>
   <span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">association: :user</span> <span class="p">}</span>
+  <span class="c1"># Equivalent to `dataload_association(:author)&amp;.name`</span>
+  <span class="n">field</span> <span class="ss">:author_name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">association: :author</span><span class="p">,</span> <span class="ss">method: :name</span> <span class="p">}</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <h4 id="rails-records">Rails Records</h4>
 
-<p>Load ActiveRecord associations using <a href="/api-doc/2.6.8/GraphQL/Dataloader/ActiveRecordSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordSource"><code>GraphQL::Dataloader::ActiveRecordSource</code></a>.</p>
+<p>Load ActiveRecord associations using <a href="/api-doc/2.6.10/GraphQL/Dataloader/ActiveRecordSource" target="_blank" title="API docs for GraphQL::Dataloader::ActiveRecordSource"><code>GraphQL::Dataloader::ActiveRecordSource</code></a>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::SearchResult</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Equivalent to `dataload_record(Post, object.post_id)`</span>
   <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">model: </span><span class="no">Post</span><span class="p">,</span> <span class="ss">using: :post_id</span> <span class="p">}</span>
   <span class="c1"># Equivalent to `dataload_record(User, object.created_by_handle, find_by: :handle)`</span>
   <span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">model: </span><span class="no">User</span><span class="p">,</span> <span class="ss">using: :created_by_handle</span><span class="p">,</span> <span class="ss">find_by: :handle</span> <span class="p">}</span>
+  <span class="c1"># Equivalent to `dataload_record(Post, object.post_id)&amp;.title`</span>
+  <span class="n">field</span> <span class="ss">:post_title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">dataload: </span><span class="p">{</span> <span class="ss">model: </span><span class="no">Post</span><span class="p">,</span> <span class="ss">using: :post_id</span><span class="p">,</span> <span class="ss">method: :title</span> <span class="p">}</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
