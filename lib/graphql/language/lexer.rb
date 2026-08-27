@@ -147,7 +147,7 @@ module GraphQL
         "\\r" => "\r",
         "\\t" => "\t",
       }
-      UTF_8 = /\\u(?:([\dAa-f]{4})|\{([\da-f]{4,})\})(?:\\u([\dAa-f]{4}))?/i
+      UTF_8 = /\\u(?:([\da-f]{4})|\{([\da-f]+)\})(?:\\u([\da-f]{4}))?/i
       VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
       ESCAPED = /(?:#{ESCAPES}|#{UTF_8})/o
 
@@ -289,7 +289,7 @@ module GraphQL
       QUOTE =         '"'
       UNICODE_DIGIT = /[0-9A-Za-z]/
       FOUR_DIGIT_UNICODE = /#{UNICODE_DIGIT}{4}/
-      N_DIGIT_UNICODE = %r{#{Punctuation::LCURLY}#{UNICODE_DIGIT}{4,}#{Punctuation::RCURLY}}x
+      N_DIGIT_UNICODE = %r{#{Punctuation::LCURLY}#{UNICODE_DIGIT}+#{Punctuation::RCURLY}}x
       UNICODE_ESCAPE = %r{\\u(?:#{FOUR_DIGIT_UNICODE}|#{N_DIGIT_UNICODE})}
       STRING_ESCAPE = %r{[\\][\\/bfnrt]}
       BLOCK_QUOTE =   '"""'

@@ -117,6 +117,8 @@ GRAPHQL
 
         it "unescapes escaped unicode characters" do
           assert_equal "\t", subject.tokenize('"\\u0009"').first.to_s
+          assert_equal "\n", subject.tokenize('"\\u{A}"').first.to_s
+          assert_equal "H", subject.tokenize('"\\u{48}"').first.to_s
           assert_equal "\t", subject.tokenize('"\\u{0009}"').first.to_s
           assert_equal "𐘑", subject.tokenize('"\\u{10611}"').first.to_s
           assert_equal "💩", subject.tokenize('"\\u{1F4A9}"').first.to_s
