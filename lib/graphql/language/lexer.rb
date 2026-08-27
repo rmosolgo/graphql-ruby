@@ -163,7 +163,11 @@ module GraphQL
           if !str.valid_encoding? || !str.match?(VALID_STRING)
             raise_parse_error("Bad unicode escape in #{str.inspect}")
           else
-            Lexer.replace_escaped_characters_in_place(str)
+            begin
+              Lexer.replace_escaped_characters_in_place(str)
+            rescue RangeError
+              raise_parse_error("Bad unicode escape in #{str.inspect}")
+            end
 
             if !str.valid_encoding?
               raise_parse_error("Bad unicode escape in #{str.inspect}")

@@ -12,6 +12,10 @@ describe GraphQL::Language::Lexer do
     assert_equal expected_err_message, err.message
   end
 
+  it "rejects unicode escapes outside the valid range" do
+    assert_bad_unicode('"\\u{FFFFFFFFFF}"', 'Bad unicode escape in "\\\\u{FFFFFFFFFF}"')
+  end
+
   it "reports positions correctly after multibyte input" do
     err = assert_raises(GraphQL::ParseError) do
       subject.tokenize("{\n  # 日本語\n  field(arg: -foo)\n}")
