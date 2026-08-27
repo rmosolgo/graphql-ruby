@@ -10,6 +10,26 @@
 
 ### Bug fixes
 
+# 2.6.10 (27 Aug 2026)
+
+### New features
+
+- `Execution::Next`: Add `dataload: { ..., method: }` shorthand #5706
+
+### Bug fixes
+
+- `AsyncDataloader`: Avoid ClosedError race in old fibers #5702
+- `AsyncDataloader`: fix nested dataloader runs #5703
+- Validation: speed up `FieldsWillMerge`  #5704
+- `AsyncDataloader`: Fix ActiveRecord relation loads in connections #5708
+- `Execution::Next`: handle SystemStackErrors #5705
+- Restore current multiplex after nested execution #5714
+- Parser: handle out-of-range Unicode escapes as parse errors #5710
+- Lexer: re-raise unexpected ArgumentErrors #5711
+- Parser: support short braced unicode escapes #5712
+- `Float`: reject non-finite values #5713
+
+
 # 2.6.9 (17 Aug 2026)
 
 ### Security
