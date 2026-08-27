@@ -9,6 +9,9 @@ module GraphQL
         end
         @string = graphql_str
         @filename = filename
+        if !@string.valid_encoding?
+          raise_parse_error("Parse error on bad Unicode escape sequence", nil, nil)
+        end
         @scanner = StringScanner.new(graphql_str)
         @pos = nil
         @max_tokens = max_tokens || Float::INFINITY
@@ -109,10 +112,6 @@ module GraphQL
         else
           @scanner.pos += 1
           :UNKNOWN_CHAR
-        end
-      rescue ArgumentError => err
-        if err.message == "invalid byte sequence in UTF-8"
-          raise_parse_error("Parse error on bad Unicode escape sequence", nil, nil)
         end
       end
 
