@@ -35,7 +35,7 @@
   COLON =         ':';
   # Could limit to hex here, but “bad unicode escape” on 0XXF is probably a
   # more helpful error than “unknown char”
-  UNICODE_ESCAPE = "\\u" ([0-9A-Za-z]{4} | LCURLY [0-9A-Za-z]{4,} RCURLY);
+  UNICODE_ESCAPE = "\\u" ([0-9A-Za-z]{4} | LCURLY [0-9A-Za-z]+ RCURLY);
   VAR_SIGN =      '$';
   DIR_SIGN =      '@';
   ELLIPSIS =      '...';
