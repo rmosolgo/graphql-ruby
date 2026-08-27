@@ -72,6 +72,7 @@ module GraphQL
       end
 
       def execute
+        previous_multiplex = Fiber[:__graphql_current_multiplex]
         Fiber[:__graphql_current_multiplex] = @multiplex
         isolated_steps = [[]]
         trace = @multiplex.current_trace
@@ -162,7 +163,7 @@ module GraphQL
           query.result
         end
       ensure
-        Fiber[:__graphql_current_multiplex] = nil
+        Fiber[:__graphql_current_multiplex] = previous_multiplex
       end
 
       def gather_selections(type_defn, ast_selections, selections_step, query, all_selections, prototype_result, into:)
