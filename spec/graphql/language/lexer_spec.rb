@@ -31,4 +31,14 @@ describe GraphQL::Language::Lexer do
 
     assert_equal [:FRAGMENT, 3, 1, "fragment"], fragment_token
   end
+
+  it "reraises unexpected argument errors" do
+    lexer = subject.new("{")
+    scanner = lexer.instance_variable_get(:@scanner)
+
+    scanner.stub(:skip, ->(*) { raise ArgumentError, "unexpected failure" }) do
+      err = assert_raises(ArgumentError) { lexer.advance }
+      assert_equal "unexpected failure", err.message
+    end
+  end
 end
