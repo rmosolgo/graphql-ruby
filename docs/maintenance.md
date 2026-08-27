@@ -11,6 +11,8 @@ bundle exec rake docs:build
 
 The generated site is written to `tmp/rdoc-site`. To preview it, run `bundle exec rake docs:rdoc:serve` and open `http://127.0.0.1:8808`.
 
+When adding or moving a guide, update `docs/guide_metadata.yml`; it controls sidebar order and the GraphQL-Pro and GraphQL-Enterprise callouts.
+
 Run the documentation checks before submitting a change:
 
 ```sh

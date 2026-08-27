@@ -1,4 +1,12 @@
 /* graphql-ruby: graphql highlighter */
+.graphql-product-callout {
+  border: 1px solid currentColor;
+  border-left-width: 0.35rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+}
+.graphql-product-callout strong { display: block; margin-bottom: 0.25rem; }
 pre.graphql .graphql-keyword { color: #8250df; font-weight: 600; }
 pre.graphql .graphql-literal { color: #cf222e; }
 pre.graphql .graphql-variable { color: #0550ae; }

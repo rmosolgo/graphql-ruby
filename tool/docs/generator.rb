@@ -5,11 +5,18 @@ require "rdoc/generator/aliki"
 require "cgi"
 require "fileutils"
 require "pathname"
+require "yaml"
 
 module RDoc
   module Generator
     class GraphQLRuby < Aliki
       ::RDoc::RDoc.add_generator self
+
+      GUIDE_METADATA = YAML.safe_load(File.read(File.expand_path("../../docs/guide_metadata.yml", __dir__))).freeze
+      PRODUCT_CALLOUTS = {
+        "pro" => ["GraphQL-Pro", "https://graphql.pro"],
+        "enterprise" => ["GraphQL-Enterprise", "https://graphql.pro/enterprise"],
+      }.freeze
 
       def generate
         super
@@ -55,8 +62,10 @@ module RDoc
           path = Pathname.new(path)
           normalize_malformed_html_images(path)
           normalize_root_relative_image_paths(path, output)
+          normalize_guide_page_title(path, output, sidebar_page_titles)
           normalize_page_titles_in_sidebar(path, output, sidebar_page_titles)
           nest_guide_pages_in_sidebar(path, output, sidebar_page_titles)
+          inject_product_callout(path, output)
           remove_source_links(path)
           remove_unresolved_rdoc_refs(path)
           inject_graphql_assets(path, output)
@@ -106,14 +115,21 @@ module RDoc
             links = section_match[2]
             guide_links = links.scan(%r{<li>\s*<a href="([^"]*guides/(?:([^/]+)/)?([^/]+_md\.html))">\s*([^<]*?)\s*</a>\s*</li>}m).map do |href, directory, page, _label|
               page_path = ["guides", directory, page].compact.join("/")
-              { href: href, directory: directory, page: page_titles[page_path] || page.sub(/_md\.html\z/, "") }
+              {
+                href: href,
+                directory: directory,
+                name: page.sub(/_md\.html\z/, ""),
+                page: page_titles[page_path] || page.sub(/_md\.html\z/, ""),
+              }
             end
             next Regexp.last_match(0) if guide_links.empty?
 
             grouped = guide_links.group_by { |link| link[:directory] }
             nested = grouped.map do |directory, directory_links|
               if directory
-                directory_label = directory.sub(/\A./) { |character| character.upcase }
+                order = GUIDE_METADATA.dig("order", directory) || []
+                directory_links.sort_by! { |link| [order.index(link[:name]) || order.length, link[:page]] }
+                directory_label = directory.split("_").map(&:capitalize).join(" ").sub("Javascript", "JavaScript")
                 entries = directory_links.map do |link|
                   <<~HTML
                     <li>
@@ -151,6 +167,30 @@ module RDoc
         File.write(path, cleaned) if cleaned != html
       end
 
+      def inject_product_callout(path, output)
+        guide = path.relative_path_from(output).to_s[%r{\Aguides/(.+)_md\.html\z}, 1]
+        return unless guide
+
+        product = GUIDE_METADATA.fetch("products").find do |_name, patterns|
+          patterns.any? { |pattern| File.fnmatch?(pattern, guide) }
+        end&.first
+        return unless product
+
+        html = File.read(path)
+        return if html.include?("<!-- graphql-ruby: product callout -->")
+
+        name, url = PRODUCT_CALLOUTS.fetch(product)
+        callout = <<~HTML
+          <!-- graphql-ruby: product callout -->
+          <aside class="graphql-product-callout">
+            <strong>#{name} feature</strong>
+            This feature ships with <a href="#{url}">#{name}</a> and is not included in GraphQL-Ruby OSS.
+          </aside>
+        HTML
+        cleaned = html.sub(/(<main\b[^>]*>\s*)/, "\\1#{callout}")
+        File.write(path, cleaned) if cleaned != html
+      end
+
       def normalize_page_titles_in_sidebar(path, output, page_titles)
         return if page_titles.empty?
 
@@ -163,6 +203,19 @@ module RDoc
             title ? "#{match[1]}#{match[2]}#{match[3]}#{title}#{match[5]}#{match[6]}" : match[0]
           end
         end
+        File.write(path, cleaned) if cleaned != html
+      end
+
+      def normalize_guide_page_title(path, output, page_titles)
+        relative_path = path.relative_path_from(output).to_s
+        return unless relative_path.start_with?("guides/") && (title = page_titles[relative_path])
+
+        full_title = "#{title} - #{CGI.escapeHTML(@options.title)}"
+        html = File.read(path)
+        cleaned = html
+          .sub(%r{<title>[^<]*</title>}, "<title>#{full_title}</title>")
+          .sub(/(<meta property="og:title" content=")[^"]*(">)/, "\\1#{full_title}\\2")
+          .sub(/(<meta name="twitter:title" content=")[^"]*(">)/, "\\1#{full_title}\\2")
         File.write(path, cleaned) if cleaned != html
       end
 

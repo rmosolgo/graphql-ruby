@@ -1,0 +1,164 @@
+version: 1
+
+# Navigation order migrated from the Jekyll `index` frontmatter.
+order:
+  authorization:
+    - overview
+    - visibility
+    - authorization
+    - can_can_integration
+    - pundit_integration
+    - scoping
+  changesets:
+    - overview
+    - installation
+    - definition
+    - releases
+  dataloader:
+    - overview
+    - sources
+    - dataloader
+    - adopting
+    - testing
+    - async_dataloader
+    - parallelism
+  defer:
+    - overview
+    - setup
+    - usage
+    - stream
+    - graphiql
+  errors:
+    - overview
+    - execution_errors
+    - error_handling
+    - type_errors
+  execution:
+    - next
+    - migration
+  fields:
+    - introduction
+    - arguments
+    - resolvers
+    - validation
+    - limits
+  javascript_client:
+    - overview
+    - sync
+    - apollo_subscriptions
+    - relay_subscriptions
+    - urql_subscriptions
+    - graphiql_subscriptions
+  language_tools:
+    - visitor
+    - c_parser
+  limiters:
+    - overview
+    - redis
+    - active_operations
+    - runtime
+    - deployment
+  mutations:
+    - mutation_root
+    - mutation_classes
+    - mutation_errors
+    - mutation_authorization
+  object_cache:
+    - overview
+    - schema_setup
+    - caching
+    - memcached
+    - redis
+    - runtime_considerations
+  operation_store:
+    - overview
+    - getting_started
+    - active_record_backend
+    - redis_backend
+    - client_workflow
+    - server_management
+    - access_control
+  pagination:
+    - overview
+    - connection_concepts
+    - using_connections
+    - custom_connections
+    - cursors
+    - stable_relation_connections
+  pro:
+    - home
+    - installation
+    - dashboard
+    - encoders
+    - privacy
+  queries:
+    - executing_queries
+    - ast_analysis
+    - phases_of_execution
+    - complexity_and_depth
+    - timeout
+    - multiplex
+    - lookahead
+    - tracing
+    - backtrace_annotations
+    - logging
+    - response_extensions
+  relay:
+    - range_add
+  schema:
+    - definition
+    - root_types
+    - generators
+    - introspection
+    - lazy_execution
+    - sdl
+    - dynamic_types
+    - object_identification
+  subscriptions:
+    - overview
+    - subscription_classes
+    - subscription_type
+    - triggers
+    - broadcast
+    - implementation
+    - action_cable_implementation
+    - pusher_implementation
+    - ably_implementation
+    - multi_tenant
+  testing:
+    - overview
+    - schema_structure
+    - integration_tests
+    - helpers
+    - profiling
+  type_definitions:
+    - objects
+    - scalars
+    - enums
+    - input_objects
+    - interfaces
+    - unions
+    - lists
+    - non_nulls
+    - extensions
+    - directives
+    - field_extensions
+
+# Product callouts migrated from the Jekyll `pro` and `enterprise` frontmatter.
+products:
+  pro:
+    - authorization/can_can_integration
+    - authorization/pundit_integration
+    - defer/*
+    - operation_store/*
+    - pagination/stable_relation_connections
+    - pro/dashboard
+    - pro/encoders
+    - pro/home
+    - pro/installation
+    - subscriptions/ably_implementation
+    - subscriptions/pusher_implementation
+  enterprise:
+    - changesets/*
+    - limiters/*
+    - object_cache/*
