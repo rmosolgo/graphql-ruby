@@ -22,6 +22,7 @@ module GraphQL
         # @param max_complexity [Integer, nil]
         # @return [Array<GraphQL::Query::Result>] One result per query
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
+          previous_multiplex = Fiber[:__graphql_current_multiplex]
           queries = query_options.map do |opts|
             query = case opts
             when Hash
@@ -131,7 +132,6 @@ module GraphQL
               queries.map { |q| q.result_values ||= {} }
               raise
             ensure
-              Fiber[:__graphql_current_multiplex] = nil
               queries.map { |query|
                 runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                 if runtime
@@ -140,6 +140,8 @@ module GraphQL
               }
             end
           end
+        ensure
+          Fiber[:__graphql_current_multiplex] = previous_multiplex
         end
       end
 
