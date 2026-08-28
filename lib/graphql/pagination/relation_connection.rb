@@ -222,7 +222,7 @@ module GraphQL
       def load_nodes
         # Return an array so we can consistently use `.index(node)` on it
         return @nodes if @nodes
-        if (@context[:dataloader].is_a?(GraphQL::Dataloader::AsyncDataloader))
+        if (@context&.[](:dataloader).is_a?(GraphQL::Dataloader::AsyncDataloader))
           # `AsyncDataloader` may resolve sibling fields (eg, `edges` and `pageInfo`)
           # in separate Fibers, so several callers can get here before `@nodes` is set.
           (@load_lock ||= Mutex.new).synchronize do
