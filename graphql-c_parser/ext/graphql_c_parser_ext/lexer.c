@@ -1989,7 +1989,7 @@ var_name = rb_utf8_str_new_cstr(str_content); \
 rb_global_variable(&var_name); \
 rb_str_freeze(var_name); \
 
-void setup_static_token_variables() {
+void setup_static_token_variables(void) {
 	SETUP_STATIC_TOKEN_VARIABLE(ON, "on")
 	SETUP_STATIC_TOKEN_VARIABLE(FRAGMENT, "fragment")
 	SETUP_STATIC_TOKEN_VARIABLE(QUERY, "query")

@@ -9,7 +9,7 @@
 #define YYSTACK_USE_ALLOCA 1
 
 int yylex(YYSTYPE *, VALUE, VALUE);
-void yyerror(VALUE, VALUE, const char*);
+NORETURN(void yyerror(VALUE, VALUE, const char*));
 
 static VALUE GraphQL_Language_Nodes_NONE;
 static VALUE r_string_query;
@@ -928,7 +928,7 @@ void yyerror(VALUE parser, VALUE filename, const char *msg) {
     rb_global_variable(&GraphQL_Language_Nodes_##node_class_name); \
     GraphQL_Language_Nodes_##node_class_name = rb_const_get_at(mGraphQLLanguageNodes, rb_intern(#node_class_name));
 
-void initialize_node_class_variables() {
+void initialize_node_class_variables(void) {
   VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
   VALUE mGraphQLLanguage = rb_const_get_at(mGraphQL, rb_intern("Language"));
   VALUE mGraphQLLanguageNodes = rb_const_get_at(mGraphQLLanguage, rb_intern("Nodes"));
