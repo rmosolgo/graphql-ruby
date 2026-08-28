@@ -19,3 +19,17 @@ describe GraphQL::Pagination::Connection do
     end
   end
 end
+
+describe GraphQL::Pagination::RelationConnection do
+  it "loads nodes without context" do
+    connection_class = Class.new(GraphQL::Pagination::RelationConnection) do
+      private
+
+      def limited_nodes
+        items
+      end
+    end
+
+    assert_equal [1, 2, 3], connection_class.new([1, 2, 3]).nodes
+  end
+end
