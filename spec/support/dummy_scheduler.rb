@@ -212,6 +212,16 @@ class DummyScheduler
     io.write_nonblock('.')
   end
 
+  FiberInterrupt = Struct.new(:fiber, :exception) do
+    def resume
+      fiber.raise(exception) if fiber.alive?
+    end
+  end
+
+  def fiber_interrupt(fiber, exception)
+    unblock(nil, FiberInterrupt.new(fiber, exception))
+  end
+
   def fiber(&block)
     fiber = Fiber.new(blocking: false, &block)
 
