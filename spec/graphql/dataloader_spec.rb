@@ -1333,6 +1333,30 @@ describe GraphQL::Dataloader do
 
   include DataloaderAssertions
 
+  it "cleans up fibers that raise errors" do
+    events = []
+    dataloader_class = Class.new(GraphQL::Dataloader) do
+      define_method(:cleanup_fiber) { events << :cleanup }
+    end
+    trace_class = Class.new(GraphQL::Tracing::Trace) do
+      define_method(:dataloader_fiber_exit) { events << :trace_exit }
+    end
+    source_class = Class.new(GraphQL::Dataloader::Source) do
+      def run_pending_keys
+        raise "Source failed"
+      end
+    end
+
+    dataloader = dataloader_class.new
+    trace = trace_class.new
+    dataloader.append_job { raise "Job failed" }
+    assert_raises(RuntimeError) { dataloader.send(:spawn_job_fiber, trace).resume }
+    dataloader.with(source_class).request(:key)
+    assert_raises(RuntimeError) { dataloader.send(:spawn_source_fiber, trace).resume }
+
+    assert_equal [:trace_exit, :cleanup, :trace_exit, :cleanup], events
+  end
+
   if RUBY_VERSION >= "3.1.1"
     require "async"
     describe "AsyncDataloader" do

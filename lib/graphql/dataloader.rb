@@ -262,11 +262,12 @@ module GraphQL
 
     def spawn_fiber
       fiber_vars = get_fiber_variables
-      Fiber.new(blocking: !@nonblocking) {
+      Fiber.new(blocking: !@nonblocking) do
         set_fiber_variables(fiber_vars)
         yield
+      ensure
         cleanup_fiber
-      }
+      end
     end
 
     # Pre-warm the Dataloader cache with ActiveRecord objects which were loaded elsewhere.
@@ -359,6 +360,7 @@ module GraphQL
           while job = @pending_jobs.shift
             job.call
           end
+        ensure
           trace&.dataloader_fiber_exit
         end
       end
@@ -392,6 +394,7 @@ module GraphQL
             source.run_pending_keys
             trace&.end_dataloader_source(source)
           end
+        ensure
           trace&.dataloader_fiber_exit
         end
       end
