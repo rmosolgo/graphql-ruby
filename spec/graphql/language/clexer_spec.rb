@@ -37,6 +37,13 @@ if defined?(GraphQL::CParser::Lexer)
       assert_equal(old_tokens, tokens)
     end
 
+    it "tokenizes exponent-only floats like the Ruby lexer" do
+      tokens = GraphQL.scan_with_c("1e400").map { |token| token.first(4) }
+
+      assert_equal [[:FLOAT, 1, 1, "1e400"]], tokens
+      assert_equal GraphQL.scan_with_ruby("1e400"), tokens
+    end
+
     it "makes frozen strings when using SchemaParser" do
       str = "type Query { f1: Int }"
       schema_ast = GraphQL::CParser::SchemaParser.new(str, nil, GraphQL::Tracing::NullTrace, nil).result
