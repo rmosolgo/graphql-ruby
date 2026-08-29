@@ -19,4 +19,19 @@ describe GraphQL::Pagination::ArrayConnection do
   }
 
   include ConnectionAssertions
+
+  it "rejects malformed cursors" do
+    query = <<~GRAPHQL
+      query($after: String!) {
+        items(first: 3, after: $after) { nodes { name } }
+      }
+    GRAPHQL
+
+    ["-1", "0", "abc", "1e10"].each do |cursor|
+      encoded_cursor = ConnectionAssertions::NonceEnabledEncoder.encode(cursor)
+      result = schema.execute(query, variables: { "after" => encoded_cursor })
+      assert_nil result.dig("data", "items", "nodes")
+      assert_includes result["errors"].first["message"], "Invalid cursor"
+    end
+  end
 end

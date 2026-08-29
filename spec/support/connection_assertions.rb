@@ -290,10 +290,15 @@ module ConnectionAssertions
         end
 
         it "handles out-of-bounds cursors" do
-          # It treats negative cursors like zero
+          # Negative cursors don't wrap around to the end
           bogus_negative_cursor = NonceEnabledEncoder.encode("-10")
           res = exec_query(query_str, first: 3, after: bogus_negative_cursor)
-          assert_names(["Avocado", "Beet", "Cucumber"], res)
+          if schema.connection_class <= GraphQL::Pagination::ArrayConnection
+            assert_nil res.dig("data", "items", "nodes")
+            assert_includes res["errors"].first["message"], "Invalid cursor"
+          else
+            assert_names(["Avocado", "Beet", "Cucumber"], res)
+          end
 
           # It returns nothing for cursors beyond the array
           bogus_huge_cursor = NonceEnabledEncoder.encode("100")

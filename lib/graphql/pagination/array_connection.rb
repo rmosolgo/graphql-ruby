@@ -27,7 +27,11 @@ module GraphQL
       private
 
       def index_from_cursor(cursor)
-        decode(cursor).to_i
+        index = Integer(decode(cursor), 10, exception: false)
+        if index.nil? || index <= 0
+          raise GraphQL::ExecutionError, "Invalid cursor: #{cursor.inspect}"
+        end
+        [index, items.length + 1].min
       end
 
       # Populate all the pagination info _once_,
