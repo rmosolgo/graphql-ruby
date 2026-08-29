@@ -13,6 +13,8 @@ module GraphQL
       TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%N%z" # eg '2020-01-01 23:59:59.123456789+05:00'
       TIMESTAMP_CLASS_NAMES = ["Date", "DateTime", "Time"].freeze
       OPEN_STRUCT_KEY = "__ostruct__"
+      HASH_KEY = "__graphql_hash__"
+      RESERVED_KEYS = [GLOBALID_KEY, SYMBOL_KEY, SYMBOL_KEYS_KEY, TIMESTAMP_KEY, OPEN_STRUCT_KEY, HASH_KEY].freeze
 
       module_function
 
@@ -91,6 +93,10 @@ module GraphQL
               when OPEN_STRUCT_KEY
                 ostruct_values = load_value(value[OPEN_STRUCT_KEY])
                 OpenStruct.new(ostruct_values)
+              when HASH_KEY
+                value[HASH_KEY].each_with_object({}) do |(k, v), loaded_h|
+                  loaded_h[load_value(k)] = load_value(v)
+                end
               else
                 key = value.keys.first
                 { key => load_value(value[key]) }
@@ -120,6 +126,11 @@ module GraphQL
           if obj.is_a?(Array)
             obj.map{|item| dump_value(item)}
           elsif obj.is_a?(Hash)
+            if obj.any? { |k, _v| RESERVED_KEYS.include?(k.to_s) }
+              return {
+                HASH_KEY => obj.map { |k, v| [dump_value(k.is_a?(Symbol) ? k : k.to_s), dump_value(v)] },
+              }
+            end
             symbol_keys = nil
             dumped_h = {}
             obj.each do |k, v|

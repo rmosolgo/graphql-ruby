@@ -155,4 +155,26 @@ describe GraphQL::Subscriptions::Serialize do
     reloaded = serialize_load(serialized)
     assert_equal os, reloaded
   end
+
+  it "round trips hashes with reserved serializer keys" do
+    reserved_values = {
+      "__gid__" => "gid://app/User/1",
+      "__sym__" => "user-value",
+      "__sym_keys__" => ["user-value"],
+      "__timestamp__" => ["UserClass", "user-value"],
+      "__ostruct__" => { "user-value" => true },
+      "__graphql_hash__" => [["user-value"]],
+    }
+
+    reserved_values.each do |key, value|
+      input = { "nested" => [{ key => value }] }
+      assert_equal input, serialize_load(serialize_dump(input)), key
+    end
+
+    input = { "__sym_keys__" => ["user-value"], "user-value" => true }
+    assert_equal input, serialize_load(serialize_dump(input))
+
+    input = { __gid__: "gid://app/User/1" }
+    assert_equal input, serialize_load(serialize_dump(input))
+  end
 end
