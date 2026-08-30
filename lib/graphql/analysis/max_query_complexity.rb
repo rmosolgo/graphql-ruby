@@ -15,6 +15,12 @@ module GraphQL
           nil
         end
       end
+
+      private
+
+      def cache_fragment_spreads?
+        self.class == MaxQueryComplexity
+      end
     end
   end
 end
