@@ -35,6 +35,12 @@ module GraphQL
         true
       end
 
+      # Analyzer hook to decide whether a particular query requires a visitor pass.
+      # Multiplex analyzers may have precomputed some queries but not others.
+      def visit_query?(_query)
+        visit?
+      end
+
       # The result for this analyzer. Returning {GraphQL::AnalysisError} results
       # in a query error.
       # @return [Any] The analyzer result

@@ -248,6 +248,70 @@ describe GraphQL::Analysis::QueryComplexity do
     end
   end
 
+  describe "with recursively reused fragments" do
+    class FragmentBombSchema < GraphQL::Schema
+      module Item
+        include GraphQL::Schema::Interface
+        field :name, String
+      end
+
+      class ItemType < GraphQL::Schema::Object
+        implements Item
+      end
+
+      class Node < GraphQL::Schema::Object
+        graphql_name "ComplexityBombNode"
+        field :name, String
+        field :a, self
+        field :b, self
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :item, Item
+        field :node, Node
+      end
+
+      query(Query)
+      orphan_types(ItemType)
+      complexity_cost_calculation_mode(:future)
+      max_complexity(100)
+      validate_timeout(0.1)
+    end
+
+    let(:schema) { FragmentBombSchema }
+    let(:query_string) do
+      fragments = ["fragment F0 on ComplexityBombNode { name }"]
+      1.upto(18) do |level|
+        fragments << "fragment F#{level} on ComplexityBombNode { a { ...F#{level - 1} } b { ...F#{level - 1} } }"
+      end
+      "{ node { ...F18 } }\n#{fragments.join("\n")}"
+    end
+
+    it "calculates complexity without repeatedly expanding fragments" do
+      assert_operator query_string.bytesize, :<, 1_500
+      assert query.valid?
+      assert_equal 786_431, reduce_result.first
+
+      result = schema.execute(query_string)
+      assert_equal "Query has complexity of 786431, which exceeds max complexity of 100", result["errors"].first["message"]
+
+      query_with_siblings = query_string.sub("{ node { ...F18 } }", "{ node { name ...F18 @include(if: true) } }")
+      sibling_query = GraphQL::Query.new(schema, query_with_siblings)
+      assert sibling_query.valid?
+      assert_equal 786_432, GraphQL::Analysis.analyze_query(sibling_query, [GraphQL::Analysis::QueryComplexity]).first
+    end
+
+    it "doesn't revisit precomputed queries in a mixed multiplex" do
+      bomb_query = GraphQL::Query.new(schema, query_string)
+      abstract_query = GraphQL::Query.new(schema, "{ item { name } }")
+      multiplex = GraphQL::Execution::Multiplex.new(schema: schema, queries: [bomb_query, abstract_query], context: {}, max_complexity: 100)
+
+      GraphQL::Analysis.analyze_multiplex(multiplex, [GraphQL::Analysis::MaxQueryComplexity])
+
+      refute_includes bomb_query.analysis_errors.map(&:message), "Timeout on validation of query"
+    end
+  end
+
   describe "relay types" do
     let(:schema) { Class.new(StarWars::Schema) { complexity_cost_calculation_mode(:future) } }
     let(:query) { GraphQL::Query.new(schema, query_string) }

@@ -11,6 +11,20 @@ module GraphQL
         @complexities_on_type_by_query = {}
         @intersect_cache = Hash.new { |h, k| h[k] = {}.compare_by_identity }.compare_by_identity
         @possible_types_cache = {}.compare_by_identity
+        @precomputed_complexities_by_query = {}.compare_by_identity
+        @precomputation_attempted_by_query = {}.compare_by_identity
+        # Concrete fragment selections form a DAG, so calculate each shared fragment once.
+        # Abstract selections and custom analyzers retain the full visitor path below.
+        precompute_query(query) if query.is_a?(GraphQL::Query)
+      end
+
+      def visit?
+        query ? visit_query?(query) : true
+      end
+
+      def visit_query?(query)
+        precompute_query(query)
+        !@precomputed_complexities_by_query.key?(query)
       end
 
       # Override this method to use the complexity result
@@ -78,6 +92,7 @@ module GraphQL
       end
 
       def on_enter_field(node, parent, visitor)
+        return if @precomputed_complexities_by_query.key?(visitor.query)
         # We don't want to visit fragment definitions,
         # we'll visit them when we hit the spreads instead
         return if visitor.visiting_fragment_definition?
@@ -96,6 +111,7 @@ module GraphQL
       end
 
       def on_leave_field(node, parent, visitor)
+        return if @precomputed_complexities_by_query.key?(visitor.query)
         # We don't want to visit fragment definitions,
         # we'll visit them when we hit the spreads instead
         return if visitor.visiting_fragment_definition?
@@ -109,9 +125,118 @@ module GraphQL
 
       # @return [Integer]
       def max_possible_complexity(mode: :future)
-        @complexities_on_type_by_query.reduce(0) do |total, (query, scopes_stack)|
+        precomputed_complexity = @precomputed_complexities_by_query.each_value.reduce(0, :+)
+        @complexities_on_type_by_query.reduce(precomputed_complexity) do |total, (query, scopes_stack)|
           total + merged_max_complexity_for_scopes(query, [scopes_stack.first], mode)
         end
+      end
+
+      def precompute_concrete_complexity?
+        self.class == QueryComplexity
+      end
+
+      def precompute_query(query)
+        return if @precomputation_attempted_by_query.key?(query)
+
+        @precomputation_attempted_by_query[query] = true
+        return unless precompute_concrete_complexity?
+
+        remaining_timeout = query.validate_timeout_remaining
+        @precompute_timeout_at = remaining_timeout ? Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_second) + remaining_timeout : Float::INFINITY
+        complexity = precomputed_query_complexity(query)
+        @precomputed_complexities_by_query[query] = complexity if complexity
+      end
+
+      def precomputed_query_complexity(query)
+        operation = query.selected_operation
+        return unless operation
+
+        @precomputed_selection_complexities = {}
+        @precomputed_fragment_fields = {}.compare_by_identity
+        @precomputing_fragments = {}.compare_by_identity
+        precomputed_selection_complexity(query, [operation.selections], query.root_type)
+      end
+
+      def precomputed_selection_complexity(query, selection_sets, owner_type)
+        return unless owner_type && owner_type.kind.object?
+
+        fields = {}
+        selection_sets.each do |selections|
+          return unless collect_precomputed_fields(query, selections, owner_type, fields)
+        end
+
+        cache_key = [owner_type, fields.map { |response_key, nodes| [response_key, nodes.map(&:object_id)] }]
+        if @precomputed_selection_complexities.key?(cache_key)
+          return @precomputed_selection_complexities[cache_key]
+        end
+
+        total = 0
+        fields.each_value do |nodes|
+          field_definition = query.types.field(owner_type, nodes.first.name)
+          return unless field_definition
+
+          if @skip_introspection_fields && field_definition.introspection?
+            return unless nodes.all? { |node| node.selections.empty? }
+            next
+          end
+
+          child_selection_sets = nodes.map(&:selections)
+          child_complexity = if child_selection_sets.all?(&:empty?)
+            0
+          else
+            precomputed_selection_complexity(query, child_selection_sets, field_definition.type.unwrap)
+          end
+          return unless child_complexity
+
+          total += field_definition.calculate_complexity(query: query, nodes: nodes, child_complexity: child_complexity)
+        end
+        @precomputed_selection_complexities[cache_key] = total
+      end
+
+      def collect_precomputed_fields(query, selections, owner_type, fields)
+        selections.each do |selection|
+          if Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_second) > @precompute_timeout_at
+            raise GraphQL::Analysis::TimeoutError
+          end
+          next unless GraphQL::Execution::DirectiveChecks.include?(selection.directives, query)
+
+          case selection
+          when GraphQL::Language::Nodes::Field
+            response_key = selection.alias || selection.name
+            (fields[response_key] ||= []) << selection
+          when GraphQL::Language::Nodes::InlineFragment
+            fragment_type = selection.type ? query.types.type(selection.type.name) : owner_type
+            return false unless fragment_type == owner_type
+            return false unless collect_precomputed_fields(query, selection.selections, owner_type, fields)
+          when GraphQL::Language::Nodes::FragmentSpread
+            fragment_fields = precomputed_fragment_fields(query, selection, owner_type)
+            return false unless fragment_fields
+            fragment_fields.each do |response_key, nodes|
+              (fields[response_key] ||= []).concat(nodes)
+            end
+          else
+            return false
+          end
+        end
+        true
+      end
+
+      def precomputed_fragment_fields(query, spread, owner_type)
+        fragment = query.fragments[spread.name]
+        return unless fragment
+        return @precomputed_fragment_fields[fragment] if @precomputed_fragment_fields.key?(fragment)
+        return if @precomputing_fragments.key?(fragment)
+
+        fragment_type = query.types.type(fragment.type.name)
+        return unless fragment_type == owner_type && fragment_type.kind.object?
+
+        @precomputing_fragments[fragment] = true
+        fields = {}
+        if collect_precomputed_fields(query, fragment.selections, fragment_type, fields)
+          @precomputed_fragment_fields[fragment] = fields
+        end
+      ensure
+        @precomputing_fragments.delete(fragment) if fragment
       end
 
       # @param query [GraphQL::Query] Used for `query.possible_types`
