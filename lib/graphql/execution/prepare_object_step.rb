@@ -30,11 +30,15 @@ module GraphQL
           st = @field_resolve_step.static_type
           ctx.query.current_trace.begin_resolve_type(st, @object, ctx)
           @resolved_type, new_value = @field_resolve_step.sync(@resolved_type)
-          ResolveTypeStep.assert_valid_resolved_type(st, @resolved_type, new_value, @field_resolve_step)
+          is_valid_type = ResolveTypeStep.assert_valid_resolved_type(st, @resolved_type, new_value, @field_resolve_step)
           if new_value
             @object = new_value
           end
           ctx.query.current_trace.end_resolve_type(st, @object, ctx, @resolved_type)
+          if !is_valid_type
+            set_invalid_type_result
+            return
+          end
         end
         @runner.add_step(self)
       ensure
@@ -49,14 +53,19 @@ module GraphQL
           if static_type.kind.abstract?
             query = @field_resolve_step.selections_step.query
             @resolved_type, new_value = ResolveTypeStep.resolve_type(static_type, @object, query)
-            if new_value
-              ResolveTypeStep.assert_valid_resolved_type(static_type, @resolved_type, new_value, @field_resolve_step)
-              @object = new_value
+            resolved_type_is_lazy = @runner.resolves_lazies && @runner.lazy?(@resolved_type)
+            if !resolved_type_is_lazy
+              if !ResolveTypeStep.assert_valid_resolved_type(static_type, @resolved_type, new_value, @field_resolve_step)
+                set_invalid_type_result
+                return
+              end
+              @object = new_value if new_value
             end
           else
             @resolved_type = static_type
+            resolved_type_is_lazy = false
           end
-          if @runner.resolves_lazies && @runner.lazy?(@resolved_type)
+          if resolved_type_is_lazy
             @next_step = :authorize
             @runner.dataloader.lazy_at_depth(@field_resolve_step.path.size, self)
           else
@@ -144,6 +153,13 @@ module GraphQL
           @runner.static_type_at[next_result_h] = @field_resolve_step.static_type
         end
 
+        @field_resolve_step.authorized_finished(self)
+      end
+
+      private
+
+      def set_invalid_type_result
+        @graphql_result[@key] = @is_non_null ? @field_resolve_step.add_non_null_error(@is_from_array) : nil
         @field_resolve_step.authorized_finished(self)
       end
     end
