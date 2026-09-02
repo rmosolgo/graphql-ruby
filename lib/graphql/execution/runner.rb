@@ -87,10 +87,10 @@ module GraphQL
           @schema.analysis_engine.analyze_multiplex(@multiplex, multiplex_analyzers)
           trace.end_analyze_multiplex(@multiplex, multiplex_analyzers)
 
-          results = []
+          results = {}.compare_by_identity
           queries.each do |query|
             if query.validate && !query.valid?
-              results << {
+              results[query] = {
                 "errors" => query.static_errors.map(&:to_h)
               }
               next
@@ -125,8 +125,8 @@ module GraphQL
             end
           end
 
-          queries.each_with_index.map do |query, idx|
-            result = results[idx]
+          queries.map do |query|
+            result = results[query]
 
             fin_result = if (!@finalizers&.key?(query) && query.context.errors.empty?) || !query.valid?
               result
@@ -262,12 +262,12 @@ module GraphQL
             end
 
             if !auth_check
-              results << {}
+              results[query] = {}
               return
             end
           end
 
-          results << { "data" => data }
+          results[query] = { "data" => data }
           objects = [root_value]
           query.current_trace.objects(root_type, objects, query.context)
 
@@ -361,7 +361,7 @@ module GraphQL
           objects = [root_value]
           query.current_trace.objects(resolved_type, objects, query.context)
           runtime_type_at[data] = resolved_type
-          results << { "data" => data }
+          results[query] = { "data" => data }
           isolated_steps[0] << SelectionsStep.new(
             parent_type: resolved_type,
             field_resolve_step: nil,
@@ -376,10 +376,10 @@ module GraphQL
           inner_type = root_type.unwrap
           case inner_type.kind.name
           when "SCALAR", "ENUM"
-            results << run_isolated_scalar(root_type, query)
+            results[query] = run_isolated_scalar(root_type, query)
           else
             list_result = Array.new(root_value.size) { Hash.new.compare_by_identity }
-            results << { "data" => list_result }
+            results[query] = { "data" => list_result }
             isolated_steps[0] << SelectionsStep.new(
               parent_type: inner_type,
               field_resolve_step: nil,
@@ -392,7 +392,7 @@ module GraphQL
             )
           end
         when "SCALAR", "ENUM"
-          results << run_isolated_scalar(root_type, query)
+          results[query] = run_isolated_scalar(root_type, query)
         else
           raise "Unhandled root type kind: #{root_type.kind.name.inspect}"
         end
