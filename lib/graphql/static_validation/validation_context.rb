@@ -22,7 +22,7 @@ module GraphQL
         @query = query
         @types = query.types # TODO update migrated callers to use this accessor
         @schema = query.schema
-        @literal_validator = LiteralValidator.new(context: query.context)
+        @input_values = query.input_values
         @errors = []
         @max_errors = max_errors || Float::INFINITY
         @on_dependency_resolve_handlers = []
@@ -38,8 +38,17 @@ module GraphQL
         @on_dependency_resolve_handlers << handler
       end
 
+      INVALID_RESULT = GraphQL::Query::InputValidationResult.new(valid: false, problems: [])
+      VALID_RESULT = GraphQL::Query::InputValidationResult.new(valid: true, problems: [])
       def validate_literal(ast_value, type)
-        @literal_validator.validate(ast_value, type)
+        result = @input_values.value_from_ast(ast_value, type)
+        if result.nil?
+          INVALID_RESULT
+        else
+          VALID_RESULT
+        end
+      rescue CoercionError => coercion_err
+        Query::InputValidationResult.from_problem(coercion_err.message, message: coercion_err.message, extensions: coercion_err.extensions)
       end
 
       def too_many_errors?

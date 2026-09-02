@@ -228,12 +228,18 @@ module GraphQL
         nil
       end
 
+      public
+
       def value_from_ast(value_node, type)
         if type.non_null?
-          type = type.of_type
-        end
-
-        if value_node.nil?
+          inner_type = type.of_type
+          value = value_from_ast(value_node, inner_type)
+          if value.nil?
+            raise GraphQL::CoercionError, "Could not coerce value #{GraphQL::Language.serialize(value_node)} to #{type.graphql_name}"
+          else
+            value
+          end
+        elsif value_node.nil?
           nil
         elsif value_node.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           variable_values[value_node.name]
