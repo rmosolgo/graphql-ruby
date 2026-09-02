@@ -21,6 +21,7 @@ module GraphQL
         @finish_extension_idx = nil
         @was_scoped = nil
         @pending_steps = nil
+        @invalid_type_locations = nil
         @arguments_without_loads = @post_processors = @directive_finalizers = nil
       end
 
@@ -561,8 +562,12 @@ module GraphQL
                   # TODO batch this
                   object_type, next_object = sync(object_type)
                 end
-                ResolveTypeStep.assert_valid_resolved_type(@static_type, object_type, next_object, self)
+                is_valid_type = ResolveTypeStep.assert_valid_resolved_type(@static_type, object_type, next_object, self)
                 query.current_trace.end_resolve_type(@static_type, next_object, query.context, object_type)
+                if !is_valid_type
+                  set_invalid_type_result(result)
+                  next
+                end
                 @runner.runtime_type_at[result] = object_type
               end
               next_objects_by_type[object_type] << next_object
@@ -582,6 +587,7 @@ module GraphQL
                 query: query,
               ))
             end
+            @invalid_type_locations = nil
           else
             query.current_trace.objects(@static_type, @all_next_objects, ctx)
             @runner.add_step(SelectionsStep.new(
@@ -619,6 +625,11 @@ module GraphQL
       end
 
       private
+
+      def set_invalid_type_result(result)
+        graphql_result, key, is_non_null, is_from_array = @invalid_type_locations.fetch(result)
+        graphql_result[key] = is_non_null ? add_non_null_error(is_from_array) : nil
+      end
 
       def build_graphql_result(graphql_result, key, field_result, return_type, is_nn, is_list, is_from_array) # rubocop:disable Metrics/ParameterLists
         if field_result.nil?
@@ -680,6 +691,10 @@ module GraphQL
           @all_next_objects << field_result
           @runner.static_type_at[next_result_h] = @static_type
           graphql_result[key] = next_result_h
+          if @static_type.kind.abstract?
+            @invalid_type_locations ||= {}.compare_by_identity
+            @invalid_type_locations[next_result_h] = [graphql_result, key, is_nn, is_from_array]
+          end
         end
       end
 
