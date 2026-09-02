@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/pagination/connection"
+require "monitor"
 
 module GraphQL
   module Pagination
@@ -178,6 +179,17 @@ module GraphQL
       # Apply `first` and `last` to `sliced_nodes`,
       # returning a new relation
       def limited_nodes
+        return @limited_nodes if @limited_nodes
+        if async_dataloader?
+          (@load_monitor ||= Monitor.new).synchronize do
+            build_limited_nodes
+          end
+        else
+          build_limited_nodes
+        end
+      end
+
+      def build_limited_nodes
         @limited_nodes ||= begin
           calculate_sliced_nodes_parameters
           if @sliced_nodes_null_relation
@@ -217,15 +229,19 @@ module GraphQL
         end
       end
 
+      def async_dataloader?
+        @context&.[](:dataloader).is_a?(GraphQL::Dataloader::AsyncDataloader)
+      end
+
       # Load nodes after applying first/last/before/after,
       # returns an array of nodes
       def load_nodes
         # Return an array so we can consistently use `.index(node)` on it
         return @nodes if @nodes
-        if (@context&.[](:dataloader).is_a?(GraphQL::Dataloader::AsyncDataloader))
+        if async_dataloader?
           # `AsyncDataloader` may resolve sibling fields (eg, `edges` and `pageInfo`)
           # in separate Fibers, so several callers can get here before `@nodes` is set.
-          (@load_lock ||= Mutex.new).synchronize do
+          (@load_monitor ||= Monitor.new).synchronize do
             @nodes ||= limited_nodes.to_a
           end
         else
