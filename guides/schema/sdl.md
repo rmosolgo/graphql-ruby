@@ -1,14 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Schema
-title: Parsing GraphQL Schema Definition Language into a Ruby Schema
-desc: Defining a schema from a string or .graphql file
-index: 7
----
+# Parsing GraphQL Schema Definition Language into a Ruby Schema
 
-GraphQL-Ruby includes a way to build a runable schema from the GraphQL Schema Definition Language (SDL). {{ "GraphQL::Schema.from_definition" | api_doc }} returns a schema class based on a filename or string containing GraphQL SDL. For example:
+GraphQL-Ruby includes a way to build a runable schema from the GraphQL Schema Definition Language (SDL). [GraphQL::Schema.from_definition](rdoc-ref:GraphQL::Schema.from_definition) returns a schema class based on a filename or string containing GraphQL SDL. For example:
 
 ```ruby
 # From a file:
@@ -78,7 +70,7 @@ The hash may contain:
 
 ## Plugins
 
-{{ "GraphQL::Schema.from_definition" | api_doc }} accepts a `using:` argument, which may be given as a map of `plugin => args` pairs. For example:
+[GraphQL::Schema.from_definition](rdoc-ref:GraphQL::Schema.from_definition) accepts a `using:` argument, which may be given as a map of `plugin => args` pairs. For example:
 
 ```ruby
 MySchema = GraphQL::Schema.from_definition("path/to/schema.graphql", using: {
@@ -104,4 +96,4 @@ pp schema.get_field("Query", "secret").ast_node.directives.map(&:to_query_string
 # => ["@privacy(secret: true)"]
 ```
 
-See {{ "GraphQL::Language::Nodes::Directive" | api_doc }} for available methods.
+See [GraphQL::Language::Nodes::Directive](rdoc-ref:GraphQL::Language::Nodes::Directive) for available methods.

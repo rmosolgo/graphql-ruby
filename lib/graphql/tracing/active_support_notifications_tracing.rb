@@ -7,7 +7,7 @@ module GraphQL
     # This implementation forwards events to ActiveSupport::Notifications
     # with a `graphql` suffix.
     #
-    # @see KEYS for event names
+    # See [KEYS](rdoc-ref:KEYS) for event names
     module ActiveSupportNotificationsTracing
       # A cache of frequently-used keys to avoid needless string allocations
       KEYS = NotificationsTracing::KEYS

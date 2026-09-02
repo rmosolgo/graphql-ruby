@@ -8,44 +8,57 @@ module GraphQL
       #
       # (This is for specifying mutually exclusive sets of arguments.)
       #
-      # If you use {GraphQL::Schema::Visibility} to hide all the arguments in a `one_of: [..]` set,
-      # then a developer-facing {GraphQL::Error} will be raised during execution. Pass `allow_all_hidden: true` to
+      # If you use [GraphQL::Schema::Visibility](rdoc-ref:GraphQL::Schema::Visibility) to hide all the arguments in a `one_of: [..]` set,
+      # then a developer-facing [GraphQL::Error](rdoc-ref:GraphQL::Error) will be raised during execution. Pass `allow_all_hidden: true` to
       # skip validation in this case instead.
       #
       # This validator also implements `argument ... required: :nullable`. If an argument has `required: :nullable`
-      # but it's hidden with {GraphQL::Schema::Visibility}, then this validator doesn't run.
+      # but it's hidden with [GraphQL::Schema::Visibility](rdoc-ref:GraphQL::Schema::Visibility), then this validator doesn't run.
       #
-      # @example Require exactly one of these arguments
+      # **Examples**
       #
-      #   field :update_amount, IngredientAmount, null: false do
-      #     argument :ingredient_id, ID, required: true
-      #     argument :cups, Integer, required: false
-      #     argument :tablespoons, Integer, required: false
-      #     argument :teaspoons, Integer, required: false
-      #     validates required: { one_of: [:cups, :tablespoons, :teaspoons] }
-      #   end
+      # **Example: Require exactly one of these arguments**
       #
-      # @example Require one of these _sets_ of arguments
+      # ```ruby
+      # field :update_amount, IngredientAmount, null: false do
+      #   argument :ingredient_id, ID, required: true
+      #   argument :cups, Integer, required: false
+      #   argument :tablespoons, Integer, required: false
+      #   argument :teaspoons, Integer, required: false
+      #   validates required: { one_of: [:cups, :tablespoons, :teaspoons] }
+      # end
+      # ```
       #
-      #  field :find_object, Node, null: true do
-      #    argument :node_id, ID, required: false
-      #    argument :object_type, String, required: false
-      #    argument :object_id, Integer, required: false
-      #    # either a global `node_id` or an `object_type`/`object_id` pair is required:
-      #    validates required: { one_of: [:node_id, [:object_type, :object_id]] }
-      #  end
+      # **Example: Require one of these _sets_ of arguments**
       #
-      # @example require _some_ value for an argument, even if it's null
-      #   field :update_settings, AccountSettings do
-      #     # `required: :nullable` means this argument must be given, but may be `null`
-      #     argument :age, Integer, required: :nullable
-      #   end
+      # ```ruby
+      # field :find_object, Node, null: true do
+      #   argument :node_id, ID, required: false
+      #   argument :object_type, String, required: false
+      #   argument :object_id, Integer, required: false
+      #   # either a global `node_id` or an `object_type`/`object_id` pair is required:
+      #   validates required: { one_of: [:node_id, [:object_type, :object_id]] }
+      # end
+      # ```
       #
+      # **Example: require _some_ value for an argument, even if it's null**
+      #
+      # ```ruby
+      # field :update_settings, AccountSettings do
+      #   # `required: :nullable` means this argument must be given, but may be `null`
+      #   argument :age, Integer, required: :nullable
+      # end
+      # ```
       class RequiredValidator < Validator
-        # @param one_of [Array<Symbol>] A list of arguments, exactly one of which is required for this field
-        # @param argument [Symbol] An argument that is required for this field
-        # @param allow_all_hidden [Boolean] If `true`, then this validator won't run if all the `one_of: ...` arguments have been hidden
-        # @param message [String]
+        # **Parameters**
+        #
+        # - `one_of` (`Array<Symbol>`) — A list of arguments, exactly one of which is required for this field
+        # - `argument` (`Symbol`) — An argument that is required for this field
+        # - `allow_all_hidden` (`Boolean`) — If `true`, then this validator won't run if all the `one_of: ...` arguments have been hidden
+        # - `message` (`String`)
+        #
+        # :call-seq:
+        #   initialize(Array[Symbol] one_of:, Symbol argument:, bool allow_all_hidden:, String message:, **default_options)
         def initialize(one_of: nil, argument: nil, allow_all_hidden: nil, message: nil, **default_options)
           @one_of = if one_of
             one_of

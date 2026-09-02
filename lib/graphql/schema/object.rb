@@ -18,13 +18,22 @@ module GraphQL
         end
       end
 
-      # @return [Object] the application object this type is wrapping
+      # **Returns**
+      #
+      # - `Object` — the application object this type is wrapping
       attr_reader :object
 
-      # @return [GraphQL::Query::Context] the context instance for this query
+      # **Returns**
+      #
+      # - `GraphQL::Query::Context` — the context instance for this query
       attr_reader :context
 
-      # @return [GraphQL::Dataloader]
+      # **Returns**
+      #
+      # - `GraphQL::Dataloader`
+      #
+      # :call-seq:
+      #   dataloader() -> GraphQL::Dataloader
       def dataloader
         context.dataloader
       end
@@ -36,8 +45,8 @@ module GraphQL
       end
 
       class << self
-        # This is protected so that we can be sure callers use the public method, {.authorized_new}
-        # @see authorized_new to make instances
+        # This is protected so that we can be sure callers use the public method, [.authorized_new](rdoc-ref:.authorized_new)
+        # See [authorized_new](rdoc-ref:authorized_new) to make instances
         protected :new
 
         def wrap_scoped(object, context)
@@ -54,18 +63,29 @@ module GraphQL
         #
         # Probably only the framework should call this method.
         #
-        # This might return a {GraphQL::Execution::Lazy} if the user-provided `.authorized?`
+        # This might return a [GraphQL::Execution::Lazy](rdoc-ref:GraphQL::Execution::Lazy) if the user-provided `.authorized?`
         # hook returns some lazy value (like a Promise).
         #
-        # The reason that the auth check is in this wrapper method instead of {.new} is because
+        # The reason that the auth check is in this wrapper method instead of [.new](rdoc-ref:.new) is because
         # of how it might return a Promise. It would be weird if `.new` returned a promise;
-        # It would be a headache to try to maintain Promise-y state inside a {Schema::Object}
+        # It would be a headache to try to maintain Promise-y state inside a [Schema::Object](rdoc-ref:Schema::Object)
         # instance. So, hopefully this wrapper method will do the job.
         #
-        # @param object [Object] The thing wrapped by this object
-        # @param context [GraphQL::Query::Context]
-        # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
-        # @raise [GraphQL::UnauthorizedError] if the user-provided hook returns `false`
+        # **Parameters**
+        #
+        # - `object` (`Object`) — The thing wrapped by this object
+        # - `context` (`GraphQL::Query::Context`)
+        #
+        # **Returns**
+        #
+        # - `GraphQL::Schema::Object, GraphQL::Execution::Lazy`
+        #
+        # **Raises**
+        #
+        # - `GraphQL::UnauthorizedError` — if the user-provided hook returns `false`
+        #
+        # :call-seq:
+        #   authorized_new(Object object, GraphQL::Query::Context context) -> GraphQL::Schema::Object | GraphQL::Execution::Lazy | GraphQL::UnauthorizedError
         def authorized_new(object, context)
           context.query.current_trace.begin_authorized(self, object, context)
           begin

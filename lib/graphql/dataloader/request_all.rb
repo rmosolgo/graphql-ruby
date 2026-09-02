@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   class Dataloader
-    # @see Source#request_all which returns an instance of this.
+    # See [Source#request_all](rdoc-ref:Source#request_all) which returns an instance of this.
     class RequestAll < Request
       def initialize(source, keys)
         @source = source
@@ -10,7 +10,12 @@ module GraphQL
 
       # Call this method to cause the current Fiber to wait for the results of this request.
       #
-      # @return [Array<Object>] One object for each of `keys`
+      # **Returns**
+      #
+      # - `Array<Object>` — One object for each of `keys`
+      #
+      # :call-seq:
+      #   load() -> Array[Object]
       def load
         @source.load_all(@keys)
       end

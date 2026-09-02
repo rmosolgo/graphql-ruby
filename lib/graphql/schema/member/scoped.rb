@@ -9,9 +9,17 @@ module GraphQL
         #
         # By default, it's a no-op. Override it to scope your objects.
         #
-        # @param items [Object] Some list-like object (eg, Array, ActiveRecord::Relation)
-        # @param context [GraphQL::Query::Context]
-        # @return [Object] Another list-like object, scoped to the current context
+        # **Parameters**
+        #
+        # - `items` (`Object`) — Some list-like object (eg, Array, ActiveRecord::Relation)
+        # - `context` (`GraphQL::Query::Context`)
+        #
+        # **Returns**
+        #
+        # - `Object` — Another list-like object, scoped to the current context
+        #
+        # :call-seq:
+        #   scope_items(Object items, GraphQL::Query::Context context) -> Object
         def scope_items(items, context)
           items
         end

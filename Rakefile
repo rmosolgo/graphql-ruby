@@ -3,7 +3,6 @@ require "bundler/gem_helper"
 Bundler::GemHelper.install_tasks
 
 require "rake/testtask"
-require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
 require 'rake/extensiontask'
 
@@ -19,8 +18,17 @@ Rake::TestTask.new do |t|
     end
   end
 
+  exclude_docs = begin
+    require "rdoc"
+    require "rdoc/generator/aliki"
+    false
+  rescue LoadError
+    true
+  end
+
   t.test_files = FileList.new("spec/**/*_spec.rb") do |fl|
     fl.exclude(*exclude_integrations.map { |int| "spec/integration/#{int}/**/*" })
+    fl.exclude("spec/docs/**/*") if exclude_docs
   end
 
   # After 2.7, there were not warnings for uninitialized ivars anymore
@@ -234,6 +242,71 @@ end
 task :move_binary do
   # For some reason my local env doesn't respect the `lib_dir` configured above
   `mv graphql-c_parser/lib/*.bundle graphql-c_parser/lib/graphql`
+end
+
+namespace :docs do
+  desc "Build the RDoc/Aliki documentation site"
+  task build: "docs:rdoc:build"
+
+  desc "Build and run documentation quality checks"
+  task check: "docs:rdoc:build" do
+    ruby "tool/docs/check.rb"
+    ruby "tool/docs/type_signatures.rb", "--check"
+    ruby "tool/docs/migrate_guides.rb", "--check"
+    ruby "tool/docs/guide_audit.rb"
+    ruby "tool/docs/compatibility.rb", "--root", "tmp/rdoc-site", "--rdoc", "tmp/rdoc-site/js/search_data.js", "--baseline", "docs/yard_api_baseline.yml", "--strict", "--json", "tmp/rdoc-api-compatibility.json"
+    ruby "tool/docs/link_checker.rb", "--root", "tmp/rdoc-site", "--strict", "--json", "tmp/rdoc-link-report.json"
+    ruby "tool/docs/rdoc_ref_checker.rb", "--root", "tmp/rdoc-site", "--json", "tmp/rdoc-ref-report.json"
+    sh "node tool/docs/assets/graphql_highlighter_test.js"
+  end
+
+  desc "Build the documentation twice and compare generated files"
+  task :build_twice do
+    require_relative "tool/docs/build"
+    require "digest"
+    require "fileutils"
+    require "pathname"
+    builder = GraphQLDocs::Build.new
+    first = builder.build_site(output: "tmp/rdoc-site-first")
+    second = builder.build_site(output: "tmp/rdoc-site-second")
+    digest = lambda do |root|
+      Dir[File.join(root, "**", "*")].select { |path| File.file?(path) }.sort.to_h do |path|
+        [Pathname.new(path).relative_path_from(Pathname.new(root)).to_s, Digest::SHA256.file(path).hexdigest]
+      end
+    end
+    raise "RDoc output is not reproducible" unless digest.call(first) == digest.call(second)
+    puts "RDoc output is reproducible"
+  ensure
+    FileUtils.rm_rf("tmp/rdoc-site-first")
+    FileUtils.rm_rf("tmp/rdoc-site-second")
+  end
+
+  namespace :rdoc do
+    desc "Build the shadow RDoc/Aliki documentation site"
+    task :build do
+      require_relative "tool/docs/build"
+      GraphQLDocs::Build.new.build_site
+    end
+
+    desc "Build versioned RDoc/Aliki API documentation"
+    task :build_version, [:version] do |_task, args|
+      require_relative "tool/docs/build"
+      version = args[:version] || ENV["GRAPHQL_VERSION"] || raise(ArgumentError, "A version is required")
+      GraphQLDocs::Build.new.build_version(version)
+    end
+
+    desc "Build the shadow RDoc site and serve it locally"
+    task :serve => :build do
+      require "webrick"
+      server = WEBrick::HTTPServer.new(
+        Port: Integer(ENV.fetch("PORT", "8808")),
+        DocumentRoot: File.expand_path("tmp/rdoc-site"),
+      )
+      trap("INT") { server.shutdown }
+      puts "Serving RDoc documentation at http://127.0.0.1:#{server.config[:Port]}"
+      server.start
+    end
+  end
 end
 
 desc "Build the C Extension"

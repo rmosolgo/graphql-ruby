@@ -6,10 +6,15 @@ module GraphQL
   module Tracing
     # A tracer for sending GraphQL-Ruby times to Scout
     #
-    # @example Adding this tracer to your schema
-    #   class MySchema < GraphQL::Schema
-    #     trace_with GraphQL::Tracing::ScoutTrace
-    #   end
+    # **Examples**
+    #
+    # **Example: Adding this tracer to your schema**
+    #
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   trace_with GraphQL::Tracing::ScoutTrace
+    # end
+    # ```
     ScoutTrace = MonitorTrace.create_module("scout")
     module ScoutTrace
       class ScoutMonitor < MonitorTrace::Monitor

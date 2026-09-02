@@ -857,7 +857,7 @@ describe GraphQL::Schema::Argument do
   describe "argument definitions" do
     it "HasArguments::argument documents each argument" do
       has_arguments_argument_comment = File.read("./lib/graphql/schema/member/has_arguments.rb")[/(\s+#[^\n]*\n)+\s+def argument\(/m]
-      has_arguments_argument_doc_param_names = has_arguments_argument_comment.split("\n").map { |line| (line[/@param (\S+)/] || line[/@option kwargs \[.*\] :(\S+)/]); $1 }.compact
+      has_arguments_argument_doc_param_names = rdoc_parameter_names(has_arguments_argument_comment, include_options: true)
       argument_initialize_argument_names = GraphQL::Schema::Argument.instance_method(:initialize).parameters.map { |param| param[1].to_s }
       assert_equal ["kwargs"], has_arguments_argument_doc_param_names - argument_initialize_argument_names
       assert_equal ["owner"], argument_initialize_argument_names - has_arguments_argument_doc_param_names
@@ -865,7 +865,7 @@ describe GraphQL::Schema::Argument do
 
     it "Argument::initialize documents each argument" do
       argument_initialize_comment = File.read("./lib/graphql/schema/argument.rb")[/(\s+#[^\n]*\n)+ {6}def initialize\(/m]
-      argument_initialize_doc_param_names = argument_initialize_comment.split("\n").map { |line| line[/@param (\S+)/]; $1 }.compact
+      argument_initialize_doc_param_names = rdoc_parameter_names(argument_initialize_comment)
       argument_initialize_argument_names = GraphQL::Schema::Argument.instance_method(:initialize).parameters.map { |param| param[1].to_s }
       assert_equal argument_initialize_doc_param_names.sort, argument_initialize_argument_names.sort
     end

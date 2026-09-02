@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Mutations
-title: Mutation authorization
-desc: Checking permissions for mutations
-index: 3
----
+# Mutation authorization
 
 Before running a mutation, you probably want to do a few things:
 
@@ -57,7 +49,7 @@ end
 
 Now, when any non-`admin` user tries to run the mutation, it won't run. Instead, they'll get an error in the response.
 
-Additionally, `#ready?` may return `false, { ... }` to return {% internal_link "errors as data", "/mutations/mutation_errors.html#errors-as-data" %}:
+Additionally, `#ready?` may return `false, { ... }` to return [errors as data](/mutations/mutation_errors.html#errors-as-data):
 
 ```ruby
 def ready?
@@ -93,9 +85,9 @@ end
 It works like this: if you pass a `loads:` option, it will:
 
 - Automatically remove `_id` from the name and pass that name for the `as:` option
-- Add a prepare hook to fetch an object with the given `ID` (using {{ "Schema.object_from_id" | api_doc }})
-- Check that the fetched object's type matches the `loads:` type (using {{ "Schema.resolve_type" | api_doc }})
-- Run the fetched object through its type's `.authorized?` hook (see {% internal_link "Authorization", "/authorization/authorization" %})
+- Add a prepare hook to fetch an object with the given `ID` (using [Schema.object_from_id](rdoc-ref:GraphQL::Schema.object_from_id))
+- Check that the fetched object's type matches the `loads:` type (using [Schema.resolve_type](rdoc-ref:GraphQL::Schema.resolve_type))
+- Run the fetched object through its type's `.authorized?` hook (see [Authorization](/authorization/authorization))
 - Inject it into `#resolve` using the object-style name (`employee:`)
 
 In this case, if the argument value is provided by `object_from_id` doesn't return a value, the mutation will fail with an error.
@@ -133,7 +125,7 @@ When `#authorized?` returns `false` (or something falsey), the mutation will be 
 
 #### Adding errors
 
-To add errors as data (as described in {% internal_link "Mutation errors", "/mutations/mutation_errors.html#errors-as-data" %}), return a value _along with_ `false`, for example:
+To add errors as data (as described in [Mutation errors](/mutations/mutation_errors.html#errors-as-data)), return a value _along with_ `false`, for example:
 
 ```ruby
 def authorized?(employee:)

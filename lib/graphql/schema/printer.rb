@@ -1,42 +1,57 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    # Used to convert your {GraphQL::Schema} to a GraphQL schema string
+    # Used to convert your [GraphQL::Schema](rdoc-ref:GraphQL::Schema) to a GraphQL schema string
     #
-    # @example print your schema to standard output (via helper)
-    #   puts GraphQL::Schema::Printer.print_schema(MySchema)
+    # **Examples**
     #
-    # @example print your schema to standard output
-    #   puts GraphQL::Schema::Printer.new(MySchema).print_schema
+    # **Example: print your schema to standard output (via helper)**
     #
-    # @example print a single type to standard output
-    #   class Types::Query < GraphQL::Schema::Object
-    #     description "The query root of this schema"
+    # ```ruby
+    # puts GraphQL::Schema::Printer.print_schema(MySchema)
+    # ```
     #
-    #     field :post, Types::Post, null: true
-    #   end
+    # **Example: print your schema to standard output**
     #
-    #   class Types::Post < GraphQL::Schema::Object
-    #     description "A blog post"
+    # ```ruby
+    # puts GraphQL::Schema::Printer.new(MySchema).print_schema
+    # ```
     #
-    #     field :id, ID, null: false
-    #     field :title, String, null: false
-    #     field :body, String, null: false
-    #   end
+    # **Example: print a single type to standard output**
     #
-    #   class MySchema < GraphQL::Schema
-    #     query(Types::Query)
-    #   end
+    # ```ruby
+    # class Types::Query < GraphQL::Schema::Object
+    #   description "The query root of this schema"
     #
-    #   printer = GraphQL::Schema::Printer.new(MySchema)
-    #   puts printer.print_type(Types::Post)
+    #   field :post, Types::Post, null: true
+    # end
     #
+    # class Types::Post < GraphQL::Schema::Object
+    #   description "A blog post"
+    #
+    #   field :id, ID, null: false
+    #   field :title, String, null: false
+    #   field :body, String, null: false
+    # end
+    #
+    # class MySchema < GraphQL::Schema
+    #   query(Types::Query)
+    # end
+    #
+    # printer = GraphQL::Schema::Printer.new(MySchema)
+    # puts printer.print_type(Types::Post)
+    # ```
     class Printer < GraphQL::Language::Printer
       attr_reader :schema, :warden
 
-      # @param schema [GraphQL::Schema]
-      # @param context [Hash]
-      # @param introspection [Boolean] Should include the introspection types in the string?
+      # **Parameters**
+      #
+      # - `schema` (`GraphQL::Schema`)
+      # - `context` (`Hash`)
+      # - `introspection` (`Boolean`) — Should include the introspection types in the string?
+      #
+      # :call-seq:
+      #   initialize(GraphQL::Schema schema, Hash context:, bool introspection:)
       def initialize(schema, context: nil, introspection: false)
         @document_from_schema = GraphQL::Language::DocumentFromSchemaDefinition.new(
           schema,
@@ -75,10 +90,16 @@ module GraphQL
       end
 
       # Return a GraphQL schema string for the defined types in the schema
-      # @param schema [GraphQL::Schema]
-      # @param context [Hash]
-      # @param only [<#call(member, ctx)>]
-      # @param except [<#call(member, ctx)>]
+      #
+      # **Parameters**
+      #
+      # - `schema` (`GraphQL::Schema`)
+      # - `context` (`Hash`)
+      # - `only` (`<#call(member, ctx)>`)
+      # - `except` (`<#call(member, ctx)>`)
+      #
+      # :call-seq:
+      #   print_schema(GraphQL::Schema schema, **args)
       def self.print_schema(schema, **args)
         printer = new(schema, **args)
         printer.print_schema

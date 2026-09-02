@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Rate Limiters
-title: Deploying Rate Limiters
-desc: Tips for releasing limiters smoothly
-index: 4
----
+# Deploying Rate Limiters
 
 Here are a few options for deploying GraphQL-Enterprise's rate limiters:
 
@@ -19,15 +10,15 @@ Here are a few options for deploying GraphQL-Enterprise's rate limiters:
 
 ## Dashboard
 
-Once installed, your {% internal_link "GraphQL-Pro dashboard", "/pro/dashboard" %} will include a simple metrics view:
+Once installed, your [GraphQL-Pro dashboard](/pro/dashboard) will include a simple metrics view:
 
-{{ "/limiters/active_operation_limiter_dashboard.png" | link_to_img:"GraphQL Active Operation Limiter Dashboard" }}
+![GraphQL Active Operation Limiter Dashboard](/limiters/active_operation_limiter_dashboard.png)
 
 To disable dashboard charts, add `use(... dashboard_charts: false)` to your configuration.
 
 Also, the dashboard includes a link to enable or disable "soft mode":
 
-{{ "/limiters/soft_button.png" | link_to_img:"GraphQL Rate Limiter Soft Mode Button" }}
+![GraphQL Rate Limiter Soft Mode Button](/limiters/soft_button.png)
 
 When "soft mode" is enabled, limited requests are _not_ actually halted (although they are _counted_). When "soft mode" is disabled, any over-limit requests are halted.
 
@@ -56,7 +47,7 @@ MySchema.enterprise_runtime_limiter.set_soft_limit(false)
 
 ## Subscriptions
 
-If you're using {% internal_link "PusherSubscriptions", "/subscriptions/pusher_implementation" %} or {% internal_link "AblySubscriptions", "/subscriptions/ably_implementation" %}, then you'll need to accomodate subscriptions that were created _before_ you deployed the rate limiter. Those subscriptions are already stored in Redis and their contexts _don't_ include the required `limiter_key:` value.
+If you're using [PusherSubscriptions](/subscriptions/pusher_implementation) or [AblySubscriptions](/subscriptions/ably_implementation), then you'll need to accomodate subscriptions that were created _before_ you deployed the rate limiter. Those subscriptions are already stored in Redis and their contexts _don't_ include the required `limiter_key:` value.
 
 To address this, you can customize the limiter(s) you're using to provide a default value in this case. For example:
 

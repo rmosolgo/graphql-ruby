@@ -7,87 +7,100 @@ module GraphQL
     # Some things to keep in mind:
     #
     # - No queueing system; ActiveJob should be added
-    # - Take care to reload context when re-delivering the subscription. (see {Query#subscription_update?})
+    # - Take care to reload context when re-delivering the subscription. (see [Query#subscription_update?](rdoc-ref:Query#subscription_update?))
     # - Avoid the async ActionCable adapter and use the redis or PostgreSQL adapters instead. Otherwise calling #trigger won't work from background jobs or the Rails console.
     #
-    # @example Adding ActionCableSubscriptions to your schema
-    #   class MySchema < GraphQL::Schema
-    #     # ...
-    #     use GraphQL::Subscriptions::ActionCableSubscriptions
+    # See [GraphQL::Testing::MockActionCable](rdoc-ref:GraphQL::Testing::MockActionCable) for test helpers
+    #
+    # **Examples**
+    #
+    # **Example: Adding ActionCableSubscriptions to your schema**
+    #
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   # ...
+    #   use GraphQL::Subscriptions::ActionCableSubscriptions
+    # end
+    # ```
+    #
+    # **Example: Implementing a channel for GraphQL Subscriptions**
+    #
+    # ```ruby
+    # class GraphqlChannel < ApplicationCable::Channel
+    #   def subscribed
+    #     @subscription_ids = []
     #   end
     #
-    # @example Implementing a channel for GraphQL Subscriptions
-    #   class GraphqlChannel < ApplicationCable::Channel
-    #     def subscribed
-    #       @subscription_ids = []
+    #   def execute(data)
+    #     query = data["query"]
+    #     variables = ensure_hash(data["variables"])
+    #     operation_name = data["operationName"]
+    #     context = {
+    #       # Re-implement whatever context methods you need
+    #       # in this channel or ApplicationCable::Channel
+    #       # current_user: current_user,
+    #       # Make sure the channel is in the context
+    #       channel: self,
+    #     }
+    #
+    #     result = MySchema.execute(
+    #       query,
+    #       context: context,
+    #       variables: variables,
+    #       operation_name: operation_name
+    #     )
+    #
+    #     payload = {
+    #       result: result.to_h,
+    #       more: result.subscription?,
+    #     }
+    #
+    #     # Track the subscription here so we can remove it
+    #     # on unsubscribe.
+    #     if result.context[:subscription_id]
+    #       @subscription_ids << result.context[:subscription_id]
     #     end
     #
-    #     def execute(data)
-    #       query = data["query"]
-    #       variables = ensure_hash(data["variables"])
-    #       operation_name = data["operationName"]
-    #       context = {
-    #         # Re-implement whatever context methods you need
-    #         # in this channel or ApplicationCable::Channel
-    #         # current_user: current_user,
-    #         # Make sure the channel is in the context
-    #         channel: self,
-    #       }
+    #     transmit(payload)
+    #   end
     #
-    #       result = MySchema.execute(
-    #         query,
-    #         context: context,
-    #         variables: variables,
-    #         operation_name: operation_name
-    #       )
+    #   def unsubscribed
+    #     @subscription_ids.each { |sid|
+    #       MySchema.subscriptions.delete_subscription(sid)
+    #     }
+    #   end
     #
-    #       payload = {
-    #         result: result.to_h,
-    #         more: result.subscription?,
-    #       }
+    #   private
     #
-    #       # Track the subscription here so we can remove it
-    #       # on unsubscribe.
-    #       if result.context[:subscription_id]
-    #         @subscription_ids << result.context[:subscription_id]
-    #       end
-    #
-    #       transmit(payload)
-    #     end
-    #
-    #     def unsubscribed
-    #       @subscription_ids.each { |sid|
-    #         MySchema.subscriptions.delete_subscription(sid)
-    #       }
-    #     end
-    #
-    #     private
-    #
-    #       def ensure_hash(ambiguous_param)
-    #         case ambiguous_param
-    #         when String
-    #           if ambiguous_param.present?
-    #             ensure_hash(JSON.parse(ambiguous_param))
-    #           else
-    #             {}
-    #           end
-    #         when Hash, ActionController::Parameters
-    #           ambiguous_param
-    #         when nil
-    #           {}
+    #     def ensure_hash(ambiguous_param)
+    #       case ambiguous_param
+    #       when String
+    #         if ambiguous_param.present?
+    #           ensure_hash(JSON.parse(ambiguous_param))
     #         else
-    #           raise ArgumentError, "Unexpected parameter: #{ambiguous_param}"
+    #           {}
     #         end
+    #       when Hash, ActionController::Parameters
+    #         ambiguous_param
+    #       when nil
+    #         {}
+    #       else
+    #         raise ArgumentError, "Unexpected parameter: #{ambiguous_param}"
     #       end
-    #   end
-    #
-    # @see GraphQL::Testing::MockActionCable for test helpers
+    #     end
+    # end
+    # ```
     class ActionCableSubscriptions < GraphQL::Subscriptions
       SUBSCRIPTION_PREFIX = "graphql-subscription:"
       EVENT_PREFIX = "graphql-event:"
 
-      # @param serializer [<#dump(obj), #load(string)] Used for serializing messages before handing them to `.broadcast(msg)`
-      # @param namespace [string] Used to namespace events and subscriptions (default: '')
+      # **Parameters**
+      #
+      # - `serializer` (`<#dump(obj), #load(string)>`) — Used for serializing messages before handing them to `.broadcast(msg)`
+      # - `namespace` (`string`) — Used to namespace events and subscriptions (default: '')
+      #
+      # :call-seq:
+      #   initialize(#dump(obj), #load(string) serializer:, string namespace:, action_cable:, action_cable_coder:, **rest)
       def initialize(serializer: Serialize, namespace: '', action_cable: ActionCable, action_cable_coder: ActiveSupport::JSON, **rest)
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
@@ -194,8 +207,14 @@ module GraphQL
 
       # This is called to turn an ActionCable-broadcasted string (JSON)
       # into a query-ready application object.
-      # @param message [String] n ActionCable-broadcasted string (JSON)
-      # @param context [GraphQL::Query::Context] the context of the first event for a given subscription fingerprint
+      #
+      # **Parameters**
+      #
+      # - `message` (`String`) — n ActionCable-broadcasted string (JSON)
+      # - `context` (`GraphQL::Query::Context`) — the context of the first event for a given subscription fingerprint
+      #
+      # :call-seq:
+      #   load_action_cable_message(String message, GraphQL::Query::Context context)
       def load_action_cable_message(message, context)
         if @serialize_with_context
           @serializer.load(message, context)

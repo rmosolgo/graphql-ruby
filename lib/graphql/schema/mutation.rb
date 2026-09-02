@@ -8,62 +8,65 @@ module GraphQL
     # If you want to customize how this class generates types, in your base class,
     # override the various `generate_*` methods.
     #
-    # @see {GraphQL::Schema::RelayClassicMutation} for an extension of this class with some conventions built-in.
+    # See [GraphQL::Schema::RelayClassicMutation](rdoc-ref:GraphQL::Schema::RelayClassicMutation) for an extension of this class with some conventions built-in.
     #
-    # @example Creating a comment
-    #  # Define the mutation:
-    #  class Mutations::CreateComment < GraphQL::Schema::Mutation
-    #    argument :body, String, required: true
-    #    argument :post_id, ID, required: true
+    # **Examples**
     #
-    #    field :comment, Types::Comment, null: true
-    #    field :errors, [String], null: false
+    # **Example: Creating a comment**
     #
-    #    def resolve(body:, post_id:)
-    #      post = Post.find(post_id)
-    #      comment = post.comments.build(body: body, author: context[:current_user])
-    #      if comment.save
-    #        # Successful creation, return the created object with no errors
-    #        {
-    #          comment: comment,
-    #          errors: [],
-    #        }
-    #      else
-    #        # Failed save, return the errors to the client
-    #        {
-    #          comment: nil,
-    #          errors: comment.errors.full_messages
-    #        }
-    #      end
-    #    end
-    #  end
+    # ```ruby
+    # # Define the mutation:
+    # class Mutations::CreateComment < GraphQL::Schema::Mutation
+    #   argument :body, String, required: true
+    #   argument :post_id, ID, required: true
     #
-    #  # Hook it up to your mutation:
-    #  class Types::Mutation < GraphQL::Schema::Object
-    #    field :create_comment, mutation: Mutations::CreateComment
-    #  end
+    #   field :comment, Types::Comment, null: true
+    #   field :errors, [String], null: false
     #
-    #  # Call it from GraphQL:
-    #  result = MySchema.execute <<-GRAPHQL
-    #  mutation {
-    #    createComment(postId: "1", body: "Nice Post!") {
-    #      errors
-    #      comment {
-    #        body
-    #        author {
-    #          login
-    #        }
-    #      }
-    #    }
-    #  }
-    #  GRAPHQL
+    #   def resolve(body:, post_id:)
+    #     post = Post.find(post_id)
+    #     comment = post.comments.build(body: body, author: context[:current_user])
+    #     if comment.save
+    #       # Successful creation, return the created object with no errors
+    #       {
+    #         comment: comment,
+    #         errors: [],
+    #       }
+    #     else
+    #       # Failed save, return the errors to the client
+    #       {
+    #         comment: nil,
+    #         errors: comment.errors.full_messages
+    #       }
+    #     end
+    #   end
+    # end
     #
+    # # Hook it up to your mutation:
+    # class Types::Mutation < GraphQL::Schema::Object
+    #   field :create_comment, mutation: Mutations::CreateComment
+    # end
+    #
+    # # Call it from GraphQL:
+    # result = MySchema.execute <<-GRAPHQL
+    # mutation {
+    #   createComment(postId: "1", body: "Nice Post!") {
+    #     errors
+    #     comment {
+    #       body
+    #       author {
+    #         login
+    #       }
+    #     }
+    #   }
+    # }
+    # GRAPHQL
+    # ```
     class Mutation < GraphQL::Schema::Resolver
       extend GraphQL::Schema::Member::HasFields
       extend GraphQL::Schema::Resolver::HasPayloadType
 
-      # @api private
-      def call_resolve(_args_hash)
+      def call_resolve(_args_hash) # :nodoc:
         # Clear any cached values from `loads` or authorization:
         dataloader.clear_cache
         super

@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Mutations
-title: Mutation Root
-desc: The Mutation object is the entry point for mutation operations.
-index: 0
----
+# Mutation Root
 
 GraphQL mutations all begin with the `mutation` keyword:
 
@@ -41,4 +33,4 @@ end
 
 Now, whenever an incoming request uses the `mutation` keyword, it will go to `Mutation`.
 
-See {% internal_link "Mutation Classes", "/mutations/mutation_classes" %} for some helpers to define mutation fields.
+See [Mutation Classes](/mutations/mutation_classes) for some helpers to define mutation fields.

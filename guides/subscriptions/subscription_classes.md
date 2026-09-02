@@ -1,14 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Subscriptions
-title: Subscription Classes
-desc: Subscription resolvers for pushing updates to clients
-index: 1
----
+# Subscription Classes
 
-You can extend {{ "GraphQL::Schema::Subscription" | api_doc }} to create fields that can be subscribed to.
+You can extend [GraphQL::Schema::Subscription](rdoc-ref:GraphQL::Schema::Subscription) to create fields that can be subscribed to.
 
 These classes support several behaviors:
 
@@ -34,7 +26,7 @@ class Subscriptions::BaseSubscription < GraphQL::Schema::Subscription
 end
 ```
 
-(This base class is a lot like the {% internal_link "mutation base class", "/mutations/mutation_classes" %}. They're both subclasses of {{ "GraphQL::Schema::Resolver" | api_doc }}.)
+(This base class is a lot like the [mutation base class](/mutations/mutation_classes). They're both subclasses of [GraphQL::Schema::Resolver](rdoc-ref:GraphQL::Schema::Resolver).)
 
 ## Extend the base class and hook it up
 
@@ -46,7 +38,7 @@ class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription
 end
 ```
 
-Then, hook up the new class to the {% internal_link "Subscription root type", "subscriptions/subscription_type" %} with the `subscription:` option:
+Then, hook up the new class to the [Subscription root type](/subscriptions/subscription_type) with the `subscription:` option:
 
 ```ruby
 class Types::SubscriptionType < Types::BaseObject
@@ -66,7 +58,7 @@ subscription {
 
 ## Arguments
 
-Subscription fields take {% internal_link "arguments", "/fields/arguments" %} just like normal fields. They also accept a {% internal_link "`loads:` option", "/mutations/mutation_classes#auto-loading-arguments" %} just like mutations. For example:
+Subscription fields take [arguments](/fields/arguments) just like normal fields. They also accept a [`loads:` option](/mutations/mutation_classes#auto-loading-arguments) just like mutations. For example:
 
 ```ruby
 class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription
@@ -148,7 +140,7 @@ payload_type Types::MessageType
 
 ## Scope
 
-Usually, GraphQL-Ruby uses explicitly-passed arguments to determine when a {% internal_link "trigger", "subscriptions/triggers" %} applies to an active subscription. But, you can use `subscription_scope` to configure _implicit_ conditions on updates. When `subscription_scope` is configured, only triggers with a matching `scope:` value will cause clients to receive updates.
+Usually, GraphQL-Ruby uses explicitly-passed arguments to determine when a [trigger](/subscriptions/triggers) applies to an active subscription. But, you can use `subscription_scope` to configure _implicit_ conditions on updates. When `subscription_scope` is configured, only triggers with a matching `scope:` value will cause clients to receive updates.
 
 `subscription_scope` accepts a symbol and the given symbol will be looked up in `context` to find a scope value.
 
@@ -191,7 +183,7 @@ MyAppSchema.subscriptions.trigger(
  )
 ```
 
-Scope is also used for determining whether subscribers can receive the same {% internal_link "broadcast", "subscriptions/implementation#broadcast" %}.
+Scope is also used for determining whether subscribers can receive the same [broadcast](/subscriptions/implementation#broadcasts).
 
 ## Check Permissions with #authorized?
 
@@ -270,7 +262,7 @@ subscription($roomId: ID!) {
 
 ## Subsequent Updates with #update
 
-After a client has registered a subscription, the application may trigger subscription updates with `MySchema.subscriptions.trigger(...)` (see the {% internal_link "Triggers guide", "/subscriptions/triggers" %} for more). Then, `def update` will be called for each client's subscription. In this method you can:
+After a client has registered a subscription, the application may trigger subscription updates with `MySchema.subscriptions.trigger(...)` (see the [Triggers guide](/subscriptions/triggers) for more). Then, `def update` will be called for each client's subscription. In this method you can:
 
 - Unsubscribe the client with `unsubscribe`
 - Return a value with `super` (which returns `object`) or by returning a different value.
@@ -368,4 +360,4 @@ class Subscriptions::JobFinished < GraphQL::Schema::Subscription
 end
 ```
 
-See the {% internal_link "Extra Field Metadata", "/fields/introduction#extra-field-metadata" %} for more information about available metadata.
+See the [Extra Field Metadata](/fields/introduction#extra-field-metadata) for more information about available metadata.

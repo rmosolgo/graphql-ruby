@@ -1,17 +1,23 @@
 # frozen_string_literal: true
 module GraphQL
   # When an `authorized?` hook returns false, this error is used to communicate the failure.
-  # It's passed to {Schema.unauthorized_object}.
+  # It's passed to [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object).
   #
   # Alternatively, custom code in `authorized?` may raise this error. It will be routed the same way.
   class UnauthorizedError < GraphQL::RuntimeError
-    # @return [Object] the application object that failed the authorization check
+    # **Returns**
+    #
+    # - `Object` — the application object that failed the authorization check
     attr_reader :object
 
-    # @return [Class] the GraphQL object type whose `.authorized?` method was called (and returned false)
+    # **Returns**
+    #
+    # - `Class` — the GraphQL object type whose `.authorized?` method was called (and returned false)
     attr_reader :type
 
-    # @return [GraphQL::Query::Context] the context for the current query
+    # **Returns**
+    #
+    # - `GraphQL::Query::Context` — the context for the current query
     attr_accessor :context
 
     def initialize(message = nil, object: nil, type: nil, context: nil)

@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Object Cache
-title: Redis Configuration
-desc: Setting up the Redis backend
-index: 3
----
+# Redis Configuration
 
 `GraphQL::Enterprise::ObjectCache` requires a Redis connection to store cached responses. Unlike `OperationStore` or rate limiters, this Redis instance should be configured to evict keys as needed.
 

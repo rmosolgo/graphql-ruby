@@ -8,7 +8,7 @@ module GraphQL
     # ActiveSupport::Notifications or Dry::Monitor::Notifications)
     # with a `graphql` suffix.
     #
-    # @see KEYS for event names
+    # See [KEYS](rdoc-ref:KEYS) for event names
     class NotificationsTracing
       # A cache of frequently-used keys to avoid needless string allocations
       KEYS = {
@@ -31,21 +31,36 @@ module GraphQL
 
       # Initialize a new NotificationsTracing instance
       #
-      # @param [Object] notifications_engine The notifications engine to use
+      # **Parameters**
+      #
+      # - `notifications_engine` (`Object`) — The notifications engine to use
+      #
+      # :call-seq:
+      #   initialize(Object notifications_engine)
       def initialize(notifications_engine)
         @notifications_engine = notifications_engine
       end
 
       # Sends a GraphQL tracing event to the notification handler
       #
-      # @example
-      # . notifications_engine = Dry::Monitor::Notifications.new(:graphql)
+      # **Yields:** The block to execute for the event
+      #
+      # **Examples**
+      #
+      # **Example: . notifications_engine = Dry::Monitor::Notifications.new(:graphql)**
+      #
+      # ```ruby
       # . tracer = GraphQL::Tracing::NotificationsTracing.new(notifications_engine)
       # . tracer.trace("lex") { ... }
+      # ```
       #
-      # @param [string] key The key for the event
-      # @param [Hash] metadata The metadata for the event
-      # @yield The block to execute for the event
+      # **Parameters**
+      #
+      # - `key` (`string`) — The key for the event
+      # - `metadata` (`Hash`) — The metadata for the event
+      #
+      # :call-seq:
+      #   trace(string key, Hash metadata, &blk)
       def trace(key, metadata, &blk)
         prefixed_key = KEYS[key] || "#{key}.graphql"
 

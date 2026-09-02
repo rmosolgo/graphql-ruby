@@ -1,14 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Type Definitions
-title: Interfaces
-desc: Interfaces are lists of fields which objects may implement
-index: 4
-redirect_from:
-  - /types/abstract_types/
----
+# Interfaces
 
 Interfaces are lists of fields which may be implemented by object types.
 
@@ -63,11 +53,11 @@ Whether the objects are `Company` or `Individual`, it doesn't matter -- you stil
 
 This means, "if the customer is an `Individual`, also get the customer's company name".
 
-Interfaces are a good choice whenever a set of objects are used interchangeably, and they have several significant fields in common. When they don't have fields in common, use a {% internal_link "Union", "/type_definitions/unions" %} instead.
+Interfaces are a good choice whenever a set of objects are used interchangeably, and they have several significant fields in common. When they don't have fields in common, use a [Union](/type_definitions/unions) instead.
 
 ## Defining Interface Types
 
-Interfaces are Ruby modules which include {{ "GraphQL::Schema::Interface" | api_doc }}. First, make a base module:
+Interfaces are Ruby modules which include [GraphQL::Schema::Interface](rdoc-ref:GraphQL::Schema::Interface). First, make a base module:
 
 ```ruby
 module Types::BaseInterface
@@ -139,7 +129,7 @@ end
 This method will be called by objects who implement the interface. To override this implementation,
 object classes can override the `#price` method.
 
-Read more in the {% internal_link "Fields guide", "/fields/introduction" %}.
+Read more in the [Fields guide](/fields/introduction).
 
 ### Definition Methods
 

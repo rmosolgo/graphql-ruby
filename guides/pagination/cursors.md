@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Pagination
-title: Cursors
-desc: Advancing through lists with opaque cursors
-index: 4
----
+# Cursors
 
 Connections use _cursors_ to advance through paginated lists. A cursor is an opaque string that indicates a specific point in this.
 

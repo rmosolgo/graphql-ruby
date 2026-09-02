@@ -1,13 +1,6 @@
----
-layout: guide
-search: true
-section: Dataloader
-title: Async Source Execution
-desc: Using AsyncDataloader to fetch external data in parallel
-index: 5
----
+# Async Source Execution
 
-`AsyncDataloader` will run {{ "GraphQL::Dataloader::Source#fetch" | api_doc }} calls in parallel, so that external service calls (like database queries or network calls) don't have to wait in a queue.
+`AsyncDataloader` will run [GraphQL::Dataloader::Source#fetch](rdoc-ref:GraphQL::Dataloader::Source#fetch) calls in parallel, so that external service calls (like database queries or network calls) don't have to wait in a queue.
 
 To use `AsyncDataloader`, hook it up in your schema _instead of_ `GraphQL::Dataloader`:
 
@@ -22,11 +15,11 @@ __Also__, add [the `async` gem](https://github.com/socketry/async) to your proje
 bundle add async
 ```
 
-Now, {{ "GraphQL::Dataloader::AsyncDataloader" | api_doc }} will create `Async::Task` instances instead of plain `Fiber`s and the `async` gem will manage parallelism.
+Now, [GraphQL::Dataloader::AsyncDataloader](rdoc-ref:GraphQL::Dataloader::AsyncDataloader) will create `Async::Task` instances instead of plain `Fiber`s and the `async` gem will manage parallelism.
 
 For a demonstration of this behavior, see: [https://github.com/rmosolgo/rails-graphql-async-demo](https://github.com/rmosolgo/rails-graphql-async-demo)
 
-_You can also implement {% internal_link "manual parallelism", "/dataloader/parallelism" %} using `dataloader.yield`._
+_You can also implement [manual parallelism](/dataloader/parallelism) using `dataloader.yield`._
 
 ## Rails
 
@@ -40,7 +33,7 @@ end
 ```
 ### ActiveRecord Connections
 
-You can use Dataloader's {% internal_link "Fiber lifecycle hooks", "/dataloader/dataloader#fiber-lifecycle-hooks" %} to improve ActiveRecord connection handling:
+You can use Dataloader's [Fiber lifecycle hooks](/dataloader/dataloader#fiber-lifecycle-hooks) to improve ActiveRecord connection handling:
 
 - In Rails < 7.2, connections are not reused when a Fiber exits; instead, they're only reused when a request or background job finishes. You can add manual `release_connection` calls to improve this.
 - With `isolation_level = :fiber`, new Fibers don't inherit `connected_to ...` settings from their parent fibers.
@@ -77,4 +70,4 @@ Modify the example according to your database configuration and abstract class h
 
 ## Other Options
 
-You can also manually implement parallelism with Dataloader. See the {% internal_link "Dataloader Parallelism", "/dataloader/parallelism" %} guide for details.
+You can also manually implement parallelism with Dataloader. See the [Dataloader Parallelism](/dataloader/parallelism) guide for details.

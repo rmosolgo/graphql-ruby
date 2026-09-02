@@ -1,13 +1,6 @@
----
-layout: guide
-search: true
-section: Dataloader
-title: Manual Parallelism
-desc: Yield to Dataloader after starting work
-index: 7
----
+# Manual Parallelism
 
-You can coordinate with {{ "GraphQL::Dataloader" | api_doc }} to run tasks in the background. To do this, call `dataloader.yield` inside `Source#fetch` after kicking off your task. For example:
+You can coordinate with [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) to run tasks in the background. To do this, call `dataloader.yield` inside `Source#fetch` after kicking off your task. For example:
 
 ```ruby
 def fetch(ids)
@@ -23,7 +16,7 @@ def fetch(ids)
 end
 ```
 
-_Alternatively, you can use {% internal_link "AsyncDataloader", "/dataloader/async_dataloader" %} to automatically background I/O inside `Source#fetch` calls._
+_Alternatively, you can use [AsyncDataloader](/dataloader/async_dataloader) to automatically background I/O inside `Source#fetch` calls._
 
 ## Example: Rails load_async
 
