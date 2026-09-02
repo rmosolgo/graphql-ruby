@@ -191,6 +191,8 @@ describe GraphQL::Query::Partial do
     end
 
     def self.resolve_type(abs_type, object, ctx)
+      return UpcasedFarm if object[:invalid_type]
+
       object[:is_market] ? Market : Farm
     end
 
@@ -442,6 +444,30 @@ describe GraphQL::Query::Partial do
 
     assert_equal({ "name" => "Whisper Hill" }, results[0]["data"])
     assert_equal({ "name" => "Crozet Farmers Market", "isYearRound" => false }, results[1]["data"])
+  end
+
+  it "reports invalid resolved types for abstract partial roots" do
+    exec_next_only("Execution::Next abstract root type validation")
+
+    query_string = "{ thing { ...on Farm { name } } }"
+    error = assert_raises(PartialSchema::Thing::UnresolvedTypeError) do
+      run_partials(query_string, [
+        { path: ["thing"], object: OpenStruct.new({ invalid_type: true }) },
+      ])
+    end
+
+    assert_equal PartialSchema::Query.get_field("thing"), error.field
+    assert_equal PartialSchema::Query, error.parent_type
+    assert_equal PartialSchema::UpcasedFarm, error.resolved_type
+
+    fragment_node = GraphQL.parse(query_string).definitions.first.selections.first.selections.first
+    error = assert_raises(PartialSchema::Thing::UnresolvedTypeError) do
+      run_partials(query_string, [
+        { fragment_node: fragment_node, type: PartialSchema::Thing, object: OpenStruct.new({ invalid_type: true }) },
+      ])
+    end
+    assert_nil error.field
+    assert_equal PartialSchema::Thing, error.parent_type
   end
 
   it "runs on interface selections" do
