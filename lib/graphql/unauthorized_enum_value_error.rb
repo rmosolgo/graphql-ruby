@@ -4,9 +4,6 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Schema::EnumValue` — The value whose `#authorized?` check returned false
-    #
-    # :call-seq:
-    #   enum_value -> GraphQL::Schema::EnumValue
     attr_accessor :enum_value
 
     def initialize(type:, context:, enum_value:)

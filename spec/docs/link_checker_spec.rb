@@ -28,4 +28,23 @@ describe GraphQLDocs::LinkChecker do
       FileUtils.remove_entry(canonical) if canonical && File.directory?(canonical)
     end
   end
+
+  it "validates local links and assets without an HTML extension" do
+    Dir.mktmpdir("graphql-docs") do |directory|
+      File.write(File.join(directory, "index.html"), <<~HTML)
+        <a href="MissingType">Type</a>
+        <a href="GraphQL::MissingType">Qualified type</a>
+        <a href="tel:+123456789">Phone</a>
+        <img src="missing.svg" alt="Missing">
+      HTML
+
+      missing = GraphQLDocs::LinkChecker.new(directory).check
+
+      _(missing.map { |_source, target, kind| [target, kind] }).must_equal([
+        ["MissingType", "file"],
+        ["GraphQL::MissingType", "file"],
+        ["missing.svg", "file"],
+      ])
+    end
+  end
 end

@@ -7,9 +7,6 @@ module GraphQL
         # **Returns**
         #
         # - `String, nil` — Explains why this member was deprecated (if present, this will be marked deprecated in introspection)
-        #
-        # :call-seq:
-        #   deprecation_reason -> String | nil
         attr_reader :deprecation_reason
 
         # Set the deprecation reason for this member, or remove it by assigning `nil`

@@ -34,25 +34,16 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::ExecutionError>` — errors returned during execution
-      #
-      # :call-seq:
-      #   errors -> Array[GraphQL::ExecutionError]
       attr_reader :errors
 
       # **Returns**
       #
       # - `GraphQL::Query` — The query whose context this is
-      #
-      # :call-seq:
-      #   query -> GraphQL::Query
       attr_reader :query
 
       # **Returns**
       #
       # - `GraphQL::Schema`
-      #
-      # :call-seq:
-      #   schema -> GraphQL::Schema
       attr_reader :schema
 
       # Make a new context which delegates key lookup to `values`
@@ -112,7 +103,7 @@ module GraphQL
       RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path]).freeze
       # **Method:** `[]=(key, value)` — Reassign `key` to the hash passed to [Schema#execute](rdoc-ref:Schema#execute) as `context:`
 
-      # Lookup `key` from the hash passed to {Schema#execute} as `context:`
+      # Lookup `key` from the hash passed to [Schema.execute](rdoc-ref:GraphQL::Schema.execute) as `context:`
       def [](key)
         if @scoped_context.key?(key)
           @scoped_context[key]

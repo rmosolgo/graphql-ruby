@@ -28,25 +28,16 @@ module GraphQL
         # **Returns**
         #
         # - `GraphQL::Query`
-        #
-        # :call-seq:
-        #   query -> GraphQL::Query
         attr_reader :query
 
         # **Returns**
         #
         # - `Class<GraphQL::Schema>`
-        #
-        # :call-seq:
-        #   schema -> Class[GraphQL::Schema]
         attr_reader :schema
 
         # **Returns**
         #
         # - `GraphQL::Query::Context`
-        #
-        # :call-seq:
-        #   context -> GraphQL::Query::Context
         attr_reader :context
 
         def initialize(query:)
@@ -883,7 +874,7 @@ module GraphQL
           end
         end
 
-        # Check {Schema::Directive.include?} for each directive that's present
+        # Check [Schema::Directive.include?](rdoc-ref:Schema::Directive.include?) for each directive that's present
         def directives_include?(node, graphql_object, parent_type, selection_result, extra_path_part)
           node.directives.each do |dir_node|
             dir_defn = @schema_directives.fetch(dir_node.name)

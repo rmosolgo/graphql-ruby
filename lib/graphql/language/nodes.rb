@@ -3,7 +3,7 @@ module GraphQL
   module Language
     module Nodes
       NONE = GraphQL::EmptyObjects::EMPTY_ARRAY
-      # {AbstractNode} is the base class for all nodes in a GraphQL AST.
+      # [AbstractNode](rdoc-ref:GraphQL::Language::Nodes::AbstractNode) is the base class for all nodes in a GraphQL AST.
       #
       # It provides some APIs for working with ASTs:
       # - `children` returns all AST nodes attached to this one. Used for tree traversal.
@@ -17,9 +17,6 @@ module GraphQL
           # **Returns**
           #
           # - `Integer` — The first line of the definition (not the description)
-          #
-          # :call-seq:
-          #   definition_line -> Integer
           attr_reader :definition_line
 
           def initialize(definition_line: nil, **_rest)
@@ -433,7 +430,7 @@ module GraphQL
         self.children_method_name = :definitions
       end
 
-      # An enum value. The string is available as {#name}.
+      # An enum value. The string is available as `name`.
       class Enum < NameOnlyNode
       end
 

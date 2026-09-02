@@ -1,15 +1,12 @@
 # frozen_string_literal: true
 module GraphQL
-  # If a field's resolve function returns a {ExecutionError},
+  # If a field's resolve function returns an [ExecutionError](rdoc-ref:GraphQL::ExecutionError),
   # the error will be inserted into the response's `"errors"` key
   # and the field will resolve to `nil`.
   class ExecutionError < GraphQL::RuntimeError
     # **Returns**
     #
     # - `String` — an array describing the JSON-path into the execution response which corresponds to this error.
-    #
-    # :call-seq:
-    #   path -> String
     attr_accessor :path
 
     # **Deprecated:** Use `extensions` instead of `options`. The GraphQL spec recommends that any custom entries in an error be under the `extensions` key.
@@ -17,17 +14,11 @@ module GraphQL
     # **Returns**
     #
     # - `Hash` — Optional data for error objects
-    #
-    # :call-seq:
-    #   options -> Hash
     attr_accessor :options
 
     # **Returns**
     #
     # - `Hash` — Optional custom data for error objects which will be added under the `extensions` key.
-    #
-    # :call-seq:
-    #   extensions -> Hash
     attr_accessor :extensions
 
     def initialize(message, ast_node: nil, ast_nodes: nil, options: nil, extensions: nil)

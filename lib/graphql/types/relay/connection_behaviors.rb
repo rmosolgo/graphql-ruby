@@ -50,17 +50,11 @@ module GraphQL
           # **Returns**
           #
           # - `Class`
-          #
-          # :call-seq:
-          #   node_type -> Class
           attr_reader :node_type
 
           # **Returns**
           #
           # - `Class`
-          #
-          # :call-seq:
-          #   edge_class -> Class
           attr_reader :edge_class
 
           # Configure this connection to return `edges` and `nodes` based on `edge_type_class`.

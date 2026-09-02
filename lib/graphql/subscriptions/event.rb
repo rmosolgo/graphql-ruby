@@ -9,33 +9,21 @@ module GraphQL
       # **Returns**
       #
       # - `String` — Corresponds to the Subscription root field name
-      #
-      # :call-seq:
-      #   name -> String
       attr_reader :name
 
       # **Returns**
       #
       # - `GraphQL::Execution::Interpreter::Arguments`
-      #
-      # :call-seq:
-      #   arguments -> GraphQL::Execution::Interpreter::Arguments
       attr_reader :arguments
 
       # **Returns**
       #
       # - `GraphQL::Query::Context`
-      #
-      # :call-seq:
-      #   context -> GraphQL::Query::Context
       attr_reader :context
 
       # **Returns**
       #
       # - `String` — An opaque string which identifies this event, derived from `name` and `arguments`
-      #
-      # :call-seq:
-      #   topic -> String
       attr_reader :topic
 
       def initialize(name:, arguments:, field: nil, context: nil, scope: nil)

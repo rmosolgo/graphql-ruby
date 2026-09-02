@@ -26,21 +26,11 @@ module GraphQLDocs
 
         legacy_fragment = legacy_fragment(entry)
         html = File.read(page)
-        anchors = []
-        unless html.include?(%(<span id="#{current_fragment}"))
-          anchors << %(<span id="#{current_fragment}" class="legacy-anchor"></span>)
-        end
-        unless html.include?(%(<span id="#{legacy_fragment}"))
-          anchors << %(<span id="#{legacy_fragment}" class="legacy-anchor"></span>)
-        end
-        next if anchors.empty?
+        current_anchor = html.match(anchor_pattern(current_fragment))
+        next unless current_anchor
+        next if html.match?(anchor_pattern(legacy_fragment))
 
-        insertion = "#{anchors.join("\n")}\n"
-        if html.include?(%(<span id="#{current_fragment}"))
-          html = html.sub(%r{(<span id="#{Regexp.escape(current_fragment)}")}, "#{insertion}\\1")
-        else
-          html = html.sub(%r{</main>}, "#{insertion}</main>")
-        end
+        html.insert(current_anchor.begin(0), %(<span id="#{legacy_fragment}" class="legacy-anchor"></span>\n))
         File.write(page, html)
       end
     end
@@ -53,9 +43,11 @@ module GraphQLDocs
     end
 
     def legacy_fragment(entry)
-      name = entry.fetch("full_name")
-      method_name = entry.fetch("type") == "instance_method" ? name.split("#", 2).last : name.split(".").last
-      "#{method_name}-#{entry.fetch("type")}"
+      "#{entry.fetch("name")}-#{entry.fetch("type")}"
+    end
+
+    def anchor_pattern(fragment)
+      %r{<[A-Za-z][^>]*\sid\s*=\s*(["'])#{Regexp.escape(fragment)}\1[^>]*>}
     end
   end
 end

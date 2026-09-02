@@ -13,7 +13,7 @@ module GraphQL
     # Note that this will stop a query _in between_ field resolutions, but
     # it doesn't interrupt long-running `resolve` functions. Be sure to use
     # timeout options for external connections. For more info, see
-    # www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/
+    # https://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/
     #
     # **Examples**
     #
@@ -155,11 +155,11 @@ module GraphQL
       end
 
       # This error is raised when a query exceeds `max_seconds`.
-      # Since it's a child of {GraphQL::ExecutionError},
+      # Since it's a child of [GraphQL::ExecutionError](rdoc-ref:GraphQL::ExecutionError),
       # its message will be added to the response's `errors` key.
       #
       # To raise an error that will stop query resolution, use a custom block
-      # to take this error and raise a new one which _doesn't_ descend from {GraphQL::ExecutionError},
+      # to take this error and raise a new one which _doesn't_ descend from [GraphQL::ExecutionError](rdoc-ref:GraphQL::ExecutionError),
       # such as `RuntimeError`.
       class TimeoutError < GraphQL::ExecutionError
         def initialize(field)

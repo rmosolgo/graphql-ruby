@@ -74,6 +74,8 @@ module GraphQLDocs
       relative = old_path.delete_prefix("/")
       locations = [@output.join(relative, "index.html")]
       locations << @output.join("#{relative}.html") unless relative.end_with?(".html")
+      redirect_path, separator, fragment = destination.partition("#")
+      redirect_fragment = separator.empty? ? "" : "##{fragment}"
       locations.each do |path|
         FileUtils.mkdir_p(path.dirname)
         href = relative_url(path, destination)
@@ -89,7 +91,7 @@ module GraphQLDocs
           </head>
           <body>
           <p>This page moved to <a href="#{href}">#{escaped_destination}</a>.</p>
-          <script>window.location.replace(#{destination.to_json});</script>
+          <script>window.location.replace(#{redirect_path.to_json} + (window.location.hash || #{redirect_fragment.to_json}));</script>
           </body>
           </html>
         HTML

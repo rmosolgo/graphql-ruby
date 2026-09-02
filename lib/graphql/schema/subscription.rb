@@ -83,9 +83,9 @@ module GraphQL
         end
       end
 
-      # Implement the {Resolve} API.
+      # Implement the [resolve](rdoc-ref:#resolve) API.
       # You can implement this if you want code to run for _both_ the initial subscription
-      # and for later updates. Or, implement {#subscribe} and {#update}
+      # and for later updates. Or, implement [subscribe](rdoc-ref:#subscribe) and [update](rdoc-ref:#update)
       def resolve(**args)
         # Dispatch based on `@mode`, which will raise a `NoMethodError` if we ever
         # have an unexpected `@mode`
@@ -121,7 +121,7 @@ module GraphQL
       end
 
       # The default implementation returns the root object.
-      # Override it to return {NO_UPDATE} if you want to
+      # Override it to return [NO_UPDATE](rdoc-ref:NO_UPDATE) if you want to
       # skip updates sometimes. Or override it to return a different object.
       def update(args = {})
         object

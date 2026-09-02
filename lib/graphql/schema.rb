@@ -929,7 +929,7 @@ module GraphQL
         end
       end
 
-      # See [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) GraphQL::Dataloader
+      # See [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader).
       def dataloader_class # :nodoc:
         @dataloader_class || GraphQL::Dataloader::NullDataloader
       end
@@ -1848,12 +1848,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Tracing::DetailedTrace` — if it has been configured for this schema
-      #
-      # :call-seq:
-      #   detailed_trace -> GraphQL::Tracing::DetailedTrace
       attr_accessor :detailed_trace
 
-      # See [Tracing::DetailedTrace](rdoc-ref:Tracing::DetailedTrace) DetailedTrace saves traces when this method returns true
+      # [Tracing::DetailedTrace](rdoc-ref:Tracing::DetailedTrace) saves traces when this method returns true.
       #
       # **Parameters**
       #
@@ -1902,7 +1899,7 @@ module GraphQL
       #
       # Any custom trace modes _also_ include the default `trace_with ...` modules (that is, those added _without_ any particular `mode: ...` configuration).
       #
-      # See [GraphQL::Tracing::Trace](rdoc-ref:GraphQL::Tracing::Trace) Tracing::Trace for available tracing methods
+      # See [GraphQL::Tracing::Trace](rdoc-ref:GraphQL::Tracing::Trace) for available tracing methods.
       #
       # **Examples**
       #
@@ -2451,7 +2448,7 @@ module GraphQL
       # complexity_cost_calculation_mode(:legacy)
       # ```
       #
-      # **Example: Run both modes for every query, call {.legacy_complexity_cost_calculation_mismatch} when they don't match:**
+      # **Example: Run both modes for every query, call [.legacy_complexity_cost_calculation_mismatch](rdoc-ref:.legacy_complexity_cost_calculation_mismatch) when they don't match:**
       #
       # ```ruby
       # complexity_cost_calculation_mode(:compare)

@@ -56,9 +56,6 @@ module GraphQL
         # **Returns**
         #
         # - `Array<Hash>` — Payloads "sent" to this channel by GraphQL-Ruby
-        #
-        # :call-seq:
-        #   mock_broadcasted_messages -> Array[Hash]
         attr_reader :mock_broadcasted_messages
 
         # Called by ActionCableSubscriptions. Implements a Rails API.

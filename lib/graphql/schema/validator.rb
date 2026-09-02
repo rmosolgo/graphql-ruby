@@ -8,9 +8,6 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Schema::Argument, GraphQL::Schema::Field, GraphQL::Schema::Resolver, Class<GraphQL::Schema::InputObject>`
-      #
-      # :call-seq:
-      #   validated -> GraphQL::Schema::Argument | GraphQL::Schema::Field | GraphQL::Schema::Resolver | Class[GraphQL::Schema::InputObject]
       attr_reader :validated
 
       # **Parameters**

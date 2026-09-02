@@ -56,25 +56,16 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — The application object this field is being resolved on
-      #
-      # :call-seq:
-      #   object -> Object
       attr_accessor :object
 
       # **Returns**
       #
       # - `GraphQL::Query::Context`
-      #
-      # :call-seq:
-      #   context -> GraphQL::Query::Context
       attr_reader :context
 
       # **Returns**
       #
       # - `GraphQL::Schema::Field`
-      #
-      # :call-seq:
-      #   field -> GraphQL::Schema::Field
       attr_reader :field
 
       attr_writer :prepared_arguments
@@ -278,7 +269,7 @@ module GraphQL
 
       # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.
       #
-      # By default, the error is re-raised and passed along to {[Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object)}.
+      # By default, the error is re-raised and passed along to [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object).
       #
       # Any value returned here will be used _instead of_ of the loaded object.
       #

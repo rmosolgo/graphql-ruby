@@ -15,17 +15,11 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Schema::Field` — The field that returned a too-big integer
-    #
-    # :call-seq:
-    #   field -> GraphQL::Schema::Field
     attr_reader :field
 
     # **Returns**
     #
     # - `Array<String, Integer>` — Where the field appeared in the GraphQL response
-    #
-    # :call-seq:
-    #   path -> Array[String | Integer]
     attr_reader :path
 
     def initialize(value, context:)

@@ -77,9 +77,6 @@ module GraphQL
     # **Returns**
     #
     # - `Integer, nil`
-    #
-    # :call-seq:
-    #   fiber_limit -> Integer | nil
     attr_reader :fiber_limit
 
     def nonblocking?

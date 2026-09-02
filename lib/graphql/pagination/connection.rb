@@ -10,7 +10,7 @@ module GraphQL
     #
     # Unlike the previous connection implementation, these default to bidirectional pagination.
     #
-    # Pagination arguments and context may be provided at initialization or assigned later (see {Schema::Field::ConnectionExtension}).
+    # Pagination arguments and context may be provided at initialization or assigned later (see [Schema::Field::ConnectionExtension](rdoc-ref:Schema::Field::ConnectionExtension)).
     class Connection
       class PaginationImplementationMissingError < GraphQL::Error
       end
@@ -18,17 +18,11 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — A list object, from the application. This is the unpaginated value passed into the connection.
-      #
-      # :call-seq:
-      #   items -> Object
       attr_reader :items
 
       # **Returns**
       #
       # - `GraphQL::Query::Context`
-      #
-      # :call-seq:
-      #   context -> GraphQL::Query::Context
       attr_reader :context
 
       def context=(new_ctx)
@@ -42,9 +36,6 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — the object this collection belongs to
-      #
-      # :call-seq:
-      #   parent -> Object
       attr_accessor :parent
 
       # Raw access to client-provided values. (`max_page_size` not applied to first or last.)
@@ -81,9 +72,6 @@ module GraphQL
       # **Returns**
       #
       # - `Hash<Symbol => Object>` — The field arguments from the field that returned this connection
-      #
-      # :call-seq:
-      #   arguments -> Hash[Symbol, Object]
       attr_accessor :arguments
 
       # **Parameters**
@@ -227,17 +215,11 @@ module GraphQL
       # **Returns**
       #
       # - `Class` — A wrapper class for edges of this connection
-      #
-      # :call-seq:
-      #   edge_class -> Class
       attr_accessor :edge_class
 
       # **Returns**
       #
       # - `GraphQL::Schema::Field` — The field this connection was returned by
-      #
-      # :call-seq:
-      #   field -> GraphQL::Schema::Field
       attr_accessor :field
 
       # **Returns**
@@ -359,7 +341,7 @@ module GraphQL
         context.schema.cursor_encoder.encode(cursor, nonce: true)
       end
 
-      # A wrapper around paginated items. It includes a {cursor} for pagination
+      # A wrapper around paginated items. It includes a [cursor](rdoc-ref:#cursor) for pagination
       # and could be extended with custom relationship-level data.
       class Edge
         attr_reader :node

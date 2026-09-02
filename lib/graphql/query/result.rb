@@ -2,9 +2,9 @@
 
 module GraphQL
   class Query
-    # A result from {Schema#execute}.
+    # A result from [Schema.execute](rdoc-ref:GraphQL::Schema.execute).
     # It provides the requested data and
-    # access to the {Query} and {Query::Context}.
+    # access to the [Query](rdoc-ref:GraphQL::Query) and [Query::Context](rdoc-ref:GraphQL::Query::Context).
     class Result
       extend Forwardable
 
@@ -16,17 +16,11 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Query` — The query that was executed
-      #
-      # :call-seq:
-      #   query -> GraphQL::Query
       attr_reader :query
 
       # **Returns**
       #
       # - `Hash` — The resulting hash of "data" and/or "errors"
-      #
-      # :call-seq:
-      #   to_h -> Hash
       attr_reader :to_h
 
       def_delegators :@query, :context, :mutation?, :query?, :subscription?

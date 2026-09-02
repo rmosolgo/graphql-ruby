@@ -10,7 +10,7 @@ module GraphQL
     # The [Partial](rdoc-ref:Partial) will use your [Schema.resolve_type](rdoc-ref:Schema.resolve_type) hook to find the right GraphQL type to use for
     # `object` in some cases.
     #
-    # See [Query#run_partials](rdoc-ref:Query#run_partials) Run via [Query#run_partials](rdoc-ref:Query#run_partials)
+    # Run via [Query#run_partials](rdoc-ref:Query#run_partials).
     class Partial
       include Query::Runnable
 

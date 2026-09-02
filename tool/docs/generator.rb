@@ -19,6 +19,8 @@ module RDoc
       }.freeze
 
       def generate
+        setup
+        disambiguate_case_insensitive_paths
         super
         install_graphql_assets
       end
@@ -30,6 +32,29 @@ module RDoc
       end
 
       private
+
+      # GraphQL.html and Graphql.html collide on case-insensitive filesystems.
+      # Keep the primary namespace at its expected URL and move the Rails
+      # integration namespace root alongside its existing child pages.
+      def disambiguate_case_insensitive_paths
+        graphql_rails = @classes.find { |klass| klass.full_name == "Graphql" }
+        graphql_rails&.define_singleton_method(:name_for_path) { "Graphql::index" }
+      end
+
+      # Darkfish extracts metadata directly from Markdown source, which cuts
+      # link syntax at punctuation inside rdoc-ref targets. Render the snippet
+      # first so page descriptions contain readable link labels.
+      def excerpt(comment)
+        document = if comment.respond_to?(:parse)
+          comment.parse
+        else
+          parsed_comment = ::RDoc::Comment.new(comment.to_s)
+          parsed_comment.format = @options.markup
+          parsed_comment.parse
+        end
+        html = ::RDoc::Markup::ToHtmlSnippet.new(@options, 150).convert(document)
+        CGI.unescapeHTML(html.gsub(/<[^>]+>/, " ")).gsub(/\s+/, " ").strip
+      end
 
       def deduplicate_search_entries(entries)
         entries.uniq { |entry| [entry[:type] || entry["type"], entry[:full_name] || entry["full_name"]] }
@@ -61,6 +86,8 @@ module RDoc
         Dir[output.join("**/*.html").to_s].each do |path|
           path = Pathname.new(path)
           normalize_malformed_html_images(path)
+          normalize_heading_links(path)
+          normalize_method_source_ids(path)
           normalize_root_relative_image_paths(path, output)
           normalize_guide_page_title(path, output, sidebar_page_titles)
           normalize_page_titles_in_sidebar(path, output, sidebar_page_titles)
@@ -85,6 +112,34 @@ module RDoc
         html = File.read(path)
         cleaned = html.gsub(/&lt;img src=“<img src="([^"]+)" \/>” height=“([^”]+)” alt=“([^”]+)”\/&gt;/) do
           %(<img src="#{Regexp.last_match(1)}" height="#{Regexp.last_match(2)}" alt="#{Regexp.last_match(3)}">)
+        end
+        File.write(path, cleaned) if cleaned != html
+      end
+
+      # Aliki wraps headings in permalink anchors while RDoc may link constants
+      # inside the same heading. Remove the inner links to avoid invalid nested
+      # anchors while keeping the heading permalink.
+      def normalize_heading_links(path)
+        html = File.read(path)
+        cleaned = html.gsub(%r{(<h[1-6]\b[^>]*><a\b[^>]*>)(.*?)(</a></h[1-6]>)}m) do
+          opening = Regexp.last_match(1)
+          closing = Regexp.last_match(3)
+          content = Regexp.last_match(2).gsub(%r{<a\b[^>]*>(.*?)</a>}m, "\\1")
+          "#{opening}#{content}#{closing}"
+        end
+        File.write(path, cleaned) if cleaned != html
+      end
+
+      # Aliki uses only the method name for source IDs, so class and instance
+      # methods with the same name receive duplicate IDs. Keep the first ID for
+      # compatibility and make later source blocks unique.
+      def normalize_method_source_ids(path)
+        html = File.read(path)
+        ids = Hash.new(0)
+        cleaned = html.gsub(/(<div class="method-source-code" id=")([^"]+)(")/) do
+          prefix, id, suffix = Regexp.last_match.captures
+          ids[id] += 1
+          ids[id] == 1 ? Regexp.last_match(0) : "#{prefix}#{id}-#{ids[id]}#{suffix}"
         end
         File.write(path, cleaned) if cleaned != html
       end

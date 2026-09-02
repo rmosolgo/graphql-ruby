@@ -291,9 +291,6 @@ module GraphQL
       # **Returns**
       #
       # - `String` — the GraphQL name for this field, camelized unless `camelize: false` is provided
-      #
-      # :call-seq:
-      #   name -> String
       attr_reader :name
       alias :graphql_name :name
 
@@ -302,17 +299,11 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — Method or hash key on the underlying object to look up
-      #
-      # :call-seq:
-      #   method_sym -> Symbol
       attr_reader :method_sym
 
       # **Returns**
       #
       # - `String` — Method or hash key on the underlying object to look up
-      #
-      # :call-seq:
-      #   method_str -> String
       attr_reader :method_str
 
       attr_reader :hash_key
@@ -366,9 +357,6 @@ module GraphQL
       # **Returns**
       #
       # - `Class` — The thing this field was defined on (type, mutation, resolver)
-      #
-      # :call-seq:
-      #   owner -> Class
       attr_accessor :owner
 
       # **Returns**
@@ -390,9 +378,6 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — the original name of the field, passed in by the user
-      #
-      # :call-seq:
-      #   original_name -> Symbol
       attr_reader :original_name
 
       # **Returns**
@@ -424,9 +409,6 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — Apply tracing to this field? (Default: skip scalars, this is the override value)
-      #
-      # :call-seq:
-      #   trace -> bool
       attr_reader :trace
 
       # **Returns**
@@ -526,16 +508,10 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — Boolean
-      #
-      # :call-seq:
-      #   relay_node_field -> Object
       attr_reader :relay_node_field
       # **Returns**
       #
       # - `Object` — Boolean
-      #
-      # :call-seq:
-      #   relay_nodes_field -> Object
       attr_reader :relay_nodes_field
 
       # **Returns**

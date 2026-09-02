@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Language
-    # Exposes {.generate}, which turns AST nodes back into query strings.
+    # Exposes [.generate](rdoc-ref:.generate), which turns AST nodes back into query strings.
     module Generation
       extend self
 

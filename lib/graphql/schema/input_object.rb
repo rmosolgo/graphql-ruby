@@ -21,16 +21,10 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Query::Context` — The context for this query
-      #
-      # :call-seq:
-      #   context -> GraphQL::Query::Context
       attr_reader :context
       # **Returns**
       #
       # - `GraphQL::Execution::Interpereter::Arguments` — The underlying arguments instance
-      #
-      # :call-seq:
-      #   arguments -> GraphQL::Execution::Interpereter::Arguments
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only

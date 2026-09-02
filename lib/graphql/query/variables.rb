@@ -8,9 +8,6 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::Query::VariableValidationError>` — Any errors encountered when parsing the provided variables and literal values
-      #
-      # :call-seq:
-      #   errors -> Array[GraphQL::Query::VariableValidationError]
       attr_reader :errors
 
       attr_reader :context

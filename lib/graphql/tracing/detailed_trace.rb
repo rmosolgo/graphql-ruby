@@ -26,7 +26,7 @@ module GraphQL
     #
     # If you need to save traces indefinitely, you can download them from Perfetto after opening them there.
     #
-    # See [Graphql::Dashboard](rdoc-ref:Graphql::Dashboard) GraphQL::Dashboard for viewing stored results
+    # See [GraphQL::Dashboard](rdoc-ref:GraphQL::Dashboard) for viewing stored results.
     #
     # **Examples**
     #
@@ -111,9 +111,6 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — The trace mode to use when [Schema.detailed_trace?](rdoc-ref:Schema.detailed_trace?) returns `true`
-      #
-      # :call-seq:
-      #   trace_mode -> Symbol
       attr_reader :trace_mode
 
       # **Returns**

@@ -49,6 +49,44 @@ describe GraphQLDocs::TypeSignatureMigrator do
     _(result).must_include("#   call(Hash[String, Array[Integer]] options, Proc &block) -> bool")
   end
 
+  it "keeps attribute types in the Returns section without adding call sequences" do
+    ["attr_reader", "attr_writer", "attr_accessor"].each do |declaration|
+      source = <<~RUBY
+        class Example
+          # **Returns**
+          #
+          # - `Array<String>` — configured values
+          #{declaration} :values, :fallback_values
+        end
+      RUBY
+
+      result = GraphQLDocs::TypeSignatureMigrator.new(paths: []).migrate(source)
+
+      _(result).must_equal(source)
+      _(result).wont_include(":call-seq:")
+    end
+  end
+
+  it "removes attribute call sequences created by an earlier migration" do
+    source = <<~RUBY
+      class Example
+        # **Returns**
+        #
+        # - `Array<String>` — configured values
+        #
+        # :call-seq:
+        #   values -> Array[String]
+        attr_reader :values
+      end
+    RUBY
+
+    result = GraphQLDocs::TypeSignatureMigrator.new(paths: []).migrate(source)
+
+    _(result).must_include("# - `Array<String>` — configured values")
+    _(result).wont_include(":call-seq:")
+    _(result).wont_include("values -> Array[String]")
+  end
+
   it "does not add signatures to nodoc objects" do
     source = <<~RUBY
       class Example

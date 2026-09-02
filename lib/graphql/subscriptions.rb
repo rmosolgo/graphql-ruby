@@ -54,9 +54,6 @@ module GraphQL
     # **Returns**
     #
     # - `Boolean` — Used when fields don't have `broadcastable:` explicitly set
-    #
-    # :call-seq:
-    #   default_broadcastable -> bool
     attr_reader :default_broadcastable
 
     # Fetch subscriptions matching this field + arguments pair

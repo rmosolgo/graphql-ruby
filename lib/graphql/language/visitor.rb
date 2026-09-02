@@ -52,9 +52,6 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Language::Nodes::Document` — The document with any modifications applied
-      #
-      # :call-seq:
-      #   result -> GraphQL::Language::Nodes::Document
       attr_reader :result
 
       # Visit `document` and all children

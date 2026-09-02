@@ -19,9 +19,6 @@ module GraphQL
         # **Returns**
         #
         # - `Hash<Symbol, Object>`
-        #
-        # :call-seq:
-        #   keyword_arguments -> Hash[Symbol, Object]
         attr_reader :keyword_arguments
 
         # **Parameters**
@@ -65,9 +62,6 @@ module GraphQL
         # **Returns**
         #
         # - `Hash{Symbol => ArgumentValue}`
-        #
-        # :call-seq:
-        #   argument_values -> Hash[Symbol, ArgumentValue]
         attr_reader :argument_values
 
         def empty?

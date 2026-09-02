@@ -28,7 +28,7 @@ module GraphQL
       # Relay classic default:
       null(true)
 
-      # Override {GraphQL::Schema::Resolver#resolve_with_support} to
+    # Override [resolve_with_support](rdoc-ref:#resolve_with_support) to
       # delete `client_mutation_id` from the kwargs.
       def resolve_with_support(**inputs)
         input = inputs[:input].to_kwargs

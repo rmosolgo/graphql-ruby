@@ -59,9 +59,6 @@ module GraphQL
     # **Returns**
     #
     # - `String` — Namespace for generated tasks
-    #
-    # :call-seq:
-    #   namespace -> String
     attr_writer :namespace
 
     def rake_namespace
@@ -71,9 +68,6 @@ module GraphQL
     # **Returns**
     #
     # - `Array<String>`
-    #
-    # :call-seq:
-    #   dependencies -> Array[String]
     attr_accessor :dependencies
 
     # See [load_schema](rdoc-ref:#load_schema) for loading a schema another way
@@ -81,59 +75,38 @@ module GraphQL
     # **Returns**
     #
     # - `String` — By default, used to find the schema as a constant.
-    #
-    # :call-seq:
-    #   schema_name -> String
     attr_accessor :schema_name
 
     # **Returns**
     #
     # - `<#call(task)>` — A proc for loading the target GraphQL schema
-    #
-    # :call-seq:
-    #   load_schema -> #call(task)
     attr_accessor :load_schema
 
     # **Returns**
     #
     # - `<#call(task)>` — A callable for loading the query context
-    #
-    # :call-seq:
-    #   load_context -> #call(task)
     attr_accessor :load_context
 
     # **Returns**
     #
     # - `String` — target for IDL task
-    #
-    # :call-seq:
-    #   idl_outfile -> String
     attr_accessor :idl_outfile
 
     # **Returns**
     #
     # - `String` — target for JSON task
-    #
-    # :call-seq:
-    #   json_outfile -> String
     attr_accessor :json_outfile
 
     # **Returns**
     #
     # - `String` — directory for IDL & JSON files
-    #
-    # :call-seq:
-    #   directory -> String
     attr_accessor :directory
 
-    # See [GraphQL::Schema.as_json](rdoc-ref:GraphQL::Schema.as_json) GraphQL::Schema.as_json
+    # See [GraphQL::Schema.as_json](rdoc-ref:GraphQL::Schema.as_json).
     #
     # **Returns**
     #
     # - `Boolean` — Options for additional fields in the introspection query JSON response
-    #
-    # :call-seq:
-    #   include_deprecated_args -> bool
     attr_accessor :include_deprecated_args, :include_schema_description, :include_is_repeatable, :include_specified_by_url, :include_is_one_of
 
     # Set the parameters of this task by passing keyword arguments

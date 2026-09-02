@@ -21,17 +21,11 @@ module GraphQL
       # **Returns**
       #
       # - `Object` — the application object this type is wrapping
-      #
-      # :call-seq:
-      #   object -> Object
       attr_reader :object
 
       # **Returns**
       #
       # - `GraphQL::Query::Context` — the context instance for this query
-      #
-      # :call-seq:
-      #   context -> GraphQL::Query::Context
       attr_reader :context
 
       # **Returns**

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module Analysis
-    # Calculate the complexity of a query, using {Field#complexity} values.
+    # Calculate the complexity of a query, using [Field#complexity](rdoc-ref:GraphQL::Schema::Field#complexity) values.
     class QueryComplexity < Analyzer
       # State for the query complexity calculation:
       # - `complexities_on_type` holds complexity scores for each type
@@ -76,9 +76,6 @@ module GraphQL
         # **Returns**
         #
         # - `Array<GraphQL::Language::Nodes::Field>`
-        #
-        # :call-seq:
-        #   nodes -> Array[GraphQL::Language::Nodes::Field]
         attr_reader :nodes
 
         def own_complexity(child_complexity)

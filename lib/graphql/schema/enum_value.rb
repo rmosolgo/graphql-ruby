@@ -35,9 +35,6 @@ module GraphQL
       # **Returns**
       #
       # - `Class` — The enum type that owns this value
-      #
-      # :call-seq:
-      #   owner -> Class
       attr_reader :owner
 
       def initialize(graphql_name, desc = nil, owner:, ast_node: nil, directives: nil, description: nil, comment: nil, value: NOT_CONFIGURED, deprecation_reason: nil, &block)

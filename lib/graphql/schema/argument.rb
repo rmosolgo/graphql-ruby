@@ -185,18 +185,12 @@ module GraphQL
       # **Returns**
       #
       # - `String` — the GraphQL name for this argument, camelized unless `camelize: false` is provided
-      #
-      # :call-seq:
-      #   name -> String
       attr_reader :name
       alias :graphql_name :name
 
       # **Returns**
       #
       # - `GraphQL::Schema::Field, Class` — The field or input object this argument belongs to
-      #
-      # :call-seq:
-      #   owner -> GraphQL::Schema::Field | Class
       attr_reader :owner
 
       # **Parameters**
@@ -219,17 +213,11 @@ module GraphQL
       # **Returns**
       #
       # - `Symbol` — This argument's name in Ruby keyword arguments
-      #
-      # :call-seq:
-      #   keyword -> Symbol
       attr_reader :keyword
 
       # **Returns**
       #
       # - `Class, Module, nil` — If this argument should load an application object, this is the type of object to load
-      #
-      # :call-seq:
-      #   loads -> Class | Module | nil
       attr_reader :loads
 
       # **Returns**

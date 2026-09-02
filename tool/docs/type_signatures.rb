@@ -8,7 +8,6 @@ module GraphQLDocs
     SECTION = /^\s*\*\*(#{SECTION_NAMES.join("|")})\*\*\s*$/.freeze
     ENTRY = /^\s*-\s+`([^`]+)`(?:\s+\(`([^`]+)`\))?/.freeze
     METHOD = /\bdef\s+(?:self\.)?([^\s(]+)(?:\((.*?)\))?/m.freeze
-    ATTRIBUTE = /\battr_(?:reader|writer|accessor)\s+(.+)/.freeze
 
     attr_reader :paths
 
@@ -40,6 +39,7 @@ module GraphQLDocs
         block_start = index
         index += 1 while index < lines.length && comment_line?(lines[index])
         block = lines[block_start...index]
+        block = remove_attribute_call_sequence(block) if lines[index]&.match?(/^\s*attr_(?:reader|writer|accessor)\b/)
         declaration = declaration_after(lines, index)
         signature = signature_for(block, declaration)
         output.concat(add_signature(block, signature))
@@ -55,7 +55,7 @@ module GraphQLDocs
 
     def declaration_after(lines, index)
       return "" unless index < lines.length
-      return "" unless lines[index].match?(/^\s*(?:def\b|attr_(?:reader|writer|accessor)\b)/)
+      return "" unless lines[index].match?(/^\s*def\b/)
 
       declaration = +""
       while index < lines.length && declaration.length < 2_000
@@ -81,20 +81,13 @@ module GraphQLDocs
       sections = typed_sections(block)
       return if sections.empty?
 
-      if (method = declaration.match(METHOD))
-        method_name = method[1]
-        parameters = method_parameters(declaration, method)
-        arguments = parameters.map { |parameter| format_parameter(parameter, sections) }
-        result_type = return_type(sections)
-        return "#{method_name}(#{arguments.join(", ")})#{result_type ? " -> #{result_type}" : ""}"
-      end
+      return unless (method = declaration.match(METHOD))
 
-      return unless (attribute = declaration.match(ATTRIBUTE))
-      name = attribute[1].split(",", 2).first.strip.sub(/\A:/, "")
-      type = sections.fetch("Returns", []).filter_map(&:first).first
-      return unless type
-
-      "#{name} -> #{normalize_type(type)}"
+      method_name = method[1]
+      parameters = method_parameters(declaration, method)
+      arguments = parameters.map { |parameter| format_parameter(parameter, sections) }
+      result_type = return_type(sections)
+      "#{method_name}(#{arguments.join(", ")})#{result_type ? " -> #{result_type}" : ""}"
     end
 
     def typed_sections(block)
@@ -241,6 +234,17 @@ module GraphQLDocs
         "#{indent}#   #{signature}\n",
       ]
       block + insertion
+    end
+
+    def remove_attribute_call_sequence(block)
+      marker_index = block.index { |line| line.include?(":call-seq:") }
+      return block unless marker_index
+
+      updated = block.dup
+      updated.delete_at(marker_index + 1) if updated[marker_index + 1]&.match?(/^\s*#\s{2,}\S/)
+      updated.delete_at(marker_index)
+      updated.delete_at(marker_index - 1) if marker_index.positive? && updated[marker_index - 1].match?(/^\s*#\s*$/)
+      updated
     end
   end
 end

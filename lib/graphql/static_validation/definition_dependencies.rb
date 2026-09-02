@@ -82,25 +82,16 @@ module GraphQL
         # **Returns**
         #
         # - `Array<GraphQL::Language::Nodes::FragmentDefinition>`
-        #
-        # :call-seq:
-        #   cyclical_definitions -> Array[GraphQL::Language::Nodes::FragmentDefinition]
         attr_reader :cyclical_definitions
 
         # **Returns**
         #
         # - `Hash<Node, Array<GraphQL::Language::Nodes::FragmentSpread>>`
-        #
-        # :call-seq:
-        #   unmet_dependencies -> Hash[Node, Array[GraphQL::Language::Nodes::FragmentSpread]]
         attr_reader :unmet_dependencies
 
         # **Returns**
         #
         # - `Array<GraphQL::Language::Nodes::FragmentDefinition>`
-        #
-        # :call-seq:
-        #   unused_dependencies -> Array[GraphQL::Language::Nodes::FragmentDefinition]
         attr_reader :unused_dependencies
 
         def initialize

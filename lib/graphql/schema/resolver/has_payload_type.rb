@@ -101,8 +101,8 @@ module GraphQL
 
         private
 
-        # Build a subclass of {.object_class} based on `self`.
-        # This value will be cached as `{.payload_type}`.
+        # Build a subclass of [.object_class](rdoc-ref:.object_class) based on `self`.
+        # This value will be cached as [.payload_type](rdoc-ref:.payload_type).
         # Override this hook to customize return type generation.
         def generate_payload_type
           resolver_name = graphql_name

@@ -11,8 +11,6 @@ module GraphQLDocs
   class LinkChecker
     LINK_PATTERN = /(?:href|src)\s*=\s*["']([^"']+)["']/i.freeze
     FRAGMENT_PATTERN = /(?:id|name)\s*=\s*["']([^"']+)["']/i.freeze
-    EXTERNAL_SCHEMES = ["data", "file", "http", "https", "javascript", "mailto"].freeze
-
     def initialize(root, allow_root_links: false, root_links: nil)
       @root = File.expand_path(root)
       @allow_root_links = allow_root_links
@@ -69,13 +67,16 @@ module GraphQLDocs
     end
 
     def external?(target)
-      target.start_with?("#") || EXTERNAL_SCHEMES.include?(URI.parse(target).scheme)
+      return true if target.start_with?("#")
+      return false if target.match?(/\A[A-Z]\w*(?:::[A-Z]\w*)+\z/)
+
+      !URI.parse(target).scheme.nil?
     rescue URI::InvalidURIError
       false
     end
 
     def document_link?(target, fragment)
-      fragment || target.start_with?("/") || target.end_with?(".html")
+      fragment || !target.empty?
     end
 
     def resolve(source, target)

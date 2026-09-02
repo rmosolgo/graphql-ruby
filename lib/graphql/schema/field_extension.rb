@@ -12,25 +12,16 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Schema::Field`
-      #
-      # :call-seq:
-      #   field -> GraphQL::Schema::Field
       attr_reader :field
 
       # **Returns**
       #
       # - `Object`
-      #
-      # :call-seq:
-      #   options -> Object
       attr_reader :options
 
       # **Returns**
       #
       # - `Array<Symbol>, nil` — `default_argument`s added, if any were added (otherwise, `nil`)
-      #
-      # :call-seq:
-      #   added_default_arguments -> Array[Symbol] | nil
       attr_reader :added_default_arguments
 
       # Called when the extension is mounted with `extension(name, options)`.

@@ -53,25 +53,16 @@ module GraphQL
       # **Returns**
       #
       # - `Array<GraphQL::Language::Nodes::Field>`
-      #
-      # :call-seq:
-      #   ast_nodes -> Array[GraphQL::Language::Nodes::Field]
       attr_reader :ast_nodes
 
       # **Returns**
       #
       # - `GraphQL::Schema::Field`
-      #
-      # :call-seq:
-      #   field -> GraphQL::Schema::Field
       attr_reader :field
 
       # **Returns**
       #
       # - `GraphQL::Schema::Object, GraphQL::Schema::Union, GraphQL::Schema::Interface`
-      #
-      # :call-seq:
-      #   owner_type -> GraphQL::Schema::Object | GraphQL::Schema::Union | GraphQL::Schema::Interface
       attr_reader :owner_type
 
       # **Returns**
@@ -308,7 +299,7 @@ module GraphQL
         "#<GraphQL::Execution::Lookahead #{@field ? "@field=#{@field.path.inspect}": "@root_type=#{@root_type}"} @ast_nodes.size=#{@ast_nodes.size}>"
       end
 
-      # This is returned for {Lookahead#selection} when a non-existent field is passed
+      # This is returned for [Lookahead#selection](rdoc-ref:Lookahead#selection) when a non-existent field is passed
       class NullLookahead < Lookahead
         # No inputs required here.
         def initialize

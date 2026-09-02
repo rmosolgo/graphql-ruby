@@ -33,7 +33,7 @@ module GraphQL
       #
       # In either case, the field should be modified so that the invalid value isn't returned.
       #
-      # {GraphQL::Schema::Enum} subclasses get their own subclass of this error, so that bug trackers can better show where they came from.
+      # [GraphQL::Schema::Enum](rdoc-ref:GraphQL::Schema::Enum) subclasses get their own subclass of this error, so that bug trackers can better show where they came from.
       class UnresolvedValueError < GraphQL::Error
         def initialize(value:, enum:, context:, authorized:)
           fix_message = if authorized == false
@@ -50,7 +50,7 @@ module GraphQL
         end
       end
 
-      # Raised when a {GraphQL::Schema::Enum} is defined to have no values.
+      # Raised when a [GraphQL::Schema::Enum](rdoc-ref:GraphQL::Schema::Enum) is defined to have no values.
       # This can also happen when all values return false for `.visible?`.
       class MissingValuesError < GraphQL::Error
         def initialize(enum_type)

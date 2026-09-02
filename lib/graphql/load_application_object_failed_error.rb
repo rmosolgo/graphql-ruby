@@ -9,30 +9,18 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::Schema::Argument` — the argument definition for the argument that was looked up
-    #
-    # :call-seq:
-    #   argument -> GraphQL::Schema::Argument
     attr_reader :argument
     # **Returns**
     #
     # - `String` — The ID provided by the client
-    #
-    # :call-seq:
-    #   id -> String
     attr_reader :id
     # **Returns**
     #
     # - `Object` — The value found with this ID
-    #
-    # :call-seq:
-    #   object -> Object
     attr_reader :object
     # **Returns**
     #
     # - `GraphQL::Query::Context`
-    #
-    # :call-seq:
-    #   context -> GraphQL::Query::Context
     attr_reader :context
 
     def initialize(argument:, id:, object:, context:)

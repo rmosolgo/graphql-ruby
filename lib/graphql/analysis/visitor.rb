@@ -35,25 +35,16 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Query` — the query being visited
-      #
-      # :call-seq:
-      #   query -> GraphQL::Query
       attr_reader :query
 
       # **Returns**
       #
       # - `Array<GraphQL::ObjectType>` — Types whose scope we've entered
-      #
-      # :call-seq:
-      #   object_types -> Array[GraphQL::ObjectType]
       attr_reader :object_types
 
       # **Returns**
       #
       # - `Array<GraphQL::AnalysisError>` — Array of errors rescued during analysis
-      #
-      # :call-seq:
-      #   rescued_errors -> Array[GraphQL::AnalysisError]
       attr_reader :rescued_errors
 
       def visit

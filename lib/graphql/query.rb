@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module GraphQL
-  # A combination of query string and {Schema} instance which can be reduced to a {#result}.
+  # A combination of query string and [Schema](rdoc-ref:GraphQL::Schema) instance which can be reduced to a [result](rdoc-ref:#result).
   #
   # The API-specific portions of `guides/queries/executing_queries.md` were
   # migrated to `Schema#execute`, `Schema#multiplex`, and this initializer.
@@ -52,7 +52,7 @@ module GraphQL
     autoload :VariableValidationError, "graphql/query/variable_validation_error"
     autoload :ValidationPipeline, "graphql/query/validation_pipeline"
 
-    # Code shared with {Partial}
+    # Code shared with [Partial](rdoc-ref:GraphQL::Query::Partial)
     module Runnable
       def after_lazy(value, &block)
         if !defined?(@runtime_instance)
@@ -113,17 +113,11 @@ module GraphQL
     # **Returns**
     #
     # - `nil, String` — The operation name provided by client or the one inferred from the document. Used to determine which operation to run.
-    #
-    # :call-seq:
-    #   operation_name -> nil | String
     attr_accessor :operation_name
 
     # **Returns**
     #
     # - `Boolean` — if false, static validation is skipped (execution behavior for invalid queries is undefined)
-    #
-    # :call-seq:
-    #   validate -> bool
     attr_reader :validate
 
     # **Parameters**
@@ -143,9 +137,6 @@ module GraphQL
     # **Returns**
     #
     # - `GraphQL::StaticValidation::Validator` — if present, the query will validate with these rules.
-    #
-    # :call-seq:
-    #   static_validator -> GraphQL::StaticValidation::Validator
     attr_reader :static_validator
 
     # **Parameters**
@@ -199,9 +190,6 @@ module GraphQL
     # **Returns**
     #
     # - `String, nil` — the triggered event, if this query is a subscription update
-    #
-    # :call-seq:
-    #   subscription_topic -> String | nil
     attr_reader :subscription_topic
 
     attr_reader :tracers
@@ -308,9 +296,6 @@ module GraphQL
     # **Returns**
     #
     # - `Symbol, nil`
-    #
-    # :call-seq:
-    #   visibility_profile -> Symbol | nil
     attr_reader :visibility_profile
 
     attr_accessor :multiplex

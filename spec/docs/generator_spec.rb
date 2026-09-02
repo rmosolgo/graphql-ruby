@@ -5,6 +5,18 @@ require_relative "../spec_helper"
 require_relative "../../tool/docs/generator"
 
 describe RDoc::Generator::GraphQLRuby do
+  it "uses distinct paths for GraphQL and Graphql on case-insensitive filesystems" do
+    graphql = RDoc::NormalModule.new("GraphQL")
+    graphql_rails = RDoc::NormalModule.new("Graphql")
+    generator = RDoc::Generator::GraphQLRuby.allocate
+    generator.instance_variable_set(:@classes, [graphql, graphql_rails])
+
+    generator.send(:disambiguate_case_insensitive_paths)
+
+    _(graphql.path).must_equal "GraphQL.html"
+    _(graphql_rails.path).must_equal "Graphql/index.html"
+  end
+
   it "deduplicates API entries while retaining guide entries" do
     generator = RDoc::Generator::GraphQLRuby.allocate
     entries = generator.send(:deduplicate_search_entries, [
@@ -173,6 +185,41 @@ describe RDoc::Generator::GraphQLRuby do
       html = File.read(path)
       _(html.scan("API Versioning for GraphQL-Ruby - GraphQL Ruby API Documentation").length).must_equal 3
       _(html).wont_include("overview - GraphQL Ruby API Documentation")
+    end
+  end
+
+  it "renders Markdown links as plain text in metadata excerpts" do
+    comment = RDoc::Comment.new("A result from [Schema.execute](rdoc-ref:GraphQL::Schema.execute).")
+    comment.format = "markdown"
+    generator = RDoc::Generator::GraphQLRuby.allocate
+    generator.instance_variable_set(:@options, RDoc::Options.new)
+
+    excerpt = generator.send(:excerpt, comment)
+
+    _(excerpt).must_equal("A result from Schema.execute.")
+  end
+
+  it "removes nested links from heading permalinks" do
+    Dir.mktmpdir("graphql-docs") do |directory|
+      path = Pathname.new(directory).join("GraphQL/Schema.html")
+      path.dirname.mkpath
+      File.write(path, '<h2 id="root-types"><a href="#root-types">Root <a href="Types.html"><code>Types</code></a></a></h2>')
+
+      RDoc::Generator::GraphQLRuby.allocate.send(:normalize_heading_links, path)
+
+      _(File.read(path)).must_equal '<h2 id="root-types"><a href="#root-types">Root <code>Types</code></a></h2>'
+    end
+  end
+
+  it "makes duplicate method source IDs unique" do
+    Dir.mktmpdir("graphql-docs") do |directory|
+      path = Pathname.new(directory).join("GraphQL/Parser.html")
+      path.dirname.mkpath
+      File.write(path, '<div class="method-source-code" id="parse-source"></div><div class="method-source-code" id="parse-source"></div>')
+
+      RDoc::Generator::GraphQLRuby.allocate.send(:normalize_method_source_ids, path)
+
+      _(File.read(path)).must_equal '<div class="method-source-code" id="parse-source"></div><div class="method-source-code" id="parse-source-2"></div>'
     end
   end
 
