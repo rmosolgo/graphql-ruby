@@ -35,6 +35,14 @@ describe "Query level Directive" do
       end
     end
 
+    class FailOperation < GraphQL::Schema::Directive
+      locations(GraphQL::Schema::Directive::QUERY)
+
+      def self.resolve_operation(*)
+        raise GraphQL::ExecutionError, "Operation failed"
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       field :int, Integer, null: false, resolve_static: true
 
@@ -49,6 +57,7 @@ describe "Query level Directive" do
     end
 
     directive(InitInt)
+    directive(FailOperation)
     query(Query)
     use GraphQL::Execution::Next
   end
@@ -105,5 +114,15 @@ describe "Query level Directive" do
     '
     error_res = QueryDirectiveSchema.execute(error_str)
     assert_equal(["Argument 'val' on InputObject 'DirectiveInput' has an invalid value (\"abc\"). Expected type 'Int!'."], error_res["errors"].map { |e| e["message"] })
+  end
+
+  it "runs registered finalizers when a later directive raises" do
+    result = QueryDirectiveSchema.execute_next("query @initInt(val: 1) @failOperation { int }")
+
+    assert_equal({
+      "errors" => [{ "message" => "Operation failed", "locations" => [{ "line" => 1, "column" => 1 }], "path" => [] }],
+      "data" => {},
+    }, result.to_h)
+    assert_equal({ path: [], result_data: {}, result_key: nil }, result.context[:operation_finalizer])
   end
 end
