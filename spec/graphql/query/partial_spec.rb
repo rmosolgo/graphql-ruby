@@ -96,6 +96,18 @@ describe GraphQL::Query::Partial do
       possible_types(Farm, Market)
     end
 
+    class ThingList < GraphQL::Schema::Object
+      field :things, [Thing, null: true], resolve_each: true
+
+      def self.things(object, _context)
+        object[:error] ? GraphQL::ExecutionError.new("Boom!") : [object[:thing]]
+      end
+
+      def things
+        self.class.things(object, context)
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       field :farms, [Farm], fallback_value: Database::FARMS.values
 
@@ -127,6 +139,22 @@ describe GraphQL::Query::Partial do
 
       def thing
         self.class.thing(context)
+      end
+
+      field :things, [Thing], resolve_static: true
+
+      def self.things(context)
+        [thing(context), thing(context)]
+      end
+
+      field :thing_lists, [ThingList], resolve_static: true
+
+      def self.thing_lists(context)
+        [{ error: true }, { thing: thing(context) }]
+      end
+
+      def thing_lists
+        self.class.thing_lists(context)
       end
 
       field :entity, Entity, resolve_static: true
@@ -199,6 +227,35 @@ describe GraphQL::Query::Partial do
     use GraphQL::Dataloader
     use GraphQL::Execution::Next
     lazy_resolve Proc, :call
+  end
+
+  class HandledInvalidTypeSchema < PartialSchema
+    def self.resolve_type(*)
+      PartialSchema::UpcasedFarm
+    end
+
+    def self.resolves_lazies?
+      false
+    end
+
+    def self.type_error(error, context)
+      if error.is_a?(GraphQL::UnresolvedTypeError)
+        context[:handled_unresolved_type_error] = error
+        nil
+      else
+        super
+      end
+    end
+  end
+
+  class HandledInvalidLazyTypeSchema < HandledInvalidTypeSchema
+    def self.resolve_type(*)
+      -> { PartialSchema::UpcasedFarm }
+    end
+
+    def self.resolves_lazies?
+      true
+    end
   end
 
   before do
@@ -468,6 +525,63 @@ describe GraphQL::Query::Partial do
     end
     assert_nil error.field
     assert_equal PartialSchema::Thing, error.parent_type
+  end
+
+  it "stops an abstract partial root when type_error handles the invalid type" do
+    exec_next_only("Execution::Next abstract root type validation")
+
+    query = GraphQL::Query.new(HandledInvalidTypeSchema, "{ thing { __typename } }")
+    query.context[:__graphql_execute_next] = true
+    root_value = OpenStruct.new({ invalid_type: true })
+    result = query.run_partials([
+      { path: ["thing"], object: root_value },
+    ]).first
+
+    assert_equal({ "data" => nil }, result.to_h)
+    error = result.context[:handled_unresolved_type_error]
+    assert_same root_value, error.value
+    assert_equal PartialSchema::Query.get_field("thing"), error.field
+    assert_equal PartialSchema::Query, error.parent_type
+    assert_match(/from "thing" on "Query"/, error.message)
+  end
+
+  it "nulls an abstract field when type_error handles the invalid type" do
+    exec_next_only("Execution::Next abstract field type validation")
+
+    [HandledInvalidTypeSchema, HandledInvalidLazyTypeSchema].each do |schema|
+      result = schema.execute_next("{ thing { __typename } }")
+
+      assert_equal({ "data" => { "thing" => nil } }, result.to_h)
+      error = result.context[:handled_unresolved_type_error]
+      assert_equal "Bellair Farm", error.value.name
+      assert_equal PartialSchema::Query.get_field("thing"), error.field
+      assert_equal PartialSchema::Query, error.parent_type
+    end
+  end
+
+  it "propagates an invalid non-null abstract list item" do
+    exec_next_only("Execution::Next abstract field type validation")
+
+    result = HandledInvalidTypeSchema.execute_next("{ things { __typename } }")
+
+    assert_nil result["data"]["things"]
+    expected_error = "Cannot return null for non-nullable element of type 'Thing' for Query.things"
+    assert_equal [expected_error, expected_error], result["errors"].map { |error| error["message"] }
+  end
+
+  it "handles an invalid abstract list after another parent returns an error" do
+    exec_next_only("Execution::Next abstract field type validation")
+
+    result = HandledInvalidTypeSchema.execute_next("{ thingLists { things { __typename } } }")
+
+    assert_equal({
+      "data" => { "thingLists" => [{ "things" => nil }, { "things" => [nil] }] },
+      "errors" => [{
+        "message" => "Boom!",
+        "locations" => [{ "line" => 1, "column" => 16 }],
+        "path" => ["thingLists", 0, "things"],
+      }],
+    }, result.to_h)
   end
 
   it "runs on interface selections" do

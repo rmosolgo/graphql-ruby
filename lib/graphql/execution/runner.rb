@@ -357,7 +357,10 @@ module GraphQL
             resolved_type = schema.sync_lazy(resolved_type)
           end
           resolved_type, root_value = resolved_type
-          ResolveTypeStep.assert_valid_resolved_type(root_type, resolved_type, root_value, nil, query: query)
+          if !ResolveTypeStep.assert_valid_resolved_type(root_type, resolved_type, root_value, nil, query: query)
+            results << { "data" => nil }
+            return
+          end
           objects = [root_value]
           query.current_trace.objects(resolved_type, objects, query.context)
           runtime_type_at[data] = resolved_type

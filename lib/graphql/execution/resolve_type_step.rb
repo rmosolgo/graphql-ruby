@@ -16,14 +16,15 @@ module GraphQL
 
       def self.assert_valid_resolved_type(abstract_type, resolved_type, object, field_resolution_step, query: field_resolution_step.selections_step.query)
         possible_types = query.types.possible_types(abstract_type)
-        if !possible_types.include?(resolved_type)
-          err_class = abstract_type::UnresolvedTypeError
-          field_definition = field_resolution_step&.field_definition
-          field_definition ||= query.field_definition if query.respond_to?(:field_definition)
-          parent_type = field_definition ? field_definition.owner_type : abstract_type
-          type_error = err_class.new(object, field_definition, parent_type, resolved_type, possible_types)
-          query.schema.type_error(type_error, query.context)
-        end
+        return true if possible_types.include?(resolved_type)
+
+        err_class = abstract_type::UnresolvedTypeError
+        field_definition = field_resolution_step&.field_definition
+        field_definition ||= query.field_definition if query.respond_to?(:field_definition)
+        parent_type = field_definition ? field_definition.owner_type : abstract_type
+        type_error = err_class.new(object, field_definition, parent_type, resolved_type, possible_types)
+        query.schema.type_error(type_error, query.context)
+        false
       end
     end
   end
