@@ -193,6 +193,19 @@ describe "Next Execution" do
     assert_graphql_equal(expected_result, result)
   end
 
+  it "doesn't use the query trace return value as the result" do
+    trace_class = Class.new(GraphQL::Tracing::Trace) do
+      def execute_query(query:)
+        super
+        :trace_return
+      end
+    end
+
+    result = run_next("{ __typename }", context: { trace: trace_class.new })
+
+    assert_equal({ "data" => { "__typename" => "Query" } }, result.to_h)
+  end
+
   it "runs mutations in isolation" do
     result = run_next <<~GRAPHQL
     mutation TestSequence {
