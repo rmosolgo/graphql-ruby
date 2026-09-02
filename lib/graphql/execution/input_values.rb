@@ -2,9 +2,9 @@
 module GraphQL
   module Execution
     class InputValues
-      def initialize(query, runner)
+      def initialize(query)
         @query = query
-        @runner = runner
+        @schema = query.schema
         @variable_values = nil
       end
 
@@ -27,7 +27,7 @@ module GraphQL
                 next
               end
 
-              var_type = @runner.schema.type_from_ast(var_node.type, context: @query.context)
+              var_type = @schema.type_from_ast(var_node.type, context: @query.context)
               values[var_node.name] = variable_value(var_ast_value, var_type)
             end
             values
@@ -182,7 +182,7 @@ module GraphQL
           arg_value = begin
             argument_definition.prepare_value(nil, arg_value, context: @query.context)
           rescue StandardError => err
-            @runner.schema.handle_or_reraise(@query.context, err, object: nil, arguments: argument_values, field: field_resolve_step&.field_definition)
+            @schema.handle_or_reraise(@query.context, err, object: nil, arguments: argument_values, field: field_resolve_step&.field_definition)
           end
         end
 
@@ -208,7 +208,7 @@ module GraphQL
                 argument_key: idx,
               )
               ps.push(loads_step)
-              @runner.add_step(loads_step)
+              field_resolve_step.runner.add_step(loads_step)
             end
           else
             loads_step = LoadArgumentStep.new(
@@ -220,7 +220,7 @@ module GraphQL
               argument_key: argument_key,
             )
             ps.push(loads_step)
-            @runner.add_step(loads_step)
+            field_resolve_step.runner.add_step(loads_step)
           end
         else
           argument_values[argument_key] = arg_value
@@ -228,12 +228,18 @@ module GraphQL
         nil
       end
 
+      public
+
       def value_from_ast(value_node, type)
         if type.non_null?
-          type = type.of_type
-        end
-
-        if value_node.nil?
+          inner_type = type.of_type
+          value = value_from_ast(value_node, inner_type)
+          if value.nil?
+            raise GraphQL::CoercionError, "Could not coerce value #{GraphQL::Language.serialize(value_node)} to #{type.graphql_name}"
+          else
+            value
+          end
+        elsif value_node.nil?
           nil
         elsif value_node.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           variable_values[value_node.name]
@@ -296,7 +302,7 @@ module GraphQL
           begin
             type.coerce_input(value_node, @query.context)
           rescue GraphQL::UnauthorizedEnumValueError => enum_err
-            @runner.schema.unauthorized_object(enum_err)
+            @schema.unauthorized_object(enum_err)
           end
         else
           raise "Unexpected input type: #{type.to_type_signature}."
