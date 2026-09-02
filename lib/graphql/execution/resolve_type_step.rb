@@ -18,7 +18,10 @@ module GraphQL
         possible_types = query.types.possible_types(abstract_type)
         if !possible_types.include?(resolved_type)
           err_class = abstract_type::UnresolvedTypeError
-          type_error = err_class.new(object, field_resolution_step.field_definition, abstract_type, resolved_type, possible_types)
+          field_definition = field_resolution_step&.field_definition
+          field_definition ||= query.field_definition if query.respond_to?(:field_definition)
+          parent_type = field_definition ? field_definition.owner_type : abstract_type
+          type_error = err_class.new(object, field_definition, parent_type, resolved_type, possible_types)
           query.schema.type_error(type_error, query.context)
         end
       end
