@@ -10,6 +10,12 @@ module GraphQL
         # @param validation_config [Hash{Symbol => Hash}]
         # @return [void]
         def validates(validation_config)
+          validation_config.each do |validator_name, _options|
+            if validator_name.is_a?(Class) || !GraphQL::Schema::Validator.all_validators.key?(validator_name)
+              GraphQL::Schema::Validator::CustomValidatorWarning.warn_for(validator_name)
+            end
+          end
+
           new_validators = GraphQL::Schema::Validator.from_config(self, validation_config)
           @own_validators ||= []
           @own_validators.concat(new_validators)
