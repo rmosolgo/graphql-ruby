@@ -37,12 +37,17 @@ module GraphQL
                     scope.set_transaction_name(transaction_name(query))
                   end
                 end
-                span.set_data('graphql.document', query.query_string)
+                if graphql_data_collection.nil? || graphql_data_collection.document
+                  span.set_data('graphql.document', query.query_string)
+                end
                 if query.selected_operation_name
                   span.set_data('graphql.operation.name', query.selected_operation_name)
                 end
                 if query.selected_operation
                   span.set_data('graphql.operation.type', query.selected_operation.operation_type)
+                end
+                if graphql_data_collection&.variables && !query.provided_variables.empty?
+                  span.set_data('graphql.variables', query.provided_variables)
                 end
               end
             end
@@ -54,6 +59,13 @@ module GraphQL
         include MonitorTrace::Monitor::GraphQLPrefixNames
 
         private
+
+        def graphql_data_collection
+          @graphql_data_collection ||= if Sentry.respond_to?(:configuration)
+            configuration = Sentry.configuration
+            configuration.data_collection.graphql if configuration.respond_to?(:data_collection)
+          end
+        end
 
         def operation_name(query)
           selected_op = query.selected_operation
