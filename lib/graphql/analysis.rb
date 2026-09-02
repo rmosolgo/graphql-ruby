@@ -60,7 +60,7 @@ module GraphQL
         analyzers_to_run = query_analyzers + multiplex_analyzers
 
         if !analyzers_to_run.empty?
-          analyzers_to_run.select!(&:visit?)
+          analyzers_to_run.select! { |analyzer| analyzer.visit_query?(query) }
           if !analyzers_to_run.empty?
             visitor = GraphQL::Analysis::Visitor.new(
               query: query,

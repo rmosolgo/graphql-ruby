@@ -15,6 +15,12 @@ module GraphQL
           nil
         end
       end
+
+      private
+
+      def precompute_concrete_complexity?
+        self.class == MaxQueryComplexity
+      end
     end
   end
 end
