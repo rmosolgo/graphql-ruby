@@ -59,7 +59,7 @@ module GraphQL
         # @return [Object] An object that load Global::Identification recursive
         def load_value(value)
           if value.is_a?(Array)
-            is_gids = (v1 = value[0]).is_a?(Hash) && v1.size == 1 && v1[GLOBALID_KEY]
+            is_gids = !value.empty? && value.all? { |v| v.is_a?(Hash) && v.size == 1 && v[GLOBALID_KEY] }
             if is_gids
               # Assume it's an array of global IDs
               ids = value.map { |v| v[GLOBALID_KEY] }
@@ -104,14 +104,20 @@ module GraphQL
             else
               loaded_h = {}
               sym_keys = value.fetch(SYMBOL_KEYS_KEY, [])
+              symbol_key_values = sym_keys.is_a?(Hash) ? sym_keys : nil
               value.each do |k, v|
                 if k == SYMBOL_KEYS_KEY
                   next
                 end
-                if sym_keys.include?(k)
+                if !symbol_key_values && sym_keys.include?(k)
                   k = k.to_sym
                 end
                 loaded_h[k] = load_value(v)
+              end
+              if symbol_key_values
+                symbol_key_values.each do |k, v|
+                  loaded_h[k.to_sym] = load_value(v)
+                end
               end
               loaded_h
             end
@@ -126,21 +132,31 @@ module GraphQL
           if obj.is_a?(Array)
             obj.map{|item| dump_value(item)}
           elsif obj.is_a?(Hash)
+            has_colliding_symbol_key = obj.any? { |k, _v| k.is_a?(Symbol) && obj.key?(k.to_s) }
             if obj.any? { |k, _v| RESERVED_KEYS.include?(k.to_s) }
               return {
                 HASH_KEY => obj.map { |k, v| [dump_value(k.is_a?(Symbol) ? k : k.to_s), dump_value(v)] },
               }
             end
             symbol_keys = nil
+            symbol_key_values = nil
             dumped_h = {}
             obj.each do |k, v|
-              dumped_h[k.to_s] = dump_value(v)
-              if k.is_a?(Symbol)
+              dumped_v = dump_value(v)
+              if has_colliding_symbol_key && k.is_a?(Symbol)
+                symbol_key_values ||= {}
+                symbol_key_values[k.to_s] = dumped_v
+              else
+                dumped_h[k.to_s] = dumped_v
+              end
+              if !has_colliding_symbol_key && k.is_a?(Symbol)
                 symbol_keys ||= Set.new
                 symbol_keys << k.to_s
               end
             end
-            if symbol_keys
+            if symbol_key_values
+              dumped_h[SYMBOL_KEYS_KEY] = symbol_key_values
+            elsif symbol_keys
               dumped_h[SYMBOL_KEYS_KEY] = symbol_keys.to_a
             end
             dumped_h
