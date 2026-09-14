@@ -41,12 +41,10 @@ module GraphQL
       INVALID_RESULT = GraphQL::Query::InputValidationResult.new(valid: false, problems: [])
       VALID_RESULT = GraphQL::Query::InputValidationResult.new(valid: true, problems: [])
       def validate_literal(ast_value, type)
-        result = @input_values.value_from_ast(ast_value, type)
-        if result.nil?
-          INVALID_RESULT
-        else
-          VALID_RESULT
-        end
+        _result = @input_values.value_from_ast(ast_value, type)
+        VALID_RESULT
+      rescue Execution::InputValues::AstCoercionFailed
+        INVALID_RESULT
       rescue CoercionError => coercion_err
         Query::InputValidationResult.from_problem(coercion_err.message, message: coercion_err.message, extensions: coercion_err.extensions)
       end

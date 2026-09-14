@@ -230,12 +230,15 @@ module GraphQL
 
       public
 
+      class AstCoercionFailed < GraphQL::Error
+      end
+
       def value_from_ast(value_node, type)
         if type.non_null?
           inner_type = type.of_type
           value = value_from_ast(value_node, inner_type)
           if value.nil?
-            raise GraphQL::CoercionError, "Could not coerce value #{GraphQL::Language.serialize(value_node)} to #{type.graphql_name}"
+            raise AstCoercionFailed
           else
             value
           end
@@ -325,6 +328,8 @@ module GraphQL
               value_h[arg.name] = coerce_untyped_input(arg.value)
             end
             value_h
+          when Language::Nodes::VariableIdentifier
+            coerce_untyped_input(@query.variables[input_value.name])
           else
             raise "Unhandled untyped input AST node: #{input_value.class}"
           end
