@@ -159,6 +159,7 @@ module GraphQL
       @root_value = root_value
       @fragments = nil
       @operations = nil
+      @input_values = nil
       @finalizers = @top_level_finalizers = nil
       @validate = validate
       self.static_validator = static_validator if static_validator
@@ -240,6 +241,11 @@ module GraphQL
           GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [selected_operation])
         end
       end
+    end
+
+    # @api private
+    def input_values
+      @input_values ||= Execution::InputValues.new(self)
     end
 
     # @api private

@@ -29,15 +29,10 @@ class ExecutionInputValuesTest < Minitest::Test
     query(Mutation) # Just to have something
   end
 
-  class DummyRunner
-    def add_step(s); end
-    def schema; TestSchema; end
-  end
-
   def get_input_values(query_string: nil, variables_string: nil, variables: nil)
     query_string ||= "query#{variables_string ? "(#{variables_string})" : ""} { __typename }"
     query = GraphQL::Query.new(TestSchema, query_string, validate: false, variables: variables)
-    GraphQL::Execution::InputValues.new(query, DummyRunner.new)
+    GraphQL::Execution::InputValues.new(query)
   end
 
   def get_argument_nodes(arg_string)
