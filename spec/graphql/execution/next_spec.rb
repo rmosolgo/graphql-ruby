@@ -490,4 +490,16 @@ describe "Next Execution" do
       assert_nil Fiber[:__graphql_current_multiplex]
     end
   end
+
+  it "doesn't use the query trace return value as the result" do
+    trace_class = Class.new(GraphQL::Tracing::Trace) do
+      def execute_query(query:)
+        super
+        :trace_return
+      end
+    end
+
+    result = run_next("{ __typename }", context: { trace: trace_class.new })
+    assert_equal({ "data" => { "__typename" => "Query" } }, result.to_h)
+  end
 end
