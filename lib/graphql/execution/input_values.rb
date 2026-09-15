@@ -2,6 +2,8 @@
 module GraphQL
   module Execution
     class InputValues
+      ARGUMENT_NODES_INDEX_THRESHOLD = 32
+
       def initialize(query, runner)
         @query = query
         @runner = runner
@@ -39,11 +41,20 @@ module GraphQL
         arg_defns = @query.types.arguments(owner_defn)
         argument_values = {}
         errors = nil
+        argument_nodes_by_name = if argument_nodes.length >= ARGUMENT_NODES_INDEX_THRESHOLD
+          argument_nodes.each_with_object({}) do |arg_node, index|
+            index[arg_node.name] ||= arg_node
+          end
+        end
 
         arg_defns.each do |argument_definition|
           arg_ruby_key = argument_definition.keyword
           arg_graphql_key = argument_definition.graphql_name
-          arg_node = argument_nodes.find { |a| a.name == arg_graphql_key }
+          arg_node = if argument_nodes_by_name
+            argument_nodes_by_name[arg_graphql_key]
+          else
+            argument_nodes.find { |a| a.name == arg_graphql_key }
+          end
           if arg_node.nil? || (arg_node.value.is_a?(Language::Nodes::VariableIdentifier) && !variable_values.key?(arg_node.value.name))
             if argument_definition.default_value?
               arg_value = value_from_ast(argument_definition.default_value, argument_definition.type)
@@ -198,14 +209,13 @@ module GraphQL
           if argument_definition.type.list?
             results = Array.new(arg_value.size, nil)
             argument_values[argument_key] = results
-            arg_value.each_with_index do |inner_v, idx|
-              loads_step = LoadArgumentStep.new(
+            if !arg_value.empty?
+              loads_step = LoadArgumentsStep.new(
                 field_resolve_step: field_resolve_step,
                 load_receiver: load_receiver,
-                argument_value: inner_v,
+                argument_values: arg_value,
                 argument_definition: argument_definition,
                 arguments: results,
-                argument_key: idx,
               )
               ps.push(loads_step)
               @runner.add_step(loads_step)
