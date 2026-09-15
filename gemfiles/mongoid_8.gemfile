@@ -8,6 +8,7 @@ gem "ruby-prof", platform: :ruby
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
 gem "mongoid", "~> 8.0"
+gem "json", "< 3" # Active Support 8.0.5.1 still passes options removed by JSON 3
 gem "async"
 gem "concurrent-ruby", "1.3.4"
 gem "minitest-mock"
