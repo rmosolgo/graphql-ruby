@@ -3,14 +3,18 @@ module GraphQL
   module Execution
     # Boolean checks for how an AST node's directives should
     # influence its execution
-    # @api private
-    module DirectiveChecks
+    module DirectiveChecks # :nodoc:
       SKIP = "skip"
       INCLUDE = "include"
 
       module_function
 
-      # @return [Boolean] Should this node be included in the query?
+      # **Returns**
+      #
+      # - `Boolean` — Should this node be included in the query?
+      #
+      # :call-seq:
+      #   include?(directive_ast_nodes, query) -> bool
       def include?(directive_ast_nodes, query)
         directive_ast_nodes.each do |directive_ast_node|
           name = directive_ast_node.name

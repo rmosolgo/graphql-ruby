@@ -2,10 +2,10 @@
 
 module GraphQL
   class Schema
-    # Subclasses of this can influence how {GraphQL::Execution::Interpreter} runs queries.
+    # Subclasses of this can influence how [GraphQL::Execution::Interpreter](rdoc-ref:GraphQL::Execution::Interpreter) runs queries.
     #
-    # - {.include?}: if it returns `false`, the field or fragment will be skipped altogether, as if it were absent
-    # - {.resolve}: Wraps field resolution (so it should call `yield` to continue)
+    # - [.include?](rdoc-ref:.include?): if it returns `false`, the field or fragment will be skipped altogether, as if it were absent
+    # - [.resolve](rdoc-ref:.resolve): Wraps field resolution (so it should call `yield` to continue)
     class Directive < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasArguments::HasDirectiveArguments
@@ -69,7 +69,7 @@ module GraphQL
           static_include?(arguments, context)
         end
 
-        # Determines whether {Execution::Lookahead} considers the field to be selected
+        # Determines whether [Execution::Lookahead](rdoc-ref:Execution::Lookahead) considers the field to be selected
         def static_include?(_arguments, _context)
           true
         end
@@ -122,10 +122,14 @@ module GraphQL
         end
       end
 
-      # @return [GraphQL::Schema::Field, GraphQL::Schema::Argument, Class, Module]
+      # **Returns**
+      #
+      # - `GraphQL::Schema::Field, GraphQL::Schema::Argument, Class, Module`
       attr_reader :owner
 
-      # @return [GraphQL::Interpreter::Arguments]
+      # **Returns**
+      #
+      # - `GraphQL::Interpreter::Arguments`
       attr_reader :arguments
 
       class InvalidArgumentError < GraphQL::Error

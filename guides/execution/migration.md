@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Execution
-title: Migrating to Execution::Next
-desc: Guidelines for migrating to the new execution engine
-index: 2
----
+# Migrating to Execution::Next
 
 This guide includes tips for migrating your schema configuration and production traffic to the new engine.
 
@@ -14,7 +6,7 @@ This guide includes tips for migrating your schema configuration and production 
 
 `Execution::Next` is designed to run alongside the previous engine so that the same schema can run queries _both_ ways. This supports an incremental migration and live toggling in production.
 
-First, update your schema to include the necessary {% internal_link "field configurations", "/execution/next#field-configurations" %}. If you implement new class methods in your Object type classes, you can also migrate instance methods to call "up" to those class methods, preserving a single source of truth:
+First, update your schema to include the necessary [field configurations](/execution/next#field-configurations). If you implement new class methods in your Object type classes, you can also migrate instance methods to call "up" to those class methods, preserving a single source of truth:
 
 ```ruby
 field :unpublished_posts, [Types::Post], resolve_each: true
@@ -207,7 +199,7 @@ Visibility works exactly as before; both runtime modules call the same methods t
 
 ### Dataloader
 
-Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use {{ "Schema::Member::HasDataloader#dataload_all" | api_doc }} instead of `.dataload`.
+Dataloader runs with new execution, but when migrating from instance methods to batch-level class methods, you may need to use [Schema::Member::HasDataloader#dataload_all](rdoc-ref:GraphQL::Schema::Member::HasDataloader#dataload_all) instead of `.dataload`.
 
 ### Tracing
 

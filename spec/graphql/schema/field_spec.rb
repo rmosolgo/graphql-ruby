@@ -951,10 +951,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   describe "argument documentation" do
     it "HasFields::field documents each argument" do
       has_fields_field_comment = File.read("./lib/graphql/schema/member/has_fields.rb")[/(\s+#[^\n]*\n)+\s+def field\(/m]
-      has_field_field_doc_param_names = has_fields_field_comment.split("\n").map do |line|
-        line[/@param (\S+)/] || line[/@option kwargs \[.*\] :(\S+)/]
-        $1
-      end.compact
+      has_field_field_doc_param_names = rdoc_parameter_names(has_fields_field_comment, include_options: true)
 
       field_initialize_argument_names = GraphQL::Schema::Field.instance_method(:initialize).parameters.map { |param| param[1].to_s }
 
@@ -967,13 +964,13 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
         "subscription",
         "kwargs",
       ]
-      assert_equal expected_differences, has_field_field_doc_param_names - field_initialize_argument_names
+      assert_equal expected_differences.sort, (has_field_field_doc_param_names - field_initialize_argument_names).sort
       assert_equal ["owner", "resolver_class"], field_initialize_argument_names - has_field_field_doc_param_names
     end
 
     it "Field::initialize documents each argument" do
       field_initialize_comment = File.read("./lib/graphql/schema/field.rb")[/(\s+#[^\n]*\n)+ {6}def initialize\(/m]
-      field_initialize_doc_param_names = field_initialize_comment.split("\n").map { |line| line[/@param (\S+)/]; $1 }.compact
+      field_initialize_doc_param_names = rdoc_parameter_names(field_initialize_comment)
       field_initialize_argument_names = GraphQL::Schema::Field.instance_method(:initialize).parameters.map { |param| param[1].to_s }
       assert_equal field_initialize_doc_param_names.sort, field_initialize_argument_names.sort
     end

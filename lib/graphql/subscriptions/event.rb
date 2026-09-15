@@ -6,16 +6,24 @@ module GraphQL
     # - Triggered by `MySchema.subscriber.trigger(name, arguments, obj)`
     #
     class Event
-      # @return [String] Corresponds to the Subscription root field name
+      # **Returns**
+      #
+      # - `String` — Corresponds to the Subscription root field name
       attr_reader :name
 
-      # @return [GraphQL::Execution::Interpreter::Arguments]
+      # **Returns**
+      #
+      # - `GraphQL::Execution::Interpreter::Arguments`
       attr_reader :arguments
 
-      # @return [GraphQL::Query::Context]
+      # **Returns**
+      #
+      # - `GraphQL::Query::Context`
       attr_reader :context
 
-      # @return [String] An opaque string which identifies this event, derived from `name` and `arguments`
+      # **Returns**
+      #
+      # - `String` — An opaque string which identifies this event, derived from `name` and `arguments`
       attr_reader :topic
 
       def initialize(name:, arguments:, field: nil, context: nil, scope: nil)
@@ -36,7 +44,12 @@ module GraphQL
         @topic = self.class.serialize(name, arguments, field, scope: scope_val, context: context)
       end
 
-      # @return [String] an identifier for this unit of subscription
+      # **Returns**
+      #
+      # - `String` — an identifier for this unit of subscription
+      #
+      # :call-seq:
+      #   serialize(_name, arguments, field, scope:, context:) -> String
       def self.serialize(_name, arguments, field, scope:, context: GraphQL::Query::NullContext.instance)
         subscription = field.resolver || GraphQL::Schema::Subscription
         arguments = arguments_without_field_extras(field: field, arguments: arguments)
@@ -44,7 +57,12 @@ module GraphQL
         subscription.topic_for(arguments: normalized_args, field: field, scope: scope)
       end
 
-      # @return [String] a logical identifier for this event. (Stable when the query is broadcastable.)
+      # **Returns**
+      #
+      # - `String` — a logical identifier for this event. (Stable when the query is broadcastable.)
+      #
+      # :call-seq:
+      #   fingerprint() -> String
       def fingerprint
         @fingerprint ||= begin
           # When this query has been flagged as broadcastable,

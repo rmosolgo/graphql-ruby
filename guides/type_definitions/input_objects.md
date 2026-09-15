@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Type Definitions
-title: Input Objects
-desc: Input objects are sets of key-value pairs which can be used as field arguments.
-index: 3
----
+# Input Objects
 
 Input object types are complex inputs for GraphQL operations. They're great for fields that need a lot of structured input, like mutations or search fields. In a GraphQL request, it might look like this:
 
@@ -36,7 +28,7 @@ This input object has three possible keys:
 
 ## Defining Input Object Types
 
-Input object types extend {{ "GraphQL::Schema::InputObject" | api_doc }} and define key-value pairs with the `argument(...)` method. For example:
+Input object types extend [GraphQL::Schema::InputObject](rdoc-ref:GraphQL::Schema::InputObject) and define key-value pairs with the `argument(...)` method. For example:
 
 ```ruby
 # app/graphql/types/base_input_object.rb
@@ -52,7 +44,7 @@ class Types::PostAttributes < Types::BaseInputObject
 end
 ```
 
-For a full description of the `argument(...)` method, see the {% internal_link "argument section of the Objects guide","/fields/arguments.html" %}.
+For a full description of the `argument(...)` method, see the [argument section of the Objects guide](/fields/arguments.html).
 
 ## Using Input Objects
 
@@ -101,8 +93,8 @@ end
 
 You can also add or override methods on input object classes to customize them.  They have two instance variables by default:
 
-- `@arguments`: A {{ "GraphQL::Execution::Interpreter::Arguments" | api_doc }} instance
-- `@context`: The current {{ "GraphQL::Query::Context" | api_doc }}
+- `@arguments`: A [GraphQL::Execution::Interpreter::Arguments](rdoc-ref:GraphQL::Execution::Interpreter::Arguments) instance
+- `@context`: The current [GraphQL::Query::Context](rdoc-ref:GraphQL::Query::Context)
 
 Any extra methods you define on the class can be used for field resolution, as demonstrated above.
 

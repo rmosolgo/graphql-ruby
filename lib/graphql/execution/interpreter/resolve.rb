@@ -5,15 +5,21 @@ module GraphQL
     class Interpreter
       module Resolve
         # Continue field results in `results` until there's nothing else to continue.
-        # @return [void]
-        # @deprecated Call `dataloader.run` instead
+        # **Deprecated:** Call `dataloader.run` instead
+        #
+        # **Returns**
+        #
+        # - `void`
+        #
+        # :call-seq:
+        #   resolve_all(results, dataloader) -> void
         def self.resolve_all(results, dataloader)
           warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{caller(1, 5).map { |l| "\n    #{l}"}.join}"
           dataloader.append_job { resolve(results, dataloader) }
           nil
         end
 
-        # @deprecated Call `dataloader.run` instead
+        # **Deprecated:** Call `dataloader.run` instead
         def self.resolve_each_depth(lazies_at_depth, dataloader)
           warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{caller(1, 5).map { |l| "\n    #{l}"}.join}"
 
@@ -39,7 +45,7 @@ module GraphQL
           nil
         end
 
-        # @deprecated Call `dataloader.run` instead
+        # **Deprecated:** Call `dataloader.run` instead
         def self.resolve(results, dataloader)
           warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{caller(1, 5).map { |l| "\n    #{l}"}.join}"
           # There might be pending jobs here that _will_ write lazies

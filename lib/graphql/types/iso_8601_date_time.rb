@@ -23,18 +23,36 @@ module GraphQL
       # i.e. ActiveSupport::JSON::Encoder.time_precision (3 by default)
       DEFAULT_TIME_PRECISION = 0
 
-      # @return [Integer]
+      # **Returns**
+      #
+      # - `Integer`
+      #
+      # :call-seq:
+      #   time_precision() -> Integer
       def self.time_precision
         @time_precision || DEFAULT_TIME_PRECISION
       end
 
-      # @param [Integer] value
+      # **Parameters**
+      #
+      # - `value` (`Integer`)
+      #
+      # :call-seq:
+      #   time_precision=(Integer value)
       def self.time_precision=(value)
         @time_precision = value
       end
 
-      # @param value [Time,Date,DateTime,String]
-      # @return [String]
+      # **Parameters**
+      #
+      # - `value` (`Time, Date, DateTime, String`)
+      #
+      # **Returns**
+      #
+      # - `String`
+      #
+      # :call-seq:
+      #   coerce_result(Time | Date | DateTime | String value, _ctx) -> String
       def self.coerce_result(value, _ctx)
         case value
         when Date
@@ -49,8 +67,16 @@ module GraphQL
         raise GraphQL::Error, "An incompatible object (#{value.class}) was given to #{self}. Make sure that only Times, Dates, DateTimes, and well-formatted Strings are used with this type. (#{error.message})"
       end
 
-      # @param str_value [String]
-      # @return [Time]
+      # **Parameters**
+      #
+      # - `str_value` (`String`)
+      #
+      # **Returns**
+      #
+      # - `Time`
+      #
+      # :call-seq:
+      #   coerce_input(String str_value, _ctx) -> Time
       def self.coerce_input(str_value, _ctx)
         Time.iso8601(str_value)
       rescue ArgumentError, TypeError

@@ -1,22 +1,15 @@
----
-layout: guide
-search: true
-section: Dataloader
-title: Dataloader
-desc: The Dataloader orchestrates Fibers and Sources
-index: 2
----
+# Dataloader
 
-{{ "GraphQL::Dataloader" | api_doc }} instances are created for each query (or multiplex) and they:
+[GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) instances are created for each query (or multiplex) and they:
 
-- Cache {% internal_link "Source", "/dataloader/sources" %} instances for the duration of GraphQL execution
+- Cache [Source](/dataloader/sources) instances for the duration of GraphQL execution
 - Run pending Fibers to resolve data requirements and continue GraphQL execution
 
 During a query, you can access the dataloader instance with:
 
-- {{ "GraphQL::Query::Context#dataloader" | api_doc }} (`context.dataloader`, anywhere that query context is available)
-- {{ "GraphQL::Schema::Object#dataloader" | api_doc }} (`dataloader` inside a resolver method)
-- {{ "GraphQL::Schema::Resolver#dataloader" | api_doc }} (`dataloader` inside `def resolve` of a Resolver, Mutation, or Subscription class.)
+- [GraphQL::Query::Context#dataloader](rdoc-ref:GraphQL::Query::Context#dataloader) (`context.dataloader`, anywhere that query context is available)
+- [GraphQL::Schema::Object#dataloader](rdoc-ref:GraphQL::Schema::Object#dataloader) (`dataloader` inside a resolver method)
+- [GraphQL::Schema::Resolver#dataloader](rdoc-ref:GraphQL::Schema::Resolver#dataloader) (`dataloader` inside `def resolve` of a Resolver, Mutation, or Subscription class.)
 
 ## Fiber Lifecycle Hooks
 
@@ -37,6 +30,6 @@ Then, use your customized dataloader instead of the built-in one:
   end
 ```
 
-- __{{ "GraphQL::Dataloader#get_fiber_variables" | api_doc }}__ is called before creating a Fiber. By default, it returns a hash containing the parent Fiber's variables (from `Thread.current[...]`). You can add to this hash in your own implementation of this method.
-- __{{ "GraphQL::Dataloader#set_fiber_variables" | api_doc }}__ is called inside the new Fiber. It's passed the hash returned from `get_fiber_variables`. You can use this method to initialize "global" state inside the new Fiber.
-- __{{ "GraphQL::Dataloader#cleanup_fiber" | api_doc }}__ is called just before a Dataloader Fiber exits. You can use this methods to teardown any state that you prepared in `set_fiber_variables`.
+- __[GraphQL::Dataloader#get_fiber_variables](rdoc-ref:GraphQL::Dataloader#get_fiber_variables)__ is called before creating a Fiber. By default, it returns a hash containing the parent Fiber's variables (from `Thread.current[...]`). You can add to this hash in your own implementation of this method.
+- __[GraphQL::Dataloader#set_fiber_variables](rdoc-ref:GraphQL::Dataloader#set_fiber_variables)__ is called inside the new Fiber. It's passed the hash returned from `get_fiber_variables`. You can use this method to initialize "global" state inside the new Fiber.
+- __[GraphQL::Dataloader#cleanup_fiber](rdoc-ref:GraphQL::Dataloader#cleanup_fiber)__ is called just before a Dataloader Fiber exits. You can use this methods to teardown any state that you prepared in `set_fiber_variables`.
