@@ -139,13 +139,13 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
       debug_assert_selector "#fingerprint-updates-1-connected-1"
       # Trigger once
       click_on("Trigger with fingerprint 1")
-      debug_assert_selector "#fingerprint-updates-1-update-1-value-1"
+      debug_assert_selector "[id^='fingerprint-updates-1-update-1-value-']"
 
       # Server unsubscribe
       click_on("Server-side unsubscribe with fingerprint 1")
       # Subsequent updates should fail
       click_on("Trigger with fingerprint 1")
-      refute_selector "#fingerprint-updates-1-update-2-value-2"
+      refute_selector "[id^='fingerprint-updates-1-update-2-value-']"
 
       # The client has only 2 connections (from the initial 2)
       assert_text "Remaining ActionCable subscriptions: 2"
@@ -162,7 +162,7 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
       debug_assert_selector "#fingerprint-updates-1-connected-1"
       # Trigger once
       click_on("Trigger with fingerprint 1")
-      debug_assert_selector "#fingerprint-updates-1-update-1-value-1"
+      debug_assert_selector "[id^='fingerprint-updates-1-update-1-value-']"
 
       # Server unsubscribe
       click_on("Unsubscribe with message with fingerprint 1")
