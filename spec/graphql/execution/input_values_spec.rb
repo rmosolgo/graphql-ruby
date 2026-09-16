@@ -23,6 +23,12 @@ class ExecutionInputValuesTest < Minitest::Test
       field :test_list_input, Boolean do
         argument :input, [TestInput, null: true], required: false
       end
+
+      field :test_many_arguments, Boolean do
+        8.times do |i|
+          argument :"arg#{i}", String, required: false
+        end
+      end
     end
 
     mutation(Mutation)
@@ -72,6 +78,19 @@ class ExecutionInputValuesTest < Minitest::Test
   def test_it_produces_argument_values_for_input_objects
     input = get_input_values
     assert_equal_input( {input: { string: "a", enum: "ACTIVE" } }, input.argument_values(TestSchema.find("Mutation.testInput"), get_argument_nodes("input: { string: \"a\", enum: ACTIVE }"), nil))
+  end
+
+  def test_it_keeps_the_first_duplicate_argument
+    input = get_input_values
+    argument_strings = [
+      'arg0: "first"',
+      'arg0: "second"',
+    ] + 30.times.map { |i| %(arg#{(i % 7) + 1}: "value") }
+    argument_nodes = get_argument_nodes(argument_strings.join(", "))
+    argument_values, errors = input.argument_values(TestSchema.find("Mutation.testManyArguments"), argument_nodes, nil)
+
+    assert_nil errors
+    assert_equal "first", argument_values[:arg0]
   end
 
   def assert_equal_input(expected_ruby_hash, graphql_input, path = [])
