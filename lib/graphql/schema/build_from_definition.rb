@@ -51,7 +51,7 @@ module GraphQL
             raise InvalidDocumentError.new('Must provide only one schema definition.')
           end
           schema_definition = schema_defns.first
-          types = {}
+          types = schema_superclass.types.dup
           directives = schema_superclass.directives.dup
           type_resolver = build_resolve_type(types, directives, ->(type_name) { types[type_name] ||= Schema::LateBoundType.new(type_name)})
           # Make a different type resolver because we need to coerce directive arguments
