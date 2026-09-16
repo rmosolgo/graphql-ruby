@@ -201,6 +201,11 @@ describe GraphQL::Query::Partial do
     lazy_resolve Proc, :call
   end
 
+  class NoLazyPartialSchema < GraphQL::Schema
+    query PartialSchema::Query
+    use GraphQL::Execution::Next
+  end
+
   before do
     PartialSchema::Database.clear
   end
@@ -428,6 +433,12 @@ describe GraphQL::Query::Partial do
     assert results[2].partial.leaf?
   end
 
+  it "runs scalar partials without configured lazy resolvers" do
+    query = GraphQL::Query.new(NoLazyPartialSchema, "{ entity { name } }", context: { __graphql_execute_next: true })
+    result = query.run_partials([{ path: ["entity", "name"], object: "Whisper Hill" }]).first
+
+    assert_equal({ "data" => "Whisper Hill" }, result.to_h)
+  end
 
   it "runs on union selections" do
     str = "{

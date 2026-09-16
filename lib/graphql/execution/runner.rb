@@ -425,7 +425,7 @@ module GraphQL
         key = dummy_path.pop
         is_from_array = key.is_a?(Integer)
 
-        if lazy?(value)
+        if resolves_lazies && lazy?(value)
           value = @schema.sync_lazy(value)
         end
         selections = partial.ast_nodes
