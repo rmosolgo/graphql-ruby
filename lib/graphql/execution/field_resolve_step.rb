@@ -786,8 +786,13 @@ module GraphQL
           end
           results
         when :resolve_legacy_instance_method
-          @selections_step.graphql_objects.map do |obj_inst|
-            obj_inst.public_send(@field_definition.execution_mode_key, **args_hash)
+          graphql_objects = if objects.equal?(@selections_step.objects)
+            @selections_step.graphql_objects
+          else
+            objects.map { |object| @parent_type.scoped_new(object, context) }
+          end
+          graphql_objects.map do |graphql_object|
+            graphql_object.public_send(@field_definition.execution_mode_key, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
             exec_err
           end
