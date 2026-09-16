@@ -220,6 +220,10 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       end
     end
 
+    class NoOp < GraphQL::Schema::Directive
+      locations(FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT, QUERY)
+    end
+
     class Thing < GraphQL::Schema::Object
       field :name, String, null: false, hash_key: :name
     end
@@ -292,6 +296,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     class Schema < GraphQL::Schema
       query(Query)
       directive(CountFields)
+      directive(NoOp)
       directive(ValidationTest)
       lazy_resolve(Proc, :call)
       use GraphQL::Dataloader
@@ -304,6 +309,20 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
   end
 
   describe "runtime directives" do
+    it "treats directives without runtime hooks as no-ops" do
+      queries = [
+        "{ __typename @noOp }",
+        "{ ... on Query @noOp { __typename } }",
+        "{ ...NoOpFragment @noOp } fragment NoOpFragment on Query { __typename }",
+        "query @noOp { __typename }",
+      ]
+
+      queries.each do |query|
+        result = RuntimeDirectiveTest::Schema.execute_next(query)
+        assert_equal({ "data" => { "__typename" => "Query" } }, result.to_h)
+      end
+    end
+
     it "works with fragment spreads, inline fragments, and fields" do
       query_str = <<-GRAPHQL
       {

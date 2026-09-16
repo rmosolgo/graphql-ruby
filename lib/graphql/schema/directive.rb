@@ -84,6 +84,11 @@ module GraphQL
           yield
         end
 
+        def resolve_field(...); end
+        def resolve_fragment_spread(...); end
+        def resolve_inline_fragment(...); end
+        def resolve_operation(...); end
+
         def validate!(arguments, context)
           Schema::Validator.validate!(validators, self, context, arguments)
         end
