@@ -287,7 +287,8 @@ module GraphQL
     # @return [GraphQL::Query::Result] A Hash-like GraphQL response, with `"data"` and/or `"errors"` keys
     def result
       if !@executed
-        Execution::Interpreter.run_all(@schema, [self], context: @context)
+        execution_engine = @schema.default_execution_next ? Execution::Next : Execution::Interpreter
+        execution_engine.run_all(@schema, [self], context: @context)
       end
       @result ||= Query::Result.new(query: self, values: @result_values)
     end
