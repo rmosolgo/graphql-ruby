@@ -2,6 +2,19 @@
 require "spec_helper"
 
 describe GraphQL::Query do
+  class DefaultNextQuery < GraphQL::Schema::Object
+    field :value, String, resolve_static: true
+
+    def self.value(_context)
+      "next"
+    end
+  end
+
+  class DefaultNextSchema < GraphQL::Schema
+    query(DefaultNextQuery)
+    use GraphQL::Execution::Next, as_default: true
+  end
+
   let(:query_string) { %|
     query getFlavor($cheeseId: Int!) {
       brie: cheese(id: 1)   { ...cheeseFields, taste: flavor },
@@ -216,6 +229,12 @@ describe GraphQL::Query do
   end
 
   describe '#result' do
+    it "uses the schema's default execution engine" do
+      result = GraphQL::Query.new(DefaultNextSchema, "{ value }").result
+
+      assert_equal({ "data" => { "value" => "next" } }, result.to_h)
+    end
+
     it "returns fields on objects" do
       expected = {"data"=> {
           "brie" =>   { "flavor" => "Brie", "taste" => "Brie" },
