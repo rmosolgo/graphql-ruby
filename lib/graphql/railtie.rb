@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 module GraphQL
-  # Support {GraphQL::Parser::Cache} and {GraphQL.eager_load!}
+  # Support [GraphQL::Language::Cache](rdoc-ref:GraphQL::Language::Cache) and [GraphQL.eager_load!](rdoc-ref:GraphQL.eager_load!)
   #
-  # @example Enable the parser cache with default directory
+  # **Examples**
   #
-  #   config.graphql.parser_cache = true
+  # **Example: Enable the parser cache with default directory**
   #
+  # ```ruby
+  # config.graphql.parser_cache = true
+  # ```
   class Railtie < Rails::Railtie
     config.graphql = ActiveSupport::OrderedOptions.new
     config.graphql.parser_cache = false

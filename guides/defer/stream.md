@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro - Defer
-title: Stream
-desc: Using @stream to receive list items one at a time
-index: 3
-pro: true
----
+# Stream
 
 `@stream` works very much like `@defer`, except it only applies to list fields. When a field has `@stream` and it returns a list, then each item in the list is returned to the client as a patch. `@stream` is described in a [proposal to the GraphQL specification](https://github.com/graphql/graphql-wg/blob/main/rfcs/DeferStream.md).
 
@@ -24,7 +15,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-Additionally, you should update your controller to handle deferred parts of the response. See the {% internal_link "@defer setup guide", "defer/setup#sending-streaming-responses" %} for details. (`@stream` uses the same deferral pipeline as `@defer`, so the same setup instructions apply.)
+Additionally, you should update your controller to handle deferred parts of the response. See the [@defer setup guide](/defer/setup#sending-streaming-responses) for details. (`@stream` uses the same deferral pipeline as `@defer`, so the same setup instructions apply.)
 
 ## Usage
 

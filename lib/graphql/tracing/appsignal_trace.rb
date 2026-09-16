@@ -5,15 +5,23 @@ module GraphQL
   module Tracing
     # Instrumentation for reporting GraphQL-Ruby times to Appsignal.
     #
-    # @example Installing the tracer
-    #   class MySchema < GraphQL::Schema
-    #     trace_with GraphQL::Tracing::AppsignalTrace
-    #   end
+    # **Examples**
+    #
+    # **Example: Installing the tracer**
+    #
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   trace_with GraphQL::Tracing::AppsignalTrace
+    # end
+    # ```
     AppsignalTrace = MonitorTrace.create_module("appsignal")
     module AppsignalTrace
-      # @param set_action_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
-      #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
-      #   It can also be specified per-query with `context[:set_appsignal_action_name]`.
+      # **Parameters**
+      #
+      # - `set_action_name` (`Boolean`) — If true, the GraphQL operation name will be used as the transaction name. This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing. It can also be specified per-query with `context[:set_appsignal_action_name]`.
+      #
+      # :call-seq:
+      #   initialize(bool set_action_name:, **rest)
       def initialize(set_action_name: false, **rest)
         rest[:set_transaction_name] ||= set_action_name
         setup_appsignal_monitor(**rest)

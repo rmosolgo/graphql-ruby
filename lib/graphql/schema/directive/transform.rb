@@ -8,15 +8,23 @@ module GraphQL
       # and if the named transform is whitelisted and applies to the return value,
       # it's applied by calling a method with that name.
       #
-      # @example Installing the directive
-      #   class MySchema < GraphQL::Schema
-      #     directive(GraphQL::Schema::Directive::Transform)
-      #   end
+      # **Examples**
       #
-      # @example Transforming strings
-      #   viewer {
-      #     username @transform(by: "upcase")
-      #   }
+      # **Example: Installing the directive**
+      #
+      # ```ruby
+      # class MySchema < GraphQL::Schema
+      #   directive(GraphQL::Schema::Directive::Transform)
+      # end
+      # ```
+      #
+      # **Example: Transforming strings**
+      #
+      # ```ruby
+      # viewer {
+      #   username @transform(by: "upcase")
+      # }
+      # ```
       class Transform < Schema::Directive
         description "Directs the executor to run named transform on the return value."
 

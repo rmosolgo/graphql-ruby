@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro - OperationStore
-title: Redis Backend
-desc: Storing persisted queries with Redis
-index: 3
-pro: true
----
+# Redis Backend
 
 `OperationStore` can use Redis to store persisted queries. Pass a `redis:` option when adding the plugin:
 

@@ -12,8 +12,7 @@ module GraphQL
       #
       # Interface/union resolution can be provided as a `resolve_type:` key.
       #
-      # @api private
-      class ResolveMap
+      class ResolveMap # :nodoc:
         module NullScalarCoerce
           def self.call(val, _ctx)
             val

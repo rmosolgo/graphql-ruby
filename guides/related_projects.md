@@ -1,11 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-title: Related Projects
-section: Other
-desc: Code, blog posts and presentations about GraphQL Ruby
----
+# Related Projects
 
 Want to add something? Please open a pull request [on GitHub](https://github.com/rmosolgo/graphql-ruby)!
 

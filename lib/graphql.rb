@@ -11,6 +11,9 @@ module GraphQL
   extend Autoload
 
   # Load all `autoload`-configured classes, and also eager-load dependents who have autoloads of their own.
+  #
+  # This is useful during application boot when autoloading is disabled or
+  # when a framework needs to eager-load its namespaces.
   def self.eager_load!
     super
     Query.eager_load!
@@ -36,6 +39,14 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   end
 
   class << self
+    # Get the parser used by `GraphQL.parse` and `GraphQL.parse_file`.
+    #
+    # **Returns**
+    #
+    # - `Class` — the configured parser class
+    #
+    # :call-seq:
+    #   default_parser() -> Class
     def default_parser
       @default_parser ||= GraphQL::Language::Parser
     end
@@ -44,21 +55,44 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   end
 
   # Turn a query string or schema definition into an AST
-  # @param graphql_string [String] a GraphQL query string or schema definition
-  # @return [GraphQL::Language::Nodes::Document]
+  #
+  # **Parameters**
+  #
+  # - `graphql_string` (`String`) — a GraphQL query string or schema definition
+  #
+  # **Returns**
+  #
+  # - `GraphQL::Language::Nodes::Document`
+  #
+  # :call-seq:
+  #   parse(String graphql_string, trace:, filename:, max_tokens:) -> GraphQL::Language::Nodes::Document
   def self.parse(graphql_string, trace: GraphQL::Tracing::NullTrace, filename: nil, max_tokens: nil)
     default_parser.parse(graphql_string, trace: trace, filename: filename, max_tokens: max_tokens)
   end
 
   # Read the contents of `filename` and parse them as GraphQL
-  # @param filename [String] Path to a `.graphql` file containing IDL or query
-  # @return [GraphQL::Language::Nodes::Document]
+  #
+  # **Parameters**
+  #
+  # - `filename` (`String`) — Path to a `.graphql` file containing IDL or query
+  #
+  # **Returns**
+  #
+  # - `GraphQL::Language::Nodes::Document`
+  #
+  # :call-seq:
+  #   parse_file(String filename) -> GraphQL::Language::Nodes::Document
   def self.parse_file(filename)
     content = File.read(filename)
     default_parser.parse(content, filename: filename)
   end
 
-  # @return [Array<Array>]
+  # **Returns**
+  #
+  # - `Array<Array>`
+  #
+  # :call-seq:
+  #   scan(graphql_string) -> Array[Array]
   def self.scan(graphql_string)
     default_parser.scan(graphql_string)
   end

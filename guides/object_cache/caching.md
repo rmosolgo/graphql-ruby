@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Object Cache
-title: Caching Results
-desc: Configuration options for caching objects and fields
-index: 2
----
+# Caching Results
 
 `GraphQL::Enterprise::ObjectCache` supports several different caching configurations for objects and fields. To get started, include the extension in your base object class and base field class and use `cacheable(...)` to set up the default cache behavior:
 
@@ -57,7 +48,7 @@ Only _queries_ are cached. `ObjectCache` skips mutations and subscriptions altog
 
 ## `public:`
 
-`cacheable(public: false)` means that a type or field may be _cached_, but {% internal_link "`Schema.private_context_fingerprint_for(ctx)`", "/object_cache/schema_setup#context-fingerprint" %} should be included in its cache key. In practice, this means that each client can have its own cached responses. Any query that contains a `cacheable(public: false)` type or field will use a private cache key.
+`cacheable(public: false)` means that a type or field may be _cached_, but [`Schema.private_context_fingerprint_for(ctx)`](/object_cache/schema_setup#context-fingerprint) should be included in its cache key. In practice, this means that each client can have its own cached responses. Any query that contains a `cacheable(public: false)` type or field will use a private cache key.
 
 `cacheable(public: true)` means that cached values from this type or field may be shared by _all_ clients. Use this for public-facing data which is the same for all viewers. Queries that include _only_ `public: true` types and fields will not include `Schema.private_context_fingerprint_for(ctx)` in their cache keys. That way their responses will be shared by all clients who request them.
 
@@ -126,7 +117,7 @@ class Query < GraphQL::Schema::Object
 end
 ```
 
-If you're using {{ "GraphQL::Schema::Resolver" | api_doc }}, you'd call `.items_for` slightly differently:
+If you're using [GraphQL::Schema::Resolver](rdoc-ref:GraphQL::Schema::Resolver), you'd call `.items_for` slightly differently:
 
 ```ruby
 def resolve(division: nil)
@@ -174,7 +165,7 @@ By default, connection-related objects (like `*Connection` and `*Edge` types) "i
 
 ## Caching Introspection
 
-By default, introspection fields are considered _public_ for all queries. This means that they are considered cacheable and their results will be reused for any clients who request them. When {% internal_link "adding the ObjectCache to your schema", "/object_cache/schema_setup#add-the-cache", %}, you can provide some options to customize this behavior:
+By default, introspection fields are considered _public_ for all queries. This means that they are considered cacheable and their results will be reused for any clients who request them. When [adding the ObjectCache to your schema](/object_cache/schema_setup#add-the-cache), you can provide some options to customize this behavior:
 
 - `cache_introspection: { public: false, ... }` to use [`public: false`](#public) for all introspection fields. Use this if you hide schema members for some clients.
 - `cache_introspection: false` to completely disable caching on introspection fields.

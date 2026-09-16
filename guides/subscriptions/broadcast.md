@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Subscriptions
-title: Broadcasts
-desc: Delivering the same GraphQL result to multiple subscribers
-index: 3
----
+# Broadcasts
 
 GraphQL subscription updates may _broadcast_ data to multiple subscribers.
 
@@ -79,13 +71,13 @@ GraphQL-Ruby determines which subscribers can receive a broadcast by inspecting:
 - __Field and Arguments__ given to `.trigger`. They must match the ones initially sent when subscribing. (Subscriptions always worked this way.)
 - __Subscription scope__. Only clients with exactly-matching subscription scope can receive the same broadcasts.
 
-So, take care to {% internal_link "set subscription_scope", "subscriptions/subscription_classes#scope" %} whenever a subscription should be implicitly scoped!
+So, take care to [set subscription_scope](/subscriptions/subscription_classes#scope) whenever a subscription should be implicitly scoped!
 
-(See {{ "GraphQL::Subscriptions::Event#fingerprint" | api_doc }} for the implementation of broadcast fingerprints.)
+(See [GraphQL::Subscriptions::Event#fingerprint](rdoc-ref:GraphQL::Subscriptions::Event#fingerprint) for the implementation of broadcast fingerprints.)
 
 ## Checking for Broadcastable
 
-For testing purposes, you can confirm that a GraphQL query string is broadcastable by using {{ "Subscriptions#broadcastable?" | api_doc }}:
+For testing purposes, you can confirm that a GraphQL query string is broadcastable by using [Subscriptions#broadcastable?](rdoc-ref:GraphQL::Subscriptions#broadcastable?):
 
 ```ruby
 subscription_string = "subscription { ... }"

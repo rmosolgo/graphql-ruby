@@ -17,8 +17,7 @@ module GraphQL
     # - using a single `input:` argument makes it easy to post whole JSON objects to the mutation
     #   using one GraphQL variable (`$input`) instead of making a separate variable for each argument.
     #
-    # @see {GraphQL::Schema::Mutation} for an example, it's basically the same.
-    #
+    # See [GraphQL::Schema::Mutation](rdoc-ref:GraphQL::Schema::Mutation) for an example, it's basically the same.
     class RelayClassicMutation < GraphQL::Schema::Mutation
       include GraphQL::Schema::HasSingleInputArgument
 
@@ -29,7 +28,7 @@ module GraphQL
       # Relay classic default:
       null(true)
 
-      # Override {GraphQL::Schema::Resolver#resolve_with_support} to
+    # Override [resolve_with_support](rdoc-ref:#resolve_with_support) to
       # delete `client_mutation_id` from the kwargs.
       def resolve_with_support(**inputs)
         input = inputs[:input].to_kwargs

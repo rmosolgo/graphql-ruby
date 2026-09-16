@@ -5,10 +5,9 @@ module GraphQL
     # This implementation forwards events to a notification handler
     # (i.e. ActiveSupport::Notifications or Dry::Monitor::Notifications) with a `graphql` suffix.
     #
-    # @see ActiveSupportNotificationsTrace ActiveSupport::Notifications integration
+    # See [ActiveSupportNotificationsTrace](rdoc-ref:ActiveSupportNotificationsTrace) ActiveSupport::Notifications integration
     module NotificationsTrace
-      # @api private
-      class Adapter
+      class Adapter # :nodoc:
         def instrument(keyword, payload, &block)
           raise "Implement #{self.class}#instrument to measure the block"
         end
@@ -37,8 +36,7 @@ module GraphQL
         end
       end
 
-      # @api private
-      class DryMonitorAdapter < Adapter
+      class DryMonitorAdapter < Adapter # :nodoc:
         def instrument(...)
           Dry::Monitor.instrument(...)
         end
@@ -54,8 +52,7 @@ module GraphQL
         end
       end
 
-      # @api private
-      class ActiveSupportNotificationsAdapter < Adapter
+      class ActiveSupportNotificationsAdapter < Adapter # :nodoc:
         def instrument(...)
           ActiveSupport::Notifications.instrument(...)
         end
@@ -73,7 +70,12 @@ module GraphQL
         end
       end
 
-      # @param engine [Class] The notifications engine to use, eg `Dry::Monitor` or `ActiveSupport::Notifications`
+      # **Parameters**
+      #
+      # - `engine` (`Class`) — The notifications engine to use, eg `Dry::Monitor` or `ActiveSupport::Notifications`
+      #
+      # :call-seq:
+      #   initialize(Class engine:, **rest)
       def initialize(engine:, **rest)
         adapter = if defined?(Dry::Monitor) && engine == Dry::Monitor
           DryMonitoringAdapter

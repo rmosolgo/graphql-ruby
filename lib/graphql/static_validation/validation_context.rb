@@ -3,7 +3,7 @@ module GraphQL
   module StaticValidation
     # The validation context gets passed to each validator.
     #
-    # It exposes a {GraphQL::Language::Visitor} where validators may add hooks. ({Language::Visitor#visit} is called in {Validator#validate})
+    # It exposes a [GraphQL::Language::Visitor](rdoc-ref:GraphQL::Language::Visitor) where validators may add hooks. ([Language::Visitor#visit](rdoc-ref:Language::Visitor#visit) is called in [Validator#validate](rdoc-ref:Validator#validate))
     #
     # It provides access to the schema & fragments which validators may read from.
     #
