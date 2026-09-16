@@ -132,6 +132,28 @@ describe "Next Execution" do
     end
   end
 
+  class DefaultLazySchema < GraphQL::Schema
+    class Source < GraphQL::Dataloader::Source
+      def fetch(keys)
+        keys.map { |key| "loaded-#{key}" }
+      end
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :value, String, null: false, resolve_static: true
+
+      def self.value(context)
+        context.dataloader.with(Source).request(1)
+      end
+    end
+
+    query(Query)
+    use GraphQL::Dataloader
+    use GraphQL::Execution::Next
+  end
+
+  class DefaultLazySubclass < GraphQL::Execution::Lazy
+  end
 
   def run_next(...)
     NextExecutionSchema.execute_next(...)
@@ -140,6 +162,24 @@ describe "Next Execution" do
   before do
     NextExecutionSchema::DATA.clear
     NextExecutionSchema::DATA.concat(Marshal.load(Marshal.dump(NextExecutionSchema::CLEAN_DATA)))
+  end
+
+  it "keeps lazy detection stable after subclass lookups" do
+    schema = Class.new(GraphQL::Schema)
+    resolves_lazies_before = schema.resolves_lazies?
+
+    assert schema.lazy?(DefaultLazySubclass.new { nil })
+    assert_equal resolves_lazies_before, schema.resolves_lazies?
+    assert resolves_lazies_before
+  end
+
+  it "resolves default Dataloader requests" do
+    result = nil
+    capture_io do
+      result = DefaultLazySchema.execute_next("{ value }")
+    end
+
+    assert_equal({ "data" => { "value" => "loaded-1" } }, result.to_h)
   end
 
   it "runs a query" do

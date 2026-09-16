@@ -1360,13 +1360,10 @@ module GraphQL
       end
 
       def resolves_lazies?
-        lazy_method_count = 0
-        lazy_methods.each do |k, v|
-          if !v.nil?
-            lazy_method_count += 1
-          end
+        lazy_methods.each do |_lazy_class, lazy_method|
+          return true if lazy_method
         end
-        lazy_method_count > 2
+        false
       end
 
       def instrument(instrument_step, instrumenter, options = {})
