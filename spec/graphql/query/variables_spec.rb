@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Execution::InputValues::VariableValues do
+describe GraphQL::Execution::VariableValues do
   module VariablesTest
     class MaxValidationSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object

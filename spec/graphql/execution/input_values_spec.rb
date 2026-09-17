@@ -60,32 +60,29 @@ describe GraphQL::Execution::InputValues do
 
     it "adds error when no value is given for a non-null variable" do
       input = get_input_values(variables_string: "$count: Int!", variables: {})
-      input.variable_values
       assert_equal [{
         "message" => "Variable $count of type Int! was provided invalid value",
         "locations" => [{"line" => 1, "column" => 7}],
         "extensions" => { "value" => nil, "problems" => [{"path" => [], "explanation" => "Expected value to not be null"}]}
-      }], input.variable_errors.map(&:to_h)
+      }], input.variable_values.errors.map(&:to_h)
     end
 
     it "adds error when nil is given for a non-null variable" do
       input = get_input_values(variables_string: "$count: Int!", variables: { "count" => nil })
-      input.variable_values
       assert_equal [{
         "message" => "Variable $count of type Int! was provided invalid value",
         "locations" => [{"line" => 1, "column" => 7}],
         "extensions" => { "value" => nil, "problems" => [{"path" => [], "explanation" => "Expected value to not be null"}]}
-      }], input.variable_errors.map(&:to_h)
+      }], input.variable_values.errors.map(&:to_h)
     end
 
     it "adds error when nil is given for nested non-null" do
       input = get_input_values(variables_string: "$count: [Int!]!", variables: { "count" => [nil]})
-      input.variable_values
       assert_equal [{
         "message" => "Variable $count of type [Int!]! was provided invalid value",
         "locations" => [{"line" => 1, "column" => 7}],
         "extensions" => { "value" => nil, "problems" => [{"path" => [], "explanation" => "Expected value to not be null"}]}
-      }], input.variable_errors.map(&:to_h)
+      }], input.variable_values.errors.map(&:to_h)
     end
   end
 

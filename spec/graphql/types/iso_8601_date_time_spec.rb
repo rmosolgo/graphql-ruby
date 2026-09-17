@@ -225,6 +225,7 @@ describe GraphQL::Types::ISO8601DateTime do
     end
     let(:full_res) { DateTimeTest::Schema.execute(query_str, variables: { date: date_str }) }
 
+    focus
     it 'serializes a Date object as an ISO8601 DateTime string' do
       assert_equal date_str_midnight, full_res["data"]["parseDate"]["iso8601"]
     end
