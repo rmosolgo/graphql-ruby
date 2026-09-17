@@ -54,7 +54,7 @@ module GraphQL
           if variable_nodes.empty?
             NO_VARIABLES
           else
-            raw_values = @query.provided_variables
+            raw_values = deep_stringify(@query.provided_variables)
             values = {}
             max_errors = @query.schema.validate_max_errors
             variable_nodes.each do |var_node|
@@ -222,7 +222,7 @@ module GraphQL
         else
           raise GraphQL::Error, "Unexpected input type: #{type.graphql_name}."
         end
-      rescue GraphQL::CoercionError => coercion_err
+      rescue GraphQL::CoercionError, GraphQL::ExecutionError => coercion_err
         @variable_errors ||= []
         validation_result = Query::InputValidationResult.from_problem(coercion_err.message, message: coercion_err.message, extensions: coercion_err.extensions)
         @variable_errors << GraphQL::Query::VariableValidationError.new(var_node, var_type, value, validation_result)
@@ -451,6 +451,21 @@ module GraphQL
         message = "Too many errors processing variables, max validation error limit reached. Execution aborted"
         validation_result = GraphQL::Query::InputValidationResult.from_problem(message)
         @variable_errors << GraphQL::Query::VariableValidationError.new(nil, nil, nil, validation_result, msg: message)
+      end
+
+      def deep_stringify(val)
+        case val
+        when Array
+          val.map { |v| deep_stringify(v) }
+        when Hash
+          new_val = {}
+          val.each do |k, v|
+            new_val[k.to_s] = deep_stringify(v)
+          end
+          new_val
+        else
+          val
+        end
       end
     end
   end
