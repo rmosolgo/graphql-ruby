@@ -5,6 +5,7 @@ module GraphQL
       class TooManyErrors < StandardError
       end
 
+      # TODO merge this into VariableValues
       class ValidationState
         def initialize(max_errors:)
           @path = []
@@ -41,7 +42,7 @@ module GraphQL
           if @problems.any?
             validation_result = Query::InputValidationResult.new
             @problems.each do |(message, path)|
-              validation_result.add_problem(message, path, message: message )
+              validation_result.add_problem(message, path)
             end
             if @total_errors >= @max_errors
               message = if @type.list?
@@ -116,13 +117,14 @@ module GraphQL
           validation_state.type = var_type
 
           if NONE.equal?(var_ast_value)
+            validation_state.value = nil
             if !var_node.default_value.nil?
               @values[var_name] = @input_values.value_from_ast(var_node.default_value, var_type)
             elsif var_type.non_null?
-              add_error_from_message(var_node, var_type, nil, UNEXPECTED_NULL_MESSAGE)
+              validation_state.add_problem(UNEXPECTED_NULL_MESSAGE)
             end
           elsif var_ast_value.nil? && var_type.non_null?
-            add_error_from_message(var_node, var_type, nil, UNEXPECTED_NULL_MESSAGE)
+            validation_state.add_problem(UNEXPECTED_NULL_MESSAGE)
           else
             @values[var_node.name] = variable_value(var_node, var_type, var_ast_value, var_type, validation_state)
           end
@@ -150,16 +152,6 @@ module GraphQL
           type_from_ast(ast_node.of_type).to_list_type
         else
           @query.types.type(ast_node.name)
-        end
-      end
-
-      def add_error_from_message(var_node, var_type, value, msg, validation_result = nil, path = nil)
-        @errors ||= []
-        if validation_result.nil?
-          validation_result = GraphQL::Query::InputValidationResult.from_problem(msg, path)
-          @errors << GraphQL::Query::VariableValidationError.new(var_node, var_type, value, validation_result)
-        else
-          validation_result.add_problem(msg, path)
         end
       end
 
@@ -200,7 +192,9 @@ module GraphQL
 
             value.each do |argument_name, value|
               if !(@query.types.argument(type, argument_name))
-                add_error_from_message(var_node, var_type, value, "Field is not defined on #{type.graphql_name}", [argument_name])
+                validation_state.path << argument_name
+                validation_state.add_problem("Field is not defined on #{type.graphql_name}")
+                validation_state.path.pop
               end
             end
 
@@ -214,14 +208,15 @@ module GraphQL
                 coerced_obj[arg_key] = arg.default_value
                 next
               else
-                next
+                arg_value = nil
               end
 
               if arg_value.nil? && arg.replace_null_with_default?
                 arg_value = arg.default_value
               end
-
+              validation_state.path << arg.graphql_name
               coerced_obj[arg_key] = variable_value(var_node, var_type, arg_value, arg.type, validation_state)
+              validation_state.path.pop
             end
           else
             @query.types.arguments(type).each do |arg|
@@ -233,13 +228,15 @@ module GraphQL
                   coerced_obj[arg_key] = if arg_value.nil? && arg.replace_null_with_default?
                     arg.default_value
                   else
+                    validation_state.path << arg_name
                     variable_value(var_node, var_type, arg_value, arg.type, validation_state)
+                    validation_state.path.pop
                   end
                 elsif arg.default_value?
                   coerced_obj[arg_key] = arg.default_value
                 end
               else
-                add_error_from_message(var_node, var_type, value, "Expected %{object} to be a key-value object." % { object: JSON.generate(value) })
+                validation_state.add_problem("Expected %{object} to be a key-value object." % { object: JSON.generate(value) })
               end
             end
           end
