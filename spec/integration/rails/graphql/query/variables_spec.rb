@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Query::Variables do
+describe GraphQL::Execution::InputValues::VariableValues do
   let(:query_string) {%|
   query getCheese(
     $animals: [DairyAnimal!],
@@ -16,12 +16,9 @@ describe GraphQL::Query::Variables do
   |}
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
   let(:schema) { Dummy::Schema }
-  let(:query_context) { GraphQL::Query.new(schema, "{ __typename }").context }
   let(:variables) {
-    GraphQL::Query::Variables.new(
-    query_context,
-    ast_variables,
-    provided_variables)
+    query = GraphQL::Query.new(schema, query_string, validate: false, variables: provided_variables)
+    query.variables
   }
 
   describe "#to_h" do
@@ -29,7 +26,7 @@ describe GraphQL::Query::Variables do
 
     it "returns a hash representation including default values" do
       expected_hash = {
-        "animals" => "YAK", # This is converted to a single-item list later on
+        "animals" => ["YAK"],
         "intDefaultNull" => nil,
         "intWithDefault" => 10,
       }
@@ -224,12 +221,6 @@ describe GraphQL::Query::Variables do
 
       let(:run_query) {
         schema.execute(query_string, variables: provided_variables)
-      }
-
-      let(:variables) { GraphQL::Query::Variables.new(
-        query_context,
-        ast_variables,
-        provided_variables)
       }
 
       def assert_has_key_with_value(hash, key, has_key, value)
