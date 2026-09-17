@@ -2,6 +2,63 @@
 module GraphQL
   module Execution
     class VariableValues
+      class TooManyErrors < StandardError
+      end
+
+      class ValidationState
+        def initialize(max_errors:)
+          @path = []
+          @problems = []
+          @max_errors = max_errors || Float::INFINITY
+          @total_errors = 0
+          clear
+        end
+
+        attr_reader :problems
+
+        attr_reader :path
+        attr_accessor :node, :type, :value
+
+        def add_problem(msg)
+          @problems ||= []
+          if @total_errors >= @max_errors
+            raise TooManyErrors
+          else
+            @total_errors += 1
+            @problems << [msg, @path.dup]
+          end
+        end
+
+        def clear
+          @type = nil
+          @node = nil
+          @value = nil
+          @path.clear
+          @problems&.clear
+        end
+
+        def build_error
+          if @problems.any?
+            validation_result = Query::InputValidationResult.new
+            @problems.each do |(message, path)|
+              validation_result.add_problem(message, path, message: message )
+            end
+            if @total_errors >= @max_errors
+              message = if @type.list?
+                "Too many errors processing list variable, max validation error limit reached. Execution aborted"
+              else
+                "Too many errors processing variables, max validation error limit reached. Execution aborted"
+              end
+              too_many_result = GraphQL::Query::InputValidationResult.from_problem(message)
+              validation_result.merge_result!(nil, too_many_result)
+            end
+            GraphQL::Query::VariableValidationError.new(@node, @type, @value, validation_result)
+          else
+            nil
+          end
+        end
+      end
+
       def initialize(query: nil, values: nil, errors: nil, input_values: nil)
         @values = values
         @errors = errors
@@ -48,14 +105,15 @@ module GraphQL
         raw_values = deep_stringify(@query.provided_variables)
         @values = {}
         max_errors = @query.schema.validate_max_errors
+        validation_state = ValidationState.new(max_errors: max_errors)
         variable_nodes.each do |var_node|
-          if @errors && max_errors && @errors.length >= max_errors
-            add_max_errors_reached_message
-            break
-          end
+          validation_state.clear
           var_name = var_node.name
           var_ast_value = get_indifferent(raw_values, var_name)
           var_type = type_from_ast(var_node.type)
+          validation_state.node = var_node
+          validation_state.value = var_ast_value
+          validation_state.type = var_type
 
           if NONE.equal?(var_ast_value)
             if !var_node.default_value.nil?
@@ -66,9 +124,17 @@ module GraphQL
           elsif var_ast_value.nil? && var_type.non_null?
             add_error_from_message(var_node, var_type, nil, UNEXPECTED_NULL_MESSAGE)
           else
-            @values[var_node.name] = variable_value(var_node, var_type, var_ast_value, var_type)
+            @values[var_node.name] = variable_value(var_node, var_type, var_ast_value, var_type, validation_state)
+          end
+        rescue TooManyErrors
+          break
+        ensure
+          if (err = validation_state.build_error)
+            @errors ||= []
+            @errors << err
           end
         end
+
         if @errors
           @values.clear
         end
@@ -87,16 +153,20 @@ module GraphQL
         end
       end
 
-      def add_error_from_message(var_node, var_type, value, msg, path = nil)
+      def add_error_from_message(var_node, var_type, value, msg, validation_result = nil, path = nil)
         @errors ||= []
-        validation_result = GraphQL::Query::InputValidationResult.from_problem(msg, path)
-        @errors << GraphQL::Query::VariableValidationError.new(var_node, var_type, value, validation_result)
+        if validation_result.nil?
+          validation_result = GraphQL::Query::InputValidationResult.from_problem(msg, path)
+          @errors << GraphQL::Query::VariableValidationError.new(var_node, var_type, value, validation_result)
+        else
+          validation_result.add_problem(msg, path)
+        end
       end
 
-      def variable_value(var_node, var_type, value, type)
+      def variable_value(var_node, var_type, value, type, validation_state)
         if type.non_null?
           if value == nil
-            add_error_from_message(var_node, var_type, nil, UNEXPECTED_NULL_MESSAGE)
+            validation_state.add_problem(UNEXPECTED_NULL_MESSAGE)
             return
           end
           type = type.of_type
@@ -111,9 +181,17 @@ module GraphQL
         elsif type.list?
           inner_type = type.of_type
           if value.is_a?(Array)
-            value.map { |v| variable_value(var_node, var_type, v, inner_type) }.freeze
+            value.each_with_index.map do |v, idx|
+              validation_state.path << idx
+              variable_value(var_node, var_type, v, inner_type, validation_state)
+            ensure
+              validation_state.path.pop
+            end.freeze
           else
-            [variable_value(var_node, var_type, value, inner_type)].freeze
+            validation_state.path << 0
+            result = [variable_value(var_node, var_type, value, inner_type, validation_state)].freeze
+            validation_state.path.pop
+            result
           end
         elsif type.kind.input_object?
           coerced_obj = {}
@@ -143,7 +221,7 @@ module GraphQL
                 arg_value = arg.default_value
               end
 
-              coerced_obj[arg_key] = variable_value(var_node, var_type, arg_value, arg.type)
+              coerced_obj[arg_key] = variable_value(var_node, var_type, arg_value, arg.type, validation_state)
             end
           else
             @query.types.arguments(type).each do |arg|
@@ -155,7 +233,7 @@ module GraphQL
                   coerced_obj[arg_key] = if arg_value.nil? && arg.replace_null_with_default?
                     arg.default_value
                   else
-                    variable_value(var_node, var_type, arg_value, arg.type)
+                    variable_value(var_node, var_type, arg_value, arg.type, validation_state)
                   end
                 elsif arg.default_value?
                   coerced_obj[arg_key] = arg.default_value
@@ -170,22 +248,14 @@ module GraphQL
         elsif type.kind.leaf?
           coerced_value = type.coerce_input(value, @query.context)
           if coerced_value.nil?
-            add_error_from_message(var_node, var_type, value, "Could not coerce value #{GraphQL::Language.serialize(value)} to #{type.graphql_name}")
+            validation_state.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{type.graphql_name}")
           end
           coerced_value
         else
           raise GraphQL::Error, "Unexpected input type: #{type.graphql_name}."
         end
       rescue GraphQL::CoercionError, GraphQL::ExecutionError => coercion_err
-        @errors ||= []
-        validation_result = Query::InputValidationResult.from_problem(coercion_err.message, message: coercion_err.message, extensions: coercion_err.extensions)
-        @errors << GraphQL::Query::VariableValidationError.new(var_node, var_type, value, validation_result)
-      end
-
-      def add_max_errors_reached_message
-        message = "Too many errors processing variables, max validation error limit reached. Execution aborted"
-        validation_result = GraphQL::Query::InputValidationResult.from_problem(message)
-        @errors << GraphQL::Query::VariableValidationError.new(nil, nil, nil, validation_result, msg: message)
+        validation_state.add_problem(coercion_err.message)
       end
 
       NONE = Object.new

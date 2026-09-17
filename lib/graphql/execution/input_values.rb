@@ -22,8 +22,11 @@ module GraphQL
 
       def argument_values(owner_defn, argument_nodes, field_resolve_step)
         arg_defns = @query.types.arguments(owner_defn)
-        argument_values = {}
+        if arg_defns.empty?
+          return [EmptyObjects::EMPTY_HASH, nil]
+        end
         errors = nil
+        argument_values = {}
 
         arg_defns.each do |argument_definition|
           arg_ruby_key = argument_definition.keyword
@@ -33,6 +36,8 @@ module GraphQL
             if argument_definition.default_value?
               arg_value = value_from_ast(argument_definition.default_value, argument_definition.type)
               argument_value(argument_values, arg_ruby_key, argument_definition, arg_value, nil, field_resolve_step)
+            elsif argument_definition.type.non_null?
+              # Add an error
             end
           else
             arg_value = value_from_ast(arg_node.value, argument_definition.type)
