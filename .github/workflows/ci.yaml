@@ -14,7 +14,7 @@ jobs:
         ruby-version: 3.4
         bundler-cache: true
     - run: bundle exec rake rubocop
-    - run: bundle exec spoom srb tc
+    - run: bundle exec srb tc
     - run: npx @herb-tools/linter@0.8.10
   system_tests:
     runs-on: ubuntu-latest
