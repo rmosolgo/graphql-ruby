@@ -287,8 +287,12 @@ module GraphQL
               end
             elsif type_defn.kind.enum?
               enum_values(type_defn)
+            elsif type_defn.kind.union?
+              loadable_possible_types(type_defn, @context)
+            elsif type_defn.kind.object? || type_defn.kind.interface?
+              interfaces(type_defn)
             end
-            # Lots more to do here
+            possible_types(type_defn)
           end
           if @schema.query
             @schema.introspection_system.entry_points.each do |f|
@@ -304,6 +308,11 @@ module GraphQL
             end
           end
 
+          directives.each do |directive|
+            arguments(directive).each do |directive_argument|
+              argument(directive, directive_argument.graphql_name)
+            end
+          end
         end
 
         private
