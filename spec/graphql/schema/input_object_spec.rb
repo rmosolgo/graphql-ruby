@@ -1399,7 +1399,6 @@ describe GraphQL::Schema::InputObject do
       end
     end
 
-    focus
     it "validates loads-only object types" do
       query_str = <<~GRAPHQL
         mutation($id: ID!) {
