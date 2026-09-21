@@ -3,8 +3,26 @@ require "spec_helper"
 
 describe GraphQL::Schema::Visibility::Profile do
   class ProfileSchema < GraphQL::Schema
+    module HasName
+      include GraphQL::Schema::Interface
+      field :name, String
+    end
+
     class Thing < GraphQL::Schema::Object
       field :name, String, method: :to_s
+    end
+
+    class OtherThing < GraphQL::Schema::Object
+      implements HasName
+    end
+
+    class SearchResult < GraphQL::Schema::Union
+      possible_types Thing, OtherThing
+    end
+
+    class Tagged < GraphQL::Schema::Directive
+      locations :FIELD
+      argument :tag, String, required: false
     end
 
     class Query < GraphQL::Schema::Object
@@ -14,9 +32,11 @@ describe GraphQL::Schema::Visibility::Profile do
         :Something
       end
       field :greeting, String
+      field :search, SearchResult
     end
 
     query(Query)
+    directive(Tagged)
 
     use GraphQL::Schema::Visibility
   end
@@ -32,11 +52,21 @@ describe GraphQL::Schema::Visibility::Profile do
     assert_equal [], query.types.loaded_types
 
     res = query.result
-    assert_equal 12, res["data"]["__schema"]["types"].size
+    assert_equal 15, res["data"]["__schema"]["types"].size
     loaded_type_names = query.types.loaded_types.map(&:graphql_name).reject { |n| n.start_with?("__") }.sort
-    assert_equal ["Boolean", "Query", "String", "Thing"], loaded_type_names
+    assert_equal ["Boolean", "HasName", "OtherThing", "Query", "SearchResult", "String", "Thing"], loaded_type_names
   end
 
+  it "preloads possible types, interfaces, and directive arguments" do
+    profile = ProfileSchema.visibility.profile_for({})
+    profile.preload
+    profile.freeze
+
+    assert_equal ["OtherThing", "Thing"], profile.possible_types(ProfileSchema::SearchResult).map(&:graphql_name).sort
+    assert_equal ["OtherThing", "Thing"], profile.loadable_possible_types(ProfileSchema::SearchResult, nil).map(&:graphql_name).sort
+    assert_equal ["HasName"], profile.interfaces(ProfileSchema::OtherThing).map(&:graphql_name)
+    assert_equal ["tag"], profile.arguments(ProfileSchema::Tagged).map(&:graphql_name)
+  end
 
   describe "when multiple field implementations are all hidden" do
     class EnsureLoadedFixSchema < GraphQL::Schema
