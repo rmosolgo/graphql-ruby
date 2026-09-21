@@ -299,7 +299,8 @@ To add other types to your schema, you might want `extra_types`: https://graphql
 
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name 'Query'
-      field :foobar, Integer, null: false
+      field :foobar, Integer, null: false, resolve_static: true
+      def self.foobar(ctx); 1337; end
       def foobar; 1337; end
     end
 
