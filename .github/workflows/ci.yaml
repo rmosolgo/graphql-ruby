@@ -11,6 +11,8 @@ jobs:
       with:
         ruby-version: 3.4
         bundler-cache: true
+      env:
+        BUNDLE_GEMFILE: gemfiles/sorbet.gemfile
     - run: bundle exec rake rubocop
     - run: bundle exec spoom srb tc
       env:
