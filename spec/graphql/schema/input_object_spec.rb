@@ -1352,6 +1352,69 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+  describe "loads-only runtime validation" do
+    class RuntimeLoadsOnlySchema < GraphQL::Schema
+      class PostType < GraphQL::Schema::Object
+        graphql_name "Post"
+        field :id, ID, null: false
+      end
+
+      class UserType < GraphQL::Schema::Object
+        graphql_name "User"
+        field :id, ID, null: false
+      end
+
+      class DestroyPost < GraphQL::Schema::RelayClassicMutation
+        argument :post_id, ID, loads: PostType
+
+        field :destroyed_kind, String, null: false
+
+        def resolve(post:)
+          context[:destroyed_object] = post
+          {
+            destroyed_kind: post.type_name
+          }
+        end
+      end
+
+      class MutationType < GraphQL::Schema::Object
+        field :destroy_post, mutation: DestroyPost
+      end
+
+      mutation(MutationType)
+      def self.object_from_id(global_id, _ctx)
+        type_name, id = global_id.split(":", 2)
+        OpenStruct.new(type_name: type_name, id: id)
+      end
+
+      def self.resolve_type(_expected_type, obj, _ctx)
+        case obj.type_name
+        when "Post"
+          PostType
+        when "User"
+          UserType
+        else
+          raise "Unknown object"
+        end
+      end
+    end
+
+    focus
+    it "validates loads-only object types" do
+      query_str = <<~GRAPHQL
+        mutation($id: ID!) {
+          destroyPost(input: { postId: $id }) {  destroyedKind }
+        }
+      GRAPHQL
+
+      assert_equal({"data" => {"destroyPost" => {"destroyedKind" => "Post"}}}, RuntimeLoadsOnlySchema.execute(query_str, variables: { id: "Post:123"}))
+      assert_graphql_equal({
+        "errors" => [{"message" => "No object found for `postId: \"User:123\"`", "locations" => [{"line" => 2, "column" => 3}], "path" => ["destroyPost"]}],
+        "data" => {"destroyPost" => nil}
+      }, RuntimeLoadsOnlySchema.execute(query_str, variables: { id: "User:123"}))
+    end
+  end
+
   describe "@oneOf" do
     class OneOfSchema < GraphQL::Schema
       class OneOfInput < GraphQL::Schema::InputObject

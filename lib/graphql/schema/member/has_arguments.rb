@@ -397,7 +397,7 @@ module GraphQL
                       # This union/interface is used in `loads:` but not otherwise visible to this query
                       context.types.loadable_possible_types(arg_loads_type, context).include?(application_object_type)
                     else
-                      true
+                      arg_loads_type == application_object_type
                     end
                   else
                     context.types.possible_types(arg_loads_type).include?(application_object_type)
