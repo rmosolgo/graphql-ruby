@@ -1367,7 +1367,7 @@ describe GraphQL::Schema::InputObject do
       class DestroyPost < GraphQL::Schema::RelayClassicMutation
         argument :post_id, ID, loads: PostType
 
-        field :destroyed_kind, String, null: false
+        field :destroyed_kind, String, null: false, hash_key: :destroyed_kind
 
         def resolve(post:)
           context[:destroyed_object] = post
