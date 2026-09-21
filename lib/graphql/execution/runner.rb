@@ -155,16 +155,16 @@ module GraphQL
             end
             query.result
           end
+        rescue SystemStackError => err
+          queries.map do |query|
+            @schema.query_stack_error(query, err)
+            query.result_values ||= { "errors" => query.context.errors.map(&:to_h) }
+            query.result
+          end
         rescue Exception
           # Assign values here so that the query's `@executed` becomes true
           queries.map { |q| q.result_values ||= {} }
           raise
-        end
-      rescue SystemStackError => err
-        @multiplex.queries.map do |query|
-          @schema.query_stack_error(query, err)
-          query.result_values ||= { "errors" => query.context.errors.map(&:to_h) }
-          query.result
         end
       ensure
         Fiber[:__graphql_current_multiplex] = previous_multiplex
