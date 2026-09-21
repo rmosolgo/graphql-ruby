@@ -321,7 +321,9 @@ module GraphQL
             end
           end
 
-          @cached_arguments.each_value do |args|
+          @cached_arguments.each do |owner, args|
+            @cached_parent_arguments[owner]
+
             args.each do |arg|
               if (loads_type = arg.loads)
                 loadable?(loads_type, @context)

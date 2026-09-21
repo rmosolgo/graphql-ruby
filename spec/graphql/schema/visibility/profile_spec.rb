@@ -95,6 +95,9 @@ describe GraphQL::Schema::Visibility::Profile do
 
     res = ProfileSchema.execute('{ findThing(loadableThingId: "1", namedThingId: "2") }', context: { visibility_profile: :public })
     assert_equal "Loaded 1", res["data"]["findThing"]
+
+    res = ProfileSchema.execute('{ greeting(bogus: 1) }', context: { visibility_profile: :public })
+    assert_equal ["Field 'greeting' doesn't accept argument 'bogus'"], res["errors"].map { |e| e["message"] }
   end
 
   describe "when multiple field implementations are all hidden" do
