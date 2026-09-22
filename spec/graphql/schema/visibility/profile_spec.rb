@@ -98,6 +98,8 @@ describe GraphQL::Schema::Visibility::Profile do
 
     res = ProfileSchema.execute('{ greeting(bogus: 1) }', context: { visibility_profile: :public })
     assert_equal ["Field 'greeting' doesn't accept argument 'bogus'"], res["errors"].map { |e| e["message"] }
+
+    assert_equal "__typename", profile.field(ProfileSchema::SearchResult, "__typename").graphql_name
   end
 
   describe "when multiple field implementations are all hidden" do

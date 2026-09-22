@@ -296,6 +296,9 @@ module GraphQL
               enum_values(type_defn)
             elsif type_defn.kind.union?
               loadable_possible_types(type_defn, @context)
+              @schema.introspection_system.dynamic_fields.each do |f|
+                field(type_defn, f.graphql_name)
+              end
             elsif type_defn.kind.object? || type_defn.kind.interface?
               interfaces(type_defn)
             end
