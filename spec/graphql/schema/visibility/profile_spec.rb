@@ -20,6 +20,20 @@ describe GraphQL::Schema::Visibility::Profile do
       possible_types Thing, OtherThing
     end
 
+    class LoadableThing < GraphQL::Schema::Object
+      field :name, String
+    end
+
+    class FindThing < GraphQL::Schema::Resolver
+      type String, null: true
+      argument :loadable_thing_id, ID, required: false, loads: LoadableThing
+      argument :named_thing_id, ID, required: false, loads: HasName
+
+      def resolve(loadable_thing: nil, named_thing: nil)
+        "Loaded #{loadable_thing || named_thing}"
+      end
+    end
+
     class Tagged < GraphQL::Schema::Directive
       locations :FIELD
       argument :tag, String, required: false
@@ -33,12 +47,21 @@ describe GraphQL::Schema::Visibility::Profile do
       end
       field :greeting, String
       field :search, SearchResult
+      field :find_thing, resolver: FindThing
     end
 
     query(Query)
     directive(Tagged)
 
-    use GraphQL::Schema::Visibility
+    use GraphQL::Schema::Visibility, profiles: { public: {} }, dynamic: true
+
+    def self.object_from_id(id, _ctx)
+      id
+    end
+
+    def self.resolve_type(abs_type, _obj, _ctx)
+      abs_type == HasName ? OtherThing : LoadableThing
+    end
   end
   it "only loads the types it needs" do
     query = GraphQL::Query.new(ProfileSchema, "{ thing { name } }", use_visibility_profile: true)
@@ -52,13 +75,13 @@ describe GraphQL::Schema::Visibility::Profile do
     assert_equal [], query.types.loaded_types
 
     res = query.result
-    assert_equal 15, res["data"]["__schema"]["types"].size
+    assert_equal 16, res["data"]["__schema"]["types"].size
     loaded_type_names = query.types.loaded_types.map(&:graphql_name).reject { |n| n.start_with?("__") }.sort
-    assert_equal ["Boolean", "HasName", "OtherThing", "Query", "SearchResult", "String", "Thing"], loaded_type_names
+    assert_equal ["Boolean", "HasName", "ID", "OtherThing", "Query", "SearchResult", "String", "Thing"], loaded_type_names
   end
 
   it "preloads possible types, interfaces, and directive arguments" do
-    profile = ProfileSchema.visibility.profile_for({})
+    profile = ProfileSchema.visibility.profile_for(visibility_profile: :public)
     profile.preload
     profile.freeze
 
@@ -66,6 +89,17 @@ describe GraphQL::Schema::Visibility::Profile do
     assert_equal ["OtherThing", "Thing"], profile.loadable_possible_types(ProfileSchema::SearchResult, nil).map(&:graphql_name).sort
     assert_equal ["HasName"], profile.interfaces(ProfileSchema::OtherThing).map(&:graphql_name)
     assert_equal ["tag"], profile.arguments(ProfileSchema::Tagged).map(&:graphql_name)
+
+    assert_equal ["loadableThingId", "namedThingId"], profile.arguments(ProfileSchema::FindThing).map(&:graphql_name).sort
+    assert_equal true, profile.loadable?(ProfileSchema::LoadableThing, nil)
+
+    res = ProfileSchema.execute('{ findThing(loadableThingId: "1", namedThingId: "2") }', context: { visibility_profile: :public })
+    assert_equal "Loaded 1", res["data"]["findThing"]
+
+    res = ProfileSchema.execute('{ greeting(bogus: 1) }', context: { visibility_profile: :public })
+    assert_equal ["Field 'greeting' doesn't accept argument 'bogus'"], res["errors"].map { |e| e["message"] }
+
+    assert_equal "__typename", profile.field(ProfileSchema::SearchResult, "__typename").graphql_name
   end
 
   describe "when multiple field implementations are all hidden" do

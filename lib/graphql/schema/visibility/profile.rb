@@ -277,6 +277,13 @@ module GraphQL
                 arguments(f).each do |arg|
                   argument(f, arg.graphql_name)
                 end
+
+                resolver_class = f.resolver
+                if resolver_class
+                  arguments(resolver_class).each do |arg|
+                    argument(resolver_class, arg.graphql_name)
+                  end
+                end
               end
               @schema.introspection_system.dynamic_fields.each do |f|
                 field(type_defn, f.graphql_name)
@@ -289,6 +296,9 @@ module GraphQL
               enum_values(type_defn)
             elsif type_defn.kind.union?
               loadable_possible_types(type_defn, @context)
+              @schema.introspection_system.dynamic_fields.each do |f|
+                field(type_defn, f.graphql_name)
+              end
             elsif type_defn.kind.object? || type_defn.kind.interface?
               interfaces(type_defn)
             end
@@ -311,6 +321,20 @@ module GraphQL
           directives.each do |directive|
             arguments(directive).each do |directive_argument|
               argument(directive, directive_argument.graphql_name)
+            end
+          end
+
+          @cached_arguments.each do |owner, args|
+            @cached_parent_arguments[owner]
+
+            args.each do |arg|
+              if (loads_type = arg.loads)
+                loadable?(loads_type, @context)
+                possible_types(loads_type)
+                if loads_type.kind.union?
+                  loadable_possible_types(loads_type, @context)
+                end
+              end
             end
           end
         end
