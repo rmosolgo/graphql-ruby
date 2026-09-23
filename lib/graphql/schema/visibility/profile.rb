@@ -33,30 +33,49 @@ module GraphQL
 
         def freeze
           @cached_visible.default_proc = nil
+          @cached_visible.freeze
           @cached_visible_fields.default_proc = nil
           @cached_visible_fields.each do |type, fields|
             fields.default_proc = nil
+            fields.freeze
           end
+          @cached_visible_fields.freeze
           @cached_visible_arguments.default_proc = nil
           @cached_visible_arguments.each do |type, fields|
             fields.default_proc = nil
+            fields.freeze
           end
+          @cached_visible_arguments.freeze
           @cached_parent_fields.default_proc = nil
           @cached_parent_fields.each do |type, fields|
             fields.default_proc = nil
+            fields.freeze
           end
+          @cached_parent_fields.freeze
           @cached_parent_arguments.default_proc = nil
           @cached_parent_arguments.each do |type, args|
             args.default_proc = nil
+            args.freeze
           end
+          @cached_parent_arguments.freeze
           @cached_possible_types.default_proc = nil
+          @cached_possible_types.freeze
           @cached_enum_values.default_proc = nil
+          @cached_enum_values.freeze
           @cached_fields.default_proc = nil
+          @cached_fields.freeze
           @cached_arguments.default_proc = nil
+          @cached_arguments.freeze
           @loadable_possible_types.default_proc = nil
+          @loadable_possible_types.freeze
           @cached_field_result.default_proc = nil
-          @cached_field_result.each { |_, h| h.default_proc = nil }
+          @cached_field_result.each do |_, h|
+            h.default_proc = nil
+            h.freeze
+          end
+          @cached_field_result.freeze
           @cached_type_result.default_proc = nil
+          @cached_type_result.freeze
           super
         end
 
