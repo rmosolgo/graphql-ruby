@@ -73,7 +73,7 @@ module GraphQL
       # Visitor Hooks
       [
         :operation_definition, :fragment_definition,
-        :inline_fragment, :field, :directive, :argument, :fragment_spread
+        :inline_fragment, :field, :directive, :argument
       ].each do |node_type|
         module_eval <<-RUBY, __FILE__, __LINE__
         def call_on_enter_#{node_type}(node, parent)
@@ -95,6 +95,23 @@ module GraphQL
         RUBY
       end
       # rubocop:enable Development/NoEvalCop
+
+      def call_on_enter_fragment_spread(node, parent)
+        @analyzers.select do |analyzer|
+          !analyzer.on_enter_fragment_spread(node, parent, self).equal?(Analyzer::SKIP_FRAGMENT_SPREAD_CHILDREN)
+        rescue AnalysisError => err
+          @rescued_errors << err
+          true
+        end
+      end
+
+      def call_on_leave_fragment_spread(node, parent)
+        @analyzers.each do |analyzer|
+          analyzer.on_leave_fragment_spread(node, parent, self)
+        rescue AnalysisError => err
+          @rescued_errors << err
+        end
+      end
 
       def on_operation_definition(node, parent)
         check_timeout
@@ -197,8 +214,13 @@ module GraphQL
         @skipping = @skip_stack.last || skip?(node)
         @skip_stack << @skipping
 
-        call_on_enter_fragment_spread(node, parent)
-        enter_fragment_spread_inline(node)
+        all_analyzers = @analyzers
+        @analyzers = call_on_enter_fragment_spread(node, parent)
+        begin
+          enter_fragment_spread_inline(node)
+        ensure
+          @analyzers = all_analyzers
+        end
         super
         @skipping = @skip_stack.pop
         leave_fragment_spread_inline(node)
@@ -256,7 +278,7 @@ module GraphQL
 
         object_types << object_type
 
-        on_fragment_definition_children(fragment_def)
+        on_fragment_definition_children(fragment_def) unless @analyzers.empty?
       end
 
       # Visit a fragment spread inline instead of visiting the definition
