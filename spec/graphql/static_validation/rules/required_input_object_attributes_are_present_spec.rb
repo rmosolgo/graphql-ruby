@@ -112,4 +112,21 @@ describe GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent do
       end
     end
   end
+
+  describe "with equal input objects in a list" do
+    let(:query_string) {%|
+      query getCheese {
+        duplicates: searchDairy(product: [{fatContent: 1.2, order_by: {}}, {fatContent: 1.2, order_by: {}}]) { __typename }
+      }
+    |}
+
+    it "reports each input object at its own index" do
+      assert_equal([
+        ["query getCheese", "duplicates", "product", 0, "source"],
+        ["query getCheese", "duplicates", "product", 0, "order_by", "direction"],
+        ["query getCheese", "duplicates", "product", 1, "source"],
+        ["query getCheese", "duplicates", "product", 1, "order_by", "direction"],
+      ], errors.map { |err| err["path"] })
+    end
+  end
 end
