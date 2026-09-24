@@ -88,7 +88,11 @@ module GraphQL
 
       # @return [Integer]
       def offset_from_cursor(cursor)
-        decode(cursor).to_i
+        offset = Integer(decode(cursor), 10, exception: false)
+        if offset.nil? || offset <= 0
+          raise GraphQL::ExecutionError, "Invalid cursor: #{cursor.inspect}"
+        end
+        offset
       end
 
       # Abstract this operation so we can always ignore inputs less than zero.
