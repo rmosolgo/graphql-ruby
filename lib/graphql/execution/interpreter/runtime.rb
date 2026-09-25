@@ -7,8 +7,7 @@ module GraphQL
       # I think it would be even better if we could somehow make
       # `continue_field` not recursive. "Trampolining" it somehow.
       #
-      # @api private
-      class Runtime
+      class Runtime # :nodoc:
         class CurrentState
           def initialize
             @current_field = nil
@@ -26,13 +25,19 @@ module GraphQL
             :current_arguments, :current_field, :was_authorized_by_scope_items
         end
 
-        # @return [GraphQL::Query]
+        # **Returns**
+        #
+        # - `GraphQL::Query`
         attr_reader :query
 
-        # @return [Class<GraphQL::Schema>]
+        # **Returns**
+        #
+        # - `Class<GraphQL::Schema>`
         attr_reader :schema
 
-        # @return [GraphQL::Query::Context]
+        # **Returns**
+        #
+        # - `GraphQL::Query::Context`
         attr_reader :context
 
         def initialize(query:)
@@ -63,7 +68,12 @@ module GraphQL
           "#<#{self.class.name} response=#{@response.inspect}>"
         end
 
-        # @return [void]
+        # **Returns**
+        #
+        # - `void`
+        #
+        # :call-seq:
+        #   run_eager() -> void
         def run_eager
           root_type = query.root_type
           case query
@@ -287,7 +297,12 @@ module GraphQL
 
         NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
-        # @return [void]
+        # **Returns**
+        #
+        # - `void`
+        #
+        # :call-seq:
+        #   evaluate_selections(gathered_selections, selections_result, target_result, runtime_state) -> void
         def evaluate_selections(gathered_selections, selections_result, target_result, runtime_state) # rubocop:disable Metrics/ParameterLists
           runtime_state ||= get_current_runtime_state
           runtime_state.current_result_name = nil
@@ -325,7 +340,12 @@ module GraphQL
           end
         end
 
-        # @return [void]
+        # **Returns**
+        #
+        # - `void`
+        #
+        # :call-seq:
+        #   evaluate_selection(result_name, field_ast_nodes_or_ast_node, selections_result) -> void
         def evaluate_selection(result_name, field_ast_nodes_or_ast_node, selections_result) # rubocop:disable Metrics/ParameterLists
           return if selections_result.graphql_dead
           # As a performance optimization, the hash key will be a `Node` if
@@ -655,7 +675,12 @@ module GraphQL
         #
         # Location information from `path` and `ast_node`.
         #
-        # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
+        # **Returns**
+        #
+        # - `Lazy, Array, Hash, Object` — Lazy, Array, and Hash are all traversed to resolve lazy values later
+        #
+        # :call-seq:
+        #   continue_field(value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped, runtime_state) -> Lazy | Array | Hash | Object
         def continue_field(value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped, runtime_state) # rubocop:disable Metrics/ParameterLists
           if current_type.non_null?
             current_type = current_type.of_type
@@ -849,7 +874,7 @@ module GraphQL
           end
         end
 
-        # Check {Schema::Directive.include?} for each directive that's present
+        # Check [Schema::Directive.include?](rdoc-ref:Schema::Directive.include?) for each directive that's present
         def directives_include?(node, graphql_object, parent_type, selection_result, extra_path_part)
           node.directives.each do |dir_node|
             dir_defn = @schema_directives.fetch(dir_node.name)
@@ -898,11 +923,19 @@ module GraphQL
           end
         end
 
-        # @param obj [Object] Some user-returned value that may want to be batched
-        # @param field [GraphQL::Schema::Field]
-        # @param eager [Boolean] Set to `true` for mutation root fields only
-        # @param trace [Boolean] If `false`, don't wrap this with field tracing
-        # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
+        # **Parameters**
+        #
+        # - `obj` (`Object`) — Some user-returned value that may want to be batched
+        # - `field` (`GraphQL::Schema::Field`)
+        # - `eager` (`Boolean`) — Set to `true` for mutation root fields only
+        # - `trace` (`Boolean`) — If `false`, don't wrap this with field tracing
+        #
+        # **Returns**
+        #
+        # - `GraphQL::Execution::Lazy, Object` — If loading `object` will be deferred, it's a wrapper over it.
+        #
+        # :call-seq:
+        #   after_lazy(lazy_obj, GraphQL::Schema::Field field:, owner_object:, arguments:, ast_node:, result:, result_name:, bool eager:, runtime_state:, bool trace:, &block) -> GraphQL::Execution::Lazy | Object
         def after_lazy(lazy_obj, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, runtime_state:, trace: true, &block)
           if lazy?(lazy_obj)
             was_authorized_by_scope_items = runtime_state.was_authorized_by_scope_items

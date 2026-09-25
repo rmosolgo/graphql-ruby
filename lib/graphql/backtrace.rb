@@ -2,18 +2,22 @@
 require "graphql/backtrace/table"
 require "graphql/backtrace/traced_error"
 module GraphQL
-  # Wrap unhandled errors with {TracedError}.
+  # Wrap unhandled errors with [TracedError](rdoc-ref:TracedError).
   #
-  # {TracedError} provides a GraphQL backtrace with arguments and return values.
-  # The underlying error is available as {TracedError#cause}.
+  # [TracedError](rdoc-ref:TracedError) provides a GraphQL backtrace with arguments and return values.
+  # The underlying error is available as `TracedError#cause`.
   #
-  # @example toggling backtrace annotation
-  #   class MySchema < GraphQL::Schema
-  #     if Rails.env.development? || Rails.env.test?
-  #       use GraphQL::Backtrace
-  #     end
+  # **Examples**
+  #
+  # **Example: toggling backtrace annotation**
+  #
+  # ```ruby
+  # class MySchema < GraphQL::Schema
+  #   if Rails.env.development? || Rails.env.test?
+  #     use GraphQL::Backtrace
   #   end
-  #
+  # end
+  # ```
   class Backtrace
     include Enumerable
     extend Forwardable

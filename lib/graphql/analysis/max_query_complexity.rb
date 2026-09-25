@@ -2,7 +2,7 @@
 module GraphQL
   module Analysis
     # Used under the hood to implement complexity validation,
-    # see {Schema#max_complexity} and {Query#max_complexity}
+    # See [Schema.max_complexity](rdoc-ref:GraphQL::Schema.max_complexity) and `Query#max_complexity`.
     class MaxQueryComplexity < QueryComplexity
       def result
         return if subject.max_complexity.nil?

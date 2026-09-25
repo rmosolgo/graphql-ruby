@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro - Defer
-title: Use with GraphiQL
-desc: Using @defer with the GraphiQL IDE
-index: 4
-pro: true
----
+# Use with GraphiQL
 
 You can use `@defer` and `@stream` with [GraphiQL](https://github.com/graphql/graphiql/blob/main/packages/graphiql/README.md), an in-browser IDE.
 

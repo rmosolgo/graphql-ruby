@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Language Tools
-title: AST Visitor
-desc: Analyze and modify parsed GraphQL code
-index: 0
----
+# AST Visitor
 
 GraphQL code is usually contained in a string, for example:
 
@@ -22,14 +14,14 @@ You can perform programmatic analysis and modifications to GraphQL code using a 
 
 ## Parse
 
-{{ "GraphQL.parse" | api_doc }} turns a string into a GraphQL document:
+[GraphQL.parse](rdoc-ref:GraphQL.parse) turns a string into a GraphQL document:
 
 ```ruby
 parsed_doc = GraphQL.parse("{ user(id: \"1\") { userName } }")
 # => #<GraphQL::Language::Nodes::Document ...>
 ```
 
-Also, {{ "GraphQL.parse_file" | api_doc }} parses the contents of the named file and includes a `filename` in the parsed document.
+Also, [GraphQL.parse_file](rdoc-ref:GraphQL.parse_file) parses the contents of the named file and includes a `filename` in the parsed document.
 
 #### AST Nodes
 
@@ -54,14 +46,14 @@ Above, `field_node` is unmodified, but `modified_node` reflects the new name and
 
 ## Analyze/Modify
 
-To inspect or modify a parsed document, extend {{ "GraphQL::Language::Visitor" | api_doc }} and implement its various hooks. It's an implementation of the [visitor pattern](https://en.wikipedia.org/wiki/Visitor_pattern). In short, each node of the tree will be "visited" by calling a method, and those methods can gather information and perform modifications.
+To inspect or modify a parsed document, extend [GraphQL::Language::Visitor](rdoc-ref:GraphQL::Language::Visitor) and implement its various hooks. It's an implementation of the [visitor pattern](https://en.wikipedia.org/wiki/Visitor_pattern). In short, each node of the tree will be "visited" by calling a method, and those methods can gather information and perform modifications.
 
 In the visitor, each node class has a hook, for example:
 
-- {{ "GraphQL::Language::Nodes::Field" | api_doc }}s are routed to `#on_field`
-- {{ "GraphQL::Language::Nodes::Argument" | api_doc }}s are routed to `#on_argument`
+- [GraphQL::Language::Nodes::Field](rdoc-ref:GraphQL::Language::Nodes::Field)s are routed to `#on_field`
+- [GraphQL::Language::Nodes::Argument](rdoc-ref:GraphQL::Language::Nodes::Argument)s are routed to `#on_argument`
 
-See the {{ "GraphQL::Language::Visitor" | api_doc }} API docs for a full list of methods.
+See the [GraphQL::Language::Visitor](rdoc-ref:GraphQL::Language::Visitor) API docs for a full list of methods.
 
 Each method is called with `(node, parent)`, where:
 
@@ -129,15 +121,15 @@ end
 This will add `emailAddress` the fields selection on `node`.
 
 
-(These `.add_*` helpers are wrappers around {{ "GraphQL::Language::Nodes::AbstractNode#merge" | api_doc }}.)
+(These `.add_*` helpers are wrappers around [GraphQL::Language::Nodes::AbstractNode#merge](rdoc-ref:GraphQL::Language::Nodes::AbstractNode#merge).)
 
 ## Print
 
-The easiest way to turn an AST back into a string of GraphQL is {{ "GraphQL::Language::Nodes::AbstractNode#to_query_string" | api_doc }}, for example:
+The easiest way to turn an AST back into a string of GraphQL is [GraphQL::Language::Nodes::AbstractNode#to_query_string](rdoc-ref:GraphQL::Language::Nodes::AbstractNode#to_query_string), for example:
 
 ```ruby
 parsed_doc.to_query_string
 # => '{ user(id: "1") { userName } }'
 ```
 
-You can also create a subclass of {{ "GraphQL::Language::Printer" | api_doc }} to customize how nodes are printed.
+You can also create a subclass of [GraphQL::Language::Printer](rdoc-ref:GraphQL::Language::Printer) to customize how nodes are printed.

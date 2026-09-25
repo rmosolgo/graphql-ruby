@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Changesets
-title: Installing Changesets
-desc: Adding Changesets to your schema
-index: 1
----
+# Installing Changesets
 
 Changesets require some updates to the schema (to define changesets) and some updates to your controller (to receive version headers from clients).
 
@@ -60,7 +51,7 @@ To get started with [GraphQL-Enterprise](https://graphql.pro/enterprise) Changes
 
     Also, make sure that your `BaseUnion` and `BaseInterface` have `type_membership_class(Types::BaseTypeMembership)` configured in it. (`TypeMembership`s are used by GraphQL-Ruby to link object types to the union types they belong to and the interfaces they implement. By using a custom type membership class, you can make objects belong (or _not_ belong) to unions or interfaces, depending on the API version.)
 
-Once those integrations are set up, you're ready to {% internal_link "write a changeset", "/changesets/definition" %} and start {% internal_link "releasing API versions", "/changesets/releases" %}!
+Once those integrations are set up, you're ready to [write a changeset](/changesets/definition) and start [releasing API versions](/changesets/releases)!
 
 ## Controller Setup
 
@@ -83,4 +74,4 @@ In the example above, `API-Version: ...` will be parsed from the incoming reques
 
 If `context[:changeset_version]` is `nil`, then _no_ changesets will apply to that request.
 
-Now that Changesets are installed, read on to {% internal_link "define some changesets", "/changesets/definition" %}.
+Now that Changesets are installed, read on to [define some changesets](/changesets/definition).

@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Fields
-title: Limits
-desc: Always limit lists of items
-index: 4
----
+# Limits
 
 ## List Fields
 
@@ -27,4 +19,4 @@ This way, you won't hit your database for 1000 items!
 
 ## Connections
 
-Connections accept a {% internal_link "`max_page_size` option","/pagination/using_connections#max-page-size" %} which limits the number of nodes.
+Connections accept a [`max_page_size` option](/pagination/using_connections#max-page-size) which limits the number of nodes.

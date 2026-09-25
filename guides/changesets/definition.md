@@ -1,15 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Changesets
-title: Defining Changesets
-desc: Creating a set of modifications to release in an API version
-index: 2
----
+# Defining Changesets
 
-After {% internal_link "installing Changeset integrations", "/changesets/installation" %} in your schema, you can create Changesets which modify parts of the schema. Changesets extend `GraphQL::Enterprise::Changeset` and include a `release` string. Once a Changeset class is defined, it can be referenced with `added_in: ...` or `removed_in: ...` configurations in the schema.
+After [installing Changeset integrations](/changesets/installation) in your schema, you can create Changesets which modify parts of the schema. Changesets extend `GraphQL::Enterprise::Changeset` and include a `release` string. Once a Changeset class is defined, it can be referenced with `added_in: ...` or `removed_in: ...` configurations in the schema.
 
 __Note:__ Before GraphQL-Enterprise 1.3.0, Changesets were configured with `modifies ...` blocks. These blocks are still supported and you can find the documentation for that API [on GitHub](https://github.com/rmosolgo/graphql-ruby/blob/v2.0.22/guides/changesets/definition.md).
 
@@ -25,7 +16,7 @@ class Changesets::DeprecateRecipeTags < GraphQL::Enterprise::Changeset
 end
 ```
 
-Additionally, Changesets must be {% internal_link "released", "/changesets/releases" %} for their changes to be published.
+Additionally, Changesets must be [released](/changesets/releases) for their changes to be published.
 
 ## Publishing with `added_in:`
 
@@ -90,7 +81,7 @@ See below for the different kind of modifications you can make in a changeset:
 
 ### Fields
 
-To add or redefine a field, use `field(..., added_in: ...)`, including all configuration values for the new implementation (see {{ "GraphQL::Schema::Field#initialize" | api_doc }}). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.
+To add or redefine a field, use `field(..., added_in: ...)`, including all configuration values for the new implementation (see the [GraphQL::Schema::Field](rdoc-ref:GraphQL::Schema::Field) API). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.
 
 ```ruby
 class Types::Recipe < Types::BaseObject
@@ -297,4 +288,4 @@ end
 
 Besides observability, you can use a runtime check when a resolver needs to pick a different behavior depending on the API version.
 
-After defining a changeset, add it to the schema to {% internal_link "release it", "/changesets/releases" %}.
+After defining a changeset, add it to the schema to [release it](/changesets/releases).

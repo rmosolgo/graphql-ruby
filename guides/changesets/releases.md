@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Changesets
-title: Releasing Changesets
-desc: Associating changes to version numbers
-index: 3
----
+# Releasing Changesets
 
 To be available to clients, Changesets added to the schema with `use GraphQL::Enterprise::Changeset::Release changesets_dir: "..."`:
 
@@ -24,11 +15,11 @@ end
 
 This attaches each Changeset defined in `app/graphql/changesets/*.rb` to the schema. (It assumes Rails conventions, where an underscored file like `app/graphql/changesets/add_some_feature.rb` contains a class like `Changesets::AddSomeFeature`.)
 
-{% callout warning %}
+> **Warning:**
+>
+> Add `GraphQL::Enterprise::Changeset::Release` _before_ hooking up your root `query(...)`, `mutation(...)`, and `subscription(...)` types. Otherwise, the schema may not find links to types in new schema versions.
+>
 
-Add `GraphQL::Enterprise::Changeset::Release` _before_ hooking up your root `query(...)`, `mutation(...)`, and `subscription(...)` types. Otherwise, the schema may not find links to types in new schema versions.
-
-{% endcallout %}
 
 Alternatively, Changesets can be explicitly attached using `changesets: [...]`, for example:
 
@@ -46,7 +37,7 @@ Only changesets in the directory (or in the array) will be shown to clients. The
 
 ## Inspecting Releases
 
-To preview releases, you can create schema dumps by passing `context: { changeset_version: ... }` to {{ "Schema.to_definition" | api_doc }}.
+To preview releases, you can create schema dumps by passing `context: { changeset_version: ... }` to [Schema.to_definition](rdoc-ref:GraphQL::Schema.to_definition).
 
 For example, to see how the schema looks with `API-Version: 2021-06-01`:
 
@@ -56,7 +47,7 @@ schema_sdl = MyAppSchema.to_definition(context: { changeset_version: "2021-06-01
 puts schema_sdl
 ```
 
-To make sure schema versions don't change unexpectedly, use the techniques described in the {% internal_link "Schema structure guide", "/testing/schema_structure" %}.
+To make sure schema versions don't change unexpectedly, use the techniques described in the [Schema structure guide](/testing/schema_structure).
 
 ### Introspection Methods
 

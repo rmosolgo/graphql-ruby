@@ -3,20 +3,31 @@ module GraphQL
   # Raised automatically when a field's resolve function returns `nil`
   # for a non-null field.
   class InvalidNullError < GraphQL::RuntimeError
-    # @return [GraphQL::BaseType] The owner of {#field}
+    # **Returns**
+    #
+    # - `GraphQL::BaseType` — The owner of [field](rdoc-ref:#field)
     attr_reader :parent_type
 
-    # @return [GraphQL::Field] The field which failed to return a value
+    # **Returns**
+    #
+    # - `GraphQL::Field` — The field which failed to return a value
     attr_reader :field
 
-    # @return [GraphQL::Language::Nodes::Field] the field where the error occurred
+    # **Returns**
+    #
+    # - `GraphQL::Language::Nodes::Field` — the field where the error occurred
+    #
+    # :call-seq:
+    #   ast_node() -> GraphQL::Language::Nodes::Field
     def ast_node
       @ast_nodes.first
     end
 
     attr_reader :ast_nodes
 
-    # @return [Boolean] indicates an array result caused the error
+    # **Returns**
+    #
+    # - `Boolean` — indicates an array result caused the error
     attr_reader :is_from_array
 
     attr_accessor :path

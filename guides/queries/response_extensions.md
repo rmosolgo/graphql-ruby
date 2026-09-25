@@ -1,12 +1,4 @@
----
-title: Response Extensions
-layout: guide
-doc_stub: false
-search: true
-section: Queries
-desc: Adding "extensions" to the response hash
-index: 12
----
+# Response Extensions
 
 During query execution, you can add to the response's `"extensions" => { ... }` Hash. By default, no `"extensions"` key is present in the result, but if you call the method below, it will be present with the given values.
 

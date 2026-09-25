@@ -8,32 +8,42 @@ module GraphQL
     # The connection doesn't receive outside arguments, so the list of items
     # should be ordered and paginated before providing it here.
     #
-    # @example Adding a comment to list of comments
-    #   post = Post.find(args[:post_id])
-    #   comments = post.comments
-    #   new_comment = comments.build(body: args[:body])
-    #   new_comment.save!
+    # **Examples**
     #
-    #   range_add = GraphQL::Relay::RangeAdd.new(
-    #     parent: post,
-    #     collection: comments,
-    #     item: new_comment,
-    #     context: context,
-    #   )
+    # **Example: Adding a comment to list of comments**
     #
-    #   response = {
-    #     post: post,
-    #     comments_connection: range_add.connection,
-    #     new_comment_edge: range_add.edge,
-    #   }
+    # ```ruby
+    # post = Post.find(args[:post_id])
+    # comments = post.comments
+    # new_comment = comments.build(body: args[:body])
+    # new_comment.save!
+    #
+    # range_add = GraphQL::Relay::RangeAdd.new(
+    #   parent: post,
+    #   collection: comments,
+    #   item: new_comment,
+    #   context: context,
+    # )
+    #
+    # response = {
+    #   post: post,
+    #   comments_connection: range_add.connection,
+    #   new_comment_edge: range_add.edge,
+    # }
+    # ```
     class RangeAdd
       attr_reader :edge, :connection, :parent
 
-      # @param collection [Object] The list of items to wrap in a connection
-      # @param item [Object] The newly-added item (will be wrapped in `edge_class`)
-      # @param context [GraphQL::Query::Context] The surrounding `ctx`, will be passed to the connection
-      # @param parent [Object] The owner of `collection`, will be passed to the connection if provided
-      # @param edge_class [Class] The class to wrap `item` with (defaults to the connection's edge class)
+      # **Parameters**
+      #
+      # - `collection` (`Object`) — The list of items to wrap in a connection
+      # - `item` (`Object`) — The newly-added item (will be wrapped in `edge_class`)
+      # - `context` (`GraphQL::Query::Context`) — The surrounding `ctx`, will be passed to the connection
+      # - `parent` (`Object`) — The owner of `collection`, will be passed to the connection if provided
+      # - `edge_class` (`Class`) — The class to wrap `item` with (defaults to the connection's edge class)
+      #
+      # :call-seq:
+      #   initialize(Object collection:, Object item:, GraphQL::Query::Context context:, Object parent:, Class edge_class:)
       def initialize(collection:, item:, context:, parent: nil, edge_class: nil)
         conn_class = context.schema.connections.wrapper_for(collection)
         # The rest will be added by ConnectionExtension
