@@ -5,6 +5,8 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_GEMFILE: gemfiles/sorbet.gemfile
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
@@ -12,6 +14,7 @@ jobs:
         ruby-version: 3.4
         bundler-cache: true
     - run: bundle exec rake rubocop
+    - run: bundle exec srb tc
     - run: npx @herb-tools/linter@0.8.10
   system_tests:
     runs-on: ubuntu-latest

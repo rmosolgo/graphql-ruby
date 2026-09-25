@@ -99,6 +99,7 @@ module GraphQL
     class InvalidDocumentError < Error; end;
 
     class << self
+      include EmptyObjects
       # Create schema with the result of an introspection query.
       # @param introspection_result [Hash] A response from {GraphQL::Introspection::INTROSPECTION_QUERY}
       # @return [Class<GraphQL::Schema>] the schema described by `input`
