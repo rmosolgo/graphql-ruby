@@ -20,6 +20,7 @@ module GraphQL
         @results = nil
         @finish_extension_idx = nil
         @was_scoped = nil
+        @field_results_are_eager = nil
         @pending_steps = nil
         @arguments_without_loads = @post_processors = @directive_finalizers = nil
       end
@@ -365,8 +366,10 @@ module GraphQL
         query.current_trace.end_execute_field(@field_definition, authorized_objects, @arguments, query, @field_results)
 
         if any_lazy_results?
+          @field_results_are_eager = false
           @runner.dataloader.lazy_at_depth(path.size, self)
         elsif @pending_steps.nil? || @pending_steps.empty?
+          @field_results_are_eager = true if @field_results_are_eager.nil?
           if has_extensions
             finish_extensions
           else
@@ -439,6 +442,7 @@ module GraphQL
           end
           @finish_extension_idx += 1
           if any_lazy_results?
+            @field_results_are_eager = false
             @runner.dataloader.lazy_at_depth(path.size, self)
             return
           end
@@ -472,13 +476,24 @@ module GraphQL
 
           is_list = return_type.list?
           is_non_null = return_type.non_null?
-          i = 0
-          s = @results.size
-          while i < s do
-            result_h = @results[i]
-            result = @field_results[i]
-            i += 1
-            build_graphql_result(result_h, @key, result, return_type, is_non_null, is_list, false)
+          if skip_prepare_object_steps?(return_type)
+            i = 0
+            s = @results.size
+            while i < s do
+              result_h = @results[i]
+              result = @field_results[i]
+              i += 1
+              build_graphql_result_without_prepare_object_step(result_h, @key, result, return_type, is_non_null, is_list, false)
+            end
+          else
+            i = 0
+            s = @results.size
+            while i < s do
+              result_h = @results[i]
+              result = @field_results[i]
+              i += 1
+              build_graphql_result(result_h, @key, result, return_type, is_non_null, is_list, false)
+            end
           end
           @enqueued_authorization = true
 
@@ -681,6 +696,50 @@ module GraphQL
           @runner.static_type_at[next_result_h] = @static_type
           graphql_result[key] = next_result_h
         end
+      end
+
+      def build_graphql_result_without_prepare_object_step(graphql_result, key, field_result, return_type, is_nn, is_list, is_from_array) # rubocop:disable Metrics/ParameterLists
+        if field_result.nil? || field_result.is_a?(Finalizer)
+          build_graphql_result(graphql_result, key, field_result, return_type, is_nn, is_list, is_from_array)
+        elsif is_list
+          if is_nn
+            return_type = return_type.of_type
+          end
+          inner_type = return_type.of_type
+          inner_type_nn = inner_type.non_null?
+          inner_type_l = inner_type.list?
+          list_result = graphql_result[key] = []
+          i = 0
+          s = field_result.size
+          while i < s
+            inner_f_r = field_result[i]
+            build_graphql_result_without_prepare_object_step(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
+            i += 1
+          end
+        else
+          if @runner.resolves_lazies
+            query = @selections_step.query
+            query.current_trace.begin_authorized(@static_type, field_result, query.context)
+            query.current_trace.end_authorized(@static_type, field_result, query.context, true)
+          end
+          next_result_h = {}.compare_by_identity
+          @all_next_results << next_result_h
+          @all_next_objects << field_result
+          @runner.static_type_at[next_result_h] = @static_type
+          graphql_result[key] = next_result_h
+        end
+      end
+
+      def skip_prepare_object_steps?(return_type)
+        return false unless @field_results_are_eager &&
+          !@was_scoped &&
+          @post_processors.nil? &&
+          @directive_finalizers.nil? &&
+          @static_type.kind.object? &&
+          !@runner.authorizes?(@static_type, @selections_step.query.context)
+
+        outer_type = return_type.non_null? ? return_type.of_type : return_type
+        !outer_type.list? || !outer_type.of_type.list?
       end
 
       def resolve_batch(objects, context, args_hash)
