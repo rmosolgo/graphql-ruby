@@ -619,7 +619,9 @@ module GraphQL
           when Array
             # It's an array full of execution errors; add them all.
             if !value.empty? && value.all?(GraphQL::ExecutionError)
-              list_type_at_all = (field && (field.type.list?))
+              list_type = field && field.type
+              list_type = list_type.of_type if list_type && list_type.non_null?
+              list_type_at_all = list_type && list_type.list?
               if selection_result.nil? || !selection_result.graphql_dead
                 value.each_with_index do |error, index|
                   error.ast_node ||= ast_node
@@ -627,7 +629,7 @@ module GraphQL
                   context.errors << error
                 end
                 if selection_result
-                  if list_type_at_all
+                  if list_type_at_all && !list_type.of_type.non_null?
                     result_without_errors = value.map { |v| v.is_a?(GraphQL::ExecutionError) ? nil : v }
                     set_result(selection_result, result_name, result_without_errors, false, is_non_null)
                   else
