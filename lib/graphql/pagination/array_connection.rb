@@ -20,8 +20,13 @@ module GraphQL
       end
 
       def cursor_for(item)
-        idx = items.find_index(item) + 1
-        encode(idx.to_s)
+        index = cursor_index_for(item, items)
+        encode((index + 1).to_s)
+      end
+
+      # @api private
+      def cursor_for_position(_item, position)
+        encode((@paged_nodes_offset + position + 1).to_s)
       end
 
       private
@@ -38,14 +43,15 @@ module GraphQL
       # It doesn't do anything on subsequent calls.
       def load_nodes
         @nodes ||= begin
+          sliced_nodes_offset = after ? index_from_cursor(after) : 0
           sliced_nodes = if before && after
             end_idx = index_from_cursor(before) - 2
-            end_idx < 0 ? [] : items[index_from_cursor(after)..end_idx] || []
+            end_idx < 0 ? [] : items[sliced_nodes_offset..end_idx] || []
           elsif before
             end_idx = index_from_cursor(before) - 2
             end_idx < 0 ? [] : items[0..end_idx] || []
           elsif after
-            items[index_from_cursor(after)..-1] || []
+            items[sliced_nodes_offset..-1] || []
           else
             items
           end
@@ -71,9 +77,13 @@ module GraphQL
           end
 
           limited_nodes = sliced_nodes
+          @paged_nodes_offset = sliced_nodes_offset
 
           limited_nodes = limited_nodes.first(first) if first
-          limited_nodes = limited_nodes.last(last) if last
+          if last
+            @paged_nodes_offset += [limited_nodes.length - last, 0].max
+            limited_nodes = limited_nodes.last(last)
+          end
 
           limited_nodes
         end

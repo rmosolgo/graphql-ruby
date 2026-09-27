@@ -47,8 +47,14 @@ module GraphQL
 
       def cursor_for(item)
         load_nodes
-        # index in nodes + existing offset + 1 (because it's offset, not index)
-        offset = nodes.index(item) + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
+        position = cursor_index_for(item, nodes)
+        cursor_for_position(item, position)
+      end
+
+      # @api private
+      def cursor_for_position(_item, position)
+        # position in nodes + existing offset + 1 (because it's offset, not index)
+        offset = position + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
         encode(offset.to_s)
       end
 
