@@ -1536,6 +1536,52 @@ describe GraphQL::Dataloader do
     assert_equal expected_errors, res.context[:errors]
   end
 
+  describe "list items resolved after an earlier item waits on the dataloader" do
+    class ListItemContextSchema < GraphQL::Schema
+      class AuthSource < GraphQL::Dataloader::Source
+        def fetch(ids)
+          ids.map { true }
+        end
+      end
+
+      class Tag < GraphQL::Schema::Object
+        field :id, Integer, method: :itself
+
+        def self.authorized?(obj, ctx)
+          ctx[:seen] << [ctx[:current_path], ctx[:current_field]&.path, ctx[:current_arguments]&.keyword_arguments]
+          ctx.dataloader.with(AuthSource).load(obj)
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :tags, [Tag], resolve_static: true do
+          argument :limit, Integer
+        end
+
+        def self.tags(context, limit:)
+          [1, 2, 3].first(limit)
+        end
+
+        def tags(limit:)
+          self.class.tags(context, limit: limit)
+        end
+      end
+
+      query(Query)
+      use GraphQL::Dataloader
+    end
+
+    it "has proper context[:current_path], context[:current_field], and context[:current_arguments]" do
+      res = ListItemContextSchema.execute("{ tags(limit: 3) { id } }", context: { seen: [] })
+      expected = if_exec_next(
+        # No context[:current_...] values:
+        [[nil, nil, nil]] * 3,
+        [0, 1, 2].map { |idx| [["tags", idx], "Query.tags", { limit: 3 }] }
+      )
+      assert_equal expected, res.context[:seen]
+    end
+  end
+
   it "passes along throws" do
     value = catch(:hello) do
       dataloader = GraphQL::Dataloader.new
