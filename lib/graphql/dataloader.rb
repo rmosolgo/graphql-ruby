@@ -263,6 +263,8 @@ module GraphQL
     def spawn_fiber
       fiber_vars = get_fiber_variables
       Fiber.new(blocking: !@nonblocking) do
+        # Fibers inherit the spawning fiber's storage; give each one its own execution state.
+        Fiber[:__graphql_runtime_info] = nil
         set_fiber_variables(fiber_vars)
         yield
       ensure
