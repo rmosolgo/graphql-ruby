@@ -16,6 +16,7 @@ module GraphQL
         @schema = context.schema
         @inline_fragment_paths = {}
         @field_unwrapped_types = {}.compare_by_identity
+        @child_positions = {}.compare_by_identity
         super(document)
       end
 
@@ -159,6 +160,7 @@ module GraphQL
           @current_argument_definition = @parent_argument_definition
           @parent_argument_definition = prev_parent
           @path_depth -= 1
+          @child_positions.delete(node)
         end
 
         def on_fragment_spread(node, parent)
@@ -171,12 +173,20 @@ module GraphQL
         def on_input_object(node, parent)
           arg_defn = @current_argument_definition
           if arg_defn && arg_defn.type.list?
-            @path[@path_depth] = parent.children.index(node)
+            @path[@path_depth] = child_positions(parent)[node]
             @path_depth += 1
             super
             @path_depth -= 1
           else
             super
+          end
+        end
+
+        def child_positions(parent)
+          @child_positions[parent] ||= begin
+            positions = {}.compare_by_identity
+            parent.children.each_with_index { |child, index| positions[child] ||= index }
+            positions
           end
         end
 

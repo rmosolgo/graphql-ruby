@@ -208,4 +208,31 @@ describe GraphQL::StaticValidation::Validator do
       assert_equal 0, errors.size
     end
   end
+
+  describe "a hand-built document that uses one input object node twice" do
+    let(:item) {
+      GraphQL::Language::Nodes::InputObject.new(
+        arguments: [GraphQL::Language::Nodes::Argument.new(name: "fatContent", value: 1.2)],
+      )
+    }
+    let(:document) {
+      field = GraphQL::Language::Nodes::Field.new(
+        field_alias: "dupes",
+        name: "searchDairy",
+        arguments: [GraphQL::Language::Nodes::Argument.new(name: "product", value: [item, item])],
+        selections: [GraphQL::Language::Nodes::Field.new(name: "__typename")],
+      )
+      GraphQL::Language::Nodes::Document.new(
+        definitions: [GraphQL::Language::Nodes::OperationDefinition.new(operation_type: "query", selections: [field])],
+      )
+    }
+    let(:query) { GraphQL::Query.new(Dummy::Schema, nil, document: document) }
+
+    it "reports the first position for both occurrences" do
+      assert_equal([
+        ["query", "dupes", "product", 0, "source"],
+        ["query", "dupes", "product", 0, "source"],
+      ], errors.map { |err| err["path"] })
+    end
+  end
 end
