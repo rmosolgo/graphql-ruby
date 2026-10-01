@@ -1,14 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Queries
-title: Lookahead
-desc: Detecting child selections during field resolution
-index: 11
----
+# Lookahead
 
-GraphQL-Ruby 1.9+ includes {{ "GraphQL::Execution::Lookahead" | api_doc }} for checking whether child fields are selected. You can use this to optimize database access, for example, selecting only the _needed_ fields from the database.
+GraphQL-Ruby 1.9+ includes [GraphQL::Execution::Lookahead](rdoc-ref:GraphQL::Execution::Lookahead) for checking whether child fields are selected. You can use this to optimize database access, for example, selecting only the _needed_ fields from the database.
 
 ## Getting a Lookahead
 

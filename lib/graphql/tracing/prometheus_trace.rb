@@ -8,24 +8,32 @@ module GraphQL
     #
     # The PrometheusExporter server must be run with a custom type collector that extends `GraphQL::Tracing::PrometheusTracing::GraphQLCollector`.
     #
-    # @example Adding this trace to your schema
-    #   require 'prometheus_exporter/client'
+    # **Examples**
     #
-    #   class MySchema < GraphQL::Schema
-    #     trace_with GraphQL::Tracing::PrometheusTrace
+    # **Example: Adding this trace to your schema**
+    #
+    # ```ruby
+    # require 'prometheus_exporter/client'
+    #
+    # class MySchema < GraphQL::Schema
+    #   trace_with GraphQL::Tracing::PrometheusTrace
+    # end
+    # ```
+    #
+    # **Example: Running a custom type collector**
+    #
+    # ```ruby
+    # # lib/graphql_collector.rb
+    # if defined?(PrometheusExporter::Server)
+    #   require 'graphql/tracing'
+    #
+    #   class GraphQLCollector < GraphQL::Tracing::PrometheusTrace::GraphQLCollector
     #   end
+    # end
     #
-    # @example Running a custom type collector
-    #   # lib/graphql_collector.rb
-    #   if defined?(PrometheusExporter::Server)
-    #     require 'graphql/tracing'
-    #
-    #     class GraphQLCollector < GraphQL::Tracing::PrometheusTrace::GraphQLCollector
-    #     end
-    #   end
-    #
-    #    # Then run:
-    #    # bundle exec prometheus_exporter -a lib/graphql_collector.rb
+    #  # Then run:
+    #  # bundle exec prometheus_exporter -a lib/graphql_collector.rb
+    # ```
     PrometheusTrace = MonitorTrace.create_module("prometheus")
     module PrometheusTrace
       if defined?(PrometheusExporter::Server)

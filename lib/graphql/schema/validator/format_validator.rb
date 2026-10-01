@@ -5,22 +5,32 @@ module GraphQL
     class Validator
       # Use this to assert that string values match (or don't match) the given RegExp.
       #
-      # @example requiring input to match a pattern
+      # **Examples**
       #
-      #   argument :handle, String, required: true,
-      #     validates: { format: { with: /\A[a-z0-9_]+\Z/ } }
+      # **Example: requiring input to match a pattern**
       #
-      # @example reject inputs that match a pattern
+      # ```ruby
+      # argument :handle, String, required: true,
+      #   validates: { format: { with: /\A[a-z0-9_]+\Z/ } }
+      # ```
       #
-      #   argument :word_that_doesnt_begin_with_a_vowel, String, required: true,
-      #     validates: { format: { without: /\A[aeiou]/ } }
+      # **Example: reject inputs that match a pattern**
       #
-      #   # It's pretty hard to come up with a legitimate use case for `without:`
+      # ```ruby
+      # argument :word_that_doesnt_begin_with_a_vowel, String, required: true,
+      #   validates: { format: { without: /\A[aeiou]/ } }
       #
+      # # It's pretty hard to come up with a legitimate use case for `without:`
+      # ```
       class FormatValidator < Validator
-        # @param with [RegExp, nil]
-        # @param without [Regexp, nil]
-        # @param message [String]
+        # **Parameters**
+        #
+        # - `with` (`RegExp, nil`)
+        # - `without` (`Regexp, nil`)
+        # - `message` (`String`)
+        #
+        # :call-seq:
+        #   initialize(RegExp | nil with:, Regexp | nil without:, String message:, **default_options)
         def initialize(
           with: nil,
           without: nil,

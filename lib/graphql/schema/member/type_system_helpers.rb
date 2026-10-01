@@ -10,7 +10,12 @@ module GraphQL
           @to_list_type ||= nil
         end
 
-        # @return [Schema::NonNull] Make a non-null-type representation of this type
+        # **Returns**
+        #
+        # - `Schema::NonNull` — Make a non-null-type representation of this type
+        #
+        # :call-seq:
+        #   to_non_null_type() -> Schema::NonNull
         def to_non_null_type
           @to_non_null_type || begin
             t = GraphQL::Schema::NonNull.new(self)
@@ -22,7 +27,12 @@ module GraphQL
           end
         end
 
-        # @return [Schema::List] Make a list-type representation of this type
+        # **Returns**
+        #
+        # - `Schema::List` — Make a list-type representation of this type
+        #
+        # :call-seq:
+        #   to_list_type() -> Schema::List
         def to_list_type
           @to_list_type || begin
             t = GraphQL::Schema::List.new(self)
@@ -34,12 +44,22 @@ module GraphQL
           end
         end
 
-        # @return [Boolean] true if this is a non-nullable type. A nullable list of non-nullables is considered nullable.
+        # **Returns**
+        #
+        # - `Boolean` — true if this is a non-nullable type. A nullable list of non-nullables is considered nullable.
+        #
+        # :call-seq:
+        #   non_null?() -> bool
         def non_null?
           false
         end
 
-        # @return [Boolean] true if this is a list type. A non-nullable list is considered a list.
+        # **Returns**
+        #
+        # - `Boolean` — true if this is a list type. A non-nullable list is considered a list.
+        #
+        # :call-seq:
+        #   list?() -> bool
         def list?
           false
         end
@@ -48,7 +68,12 @@ module GraphQL
           graphql_name
         end
 
-        # @return [GraphQL::TypeKinds::TypeKind]
+        # **Returns**
+        #
+        # - `GraphQL::TypeKinds::TypeKind`
+        #
+        # :call-seq:
+        #   kind() -> GraphQL::TypeKinds::TypeKind
         def kind
           raise GraphQL::RequiredImplementationMissingError, "No `.kind` defined for #{self}"
         end

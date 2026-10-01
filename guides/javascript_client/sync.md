@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: JavaScript Client
-title: OperationStore Sync
-desc: Javascript tooling for persisted queries with GraphQL-Ruby
-index: 1
----
+# OperationStore Sync
 
 JavaScript support for GraphQL projects using [graphql-pro](https://graphql.pro)'s `OperationStore` for persisted queries.
 
@@ -21,7 +13,7 @@ JavaScript support for GraphQL projects using [graphql-pro](https://graphql.pro)
 - [Plain JS support](#use-with-plain-javascript)
 - [Authorization](#authorization)
 
-See the {% internal_link "OperationStore guide", "/operation_store/overview" %} for server-side setup.
+See the [OperationStore guide](/operation_store/overview) for server-side setup.
 
 ## `sync` utility
 
@@ -42,19 +34,19 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 option | description
 --------|----------
-`--url` | {% internal_link "Sync API", "/operation_store/getting_started.html#add-routes" %} url
+`--url` | [Sync API](/operation_store/getting_started.html#add-routes) url
 `--path` | Local directory to search for `.graphql` / `.graphql.js` files
 `--relay-persisted-output` | Path to a `.json` file from `relay-compiler ... --persist-output`
 `--apollo-codegen-json-output` | Path to a `.json` file from `apollo client:codegen ... --target json`
 `--apollo-android-operation-output` | Path to an `OperationOutput.json` file from Apollo Android
-`--client` | Client ID ({% internal_link "created on server", "/operation_store/client_workflow" %})
-`--secret` | Client Secret ({% internal_link "created on server", "/operation_store/client_workflow" %})
+`--client` | Client ID ([created on server](/operation_store/client_workflow))
+`--secret` | Client Secret ([created on server](/operation_store/client_workflow))
 `--outfile` | Destination for generated code
 `--outfile-type` | What kind of code to generate (`js` or `json`)
 `--header={key}:{value}` | Add a header to the outgoing HTTP request (may be repeated)
 `--add-typename` | Add `__typename` to all selection sets (for use with Apollo Client)
 `--verbose` | Output some debug information
-`--changeset-version` | Set a {% internal_link "Changeset Version", "/changesets/installation#controller-setup" %} when syncing these queries. (`context[:changeset_version]` will also be required at runtime, when running these stored operations.)
+`--changeset-version` | Set a [Changeset Version](/changesets/installation#controller-setup) when syncing these queries. (`context[:changeset_version]` will also be required at runtime, when running these stored operations.)
 `--dump-payload` | A file to write the HTTP Post payload into, or if no filename is passed, then the payload will be written to stdout.
 
 You can see these and a few others with `graphql-ruby-client sync --help`.
@@ -267,7 +259,7 @@ You may also have to __update your app__ to send an identifier, so that the serv
 
 ## Use with Apollo Persisted Queries
 
-Apollo client has a [Persisted Queries Link](https://www.apollographql.com/docs/react/api/link/persisted-queries/). You can use that link with GraphQL-Pro's {% internal_link "OperationStore", "/operation_store/overview" %}. First, create a manifest with [`generate-persisted-query-manifest`](https://www.apollographql.com/docs/react/api/link/persisted-queries/#1-generate-operation-manifests), then, pass the path to that file to `sync`:
+Apollo client has a [Persisted Queries Link](https://www.apollographql.com/docs/react/api/link/persisted-queries/). You can use that link with GraphQL-Pro's [OperationStore](/operation_store/overview). First, create a manifest with [`generate-persisted-query-manifest`](https://www.apollographql.com/docs/react/api/link/persisted-queries/#1-generate-operation-manifests), then, pass the path to that file to `sync`:
 
 ```sh
 $ graphql-ruby-client sync --apollo-persisted-query-manifest=path/to/manifest.json ...
@@ -316,7 +308,7 @@ $.post("/graphql", {
 
 ## Authorization
 
-`OperationStore` uses HMAC-SHA256 to {% internal_link "authenticate requests" , "/operation_store/access_control" %}.
+`OperationStore` uses HMAC-SHA256 to [authenticate requests](/operation_store/access_control).
 
 Pass the key to `graphql-ruby-client sync` as `--secret` to authenticate it:
 

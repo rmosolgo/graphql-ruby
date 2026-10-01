@@ -1,13 +1,3 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Errors
-title: Top-level "errors"
-desc: The top-level "errors" array and how to use it.
-index: 1
----
-
 The GraphQL specification [allows for a top-level `"errors"` key](https://graphql.github.io/graphql-spec/June2018/#sec-Errors) in the response which may contain information about what went wrong during execution. For example:
 
 ```ruby
@@ -31,7 +21,7 @@ In general, top-level errors should only be used for exceptional circumstances w
 
 For example, the GraphQL specification says that when a non-null field returns `nil`, an error should be added to the `"errors"` key. This kind of error is not recoverable by the client. Instead, something on the server should be fixed to handle this case.
 
-When you want to notify a client some kind of recoverable issue, consider making error messages part of the schema, for example, as in {% internal_link "mutation errors", "/mutations/mutation_errors" %}.
+When you want to notify a client some kind of recoverable issue, consider making error messages part of the schema, for example, as in [mutation errors](/mutations/mutation_errors).
 
 ## Adding Errors to the Array
 

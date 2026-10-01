@@ -1,13 +1,6 @@
----
-layout: guide
-search: true
-section: Dataloader
-title: Overview
-desc: Getting started with the Fiber-based Dataloader
-index: 0
----
+# Overview
 
- {{ "GraphQL::Dataloader" | api_doc }} provides efficient, batched access to external services, backed by Ruby's `Fiber` concurrency primitive. It has a per-query result cache and {% internal_link "AsyncDataloader", "/dataloader/async_dataloader" %} supports truly parallel execution out-of-the-box.
+ [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) provides efficient, batched access to external services, backed by Ruby's `Fiber` concurrency primitive. It has a per-query result cache and [AsyncDataloader](/dataloader/async_dataloader) supports truly parallel execution out-of-the-box.
 
 `GraphQL::Dataloader` is inspired by [`@bessey`'s proof-of-concept](https://github.com/bessey/graphql-fiber-test/tree/no-gem-changes) and [shopify/graphql-batch](https://github.com/shopify/graphql-batch).
 
@@ -34,11 +27,11 @@ At a high level, `GraphQL::Dataloader`'s usage of `Fiber` looks like this:
 
 Whenever `GraphQL::Dataloader` creates a new `Fiber`, it copies each pair from `Thread.current[...]` and reassigns them inside the new `Fiber`.
 
-`AsyncDataloader`, built on top of the [`async` gem](https://github.com/socketry/async), supports parallel I/O operations (like network and database communication) via Ruby's non-blocking `Fiber.schedule` API. {% internal_link "Learn more →", "/dataloader/async_dataloader" %}.
+`AsyncDataloader`, built on top of the [`async` gem](https://github.com/socketry/async), supports parallel I/O operations (like network and database communication) via Ruby's non-blocking `Fiber.schedule` API. [Learn more →](/dataloader/async_dataloader).
 
 ## Getting Started
 
-To install {{ "GraphQL::Dataloader" | api_doc }}, add it to your schema with `use ...`, for example:
+To install [GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader), add it to your schema with `use ...`, for example:
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -130,11 +123,11 @@ end
 
 ## Data Sources
 
-To implement batch-loading data sources, see the {% internal_link "Sources guide", "/dataloader/sources" %}.
+To implement batch-loading data sources, see the [Sources guide](/dataloader/sources).
 
 ## Parallelism
 
 You can run I/O operations in parallel with GraphQL::Dataloader. There are two approaches:
 
-- `AsyncDataloader` uses the `async` gem to automatically background I/O from `Dataloader::Source#fetch` calls. {% internal_link "Read More", "/dataloader/async_dataloader" %}
-- You can manually call `dataloader.yield` after starting work in the background. {% internal_link "Read More", "/dataloader/parallelism" %}
+- `AsyncDataloader` uses the `async` gem to automatically background I/O from `Dataloader::Source#fetch` calls. [Read More](/dataloader/async_dataloader)
+- You can manually call `dataloader.yield` after starting work in the background. [Read More](/dataloader/parallelism)

@@ -1,14 +1,6 @@
----
-title: Complexity & Depth
-layout: guide
-doc_stub: false
-search: true
-section: Queries
-desc: Limiting query depth and field selections
-index: 4
----
+# Complexity & Depth
 
-GraphQL-Ruby ships with some validations based on {% internal_link "query analysis", "/queries/ast_analysis" %}. You can customize them as-needed, too.
+GraphQL-Ruby ships with some validations based on [query analysis](/queries/ast_analysis). You can customize them as-needed, too.
 
 ## Prevent deeply-nested queries
 
@@ -34,7 +26,7 @@ You can use `nil` to disable the validation:
 MySchema.execute(query_string, max_depth: nil)
 ```
 
-To get a feeling for depth of queries in your system, you can extend {{ "GraphQL::Analysis::QueryDepth" | api_doc }}. Hook it up to log out values from each query:
+To get a feeling for depth of queries in your system, you can extend [GraphQL::Analysis::QueryDepth](rdoc-ref:GraphQL::Analysis::QueryDepth). Hook it up to log out values from each query:
 
 ```ruby
 class LogQueryDepth < GraphQL::Analysis::QueryDepth
@@ -100,7 +92,7 @@ Using `nil` will disable the validation:
 MySchema.execute(query_string, max_complexity: nil)
 ```
 
-To get a feeling for complexity of queries in your system, you can extend {{ "GraphQL::Analysis::QueryComplexity" | api_doc }}. Hook it up to log out values from each query:
+To get a feeling for complexity of queries in your system, you can extend [GraphQL::Analysis::QueryComplexity](rdoc-ref:GraphQL::Analysis::QueryComplexity). Hook it up to log out values from each query:
 
 ```ruby
 class LogQueryComplexityAnalyzer < GraphQL::Analysis::QueryComplexity

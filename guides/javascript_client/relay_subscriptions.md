@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: JavaScript Client
-title: Relay Subscriptions
-desc: GraphQL subscriptions with GraphQL-Ruby and Relay Modern
-index: 3
----
+# Relay Subscriptions
 
 `graphql-ruby-client` includes three kinds of support for subscriptions with Relay Modern:
 
@@ -19,11 +11,11 @@ To use it, require `graphql-ruby-client/subscriptions/createRelaySubscriptionHan
 __Note:__ For Relay <11, use `import { createLegacyRelaySubscriptionHandler } from "graphql-ruby-client/subscriptions/createRelaySubscriptionHandler"` instead; the signature changed in Relay 11.
 
 
-See the {% internal_link "Subscriptions guide", "/subscriptions/overview" %} for information about server-side setup.
+See the [Subscriptions guide](/subscriptions/overview) for information about server-side setup.
 
 ## Pusher
 
-Subscriptions with {% internal_link "Pusher", "/subscriptions/pusher_implementation" %} require two things:
+Subscriptions with [Pusher](/subscriptions/pusher_implementation) require two things:
 
 - A client from the [`pusher-js` library](https://github.com/pusher/pusher-js)
 - A [`fetchOperation` function](#fetchoperation-function) for sending the `subscription` operation to the server
@@ -57,7 +49,7 @@ var network = Network.create(fetchQuery, subscriptionHandler)
 
 ### Compressed Payloads
 
-If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#payload-compression" %}, configure a `decompress:` function, too:
+If you're using [compressed payloads](/subscriptions/pusher_implementation#payload-compression), configure a `decompress:` function, too:
 
 ```javascript
 // Add `pako` to the project for gunzipping
@@ -79,7 +71,7 @@ var subscriptionHandler = createRelaySubscriptionHandler({
 
 ## Ably
 
-Subscriptions with {% internal_link "Ably", "/subscriptions/ably_implementation" %} require two things:
+Subscriptions with [Ably](/subscriptions/ably_implementation) require two things:
 
 - A client from the [`ably-js` library](https://github.com/ably/ably-js)
 - A [`fetchOperation` function](#fetchoperation-function) for sending the `subscription` operation to the server
@@ -113,7 +105,7 @@ var network = Network.create(fetchQuery, subscriptionHandler)
 
 ## ActionCable
 
-With this configuration, `subscription` queries will be routed to {% internal_link "ActionCable", "/subscriptions/action_cable_implementation" %}.
+With this configuration, `subscription` queries will be routed to [ActionCable](/subscriptions/action_cable_implementation).
 
 For example:
 
@@ -135,7 +127,7 @@ var network = Network.create(fetchQuery, subscriptionHandler)
 
 ## With Relay Persisted Queries
 
-If you're using Relay's built-in [persisted query support](https://relay.dev/docs/guides/persisted-queries/), you can pass `clientName:` to the handler in order to build IDs that work with the {% internal_link "OperationStore", "/operation_store/overview.html" %}. For example:
+If you're using Relay's built-in [persisted query support](https://relay.dev/docs/guides/persisted-queries/), you can pass `clientName:` to the handler in order to build IDs that work with the [OperationStore](/operation_store/overview.html). For example:
 
 ```js
 var subscriptionHandler = createRelaySubscriptionHandler({

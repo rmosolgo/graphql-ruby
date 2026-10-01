@@ -6,14 +6,19 @@ module GraphQL
       # This class filters the types, fields, arguments, enum values, and directives in a schema
       # based on the given `context`.
       #
-      # It's like {Warden}, but has some differences:
+      # It's like `Warden`, but has some differences:
       #
-      # - It doesn't use {Schema}'s top-level caches (eg {Schema.references_to}, {Schema.possible_types}, {Schema.types})
+      # - It doesn't use [Schema](rdoc-ref:GraphQL::Schema)'s top-level caches (eg [Schema.references_to](rdoc-ref:GraphQL::Schema.references_to), [Schema.possible_types](rdoc-ref:GraphQL::Schema.possible_types), [Schema.types](rdoc-ref:GraphQL::Schema.types))
       # - It doesn't hide Interface or Union types when all their possible types are hidden. (Instead, those types should implement `.visible?` to hide in that case.)
       # - It checks `.visible?` on root introspection types
       # - It can be used to cache profiles by name for re-use across queries
       class Profile
-        # @return [Schema::Visibility::Profile]
+        # **Returns**
+        #
+        # - `Schema::Visibility::Profile`
+        #
+        # :call-seq:
+        #   from_context(ctx, schema) -> Schema::Visibility::Profile
         def self.from_context(ctx, schema)
           if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
             types
@@ -28,7 +33,9 @@ module GraphQL
           profile
         end
 
-        # @return [Symbol, nil]
+        # **Returns**
+        #
+        # - `Symbol, nil`
         attr_reader :name
 
         def freeze

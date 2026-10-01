@@ -5,8 +5,13 @@ module GraphQL
     class Validator
       # Use this to specifically reject or permit `nil` values (given as `null` from GraphQL).
       #
-      # @example require a non-null value for an argument if it is provided
-      #   argument :name, String, required: false, validates: { allow_null: false }
+      # **Examples**
+      #
+      # **Example: require a non-null value for an argument if it is provided**
+      #
+      # ```ruby
+      # argument :name, String, required: false, validates: { allow_null: false }
+      # ```
       class AllowNullValidator < Validator
         MESSAGE = "%{validated} can't be null"
         def initialize(allow_null_positional = nil, allow_null: nil, message: MESSAGE, **default_options)

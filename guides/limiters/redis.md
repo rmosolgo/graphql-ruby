@@ -1,15 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Rate Limiters
-title: Configuring Redis
-desc: Preparing the rate limiter backend
-index: 1
----
+# Configuring Redis
 
-Rate limiting requires a persistent Redis instance, just like [Sidekiq](https://github.com/mperham/sidekiq/wiki/Using-Redis) or the {% internal_link "Operation Store", "/operation_store/redis_backend" %}. Set `maxmemory-policy noeviction` in `redis.conf` to ensure that Redis doesn't silently drop keys when it reaches its memory limit.
+Rate limiting requires a persistent Redis instance, just like [Sidekiq](https://github.com/mperham/sidekiq/wiki/Using-Redis) or the [Operation Store](/operation_store/redis_backend). Set `maxmemory-policy noeviction` in `redis.conf` to ensure that Redis doesn't silently drop keys when it reaches its memory limit.
 
 ## Memory Usage
 
