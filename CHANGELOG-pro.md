@@ -6,15 +6,19 @@
 
 ### New Features
 
-# 1.30.2 (3 Aug 2025)
+# 1.30.3 (1 Oct 2026)
+
+- Remove dependency on `ostruct`
+
+# 1.30.2 (3 Aug 2026)
 
 - `PusherSubscriptions`: accept `extra_webhook_tokens:` to use when rolling credentials
 
-# 1.30.1 (30 Jun 2025)
+# 1.30.1 (30 Jun 2026)
 
 - `@defer`: fix memory leak in legacy execution when used without Dataloader
 
-# 1.30.0 (24 Apr 2025)
+# 1.30.0 (24 Apr 2026)
 
 - Support GraphQL-Ruby's new `Execution::Next` runtime
 
