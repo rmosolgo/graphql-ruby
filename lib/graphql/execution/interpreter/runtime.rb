@@ -798,6 +798,8 @@ module GraphQL
 
         def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state) # rubocop:disable Metrics/ParameterLists
           runtime_state ||= get_current_runtime_state
+          runtime_state.current_field = field
+          runtime_state.current_arguments = arguments
           runtime_state.current_result_name = this_idx
           runtime_state.current_result = response_list
           call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
