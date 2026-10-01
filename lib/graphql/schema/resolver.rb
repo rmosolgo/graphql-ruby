@@ -16,8 +16,8 @@ module GraphQL
     #
     # A resolver's configuration may be overridden with other keywords in the `field(...)` call.
     #
-    # @see {GraphQL::Schema::Mutation} for a concrete subclass of `Resolver`.
-    # @see {GraphQL::Function} `Resolver` is a replacement for `GraphQL::Function`
+    # See [GraphQL::Schema::Mutation](rdoc-ref:GraphQL::Schema::Mutation) for a concrete subclass of `Resolver`.
+    # `Resolver` is a replacement for the former `GraphQL::Function` API.
     class Resolver
       include Schema::Member::GraphQLTypeNames
       # Really we only need description & comment from here, but:
@@ -31,9 +31,14 @@ module GraphQL
       include Schema::Member::HasDataloader
       extend Schema::Member::HasDeprecationReason
 
-      # @param object [Object] The application object that this field is being resolved on
-      # @param context [GraphQL::Query::Context]
-      # @param field [GraphQL::Schema::Field]
+      # **Parameters**
+      #
+      # - `object` (`Object`) — The application object that this field is being resolved on
+      # - `context` (`GraphQL::Query::Context`)
+      # - `field` (`GraphQL::Schema::Field`)
+      #
+      # :call-seq:
+      #   initialize(Object object:, GraphQL::Query::Context context:, GraphQL::Schema::Field field:)
       def initialize(object:, context:, field:)
         @object = object
         @context = context
@@ -48,13 +53,19 @@ module GraphQL
 
       attr_accessor :exec_result, :exec_index, :field_resolve_step, :raw_arguments
 
-      # @return [Object] The application object this field is being resolved on
+      # **Returns**
+      #
+      # - `Object` — The application object this field is being resolved on
       attr_accessor :object
 
-      # @return [GraphQL::Query::Context]
+      # **Returns**
+      #
+      # - `GraphQL::Query::Context`
       attr_reader :context
 
-      # @return [GraphQL::Schema::Field]
+      # **Returns**
+      #
+      # - `GraphQL::Schema::Field`
       attr_reader :field
 
       attr_writer :prepared_arguments
@@ -132,8 +143,7 @@ module GraphQL
       # This method is _actually_ called by the runtime,
       # it does some preparation and then eventually calls
       # the user-defined `#resolve` method.
-      # @api private
-      def resolve_with_support(**args)
+      def resolve_with_support(**args) # :nodoc:
         # First call the ready? hook which may raise
         raw_ready_val = if !args.empty?
           ready?(**args)
@@ -183,8 +193,7 @@ module GraphQL
         end
       end
 
-      # @api private {GraphQL::Schema::Mutation} uses this to clear the dataloader cache
-      def call_resolve(args_hash)
+      def call_resolve(args_hash) # :nodoc:
         if !args_hash.empty?
           public_send(self.class.resolve_method, **args_hash)
         else
@@ -193,7 +202,13 @@ module GraphQL
       end
 
       # Do the work. Everything happens here.
-      # @return [Object] An object corresponding to the return type
+      #
+      # **Returns**
+      #
+      # - `Object` — An object corresponding to the return type
+      #
+      # :call-seq:
+      #   resolve(**args) -> Object
       def resolve(**args)
         raise GraphQL::RequiredImplementationMissingError, "#{self.class.name}#resolve should execute the field's logic"
       end
@@ -204,10 +219,21 @@ module GraphQL
       # If it returns a lazy object (like a promise), it will be synced by GraphQL
       # (but the resulting value won't be used).
       #
-      # @param args [Hash] The input arguments, if there are any
-      # @raise [GraphQL::ExecutionError] To add an error to the response
-      # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
-      # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
+      # **Parameters**
+      #
+      # - `args` (`Hash`) — The input arguments, if there are any
+      #
+      # **Raises**
+      #
+      # - `GraphQL::ExecutionError` — To add an error to the response
+      # - `GraphQL::UnauthorizedError` — To signal an authorization failure
+      #
+      # **Returns**
+      #
+      # - `Boolean, early_return_data` — If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
+      #
+      # :call-seq:
+      #   ready?(Hash **args) -> bool | early_return_data
       def ready?(**args)
         true
       end
@@ -215,10 +241,22 @@ module GraphQL
       # Called after arguments are loaded, but before resolving.
       #
       # Override it to check everything before calling the mutation.
-      # @param inputs [Hash] The input arguments
-      # @raise [GraphQL::ExecutionError] To add an error to the response
-      # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
-      # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
+      #
+      # **Parameters**
+      #
+      # - `inputs` (`Hash`) — The input arguments
+      #
+      # **Raises**
+      #
+      # - `GraphQL::ExecutionError` — To add an error to the response
+      # - `GraphQL::UnauthorizedError` — To signal an authorization failure
+      #
+      # **Returns**
+      #
+      # - `Boolean, early_return_data` — If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
+      #
+      # :call-seq:
+      #   authorized?(Hash **inputs) -> bool | early_return_data
       def authorized?(**inputs)
         arg_owner = @field # || self.class
         args = context.types.arguments(arg_owner)
@@ -231,10 +269,16 @@ module GraphQL
 
       # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.
       #
-      # By default, the error is re-raised and passed along to {{Schema.unauthorized_object}}.
+      # By default, the error is re-raised and passed along to [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object).
       #
       # Any value returned here will be used _instead of_ of the loaded object.
-      # @param err [GraphQL::UnauthorizedError]
+      #
+      # **Parameters**
+      #
+      # - `err` (`GraphQL::UnauthorizedError`)
+      #
+      # :call-seq:
+      #   unauthorized_object(GraphQL::UnauthorizedError err)
       def unauthorized_object(err)
         raise err
       end
@@ -309,7 +353,13 @@ module GraphQL
         end
 
         # Default `:resolve` set below.
-        # @return [Symbol] The method to call on instances of this object to resolve the field
+        #
+        # **Returns**
+        #
+        # - `Symbol` — The method to call on instances of this object to resolve the field
+        #
+        # :call-seq:
+        #   resolve_method(new_method) -> Symbol
         def resolve_method(new_method = nil)
           if new_method
             @resolve_method = new_method
@@ -317,8 +367,8 @@ module GraphQL
           @resolve_method || (superclass.respond_to?(:resolve_method) ? superclass.resolve_method : :resolve)
         end
 
-        # Additional info injected into {#resolve}
-        # @see {GraphQL::Schema::Field#extras}
+        # Additional info injected into [resolve](rdoc-ref:#resolve)
+        # See [GraphQL::Schema::Field#extras](rdoc-ref:GraphQL::Schema::Field#extras)
         def extras(new_extras = nil)
           if new_extras
             @own_extras = new_extras
@@ -330,8 +380,14 @@ module GraphQL
         # If `true` (default), then the return type for this resolver will be nullable.
         # If `false`, then the return type is non-null.
         #
-        # @see #type which sets the return type of this field and accepts a `null:` option
-        # @param allow_null [Boolean] Whether or not the response can be null
+        # See [type](rdoc-ref:GraphQL::Schema::Resolver::type) which sets the return type of this field and accepts a `null:` option
+        #
+        # **Parameters**
+        #
+        # - `allow_null` (`Boolean`) — Whether or not the response can be null
+        #
+        # :call-seq:
+        #   null(bool allow_null)
         def null(allow_null = nil)
           if !allow_null.nil?
             @null = allow_null
@@ -351,10 +407,19 @@ module GraphQL
         # Call this method to get the return type of the field,
         # or use it as a configuration method to assign a return type
         # instead of generating one.
-        # TODO unify with {#null}
-        # @param new_type [Class, Array<Class>, nil] If a type definition class is provided, it will be used as the return type of the field
-        # @param null [true, false] Whether or not the field may return `nil`
-        # @return [Class] The type which this field returns.
+        # TODO unify with [null](rdoc-ref:GraphQL::Schema::Resolver::null)
+        #
+        # **Parameters**
+        #
+        # - `new_type` (`Class, Array<Class>, nil`) — If a type definition class is provided, it will be used as the return type of the field
+        # - `null` (`true, false`) — Whether or not the field may return `nil`
+        #
+        # **Returns**
+        #
+        # - `Class` — The type which this field returns.
+        #
+        # :call-seq:
+        #   type(Class | Array[Class] | nil new_type, true | false null:) -> Class
         def type(new_type = nil, null: nil)
           if new_type
             if null.nil?
@@ -374,7 +439,13 @@ module GraphQL
         end
 
         # Specifies the complexity of the field. Defaults to `1`
-        # @return [Integer, Proc]
+        #
+        # **Returns**
+        #
+        # - `Integer, Proc`
+        #
+        # :call-seq:
+        #   complexity(new_complexity) -> Integer | Proc
         def complexity(new_complexity = nil)
           if new_complexity
             @complexity = new_complexity
@@ -386,7 +457,12 @@ module GraphQL
           @broadcastable = new_broadcastable
         end
 
-        # @return [Boolean, nil]
+        # **Returns**
+        #
+        # - `Boolean, nil`
+        #
+        # :call-seq:
+        #   broadcastable?() -> bool | nil
         def broadcastable?
           if defined?(@broadcastable)
             @broadcastable
@@ -397,8 +473,17 @@ module GraphQL
 
         # Get or set the `max_page_size:` which will be configured for fields using this resolver
         # (`nil` means "unlimited max page size".)
-        # @param max_page_size [Integer, nil] Set a new value
-        # @return [Integer, nil] The `max_page_size` assigned to fields that use this resolver
+        #
+        # **Parameters**
+        #
+        # - `max_page_size` (`Integer, nil`) — Set a new value
+        #
+        # **Returns**
+        #
+        # - `Integer, nil` — The `max_page_size` assigned to fields that use this resolver
+        #
+        # :call-seq:
+        #   max_page_size(new_max_page_size) -> Integer | nil
         def max_page_size(new_max_page_size = NOT_CONFIGURED)
           if new_max_page_size != NOT_CONFIGURED
             @max_page_size = new_max_page_size
@@ -411,15 +496,29 @@ module GraphQL
           end
         end
 
-        # @return [Boolean] `true` if this resolver or a superclass has an assigned `max_page_size`
+        # **Returns**
+        #
+        # - `Boolean` — `true` if this resolver or a superclass has an assigned `max_page_size`
+        #
+        # :call-seq:
+        #   has_max_page_size?() -> bool
         def has_max_page_size?
           (!!defined?(@max_page_size)) || (superclass.respond_to?(:has_max_page_size?) && superclass.has_max_page_size?)
         end
 
         # Get or set the `default_page_size:` which will be configured for fields using this resolver
         # (`nil` means "unlimited default page size".)
-        # @param default_page_size [Integer, nil] Set a new value
-        # @return [Integer, nil] The `default_page_size` assigned to fields that use this resolver
+        #
+        # **Parameters**
+        #
+        # - `default_page_size` (`Integer, nil`) — Set a new value
+        #
+        # **Returns**
+        #
+        # - `Integer, nil` — The `default_page_size` assigned to fields that use this resolver
+        #
+        # :call-seq:
+        #   default_page_size(new_default_page_size) -> Integer | nil
         def default_page_size(new_default_page_size = NOT_CONFIGURED)
           if new_default_page_size != NOT_CONFIGURED
             @default_page_size = new_default_page_size
@@ -432,7 +531,12 @@ module GraphQL
           end
         end
 
-        # @return [Boolean] `true` if this resolver or a superclass has an assigned `default_page_size`
+        # **Returns**
+        #
+        # - `Boolean` — `true` if this resolver or a superclass has an assigned `default_page_size`
+        #
+        # :call-seq:
+        #   has_default_page_size?() -> bool
         def has_default_page_size?
           (!!defined?(@default_page_size)) || (superclass.respond_to?(:has_default_page_size?) && superclass.has_default_page_size?)
         end
@@ -444,7 +548,7 @@ module GraphQL
 
         # Add an argument to this field's signature, but
         # also add some preparation hook methods which will be used for this argument
-        # @see {GraphQL::Schema::Argument#initialize} for the signature
+        # See [GraphQL::Schema::Argument](rdoc-ref:GraphQL::Schema::Argument) for the signature
         def argument(*args, **kwargs, &block)
           # Use `from_resolver: true` to short-circuit the InputObject's own `loads:` implementation
           # so that we can support `#load_{x}` methods below.
@@ -452,15 +556,20 @@ module GraphQL
         end
 
         # Registers new extension
-        # @param extension [Class] Extension class
-        # @param options [Hash] Optional extension options
+        #
+        # **Parameters**
+        #
+        # - `extension` (`Class`) — Extension class
+        # - `options` (`Hash`) — Optional extension options
+        #
+        # :call-seq:
+        #   extension(Class extension, Hash **options)
         def extension(extension, **options)
           @own_extensions ||= []
           @own_extensions << {extension => options}
         end
 
-        # @api private
-        def extensions
+        def extensions # :nodoc:
           own_exts = @own_extensions
           # Jump through some hoops to avoid creating arrays when we don't actually need them
           if superclass.respond_to?(:extensions)

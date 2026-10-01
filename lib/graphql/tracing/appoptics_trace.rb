@@ -10,7 +10,7 @@ module GraphQL
     #
     # There are 4 configurations available. They can be set in the
     # appoptics_apm config file or in code. Please see:
-    # {https://docs.appoptics.com/kb/apm_tracing/ruby/configure}
+    # https://docs.appoptics.com/kb/apm_tracing/ruby/configure
     #
     #     AppOpticsAPM::Config[:graphql][:enabled] = true|false
     #     AppOpticsAPM::Config[:graphql][:transaction_name]  = true|false

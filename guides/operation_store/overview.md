@@ -1,15 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro - OperationStore
-title: Overview
-desc: Learn how persisted queries work and how OperationStore implements them.
-index: 0
-pro: true
----
+# Overview
 
-`GraphQL::Pro::OperationStore` uses `Rack` and a storage backend ({% internal_link "ActiveRecord", "/operation_store/active_record_backend" %} or {% internal_link "Redis", "/operation_store/redis_backend" %}) to maintain a normalized, deduplicated database of _persisted queries_ for your GraphQL system.
+`GraphQL::Pro::OperationStore` uses `Rack` and a storage backend ([ActiveRecord](/operation_store/active_record_backend) or [Redis](/operation_store/redis_backend)) to maintain a normalized, deduplicated database of _persisted queries_ for your GraphQL system.
 
 In this guide, you'll find:
 
@@ -19,10 +10,10 @@ In this guide, you'll find:
 
 In other guides, you can read more about:
 
-- {% internal_link "Getting Started","/operation_store/getting_started" %} installing `OperationStore` in your app
-- {% internal_link "Workflow","/operation_store/client_workflow" %} and usage for client apps
-- {% internal_link "Authentication","/operation_store/access_control" %} for the sync API
-- {% internal_link "Server Management","/operation_store/server_management" %} after your system is running
+- [Getting Started](/operation_store/getting_started) installing `OperationStore` in your app
+- [Workflow](/operation_store/client_workflow) and usage for client apps
+- [Authentication](/operation_store/access_control) for the sync API
+- [Server Management](/operation_store/server_management) after your system is running
 
 Also, you can find a [demo app on GitHub](https://github.com/rmosolgo/graphql-pro-operation-store-example).
 
@@ -88,23 +79,23 @@ Persisted queries improve the _efficiency_ of your system by reducing HTTP traff
 
 For example, _before_ using persisted queries, the entire query is sent to the server:
 
-{{ "/operation_store/request_before.png" | link_to_img:"GraphQL request without persisted queries" }}
+![GraphQL request without persisted queries](/operation_store/request_before.png)
 
 But _after_ using persisted queries, only the query identification info is sent to the server:
 
-{{ "/operation_store/request_after.png" | link_to_img:"GraphQL request with persisted queries" }}
+![GraphQL request with persisted queries](/operation_store/request_after.png)
 
 ### Visibility
 
 Persisted queries improve _visibility_ because you can track GraphQL usage from a single location. `OperationStore` maintains an index of type, field and argument usage so that you can analyze your traffic.
 
-{{ "/operation_store/operation_index.png" | link_to_img:"Index of GraphQL usage with persisted queries" }}
+![Index of GraphQL usage with persisted queries](/operation_store/operation_index.png)
 
 ## How it Works
 
 `OperationStore` uses tables in your database to store normalized, deduplicated GraphQL strings. The database is immutable: new operations may be added, but operations are never modified or removed.
 
-When clients {% internal_link "sync their operations","/operation_store/client_workflow" %}, requests are {% internal_link "authenticated","/operation_store/access_control" %}, then the incoming GraphQL is validated, normalized, and added to the database if needed. Also, the incoming client name is associated with all operations in the payload.
+When clients [sync their operations](/operation_store/client_workflow), requests are [authenticated](/operation_store/access_control), then the incoming GraphQL is validated, normalized, and added to the database if needed. Also, the incoming client name is associated with all operations in the payload.
 
 Then, at runtime, clients send an _operation ID_ to run a persisted query. It looks like this in `params`:
 
@@ -116,4 +107,4 @@ params[:operationId] # => "relay-app-v1/810c97f6631001..."
 
 ## Getting Started
 
-See the {% internal_link "getting started guide","/operation_store/getting_started" %} to add `OperationStore` to your app.
+See the [getting started guide](/operation_store/getting_started) to add `OperationStore` to your app.

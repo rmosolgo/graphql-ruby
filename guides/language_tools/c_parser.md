@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Language Tools
-title: C-based Parser
-desc: The GraphQL::CParser gem is a drop-in replacement for the built-in parser
-index: 1
----
+# C-based Parser
 
 GraphQL-Ruby includes a plain-Ruby parser, but a faster parser is available as a C extension. To use it, add the [`graphql-c_parser` gem](https://rubygems.org/gems/graphql-c_parser) to your project, for example:
 
@@ -14,7 +6,7 @@ GraphQL-Ruby includes a plain-Ruby parser, but a faster parser is available as a
 bundle add graphql-c_parser
 ```
 
-When `graphql-c_parser` is `require`d by your app, the C-based parser is installed as the default parser (as {{ "GraphQL.default_parser" | api_doc }}). Bundler requires the library automatically, but you can also require it manually:
+When `graphql-c_parser` is `require`d by your app, the C-based parser is installed as the default parser (as [GraphQL.default_parser](rdoc-ref:GraphQL.default_parser)). Bundler requires the library automatically, but you can also require it manually:
 
 ```ruby
 require "graphql/c_parser"

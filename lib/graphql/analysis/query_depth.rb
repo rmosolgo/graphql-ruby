@@ -5,24 +5,28 @@ module GraphQL
     #
     # See https://graphql-ruby.org/queries/ast_analysis.html for more examples.
     #
-    # @example Logging the depth of a query
-    #   class LogQueryDepth < GraphQL::Analysis::QueryDepth
-    #     def result
-    #       log("GraphQL query depth: #{@max_depth}")
-    #     end
+    # **Examples**
+    #
+    # **Example: Logging the depth of a query**
+    #
+    # ```ruby
+    # class LogQueryDepth < GraphQL::Analysis::QueryDepth
+    #   def result
+    #     log("GraphQL query depth: #{@max_depth}")
     #   end
+    # end
     #
-    #   # In your Schema file:
+    # # In your Schema file:
     #
-    #   class MySchema < GraphQL::Schema
-    #     query_analyzer LogQueryDepth
-    #   end
+    # class MySchema < GraphQL::Schema
+    #   query_analyzer LogQueryDepth
+    # end
     #
-    #   # When you run the query, the depth will get logged:
+    # # When you run the query, the depth will get logged:
     #
-    #   Schema.execute(query_str)
-    #   # GraphQL query depth: 8
-    #
+    # Schema.execute(query_str)
+    # # GraphQL query depth: 8
+    # ```
     class QueryDepth < Analyzer
       def initialize(query)
         @max_depth = 0

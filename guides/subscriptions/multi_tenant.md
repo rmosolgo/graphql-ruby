@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Subscriptions
-title: Multi-Tenant
-desc: Switching tenants in GraphQL Subscription execution
-index: 8
----
+# Multi-Tenant
 
 In a multi-tenant system, data from many different accounts is stored on the same server. (An account might be an organization, a customer, a namespace, a domain, etc -- these are all _tenants_.) Gems like [Apartment](https://github.com/influitive/apartment) assist with this arrangement, but it can also be implemented in the application. Here are a few considerations for this architecture when using GraphQL subscriptions.
 
@@ -26,7 +18,7 @@ MySchema.execute(query_str, context: context, ...)
 
 ## Tenant-based `subscription_scope`
 
-When subscriptions are delivered, {% internal_link "`subscription_scope`",  "subscriptions/subscription_classes#scope" %} is one element used to route data to the right subscriber. In short, it's the _implicit_ identifier for the receiver. In a multi-tenant architecture, `subscription_scope` should reference the context key that names the tenant, for example:
+When subscriptions are delivered, [`subscription_scope`](/subscriptions/subscription_classes#scope) is one element used to route data to the right subscriber. In short, it's the _implicit_ identifier for the receiver. In a multi-tenant architecture, `subscription_scope` should reference the context key that names the tenant, for example:
 
 ```ruby
 class BudgetWasApproved < GraphQL::Schema::Subscription
@@ -62,7 +54,7 @@ There are a few places where subscriptions might need to load data:
 
 Each of these operations will need to select the right tenant in order to load data properly.
 
-For __building the payload__, use a {% internal_link "Trace module", "queries/tracing" %}:
+For __building the payload__, use a [Trace module](/queries/tracing):
 
 ```ruby
 module TenantSelectionTrace

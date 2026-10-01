@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro - OperationStore
-title: ActiveRecord Backend
-desc: Storing persisted queries with ActiveRecord
-index: 2
-pro: true
----
+# ActiveRecord Backend
 
 GraphQL-Pro's `OperationStore` can use ActiveRecord to store persisted queries. After setting up the database, it will read and write using those tables as needed.
 
