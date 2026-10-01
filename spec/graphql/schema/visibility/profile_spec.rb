@@ -3,8 +3,14 @@ require "spec_helper"
 
 describe GraphQL::Schema::Visibility::Profile do
   class ProfileSchema < GraphQL::Schema
+    module Node
+      include GraphQL::Schema::Interface
+      field :id, GraphQL::Types::ID, null: false
+    end
+
     module HasName
       include GraphQL::Schema::Interface
+      implements Node
       field :name, String
     end
 
@@ -75,9 +81,9 @@ describe GraphQL::Schema::Visibility::Profile do
     assert_equal [], query.types.loaded_types
 
     res = query.result
-    assert_equal 16, res["data"]["__schema"]["types"].size
+    assert_equal 17, res["data"]["__schema"]["types"].size
     loaded_type_names = query.types.loaded_types.map(&:graphql_name).reject { |n| n.start_with?("__") }.sort
-    assert_equal ["Boolean", "HasName", "ID", "OtherThing", "Query", "SearchResult", "String", "Thing"], loaded_type_names
+    assert_equal ["Boolean", "HasName", "ID", "Node", "OtherThing", "Query", "SearchResult", "String", "Thing"], loaded_type_names
   end
 
   it "preloads possible types, interfaces, and directive arguments" do
@@ -87,7 +93,8 @@ describe GraphQL::Schema::Visibility::Profile do
 
     assert_equal ["OtherThing", "Thing"], profile.possible_types(ProfileSchema::SearchResult).map(&:graphql_name).sort
     assert_equal ["OtherThing", "Thing"], profile.loadable_possible_types(ProfileSchema::SearchResult, nil).map(&:graphql_name).sort
-    assert_equal ["HasName"], profile.interfaces(ProfileSchema::OtherThing).map(&:graphql_name)
+    assert_equal ["Node", "HasName"], profile.interfaces(ProfileSchema::OtherThing).map(&:graphql_name)
+    assert_equal ["Node"], profile.interfaces(ProfileSchema::HasName).map(&:graphql_name)
     assert_equal ["tag"], profile.arguments(ProfileSchema::Tagged).map(&:graphql_name)
 
     assert_equal ["loadableThingId", "namedThingId"], profile.arguments(ProfileSchema::FindThing).map(&:graphql_name).sort
@@ -98,6 +105,9 @@ describe GraphQL::Schema::Visibility::Profile do
 
     res = ProfileSchema.execute('{ greeting(bogus: 1) }', context: { visibility_profile: :public })
     assert_equal ["Field 'greeting' doesn't accept argument 'bogus'"], res["errors"].map { |e| e["message"] }
+
+    res = ProfileSchema.execute('{ __type(name: "HasName") { interfaces { name } } }', context: { visibility_profile: :public })
+    assert_equal ["Node"], res["data"]["__type"]["interfaces"].map { |i| i["name"] }
 
     assert_equal "__typename", profile.field(ProfileSchema::SearchResult, "__typename").graphql_name
   end

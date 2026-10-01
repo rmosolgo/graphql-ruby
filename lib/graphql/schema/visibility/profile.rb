@@ -307,6 +307,7 @@ module GraphQL
               @schema.introspection_system.dynamic_fields.each do |f|
                 field(type_defn, f.graphql_name)
               end
+              interfaces(type_defn)
             elsif type_defn.kind.input_object?
               arguments(type_defn).each do |arg|
                 argument(type_defn, arg.graphql_name)
@@ -318,8 +319,6 @@ module GraphQL
               @schema.introspection_system.dynamic_fields.each do |f|
                 field(type_defn, f.graphql_name)
               end
-            elsif type_defn.kind.object? || type_defn.kind.interface?
-              interfaces(type_defn)
             end
             possible_types(type_defn)
           end
