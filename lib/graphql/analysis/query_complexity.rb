@@ -11,6 +11,8 @@ module GraphQL
         @complexities_on_type_by_query = {}
         @intersect_cache = Hash.new { |h, k| h[k] = {}.compare_by_identity }.compare_by_identity
         @possible_types_cache = {}.compare_by_identity
+        @uncacheable = []
+        @complexity_digest = Hash.new { |h, k| h[k] = Set.new }
       end
 
       # Override this method to use the complexity result
@@ -85,14 +87,58 @@ module GraphQL
         return if @skip_introspection_fields && visitor.field_definition.introspection?
         parent_type = visitor.parent_type_definition
         field_key = node.alias || node.name
+        field_definition = visitor.field_definition
 
         # Find or create a complexity scope stack for this query.
         scopes_stack = @complexities_on_type_by_query[visitor.query] ||= [ScopedTypeComplexity.new(nil, nil, query, visitor.response_path)]
 
         # Find or create the complexity costing node for this field.
-        scope = scopes_stack.last[parent_type][field_key] ||= ScopedTypeComplexity.new(parent_type, visitor.field_definition, visitor.query, visitor.response_path)
+        scope = scopes_stack.last[parent_type][field_key] ||= ScopedTypeComplexity.new(parent_type, field_definition, visitor.query, visitor.response_path)
         scope.nodes.push(node)
         scopes_stack.push(scope)
+
+        # We already know we can't cache this query.
+        if @uncacheable.include?(visitor.query)
+          return
+        end
+
+        # If the field definition is dynamically computed, we can't cache the complexity.
+        if field_definition.complexity.is_a?(Proc) || field_definition.respond_to?(:complexity_for)
+          @uncacheable << visitor.query
+          @complexity_digest.delete(visitor.query)
+
+          return
+        end
+
+        # Add the field definition to the complexity fields hash.
+        complexity_digest = [field_definition.name, field_definition.complexity]
+
+        # The page size affects the complexity.
+        if field_definition.connection?
+          arguments = visitor.arguments_for(node, field_definition)
+          return unless arguments.is_a?(GraphQL::Execution::Interpreter::Arguments) # FIXME: Are errors by definition not cacheable?
+          max_possible_page_size = nil
+          
+          if arguments[:first]
+            max_possible_page_size = arguments[:first]
+          end
+
+          if arguments[:last] && (max_possible_page_size.nil? || arguments[:last] > max_possible_page_size)
+            max_possible_page_size = arguments[:last]
+          end
+
+          if max_possible_page_size.nil?
+            max_possible_page_size = field_definition.default_page_size || visitor.query.schema.default_page_size || field_definition.max_page_size || visitor.query.schema.default_max_page_size
+          end
+
+          if max_possible_page_size.nil?
+            raise GraphQL::Error, "Can't calculate complexity for #{field_definition.path}, no `first:`, `last:`, `default_page_size`, `max_page_size` or `default_max_page_size`"
+          end
+
+          complexity_digest << max_possible_page_size
+        end
+
+        @complexity_digest[visitor.query] << complexity_digest
       end
 
       def on_leave_field(node, parent, visitor)
