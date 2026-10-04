@@ -108,7 +108,6 @@ describe GraphQL::Types::ISO8601DateTime do
 
     it "parses valid dates" do
       res = parse_date("2018-06-07T09:31:42-07:00")
-      # Ruby names the zone only when the offset matches the system timezone
       system_zone = Time.iso8601("2018-06-07T09:31:42-07:00").zone
       expected_res = {
         "year" => 2018,
