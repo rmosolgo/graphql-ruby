@@ -527,7 +527,7 @@ module GraphQL
           end
 
           inner_type = return_type.of_type
-          result_a = Array.new(field_result.size)
+          result_a = field_result.is_a?(Array) ? Array.new(field_result.size) : []
           field_result.each_with_index do |item, idx|
             result_a[idx] = build_leaf_result(result_a, idx, item, inner_type, ctx, true)
           end
@@ -645,11 +645,18 @@ module GraphQL
           list_result = graphql_result[key] = []
           @directive_finalizers&.each { |f| @runner.add_finalizer(@selections_step.query, list_result, nil, f) }
           i = 0
-          s = field_result.size
-          while i < s
-            inner_f_r = field_result[i]
-            build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
-            i += 1
+          if field_result.is_a?(Array)
+            s = field_result.size
+            while i < s
+              inner_f_r = field_result[i]
+              build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
+              i += 1
+            end
+          else
+            field_result.each do |inner_f_r|
+              build_graphql_result(list_result, i, inner_f_r, inner_type, inner_type_nn, inner_type_l, true)
+              i += 1
+            end
           end
         elsif @runner.resolves_lazies || (
                 @static_type.kind.object? ?
