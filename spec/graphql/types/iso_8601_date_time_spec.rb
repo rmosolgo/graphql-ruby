@@ -108,6 +108,7 @@ describe GraphQL::Types::ISO8601DateTime do
 
     it "parses valid dates" do
       res = parse_date("2018-06-07T09:31:42-07:00")
+      system_zone = Time.iso8601("2018-06-07T09:31:42-07:00").zone
       expected_res = {
         "year" => 2018,
         "month" => 6,
@@ -115,7 +116,7 @@ describe GraphQL::Types::ISO8601DateTime do
         "hour" => 9,
         "minute" => 31,
         "second" => 42,
-        "zone" => nil,
+        "zone" => system_zone,
         "utcOffset" => -25200,
       }
       assert_equal(expected_res, res)
