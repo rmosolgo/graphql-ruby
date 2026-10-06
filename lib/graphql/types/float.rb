@@ -18,7 +18,12 @@ module GraphQL
       end
 
       def self.coerce_result(value, ctx)
-        value = value.to_f
+        float_value = Float(value, exception: false)
+        if float_value.nil?
+          raise GraphQL::CoercionError, "Could not coerce value #{value.inspect} to Float"
+        end
+
+        value = float_value
         if value.finite?
           value
         else
