@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-title: Introspection
-section: Schema
-desc: GraphQL has an introspection system that tells about the schema.
-index: 3
----
+# Introspection
 
 A GraphQL schema has a [built-in introspection system](https://graphql.org/learn/introspection/) that publishes the schema's structure. In fact, the introspection system can be queried using GraphQL, for example:
 
@@ -111,9 +103,9 @@ Keep in mind that off-the-shelf tooling may not support your custom introspectio
 
 The introspection namespace may contain a few different customizations:
 
-- Class-based {% internal_link "object definitions", "/type_definitions/objects" %} which replace the built-in introspection types (such as `__Schema` and `__Type`)
-- `EntryPoints`, A class-based {% internal_link "object definition", "/type_definitions/objects" %} containing introspection entry points (like `__schema` and `__type(name:)`).
-- `DynamicFields`, A class-based {% internal_link "object definition", "/type_definitions/objects" %} containing dynamic, globally-available fields (like `__typename`.)
+- Class-based [object definitions](/type_definitions/objects) which replace the built-in introspection types (such as `__Schema` and `__Type`)
+- `EntryPoints`, A class-based [object definition](/type_definitions/objects) containing introspection entry points (like `__schema` and `__type(name:)`).
+- `DynamicFields`, A class-based [object definition](/type_definitions/objects) containing dynamic, globally-available fields (like `__typename`.)
 
 ### Custom Introspection Types
 
@@ -121,14 +113,14 @@ The `module` passed as `introspection` may contain classes with the following na
 
 Custom class name | GraphQL type | Built-in class name
 --|--|--
-`SchemaType` | `__Schema` | {{ "GraphQL::Introspection::SchemaType" | api_doc }}
-`TypeType` | `__Type` | {{ "GraphQL::Introspection::TypeType" | api_doc }}
-`DirectiveType` | `__Directive` | {{ "GraphQL::Introspection::DirectiveType" | api_doc }}
-`DirectiveLocationType` | `__DirectiveLocation` | {{ "GraphQL::Introspection::DirectiveLocationEnum" | api_doc }}
-`EnumValueType` | `__EnumValue` | {{ "GraphQL::Introspection::EnumValueType" | api_doc }}
-`FieldType` | `__Field` | {{ "GraphQL::Introspection::FieldType" | api_doc }}
-`InputValueType` | `__InputValue` | {{ "GraphQL::Introspection::InputValueType" | api_doc }}
-`TypeKindType` | `__TypeKind` | {{ "GraphQL::Introspection::TypeKindEnum" | api_doc }}
+`SchemaType` | `__Schema` | [GraphQL::Introspection::SchemaType](rdoc-ref:GraphQL::Introspection::SchemaType)
+`TypeType` | `__Type` | [GraphQL::Introspection::TypeType](rdoc-ref:GraphQL::Introspection::TypeType)
+`DirectiveType` | `__Directive` | [GraphQL::Introspection::DirectiveType](rdoc-ref:GraphQL::Introspection::DirectiveType)
+`DirectiveLocationType` | `__DirectiveLocation` | [GraphQL::Introspection::DirectiveLocationEnum](rdoc-ref:GraphQL::Introspection::DirectiveLocationEnum)
+`EnumValueType` | `__EnumValue` | [GraphQL::Introspection::EnumValueType](rdoc-ref:GraphQL::Introspection::EnumValueType)
+`FieldType` | `__Field` | [GraphQL::Introspection::FieldType](rdoc-ref:GraphQL::Introspection::FieldType)
+`InputValueType` | `__InputValue` | [GraphQL::Introspection::InputValueType](rdoc-ref:GraphQL::Introspection::InputValueType)
+`TypeKindType` | `__TypeKind` | [GraphQL::Introspection::TypeKindEnum](rdoc-ref:GraphQL::Introspection::TypeKindEnum)
 
 The class-based definitions' names _must_ match the names of the types they replace.
 

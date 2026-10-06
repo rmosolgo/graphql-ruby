@@ -3,17 +3,27 @@
 module GraphQL
   class Schema
     # Represents a list type in the schema.
-    # Wraps a {Schema::Member} as a list type.
-    # @see Schema::Member::TypeSystemHelpers#to_list_type Create a list type from another GraphQL type
+    # Wraps a [Schema::Member](rdoc-ref:Schema::Member) as a list type.
+    # See [Schema::Member::TypeSystemHelpers#to_list_type](rdoc-ref:Schema::Member::TypeSystemHelpers#to_list_type) Create a list type from another GraphQL type
     class List < GraphQL::Schema::Wrapper
       include Schema::Member::ValidatesInput
 
-      # @return [GraphQL::TypeKinds::LIST]
+      # **Returns**
+      #
+      # - `GraphQL::TypeKinds::LIST`
+      #
+      # :call-seq:
+      #   kind() -> GraphQL::TypeKinds::LIST
       def kind
         GraphQL::TypeKinds::LIST
       end
 
-      # @return [true]
+      # **Returns**
+      #
+      # - `true`
+      #
+      # :call-seq:
+      #   list?() -> true
       def list?
         true
       end

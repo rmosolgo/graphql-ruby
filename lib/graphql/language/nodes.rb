@@ -3,7 +3,7 @@ module GraphQL
   module Language
     module Nodes
       NONE = GraphQL::EmptyObjects::EMPTY_ARRAY
-      # {AbstractNode} is the base class for all nodes in a GraphQL AST.
+      # [AbstractNode](rdoc-ref:GraphQL::Language::Nodes::AbstractNode) is the base class for all nodes in a GraphQL AST.
       #
       # It provides some APIs for working with ASTs:
       # - `children` returns all AST nodes attached to this one. Used for tree traversal.
@@ -12,8 +12,11 @@ module GraphQL
       class AbstractNode
 
         module DefinitionNode
-          # This AST node's {#line} returns the first line, which may be the description.
-          # @return [Integer] The first line of the definition (not the description)
+          # This AST node's [line](rdoc-ref:GraphQL::Language::Nodes::AbstractNode#line) returns the first line, which may be the description.
+          #
+          # **Returns**
+          #
+          # - `Integer` — The first line of the definition (not the description)
           attr_reader :definition_line
 
           def initialize(definition_line: nil, **_rest)
@@ -46,7 +49,13 @@ module GraphQL
         end
 
         # Value equality
-        # @return [Boolean] True if `self` is equivalent to `other`
+        #
+        # **Returns**
+        #
+        # - `Boolean` — True if `self` is equivalent to `other`
+        #
+        # :call-seq:
+        #   ==(other) -> bool
         def ==(other)
           return true if equal?(other)
           other.kind_of?(self.class) &&
@@ -56,12 +65,22 @@ module GraphQL
 
         NO_CHILDREN = GraphQL::EmptyObjects::EMPTY_ARRAY
 
-        # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one
+        # **Returns**
+        #
+        # - `Array<GraphQL::Language::Nodes::AbstractNode>` — all nodes in the tree below this one
+        #
+        # :call-seq:
+        #   children() -> Array[GraphQL::Language::Nodes::AbstractNode]
         def children
           NO_CHILDREN
         end
 
-        # @return [Array<Integer, Float, String, Boolean, Array>] Scalar values attached to this node
+        # **Returns**
+        #
+        # - `Array<Integer, Float, String, Boolean, Array>` — Scalar values attached to this node
+        #
+        # :call-seq:
+        #   scalars() -> Array[Integer | Float | String | bool | Array]
         def scalars
           NO_CHILDREN
         end
@@ -94,8 +113,17 @@ module GraphQL
         end
 
         # This creates a copy of `self`, with `new_options` applied.
-        # @param new_options [Hash]
-        # @return [AbstractNode] a shallow copy of `self`
+        #
+        # **Parameters**
+        #
+        # - `new_options` (`Hash`)
+        #
+        # **Returns**
+        #
+        # - `AbstractNode` — a shallow copy of `self`
+        #
+        # :call-seq:
+        #   merge(Hash new_options) -> AbstractNode
         def merge(new_options)
           dup.merge!(new_options)
         end
@@ -371,11 +399,13 @@ module GraphQL
         scalar_methods :name, :value
         children_methods(false)
 
-        # @!attribute name
-        #   @return [String] the key for this argument
+        # **Attributes**
+        #
+        # - `name` (`String`) — the key for this argument
 
-        # @!attribute value
-        #   @return [String, Float, Integer, Boolean, Array, InputObject, VariableIdentifier] The value passed for this key
+        # **Attributes**
+        #
+        # - `value` (`String, Float, Integer, Boolean, Array, InputObject, VariableIdentifier`) — The value passed for this key
 
         def children
           @children ||= Array(value).flatten.tap { _1.select! { |v| v.is_a?(AbstractNode) } }
@@ -400,7 +430,7 @@ module GraphQL
         self.children_method_name = :definitions
       end
 
-      # An enum value. The string is available as {#name}.
+      # An enum value. The string is available as `name`.
       class Enum < NameOnlyNode
       end
 
@@ -489,8 +519,9 @@ module GraphQL
 
         self.children_method_name = :selections
 
-        # @!attribute name
-        #   @return [String] The identifier of the fragment to apply, corresponds with {FragmentDefinition#name}
+        # **Attributes**
+        #
+        # - `name` (`String`) — The identifier of the fragment to apply, corresponds with [FragmentDefinition#name](rdoc-ref:FragmentDefinition#name)
       end
 
       # An unnamed fragment, defined directly in the query with `... {  }`
@@ -503,8 +534,9 @@ module GraphQL
 
         self.children_method_name = :selections
 
-        # @!attribute type
-        #   @return [String, nil] Name of the type this fragment applies to, or `nil` if this fragment applies to any type
+        # **Attributes**
+        #
+        # - `type` (`String, nil`) — Name of the type this fragment applies to, or `nil` if this fragment applies to any type
       end
 
       # A collection of key-value inputs which may be a field argument
@@ -512,10 +544,16 @@ module GraphQL
         scalar_methods(false)
         children_methods(arguments: GraphQL::Language::Nodes::Argument)
 
-        # @!attribute arguments
-        #   @return [Array<Nodes::Argument>] A list of key-value pairs inside this input object
+        # **Attributes**
+        #
+        # - `arguments` (`Array<Nodes::Argument>`) — A list of key-value pairs inside this input object
 
-        # @return [Hash<String, Any>] Recursively turn this input object into a Ruby Hash
+        # **Returns**
+        #
+        # - `Hash<String, Any>` — Recursively turn this input object into a Ruby Hash
+        #
+        # :call-seq:
+        #   to_h(options=) -> Hash[String, Any]
         def to_h(options={})
           arguments.inject({}) do |memo, pair|
             v = pair.value
@@ -558,14 +596,17 @@ module GraphQL
       class VariableDefinition < AbstractNode
         scalar_methods :name, :type, :default_value
         children_methods(directives: Directive)
-        # @!attribute default_value
-        #   @return [String, Integer, Float, Boolean, Array, NullValue] A Ruby value to use if no other value is provided
+        # **Attributes**
+        #
+        # - `default_value` (`String, Integer, Float, Boolean, Array, NullValue`) — A Ruby value to use if no other value is provided
 
-        # @!attribute type
-        #   @return [TypeName, NonNullType, ListType] The expected type of this value
+        # **Attributes**
+        #
+        # - `type` (`TypeName, NonNullType, ListType`) — The expected type of this value
 
-        # @!attribute name
-        #   @return [String] The identifier for this variable, _without_ `$`
+        # **Attributes**
+        #
+        # - `name` (`String`) — The identifier for this variable, _without_ `$`
 
         self.children_method_name = :variables
       end
@@ -581,44 +622,59 @@ module GraphQL
           selections: GraphQL::Language::Nodes::Field,
         })
 
-        # @!attribute variables
-        #   @return [Array<VariableDefinition>] Variable $definitions for this operation
+        # **Attributes**
+        #
+        # - `variables` (`Array<VariableDefinition>`) — Variable $definitions for this operation
 
-        # @!attribute selections
-        #   @return [Array<Field>] Root-level fields on this operation
+        # **Attributes**
+        #
+        # - `selections` (`Array<Field>`) — Root-level fields on this operation
 
-        # @!attribute operation_type
-        #   @return [String, nil] The root type for this operation, or `nil` for implicit `"query"`
+        # **Attributes**
+        #
+        # - `operation_type` (`String, nil`) — The root type for this operation, or `nil` for implicit `"query"`
 
-        # @!attribute name
-        #   @return [String, nil] The name for this operation, or `nil` if unnamed
+        # **Attributes**
+        #
+        # - `name` (`String, nil`) — The name for this operation, or `nil` if unnamed
 
         self.children_method_name = :definitions
       end
 
       # This is the AST root for normal queries
       #
-      # @example Deriving a document by parsing a string
-      #   document = GraphQL.parse(query_string)
+      # **Examples**
       #
-      # @example Creating a string from a document
-      #   document.to_query_string
-      #   # { ... }
+      # **Example: Deriving a document by parsing a string**
       #
-      # @example Creating a custom string from a document
-      #  class VariableScrubber < GraphQL::Language::Printer
-      #    def print_argument(arg)
-      #      print_string("#{arg.name}: <HIDDEN>")
-      #    end
-      #  end
+      # ```ruby
+      # document = GraphQL.parse(query_string)
+      # ```
       #
-      #  document.to_query_string(printer: VariableScrubber.new)
+      # **Example: Creating a string from a document**
       #
+      # ```ruby
+      # document.to_query_string
+      # # { ... }
+      # ```
+      #
+      # **Example: Creating a custom string from a document**
+      #
+      # ```ruby
+      # class VariableScrubber < GraphQL::Language::Printer
+      #   def print_argument(arg)
+      #     print_string("#{arg.name}: <HIDDEN>")
+      #   end
+      # end
+      #
+      # document.to_query_string(printer: VariableScrubber.new)
+      # ```
       class Document < AbstractNode
         scalar_methods false
         children_methods(definitions: nil)
-        # @!attribute definitions
-        #   @return [Array<OperationDefinition, FragmentDefinition>] top-level GraphQL units: operations or fragments
+        # **Attributes**
+        #
+        # - `definitions` (`Array<OperationDefinition, FragmentDefinition>`) — top-level GraphQL units: operations or fragments
 
         def slice_definition(name)
           GraphQL::Language::DefinitionSlice.slice(self, name)

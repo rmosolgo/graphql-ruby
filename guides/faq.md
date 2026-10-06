@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-title: FAQ
-other: true
-desc: How to do common tasks
----
-
+# FAQ
 
 Returning Route URLs
 ====================

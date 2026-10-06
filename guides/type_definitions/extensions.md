@@ -1,14 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Type Definitions
-title: Extending the GraphQL-Ruby Type Definition System
-desc: Adding metadata and custom helpers to the DSL
-index: 8
-redirect_from:
-  - /schema/extending_the_dsl/
----
+# Extending the GraphQL-Ruby Type Definition System
 
 While integrating GraphQL into your app, you can customize the definition DSL. For example, you might:
 

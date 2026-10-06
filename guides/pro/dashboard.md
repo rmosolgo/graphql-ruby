@@ -1,16 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro
-title: Dashboard
-desc: Installing GraphQL-Pro's Dashboard
-index: 4
-pro: true
----
+# Dashboard
 
-
-[GraphQL-Pro](https://graphql.pro) includes a web dashboard for monitoring {% internal_link "Operation Store", "/operation_store/overview" %} and {% internal_link "subscriptions", "/subscriptions/pusher_implementation" %}.
+[GraphQL-Pro](https://graphql.pro) includes a web dashboard for monitoring [Operation Store](/operation_store/overview) and [subscriptions](/subscriptions/pusher_implementation).
 
 <!-- TODO image -->
 

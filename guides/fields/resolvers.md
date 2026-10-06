@@ -1,23 +1,13 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Fields
-title: Resolvers
-desc: Reusable, extendable resolution logic for complex fields
-index: 2
-redirect_from:
-  - /fields/functions
----
+# Resolvers
 
-A {{ "GraphQL::Schema::Resolver" | api_doc }} is a container for field signature and resolution logic. It can be attached to a field with the `resolver:` keyword:
+A [GraphQL::Schema::Resolver](rdoc-ref:GraphQL::Schema::Resolver) is a container for field signature and resolution logic. It can be attached to a field with the `resolver:` keyword:
 
 ```ruby
 # Use the resolver class to execute this field
 field :pending_orders, resolver: PendingOrders
 ```
 
-Under the hood, {{ "GraphQL::Schema::Mutation" | api_doc }} is a specialized subclass of `Resolver`.
+Under the hood, [GraphQL::Schema::Mutation](rdoc-ref:GraphQL::Schema::Mutation) is a specialized subclass of `Resolver`.
 
 ## First, ask yourself ...
 
@@ -88,7 +78,7 @@ class Types::User < BaseObject
 end
 ```
 
-- If the module approach looks good to you, also consider {% internal_link "Interfaces", "/type_definitions/interfaces" %}. They also share behavior between objects (since they're just modules that get included, after all), and they expose that commonality to clients via introspection.
+- If the module approach looks good to you, also consider [Interfaces](/type_definitions/interfaces). They also share behavior between objects (since they're just modules that get included, after all), and they expose that commonality to clients via introspection.
 
 ## When do you really need a resolver?
 

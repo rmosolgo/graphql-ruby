@@ -7,15 +7,18 @@ module GraphQL
       # Identify (and auto-correct) any field whose type configuration isn't given
       # in the configuration block.
       #
-      # @example
-      #   # bad, immediately causes Rails to load `app/graphql/types/thing.rb`
-      #   field :thing, Types::Thing
+      # **Examples**
       #
-      #   # good, defers loading until the file is needed
-      #   field :thing do
-      #     type(Types::Thing)
-      #   end
+      # **Example: # bad, immediately causes Rails to load `app/graphql/types/thing.rb`**
       #
+      # ```ruby
+      # field :thing, Types::Thing
+      #
+      # # good, defers loading until the file is needed
+      # field :thing do
+      #   type(Types::Thing)
+      # end
+      # ```
       class FieldTypeInBlock < BaseCop
         MSG = "type configuration can be moved to a block to defer loading the type's file"
 

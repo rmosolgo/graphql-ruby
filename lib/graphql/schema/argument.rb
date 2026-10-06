@@ -1,6 +1,178 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
+    # Arguments describe the input accepted by a field or input object.
+    # This API reference was migrated from guides/fields/arguments.md.
+    # Keep argument-specific behavior and examples here; the guide is only
+    # an entry point for the broader fields documentation.
+    #
+    # Fields can take **arguments** as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in `MutationType`).
+    #
+    # Arguments are defined with the `argument` helper. These arguments are passed as [keyword arguments](https://robots.thoughtbot.com/ruby-2-keyword-arguments) to the resolver method:
+    #
+    # ```ruby
+    # field :search_posts, [PostType], null: false do
+    #   argument :category, String
+    # end
+    #
+    # def search_posts(category:)
+    #   Post.where(category: category).limit(10)
+    # end
+    # ```
+    #
+    # ## Nullability
+    #
+    # To make an argument optional, set `required: false`, and set default values for the corresponding keyword arguments:
+    #
+    # ```ruby
+    # field :search_posts, [PostType], null: false do
+    #   argument :category, String, required: false
+    # end
+    #
+    # def search_posts(category: nil)
+    #   if category
+    #     Post.where(category: category).limit(10)
+    #   else
+    #     Post.all.limit(10)
+    #   end
+    # end
+    # ```
+    #
+    # Be aware that if all arguments are optional and the query does not provide any arguments, then the resolver method will be called with no arguments. To prevent an `ArgumentError` in this case, you must either specify default values for all keyword arguments (as done in the prior example) or use the double splat operator argument in the method definition. For example:
+    #
+    # ```ruby
+    # def search_posts(**args)
+    #   if args[:category]
+    #     Post.where(category: args[:category]).limit(10)
+    #   else
+    #     Post.all.limit(10)
+    #   end
+    # end
+    # ```
+    #
+    # ### Default Values
+    #
+    # Another approach is to use `default_value: value` to provide a default value for the argument if it is not supplied in the query.
+    #
+    # ```ruby
+    # field :search_posts, [PostType], null: false do
+    #   argument :category, String, required: false, default_value: "Programming"
+    # end
+    #
+    # def search_posts(category:)
+    #   Post.where(category: category).limit(10)
+    # end
+    # ```
+    #
+    # Arguments with `required: false` _do_ accept `null` as inputs from clients. This can be surprising in resolver code, for example, an argument with `Integer, required: false` can sometimes be `nil`. In this case, you can use `replace_null_with_default: true` to apply the given `default_value: ...` when clients provide `null`. For example:
+    #
+    # ```ruby
+    # # Even if clients send `query: null`, the resolver will receive `"*"` for this argument:
+    # argument :query, String, required: false, default_value: "*", replace_null_with_default: true
+    # ```
+    #
+    # Finally, `required: :nullable` will require clients to pass the argument, although it will accept `null` as a valid input. For example:
+    #
+    # ```ruby
+    # # This argument _must_ be given -- send `null` if there's no other appropriate value:
+    # argument :email_address, String, required: :nullable
+    # ```
+    #
+    #
+    # ## Deprecation
+    #
+    # **Experimental:** __Deprecated__ arguments can be marked by adding a `deprecation_reason:` keyword argument:
+    #
+    # ```ruby
+    # field :search_posts, [PostType], null: false do
+    #   argument :name, String, required: false, deprecation_reason: "Use `query` instead."
+    #   argument :query, String, required: false
+    # end
+    # ```
+    #
+    # ## Aliasing
+    #
+    # Use `as: :alternate_name` to use a different key from within your resolvers while
+    # exposing another key to clients.
+    #
+    # ```ruby
+    # field :post, PostType, null: false do
+    #   argument :post_id, ID, as: :id
+    # end
+    #
+    # def post(id:)
+    #   Post.find(id)
+    # end
+    # ```
+    #
+    # ## Preprocessing
+    #
+    # Provide a `prepare` function to modify or validate the value of an argument before the field's resolver method is executed:
+    #
+    # ```ruby
+    # field :posts, [PostType], null: false do
+    #   argument :start_date, String, prepare: ->(startDate, ctx) {
+    #     # return the prepared argument.
+    #     # raise a GraphQL::ExecutionError to halt the execution of the field and
+    #     # add the exception's message to the `errors` key.
+    #   }
+    # end
+    #
+    # def posts(start_date:)
+    #   # use prepared start_date
+    # end
+    # ```
+    #
+    # ## Automatic camelization
+    #
+    # Arguments that are snake_cased will be camelized in the GraphQL schema. Using the example of:
+    #
+    # ```ruby
+    # field :posts, [PostType], null: false do
+    #   argument :start_year, Int
+    # end
+    # ```
+    #
+    # The corresponding GraphQL query will look like:
+    #
+    # ```graphql
+    # {
+    #   posts(startYear: 2018) {
+    #     id
+    #   }
+    # }
+    # ```
+    #
+    # To disable auto-camelization, pass `camelize: false` to the `argument` method.
+    #
+    # ```ruby
+    # field :posts, [PostType], null: false do
+    #   argument :start_year, Int, camelize: false
+    # end
+    # ```
+    #
+    # Furthermore, if your argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:
+    #
+    # ```ruby
+    # field :posts, [PostType], null: false do
+    #   argument :startYear, Int
+    # end
+    #
+    # def posts(start_year:)
+    #   # ...
+    # end
+    # ```
+    #
+    # ## Valid Argument Types
+    #
+    # Only certain types are valid for arguments:
+    #
+    # - [GraphQL::Schema::Scalar](rdoc-ref:GraphQL::Schema::Scalar), including built-in scalars (string, int, float, boolean, ID)
+    # - [GraphQL::Schema::Enum](rdoc-ref:GraphQL::Schema::Enum)
+    # - [GraphQL::Schema::InputObject](rdoc-ref:GraphQL::Schema::InputObject), which allows key-value pairs as input
+    # - [GraphQL::Schema::List](rdoc-ref:GraphQL::Schema::List)s of a valid input type, configured using `[...]`
+    # - [GraphQL::Schema::NonNull](rdoc-ref:GraphQL::Schema::NonNull)s of a valid input type (arguments are non-null by default; use `required: false` to make optional arguments)
+    #
     class Argument
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
@@ -10,15 +182,27 @@ module GraphQL
       include GraphQL::Schema::Member::HasValidators
       include GraphQL::EmptyObjects
 
-      # @return [String] the GraphQL name for this argument, camelized unless `camelize: false` is provided
+      # **Returns**
+      #
+      # - `String` — the GraphQL name for this argument, camelized unless `camelize: false` is provided
       attr_reader :name
       alias :graphql_name :name
 
-      # @return [GraphQL::Schema::Field, Class] The field or input object this argument belongs to
+      # **Returns**
+      #
+      # - `GraphQL::Schema::Field, Class` — The field or input object this argument belongs to
       attr_reader :owner
 
-      # @param new_prepare [Method, Proc]
-      # @return [Symbol] A method or proc to call to transform this value before sending it to field resolution method
+      # **Parameters**
+      #
+      # - `new_prepare` (`Method, Proc`)
+      #
+      # **Returns**
+      #
+      # - `Symbol` — A method or proc to call to transform this value before sending it to field resolution method
+      #
+      # :call-seq:
+      #   prepare(Method | Proc new_prepare) -> Symbol
       def prepare(new_prepare = NOT_CONFIGURED)
         if new_prepare != NOT_CONFIGURED
           @prepare = new_prepare
@@ -26,38 +210,52 @@ module GraphQL
         @prepare
       end
 
-      # @return [Symbol] This argument's name in Ruby keyword arguments
+      # **Returns**
+      #
+      # - `Symbol` — This argument's name in Ruby keyword arguments
       attr_reader :keyword
 
-      # @return [Class, Module, nil] If this argument should load an application object, this is the type of object to load
+      # **Returns**
+      #
+      # - `Class, Module, nil` — If this argument should load an application object, this is the type of object to load
       attr_reader :loads
 
-      # @return [Boolean] true if a resolver defined this argument
+      # **Returns**
+      #
+      # - `Boolean` — true if a resolver defined this argument
+      #
+      # :call-seq:
+      #   from_resolver?() -> bool
       def from_resolver?
         @from_resolver
       end
 
-      # @param arg_name [Symbol]
-      # @param type_expr
-      # @param desc [String]
-      # @param type [Class, Array<Class>] Input type; positional argument also accepted
-      # @param name [Symbol] positional argument also accepted        # @param loads [Class, Array<Class>] A GraphQL type to load for the given ID when one is present
-      # @param definition_block [Proc] Called with the newly-created {Argument}
-      # @param owner [Class] Private, used by GraphQL-Ruby during schema definition
-      # @param required [Boolean, :nullable] if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
-      # @param description [String]
-      # @param default_value [Object]
-      # @param loads [Class, Array<Class>] A GraphQL type to load for the given ID when one is present
-      # @param as [Symbol] Override the keyword name when passed to a method
-      # @param prepare [Symbol] A method to call to transform this argument's valuebefore sending it to field resolution
-      # @param camelize [Boolean] if true, the name will be camelized when building the schema
-      # @param from_resolver [Boolean] if true, a Resolver class defined this argument
-      # @param directives [Hash{Class => Hash}]
-      # @param deprecation_reason [String]
-      # @param validates [Hash, nil] Options for building validators, if any should be applied
-      # @param replace_null_with_default [Boolean] if `true`, incoming values of `null` will be replaced with the configured `default_value`
-      # @param comment [String] Private, used by GraphQL-Ruby when parsing GraphQL schema files
-      # @param ast_node [GraphQL::Language::Nodes::InputValueDefinition] Private, used by GraphQL-Ruby when parsing schema files
+      # **Parameters**
+      #
+      # - `arg_name` (`Symbol`)
+      # - `type_expr`
+      # - `desc` (`String`)
+      # - `type` (`Class, Array<Class>`) — Input type; positional argument also accepted
+      # - `name` (`Symbol`) — positional argument also accepted
+      # - `definition_block` (`Proc`) — Called with the newly-created [Argument](rdoc-ref:Argument)
+      # - `owner` (`Class`) — Private, used by GraphQL-Ruby during schema definition
+      # - `required` (`Boolean, :nullable`) — if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
+      # - `description` (`String`)
+      # - `default_value` (`Object`)
+      # - `loads` (`Class, Array<Class>`) — A GraphQL type to load for the given ID when one is present
+      # - `as` (`Symbol`) — Override the keyword name when passed to a method
+      # - `prepare` (`Symbol`) — A method to call to transform this argument's valuebefore sending it to field resolution
+      # - `camelize` (`Boolean`) — if true, the name will be camelized when building the schema
+      # - `from_resolver` (`Boolean`) — if true, a Resolver class defined this argument
+      # - `directives` (`Hash{Class => Hash}`)
+      # - `deprecation_reason` (`String`)
+      # - `validates` (`Hash, nil`) — Options for building validators, if any should be applied
+      # - `replace_null_with_default` (`Boolean`) — if `true`, incoming values of `null` will be replaced with the configured `default_value`
+      # - `comment` (`String`) — Private, used by GraphQL-Ruby when parsing GraphQL schema files
+      # - `ast_node` (`GraphQL::Language::Nodes::InputValueDefinition`) — Private, used by GraphQL-Ruby when parsing schema files
+      #
+      # :call-seq:
+      #   initialize(Symbol arg_name, type_expr, String desc, bool | :nullable required:, Class | Array[Class] type:, Symbol name:, Class | Array[Class] loads:, String description:, String comment:, GraphQL::Language::Nodes::InputValueDefinition ast_node:, Object default_value:, Symbol as:, bool from_resolver:, bool camelize:, Symbol prepare:, Class owner:, Hash | nil validates:, Hash[Class, Hash] directives:, String deprecation_reason:, bool replace_null_with_default:, Proc &definition_block)
       def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, comment: nil, ast_node: nil, default_value: NOT_CONFIGURED, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
@@ -107,8 +305,16 @@ module GraphQL
         "#<#{self.class} #{path}: #{type.to_type_signature}#{description ? " @description=#{description.inspect}" : ""}>"
       end
 
-      # @param default_value [Object] The value to use when the client doesn't provide one
-      # @return [Object] the value used when the client doesn't provide a value for this argument
+      # **Parameters**
+      #
+      # - `default_value` (`Object`) — The value to use when the client doesn't provide one
+      #
+      # **Returns**
+      #
+      # - `Object` — the value used when the client doesn't provide a value for this argument
+      #
+      # :call-seq:
+      #   default_value(new_default_value) -> Object
       def default_value(new_default_value = NOT_CONFIGURED)
         if new_default_value != NOT_CONFIGURED
           @default_value = new_default_value
@@ -116,7 +322,12 @@ module GraphQL
         @default_value
       end
 
-      # @return [Boolean] True if this argument has a default value
+      # **Returns**
+      #
+      # - `Boolean` — True if this argument has a default value
+      #
+      # :call-seq:
+      #   default_value?() -> bool
       def default_value?
         @default_value != NOT_CONFIGURED
       end
@@ -127,7 +338,12 @@ module GraphQL
 
       attr_writer :description
 
-      # @return [String] Documentation for this argument
+      # **Returns**
+      #
+      # - `String` — Documentation for this argument
+      #
+      # :call-seq:
+      #   description(text) -> String
       def description(text = nil)
         if text
           @description = text
@@ -138,7 +354,12 @@ module GraphQL
 
       attr_writer :comment
 
-      # @return [String] Comment for this argument
+      # **Returns**
+      #
+      # - `String` — Comment for this argument
+      #
+      # :call-seq:
+      #   comment(text) -> String
       def comment(text = nil)
         if text
           @comment = text
@@ -147,7 +368,12 @@ module GraphQL
         end
       end
 
-      # @return [String] Deprecation reason for this argument
+      # **Returns**
+      #
+      # - `String` — Deprecation reason for this argument
+      #
+      # :call-seq:
+      #   deprecation_reason(text) -> String
       def deprecation_reason(text = nil)
         if text
           self.deprecation_reason = text
@@ -229,10 +455,9 @@ module GraphQL
         super
       end
 
-      # Apply the {prepare} configuration to `value`, using methods from `obj`.
+      # Apply the [prepare](rdoc-ref:prepare) configuration to `value`, using methods from `obj`.
       # Used by the runtime.
-      # @api private
-      def prepare_value(obj, value, context: nil)
+      def prepare_value(obj, value, context: nil) # :nodoc:
         if type.unwrap.kind.input_object?
           value = recursively_prepare_input_object(value, type, context)
         end
@@ -263,8 +488,7 @@ module GraphQL
         end
       end
 
-      # @api private
-      def coerce_into_values(parent_object, values, context, argument_values)
+      def coerce_into_values(parent_object, values, context, argument_values) # :nodoc:
         arg_name = graphql_name
         arg_key = keyword
         default_used = false
@@ -377,8 +601,7 @@ module GraphQL
         end
       end
 
-      # @api private
-      def validate_default_value
+      def validate_default_value # :nodoc:
         return unless default_value?
         coerced_default_value = begin
           # This is weird, but we should accept single-item default values for list-type arguments.

@@ -1,13 +1,4 @@
----
-title: Backtrace Annotations
-layout: guide
-doc_stub: false
-search: true
-section: Queries
-desc: Use the GraphQL backtrace for debugging
-index: 12
-experimental: true
----
+# Backtrace Annotations
 
 `context` objects have a `backtrace` which shows its GraphQL context. You can print the backtrace during query execution:
 
