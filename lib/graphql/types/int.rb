@@ -21,7 +21,16 @@ module GraphQL
       end
 
       def self.coerce_result(value, ctx)
-        value = value.to_i
+        integer_value = if value.is_a?(::String)
+          Integer(value, 10, exception: false)
+        else
+          Integer(value, exception: false)
+        end
+        if integer_value.nil? || (value.is_a?(Numeric) && integer_value != value)
+          raise GraphQL::CoercionError, "Could not coerce value #{value.inspect} to Int"
+        end
+
+        value = integer_value
         if value >= MIN && value <= MAX
           value
         else
