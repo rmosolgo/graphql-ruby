@@ -65,24 +65,25 @@ module GraphQL
       end
 
       def column_at(pos)
-        next_line_idx = lines_at.bsearch_index { |l| l >= pos } || 0
-        if next_line_idx > 0
-          line_pos = @lines_at[next_line_idx - 1]
-          pos - line_pos
+        next_line_idx = lines_at.bsearch_index { |l| l >= pos } || @lines_at.size
+        line_start = next_line_idx == 0 ? 0 : @lines_at[next_line_idx - 1] + 1
+        if @graphql_str.ascii_only?
+          pos - line_start + 1
         else
-          pos + 1
+          @graphql_str.byteslice(line_start, pos - line_start).force_encoding(Encoding::UTF_8).length + 1
         end
       end
 
       private
 
-      # @return [Array<Integer>] Positions of each line break in the original string
+      # @return [Array<Integer>] Byte offsets of each line break in the original string
       def lines_at
         @lines_at ||= begin
+          graphql_str = @graphql_str.b
           la = []
           idx = 0
           while idx
-            idx = @graphql_str.index("\n", idx)
+            idx = graphql_str.index("\n", idx)
             if idx
               la << idx
               idx += 1
