@@ -11,6 +11,9 @@ module GraphQL
         @complexities_on_type_by_query = {}
         @intersect_cache = Hash.new { |h, k| h[k] = {}.compare_by_identity }.compare_by_identity
         @possible_types_cache = {}.compare_by_identity
+        @fragment_caches_by_query = {}.compare_by_identity
+        @fragment_contexts_by_query = {}.compare_by_identity
+        @merged_complexity_caches_by_query = {}.compare_by_identity
       end
 
       # Override this method to use the complexity result
@@ -65,6 +68,11 @@ module GraphQL
           @nodes = []
         end
 
+        def initialize_copy(other)
+          super
+          @nodes = @nodes.dup
+        end
+
         # @return [Array<GraphQL::Language::Nodes::Field>]
         attr_reader :nodes
 
@@ -87,10 +95,24 @@ module GraphQL
         field_key = node.alias || node.name
 
         # Find or create a complexity scope stack for this query.
-        scopes_stack = @complexities_on_type_by_query[visitor.query] ||= [ScopedTypeComplexity.new(nil, nil, query, visitor.response_path)]
+        scopes_stack = complexity_scopes_stack(visitor.query, visitor.response_path)
 
         # Find or create the complexity costing node for this field.
-        scope = scopes_stack.last[parent_type][field_key] ||= ScopedTypeComplexity.new(parent_type, visitor.field_definition, visitor.query, visitor.response_path)
+        scopes_on_type = scopes_stack.last[parent_type]
+        if scopes_on_type.frozen?
+          scopes_on_type = scopes_on_type.dup
+          scopes_stack.last[parent_type] = scopes_on_type
+        end
+
+        scope = scopes_on_type[field_key]
+        if scope
+          if scope.frozen?
+            scope = scope.dup
+            scopes_on_type[field_key] = scope
+          end
+        else
+          scope = scopes_on_type[field_key] = ScopedTypeComplexity.new(parent_type, visitor.field_definition, visitor.query, visitor.response_path)
+        end
         scope.nodes.push(node)
         scopes_stack.push(scope)
       end
@@ -105,6 +127,50 @@ module GraphQL
         scopes_stack.pop
       end
 
+      def on_enter_fragment_spread(node, parent, visitor)
+        return unless cache_fragment_spreads?
+
+        query = visitor.query
+        contexts = @fragment_contexts_by_query[query] ||= []
+        if visitor.skipping?
+          contexts << nil
+          return SKIP_FRAGMENT_SPREAD_CHILDREN
+        end
+
+        fragment = query.fragments[node.name]
+        scopes_stack = complexity_scopes_stack(query, visitor.response_path)
+        current_scope = scopes_stack.last
+        fragment_cache = @fragment_caches_by_query[query] ||= {}.compare_by_identity
+
+        if fragment_cache.key?(fragment) && attach_fragment_scope(current_scope, fragment_cache[fragment])
+          contexts << nil
+          return SKIP_FRAGMENT_SPREAD_CHILDREN
+        elsif current_scope.empty?
+          fragment_scope = ScopedTypeComplexity.new(nil, nil, query, visitor.response_path)
+          scopes_stack << fragment_scope
+          contexts << [fragment, fragment_scope]
+        else
+          contexts << nil
+        end
+
+        nil
+      end
+
+      def on_leave_fragment_spread(node, parent, visitor)
+        return unless cache_fragment_spreads?
+
+        query = visitor.query
+        context = @fragment_contexts_by_query[query].pop
+        if context
+          fragment, fragment_scope = context
+          scopes_stack = @complexities_on_type_by_query[query]
+          scopes_stack.pop
+          freeze_scope(fragment_scope)
+          (@fragment_caches_by_query[query] ||= {}.compare_by_identity)[fragment] = fragment_scope
+          attach_fragment_scope(scopes_stack.last, fragment_scope)
+        end
+      end
+
       private
 
       # @return [Integer]
@@ -112,6 +178,59 @@ module GraphQL
         @complexities_on_type_by_query.reduce(0) do |total, (query, scopes_stack)|
           total + merged_max_complexity_for_scopes(query, [scopes_stack.first], mode)
         end
+      end
+
+      def cache_fragment_spreads?
+        self.class == QueryComplexity
+      end
+
+      def complexity_scopes_stack(query, response_path)
+        @complexities_on_type_by_query[query] ||= [ScopedTypeComplexity.new(nil, nil, query, response_path)]
+      end
+
+      def attach_fragment_scope(target, fragment_scope)
+        has_collision = fragment_scope.any? do |type, fragment_fields|
+          if target.key?(type)
+            target_fields = target[type]
+            fragment_fields.any? { |field_key, _| target_fields.key?(field_key) }
+          else
+            false
+          end
+        end
+        return false if has_collision
+
+        fragment_scope.each do |type, fragment_fields|
+          if target.key?(type)
+            target_fields = target[type]
+            if target_fields.frozen?
+              target_fields = target_fields.dup
+              target[type] = target_fields
+            end
+            target_fields.update(fragment_fields)
+          else
+            target[type] = fragment_fields
+          end
+        end
+        true
+      end
+
+      def freeze_scope(scope)
+        return if scope.frozen?
+
+        scope.nodes.freeze
+        scope.each_value do |fields|
+          fields.each_value { |field_scope| freeze_scope(field_scope) }
+          fields.freeze
+        end
+        scope.freeze
+      end
+
+      def merged_complexity_cache(query, mode, inner_selections)
+        return unless cache_fragment_spreads?
+
+        query_cache = @merged_complexity_caches_by_query[query] ||= {}
+        cache_key = [mode, *inner_selections.map(&:object_id)]
+        [query_cache, cache_key]
       end
 
       # @param query [GraphQL::Query] Used for `query.possible_types`
@@ -191,6 +310,9 @@ module GraphQL
       # @param inner_selections [Array<Hash<String, ScopedTypeComplexity>>] Field selections for a scope
       # @return [Integer] Total complexity value for all these selections in the parent scope
       def merged_max_complexity(query, inner_selections)
+        cache, cache_key = merged_complexity_cache(query, :future, inner_selections)
+        return cache[cache_key] if cache && cache.key?(cache_key)
+
         child_scopes_by_key = {}
         inner_selections.each do |inner_selection|
           inner_selection.each do |k, v|
@@ -231,10 +353,14 @@ module GraphQL
           total += maximum_cost
         end
 
+        cache[cache_key] = total if cache
         total
       end
 
       def legacy_merged_max_complexity(query, inner_selections)
+        cache, cache_key = merged_complexity_cache(query, :legacy, inner_selections)
+        return cache[cache_key] if cache && cache.key?(cache_key)
+
         # Aggregate a set of all unique field selection keys across all scopes.
         # Use a hash, but ignore the values; it's just a fast way to work with the keys.
         unique_field_keys = inner_selections.each_with_object({}) do |inner_selection, memo|
@@ -242,7 +368,7 @@ module GraphQL
         end
 
         # Add up the total cost for each unique field name's coalesced selections
-        unique_field_keys.each_key.reduce(0) do |total, field_key|
+        total = unique_field_keys.each_key.reduce(0) do |total, field_key|
           composite_scopes = nil
           field_cost = 0
 
@@ -273,6 +399,8 @@ module GraphQL
 
           total + field_cost
         end
+        cache[cache_key] = total if cache
+        total
       end
     end
   end
