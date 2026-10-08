@@ -2,6 +2,44 @@
 require "spec_helper"
 
 describe GraphQL::Pagination::Connection do
+  it "uses custom item cursors through the public position hook" do
+    connection_class = Class.new(GraphQL::Pagination::Connection) do
+      def nodes
+        items
+      end
+
+      def cursor_for(item)
+        "cursor:#{item}"
+      end
+    end
+    connection = connection_class.new([1, 2])
+
+    assert_respond_to connection, :cursor_for_position
+    assert_equal "cursor:2", connection.cursor_for_position(2, 1)
+    assert_equal ["cursor:1", "cursor:2"], connection.edges.map(&:cursor)
+    assert_equal "cursor:1", connection.start_cursor
+    assert_equal "cursor:2", connection.end_cursor
+    assert_equal "cursor:1", connection.range_add_edge(1).cursor
+  end
+
+  it "assigns page positions through the custom edge accessor" do
+    edge_class = Class.new(GraphQL::Pagination::Connection::Edge) do
+      attr_reader :assigned_position
+
+      def graphql_connection_position=(position)
+        @assigned_position = position
+        super
+      end
+    end
+    context = GraphQL::Query.new(GraphQL::Schema, "{ __typename }").context
+    connection = GraphQL::Pagination::ArrayConnection.new([1, 1], context: context, edge_class: edge_class)
+
+    assert_equal [0, 1], connection.edges.map(&:assigned_position)
+    assert_equal [0, 1], connection.edges.map(&:graphql_connection_position)
+    assert_equal ["1", "2"], connection.edges.map { |edge| context.schema.cursor_encoder.decode(edge.cursor, nonce: true) }
+    assert_equal connection.cursor_for(1), connection.range_add_edge(1).cursor
+  end
+
   describe "was_authorized_by_scope_ites?" do
     it "doesn't raise an error for missing runtime state and it updates it if context is assigned later" do
       context = GraphQL::Query.new(GraphQL::Schema, "{ __typename }").context
@@ -35,6 +73,48 @@ describe GraphQL::Pagination::RelationConnection do
       end
       assert_includes error.message, "Invalid cursor"
     end
+  end
+
+  it "paginates duplicate nodes by position" do
+    connection_class = Class.new(GraphQL::Pagination::RelationConnection) do
+      private
+
+      def relation_offset(_relation)
+        nil
+      end
+
+      def relation_limit(_relation)
+        nil
+      end
+
+      def relation_count(relation)
+        relation.length
+      end
+
+      def null_relation(_relation)
+        []
+      end
+
+      def set_offset(relation, offset)
+        relation.drop(offset)
+      end
+
+      def set_limit(relation, limit)
+        relation.first(limit)
+      end
+    end
+    items = ["a", "a", "a", "b"]
+    context = GraphQL::Query.new(GraphQL::Schema, "{ __typename }").context
+    first_page = connection_class.new(items, first: 2, context: context, max_page_size: nil)
+    second_page = connection_class.new(items, first: 2, after: first_page.end_cursor, context: context, max_page_size: nil)
+
+    assert_equal ["a", "a"], first_page.nodes
+    assert_equal ["a", "b"], second_page.nodes
+    assert_respond_to first_page, :cursor_for_position
+    assert_equal first_page.end_cursor, first_page.cursor_for_position(first_page.nodes.last, 1)
+    assert_equal 2, first_page.edges.map(&:cursor).uniq.length
+    error = assert_raises(GraphQL::ExecutionError) { first_page.cursor_for("missing") }
+    assert_equal "Can't generate a cursor for an item outside this connection", error.message
   end
 
   it "loads nodes without context" do
