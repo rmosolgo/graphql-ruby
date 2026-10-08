@@ -91,6 +91,10 @@ module GraphQL
         @query.variables
       end
 
+      def input_values
+        @query.input_values
+      end
+
       def fragments
         @query.fragments
       end
