@@ -234,7 +234,7 @@ module GraphQL
       end
 
       def async_dataloader?
-        @context&.[](:dataloader).is_a?(GraphQL::Dataloader::AsyncDataloader)
+        @context&.dataloader.is_a?(GraphQL::Dataloader::AsyncDataloader)
       end
 
       # Load nodes after applying first/last/before/after,
