@@ -1056,6 +1056,7 @@ allowed_missing:
   - ["module","GraphQL::Schema::TypeExpression"]
   - ["module","GraphQL::Subscriptions::Serialize"]
   - ["module","GraphQL::Tracing::Traceable"]
+  - ["module","GraphQL::Schema::ResolveTypeWithType"]
 allowed_extra:
   - ["class","GraphQL::Dashboard"]
   # Added on master after the YARD baseline was captured.
@@ -1181,4 +1182,5 @@ allowed_extra:
   - ["instance_method","GraphQL::Types::Relay::ConnectionBehaviors::ClassMethods#edge_type"]
   - ["instance_method","GraphQL::Types::Relay::EdgeBehaviors::ClassMethods#node_nullable"]
   - ["instance_method","GraphQL::Types::Relay::EdgeBehaviors::ClassMethods#node_type"]
+  - ["module","GraphQL"]
   - ["module","GraphQL::Schema::BuildFromDefinition::Builder"]
