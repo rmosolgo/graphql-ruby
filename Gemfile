@@ -12,7 +12,3 @@ if RUBY_VERSION >= "3.2.0"
   gem "async", "~>2.0"
   gem "minitest-mock"
 end
-
-group :docs, optional: true do
-  gem "rdoc", "~> 7.2"
-end

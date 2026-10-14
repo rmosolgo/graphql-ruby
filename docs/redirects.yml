@@ -9,7 +9,7 @@ redirects:
   - old_path: /guides
     destination:
       kind: page
-      value: guides/getting_started.md
+      value: guides/development/getting_started.md
   - old_path: /queries/executing_queries
     destination:
       kind: rdoc_ref
@@ -17,4 +17,4 @@ redirects:
   - old_path: /getting_started
     destination:
       kind: page
-      value: guides/getting_started.md
+      value: guides/development/getting_started.md

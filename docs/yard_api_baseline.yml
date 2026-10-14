@@ -1112,6 +1112,7 @@ allowed_extra:
   - ["constant","GraphQL::Analysis::QueryComplexity::ScopedTypeComplexity::DEFAULT_PROC"]
   - ["constant","GraphQL::Backtrace::TracedError::CAUSE_BACKTRACE_PREVIEW_LENGTH"]
   - ["constant","GraphQL::Dashboard"]
+  - ["constant","GraphQL::Execution::FieldResolveStep::SCOPED_RELAY_FIELD_NAMES"]
   - ["constant","GraphQL::Execution::Interpreter::NO_OPERATION"]
   - ["constant","GraphQL::Execution::Lazy::NullResult"]
   - ["constant","GraphQL::Execution::Lookahead::NULL_LOOKAHEAD"]

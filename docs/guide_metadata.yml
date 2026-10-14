@@ -28,6 +28,12 @@ order:
     - usage
     - stream
     - graphiql
+  development:
+    - getting_started
+    - development
+    - faq
+    - related_projects
+    - documentation_maintenance
   errors:
     - overview
     - execution_errors

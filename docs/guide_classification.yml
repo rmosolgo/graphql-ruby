@@ -77,18 +77,20 @@ standalone:
   - guides/defer/setup.md
   - guides/defer/stream.md
   - guides/defer/usage.md
-  - guides/development.md
+  - guides/development/getting_started.md
+  - guides/development/development.md
+  - guides/development/faq.md
+  - guides/development/related_projects.md
+  - guides/development/documentation_maintenance.md
   - guides/errors/error_handling.md
   - guides/errors/execution_errors.md
   - guides/errors/overview.md
   - guides/errors/type_errors.md
   - guides/execution/migration.md
   - guides/execution/next.md
-  - guides/faq.md
   - guides/fields/limits.md
   - guides/fields/resolvers.md
   - guides/fields/validation.md
-  - guides/getting_started.md
   - guides/javascript_client/apollo_subscriptions.md
   - guides/javascript_client/graphiql_subscriptions.md
   - guides/javascript_client/overview.md
@@ -140,7 +142,6 @@ standalone:
   - guides/queries/response_extensions.md
   - guides/queries/timeout.md
   - guides/queries/tracing.md
-  - guides/related_projects.md
   - guides/relay/range_add.md
   - guides/schema/dynamic_types.md
   - guides/schema/generators.md
