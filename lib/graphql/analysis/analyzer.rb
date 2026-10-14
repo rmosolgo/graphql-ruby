@@ -9,6 +9,10 @@ module GraphQL
     #
     # @param [GraphQL::Query, GraphQL::Execution::Multiplex] The query or multiplex to analyze
     class Analyzer
+      # Return this from {#on_enter_fragment_spread} to reuse a cached result
+      # without visiting the fragment's selections for this analyzer.
+      SKIP_FRAGMENT_SPREAD_CHILDREN = Object.new.freeze
+
       def initialize(subject)
         @subject = subject
 
@@ -62,7 +66,6 @@ module GraphQL
       build_visitor_hooks :document
       build_visitor_hooks :enum
       build_visitor_hooks :field
-      build_visitor_hooks :fragment_spread
       build_visitor_hooks :inline_fragment
       build_visitor_hooks :input_object
       build_visitor_hooks :list_type
@@ -74,6 +77,13 @@ module GraphQL
       build_visitor_hooks :variable_identifier
       build_visitor_hooks :abstract_node
       # rubocop:enable Development/NoEvalCop
+
+      def on_enter_fragment_spread(node, parent, visitor)
+      end
+
+      def on_leave_fragment_spread(node, parent, visitor)
+      end
+
       protected
 
       # @return [GraphQL::Query, GraphQL::Execution::Multiplex] Whatever this analyzer is analyzing
