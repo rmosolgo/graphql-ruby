@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module GraphQL
-  # This error is raised when `Types::Float` is asked to return a non-finite value.
+  # This error is passed to `Schema.type_error` when `Types::Float` is asked to return a non-finite value.
   class FloatEncodingError < GraphQL::RuntimeTypeError
     # The value which couldn't be encoded
     attr_reader :float_value

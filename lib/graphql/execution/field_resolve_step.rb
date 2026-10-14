@@ -533,7 +533,13 @@ module GraphQL
           end
           result_a
         else
-          return_type.coerce_result(field_result, ctx)
+          begin
+            return_type.coerce_result(field_result, ctx)
+          rescue GraphQL::ExecutionError => err
+            err.ast_nodes = ast_nodes if err.ast_node.nil?
+            @runner.add_finalizer(ctx.query, result_h, result_key, err)
+            err
+          end
         end
       end
 

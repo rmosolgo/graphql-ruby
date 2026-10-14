@@ -9,7 +9,13 @@ module GraphQL
       end
 
       def self.coerce_result(value, _ctx)
-        !!value
+        if value == true || value == false
+          value
+        elsif value.is_a?(Numeric) && value.finite?
+          !value.zero?
+        else
+          raise GraphQL::CoercionError, "Could not coerce value #{value.inspect} to Boolean"
+        end
       end
 
       default_scalar true

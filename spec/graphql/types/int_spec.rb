@@ -32,15 +32,15 @@ describe GraphQL::Types::Int do
 
       it "raises on values out of bounds" do
         err_ctx = GraphQL::Query.new(Dummy::Schema, "{ __typename }").context
-        assert_raises(GraphQL::IntegerEncodingError) { GraphQL::Types::Int.coerce_result(2**31, err_ctx) }
-        err = assert_raises(GraphQL::IntegerEncodingError) { GraphQL::Types::Int.coerce_result(-(2**31 + 1), err_ctx) }
+        assert_raises(GraphQL::CoercionError) { GraphQL::Types::Int.coerce_result(2**31, err_ctx) }
+        err = assert_raises(GraphQL::CoercionError) { GraphQL::Types::Int.coerce_result(-(2**31 + 1), err_ctx) }
         assert_equal "Integer out of bounds: -2147483649. Consider using ID or GraphQL::Types::BigInt instead.", err.message
 
-        err = assert_raises GraphQL::IntegerEncodingError do
-          Dummy::Schema.execute("{ hugeInteger }")
-        end
+        result = Dummy::Schema.execute("{ hugeInteger }")
         expected_err = "Integer out of bounds: 2147483648 @ hugeInteger (Query.hugeInteger). Consider using ID or GraphQL::Types::BigInt instead."
-        assert_equal expected_err, err.message
+        assert_equal({ "hugeInteger" => nil }, result["data"])
+        assert_equal ["hugeInteger"], result["errors"].first["path"]
+        assert_equal expected_err, result["errors"].first["message"]
       end
     end
   end

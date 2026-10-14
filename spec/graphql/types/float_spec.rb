@@ -65,21 +65,18 @@ describe GraphQL::Types::Float do
     end
 
     it "raises on non-finite values" do
-      assert_raises(GraphQL::FloatEncodingError) do
+      assert_raises(GraphQL::CoercionError) do
         GraphQL::Types::Float.coerce_isolated_result(Float::INFINITY)
       end
-      assert_raises(GraphQL::FloatEncodingError) do
+      assert_raises(GraphQL::CoercionError) do
         GraphQL::Types::Float.coerce_isolated_result(-Float::INFINITY)
       end
 
-      err = assert_raises(GraphQL::FloatEncodingError) do
-        schema.execute("{ nonFinite }")
-      end
-      expected_message = exec_next_error_message(
-        "Query.nonFinite",
-        "Float is not finite: NaN#{if_exec_next("", " @ nonFinite (Query.nonFinite)")}.",
-      )
-      assert_equal expected_message, err.message
+      result = schema.execute("{ nonFinite }")
+      expected_message = "Float is not finite: NaN#{if_exec_next("", " @ nonFinite (Query.nonFinite)")}."
+      assert_equal({ "nonFinite" => nil }, result["data"])
+      assert_equal ["nonFinite"], result["errors"].first["path"]
+      assert_equal expected_message, result["errors"].first["message"]
     end
   end
 end
