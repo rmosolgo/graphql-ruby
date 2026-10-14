@@ -175,7 +175,7 @@ bundle exec rake docs:check
 bundle exec rake docs:build_twice
 ```
 
-See the [documentation maintenance guide](/docs/maintenance) for API links, GraphQL code blocks, redirects, and release documentation.
+See the [documentation maintenance guide](/development/documentation_maintenance) for API links, GraphQL code blocks, redirects, and release documentation.
 
 ### API Docs
 

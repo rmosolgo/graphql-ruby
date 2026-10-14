@@ -5,7 +5,7 @@ redirects:
   - old_path: /docs/maintenance
     destination:
       kind: page
-      value: docs/maintenance.md
+      value: guides/development/documentation_maintenance.md
   - old_path: /guides
     destination:
       kind: page
