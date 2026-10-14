@@ -1280,7 +1280,6 @@ describe GraphQL::Schema::InputObject do
     end
 
     describe "when sent into a query" do
-      let(:variables) { {} }
       let(:result) { Dummy::Schema.execute(query_string, variables: variables) }
 
       describe "list inputs" do

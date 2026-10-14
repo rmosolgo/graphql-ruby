@@ -207,7 +207,7 @@ if RUBY_VERSION >= "3.2.0"
 
             assert_equal 0.2, v2
             assert_equal 0.3, v3
-            assert_in_delta 0.0, started_at_2 - ended_at_2, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Already-loaded values returned instantly"
+            assert_in_delta 0.0, ended_at_2 - started_at_2, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Already-loaded values returned instantly"
 
             assert_in_delta 0.3, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "IO ran in parallel"
           end

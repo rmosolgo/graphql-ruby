@@ -46,8 +46,6 @@ describe GraphQL::StaticValidation::Validator do
   end
 
   describe "validation order" do
-    let(:document) { GraphQL.parse(query_string)}
-
     describe "fields & arguments" do
       let(:query_string) { %|
         query getCheese($id: Int!) {

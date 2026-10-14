@@ -502,4 +502,89 @@ describe "Next Execution" do
     result = run_next("{ __typename }", context: { trace: trace_class.new })
     assert_equal({ "data" => { "__typename" => "Query" } }, result.to_h)
   end
+
+  class NextEnumerableListSchema < GraphQL::Schema
+    class Item < GraphQL::Schema::Object
+      field :n, Int, hash_key: :n
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :item_set, [Item], resolve_static: true
+      field :int_set, [Int], resolve_static: true
+
+      def self.item_set(_ctx)
+        Set[{ n: 1 }, { n: 2 }]
+      end
+
+      def self.int_set(_ctx)
+        Set[3, 4]
+      end
+    end
+
+    query(Query)
+    use GraphQL::Execution::Next
+  end
+
+  it "runs lists of non-Array enumerables" do
+    result = NextEnumerableListSchema.execute_next("{ itemSet { n } intSet }")
+    assert_equal({ "data" => { "itemSet" => [{ "n" => 1 }, { "n" => 2 }], "intSet" => [3, 4] } }, result.to_h)
+  end
+
+  if testing_rails?
+    describe "lists of ActiveRecord relations" do
+      class NextRelationListSchema < GraphQL::Schema
+        class BookTitle < GraphQL::Schema::Scalar
+          def self.coerce_result(book, _ctx)
+            book.title
+          end
+        end
+
+        class Book < GraphQL::Schema::Object
+          field :title, String
+        end
+
+        class Author < GraphQL::Schema::Object
+          field :name, String
+          field :books, [Book]
+          field :book_titles, [BookTitle], method: :books
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :authors, [Author], resolve_static: true
+
+          def self.authors(_ctx)
+            ::Author.all
+          end
+
+          def authors
+            self.class.authors(context)
+          end
+        end
+
+        query(Query)
+        use GraphQL::Execution::Next
+      end
+
+      def run_and_log_sql(query_str, engine)
+        sql = []
+        log_sql = ->(*, payload) { sql << payload[:sql] unless payload[:name] == "SCHEMA" || payload[:cached] }
+        result = ActiveSupport::Notifications.subscribed(log_sql, "sql.active_record") do
+          NextRelationListSchema.public_send(engine, query_str)
+        end
+        [result.to_h, sql]
+      end
+
+      it "loads unloaded relations without counting them first" do
+        ["{ authors { name books { title } } }", "{ authors { name bookTitles } }"].each do |query_str|
+          legacy_result, legacy_sql = run_and_log_sql(query_str, :execute)
+          next_result, next_sql = run_and_log_sql(query_str, :execute_next)
+
+          assert_equal legacy_result, next_result
+          assert_equal 4, next_result["data"]["authors"].size
+          assert_equal [], next_sql.grep(/COUNT/), query_str
+          assert_equal legacy_sql.size, next_sql.size, query_str
+        end
+      end
+    end
+  end
 end
