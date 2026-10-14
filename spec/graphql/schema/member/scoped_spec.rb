@@ -403,5 +403,99 @@ describe GraphQL::Schema::Member::Scoped do
       exec_skip_auth("{ skipAuthorizationBooksConnection(first: 10) { nodes { title } } }", context: { auth_log: log })
       assert_equal [[:scope_items, ["Jayber Crow", "Hannah Coulter"]]], log
     end
+
+    describe "custom fields on connection and edge types" do
+      class EdgeFieldAuthSchema < GraphQL::Schema
+        # Simulates an app-wide base class that opts out of reauthorization
+        class BaseObject < GraphQL::Schema::Object
+          reauthorize_scoped_objects(false)
+        end
+
+        class Reviewer < BaseObject
+          def self.authorized?(obj, ctx)
+            ctx[:auth_log] << [:authorized?, obj[:name]]
+            !obj[:secret]
+          end
+
+          field :name, String, hash_key: :name
+        end
+
+        class Book < BaseObject
+          def self.authorized?(obj, ctx)
+            ctx[:auth_log] << [:authorized?, obj[:title]]
+            true
+          end
+
+          def self.scope_items(list, ctx)
+            ctx[:auth_log] << [:scope_items, list.map { |b| b[:title] }]
+            list.dup
+          end
+
+          field :title, String, hash_key: :title
+        end
+
+        class BookEdge < GraphQL::Types::Relay::BaseEdge
+          node_type(Book)
+          # Not a node -- this should be authorized normally:
+          field :reviewer, Reviewer, resolve_each: :reviewer
+
+          def self.reviewer(edge, _context)
+            { name: "Secret Reviewer for #{edge.node[:title]}", secret: true }
+          end
+
+          def reviewer
+            self.class.reviewer(object, context)
+          end
+        end
+
+        class BookConnection < GraphQL::Types::Relay::BaseConnection
+          edge_type(BookEdge)
+          # Not a node -- this should be authorized normally:
+          field :top_reviewer, Reviewer, resolve_each: :top_reviewer
+
+          def self.top_reviewer(_conn, _context)
+            { name: "Secret Top Reviewer", secret: true }
+          end
+
+          def top_reviewer
+            self.class.top_reviewer(object, context)
+          end
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :books, BookConnection, resolve_static: true
+
+          def books
+            self.class.books(context)
+          end
+
+          def self.books(_context)
+            [{ title: "Jayber Crow" }, { title: "Hannah Coulter" }]
+          end
+        end
+
+        query(Query)
+        use GraphQL::Execution::Next
+      end
+
+      [:execute, :execute_next].each do |exec_method|
+        it "authorizes non-node objects on edge types (#{exec_method})" do
+          log = []
+          res = EdgeFieldAuthSchema.public_send(exec_method, "{ books(first: 10) { edges { node { title } reviewer { name } } } }", context: { auth_log: log })
+          assert_equal [{ "node" => { "title" => "Jayber Crow" }, "reviewer" => nil }, { "node" => { "title" => "Hannah Coulter" }, "reviewer" => nil }], res["data"]["books"]["edges"]
+          assert_includes log, [:authorized?, "Secret Reviewer for Jayber Crow"]
+          assert_includes log, [:authorized?, "Secret Reviewer for Hannah Coulter"]
+          refute_includes log, [:authorized?, "Jayber Crow"], "Nodes are still skipped"
+        end
+
+        it "authorizes non-node objects on connection types (#{exec_method})" do
+          log = []
+          res = EdgeFieldAuthSchema.public_send(exec_method, "{ books(first: 10) { nodes { title } topReviewer { name } } }", context: { auth_log: log })
+          assert_nil res["data"]["books"]["topReviewer"]
+          assert_includes log, [:authorized?, "Secret Top Reviewer"]
+          refute_includes log, [:authorized?, "Jayber Crow"], "Nodes are still skipped"
+        end
+      end
+    end
   end
 end
