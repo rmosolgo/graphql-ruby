@@ -171,7 +171,7 @@ module GraphQL
         field_name = @ast_node.name
         @field_definition = query.types.field(@parent_type, field_name) || raise(GraphQL::Error, "No field definition found for #{@parent_type.to_type_signature}.#{ast_node.name} (at #{@ast_node.position})")
         set_current_field
-        @arguments, errors = @runner.input_values[query].argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
+        @arguments, errors = query.input_values.argument_values(@field_definition, @ast_node.arguments, self) # rubocop:disable Development/ContextIsPassedCop
         if errors
           build_errors_result(errors, nil)
           return
@@ -188,7 +188,7 @@ module GraphQL
       # Used for compatibility in Schema::Subscription
       def arguments_without_loads
         if @arguments_without_loads.nil?
-          @arguments_without_loads, _errors = @runner.input_values[@selections_step.query].argument_values(@field_definition, ast_node.arguments, nil)
+          @arguments_without_loads, _errors = @selections_step.query.input_values.argument_values(@field_definition, ast_node.arguments, nil)
         end
         @arguments_without_loads
       end
@@ -309,7 +309,7 @@ module GraphQL
           if directives
             directives.each do |dir_node|
               if (dir_defn = @runner.runtime_directives[dir_node.name])
-                dir_args, errors = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, self)  # rubocop:disable Development/ContextIsPassedCop
+                dir_args, errors = query.input_values.argument_values(dir_defn, dir_node.arguments, self)  # rubocop:disable Development/ContextIsPassedCop
                 if errors
                   @results.each { |r| r.delete(@key) }
                   errors.each { |e| e.ast_node = dir_node }
