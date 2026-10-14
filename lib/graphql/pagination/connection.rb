@@ -178,6 +178,9 @@ module GraphQL
       # @return [GraphQL::Schema::Field] The field this connection was returned by
       attr_accessor :field
 
+      # @return [GraphQL::Execution::Lookahead, nil] Selections on this connection, set by connection fields
+      attr_accessor :lookahead
+
       # @return [Array<Object>] A slice of {items}, constrained by {@first_value}/{@after_value}/{@last_value}/{@before_value}
       def nodes
         raise PaginationImplementationMissingError, "Implement #{self.class}#nodes to paginate `@items`"

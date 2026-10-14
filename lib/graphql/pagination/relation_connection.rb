@@ -29,6 +29,12 @@ module GraphQL
       end
 
       def has_next_page
+        # If the query loads the page anyway, load it now so its extra row answers this
+        if @has_next_page.nil? && peek_next_page? &&
+            (lookahead.selects?(:nodes) || lookahead.selects?(:edges) ||
+              page_info_selection.selects?(:start_cursor) || page_info_selection.selects?(:end_cursor))
+          load_nodes
+        end
         if @has_next_page.nil?
           @has_next_page = if before_offset && before_offset > 0
             true
@@ -246,11 +252,32 @@ module GraphQL
           # `AsyncDataloader` may resolve sibling fields (eg, `edges` and `pageInfo`)
           # in separate Fibers, so several callers can get here before `@nodes` is set.
           (@load_monitor ||= Monitor.new).synchronize do
-            @nodes ||= limited_nodes.to_a
+            @nodes ||= load_page
           end
         else
-          @nodes = limited_nodes.to_a
+          @nodes = load_page
         end
+      end
+
+      # Fetch one row past `first` so `has_next_page` needs no extra query.
+      # Skips arrays (no query to save) and relations limited below `first` (no next page).
+      def load_page
+        page = limited_nodes
+        return page.to_a if page.is_a?(Array) || !peek_next_page? || relation_limit(page) != first
+
+        rows = set_limit(page, first + 1).to_a
+        @has_next_page = rows.size > first
+        rows.first(first)
+      end
+
+      # Peek on forward pages that select `hasNextPage`; `last` and `before` keep the separate check
+      def peek_next_page?
+        return @peek_next_page if defined?(@peek_next_page)
+        @peek_next_page = first&.positive? && last.nil? && before.nil? && page_info_selection.selects?(:has_next_page)
+      end
+
+      def page_info_selection
+        @page_info_selection ||= (lookahead || GraphQL::Execution::Lookahead::NULL_LOOKAHEAD).selection(:page_info)
       end
     end
   end
