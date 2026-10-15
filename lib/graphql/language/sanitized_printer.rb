@@ -10,11 +10,16 @@ module GraphQL
     # on the type of fields or arguments, we have to track the current object, field
     # and input type while printing the query.
     #
-    # @example Printing a scrubbed string
-    #   printer = QueryPrinter.new(query)
-    #   puts printer.sanitized_query_string
+    # See [Query#sanitized_query_string](rdoc-ref:Query#sanitized_query_string)
     #
-    # @see {Query#sanitized_query_string}
+    # **Examples**
+    #
+    # **Example: Printing a scrubbed string**
+    #
+    # ```ruby
+    # printer = QueryPrinter.new(query)
+    # puts printer.sanitized_query_string
+    # ```
     class SanitizedPrinter < GraphQL::Language::Printer
 
       REDACTED = "\"<REDACTED>\""
@@ -27,7 +32,12 @@ module GraphQL
         @inline_variables = inline_variables
       end
 
-      # @return [String, nil] A scrubbed query string, if the query was valid.
+      # **Returns**
+      #
+      # - `String, nil` — A scrubbed query string, if the query was valid.
+      #
+      # :call-seq:
+      #   sanitized_query_string() -> String | nil
       def sanitized_query_string
         if query.valid?
           print(query.document)

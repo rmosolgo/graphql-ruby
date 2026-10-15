@@ -384,13 +384,6 @@ describe GraphQL::Schema::RelayClassicMutation do
             }
           }
         |}
-        let(:introspect) {%|
-          {
-            __schema {
-              types { name, fields { name } }
-            }
-          }
-        |}
 
         after do
           StarWars::DATA["Ship"].delete("9")

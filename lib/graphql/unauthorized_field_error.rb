@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 module GraphQL
   class UnauthorizedFieldError < GraphQL::UnauthorizedError
-    # @return [Field] the field that failed the authorization check
+    # **Returns**
+    #
+    # - `Field` — the field that failed the authorization check
     attr_accessor :field
 
     def initialize(message = nil, object: nil, type: nil, context: nil, field: nil)

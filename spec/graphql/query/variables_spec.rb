@@ -35,6 +35,14 @@ describe "GraphQL::Query::Variables" do
       res = schema.execute(query_string, variables: variables)
       assert_nil res["errors"]
     end
+
+    it "uses defaults for omitted non-null variables" do
+      query_string = "query($a: Int! = 1, $b: Int! = 2, $c: Int! = 3) { items(a: $a, b: $b, c: $c) }"
+      res = schema.execute(query_string)
+
+      assert_nil res["errors"]
+      assert_equal ["1", "2", "3"], res["data"]["items"]
+    end
   end
 
   describe "when validate_max_errors is nil" do

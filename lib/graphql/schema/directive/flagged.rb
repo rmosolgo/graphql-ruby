@@ -2,7 +2,7 @@
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
-      # This is _similar_ to {Directive::Feature}, except it's prescribed by the server, not the client.
+      # This is _similar_ to [Directive::Feature](rdoc-ref:Directive::Feature), except it's prescribed by the server, not the client.
       #
       # In this case, the server hides types and fields _entirely_, unless the current context has certain `:flags` present.
       class Flagged < GraphQL::Schema::Directive

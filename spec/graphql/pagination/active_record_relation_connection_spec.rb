@@ -258,6 +258,11 @@ if testing_rails?
       require "async"
 
       describe "when Fibers share a connection" do
+        let(:async_context) {
+          async_schema = Class.new(schema) { use GraphQL::Dataloader::AsyncDataloader }
+          GraphQL::Query.new(async_schema, "{ __typename }").context
+        }
+
         class SlowCountingRelationConnection < GraphQL::Pagination::ActiveRecordRelationConnection
           attr_reader :count_calls
 
@@ -271,7 +276,7 @@ if testing_rails?
         end
 
         it "loads the page only once when several Fibers resolve it" do
-          connection = GraphQL::Pagination::ActiveRecordRelationConnection.new(Food.all, first: 2, max_page_size: 10, context: { dataloader: GraphQL::Dataloader::AsyncDataloader.new })
+          connection = GraphQL::Pagination::ActiveRecordRelationConnection.new(Food.all, first: 2, max_page_size: 10, context: async_context)
           results = []
 
           log = with_active_record_log do
@@ -285,7 +290,7 @@ if testing_rails?
         end
 
         it "counts the relation only once when page fields resolve in separate Fibers" do
-          connection = SlowCountingRelationConnection.new(Food.all, last: 2, max_page_size: 10, context: { dataloader: GraphQL::Dataloader::AsyncDataloader.new })
+          connection = SlowCountingRelationConnection.new(Food.all, last: 2, max_page_size: 10, context: async_context)
           nodes = nil
           has_previous_page = nil
 

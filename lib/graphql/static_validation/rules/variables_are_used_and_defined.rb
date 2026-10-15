@@ -89,7 +89,7 @@ module GraphQL
       private
 
       # Follow spreads in `node`, looking them up from `spreads_for_context` and finding their match in `fragment_definitions`.
-      # Use those fragments to update {VariableUsage}s in `parent_variables`.
+      # Use those fragments to update [VariableUsage](rdoc-ref:VariableUsage)s in `parent_variables`.
       # Avoid infinite loops by skipping anything in `visited_fragments`.
       def follow_spreads(node, parent_variables, spreads_for_context, fragment_definitions, visited_fragments)
         spreads = spreads_for_context[node] - visited_fragments

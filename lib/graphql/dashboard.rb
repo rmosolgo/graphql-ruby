@@ -5,36 +5,49 @@ module Graphql
   # `GraphQL::Dashboard` is a `Rails::Engine`-based dashboard for viewing metadata about your GraphQL schema.
   #
   # Pass the class name of your schema when mounting it.
-  # @see GraphQL::Tracing::DetailedTrace DetailedTrace for viewing production traces in the Dashboard
+  # See [GraphQL::Tracing::DetailedTrace](rdoc-ref:GraphQL::Tracing::DetailedTrace) DetailedTrace for viewing production traces in the Dashboard
   #
-  # @example Mounting the Dashboard in your app
-  #   mount GraphQL::Dashboard, at: "graphql_dashboard", schema: "MySchema"
+  # **Examples**
   #
-  # Pass an array to allow selecting from multiple schemas with the `schema` query parameter.
-  #   mount GraphQL::Dashboard, at: "graphql_dashboard", schema: ["MySchema", "OtherSchema"]
+  # **Example: Mounting the Dashboard in your app**
   #
-  # @example Authenticating the Dashboard with HTTP Basic Auth
-  #   # config/initializers/graphql_dashboard.rb
-  #   GraphQL::Dashboard.middleware.use(Rack::Auth::Basic) do |username, password|
-  #     # Compare the provided username/password to an application setting:
-  #     ActiveSupport::SecurityUtils.secure_compare(Rails.application.credentials.graphql_dashboard_username, username) &&
-  #       ActiveSupport::SecurityUtils.secure_compare(Rails.application.credentials.graphql_dashboard_username, password)
+  # ```ruby
+  # mount GraphQL::Dashboard, at: "graphql_dashboard", schema: "MySchema"
+  # ```
+  #
+  # To allow selecting from multiple schemas with the `schema` query parameter:
+  #
+  # ```ruby
+  # mount GraphQL::Dashboard, at: "graphql_dashboard", schema: ["MySchema", "OtherSchema"]
+  # ```
+  #
+  # **Example: Authenticating the Dashboard with HTTP Basic Auth**
+  #
+  # ```ruby
+  # # config/initializers/graphql_dashboard.rb
+  # GraphQL::Dashboard.middleware.use(Rack::Auth::Basic) do |username, password|
+  #   # Compare the provided username/password to an application setting:
+  #   ActiveSupport::SecurityUtils.secure_compare(Rails.application.credentials.graphql_dashboard_username, username) &&
+  #     ActiveSupport::SecurityUtils.secure_compare(Rails.application.credentials.graphql_dashboard_username, password)
+  # end
+  # ```
+  #
+  # **Example: Custom Rails authentication**
+  #
+  # ```ruby
+  # # config/initializers/graphql_dashboard.rb
+  # ActiveSupport.on_load(:graphql_dashboard_application_controller) do
+  #   # context here is GraphQL::Dashboard::ApplicationController
+  #
+  #   before_action do
+  #     raise ActionController::RoutingError.new('Not Found') unless current_user&.admin?
   #   end
   #
-  # @example Custom Rails authentication
-  #   # config/initializers/graphql_dashboard.rb
-  #   ActiveSupport.on_load(:graphql_dashboard_application_controller) do
-  #     # context here is GraphQL::Dashboard::ApplicationController
-  #
-  #     before_action do
-  #       raise ActionController::RoutingError.new('Not Found') unless current_user&.admin?
-  #     end
-  #
-  #     def current_user
-  #       # load current user
-  #     end
+  #   def current_user
+  #     # load current user
   #   end
-  #
+  # end
+  # ```
   class Dashboard < Rails::Engine
     engine_name "graphql_dashboard"
     isolate_namespace(Graphql::Dashboard)

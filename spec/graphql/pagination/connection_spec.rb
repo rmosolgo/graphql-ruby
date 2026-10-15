@@ -21,6 +21,22 @@ describe GraphQL::Pagination::Connection do
 end
 
 describe GraphQL::Pagination::RelationConnection do
+  it "rejects malformed cursor offsets" do
+    schema = Class.new(GraphQL::Schema) do
+      cursor_encoder(ConnectionAssertions::NonceEnabledEncoder)
+    end
+    context = GraphQL::Query.new(schema, "{ __typename }").context
+    connection = GraphQL::Pagination::RelationConnection.new([], context: context)
+
+    ["-1", "0", "abc", "1e10"].each do |cursor|
+      encoded_cursor = ConnectionAssertions::NonceEnabledEncoder.encode(cursor)
+      error = assert_raises(GraphQL::ExecutionError) do
+        connection.send(:offset_from_cursor, encoded_cursor)
+      end
+      assert_includes error.message, "Invalid cursor"
+    end
+  end
+
   it "loads nodes without context" do
     connection_class = Class.new(GraphQL::Pagination::RelationConnection) do
       private

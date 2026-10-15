@@ -70,6 +70,22 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     end
   end
 
+  describe "with equal invalid literals in a list" do
+    let(:query_string) { <<-GRAPHQL
+      {
+        dupes: searchDairy(product: [{source: 1.1}, {source: 1.1}]) { __typename }
+      }
+    GRAPHQL
+    }
+
+    it "reports an error for each one" do
+      assert_equal([
+        ["query", "dupes", "product", 0, "source"],
+        ["query", "dupes", "product", 1, "source"],
+      ], errors.map { |err| err["path"] })
+    end
+  end
+
   describe "using enums for scalar arguments it adds an error" do
     let(:query_string) { <<-GRAPHQL
       {

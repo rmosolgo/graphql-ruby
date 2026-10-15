@@ -5,7 +5,9 @@ module GraphQL
     class Variables
       extend Forwardable
 
-      # @return [Array<GraphQL::Query::VariableValidationError>]  Any errors encountered when parsing the provided variables and literal values
+      # **Returns**
+      #
+      # - `Array<GraphQL::Query::VariableValidationError>` — Any errors encountered when parsing the provided variables and literal values
       attr_reader :errors
 
       attr_reader :context
@@ -35,7 +37,11 @@ module GraphQL
             value_was_provided =  @provided_variables.key?(variable_name)
             max_errors = schema.validate_max_errors - @errors.count if schema.validate_max_errors
             begin
-              validation_result = variable_type.validate_input(provided_value, ctx, max_errors: max_errors)
+              validation_result = if value_was_provided || default_value.nil?
+                variable_type.validate_input(provided_value, ctx, max_errors: max_errors)
+              else
+                GraphQL::Query::InputValidationResult::VALID
+              end
               if validation_result.valid?
                 if value_was_provided
                   # Add the variable if a value was provided

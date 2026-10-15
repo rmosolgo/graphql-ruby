@@ -11,21 +11,32 @@ module GraphQL
   #
   # Use `load_context:` and `visible?` to dump schemas under certain visibility constraints.
   #
-  # @example Dump a Schema to .graphql + .json files
-  #   require "graphql/rake_task"
-  #   GraphQL::RakeTask.new(schema_name: "MySchema")
+  # **Examples**
   #
-  #   # $ rake graphql:schema:dump
-  #   # Schema IDL dumped to ./schema.graphql
-  #   # Schema JSON dumped to ./schema.json
+  # **Example: Dump a Schema to .graphql + .json files**
   #
-  # @example Invoking the task from Ruby
-  #   require "rake"
-  #   Rake::Task["graphql:schema:dump"].invoke
+  # ```ruby
+  # require "graphql/rake_task"
+  # GraphQL::RakeTask.new(schema_name: "MySchema")
   #
-  # @example Providing arguments to build the introspection query
-  #   require "graphql/rake_task"
-  #   GraphQL::RakeTask.new(schema_name: "MySchema", include_is_one_of: true)
+  # # $ rake graphql:schema:dump
+  # # Schema IDL dumped to ./schema.graphql
+  # # Schema JSON dumped to ./schema.json
+  # ```
+  #
+  # **Example: Invoking the task from Ruby**
+  #
+  # ```ruby
+  # require "rake"
+  # Rake::Task["graphql:schema:dump"].invoke
+  # ```
+  #
+  # **Example: Providing arguments to build the introspection query**
+  #
+  # ```ruby
+  # require "graphql/rake_task"
+  # GraphQL::RakeTask.new(schema_name: "MySchema", include_is_one_of: true)
+  # ```
   class RakeTask
     include Rake::DSL
 
@@ -45,37 +56,57 @@ module GraphQL
       include_is_one_of: false
     }
 
-    # @return [String] Namespace for generated tasks
+    # **Returns**
+    #
+    # - `String` — Namespace for generated tasks
     attr_writer :namespace
 
     def rake_namespace
       @namespace
     end
 
-    # @return [Array<String>]
+    # **Returns**
+    #
+    # - `Array<String>`
     attr_accessor :dependencies
 
-    # @return [String] By default, used to find the schema as a constant.
-    # @see {#load_schema} for loading a schema another way
+    # See [load_schema](rdoc-ref:#load_schema) for loading a schema another way
+    #
+    # **Returns**
+    #
+    # - `String` — By default, used to find the schema as a constant.
     attr_accessor :schema_name
 
-    # @return [<#call(task)>] A proc for loading the target GraphQL schema
+    # **Returns**
+    #
+    # - `<#call(task)>` — A proc for loading the target GraphQL schema
     attr_accessor :load_schema
 
-    # @return [<#call(task)>] A callable for loading the query context
+    # **Returns**
+    #
+    # - `<#call(task)>` — A callable for loading the query context
     attr_accessor :load_context
 
-    # @return [String] target for IDL task
+    # **Returns**
+    #
+    # - `String` — target for IDL task
     attr_accessor :idl_outfile
 
-    # @return [String] target for JSON task
+    # **Returns**
+    #
+    # - `String` — target for JSON task
     attr_accessor :json_outfile
 
-    # @return [String] directory for IDL & JSON files
+    # **Returns**
+    #
+    # - `String` — directory for IDL & JSON files
     attr_accessor :directory
 
-    # @return [Boolean] Options for additional fields in the introspection query JSON response
-    # @see GraphQL::Schema.as_json
+    # See [GraphQL::Schema.as_json](rdoc-ref:GraphQL::Schema.as_json).
+    #
+    # **Returns**
+    #
+    # - `Boolean` — Options for additional fields in the introspection query JSON response
     attr_accessor :include_deprecated_args, :include_schema_description, :include_is_repeatable, :include_specified_by_url, :include_is_one_of
 
     # Set the parameters of this task by passing keyword arguments

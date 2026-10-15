@@ -1536,6 +1536,115 @@ describe GraphQL::Dataloader do
     assert_equal expected_errors, res.context[:errors]
   end
 
+  describe "list items resolved after an earlier item waits on the dataloader" do
+    class ListItemContextSchema < GraphQL::Schema
+      class AuthSource < GraphQL::Dataloader::Source
+        def fetch(ids)
+          ids.map { true }
+        end
+      end
+
+      class Tag < GraphQL::Schema::Object
+        field :id, Integer, method: :itself
+
+        def self.authorized?(obj, ctx)
+          ctx[:seen] << [ctx[:current_path], ctx[:current_field]&.path, ctx[:current_arguments]&.keyword_arguments]
+          ctx.dataloader.with(AuthSource).load(obj)
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :tags, [Tag], resolve_static: true do
+          argument :limit, Integer
+        end
+
+        def self.tags(context, limit:)
+          [1, 2, 3].first(limit)
+        end
+
+        def tags(limit:)
+          self.class.tags(context, limit: limit)
+        end
+      end
+
+      query(Query)
+      use GraphQL::Dataloader
+    end
+
+    it "has proper context[:current_path], context[:current_field], and context[:current_arguments]" do
+      res = ListItemContextSchema.execute("{ tags(limit: 3) { id } }", context: { seen: [] })
+      expected = if_exec_next(
+        # No context[:current_...] values:
+        [[nil, nil, nil]] * 3,
+        [0, 1, 2].map { |idx| [["tags", idx], "Query.tags", { limit: 3 }] }
+      )
+      assert_equal expected, res.context[:seen]
+    end
+  end 
+  
+  describe "list items under an eager mutation field that wait on the dataloader" do
+    class EagerListItemContextSchema < GraphQL::Schema
+      class AuthSource < GraphQL::Dataloader::Source
+        def fetch(ids)
+          ids.map { true }
+        end
+      end
+
+      class Tag < GraphQL::Schema::Object
+        field :id, Integer, method: :itself
+
+        def self.authorized?(obj, ctx)
+          before = ctx[:current_path]
+          result = ctx.dataloader.with(AuthSource).load(obj)
+          ctx[:seen][obj] = [before, ctx[:current_path]]
+          result
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :tags, [Tag], resolve_static: true
+
+        def self.tags(context)
+          [1, 2, 3]
+        end
+
+        def tags
+          self.class.tags(context)
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :int, Integer
+      end
+
+      query(Query)
+      mutation(Mutation)
+      use GraphQL::Dataloader
+    end
+
+    def assert_paths_kept(schema)
+      res = schema.execute("mutation { tags { id } }", context: { seen: {} })
+      expected = if_exec_next(
+        # No context[:current_...] values:
+        { 1 => [nil, nil], 2 => [nil, nil], 3 => [nil, nil] },
+        { 1 => [["tags", 0]] * 2, 2 => [["tags", 1]] * 2, 3 => [["tags", 2]] * 2 }
+      )
+      assert_equal expected, res.context[:seen]
+    end
+
+    it "keeps each item's context[:current_path] across the wait" do
+      assert_paths_kept(EagerListItemContextSchema)
+    end
+
+    if RUBY_VERSION >= "3.1.1"
+      require "async"
+
+      it "keeps each item's context[:current_path] across the wait with AsyncDataloader" do
+        assert_paths_kept(Class.new(EagerListItemContextSchema) { use GraphQL::Dataloader::AsyncDataloader })
+      end
+    end
+  end
+
   it "passes along throws" do
     value = catch(:hello) do
       dataloader = GraphQL::Dataloader.new

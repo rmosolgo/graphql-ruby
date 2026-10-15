@@ -1,13 +1,4 @@
----
-layout: guide
-search: true
-section: Authorization
-title: Visibility
-desc: Programmatically hide parts of the GraphQL schema from some users.
-index: 1
-redirect_from:
-- /schema/limiting_visibility
----
+# Visibility
 
 With GraphQL-Ruby, it's possible to _hide_ parts of your schema from some users. This isn't exactly part of the GraphQL spec, but it's roughly within the bounds of the spec.
 
@@ -110,7 +101,7 @@ class Types::BaseField < GraphQL::Schema::Field
 end
 ```
 
-For this to work, the base field class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-fields" %}.
+For this to work, the base field class must be [configured with other GraphQL types](/type_definitions/extensions.html#customizing-fields).
 
 ## Argument Visibility
 
@@ -128,7 +119,7 @@ class Types::BaseArgument < GraphQL::Schema::Argument
 end
 ```
 
-For this to work, the base argument class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-arguments" %}.
+For this to work, the base argument class must be [configured with other GraphQL types](/type_definitions/extensions.html#customizing-arguments).
 
 ## Opting Out
 
@@ -146,7 +137,7 @@ For big schemas, this can be a worthwhile speed-up.
 
 ## Migration Notes
 
-{{ "GraphQL::Schema::Visibility" | api_doc }} is a _new_ implementation of visibility in GraphQL-Ruby. It has some slight differences from the previous implementation ({{ "GraphQL::Schema::Warden" | api_doc }}):
+[GraphQL::Schema::Visibility](rdoc-ref:GraphQL::Schema::Visibility) is a _new_ implementation of visibility in GraphQL-Ruby. It has some slight differences from the previous implementation ([GraphQL::Schema::Warden](rdoc-ref:GraphQL::Schema::Warden)):
 
 - `Visibility` speeds up Rails app boot because it doesn't require all types to be loaded during boot and only loads types as they are used by queries.
 - `Visibility` supports predefined, reusable visibility profiles which speeds up queries using complicated `visible?` checks.

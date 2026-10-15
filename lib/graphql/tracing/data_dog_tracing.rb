@@ -49,9 +49,15 @@ module GraphQL
       end
 
       # Implement this method in a subclass to apply custom tags to datadog spans
-      # @param key [String] The event being traced
-      # @param data [Hash] The runtime data for this event (@see GraphQL::Tracing for keys for each event)
-      # @param span [Datadog::Tracing::SpanOperation] The datadog span for this event
+      #
+      # **Parameters**
+      #
+      # - `key` (`String`) — The event being traced
+      # - `data` (`Hash`) — The runtime data for this event; see [GraphQL::Tracing](rdoc-ref:GraphQL::Tracing) for keys for each event
+      # - `span` (`Datadog::Tracing::SpanOperation`) — The datadog span for this event
+      #
+      # :call-seq:
+      #   prepare_span(String key, Hash data, Datadog::Tracing::SpanOperation span)
       def prepare_span(key, data, span)
       end
 

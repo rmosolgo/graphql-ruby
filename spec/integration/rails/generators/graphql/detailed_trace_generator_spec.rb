@@ -10,7 +10,7 @@ class GraphQLGeneratorsDetailedTraceGeneratorTest < Rails::Generators::TestCase
   setup do
     prepare_destination
     FileUtils.cd(File.join(destination_root, '..')) do
-      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
+      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install --skip-bootsnap`
       Graphql::Generators::InstallGenerator.start(["--skip-graphiql"], { destination_root: destination_root })
     end
   end

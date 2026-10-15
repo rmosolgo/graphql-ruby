@@ -1,18 +1,8 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Queries
-title: Ahead-of-Time AST Analysis
-desc: Check incoming query strings and reject them if they don't pass your checks
-index: 1
-redirect_from:
-  - /queries/analysis/
----
+# Ahead-of-Time AST Analysis
 
 You can do ahead-of-time analysis for your queries.
 
-The primitive for analysis is {{ "GraphQL::Analysis::Analyzer" | api_doc }}. Analyzers must inherit from this base class and implement the desired methods for analysis.
+The primitive for analysis is [GraphQL::Analysis::Analyzer](rdoc-ref:GraphQL::Analysis::Analyzer). Analyzers must inherit from this base class and implement the desired methods for analysis.
 
 ## Using Analyzers
 
@@ -32,7 +22,7 @@ Analyzers respond to methods similar to AST visitors. They're named like `on_ent
 
 - `node`: The current AST node (being entered or left)
 - `parent`: The AST node which precedes this one in the tree
-- `visitor`: A {{ "GraphQL::Analysis::Visitor" | api_doc }} which is managing this analysis run
+- `visitor`: A [GraphQL::Analysis::Visitor](rdoc-ref:GraphQL::Analysis::Visitor) which is managing this analysis run
 
 For example:
 
@@ -85,15 +75,15 @@ class BasicFieldAnalyzer < GraphQL::Analysis::Analyzer
 end
 ```
 
-See {{ "GraphQL::Analysis::Visitor" | api_doc }} for more information about the `visitor` object.
+See [GraphQL::Analysis::Visitor](rdoc-ref:GraphQL::Analysis::Visitor) for more information about the `visitor` object.
 
 ### Field Arguments
 
-Usually, analyzers will use `on_enter_field` and `on_leave_field` to process queries. To get a field's arguments during analysis, use `visitor.query.arguments_for(node, visitor.field_definition)` ({{ "GraphQL::Query#arguments_for" | api_doc }}). That method returns coerced argument values and normalizes argument literals and variable values.
+Usually, analyzers will use `on_enter_field` and `on_leave_field` to process queries. To get a field's arguments during analysis, use `visitor.query.arguments_for(node, visitor.field_definition)` ([GraphQL::Query#arguments_for](rdoc-ref:GraphQL::Query#arguments_for)). That method returns coerced argument values and normalizes argument literals and variable values.
 
 ### Errors
 
-It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return {{ "GraphQL::AnalysisError" | api_doc }} in the `result` method:
+It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return [GraphQL::AnalysisError](rdoc-ref:GraphQL::AnalysisError) in the `result` method:
 
 ```ruby
 class NoFieldsCalledHello < GraphQL::Analysis::Analyzer

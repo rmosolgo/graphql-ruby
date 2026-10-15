@@ -21,9 +21,17 @@ module GraphQL
     # Multiplex analyzers are ran for all queries, keeping state.
     # Query analyzers are ran per query, without carrying state between queries.
     #
-    # @param multiplex [GraphQL::Execution::Multiplex]
-    # @param analyzers [Array<GraphQL::Analysis::Analyzer>]
-    # @return [Array<Any>] Results from multiplex analyzers
+    # **Parameters**
+    #
+    # - `multiplex` (`GraphQL::Execution::Multiplex`)
+    # - `analyzers` (`Array<GraphQL::Analysis::Analyzer>`)
+    #
+    # **Returns**
+    #
+    # - `Array<Any>` — Results from multiplex analyzers
+    #
+    # :call-seq:
+    #   analyze_multiplex(GraphQL::Execution::Multiplex multiplex, Array[GraphQL::Analysis::Analyzer] analyzers) -> Array[Any]
     def analyze_multiplex(multiplex, analyzers)
       multiplex_analyzers = analyzers.map { |analyzer| analyzer.new(multiplex) }
 
@@ -50,9 +58,17 @@ module GraphQL
       end
     end
 
-    # @param query [GraphQL::Query]
-    # @param analyzers [Array<GraphQL::Analysis::Analyzer>]
-    # @return [Array<Any>] Results from those analyzers
+    # **Parameters**
+    #
+    # - `query` (`GraphQL::Query`)
+    # - `analyzers` (`Array<GraphQL::Analysis::Analyzer>`)
+    #
+    # **Returns**
+    #
+    # - `Array<Any>` — Results from those analyzers
+    #
+    # :call-seq:
+    #   analyze_query(GraphQL::Query query, Array[GraphQL::Analysis::Analyzer] analyzers, multiplex_analyzers:) -> Array[Any]
     def analyze_query(query, analyzers, multiplex_analyzers: [])
       query.current_trace.analyze_query(query: query) do
         query_analyzers = analyzers.map { |analyzer| analyzer.new(query) }

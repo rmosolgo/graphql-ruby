@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Type Definitions
-title: Enums
-desc: Enums are sets of discrete values
-index: 2
----
+# Enums
 
 Enum types are sets of discrete values. An enum field must return one of the possible values of the enum. In the [GraphQL Schema Definition Language](https://graphql.org/learn/schema/#enum-types) (SDL), enums are described like this:
 
@@ -39,7 +31,7 @@ params["variables"]
 
 ## Defining Enum Types
 
-In your application, enums extend {{ "GraphQL::Schema::Enum" | api_doc }} and define values with the `value(...)` method:
+In your application, enums extend [GraphQL::Schema::Enum](rdoc-ref:GraphQL::Schema::Enum) and define values with the `value(...)` method:
 
 ```ruby
 # First, a base class

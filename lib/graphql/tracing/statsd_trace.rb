@@ -8,12 +8,17 @@ module GraphQL
     # Passing any Statsd client that implements `.time(name) { ... }`
     # and `.timing(name, ms)` will work.
     #
-    # @example Installing this tracer
-    #   # eg:
-    #   # $statsd = Statsd.new 'localhost', 9125
-    #   class MySchema < GraphQL::Schema
-    #     use GraphQL::Tracing::StatsdTrace, statsd: $statsd
-    #   end
+    # **Examples**
+    #
+    # **Example: Installing this tracer**
+    #
+    # ```ruby
+    # # eg:
+    # # $statsd = Statsd.new 'localhost', 9125
+    # class MySchema < GraphQL::Schema
+    #   use GraphQL::Tracing::StatsdTrace, statsd: $statsd
+    # end
+    # ```
     StatsdTrace = MonitorTrace.create_module("statsd")
     module StatsdTrace
       class StatsdMonitor < MonitorTrace::Monitor

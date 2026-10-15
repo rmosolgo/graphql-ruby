@@ -3,17 +3,16 @@ module GraphQL
   class Query
     # Contain the validation pipeline and expose the results.
     #
-    # 0. Checks in {Query#initialize}:
+    # 0. Checks in the [GraphQL::Query](rdoc-ref:GraphQL::Query) constructor:
     #   - Rescue a ParseError, halt if there is one
     #   - Check for selected operation, halt if not found
     # 1. Validate the AST, halt if errors
     # 2. Validate the variables, halt if errors
     # 3. Run query analyzers, halt if errors
     #
-    # {#valid?} is false if any of the above checks halted the pipeline.
+    # [valid?](rdoc-ref:#valid?) is false if any of the above checks halted the pipeline.
     #
-    # @api private
-    class ValidationPipeline
+    class ValidationPipeline # :nodoc:
       attr_reader :max_depth, :max_complexity, :validate_timeout_remaining
 
       def initialize(query:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
@@ -28,13 +27,23 @@ module GraphQL
         @has_validated = false
       end
 
-      # @return [Boolean] does this query have errors that should prevent it from running?
+      # **Returns**
+      #
+      # - `Boolean` — does this query have errors that should prevent it from running?
+      #
+      # :call-seq:
+      #   valid?() -> bool
       def valid?
         ensure_has_validated
         @valid
       end
 
-      # @return [Array<GraphQL::StaticValidation::Error, GraphQL::Query::VariableValidationError>] Static validation errors for the query string
+      # **Returns**
+      #
+      # - `Array<GraphQL::StaticValidation::Error, GraphQL::Query::VariableValidationError>` — Static validation errors for the query string
+      #
+      # :call-seq:
+      #   validation_errors() -> Array[GraphQL::StaticValidation::Error | GraphQL::Query::VariableValidationError]
       def validation_errors
         ensure_has_validated
         @validation_errors

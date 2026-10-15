@@ -1,21 +1,24 @@
 # frozen_string_literal: true
 module GraphQL
-  # If a field's resolve function returns a {ExecutionError},
+  # If a field's resolve function returns an [ExecutionError](rdoc-ref:GraphQL::ExecutionError),
   # the error will be inserted into the response's `"errors"` key
   # and the field will resolve to `nil`.
   class ExecutionError < GraphQL::RuntimeError
-    # @return [String] an array describing the JSON-path into the execution
-    # response which corresponds to this error.
+    # **Returns**
+    #
+    # - `String` — an array describing the JSON-path into the execution response which corresponds to this error.
     attr_accessor :path
 
-    # @return [Hash] Optional data for error objects
-    # @deprecated Use `extensions` instead of `options`. The GraphQL spec
-    # recommends that any custom entries in an error be under the
-    # `extensions` key.
+    # **Deprecated:** Use `extensions` instead of `options`. The GraphQL spec recommends that any custom entries in an error be under the `extensions` key.
+    #
+    # **Returns**
+    #
+    # - `Hash` — Optional data for error objects
     attr_accessor :options
 
-    # @return [Hash] Optional custom data for error objects which will be added
-    # under the `extensions` key.
+    # **Returns**
+    #
+    # - `Hash` — Optional custom data for error objects which will be added under the `extensions` key.
     attr_accessor :extensions
 
     def initialize(message, ast_node: nil, ast_nodes: nil, options: nil, extensions: nil)
@@ -38,7 +41,12 @@ module GraphQL
       end
     end
 
-    # @return [Hash] An entry for the response's "errors" key
+    # **Returns**
+    #
+    # - `Hash` — An entry for the response's "errors" key
+    #
+    # :call-seq:
+    #   to_h() -> Hash
     def to_h
       hash = {
         "message" => message,

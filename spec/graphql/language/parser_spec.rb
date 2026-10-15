@@ -16,6 +16,57 @@ describe GraphQL::Language::Parser do
     assert_equal expected_message, err.message
   end
 
+  describe "source locations" do
+    it "reports validation errors after multibyte comments at their original position" do
+      ["\n", "\r\n"].each do |newline|
+        query_string = ["{", "  # 日本語を含むコメント", "  __typename", "  missing", "}"].join(newline)
+        document = GraphQL::Language::Parser.parse(query_string)
+        assert_equal [[3, 3], [4, 3]], document.definitions.first.selections.map(&:position)
+
+        query = GraphQL::Query.new(Dummy::Schema, document: document)
+        assert_equal [[{ "line" => 4, "column" => 3 }]], query.validation_errors.map { |error| error.to_h["locations"] }
+      end
+    end
+
+    it "uses the same character columns as parse errors after multibyte strings" do
+      query_string = '{ __type(name: "日本語😀") { name } missing }'
+      document = GraphQL::Language::Parser.parse(query_string)
+      field = document.definitions.first.selections.last
+      error = assert_raises(GraphQL::ParseError) do
+        GraphQL::Language::Parser.parse(query_string.sub("missing", ")"))
+      end
+
+      assert_equal [1, 33], field.position
+      assert_equal field.position, [error.line, error.col]
+    end
+
+    it "reports columns on the final line without a trailing newline" do
+      ["# comment\n", "# 日本語\n"].each do |comment|
+        document = GraphQL::Language::Parser.parse(comment + "{ __typename missing }")
+        assert_equal [2, 14], document.definitions.first.selections.last.position
+      end
+    end
+
+    it "reports positions after multibyte block strings" do
+      query_string = "{ __type(name: \"\"\"日本語\n続き\n\"\"\") { name } missing }"
+      document = GraphQL::Language::Parser.parse(query_string)
+      assert_equal [3, 15], document.definitions.first.selections.last.position
+    end
+
+    it "reports definition positions after multibyte descriptions" do
+      document = GraphQL::Language::Parser.parse("\"日本語の説明\"\nscalar Thing\n\n\"別の説明\"\nscalar Other\n")
+      assert_equal [[1, 1], [4, 1]], document.definitions.map(&:position)
+      assert_equal [2, 5], document.definitions.map(&:definition_line)
+    end
+
+    it "counts UTF-8 characters in binary input without changing its encoding" do
+      query_string = '{ __type(name: "日本語😀") { name } missing }'.b.freeze
+      document = GraphQL::Language::Parser.parse(query_string)
+      assert_equal [1, 33], document.definitions.first.selections.last.position
+      assert_equal Encoding::ASCII_8BIT, query_string.encoding
+    end
+  end
+
   it "rejects newlines in single-quoted strings unless escaped" do
     nl_query_string_1 = "{ doStuff(arg: \"
     abc\") }"
