@@ -824,7 +824,7 @@ class ActionText::Content
   #     content.to_plain_text # => "Funny times!"
   #
   #     content = ActionText::Content.new("<div onclick='action()'>safe<script>unsafe</script></div>")
-  #     content.to_plain_text # => "safeunsafe"
+  #     content.to_plain_text # => "safe"
   #
   # NOTE: that the returned string is not HTML safe and should not be rendered in
   # browsers without additional sanitization.
@@ -841,7 +841,7 @@ class ActionText::Content
 
   # Safely transforms Content into an HTML String.
   #
-  #     content = ActionText::Content.new(content: "<h1>Funny times!</h1>")
+  #     content = ActionText::Content.new("<h1>Funny times!</h1>")
   #     content.to_s # => "<h1>Funny times!</h1>"
   #
   #     content = ActionText::Content.new("<div onclick='action()'>safe<script>unsafe</script></div>")
@@ -1372,7 +1372,7 @@ ActionText::VERSION::MAJOR = T.let(T.unsafe(nil), Integer)
 ActionText::VERSION::MINOR = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/actiontext#lib/action_text/gem_version.rb:15
-ActionText::VERSION::PRE = T.let(T.unsafe(nil), String)
+ActionText::VERSION::PRE = T.let(T.unsafe(nil), T.untyped)
 
 # pkg:gem/actiontext#lib/action_text/gem_version.rb:17
 ActionText::VERSION::STRING = T.let(T.unsafe(nil), String)

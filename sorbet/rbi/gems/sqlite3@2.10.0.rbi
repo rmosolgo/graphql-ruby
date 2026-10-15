@@ -755,6 +755,9 @@ class SQLite3::Database
   def define_function_with_flags(_arg0, _arg1); end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
+  def deserialize(*_arg0); end
+
+  # pkg:gem/sqlite3#lib/sqlite3.rb:4
   def enable_load_extension(_arg0); end
 
   # call-seq: db.encoding
@@ -943,6 +946,9 @@ class SQLite3::Database
   def rollback; end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
+  def serialize(*_arg0); end
+
+  # pkg:gem/sqlite3#lib/sqlite3.rb:4
   def statement_timeout=(_arg0); end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
@@ -1120,9 +1126,9 @@ class SQLite3::FormatException < ::SQLite3::Exception; end
 # pkg:gem/sqlite3#lib/sqlite3/errors.rb:61
 class SQLite3::FullException < ::SQLite3::Exception; end
 
-# pkg:gem/sqlite3#lib/sqlite3/resultset.rb:93
+# pkg:gem/sqlite3#lib/sqlite3/resultset.rb:99
 class SQLite3::HashResultSet < ::SQLite3::ResultSet
-  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:94
+  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:100
   def next; end
 end
 
@@ -1620,29 +1626,31 @@ class SQLite3::ResultSet
   # <em>Use with caution!</em> Closing a result set will automatically
   # close any other result sets that were spawned from the same statement.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:65
+  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:71
   def close; end
 
   # Queries whether the underlying statement has been closed or not.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:70
+  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:76
   def closed?; end
 
   # Returns the names of the columns returned by this result set.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:80
+  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:86
   def columns; end
 
-  # Required by the Enumerable mixin. Provides an internal iterator over the
-  # rows of the result set.
+  # With a block given, iterates over the rows of the result set, passing each
+  # to the block. Returns self.
+  # With no block given, returns a new Enumerator.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:48
+  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:49
   def each; end
 
-  # Provides an internal iterator over the rows of the result set where
-  # each row is yielded as a hash.
+  # With a block given, iterates over the rows of the result set, passing each
+  # to the block as a hash. Returns self.
+  # With no block given, returns a new Enumerator.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:56
+  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:60
   def each_hash; end
 
   # Query whether the cursor has reached the end of the result set or not.
@@ -1667,7 +1675,7 @@ class SQLite3::ResultSet
 
   # Return the next row as a hash
   #
-  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:85
+  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:91
   def next_hash; end
 
   # Reset the cursor, so that a result set which has reached end-of-file
@@ -1678,7 +1686,7 @@ class SQLite3::ResultSet
 
   # Returns the types of the columns returned by this result set.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:75
+  # pkg:gem/sqlite3#lib/sqlite3/resultset.rb:81
   def types; end
 end
 
@@ -1715,7 +1723,7 @@ class SQLite3::Statement
   # Returns true if the statement is currently active, meaning it has an
   # open result set.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:111
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:129
   def active?; end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
@@ -1730,6 +1738,24 @@ class SQLite3::Statement
   # See Database#execute for a description of the valid placeholder
   # syntaxes.
   #
+  # Type mapping from Ruby to SQLite3:
+  # - +nil+                            → NULL
+  # - Integer                          → INTEGER (or REAL when outside the signed int64 range)
+  # - Float                            → REAL
+  # - SQLite3::Blob                    → BLOB
+  # - String with Encoding::ASCII_8BIT
+  #   (a.k.a. BINARY)                  → BLOB
+  # - String with Encoding::UTF_16LE
+  #   or Encoding::UTF_16BE            → TEXT (bound as UTF-16)
+  # - String (all other encodings)     → TEXT (re-encoded to UTF-8 if needed)
+  # - Any other type                   → raises RuntimeError
+  #
+  # Note: a String with Encoding::ASCII_8BIT (BINARY) is always bound as a
+  # BLOB, even when its bytes are all valid ASCII. If you want such a string
+  # compared or stored as TEXT, re-encode it before binding:
+  #
+  #   stmt.bind_params(my_binary_str.encode(Encoding::UTF_8))
+  #
   # Example:
   #
   #   stmt = db.prepare( "select * from table where a=? and b=?" )
@@ -1738,7 +1764,7 @@ class SQLite3::Statement
   # See also #execute, #bind_param, Statement#bind_param, and
   # Statement#bind_params.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:52
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:70
   def bind_params(*bind_vars); end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
@@ -1759,17 +1785,17 @@ class SQLite3::Statement
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
   def column_name(_arg0); end
 
-  # Return an array of the column names for this statement. Note that this
-  # may execute the statement in order to obtain the metadata; this makes it
-  # a (potentially) expensive operation.
+  # Return a frozen array of the column names for this statement, as frozen
+  # UTF-8 strings. Note that this may execute the statement in order to
+  # obtain the metadata; this makes it a (potentially) expensive operation.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:118
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:136
   def columns; end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
   def done?; end
 
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:123
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:141
   def each; end
 
   # Execute the statement. This creates a new ResultSet object for the
@@ -1787,7 +1813,7 @@ class SQLite3::Statement
   #
   # See also #bind_params, #execute!.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:78
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:96
   def execute(*bind_vars); end
 
   # Execute the statement. If no block was given, this returns an array of
@@ -1805,7 +1831,7 @@ class SQLite3::Statement
   #
   # See also #bind_params, #execute.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:104
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:122
   def execute!(*bind_vars, &block); end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
@@ -1817,7 +1843,7 @@ class SQLite3::Statement
   # Performs a sanity check to ensure that the statement is not
   # closed. If it is, an exception is raised.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:142
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:162
   def must_be_open!; end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
@@ -1856,26 +1882,31 @@ class SQLite3::Statement
   #   - +filter_hits+: the number of times that a join step was bypassed
   # because a Bloom filter returned not-found
   #
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:167
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:187
   def stat(key = T.unsafe(nil)); end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4
   def step; end
 
-  # Return an array of the data types for each column in this statement. Note
-  # that this may execute the statement in order to obtain the metadata; this
-  # makes it a (potentially) expensive operation.
+  # Return a frozen array of the declared types of the columns in this
+  # statement, as frozen UTF-8 strings with ASCII letters downcased. A column
+  # with no declared type, such as an expression, has a +nil+ type. Note that
+  # this may execute the statement in order to obtain the metadata; this makes
+  # it a (potentially) expensive operation.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:134
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:154
   def types; end
 
   private
+
+  # pkg:gem/sqlite3#lib/sqlite3.rb:4
+  def column_decltype_downcased(_arg0); end
 
   # A convenience method for obtaining the metadata about the query. Note
   # that this will actually execute the SQL, which means it can be a
   # (potentially) expensive operation.
   #
-  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:180
+  # pkg:gem/sqlite3#lib/sqlite3/statement.rb:200
   def get_metadata; end
 
   # pkg:gem/sqlite3#lib/sqlite3.rb:4

@@ -533,31 +533,31 @@ module ActiveModel::AttributeMethods
   # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:507
   def method_missing(method, *, **, &); end
 
-  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:528
-  def respond_to?(method, include_private_methods = T.unsafe(nil)); end
-
   # A +Person+ instance with a +name+ attribute can ask
   # <tt>person.respond_to?(:name)</tt>, <tt>person.respond_to?(:name=)</tt>,
   # and <tt>person.respond_to?(:name?)</tt> which will all return +true+.
   #
-  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:527
+  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:536
+  def respond_to?(method, include_private_methods = T.unsafe(nil)); end
+
+  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:531
   def respond_to_without_attributes?(*_arg0); end
 
   private
 
-  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:556
+  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:564
   def _read_attribute(attr); end
 
-  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:541
+  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:549
   def attribute_method?(attr_name); end
 
   # Returns a struct representing the matching attribute method.
   # The struct's attributes are prefix, base and suffix.
   #
-  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:547
+  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:555
   def matched_attribute_method(method_name); end
 
-  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:552
+  # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:560
   def missing_attribute(attr_name, stack); end
 
   module GeneratedClassMethods
@@ -577,7 +577,7 @@ module ActiveModel::AttributeMethods
   end
 end
 
-# pkg:gem/activemodel#lib/active_model/attribute_methods.rb:560
+# pkg:gem/activemodel#lib/active_model/attribute_methods.rb:568
 module ActiveModel::AttributeMethods::AttrNames
   class << self
     # We want to generate the methods via module_eval rather than
@@ -595,12 +595,12 @@ module ActiveModel::AttributeMethods::AttrNames
     # Making it frozen means that it doesn't get duped when used to
     # key the @attributes in read_attribute.
     #
-    # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:577
+    # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:585
     def define_attribute_accessor_method(owner, attr_name, writer: T.unsafe(nil)); end
   end
 end
 
-# pkg:gem/activemodel#lib/active_model/attribute_methods.rb:561
+# pkg:gem/activemodel#lib/active_model/attribute_methods.rb:569
 ActiveModel::AttributeMethods::AttrNames::DEF_SAFE_NAME = T.let(T.unsafe(nil), Regexp)
 
 # pkg:gem/activemodel#lib/active_model/attribute_methods.rb:68
@@ -1530,6 +1530,9 @@ module ActiveModel::Attributes::Normalization
   # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:140
   def normalize_changed_in_place_attributes; end
 
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:147
+  def normalized_attribute_changed_in_place?(attribute); end
+
   module GeneratedClassMethods
     def __callbacks; end
     def __callbacks=(value); end
@@ -1617,53 +1620,53 @@ module ActiveModel::Attributes::Normalization::ClassMethods
   def normalizes(*names, with:, apply_to_nil: T.unsafe(nil)); end
 end
 
-# pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:146
+# pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:151
 class ActiveModel::Attributes::Normalization::NormalizedValueType
   include ::ActiveModel::Type::SerializeCastValue
   extend ::ActiveModel::Type::SerializeCastValue::ClassMethods
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:152
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:157
   def initialize(cast_type:, normalizer:, normalize_nil:); end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:171
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:176
   def ==(other); end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:159
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:164
   def cast(value); end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:149
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:154
   def cast_type; end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:177
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:182
   def eql?(other); end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:179
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:184
   def hash; end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:183
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:188
   def inspect; end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:149
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:154
   def normalize_nil; end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:150
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:155
   def normalize_nil?; end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:149
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:154
   def normalizer; end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:163
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:168
   def serialize(value); end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:167
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:172
   def serialize_cast_value(value); end
 
   private
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:189
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:194
   def instance_variables_to_inspect; end
 
-  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:191
+  # pkg:gem/activemodel#lib/active_model/attributes/normalization.rb:196
   def normalize(value); end
 end
 
@@ -2460,7 +2463,7 @@ class ActiveModel::Errors
   #   person.errors[:name]  # => ["cannot be nil"]
   #   person.errors['name'] # => ["cannot be nil"]
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:226
+  # pkg:gem/activemodel#lib/active_model/errors.rb:227
   def [](attribute); end
 
   # Adds a new error of +type+ on +attribute+.
@@ -2487,7 +2490,7 @@ class ActiveModel::Errors
   #
   #   person.errors.add(:name, :too_long, count: 25)
   #   person.errors.messages
-  #   # => ["is too long (maximum is 25 characters)"]
+  #   # => {:name=>["is too long (maximum is 25 characters)"]}
   #
   # If +type+ is a proc, it will be called, allowing for things like
   # <tt>Time.now</tt> to be used within an error.
@@ -2513,7 +2516,7 @@ class ActiveModel::Errors
   #   person.errors.details
   #   # => {:base=>[{error: :name_or_email_blank}]}
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:339
+  # pkg:gem/activemodel#lib/active_model/errors.rb:340
   def add(attribute, type = T.unsafe(nil), **options); end
 
   # Returns +true+ if an error matches provided +attribute+ and +type+,
@@ -2533,7 +2536,7 @@ class ActiveModel::Errors
   #   person.errors.added? :name, :too_long                                # => false
   #   person.errors.added? :name, "is too long"                            # => false
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:369
+  # pkg:gem/activemodel#lib/active_model/errors.rb:370
   def added?(attribute, type = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a Hash that can be used as the JSON representation for this
@@ -2543,7 +2546,7 @@ class ActiveModel::Errors
   #   person.errors.as_json                      # => {:name=>["cannot be nil"]}
   #   person.errors.as_json(full_messages: true) # => {:name=>["name cannot be nil"]}
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:244
+  # pkg:gem/activemodel#lib/active_model/errors.rb:245
   def as_json(options = T.unsafe(nil)); end
 
   # Returns all error attribute names
@@ -2551,7 +2554,7 @@ class ActiveModel::Errors
   #   person.errors.messages        # => {:name=>["cannot be nil", "must be specified"]}
   #   person.errors.attribute_names # => [:name]
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:234
+  # pkg:gem/activemodel#lib/active_model/errors.rb:235
   def attribute_names; end
 
   # pkg:gem/activemodel#lib/active_model/errors.rb:100
@@ -2577,12 +2580,12 @@ class ActiveModel::Errors
   #   person.errors.delete(:name) # => ["cannot be nil"]
   #   person.errors[:name]        # => []
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:212
+  # pkg:gem/activemodel#lib/active_model/errors.rb:213
   def delete(attribute, type = T.unsafe(nil), **options); end
 
   # Returns a Hash of attributes with an array of their error details.
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:273
+  # pkg:gem/activemodel#lib/active_model/errors.rb:274
   def details; end
 
   # pkg:gem/activemodel#lib/active_model/errors.rb:100
@@ -2601,7 +2604,7 @@ class ActiveModel::Errors
   #
   #   person.errors.full_message(:name, 'is invalid') # => "Name is invalid"
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:448
+  # pkg:gem/activemodel#lib/active_model/errors.rb:449
   def full_message(attribute, message); end
 
   # Returns all the full error messages in an array.
@@ -2615,7 +2618,7 @@ class ActiveModel::Errors
   #   person.errors.full_messages
   #   # => ["Name is too short (minimum is 5 characters)", "Name can't be blank", "Email can't be blank"]
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:412
+  # pkg:gem/activemodel#lib/active_model/errors.rb:413
   def full_messages; end
 
   # Returns all the full error messages for a given attribute in an array.
@@ -2629,7 +2632,7 @@ class ActiveModel::Errors
   #   person.errors.full_messages_for(:name)
   #   # => ["Name is too short (minimum is 5 characters)", "Name can't be blank"]
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:427
+  # pkg:gem/activemodel#lib/active_model/errors.rb:428
   def full_messages_for(attribute); end
 
   # Translates an error message in its default scope
@@ -2657,7 +2660,7 @@ class ActiveModel::Errors
   # * <tt>errors.attributes.title.blank</tt>
   # * <tt>errors.messages.blank</tt>
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:476
+  # pkg:gem/activemodel#lib/active_model/errors.rb:477
   def generate_message(attribute, type = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a Hash of attributes with an array of their Error objects.
@@ -2665,10 +2668,10 @@ class ActiveModel::Errors
   #   person.errors.group_by_attribute
   #   # => {:name=>[<#ActiveModel::Error>, <#ActiveModel::Error>]}
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:286
+  # pkg:gem/activemodel#lib/active_model/errors.rb:287
   def group_by_attribute; end
 
-  # pkg:gem/activemodel#lib/active_model/errors.rb:204
+  # pkg:gem/activemodel#lib/active_model/errors.rb:205
   def has_key?(attribute); end
 
   # Imports one error.
@@ -2691,13 +2694,13 @@ class ActiveModel::Errors
   #   person.errors.include?(:name) # => true
   #   person.errors.include?(:age)  # => false
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:199
+  # pkg:gem/activemodel#lib/active_model/errors.rb:200
   def include?(attribute); end
 
-  # pkg:gem/activemodel#lib/active_model/errors.rb:480
+  # pkg:gem/activemodel#lib/active_model/errors.rb:481
   def inspect; end
 
-  # pkg:gem/activemodel#lib/active_model/errors.rb:205
+  # pkg:gem/activemodel#lib/active_model/errors.rb:206
   def key?(attribute); end
 
   # Merges the errors from <tt>other</tt>,
@@ -2711,12 +2714,12 @@ class ActiveModel::Errors
   #
   #   person.errors.merge!(other)
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:171
+  # pkg:gem/activemodel#lib/active_model/errors.rb:172
   def merge!(other); end
 
   # Returns a Hash of attributes with an array of their error messages.
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:265
+  # pkg:gem/activemodel#lib/active_model/errors.rb:266
   def messages; end
 
   # Returns all the error messages for a given attribute in an array.
@@ -2730,7 +2733,7 @@ class ActiveModel::Errors
   #   person.errors.messages_for(:name)
   #   # => ["is too short (minimum is 5 characters)", "can't be blank"]
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:441
+  # pkg:gem/activemodel#lib/active_model/errors.rb:442
   def messages_for(attribute); end
 
   # pkg:gem/activemodel#lib/active_model/errors.rb:105
@@ -2748,13 +2751,13 @@ class ActiveModel::Errors
   #   person.errors.of_kind? :name, :not_too_long                            # => false
   #   person.errors.of_kind? :name, "is too long"                            # => false
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:392
+  # pkg:gem/activemodel#lib/active_model/errors.rb:393
   def of_kind?(attribute, type = T.unsafe(nil)); end
 
   # pkg:gem/activemodel#lib/active_model/errors.rb:100
   def size(*, **, &); end
 
-  # pkg:gem/activemodel#lib/active_model/errors.rb:415
+  # pkg:gem/activemodel#lib/active_model/errors.rb:416
   def to_a; end
 
   # Returns a Hash of attributes with their error messages. If +full_messages+
@@ -2763,7 +2766,7 @@ class ActiveModel::Errors
   #   person.errors.to_hash       # => {:name=>["cannot be nil"]}
   #   person.errors.to_hash(true) # => {:name=>["name cannot be nil"]}
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:253
+  # pkg:gem/activemodel#lib/active_model/errors.rb:254
   def to_hash(full_messages = T.unsafe(nil)); end
 
   # pkg:gem/activemodel#lib/active_model/errors.rb:100
@@ -2777,7 +2780,7 @@ class ActiveModel::Errors
   #   person.errors.where(:name, :too_short) # => all name errors being too short
   #   person.errors.where(:name, :too_short, minimum: 2) # => all name errors being too short and minimum is 2
   #
-  # pkg:gem/activemodel#lib/active_model/errors.rb:186
+  # pkg:gem/activemodel#lib/active_model/errors.rb:187
   def where(attribute, type = T.unsafe(nil), **options); end
 
   private
@@ -2785,11 +2788,11 @@ class ActiveModel::Errors
   # pkg:gem/activemodel#lib/active_model/errors.rb:119
   def initialize_dup(other); end
 
-  # pkg:gem/activemodel#lib/active_model/errors.rb:487
+  # pkg:gem/activemodel#lib/active_model/errors.rb:488
   def normalize_arguments(attribute, type, **options); end
 end
 
-# pkg:gem/activemodel#lib/active_model/errors.rb:262
+# pkg:gem/activemodel#lib/active_model/errors.rb:263
 ActiveModel::Errors::EMPTY_ARRAY = T.let(T.unsafe(nil), Array)
 
 # = Active \Model \ForbiddenAttributesError
@@ -3482,7 +3485,7 @@ class ActiveModel::Railtie < ::Rails::Railtie; end
 #
 # Raised when attribute values are out of range.
 #
-# pkg:gem/activemodel#lib/active_model/errors.rb:520
+# pkg:gem/activemodel#lib/active_model/errors.rb:521
 class ActiveModel::RangeError < ::RangeError; end
 
 # pkg:gem/activemodel#lib/active_model/secure_password.rb:6
@@ -3710,7 +3713,7 @@ module ActiveModel::Serialization
   #   end
   #
   # pkg:gem/activemodel#lib/active_model/serialization.rb:167
-  def read_attribute_for_serialization(*_arg0); end
+  def read_attribute_for_serialization(key); end
 
   # Returns a serialized hash of your object.
   #
@@ -3773,7 +3776,7 @@ module ActiveModel::Serialization
 
   private
 
-  # pkg:gem/activemodel#lib/active_model/serialization.rb:170
+  # pkg:gem/activemodel#lib/active_model/serialization.rb:172
   def attribute_names_for_serialization; end
 
   # Add associations specified via the <tt>:include</tt> option.
@@ -3783,10 +3786,10 @@ module ActiveModel::Serialization
   #   +records+     - the association record(s) to be serialized
   #   +opts+        - options for the association records
   #
-  # pkg:gem/activemodel#lib/active_model/serialization.rb:184
+  # pkg:gem/activemodel#lib/active_model/serialization.rb:186
   def serializable_add_includes(options = T.unsafe(nil)); end
 
-  # pkg:gem/activemodel#lib/active_model/serialization.rb:174
+  # pkg:gem/activemodel#lib/active_model/serialization.rb:176
   def serializable_attributes(attribute_names); end
 end
 
@@ -3817,7 +3820,7 @@ module ActiveModel::Serializers::JSON
   #   user = User.find(1)
   #   user.as_json
   #   # => { "id" => 1, "name" => "Konata Izumi", "age" => 16,
-  #   #     "created_at" => "2006-08-01T17:27:133.000Z", "awesome" => true}
+  #   #     "created_at" => "2006-08-01T17:27:13.000Z", "awesome" => true}
   #
   #   ActiveRecord::Base.include_root_in_json = true
   #
@@ -3956,7 +3959,7 @@ end
 #   person.valid?
 #   # => ActiveModel::StrictValidationFailed: Name can't be blank
 #
-# pkg:gem/activemodel#lib/active_model/errors.rb:514
+# pkg:gem/activemodel#lib/active_model/errors.rb:515
 class ActiveModel::StrictValidationFailed < ::StandardError; end
 
 # = Active \Model \Translation
@@ -4229,11 +4232,8 @@ ActiveModel::Type::Date::ISO_DATE = T.let(T.unsafe(nil), Regexp)
 #   event.start.sec   # => 0
 #   event.start.zone  # => "EAT"
 #
-# String values are parsed using the ISO 8601 datetime format. Partial
-# time-only formats are also accepted.
-#
-#   event.start = "06:07:08+09:00"
-#   event.start.utc # => 1999-12-31 21:07:08 UTC
+# String values are parsed using the ISO 8601 datetime format. Use the
+# +:time+ type instead to parse partial time-only values.
 #
 # The degree of sub-second precision can be customized when declaring an
 # attribute:
@@ -4244,33 +4244,33 @@ ActiveModel::Type::Date::ISO_DATE = T.let(T.unsafe(nil), Regexp)
 #     attribute :start, :datetime, precision: 4
 #   end
 #
-# pkg:gem/activemodel#lib/active_model/type/date_time.rb:42
+# pkg:gem/activemodel#lib/active_model/type/date_time.rb:39
 class ActiveModel::Type::DateTime < ::ActiveModel::Type::Value
   include ::ActiveModel::Type::Helpers::Timezone
   include ::ActiveModel::Type::Helpers::AcceptsMultiparameterTime::InstanceMethods
   include ::ActiveModel::Type::Helpers::TimeValue
 
-  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:53
+  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:50
   def mutable?; end
 
-  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:49
+  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:46
   def type; end
 
   private
 
-  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:62
+  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:59
   def cast_value(value); end
 
-  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:75
+  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:72
   def fallback_string_to_time(string); end
 
   # '0.123456' -> 123456
   # '1.123456' -> 123456
   #
-  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:71
+  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:68
   def microseconds(time); end
 
-  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:87
+  # pkg:gem/activemodel#lib/active_model/type/date_time.rb:84
   def value_from_multiparameter_assignment(values_hash); end
 end
 
@@ -4302,7 +4302,7 @@ end
 #   bag.weight # => nil
 #
 #   bag.weight = :arbitrary
-#   bag.weight # => nil (the result of `.to_s.to_d`)
+#   bag.weight # => 0.0 (the result of `.to_s.to_d`)
 #
 # Decimal precision defaults to 18, and can be customized when declaring an
 # attribute:
@@ -4627,16 +4627,16 @@ class ActiveModel::Type::Integer < ::ActiveModel::Type::Value
 
   private
 
-  # pkg:gem/activemodel#lib/active_model/type/integer.rb:124
+  # pkg:gem/activemodel#lib/active_model/type/integer.rb:132
   def _limit; end
 
   # pkg:gem/activemodel#lib/active_model/type/integer.rb:112
   def cast_value(value); end
 
-  # pkg:gem/activemodel#lib/active_model/type/integer.rb:116
+  # pkg:gem/activemodel#lib/active_model/type/integer.rb:124
   def max_value; end
 
-  # pkg:gem/activemodel#lib/active_model/type/integer.rb:120
+  # pkg:gem/activemodel#lib/active_model/type/integer.rb:128
   def min_value; end
 
   # pkg:gem/activemodel#lib/active_model/type/integer.rb:104
@@ -4948,15 +4948,15 @@ end
 #   person.assign_attributes(name: 'Gorby')
 #   # => ActiveModel::UnknownAttributeError: unknown attribute 'name' for Person.
 #
-# pkg:gem/activemodel#lib/active_model/errors.rb:535
+# pkg:gem/activemodel#lib/active_model/errors.rb:536
 class ActiveModel::UnknownAttributeError < ::NoMethodError
-  # pkg:gem/activemodel#lib/active_model/errors.rb:538
+  # pkg:gem/activemodel#lib/active_model/errors.rb:539
   def initialize(record, attribute); end
 
-  # pkg:gem/activemodel#lib/active_model/errors.rb:536
+  # pkg:gem/activemodel#lib/active_model/errors.rb:537
   def attribute; end
 
-  # pkg:gem/activemodel#lib/active_model/errors.rb:536
+  # pkg:gem/activemodel#lib/active_model/errors.rb:537
   def record; end
 end
 
@@ -4970,7 +4970,7 @@ ActiveModel::VERSION::MAJOR = T.let(T.unsafe(nil), Integer)
 ActiveModel::VERSION::MINOR = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/activemodel#lib/active_model/gem_version.rb:13
-ActiveModel::VERSION::PRE = T.let(T.unsafe(nil), String)
+ActiveModel::VERSION::PRE = T.let(T.unsafe(nil), T.untyped)
 
 # pkg:gem/activemodel#lib/active_model/gem_version.rb:15
 ActiveModel::VERSION::STRING = T.let(T.unsafe(nil), String)
@@ -4978,12 +4978,12 @@ ActiveModel::VERSION::STRING = T.let(T.unsafe(nil), String)
 # pkg:gem/activemodel#lib/active_model/gem_version.rb:12
 ActiveModel::VERSION::TINY = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/activemodel#lib/active_model/validations.rb:491
+# pkg:gem/activemodel#lib/active_model/validations.rb:493
 class ActiveModel::ValidationContext
-  # pkg:gem/activemodel#lib/active_model/validations.rb:492
+  # pkg:gem/activemodel#lib/active_model/validations.rb:494
   def context; end
 
-  # pkg:gem/activemodel#lib/active_model/validations.rb:492
+  # pkg:gem/activemodel#lib/active_model/validations.rb:494
   def context=(_arg0); end
 end
 
@@ -4998,12 +4998,12 @@ end
 #     puts invalid.model.errors
 #   end
 #
-# pkg:gem/activemodel#lib/active_model/validations.rb:481
+# pkg:gem/activemodel#lib/active_model/validations.rb:483
 class ActiveModel::ValidationError < ::StandardError
-  # pkg:gem/activemodel#lib/active_model/validations.rb:484
+  # pkg:gem/activemodel#lib/active_model/validations.rb:486
   def initialize(model); end
 
-  # pkg:gem/activemodel#lib/active_model/validations.rb:482
+  # pkg:gem/activemodel#lib/active_model/validations.rb:484
   def model; end
 end
 
@@ -5125,7 +5125,7 @@ module ActiveModel::Validations
   #   end
   #
   # pkg:gem/activemodel#lib/active_model/validations.rb:439
-  def read_attribute_for_validation(*_arg0); end
+  def read_attribute_for_validation(key); end
 
   # Runs all the specified validations and returns +true+ if no errors were
   # added otherwise +false+.
@@ -5214,15 +5214,15 @@ module ActiveModel::Validations
 
   # Returns the context when running validations.
   #
-  # pkg:gem/activemodel#lib/active_model/validations.rb:442
+  # pkg:gem/activemodel#lib/active_model/validations.rb:444
   def validation_context; end
 
   private
 
-  # pkg:gem/activemodel#lib/active_model/validations.rb:451
+  # pkg:gem/activemodel#lib/active_model/validations.rb:453
   def context_for_validation; end
 
-  # pkg:gem/activemodel#lib/active_model/validations.rb:455
+  # pkg:gem/activemodel#lib/active_model/validations.rb:457
   def init_internals; end
 
   # Clean the +Errors+ object if instance is duped.
@@ -5230,13 +5230,13 @@ module ActiveModel::Validations
   # pkg:gem/activemodel#lib/active_model/validations.rb:312
   def initialize_dup(other); end
 
-  # pkg:gem/activemodel#lib/active_model/validations.rb:466
+  # pkg:gem/activemodel#lib/active_model/validations.rb:468
   def raise_validation_error; end
 
-  # pkg:gem/activemodel#lib/active_model/validations.rb:461
+  # pkg:gem/activemodel#lib/active_model/validations.rb:463
   def run_validations!; end
 
-  # pkg:gem/activemodel#lib/active_model/validations.rb:447
+  # pkg:gem/activemodel#lib/active_model/validations.rb:449
   def validation_context=(context); end
 
   module GeneratedClassMethods
@@ -5525,7 +5525,7 @@ module ActiveModel::Validations::ClassMethods
   #   <tt>on: [:create, :custom_validation_context]</tt>)
   # * <tt>:except_on</tt> - Specifies the contexts where this validation is not active.
   #   Runs in all validation contexts by default +nil+. You can pass a symbol
-  #   or an array of symbols. (e.g. <tt>except: :create</tt> or
+  #   or an array of symbols. (e.g. <tt>except_on: :create</tt> or
   #   <tt>except_on: :custom_validation_context</tt> or
   #   <tt>except_on: [:create, :custom_validation_context]</tt>)
   # * <tt>:if</tt> - Specifies a method or proc to call to determine
@@ -5618,7 +5618,7 @@ module ActiveModel::Validations::ClassMethods
   #   <tt>on: [:create, :custom_validation_context]</tt>)
   # * <tt>:except_on</tt> - Specifies the contexts where this validation is not active.
   #   Runs in all validation contexts by default +nil+. You can pass a symbol
-  #   or an array of symbols. (e.g. <tt>except: :create</tt> or
+  #   or an array of symbols. (e.g. <tt>except_on: :create</tt> or
   #   <tt>except_on: :custom_validation_context</tt> or
   #   <tt>except_on: [:create, :custom_validation_context]</tt>)
   # * <tt>:if</tt> - Specifies a method, proc or string to call to determine
@@ -5693,7 +5693,7 @@ module ActiveModel::Validations::ClassMethods
   #   <tt>on: [:create, :custom_validation_context]</tt>)
   # * <tt>:except_on</tt> - Specifies the contexts where this validation is not active.
   #   Runs in all validation contexts by default +nil+. You can pass a symbol
-  #   or an array of symbols. (e.g. <tt>except: :create</tt> or
+  #   or an array of symbols. (e.g. <tt>except_on: :create</tt> or
   #   <tt>except_on: :custom_validation_context</tt> or
   #   <tt>except_on: [:create, :custom_validation_context]</tt>)
   # * <tt>:allow_nil</tt> - Skip validation if attribute is +nil+.

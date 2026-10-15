@@ -417,6 +417,14 @@
 #   When +true+, keys are sorted lexicographically. When a \Proc, it receives
 #   the entire \Hash and must return a \Hash with its pairs in the desired
 #   order, allowing for arbitrary sort orders.
+# - Option +rfc8785+ (boolean) controls whether the generated JSON will be canonicalized
+#   as defined in RFC8785.
+#   Integers are converted to Float before formatting and may be rounded.
+#   Integers outside the finite Float range raise JSON::GeneratorError.
+#   Nonempty +indent+, +space+, +space_before+, +object_nl+, or +array_nl+,
+#   and enabled +ascii_only+, +script_safe+, or +allow_nan+ raise ArgumentError.
+#   JSON.dump defaults +allow_nan+ to +false+ when +rfc8785+ is enabled.
+#   JSON::Fragment contents are inserted as is; the caller must ensure they are canonical.
 #
 # In this example, +obj+ is used first to generate the shortest
 # \JSON data (no whitespace), then again with all formatting options
@@ -478,7 +486,7 @@ module JSON
   # Output:
   #   {"foo":[0,1],"bar":{"baz":2,"bat":3},"bam":"bad"}
   #
-  # pkg:gem/json#lib/json/common.rb:752
+  # pkg:gem/json#lib/json/common.rb:747
   def dump(obj, anIO = T.unsafe(nil), _deprecated_limit = T.unsafe(nil), kwargs = T.unsafe(nil)); end
 
   # :call-seq:
@@ -517,7 +525,7 @@ module JSON
   #   # Raises JSON::NestingError (nesting of 100 is too deep. Did you try to serialize objects with circular references?):
   #   JSON.generate(a)
   #
-  # pkg:gem/json#lib/json/common.rb:378
+  # pkg:gem/json#lib/json/common.rb:373
   def generate(obj, opts = T.unsafe(nil)); end
 
   # :call-seq:
@@ -646,7 +654,7 @@ module JSON
   #      #<Admin:0x00000000064c41f8
   #      @attributes={"type"=>"Admin", "password"=>"0wn3d"}>}
   #
-  # pkg:gem/json#lib/json/common.rb:706
+  # pkg:gem/json#lib/json/common.rb:701
   def load(source, proc = T.unsafe(nil), allow_blank: T.unsafe(nil), **options); end
 
   # :call-seq:
@@ -657,7 +665,7 @@ module JSON
   #
   # See method #parse.
   #
-  # pkg:gem/json#lib/json/common.rb:327
+  # pkg:gem/json#lib/json/common.rb:322
   def load_file(filespec, **options); end
 
   # :call-seq:
@@ -668,7 +676,7 @@ module JSON
   #
   # See method #parse!
   #
-  # pkg:gem/json#lib/json/common.rb:338
+  # pkg:gem/json#lib/json/common.rb:333
   def load_file!(filespec, **options); end
 
   # :call-seq:
@@ -719,7 +727,7 @@ module JSON
   #   # Raises JSON::ParserError (unexpected character: 'invalid' at line 1 column 1):
   #   JSON.parse('invalid')
   #
-  # pkg:gem/json#lib/json/common.rb:296
+  # pkg:gem/json#lib/json/common.rb:291
   def parse(source, on_load: T.unsafe(nil), object_class: T.unsafe(nil), array_class: T.unsafe(nil), **options); end
 
   # :call-seq:
@@ -734,7 +742,7 @@ module JSON
   #   which disables checking for nesting depth.
   # - Option +allow_nan+, if not provided, defaults to +true+.
   #
-  # pkg:gem/json#lib/json/common.rb:316
+  # pkg:gem/json#lib/json/common.rb:311
   def parse!(source, **options); end
 
   # :call-seq:
@@ -767,7 +775,7 @@ module JSON
   #     }
   #   }
   #
-  # pkg:gem/json#lib/json/common.rb:424
+  # pkg:gem/json#lib/json/common.rb:419
   def pretty_generate(obj, opts = T.unsafe(nil)); end
 
   # :call-seq:
@@ -900,7 +908,7 @@ module JSON
   #      #<Admin:0x00000000064c41f8
   #      @attributes={"type"=>"Admin", "password"=>"0wn3d"}>}
   #
-  # pkg:gem/json#lib/json/common.rb:576
+  # pkg:gem/json#lib/json/common.rb:571
   def unsafe_load(source, proc = T.unsafe(nil), **options); end
 
   class << self
@@ -944,7 +952,7 @@ module JSON
     # Output:
     #   {"foo":[0,1],"bar":{"baz":2,"bat":3},"bam":"bad"}
     #
-    # pkg:gem/json#lib/json/common.rb:752
+    # pkg:gem/json#lib/json/common.rb:747
     def dump(obj, anIO = T.unsafe(nil), _deprecated_limit = T.unsafe(nil), kwargs = T.unsafe(nil)); end
 
     # :call-seq:
@@ -983,12 +991,12 @@ module JSON
     #   # Raises JSON::NestingError (nesting of 100 is too deep. Did you try to serialize objects with circular references?):
     #   JSON.generate(a)
     #
-    # pkg:gem/json#lib/json/common.rb:378
+    # pkg:gem/json#lib/json/common.rb:373
     def generate(obj, opts = T.unsafe(nil)); end
 
     # Returns the JSON generator module that is used by JSON.
     #
-    # pkg:gem/json#lib/json/common.rb:112
+    # pkg:gem/json#lib/json/common.rb:104
     def generator; end
 
     # Set the module _generator_ to be used by JSON.
@@ -1122,7 +1130,7 @@ module JSON
     #      #<Admin:0x00000000064c41f8
     #      @attributes={"type"=>"Admin", "password"=>"0wn3d"}>}
     #
-    # pkg:gem/json#lib/json/common.rb:706
+    # pkg:gem/json#lib/json/common.rb:701
     def load(source, proc = T.unsafe(nil), allow_blank: T.unsafe(nil), **options); end
 
     # :call-seq:
@@ -1133,7 +1141,7 @@ module JSON
     #
     # See method #parse.
     #
-    # pkg:gem/json#lib/json/common.rb:327
+    # pkg:gem/json#lib/json/common.rb:322
     def load_file(filespec, **options); end
 
     # :call-seq:
@@ -1144,7 +1152,7 @@ module JSON
     #
     # See method #parse!
     #
-    # pkg:gem/json#lib/json/common.rb:338
+    # pkg:gem/json#lib/json/common.rb:333
     def load_file!(filespec, **options); end
 
     # :call-seq:
@@ -1195,7 +1203,7 @@ module JSON
     #   # Raises JSON::ParserError (unexpected character: 'invalid' at line 1 column 1):
     #   JSON.parse('invalid')
     #
-    # pkg:gem/json#lib/json/common.rb:296
+    # pkg:gem/json#lib/json/common.rb:291
     def parse(source, on_load: T.unsafe(nil), object_class: T.unsafe(nil), array_class: T.unsafe(nil), **options); end
 
     # :call-seq:
@@ -1210,7 +1218,7 @@ module JSON
     #   which disables checking for nesting depth.
     # - Option +allow_nan+, if not provided, defaults to +true+.
     #
-    # pkg:gem/json#lib/json/common.rb:316
+    # pkg:gem/json#lib/json/common.rb:311
     def parse!(source, **options); end
 
     # Returns the JSON parser class that is used by JSON.
@@ -1253,17 +1261,17 @@ module JSON
     #     }
     #   }
     #
-    # pkg:gem/json#lib/json/common.rb:424
+    # pkg:gem/json#lib/json/common.rb:419
     def pretty_generate(obj, opts = T.unsafe(nil)); end
 
     # Sets or Returns the JSON generator state class that is used by JSON.
     #
-    # pkg:gem/json#lib/json/common.rb:115
+    # pkg:gem/json#lib/json/common.rb:107
     def state; end
 
     # Sets or Returns the JSON generator state class that is used by JSON.
     #
-    # pkg:gem/json#lib/json/common.rb:115
+    # pkg:gem/json#lib/json/common.rb:107
     def state=(_arg0); end
 
     # :call-seq:
@@ -1396,14 +1404,14 @@ module JSON
     #      #<Admin:0x00000000064c41f8
     #      @attributes={"type"=>"Admin", "password"=>"0wn3d"}>}
     #
-    # pkg:gem/json#lib/json/common.rb:576
+    # pkg:gem/json#lib/json/common.rb:571
     def unsafe_load(source, proc = T.unsafe(nil), **options); end
 
     private
 
     # Called from the extension when a hash has both string and symbol keys
     #
-    # pkg:gem/json#lib/json/common.rb:120
+    # pkg:gem/json#lib/json/common.rb:112
     def on_mixed_keys_hash(hash); end
   end
 end
@@ -1418,7 +1426,7 @@ end
 #
 #   MyApp::JSONC_CODER.load(document)
 #
-# pkg:gem/json#lib/json/common.rb:792
+# pkg:gem/json#lib/json/common.rb:787
 class JSON::Coder
   # :call-seq:
   #   JSON::Coder.new(**options, &block)
@@ -1444,8 +1452,11 @@ class JSON::Coder
   #
   #  puts MyApp::API_JSON_CODER.dump(Time.now.utc) # => "2025-01-21T08:41:44.286Z"
   #
-  # pkg:gem/json#lib/json/common.rb:838
-  def initialize(object_class: T.unsafe(nil), array_class: T.unsafe(nil), on_load: T.unsafe(nil), **options, &as_json); end
+  # The conversion callback can also be passed as +as_json:+. If both are given, the block takes precedence.
+  # Passing +false+ or +nil+ for +strict:+ raises ArgumentError.
+  #
+  # pkg:gem/json#lib/json/common.rb:836
+  def initialize(object_class: T.unsafe(nil), array_class: T.unsafe(nil), on_load: T.unsafe(nil), strict: T.unsafe(nil), **options, &as_json); end
 
   # call-seq:
   #   dump(object) -> String
@@ -1479,13 +1490,33 @@ class JSON::Coder
   def parse(source); end
 end
 
-# pkg:gem/json#lib/json/common.rb:807
+# pkg:gem/json#lib/json/common.rb:802
 JSON::Coder::EXCLUDED_GENERATOR_OPTIONS = T.let(T.unsafe(nil), Array)
 
-# pkg:gem/json#lib/json/common.rb:793
+# pkg:gem/json#lib/json/common.rb:788
 JSON::Coder::PARSER_OPTIONS = T.let(T.unsafe(nil), Array)
 
-# pkg:gem/json#lib/json/ext.rb:39
+# This module holds all the modules/classes that implement JSON's
+# functionality as C extensions.
+#
+# pkg:gem/json#lib/json/ext.rb:8
+module JSON::Ext
+  class << self
+    # pkg:gem/json#lib/json/ext.rb:46
+    def coerce_key(key, as_json); end
+
+    # pkg:gem/json#lib/json/ext.rb:80
+    def on_duplicate_key(hash, as_json); end
+
+    # pkg:gem/json#lib/json/ext.rb:33
+    def shareable_lambda(block); end
+
+    # pkg:gem/json#lib/json/ext.rb:42
+    def valid_encoding?(str); end
+  end
+end
+
+# pkg:gem/json#lib/json/ext.rb:101
 class JSON::Ext::Generator::State
   # call-seq: new(opts = {})
   #
@@ -1494,43 +1525,43 @@ class JSON::Ext::Generator::State
   # Argument +opts+, if given, contains a \Hash of options for the generation.
   # See {Generating Options}[rdoc-ref:JSON@Generating+Options].
   #
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def initialize(opts = T.unsafe(nil)); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def _generate_no_fallback(*_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def allow_nan=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def allow_nan?; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def array_nl; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def array_nl=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def as_json; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def as_json=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def ascii_only=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def ascii_only?; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def buffer_initial_length; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def buffer_initial_length=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def check_circular?; end
 
   # call-seq: configure(opts)
@@ -1541,70 +1572,76 @@ class JSON::Ext::Generator::State
   # pkg:gem/json#lib/json/ext/generator/state.rb:23
   def configure(opts); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def depth; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def depth=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def generate(*_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def indent; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def indent=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def max_nesting; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def max_nesting=(_arg0); end
 
   # pkg:gem/json#lib/json/ext/generator/state.rb:36
   def merge(opts); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def object_nl; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def object_nl=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
+  def rfc8785=(_arg0); end
+
+  # pkg:gem/json#lib/json/ext.rb:101
+  def rfc8785?; end
+
+  # pkg:gem/json#lib/json/ext.rb:101
   def script_safe; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def script_safe=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def script_safe?; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def sort_keys; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def sort_keys=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def space; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def space=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def space_before; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def space_before=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def strict; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def strict=(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def strict?; end
 
   # call-seq: to_h
@@ -1615,32 +1652,38 @@ class JSON::Ext::Generator::State
   # pkg:gem/json#lib/json/ext/generator/state.rb:42
   def to_h; end
 
-  # pkg:gem/json#lib/json/ext/generator/state.rb:73
+  # pkg:gem/json#lib/json/ext/generator/state.rb:69
   def to_hash; end
 
   private
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def _configure(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def allow_duplicate_key?; end
 
-  # pkg:gem/json#lib/json/ext.rb:39
+  # pkg:gem/json#lib/json/ext.rb:101
   def initialize_copy(_arg0); end
 
   class << self
-    # pkg:gem/json#lib/json/ext.rb:39
+    # pkg:gem/json#lib/json/ext.rb:101
     def _generate_no_fallback(_arg0, _arg1, _arg2); end
 
-    # pkg:gem/json#lib/json/ext.rb:39
+    # pkg:gem/json#lib/json/ext.rb:101
     def default_sort_keys_proc=(_arg0); end
 
-    # pkg:gem/json#lib/json/ext.rb:39
+    # pkg:gem/json#lib/json/ext.rb:101
     def from_state(_arg0); end
 
-    # pkg:gem/json#lib/json/ext.rb:39
+    # pkg:gem/json#lib/json/ext.rb:101
     def generate(_arg0, _arg1, _arg2); end
+
+    # pkg:gem/json#lib/json/ext.rb:101
+    def rfc8785_number_formatter_proc=(_arg0); end
+
+    # pkg:gem/json#lib/json/ext.rb:101
+    def rfc8785_sort_keys_proc=(_arg0); end
   end
 end
 
@@ -1661,15 +1704,15 @@ class JSON::Ext::Parser
   end
 end
 
-# pkg:gem/json#lib/json/ext.rb:32
+# pkg:gem/json#lib/json/ext.rb:94
 JSON::Ext::Parser::Config = JSON::Ext::ParserConfig
 
-# pkg:gem/json#lib/json/ext.rb:31
+# pkg:gem/json#lib/json/ext.rb:93
 class JSON::Ext::ParserConfig
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def initialize(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def parse(_arg0); end
 end
 
@@ -1684,49 +1727,49 @@ end
 # Note: no validation is performed on the provided string. It is the
 # responsibility of the caller to ensure the string contains valid JSON.
 #
-# pkg:gem/json#lib/json/common.rb:232
+# pkg:gem/json#lib/json/common.rb:227
 class JSON::Fragment < ::Struct
-  # pkg:gem/json#lib/json/common.rb:233
+  # pkg:gem/json#lib/json/common.rb:228
   def initialize(json); end
 
-  # pkg:gem/json#lib/json/common.rb:232
+  # pkg:gem/json#lib/json/common.rb:227
   def json; end
 
-  # pkg:gem/json#lib/json/common.rb:232
+  # pkg:gem/json#lib/json/common.rb:227
   def json=(_); end
 
-  # pkg:gem/json#lib/json/common.rb:241
+  # pkg:gem/json#lib/json/common.rb:236
   def to_json(state = T.unsafe(nil), *); end
 
   class << self
-    # pkg:gem/json#lib/json/common.rb:232
+    # pkg:gem/json#lib/json/common.rb:227
     def [](*_arg0); end
 
-    # pkg:gem/json#lib/json/common.rb:232
+    # pkg:gem/json#lib/json/common.rb:227
     def inspect; end
 
-    # pkg:gem/json#lib/json/common.rb:232
+    # pkg:gem/json#lib/json/common.rb:227
     def keyword_init?; end
 
-    # pkg:gem/json#lib/json/common.rb:232
+    # pkg:gem/json#lib/json/common.rb:227
     def members; end
 
-    # pkg:gem/json#lib/json/common.rb:232
+    # pkg:gem/json#lib/json/common.rb:227
     def new(*_arg0); end
   end
 end
 
 # This exception is raised if a generator or unparser error occurs.
 #
-# pkg:gem/json#lib/json/common.rb:202
+# pkg:gem/json#lib/json/common.rb:197
 class JSON::GeneratorError < ::JSON::JSONError
-  # pkg:gem/json#lib/json/common.rb:205
+  # pkg:gem/json#lib/json/common.rb:200
   def initialize(message, invalid_object = T.unsafe(nil)); end
 
-  # pkg:gem/json#lib/json/common.rb:210
+  # pkg:gem/json#lib/json/common.rb:205
   def detailed_message(*, **, &); end
 
-  # pkg:gem/json#lib/json/common.rb:203
+  # pkg:gem/json#lib/json/common.rb:198
   def invalid_object; end
 end
 
@@ -1744,7 +1787,7 @@ module JSON::GeneratorMethods
   def to_json(state = T.unsafe(nil), *); end
 end
 
-# pkg:gem/json#lib/json/common.rb:386
+# pkg:gem/json#lib/json/common.rb:381
 JSON::PRETTY_GENERATE_OPTIONS = T.let(T.unsafe(nil), Hash)
 
 # pkg:gem/json#lib/json/common.rb:76
@@ -1752,12 +1795,12 @@ JSON::Parser = JSON::Ext::Parser
 
 # This exception is raised if a parser error occurs.
 #
-# pkg:gem/json#lib/json/common.rb:144
+# pkg:gem/json#lib/json/common.rb:136
 class JSON::ParserError < ::JSON::JSONError
-  # Column number where the parser encountered an error.
+  # One-based column number where the parser encountered an error, counted in Unicode codepoints.
   # Is +nil+ when raised by JSON::ResumableParser.
   #
-  # pkg:gem/json#lib/json/common.rb:151
+  # pkg:gem/json#lib/json/common.rb:143
   def column; end
 
   # Returns a best effort JSONPath string representing where in the document
@@ -1769,18 +1812,18 @@ class JSON::ParserError < ::JSON::JSONError
   #     error.json_path # => "$.articles[0].title"
   #   end
   #
-  # pkg:gem/json#lib/json/common.rb:161
+  # pkg:gem/json#lib/json/common.rb:153
   def json_path; end
 
   # Line number where the parser encountered an error.
   # Is +nil+ when raised by JSON::ResumableParser.
   #
-  # pkg:gem/json#lib/json/common.rb:147
+  # pkg:gem/json#lib/json/common.rb:139
   def line; end
 
   private
 
-  # pkg:gem/json#lib/json/common.rb:173
+  # pkg:gem/json#lib/json/common.rb:165
   def build_json_path(segments); end
 end
 
@@ -1802,15 +1845,15 @@ end
 
 # Not yet available on JRuby
 #
-# pkg:gem/json#lib/json/ext.rb:31
+# pkg:gem/json#lib/json/ext.rb:93
 class JSON::ResumableParser
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def initialize(*_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def <<(_arg0); end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def clear; end
 
   # Returns whether the parser is entirely done: no unconsumed bytes in
@@ -1832,35 +1875,35 @@ class JSON::ResumableParser
   #   end
   #   warn "stream was truncated" unless parser.empty?
   #
-  # pkg:gem/json#lib/json/ext.rb:64
+  # pkg:gem/json#lib/json/ext.rb:190
   def empty?; end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def eos?; end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def parse; end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def parsed_bytes; end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def partial_value; end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def partial_value?; end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def rest; end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def value; end
 
-  # pkg:gem/json#lib/json/ext.rb:31
+  # pkg:gem/json#lib/json/ext.rb:93
   def value?; end
 end
 
-# pkg:gem/json#lib/json/common.rb:106
+# pkg:gem/json#lib/json/common.rb:98
 JSON::State = JSON::Ext::Generator::State
 
 # pkg:gem/json#lib/json/common.rb:907

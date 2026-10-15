@@ -62,10 +62,10 @@ module Parallel
     # pkg:gem/parallel#lib/parallel.rb:410
     def add_progress_bar!(job_factory, options); end
 
-    # pkg:gem/parallel#lib/parallel.rb:797
+    # pkg:gem/parallel#lib/parallel.rb:800
     def available_processor_count; end
 
-    # pkg:gem/parallel#lib/parallel.rb:745
+    # pkg:gem/parallel#lib/parallel.rb:748
     def call_with_index(item, index, options, &block); end
 
     # pkg:gem/parallel#lib/parallel.rb:655
@@ -73,26 +73,26 @@ module Parallel
 
     # options is either a Integer or a Hash with :count
     #
-    # pkg:gem/parallel#lib/parallel.rb:735
+    # pkg:gem/parallel#lib/parallel.rb:738
     def extract_count_from_options(options); end
 
-    # pkg:gem/parallel#lib/parallel.rb:763
+    # pkg:gem/parallel#lib/parallel.rb:766
     def instrument_finish(item, index, result, options); end
 
     # yield results in the order of the input items
     # needs to use `options` to store state between executions
     # needs to use `done` index since a nil result would also be valid
     #
-    # pkg:gem/parallel#lib/parallel.rb:772
+    # pkg:gem/parallel#lib/parallel.rb:775
     def instrument_finish_in_order(item, index, result, options); end
 
-    # pkg:gem/parallel#lib/parallel.rb:792
+    # pkg:gem/parallel#lib/parallel.rb:795
     def instrument_start(item, index, options); end
 
     # pkg:gem/parallel#lib/parallel.rb:383
     def physical_processor_count_windows; end
 
-    # pkg:gem/parallel#lib/parallel.rb:710
+    # pkg:gem/parallel#lib/parallel.rb:713
     def process_incoming_jobs(read, write, job_factory, options, &block); end
 
     # ractors cannot execute blocks, so run the callback directly when not using ractors
@@ -118,7 +118,7 @@ module Parallel
     # pkg:gem/parallel#lib/parallel.rb:404
     def run(command); end
 
-    # pkg:gem/parallel#lib/parallel.rb:756
+    # pkg:gem/parallel#lib/parallel.rb:759
     def with_instrumentation(item, index, options); end
 
     # pkg:gem/parallel#lib/parallel.rb:435

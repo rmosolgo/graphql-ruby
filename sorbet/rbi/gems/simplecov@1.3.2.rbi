@@ -96,7 +96,7 @@ module SimpleCov
 
     # @api private
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:72
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:74
     def exit_status_from_exception; end
 
     # pkg:gem/simplecov#lib/simplecov.rb:36
@@ -175,14 +175,14 @@ module SimpleCov
     # accepts it. test_unit sets status 0 on success, so SUCCESS must also be
     # treated as "not a previous error".
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:86
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:88
     def previous_error?(error_exit_status); end
 
     # @api private. The history entry is recorded on the same successful-run
     # condition `.last_run.json` uses, so a run that failed its thresholds
     # becomes neither the drop baseline nor a data point in the trend.
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:127
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:129
     def process_result(result); end
 
     # pkg:gem/simplecov#lib/simplecov.rb:22
@@ -197,19 +197,19 @@ module SimpleCov
     # times out the merged total is partial, and comparing it against the
     # thresholds would surface a spurious violation about the missing slice.
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:108
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:110
     def ready_to_process_results?; end
 
     # @api private -- the notice alone; the status it accompanies is the
     # caller's to answer with.
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:94
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:96
     def report_previous_error; end
 
     # @api private -- answers the status it was handed, explaining it first when
     # it is a coverage failure worth explaining.
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:115
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:117
     def report_processing_failure(exit_status); end
 
     # pkg:gem/simplecov#lib/simplecov/result_processing.rb:29
@@ -218,7 +218,7 @@ module SimpleCov
     # pkg:gem/simplecov#lib/simplecov.rb:22
     def result?(*, **, &); end
 
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:149
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:151
     def result_exit_status(result); end
 
     # `tracker` carries the last count and the time it last changed across poll
@@ -239,13 +239,13 @@ module SimpleCov
     # The one side effect left to the caller is ending the process, which is
     # what makes this whole path answerable from inside a test.
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:49
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:51
     def run_exit_tasks(error_exit_status = T.unsafe(nil)); end
 
     # @api private -- the exiting adapter over `run_exit_tasks`, called from the
     # at_exit block (which pre-captures the status, see there) and by `collate`.
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:64
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:66
     def run_exit_tasks!(error_exit_status = T.unsafe(nil)); end
 
     # pkg:gem/simplecov#lib/simplecov.rb:50
@@ -257,7 +257,7 @@ module SimpleCov
     # mutant:disable -- a pid is an Integer, and Integers answer ==, eql? and
     # equal? alike for the same value.
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:138
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:140
     def started_in_this_process?; end
 
     # pkg:gem/simplecov#lib/simplecov.rb:22
@@ -267,7 +267,7 @@ module SimpleCov
     # because two equal Integers are equal through every spelling of the
     # comparison.
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:145
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:147
     def successful?(status); end
 
     # @api private
@@ -316,7 +316,7 @@ module SimpleCov
     # supplies it, so a new limit only has to be added to the Data definition
     # and the checks.
     #
-    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:158
+    # pkg:gem/simplecov#lib/simplecov/exit_handling.rb:160
     def build_coverage_limits; end
 
     # pkg:gem/simplecov#lib/simplecov/result_processing.rb:181
@@ -5629,7 +5629,12 @@ end
 # always match `Coverage`'s byte-for-byte, but lines are reliable and
 # downstream consumers that key off line numbers see the data they expect.
 #
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:17
+# Prism loads on the first extraction rather than with SimpleCov, so a
+# line-only run never needs it. Where it cannot load at all (JRuby on
+# Windows, whose FFI backend fails to open libprism), extraction answers nil
+# like any other failure.
+#
+# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:20
 module SimpleCov::StaticCoverageExtractor
   extend ::SimpleCov::StaticCoverageExtractor
 
@@ -5638,19 +5643,25 @@ module SimpleCov::StaticCoverageExtractor
   # every spelling of an index answers the same for a tuple of this fixed
   # shape. Binding an argument has only the one spelling.
   #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:68
+  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:81
   def branch_start_line(_type, _id, start_line, *); end
 
   # Parse `source` and return `{"branches" => {...}, "methods" => {...}}`
-  # matching the shape `Coverage.result[path]` produces. Returns nil on parse
-  # failure, which callers treat as "couldn't extract, fall back to empty
-  # hashes".
+  # matching the shape `Coverage.result[path]` produces. Returns nil when
+  # Prism cannot load or parsing fails, which callers treat as "couldn't
+  # extract, fall back to empty hashes".
   #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:24
+  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:27
   def call(source); end
 
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:72
+  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:85
   def method_identity(_class_name, name, start_line, *); end
+
+  # Memoized, because a failed load leaves nothing in $LOADED_FEATURES and
+  # would otherwise be retried for every file.
+  #
+  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:71
+  def prism_loaded?; end
 
   # Summarize a source file's real branch and method positions, for the
   # `:eval_generated` filter (#1046). Answers:
@@ -5666,471 +5677,16 @@ module SimpleCov::StaticCoverageExtractor
   # Coincidental line-sharing between a real branch and an eval-generated one
   # keeps both, an acceptable false-negative for an opt-in filter.
   #
-  # Returns nil when parsing fails, signaling callers to keep every Coverage
-  # entry.
+  # Returns nil when Prism cannot load or parsing fails, signaling callers to
+  # keep every Coverage entry.
   #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:54
+  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:59
   def real_source_positions(source); end
-end
-
-# Detects the `if` / `unless` / ternary conditions CRuby folds away. When a
-# condition is a statically-known-truthy/falsy literal the compiler
-# eliminates the dead arm and Coverage emits no branch, so the extractor
-# must not synthesize one either: the arm would be a phantom no loaded run
-# can hit, the same unmergeable-tuple failure as #1226 / #1233.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:10
-module SimpleCov::StaticCoverageExtractor::ConditionFolding
-  private
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:150
-  def container_contents_eliminable?(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:111
-  def eliminable_when_discarded?(node); end
-
-  # `unwrapped` differing from `node` is what says parentheses were seen
-  # through.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:85
-  def foldable?(node, unwrapped); end
-
-  # `:truthy` or `:falsy` when the compiler folds, nil when it doesn't. The
-  # compiler eliminates the losing arm's entire subtree, so everything
-  # inside it must go unvisited too, not just the folded condition's tuple.
-  #
-  # Compound forms (`!true`, `true || x`) are deliberately not folded: `!`
-  # never folds, and `||` / `&&` constant-propagation diverges across Ruby
-  # versions, so matching it would trade a rare gain for real risk.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:76
-  def folded_condition(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:135
-  def static_array_literal?(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:126
-  def static_container?(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:120
-  def static_container_literal?(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:139
-  def static_hash_literal?(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:146
-  def static_range_literal?(node); end
-
-  # A multi-statement body (`if (1; 2)`) folds by its LAST expression, but
-  # only when the compiler eliminates every leading statement. Stopping at
-  # multi-statement bodies synthesized a phantom then/else pair.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:94
-  def unwrap_parentheses(node); end
-
-  # `visit` is nil-safe, so a missing arm just visits nothing.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:65
-  def visit_folded_arms(verdict, truthy_arm, falsy_arm); end
-end
-
-# Container literals in discarded position are eliminated from 3.3 on, but
-# 3.3's compile.c elides a container whose contents are merely
-# effect-free (`[x]`), while the Prism compiler demands fully static
-# literals (`[1]` goes, `[x]` stays).
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:18
-SimpleCov::StaticCoverageExtractor::ConditionFolding::CONTAINER_CONTENTS_NEED_STATIC_LITERALS = T.let(T.unsafe(nil), TrueClass)
-
-# Non-literal reads that are also eliminated when discarded. Anything that
-# can raise or run hooks is never eliminated and keeps the branch real.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:57
-SimpleCov::StaticCoverageExtractor::ConditionFolding::ELIMINABLE_READ_TYPES = T.let(T.unsafe(nil), Array)
-
-# simplecov:enable branch
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:36
-SimpleCov::StaticCoverageExtractor::ConditionFolding::FALSY_CONDITION_TYPES = T.let(T.unsafe(nil), Array)
-
-# CRuby 3.4 rebuilt the fold on the Prism compiler, and the parse.y fold
-# it replaced still differs on 3.3, where `__FILE__` folds.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:13
-SimpleCov::StaticCoverageExtractor::ConditionFolding::FOLDS_SOURCE_FILE = T.let(T.unsafe(nil), FalseClass)
-
-# CRuby folds `if nil`, `if "x"`, and `if -> {}` but keeps a real branch
-# for `if (nil)`, `if ("x")`, and `if (-> {})`, while every other literal
-# folds parenthesized or not.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:41
-SimpleCov::StaticCoverageExtractor::ConditionFolding::PAREN_OPAQUE_TYPES = T.let(T.unsafe(nil), Array)
-
-# The literals that fold. `while` / `until` do NOT fold (`while true` is a
-# real branch), so only the if-like visitors consult this. Regexp and
-# Range literals are excluded on purpose: as conditions they mean
-# `=~ $_` / flip-flop, which Coverage does branch on. `[]`, `{}`, and
-# interpolated strings do not fold either, and `->` folds while a
-# `lambda` call does not: a method named `lambda` proves nothing.
-# simplecov:disable branch — which arm runs is fixed by the running Ruby's version
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:27
-SimpleCov::StaticCoverageExtractor::ConditionFolding::STATIC_CONDITION_TYPES = T.let(T.unsafe(nil), Array)
-
-# A multi-statement paren condition (`if (1; 2)`) folds by its last
-# expression only when every leading statement is eliminated when
-# discarded, and these always are, bare or composing an Array/Hash/Range.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/condition_folding.rb:48
-SimpleCov::StaticCoverageExtractor::ConditionFolding::STATIC_LITERAL_LEAF_TYPES = T.let(T.unsafe(nil), Array)
-
-# The source ranges Ruby's Coverage assigns to branch conditions and arms,
-# resolved from Prism nodes. Simulated entries only ever merge with real
-# entries produced by the running Ruby, and CRuby 3.4 changed several of
-# these conventions, so every resolver here emits whichever shape this
-# Ruby's Coverage uses (#1226, #1233). The "runtime tuple equivalence" spec
-# exercises the module against real Coverage output on every CI Ruby, and
-# is the authority on what each resolver should answer.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:15
-module SimpleCov::StaticCoverageExtractor::LocationConventions
-  private
-
-  # The accessor arrived in Prism 0.25, and this gem supports older ones,
-  # where nothing answers the question.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:138
-  def begin_modifier_loop?(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:87
-  def case_arm_location(case_node, when_node, when_type); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:118
-  def else_arm_location(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:37
-  def elsif_node?(node); end
-
-  # Modern Coverage collapses an empty then arm for every `if` but not
-  # `unless`; legacy Coverage does it only in void position, for both.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:175
-  def empty_arm_collapses?(node, type); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:78
-  def empty_else_location(node, sub, type); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:106
-  def following_case_content(case_node, when_node); end
-
-  # With no else/elsif present, the synthesized else inherits the
-  # condition's range.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:66
-  def if_like_else_location(node, type); end
-
-  # 3.2/3.3 end an `elsif` clause's range at its last content rather than
-  # at the shared `end` keyword the clause doesn't own.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:31
-  def if_like_location(node, type); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:57
-  def if_like_then_location(node, type); end
-
-  # Only a `when` reaches here, and a `when` always carries at least one
-  # condition, so the fallback is always available.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:102
-  def legacy_case_tail_end(case_node, when_node); end
-
-  # The deepest trailing clause's statements, or that clause's predicate /
-  # `else` keyword when its body is empty.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:44
-  def legacy_content_end(node); end
-
-  # `begin ... end while cond` parses as a while whose sole statement is
-  # the BeginNode. Modern Coverage attributes the body to that whole
-  # `begin ... end` span, but 3.3 uses the begin's inner statements.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:145
-  def legacy_do_while_body_location(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:96
-  def legacy_when_value_location(case_node, when_node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:128
-  def loop_body_location(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:166
-  def point_at_end(location); end
-
-  # Coverage's safe-navigation branch spans the receiver through the end of
-  # the call's arguments (or just the message when there are none), but
-  # never includes a trailing block: `x&.foo { ... }` ends exactly where
-  # `x&.foo` would. `node.location` would include the block (#1233).
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:155
-  def safe_navigation_location(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:159
-  def span(from, to); end
-
-  # `@value_positions` is computed once per parse by ValuePositions, and
-  # only on legacy Rubies. Nil elsewhere, which reads as "value": the safe,
-  # pre-audit default.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:184
-  def value_position?(node); end
-end
-
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:16
-SimpleCov::StaticCoverageExtractor::LocationConventions::LEGACY_COVERAGE_LOCATIONS = T.let(T.unsafe(nil), FalseClass)
-
-# A zero-width stand-in for Prism locations, for the arms Coverage
-# anchors to a point rather than a range. Resolvers answer whichever of a
-# node, one of its locations, or this is nearest to hand: all three
-# answer the four position accessors the emitted tuples are built from.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:22
-class SimpleCov::StaticCoverageExtractor::LocationConventions::PointLocation < ::Data
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:22
-  def end_column; end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:22
-  def end_line; end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:22
-  def start_column; end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:22
-  def start_line; end
-
-  class << self
-    # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:22
-    def [](*_arg0); end
-
-    # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:22
-    def inspect; end
-
-    # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:22
-    def members; end
-
-    # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/location_conventions.rb:22
-    def new(*_arg0); end
-  end
-end
-
-# Visitor mixin that collects method tuples and tracks the lexical class /
-# module nesting that names them, in the shape Ruby's `Coverage` reports
-# methods. Module and Class are both namespaces here, since `Coverage` reports
-# both as the constant.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/method_collector.rb:9
-module SimpleCov::StaticCoverageExtractor::MethodCollector
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/method_collector.rb:10
-  def visit_class_node(node); end
-
-  # `def name(...)` and `def self.name(...)` both produce DefNode. The class
-  # context is the surrounding lexical class or module, or `Object` at the top
-  # level, matching `Coverage`'s convention.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/method_collector.rb:21
-  def visit_def_node(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/method_collector.rb:14
-  def visit_module_node(node); end
 
   private
 
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/method_collector.rb:30
-  def constant_name(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/method_collector.rb:37
-  def with_class(name); end
-end
-
-# The Prism 1.3 accessor renames for the trailing clause of conditional
-# nodes, resolved once at load so the per-node hot paths stay branch-free.
-# Ruby 3.3's stdlib Prism predates the renames; 3.4+ and any installed prism
-# gem post-date them, and reaching for the modern name on the old one raised
-# NoMethodError inside the extractor, which `call` swallowed, silently
-# falling back to no simulated data.
-#
-# This lives in its own file, required by every consumer, because the
-# constants are referenced from several extractor files and defining them
-# after those files were loaded worked only while the references happened at
-# call time: a load-order trap for the next editor.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/prism_compat.rb:16
-module SimpleCov::StaticCoverageExtractor::PrismCompat
-  extend ::SimpleCov::StaticCoverageExtractor::PrismCompat
-
-  # The rename hit `UnlessNode`, `CaseNode`, and `CaseMatchNode` together, so
-  # one constant probed off CaseNode covers all three.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/prism_compat.rb:41
-  def else_clause(node); end
-
-  # simplecov:enable
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/prism_compat.rb:35
-  def subsequent(node); end
-end
-
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/prism_compat.rb:27
-SimpleCov::StaticCoverageExtractor::PrismCompat::ELSE_CLAUSE_METHOD = T.let(T.unsafe(nil), Symbol)
-
-# simplecov:disable
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/prism_compat.rb:20
-SimpleCov::StaticCoverageExtractor::PrismCompat::IF_NODE_SUBSEQUENT_METHOD = T.let(T.unsafe(nil), Symbol)
-
-# Ruby 3.3 value-position analysis for the extractor's legacy branch
-# conventions (#1233). On 3.3 the source range Coverage assigns to an empty
-# branch arm depends on whether its construct is in value position, where its
-# result is the method's return value, or void position, where the result is
-# discarded. Value position keeps the whole-construct range; void collapses
-# the arm to a point at its header's end. Ruby 3.4 dropped the distinction.
-#
-# "Value position" here is strictly method-return (tail) position. It reaches
-# a node only through statement tails and `if`/`unless`/`when` arms.
-# Assignments, blocks, lambdas, method arguments, `case/in` arms, and loop
-# bodies all discard it, so `tail_children` names the constructs that forward
-# tail position and everything else falls through to the void default.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/value_position.rb:19
-module SimpleCov::StaticCoverageExtractor::ValuePositions
-  extend ::SimpleCov::StaticCoverageExtractor::ValuePositions
-
-  # An identity set of the Prism nodes Coverage treats as being in value
-  # position. This pass runs natively only on legacy Rubies; elsewhere the
-  # specs drive it directly, pinned by the differential tuple-equivalence spec
-  # against real Coverage on 3.3.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/value_position.rb:26
-  def call(root); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/value_position.rb:33
-  def mark(node, in_value, positions); end
-
-  # A method body is a tail context even when the `def` itself is not, since
-  # the method still returns its last expression, so it is included regardless
-  # of `in_value`. `case/in` is intentionally absent: its `in` arms and `else`
-  # both discard tail position.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/value_position.rb:47
-  def tail_children(node, in_value); end
-end
-
-# Prism visitor that accumulates branch and method tuples in the shape
-# Ruby's `Coverage` reports. Tuple ids are sequential across the file like
-# `Coverage`'s, but the numbering order can differ. That's fine: the
-# combiners intern on source span and the report output drops ids, so
-# nothing downstream compares them.
-#
-# pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:16
-class SimpleCov::StaticCoverageExtractor::Visitor < ::Prism::Visitor
-  include ::SimpleCov::StaticCoverageExtractor::MethodCollector
-  include ::SimpleCov::StaticCoverageExtractor::LocationConventions
-  include ::SimpleCov::StaticCoverageExtractor::ConditionFolding
-
-  # Prism's Visitor is a stateless dispatch table whose initializer is
-  # Object's, so no mutation of the `super` call can be told apart. It
-  # stays for the day that stops being true.
-  # mutant:disable
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:27
-  def initialize; end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:21
-  def branches; end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:21
-  def methods; end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:69
-  def visit_call_node(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:81
-  def visit_case_match_node(node); end
-
-  # When there's no explicit `else`, Coverage synthesizes one at the case's
-  # range.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:76
-  def visit_case_node(node); end
-
-  # `if` / `unless` / postfix / ternary all parse as IfNode (or UnlessNode).
-  # Both carry a `then` arm and an optional `subsequent` (an ElseNode for
-  # `else`, another IfNode for `elsif`). When the subsequent is missing,
-  # Coverage synthesizes a `:else` arm attributed to the whole condition's
-  # range, and so do we.
-  #
-  # A folded condition emits no tuple, and only its live arm is descended
-  # into: the compiler eliminates the dead arm's entire subtree, so a branch
-  # or method nested there would be a phantom no loaded run can produce.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:53
-  def visit_if_node(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:96
-  def visit_match_predicate_node(node); end
-
-  # One-line pattern matching: `x => pattern` and `x in pattern`. Ruby 3.3's
-  # Coverage reports these as a `:case` with an `:in` and an `:else` arm;
-  # 3.4 dropped them entirely, so this is legacy-only. The two forms differ
-  # only in where Coverage anchors the synthesized `:else`: `=>` uses the
-  # whole expression, `in` uses just the pattern.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:91
-  def visit_match_required_node(node); end
-
-  # On legacy Rubies the location of an empty branch arm depends on whether
-  # its construct is in value (tail) position, so precompute that once for
-  # the whole tree before emitting anything.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:39
-  def visit_program_node(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:61
-  def visit_unless_node(node); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:107
-  def visit_until_node(node); end
-
-  # A loop gets a single `:body` arm and no synthetic else.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:102
-  def visit_while_node(node); end
-
-  private
-
-  # `span` is anything that answers the four position accessors: a location
-  # from LocationConventions, or the node itself where the range wanted is
-  # the node's own.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:156
-  def build_tuple(type, span); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:140
-  def emit_case_like(node, when_type); end
-
-  # IfNode and UnlessNode share a shape but expose the trailing arm under
-  # different accessors, which `if_like_else_location` hides.
-  #
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:116
-  def emit_if_like(node, type); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:148
-  def emit_loop(node, type); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:133
-  def emit_oneline_pattern(node, else_span); end
-
-  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor/visitor.rb:125
-  def emit_safe_navigation(node); end
+  # pkg:gem/simplecov#lib/simplecov/static_coverage_extractor.rb:91
+  def load_prism; end
 end
 
 # pkg:gem/simplecov#lib/simplecov/filter.rb:57
@@ -6612,14 +6168,12 @@ module SimpleCov::ViewCoverage::TemplateCompiler
   # pkg:gem/simplecov#lib/simplecov/view_coverage/template_compiler.rb:27
   def available?; end
 
-  # The single place ActionView is named. The handler lookup is the one the
-  # resolver performs, so a template language the project has registered a
-  # handler for compiles here the way it does when rendered. Nil when
-  # nothing is registered for the extension, which is how a default glob
-  # naming `.haml` behaves in a project that has no Haml: ActionView would
-  # hand back the raw handler and the template would report as static text.
+  # Nil when nothing is registered for the extension, which is how a default
+  # glob naming `.haml` behaves in a project that has no Haml.
+  # `handler_for_extension` is not that lookup: it falls back to the raw
+  # handler, and the template would report as static text.
   #
-  # pkg:gem/simplecov#lib/simplecov/view_coverage/template_compiler.rb:73
+  # pkg:gem/simplecov#lib/simplecov/view_coverage/template_compiler.rb:71
   def build_template(path, source); end
 
   # Answers whether the compile produced coverage data. A template that
@@ -6647,4 +6201,11 @@ module SimpleCov::ViewCoverage::TemplateCompiler
   #
   # pkg:gem/simplecov#lib/simplecov/view_coverage/template_compiler.rb:60
   def format_for(path); end
+
+  # Rails main removed `Template.registered_template_handler` when the
+  # registry moved onto `Template::Handlers`. Read that hash directly so an
+  # unregistered extension stays nil. Older Rails still have the method.
+  #
+  # pkg:gem/simplecov#lib/simplecov/view_coverage/template_compiler.rb:83
+  def handler_for(extension); end
 end

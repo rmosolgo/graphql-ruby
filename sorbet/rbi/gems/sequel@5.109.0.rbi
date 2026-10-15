@@ -413,16 +413,16 @@ module Sequel
     #   Sequel[:a]    # => Sequel::SQL::Identifier: "a"
     #   Sequel[a: 1]  # => Sequel::SQL::BooleanExpression: ("a" = 1)
     #
-    # pkg:gem/sequel#lib/sequel/core.rb:479
+    # pkg:gem/sequel#lib/sequel/core.rb:491
     def [](arg = T.unsafe(nil), &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def ado(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def amalgalite(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def ibmdb(*args, &block); end
 
     # Yield the Inflections module if a block is given, and return
@@ -431,37 +431,37 @@ module Sequel
     # pkg:gem/sequel#lib/sequel/model/inflections.rb:6
     def inflections; end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def jdbc(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def mock(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def mysql(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def mysql2(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def odbc(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def oracle(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def postgres(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def sqlanywhere(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def sqlite(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def tinytds(*args, &block); end
 
-    # pkg:gem/sequel#lib/sequel/core.rb:456
+    # pkg:gem/sequel#lib/sequel/core.rb:468
     def trilogy(*args, &block); end
 
     # The version of Sequel you are using, as a string (e.g. "2.11.0")
@@ -884,7 +884,7 @@ class Sequel::Database
   #   DB.cast_type_literal(Float) # double precision
   #   DB.cast_type_literal(:foo)  # foo
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:243
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:238
   def cast_type_literal(type); end
 
   # Whether to check the bytesize of strings before typecasting (to avoid typecasting strings that
@@ -1290,7 +1290,7 @@ class Sequel::Database
   # extension does not have specific support for Database objects, an Error will be raised.
   # Returns self.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:252
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:247
   def extension(*exts); end
 
   # Returns a dataset instance for the given SQL string:
@@ -1341,7 +1341,7 @@ class Sequel::Database
   # to the databases's timezone or the default database timezone if
   # the database does not have a timezone.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:273
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:268
   def from_application_timestamp(v); end
 
   # Returns a single value from the database, see Dataset#get.
@@ -1369,7 +1369,7 @@ class Sequel::Database
   # Returns a string representation of the Database object, including
   # the database type, host, database, and user, if present.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:279
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:274
   def inspect; end
 
   # Proxy the literal call to the dataset.
@@ -1378,18 +1378,18 @@ class Sequel::Database
   #   DB.literal(:a)  # "a" # or `a`, [a], or a, depending on identifier quoting
   #   DB.literal("a") # 'a'
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:305
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:300
   def literal(v); end
 
   # Return the literalized version of the symbol if cached, or
   # nil if it is not cached.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:311
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:306
   def literal_symbol(sym); end
 
   # Set the cached value of the literal symbol.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:316
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:311
   def literal_symbol_set(sym, lit); end
 
   # Whether to include information about the connection in use when logging queries.
@@ -1467,7 +1467,7 @@ class Sequel::Database
 
   # Synchronize access to the prepared statements cache.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:321
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:316
   def prepared_statement(name); end
 
   # The prepared statement object hash for this database, keyed by name symbol
@@ -1479,7 +1479,7 @@ class Sequel::Database
   # useful for quoting unqualified identifiers for use
   # outside of datasets.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:328
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:323
   def quote_identifier(v); end
 
   # Dynamically remove existing servers from the connection pool. Only usable
@@ -1598,7 +1598,7 @@ class Sequel::Database
 
   # Return ruby class or array of classes for the given type symbol.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:333
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:328
   def schema_type_class(type); end
 
   # Returns a new dataset with the select method invoked.
@@ -1612,7 +1612,7 @@ class Sequel::Database
 
   # Default serial primary key options, used by the table creation code.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:338
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:333
   def serial_primary_key_options; end
 
   # An array of servers/shards for this Database object.
@@ -1643,13 +1643,13 @@ class Sequel::Database
 
   # Cache the prepared statement object at the given name.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:343
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:338
   def set_prepared_statement(name, ps); end
 
   # Whether this database instance uses multiple servers, either for sharding
   # or for primary/replica configurations.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:349
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:344
   def sharded?; end
 
   # Returns true if the database is using a single-threaded connection pool.
@@ -1803,7 +1803,7 @@ class Sequel::Database
   # Set the timezone to use for this database, overriding <tt>Sequel.database_timezone</tt>.
   # The timezone to use for this database, defaulting to <tt>Sequel.database_timezone</tt>.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:354
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:349
   def timezone; end
 
   # Set the timezone to use for this database, overriding <tt>Sequel.database_timezone</tt>.
@@ -1816,7 +1816,7 @@ class Sequel::Database
   # from the databases's timezone or the default database timezone if
   # the database does not have a timezone.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:361
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:356
   def to_application_timestamp(v); end
 
   # Starts a database transaction.  When a database transaction is used,
@@ -1896,18 +1896,18 @@ class Sequel::Database
   # This method should raise Sequel::InvalidValue if assigned value
   # is invalid.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:370
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:365
   def typecast_value(column_type, value); end
 
   # Returns the URI use to connect to the database.  If a URI
   # was not used when connecting, returns nil.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:383
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:378
   def uri; end
 
   # Explicit alias of uri for easier subclassing.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:388
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:383
   def url; end
 
   # Check whether the given connection is currently valid, by
@@ -1948,12 +1948,12 @@ class Sequel::Database
   # Typecast a string to a BigDecimal
   # simplecov:disable
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:581
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:576
   def _typecast_value_string_to_decimal(*_arg0); end
 
   # Per adapter initialization method, empty by default.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:395
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:390
   def adapter_initialize; end
 
   # Set the given callable as a hook to be called. Type should be either
@@ -2075,7 +2075,7 @@ class Sequel::Database
   # strings with all whitespace, and ones that respond
   # true to empty?
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:402
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:397
   def blank_object?(obj); end
 
   # Whether the database supports adding primary key constraints on NULLable columns,
@@ -2234,32 +2234,30 @@ class Sequel::Database
 
   # Whether to commit the current transaction. Thread.current.status is
   # checked because Thread#kill skips rescue blocks (so exception would be
-  # nil), but the transaction should still be rolled back. On Ruby 1.9 (but
-  # not 2.0+), the thread status will still be "run", so Thread#kill
-  # will erroneously commit the transaction, and there isn't a workaround.
+  # nil), but the transaction should still be rolled back.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:380
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:378
   def commit_or_rollback_transaction(exception, conn, opts); end
 
   # SQL to commit a savepoint
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:395
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:393
   def commit_savepoint_sql(depth); end
 
   # Commit the active transaction on the connection
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:400
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:398
   def commit_transaction(conn, opts = T.unsafe(nil)); end
 
   # SQL to COMMIT a transaction.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:410
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:408
   def commit_transaction_sql; end
 
   # Method called on the connection object to execute SQL on the database,
   # used by the transaction code.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:416
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:414
   def connection_execute_method; end
 
   # String including information about the connection, for use when logging
@@ -2352,36 +2350,36 @@ class Sequel::Database
   # Return the Sequel::DatabaseError subclass to wrap the given
   # exception in.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:425
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:420
   def database_error_class(exception, opts); end
 
   # Which transaction errors to translate, blank by default.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:421
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:419
   def database_error_classes; end
 
   # An enumerable yielding pairs of regexps and exception classes, used
   # to match against underlying driver exception messages in
   # order to raise a more specific Sequel::DatabaseError subclass.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:419
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:414
   def database_error_regexps; end
 
   # Return the SQLState for the given exception, if one can be determined
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:430
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:425
   def database_exception_sqlstate(exception, opts); end
 
   # Return a specific Sequel::DatabaseError exception class if
   # one is appropriate for the underlying exception,
   # or nil if there is no specific exception class.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:437
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:432
   def database_specific_error_class(exception, opts); end
 
   # Given the SQLState, return the appropriate DatabaseError subclass.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:459
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:454
   def database_specific_error_class_from_sqlstate(sqlstate); end
 
   # The default dataset class to use for the database
@@ -2397,7 +2395,7 @@ class Sequel::Database
 
   # Return true if exception represents a disconnect error, false otherwise.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:475
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:470
   def disconnect_error?(exception, opts); end
 
   # The SQL to drop an index for the table.
@@ -2435,7 +2433,7 @@ class Sequel::Database
 
   # Whether the connection is currently inside a savepoint.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:426
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:424
   def in_savepoint?(conn); end
 
   # SQL statement for creating an index for the table with the given name
@@ -2452,7 +2450,7 @@ class Sequel::Database
 
   # Load extensions during initialization from the given key in opts.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:480
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:475
   def initialize_load_extensions(key); end
 
   # Return a Method object for the dataset's output_identifier_method.
@@ -2546,7 +2544,7 @@ class Sequel::Database
   # Convert the given exception to an appropriate Sequel::DatabaseError
   # subclass, keeping message and backtrace.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:497
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:492
   def raise_error(exception, opts = T.unsafe(nil)); end
 
   # Remove the cached schema for the given schema name
@@ -2556,7 +2554,7 @@ class Sequel::Database
 
   # Remove the current thread from the list of active transactions
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:446
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:444
   def remove_transaction(conn, committed); end
 
   # SQL statement for renaming a table.
@@ -2571,34 +2569,34 @@ class Sequel::Database
 
   # Whether to rollback the transaction when exiting the transaction.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:489
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:487
   def rollback_on_transaction_exit?(conn, opts); end
 
   # SQL to rollback to a savepoint
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:484
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:482
   def rollback_savepoint_sql(depth); end
 
   # Rollback the active transaction on the connection
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:500
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:498
   def rollback_transaction(conn, opts = T.unsafe(nil)); end
 
   # SQL to ROLLBACK a transaction.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:510
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:508
   def rollback_transaction_sql; end
 
   # Retrieve the savepoint hooks that should be run for the given
   # connection and commit status.  This expacts that you are
   # already inside a savepoint when calling.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:433
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:431
   def savepoint_hooks(conn, committed); end
 
   # Current savepoint level.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:527
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:525
   def savepoint_level(conn); end
 
   # Split the schema information from the table
@@ -2637,12 +2635,12 @@ class Sequel::Database
 
   # Set the transaction isolation level on the given connection
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:515
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:513
   def set_transaction_isolation(conn, opts); end
 
   # SQL to set the transaction isolation level
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:522
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:520
   def set_transaction_isolation_sql(level); end
 
   # Determine if logging should be skipped. Defaults to true if no loggers
@@ -2678,7 +2676,7 @@ class Sequel::Database
 
   # Swallow database errors, unless they are connect/disconnect errors.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:506
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:501
   def swallow_database_error; end
 
   # SQL fragment for temporary table
@@ -2688,19 +2686,19 @@ class Sequel::Database
 
   # Raise a database error unless the exception is an Rollback.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:532
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:530
   def transaction_error(e, opts = T.unsafe(nil)); end
 
   # Finish a subtransaction.  If savepoints are supported, pops the current
   # transaction off the savepoint stack.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:542
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:540
   def transaction_finished?(conn); end
 
   # Retrieve the transaction hooks that should be run for the given
   # connection and commit status.
   #
-  # pkg:gem/sequel#lib/sequel/database/transactions.rb:439
+  # pkg:gem/sequel#lib/sequel/database/transactions.rb:437
   def transaction_hooks(conn, committed); end
 
   # Derive the transaction hash from the options passed to the transaction.
@@ -2804,58 +2802,58 @@ class Sequel::Database
 
   # Check the bytesize of the string value, if value is a string.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:528
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:523
   def typecast_check_length(value, max_size); end
 
   # Check the bytesize of a string before conversion. There is no point
   # trying to typecast strings that would be way too long.
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:520
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:515
   def typecast_check_string_length(string, max_size); end
 
   # Typecast the value to an SQL::Blob
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:534
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:529
   def typecast_value_blob(value); end
 
   # Typecast the value to true, false, or nil
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:539
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:534
   def typecast_value_boolean(value); end
 
   # Typecast the value to a Date
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:549
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:544
   def typecast_value_date(value); end
 
   # Typecast the value to a DateTime or Time depending on Sequel.datetime_class
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:565
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:560
   def typecast_value_datetime(value); end
 
   # Typecast the value to a BigDecimal
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:602
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:597
   def typecast_value_decimal(value); end
 
   # Typecast the value to a Float
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:616
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:611
   def typecast_value_float(value); end
 
   # Typecast the value to an Integer
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:621
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:616
   def typecast_value_integer(value); end
 
   # Typecast the value to a String
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:636
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:631
   def typecast_value_string(value); end
 
   # Typecast the value to a Time
   #
-  # pkg:gem/sequel#lib/sequel/database/misc.rb:646
+  # pkg:gem/sequel#lib/sequel/database/misc.rb:641
   def typecast_value_time(value); end
 
   # Add fragment for unique specification, separated for easier overriding.
@@ -2993,7 +2991,7 @@ end
 # pkg:gem/sequel#lib/sequel/database/connecting.rb:11
 Sequel::Database::ADAPTERS = T.let(T.unsafe(nil), Array)
 
-# pkg:gem/sequel#lib/sequel/database/misc.rb:456
+# pkg:gem/sequel#lib/sequel/database/misc.rb:451
 Sequel::Database::CHECK_CONSTRAINT_SQLSTATES = T.let(T.unsafe(nil), Array)
 
 # The order of column modifiers to use when defining a column.
@@ -3036,7 +3034,7 @@ Sequel::Database::DEFAULT_STRING_COLUMN_SIZE = T.let(T.unsafe(nil), Integer)
 # pkg:gem/sequel#lib/sequel/database/misc.rb:13
 Sequel::Database::EXTENSIONS = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/sequel#lib/sequel/database/misc.rb:454
+# pkg:gem/sequel#lib/sequel/database/misc.rb:449
 Sequel::Database::FOREIGN_KEY_CONSTRAINT_SQLSTATES = T.let(T.unsafe(nil), Array)
 
 # pkg:gem/sequel#lib/sequel/database/query.rb:284
@@ -3054,7 +3052,7 @@ Sequel::Database::INTEGER4_MIN_MAX = T.let(T.unsafe(nil), Array)
 # pkg:gem/sequel#lib/sequel/database/query.rb:288
 Sequel::Database::INTEGER8_MIN_MAX = T.let(T.unsafe(nil), Array)
 
-# pkg:gem/sequel#lib/sequel/database/misc.rb:453
+# pkg:gem/sequel#lib/sequel/database/misc.rb:448
 Sequel::Database::NOT_NULL_CONSTRAINT_SQLSTATES = T.let(T.unsafe(nil), Array)
 
 # pkg:gem/sequel#lib/sequel/database.rb:24
@@ -3066,7 +3064,7 @@ Sequel::Database::OPTS = T.let(T.unsafe(nil), Hash)
 # pkg:gem/sequel#lib/sequel/database/misc.rb:25
 Sequel::Database::SCHEMA_TYPE_CLASSES = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/sequel#lib/sequel/database/misc.rb:457
+# pkg:gem/sequel#lib/sequel/database/misc.rb:452
 Sequel::Database::SERIALIZATION_CONSTRAINT_SQLSTATES = T.let(T.unsafe(nil), Array)
 
 # ---------------------
@@ -3079,7 +3077,7 @@ Sequel::Database::SERIALIZATION_CONSTRAINT_SQLSTATES = T.let(T.unsafe(nil), Arra
 # pkg:gem/sequel#lib/sequel/database/transactions.rb:12
 Sequel::Database::TRANSACTION_ISOLATION_LEVELS = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/sequel#lib/sequel/database/misc.rb:455
+# pkg:gem/sequel#lib/sequel/database/misc.rb:450
 Sequel::Database::UNIQUE_CONSTRAINT_SQLSTATES = T.let(T.unsafe(nil), Array)
 
 # pkg:gem/sequel#lib/sequel/database/query.rb:289
@@ -6123,16 +6121,16 @@ class Sequel::Dataset
   # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1174
   def delete_from_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1662
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1673
   def delete_order_sql(sql); end
 
   # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1346
   def delete_returning_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1675
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1686
   def delete_where_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1708
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1719
   def delete_with_sql(sql); end
 
   # Append the column aliases to the SQL.
@@ -6308,7 +6306,7 @@ class Sequel::Dataset
   # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1317
   def insert_values_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1709
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1720
   def insert_with_sql(sql); end
 
   # Inverts the given order by breaking it into a list of column references
@@ -6320,91 +6318,90 @@ class Sequel::Dataset
   # pkg:gem/sequel#lib/sequel/dataset/query.rb:1538
   def invert_order(order); end
 
-  # SQL fragment specifying a JOIN type, converts underscores to
-  # spaces and upcases.
+  # SQL fragment for join type
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1351
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1358
   def join_type_sql(join_type); end
 
   # Append USING clause for JOIN USING
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1356
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1367
   def join_using_clause_using_sql_append(sql, using_columns); end
 
   # Append a literalization of the array to SQL string.
   # Treats as an expression if an array of all two pairs, or as a SQL array otherwise.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1364
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1375
   def literal_array_append(sql, v); end
 
   # SQL fragment for BigDecimal
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1373
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1384
   def literal_big_decimal(v); end
 
   # Append literalization of SQL::Blob to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1379
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1390
   def literal_blob_append(sql, v); end
 
   # Append literalization of dataset to SQL string.  Does a subselect inside parentheses.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1384
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1395
   def literal_dataset_append(sql, v); end
 
   # SQL fragment for Date, using the ISO8601 format.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1392
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1403
   def literal_date(v); end
 
   # Append literalization of date to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1397
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1408
   def literal_date_append(sql, v); end
 
   # SQL fragment for DateTime
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1402
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1413
   def literal_datetime(v); end
 
   # Append literalization of DateTime to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1407
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1418
   def literal_datetime_append(sql, v); end
 
   # Append literalization of SQL::Expression to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1412
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1423
   def literal_expression_append(sql, v); end
 
   # SQL fragment for false
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1417
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1428
   def literal_false; end
 
   # SQL fragment for Float
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1422
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1433
   def literal_float(v); end
 
   # Append literalization of Hash to SQL string, treating hash as a boolean expression.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1427
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1438
   def literal_hash_append(sql, v); end
 
   # SQL fragment for Integer
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1432
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1443
   def literal_integer(v); end
 
   # Append string to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1437
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1448
   def literal_literal_string_append(sql, v); end
 
   # SQL fragment for nil
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1442
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1453
   def literal_nil; end
 
   # Append a literalization of the object to the given SQL string.
@@ -6412,48 +6409,48 @@ class Sequel::Dataset
   # calls +sql_literal+ if object responds to it, otherwise raises an error.
   # If a database specific type is allowed, this should be overridden in a subclass.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1450
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1461
   def literal_other_append(sql, v); end
 
   # Append a literalization of the set to SQL string.
   # Treats as an expression as an SQL value list.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1468
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1479
   def literal_set_append(sql, v); end
 
   # SQL fragment for Sequel::SQLTime, containing just the time part
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1473
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1484
   def literal_sqltime(v); end
 
   # Append literalization of Sequel::SQLTime to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1478
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1489
   def literal_sqltime_append(sql, v); end
 
   # Append literalization of string to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1483
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1494
   def literal_string_append(sql, v); end
 
   # Append literalization of symbol to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1488
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1499
   def literal_symbol_append(sql, v); end
 
   # SQL fragment for Time
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1499
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1510
   def literal_time(v); end
 
   # Append literalization of Time to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1504
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1515
   def literal_time_append(sql, v); end
 
   # SQL fragment for true
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1509
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1520
   def literal_true; end
 
   # What strategy to use for import/multi_insert.  While SQL-92 defaults
@@ -6461,12 +6458,12 @@ class Sequel::Dataset
   # that don't allow that that it can't be the default.  Use separate queries
   # by default, which works everywhere.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1517
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1528
   def multi_insert_sql_strategy; end
 
   # Get the native function name given the emulated function name.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1523
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1534
   def native_function_name(emulated_function); end
 
   # Whether the given option key does not affect the generated SQL.
@@ -6499,12 +6496,12 @@ class Sequel::Dataset
   # Returns a qualified column name (including a table name) if the column
   # name isn't already qualified.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1529
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1540
   def qualified_column_name(column, table); end
 
   # Qualify the given expression to the given table.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1549
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1560
   def qualified_expression(e, table); end
 
   # Wrap the alias symbol in an SQL::Identifier if the identifier on which is based
@@ -6532,94 +6529,94 @@ class Sequel::Dataset
   # pkg:gem/sequel#lib/sequel/dataset/actions.rb:1362
   def returning_fetch_rows(sql, &block); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1553
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1564
   def select_columns_sql(sql); end
 
   # Modify the sql to add a dataset to the via an EXCEPT, INTERSECT, or UNION clause.
   # This uses a subselect for the compound datasets used, because using parentheses doesn't
   # work on all databases.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1572
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1583
   def select_compounds_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1558
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1569
   def select_distinct_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1582
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1593
   def select_from_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1591
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1602
   def select_group_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1613
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1624
   def select_having_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1620
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1631
   def select_join_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1626
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1637
   def select_limit_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1639
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1650
   def select_lock_sql(sql); end
 
   # Used only if there is an offset and no limit, making it easier to override
   # in the adapter, as many databases do not support just a plain offset with
   # no limit.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1651
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1662
   def select_only_offset_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1656
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1667
   def select_order_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1665
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1676
   def select_select_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1669
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1680
   def select_where_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1678
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1689
   def select_window_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1694
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1705
   def select_with_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1712
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1723
   def select_with_sql_base; end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1716
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1727
   def select_with_sql_cte(sql, cte); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1721
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1732
   def select_with_sql_prefix(sql, w); end
 
   # Whether the symbol cache should be skipped when literalizing the dataset
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1739
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1750
   def skip_symbol_cache?; end
 
   # Append literalization of array of sources/tables to SQL string, raising an Error if there
   # are no sources.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1745
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1756
   def source_list_append(sql, sources); end
 
   # Delegate to Sequel.split_symbol.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1751
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1762
   def split_symbol(sym); end
 
   # The string that is appended to to create the SQL query, the empty
   # string by default.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1757
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1768
   def sql_string_origin; end
 
   # The precision to use for SQLTime instances (time column values without dates).
   # Defaults to timestamp_precision.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1763
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1774
   def sqltime_precision; end
 
   # SQL to use if this dataset uses static SQL.  Since static SQL
@@ -6627,18 +6624,18 @@ class Sequel::Dataset
   # we literalize nonstrings.  If there is an append_sql for this
   # dataset, append to that SQL instead of returning the value.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1771
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1782
   def static_sql(sql); end
 
   # Append literalization of the subselect to SQL string.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1788
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1799
   def subselect_sql_append(sql, ds); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1802
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1813
   def subselect_sql_append_sql(sql, ds); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1798
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1809
   def subselect_sql_dataset(sql, ds); end
 
   # Whether common table expressions are supported in UNION/INTERSECT/EXCEPT clauses.
@@ -6659,7 +6656,7 @@ class Sequel::Dataset
 
   # The number of decimal digits of precision to use in timestamps.
   #
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1807
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1818
   def timestamp_precision; end
 
   # Return the unaliased part of the identifier.  Handles both
@@ -6669,28 +6666,28 @@ class Sequel::Dataset
   # pkg:gem/sequel#lib/sequel/dataset/actions.rb:1376
   def unaliased_identifier(c); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1663
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1674
   def update_order_sql(sql); end
 
   # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1347
   def update_returning_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1817
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1828
   def update_set_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1827
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1838
   def update_sql_values_hash(sql, values); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1811
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1822
   def update_table_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1843
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1854
   def update_update_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1676
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1687
   def update_where_sql(sql); end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1710
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1721
   def update_with_sql(sql); end
 
   # Whether the RETURNING clause is used for the given dataset.
@@ -6715,7 +6712,7 @@ class Sequel::Dataset
   # pkg:gem/sequel#lib/sequel/dataset/misc.rb:375
   def visible_class_name; end
 
-  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1847
+  # pkg:gem/sequel#lib/sequel/dataset/sql.rb:1858
   def window_frame_boundary_sql_append(sql, boundary, direction); end
 
   class << self
@@ -7009,6 +7006,9 @@ Sequel::Dataset::IS_OPERATORS = T.let(T.unsafe(nil), Array)
 #
 # pkg:gem/sequel#lib/sequel/dataset/query.rb:39
 Sequel::Dataset::JOIN_METHODS = T.let(T.unsafe(nil), Array)
+
+# pkg:gem/sequel#lib/sequel/dataset/sql.rb:1349
+Sequel::Dataset::JOIN_TYPE_SQL = T.let(T.unsafe(nil), Hash)
 
 # pkg:gem/sequel#lib/sequel/dataset/sql.rb:286
 Sequel::Dataset::LIKE_OPERATORS = T.let(T.unsafe(nil), Array)
@@ -7666,18 +7666,18 @@ class Sequel::LiteralString < ::String
 
   # Show that the current string is a literal string in addition to the output.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:2042
+  # pkg:gem/sequel#lib/sequel/sql.rb:2046
   def inspect; end
 
   # Return self if no args are given, otherwise return a SQL::PlaceholderLiteralString
   # with the current string and the given args.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:2048
+  # pkg:gem/sequel#lib/sequel/sql.rb:2052
   def lit(*args); end
 
   # Convert a literal string to a SQL::Blob.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:2053
+  # pkg:gem/sequel#lib/sequel/sql.rb:2057
   def to_sequel_blob; end
 end
 
@@ -12895,7 +12895,7 @@ end
 
 # Represents boolean constants such as +NULL+, +TRUE+, and +FALSE+.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1311
+# pkg:gem/sequel#lib/sequel/sql.rb:1315
 class Sequel::SQL::BooleanConstant < ::Sequel::SQL::Constant
   # pkg:gem/sequel#lib/sequel/sql.rb:112
   def to_s_append(ds, sql); end
@@ -12907,64 +12907,66 @@ end
 # pkg:gem/sequel#lib/sequel/sql.rb:1061
 class Sequel::SQL::BooleanExpression < ::Sequel::SQL::ComplexExpression
   include ::Sequel::SQL::BooleanMethods
+  extend ::Sequel::SQL::BooleanExpression::ClassMethods
 
   # Always use an AND operator for & on BooleanExpressions
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1181
+  # pkg:gem/sequel#lib/sequel/sql.rb:1185
   def &(ce); end
 
   # Return self instead of creating a new object to save on memory.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1191
+  # pkg:gem/sequel#lib/sequel/sql.rb:1195
   def sql_boolean; end
 
   # Always use an OR operator for | on BooleanExpressions
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1186
+  # pkg:gem/sequel#lib/sequel/sql.rb:1190
   def |(ce); end
+end
 
-  class << self
-    # Take pairs of values (e.g. a hash or array of two element arrays)
-    # and converts it to a +BooleanExpression+.  The operator and args
-    # used depends on the case of the right (2nd) argument:
-    #
-    # 0..10 :: left >= 0 AND left <= 10
-    # [1,2] :: left IN (1,2)
-    # nil :: left IS NULL
-    # true :: left IS TRUE
-    # false :: left IS FALSE
-    # /as/ :: left ~ 'as'
-    # :blah :: left = blah
-    # 'blah' :: left = 'blah'
-    #
-    # If multiple arguments are given, they are joined with the op given (AND
-    # by default, OR possible).  If negate is set to true,
-    # all subexpressions are inverted before used.  Therefore, the following
-    # expressions are equivalent:
-    #
-    #   ~from_value_pairs(hash)
-    #   from_value_pairs(hash, :OR, true)
-    #
-    # pkg:gem/sequel#lib/sequel/sql.rb:1084
-    def from_value_pairs(pairs, op = T.unsafe(nil), negate = T.unsafe(nil)); end
+# pkg:gem/sequel#lib/sequel/sql.rb:1064
+module Sequel::SQL::BooleanExpression::ClassMethods
+  # Take pairs of values (e.g. a hash or array of two element arrays)
+  # and converts it to a +BooleanExpression+.  The operator and args
+  # used depends on the case of the right (2nd) argument:
+  #
+  # 0..10 :: left >= 0 AND left <= 10
+  # [1,2] :: left IN (1,2)
+  # nil :: left IS NULL
+  # true :: left IS TRUE
+  # false :: left IS FALSE
+  # /as/ :: left ~ 'as'
+  # :blah :: left = blah
+  # 'blah' :: left = 'blah'
+  #
+  # If multiple arguments are given, they are joined with the op given (AND
+  # by default, OR possible).  If negate is set to true,
+  # all subexpressions are inverted before used.  Therefore, the following
+  # expressions are equivalent:
+  #
+  #   ~from_value_pairs(hash)
+  #   from_value_pairs(hash, :OR, true)
+  #
+  # pkg:gem/sequel#lib/sequel/sql.rb:1085
+  def from_value_pairs(pairs, op = T.unsafe(nil), negate = T.unsafe(nil)); end
 
-    # Invert the expression, if possible.  If the expression cannot
-    # be inverted, raise an error.  An inverted expression should match everything that the
-    # uninverted expression did not match, and vice-versa, except for possible issues with
-    # SQL NULL (i.e. 1 == NULL is NULL and 1 != NULL is also NULL).
-    #
-    #   BooleanExpression.invert(:a) # NOT "a"
-    #
-    # pkg:gem/sequel#lib/sequel/sql.rb:1149
-    def invert(ce); end
+  # Invert the expression, if possible.  If the expression cannot
+  # be inverted, raise an error.  An inverted expression should match everything that the
+  # uninverted expression did not match, and vice-versa, except for possible issues with
+  # SQL NULL (i.e. 1 == NULL is NULL and 1 != NULL is also NULL).
+  #
+  #   BooleanExpression.invert(:a) # NOT "a"
+  #
+  # pkg:gem/sequel#lib/sequel/sql.rb:1150
+  def invert(ce); end
 
-    private
+  private
 
-    # Return a BooleanExpression based on the right side of the pair.
-    #
-    # pkg:gem/sequel#lib/sequel/sql.rb:1091
-    def from_value_pair(l, r); end
-  end
+  # Return a BooleanExpression based on the right side of the pair.
+  #
+  # pkg:gem/sequel#lib/sequel/sql.rb:1092
+  def from_value_pair(l, r); end
 end
 
 # This module includes the boolean/logical AND (&), OR (|) and NOT (~) operators
@@ -13280,14 +13282,14 @@ end
 
 # Represents an SQL CASE expression, used for conditional branching in SQL.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1197
+# pkg:gem/sequel#lib/sequel/sql.rb:1201
 class Sequel::SQL::CaseExpression < ::Sequel::SQL::GenericExpression
   # Create an object with the given conditions and
   # default value, and optional expression.  An expression can be provided to
   # test each condition against, instead of having
   # all conditions represent their own boolean expression.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1213
+  # pkg:gem/sequel#lib/sequel/sql.rb:1217
   def initialize(conditions, default, expression = T.unsafe(nil)); end
 
   # An array of all two pairs with the first element specifying the
@@ -13309,7 +13311,7 @@ class Sequel::SQL::CaseExpression < ::Sequel::SQL::GenericExpression
 
   # Whether to use an expression for this CASE expression.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1223
+  # pkg:gem/sequel#lib/sequel/sql.rb:1227
   def expression?; end
 
   # pkg:gem/sequel#lib/sequel/sql.rb:112
@@ -13318,17 +13320,17 @@ class Sequel::SQL::CaseExpression < ::Sequel::SQL::GenericExpression
   # Merge the CASE expression into the conditions, useful for databases that
   # don't support CASE expressions.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1229
+  # pkg:gem/sequel#lib/sequel/sql.rb:1233
   def with_merged_expression; end
 end
 
 # Represents a cast of an SQL expression to a specific type.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1242
+# pkg:gem/sequel#lib/sequel/sql.rb:1246
 class Sequel::SQL::Cast < ::Sequel::SQL::GenericExpression
   # Set the expression and type for the cast
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1250
+  # pkg:gem/sequel#lib/sequel/sql.rb:1254
   def initialize(expr, type); end
 
   # The expression to cast
@@ -13381,11 +13383,11 @@ end
 
 # Represents all columns in a given table, table.* in SQL
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1260
+# pkg:gem/sequel#lib/sequel/sql.rb:1264
 class Sequel::SQL::ColumnAll < ::Sequel::SQL::Expression
   # Create an object with the given table
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1265
+  # pkg:gem/sequel#lib/sequel/sql.rb:1269
   def initialize(table); end
 
   # The table containing the columns being selected
@@ -13434,17 +13436,17 @@ class Sequel::SQL::ComplexExpression < ::Sequel::SQL::Expression
 
   # Return a BooleanExpression with the same op and args.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1281
+  # pkg:gem/sequel#lib/sequel/sql.rb:1285
   def sql_boolean; end
 
   # Return a NumericExpression with the same op and args.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1286
+  # pkg:gem/sequel#lib/sequel/sql.rb:1290
   def sql_number; end
 
   # Return a StringExpression with the same op and args.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1291
+  # pkg:gem/sequel#lib/sequel/sql.rb:1295
   def sql_string; end
 
   # pkg:gem/sequel#lib/sequel/sql.rb:112
@@ -13468,7 +13470,7 @@ Sequel::SQL::ComplexExpression::BOOLEAN_OPERATOR_METHODS = T.let(T.unsafe(nil), 
 
 # A hash of the opposite for each constant, used for inverting constants.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1339
+# pkg:gem/sequel#lib/sequel/sql.rb:1343
 Sequel::SQL::ComplexExpression::CONSTANT_INVERSIONS = T.let(T.unsafe(nil), Hash)
 
 # Custom expressions that may have different syntax on different databases
@@ -13576,11 +13578,11 @@ end
 
 # Represents constants or psuedo-constants (e.g. +CURRENT_DATE+) in SQL.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1297
+# pkg:gem/sequel#lib/sequel/sql.rb:1301
 class Sequel::SQL::Constant < ::Sequel::SQL::GenericExpression
   # Create a constant with the given value
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1302
+  # pkg:gem/sequel#lib/sequel/sql.rb:1306
   def initialize(constant); end
 
   # The underlying constant related to this object.
@@ -13597,63 +13599,63 @@ end
 # in this module which can be required at the top level to get
 # direct access to the constants.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1325
+# pkg:gem/sequel#lib/sequel/sql.rb:1329
 module Sequel::SQL::Constants; end
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1326
+# pkg:gem/sequel#lib/sequel/sql.rb:1330
 Sequel::SQL::Constants::ALL = T.let(T.unsafe(nil), Sequel::SQL::Constant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1327
+# pkg:gem/sequel#lib/sequel/sql.rb:1331
 Sequel::SQL::Constants::CURRENT_DATE = T.let(T.unsafe(nil), Sequel::SQL::Constant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1328
+# pkg:gem/sequel#lib/sequel/sql.rb:1332
 Sequel::SQL::Constants::CURRENT_TIME = T.let(T.unsafe(nil), Sequel::SQL::Constant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1329
+# pkg:gem/sequel#lib/sequel/sql.rb:1333
 Sequel::SQL::Constants::CURRENT_TIMESTAMP = T.let(T.unsafe(nil), Sequel::SQL::Constant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1330
+# pkg:gem/sequel#lib/sequel/sql.rb:1334
 Sequel::SQL::Constants::DEFAULT = T.let(T.unsafe(nil), Sequel::SQL::Constant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1332
+# pkg:gem/sequel#lib/sequel/sql.rb:1336
 Sequel::SQL::Constants::FALSE = T.let(T.unsafe(nil), Sequel::SQL::BooleanConstant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:2059
+# pkg:gem/sequel#lib/sequel/sql.rb:2063
 Sequel::SQL::Constants::NEW = T.let(T.unsafe(nil), Sequel::SQL::Identifier)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1334
+# pkg:gem/sequel#lib/sequel/sql.rb:1338
 Sequel::SQL::Constants::NOTNULL = T.let(T.unsafe(nil), Sequel::SQL::NegativeBooleanConstant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1333
+# pkg:gem/sequel#lib/sequel/sql.rb:1337
 Sequel::SQL::Constants::NULL = T.let(T.unsafe(nil), Sequel::SQL::BooleanConstant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:2058
+# pkg:gem/sequel#lib/sequel/sql.rb:2062
 Sequel::SQL::Constants::OLD = T.let(T.unsafe(nil), Sequel::SQL::Identifier)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1332
+# pkg:gem/sequel#lib/sequel/sql.rb:1336
 Sequel::SQL::Constants::SQLFALSE = T.let(T.unsafe(nil), Sequel::SQL::BooleanConstant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1331
+# pkg:gem/sequel#lib/sequel/sql.rb:1335
 Sequel::SQL::Constants::SQLTRUE = T.let(T.unsafe(nil), Sequel::SQL::BooleanConstant)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1331
+# pkg:gem/sequel#lib/sequel/sql.rb:1335
 Sequel::SQL::Constants::TRUE = T.let(T.unsafe(nil), Sequel::SQL::BooleanConstant)
 
 # Represents a delayed evaluation, encapsulating a callable
 # object which returns the value to use when called.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1345
+# pkg:gem/sequel#lib/sequel/sql.rb:1349
 class Sequel::SQL::DelayedEvaluation < ::Sequel::SQL::GenericExpression
   # Set the callable object
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1351
+  # pkg:gem/sequel#lib/sequel/sql.rb:1355
   def initialize(callable); end
 
   # Call the underlying callable and return the result.  If the
   # underlying callable only accepts a single argument, call it
   # with the given dataset.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1359
+  # pkg:gem/sequel#lib/sequel/sql.rb:1363
   def call(ds); end
 
   # A callable object that returns the value of the evaluation
@@ -13739,18 +13741,18 @@ end
 
 # Represents an SQL function call.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1371
+# pkg:gem/sequel#lib/sequel/sql.rb:1375
 class Sequel::SQL::Function < ::Sequel::SQL::GenericExpression
   # Set the name and args for the function
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1386
+  # pkg:gem/sequel#lib/sequel/sql.rb:1390
   def initialize(name, *args); end
 
   # If no arguments are given, return a new function with the wildcard prepended to the arguments.
   #
   #   Sequel.function(:count).*  # count(*)
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1398
+  # pkg:gem/sequel#lib/sequel/sql.rb:1402
   def *(ce = T.unsafe(nil)); end
 
   # The array of arguments to pass to the function (may be blank)
@@ -13762,7 +13764,7 @@ class Sequel::SQL::Function < ::Sequel::SQL::GenericExpression
   #
   #   Sequel.function(:count, :col).distinct # count(DISTINCT col)
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1410
+  # pkg:gem/sequel#lib/sequel/sql.rb:1414
   def distinct; end
 
   # Return a new function with FILTER added to it, for filtered
@@ -13770,14 +13772,14 @@ class Sequel::SQL::Function < ::Sequel::SQL::GenericExpression
   #
   #   Sequel.function(:foo, :col).filter(a: 1) # foo(col) FILTER (WHERE (a = 1))
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1418
+  # pkg:gem/sequel#lib/sequel/sql.rb:1422
   def filter(*args, &block); end
 
   # Return a function which will use LATERAL when literalized:
   #
   #   Sequel.function(:foo, :col).lateral # LATERAL foo(col)
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1431
+  # pkg:gem/sequel#lib/sequel/sql.rb:1435
   def lateral; end
 
   # The SQL function to call
@@ -13795,7 +13797,7 @@ class Sequel::SQL::Function < ::Sequel::SQL::GenericExpression
   #
   #   Sequel.function(:foo, :a).order(:a, Sequel.desc(:b)) # foo(a ORDER BY a, b DESC)
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1439
+  # pkg:gem/sequel#lib/sequel/sql.rb:1443
   def order(*args); end
 
   # Return a new function with an OVER clause (making it a window function).
@@ -13803,7 +13805,7 @@ class Sequel::SQL::Function < ::Sequel::SQL::GenericExpression
   #
   #   Sequel.function(:row_number).over(partition: :col) # row_number() OVER (PARTITION BY col)
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1447
+  # pkg:gem/sequel#lib/sequel/sql.rb:1451
   def over(window = T.unsafe(nil)); end
 
   # Return a new function where the function name will be quoted if the database supports
@@ -13811,7 +13813,7 @@ class Sequel::SQL::Function < ::Sequel::SQL::GenericExpression
   #
   #   Sequel.function(:foo).quoted # "foo"()
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1457
+  # pkg:gem/sequel#lib/sequel/sql.rb:1461
   def quoted; end
 
   # pkg:gem/sequel#lib/sequel/sql.rb:112
@@ -13822,7 +13824,7 @@ class Sequel::SQL::Function < ::Sequel::SQL::GenericExpression
   #
   #   Sequel[:foo][:bar].function.unquoted # foo.bar()
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1465
+  # pkg:gem/sequel#lib/sequel/sql.rb:1469
   def unquoted; end
 
   # Return a new function that will use WITH ORDINALITY to also return
@@ -13830,7 +13832,7 @@ class Sequel::SQL::Function < ::Sequel::SQL::GenericExpression
   #
   #   Sequel.function(:foo).with_ordinality # foo() WITH ORDINALITY
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1473
+  # pkg:gem/sequel#lib/sequel/sql.rb:1477
   def with_ordinality; end
 
   # Return a new function that uses WITHIN GROUP ordered by the given expression,
@@ -13839,36 +13841,36 @@ class Sequel::SQL::Function < ::Sequel::SQL::GenericExpression
   #   Sequel.function(:rank, :a).within_group(:b, :c)
   #   # rank(a) WITHIN GROUP (ORDER BY b, c)
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1482
+  # pkg:gem/sequel#lib/sequel/sql.rb:1486
   def within_group(*expressions); end
 
   private
 
   # Set name, args, and opts
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1491
+  # pkg:gem/sequel#lib/sequel/sql.rb:1495
   def _initialize(name, args, opts); end
 
   # Return a new function call with the given opts merged into the current opts.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1499
+  # pkg:gem/sequel#lib/sequel/sql.rb:1503
   def with_opts(opts); end
 
   class << self
     # Set the name, args, and options, for internal use only.
     #
-    # pkg:gem/sequel#lib/sequel/sql.rb:1391
+    # pkg:gem/sequel#lib/sequel/sql.rb:1395
     def new!(name, args, opts); end
   end
 end
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1374
+# pkg:gem/sequel#lib/sequel/sql.rb:1378
 Sequel::SQL::Function::COMMA_ARRAY = T.let(T.unsafe(nil), Array)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1373
+# pkg:gem/sequel#lib/sequel/sql.rb:1377
 Sequel::SQL::Function::DISTINCT = T.let(T.unsafe(nil), Array)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1372
+# pkg:gem/sequel#lib/sequel/sql.rb:1376
 Sequel::SQL::Function::WILDCARD = T.let(T.unsafe(nil), Sequel::LiteralString)
 
 # The base class for expressions that can be used in multiple places in
@@ -13890,19 +13892,19 @@ end
 
 # Represents an identifier (column, table, schema, etc.).
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1518
+# pkg:gem/sequel#lib/sequel/sql.rb:1522
 class Sequel::SQL::Identifier < ::Sequel::SQL::GenericExpression
   include ::Sequel::SQL::QualifyingMethods
 
   # Set the identifier to the given argument
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1525
+  # pkg:gem/sequel#lib/sequel/sql.rb:1529
   def initialize(value); end
 
   # Create a Function using this identifier as the functions name, with
   # the given args.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1532
+  # pkg:gem/sequel#lib/sequel/sql.rb:1536
   def function(*args); end
 
   # pkg:gem/sequel#lib/sequel/sql.rb:112
@@ -13939,17 +13941,17 @@ end
 
 # Represents an SQL JOIN clause, used for joining tables.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1540
+# pkg:gem/sequel#lib/sequel/sql.rb:1544
 class Sequel::SQL::JoinClause < ::Sequel::SQL::Expression
   # Create an object with the given join_type and table expression.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1549
+  # pkg:gem/sequel#lib/sequel/sql.rb:1553
   def initialize(join_type, table_expr); end
 
   # The column aliases to use for the JOIN , or nil if the
   # JOIN does not use a derived column list.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1574
+  # pkg:gem/sequel#lib/sequel/sql.rb:1578
   def column_aliases; end
 
   # The type of join to do
@@ -13959,13 +13961,13 @@ class Sequel::SQL::JoinClause < ::Sequel::SQL::Expression
 
   # The table/set related to the JOIN, without any alias.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1556
+  # pkg:gem/sequel#lib/sequel/sql.rb:1560
   def table; end
 
   # The table alias to use for the JOIN , or nil if the
   # JOIN does not alias the table.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1566
+  # pkg:gem/sequel#lib/sequel/sql.rb:1570
   def table_alias; end
 
   # The expression representing the table/set related to the JOIN.
@@ -13980,12 +13982,12 @@ end
 
 # Represents an SQL JOIN clause with ON conditions.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1584
+# pkg:gem/sequel#lib/sequel/sql.rb:1588
 class Sequel::SQL::JoinOnClause < ::Sequel::SQL::JoinClause
   # Create an object with the ON conditions and call super with the
   # remaining args.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1590
+  # pkg:gem/sequel#lib/sequel/sql.rb:1594
   def initialize(on, *args); end
 
   # The conditions for the join
@@ -13999,12 +14001,12 @@ end
 
 # Represents an SQL JOIN clause with USING conditions.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1599
+# pkg:gem/sequel#lib/sequel/sql.rb:1603
 class Sequel::SQL::JoinUsingClause < ::Sequel::SQL::JoinClause
   # Create an object with the given USING conditions and call super
   # with the remaining args.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1606
+  # pkg:gem/sequel#lib/sequel/sql.rb:1610
   def initialize(cols, *args); end
 
   # pkg:gem/sequel#lib/sequel/sql.rb:112
@@ -14020,7 +14022,7 @@ end
 # Represents inverse boolean constants (currently only +NOTNULL+). A
 # special class to allow for special behavior.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1317
+# pkg:gem/sequel#lib/sequel/sql.rb:1321
 class Sequel::SQL::NegativeBooleanConstant < ::Sequel::SQL::Constant
   # pkg:gem/sequel#lib/sequel/sql.rb:112
   def to_s_append(ds, sql); end
@@ -14029,7 +14031,7 @@ end
 # Subclass of +ComplexExpression+ where the expression results
 # in a numeric value in SQL.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1650
+# pkg:gem/sequel#lib/sequel/sql.rb:1654
 class Sequel::SQL::NumericExpression < ::Sequel::SQL::ComplexExpression
   include ::Sequel::SQL::BitwiseMethods
   include ::Sequel::SQL::NumericMethods
@@ -14037,12 +14039,12 @@ class Sequel::SQL::NumericExpression < ::Sequel::SQL::ComplexExpression
 
   # Always use + for + operator for NumericExpressions.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1656
+  # pkg:gem/sequel#lib/sequel/sql.rb:1660
   def +(ce); end
 
   # Return self instead of creating a new object to save on memory.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1661
+  # pkg:gem/sequel#lib/sequel/sql.rb:1665
   def sql_number; end
 end
 
@@ -14165,24 +14167,24 @@ end
 
 # Represents a column/expression to order the result set by.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1667
+# pkg:gem/sequel#lib/sequel/sql.rb:1671
 class Sequel::SQL::OrderedExpression < ::Sequel::SQL::Expression
   # Set the expression and descending attributes to the given values.
   # Options:
   #
   # :nulls :: Can be :first/:last for NULLS FIRST/LAST.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1683
+  # pkg:gem/sequel#lib/sequel/sql.rb:1687
   def initialize(expression, descending = T.unsafe(nil), opts = T.unsafe(nil)); end
 
   # Return a copy that is ordered ASC
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1691
+  # pkg:gem/sequel#lib/sequel/sql.rb:1695
   def asc; end
 
   # Return a copy that is ordered DESC
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1696
+  # pkg:gem/sequel#lib/sequel/sql.rb:1700
   def desc; end
 
   # Whether the expression should order the result set in a descending manner
@@ -14197,7 +14199,7 @@ class Sequel::SQL::OrderedExpression < ::Sequel::SQL::Expression
 
   # Return an inverted expression, changing ASC to DESC and NULLS FIRST to NULLS LAST.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1701
+  # pkg:gem/sequel#lib/sequel/sql.rb:1705
   def invert; end
 
   # Whether to sort NULLS FIRST/LAST
@@ -14209,7 +14211,7 @@ class Sequel::SQL::OrderedExpression < ::Sequel::SQL::Expression
   def to_s_append(ds, sql); end
 end
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1668
+# pkg:gem/sequel#lib/sequel/sql.rb:1672
 Sequel::SQL::OrderedExpression::INVERT_NULLS = T.let(T.unsafe(nil), Hash)
 
 # This module includes methods for overriding the =~ method for SQL equality,
@@ -14246,11 +14248,11 @@ end
 # required for the prepared statement support and for database-specific
 # literalization.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1618
+# pkg:gem/sequel#lib/sequel/sql.rb:1622
 class Sequel::SQL::PlaceholderLiteralString < ::Sequel::SQL::GenericExpression
   # Create an object with the given string, placeholder arguments, and parens flag.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1633
+  # pkg:gem/sequel#lib/sequel/sql.rb:1637
   def initialize(str, args, parens = T.unsafe(nil)); end
 
   # The arguments that will be substituted into the placeholders.
@@ -14277,19 +14279,19 @@ class Sequel::SQL::PlaceholderLiteralString < ::Sequel::SQL::GenericExpression
 
   # Return a copy of the that will be surrounded by parentheses.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1641
+  # pkg:gem/sequel#lib/sequel/sql.rb:1645
   def with_parens; end
 end
 
 # Represents a qualified identifier (column with table or table with schema).
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1709
+# pkg:gem/sequel#lib/sequel/sql.rb:1713
 class Sequel::SQL::QualifiedIdentifier < ::Sequel::SQL::GenericExpression
   include ::Sequel::SQL::QualifyingMethods
 
   # Set the table and column to the given arguments
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1719
+  # pkg:gem/sequel#lib/sequel/sql.rb:1723
   def initialize(table, column); end
 
   # The column/table referenced
@@ -14300,7 +14302,7 @@ class Sequel::SQL::QualifiedIdentifier < ::Sequel::SQL::GenericExpression
   # Create a Function using this identifier as the functions name, with
   # the given args.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1727
+  # pkg:gem/sequel#lib/sequel/sql.rb:1731
   def function(*args); end
 
   # The table/schema qualifying the reference
@@ -14315,7 +14317,7 @@ class Sequel::SQL::QualifiedIdentifier < ::Sequel::SQL::GenericExpression
 
   # Automatically convert SQL::Identifiers to strings
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1736
+  # pkg:gem/sequel#lib/sequel/sql.rb:1740
   def convert_identifier(identifier); end
 end
 
@@ -14368,7 +14370,7 @@ end
 # Subclass of +ComplexExpression+ where the expression results
 # in a text/string/varchar value in SQL.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1747
+# pkg:gem/sequel#lib/sequel/sql.rb:1751
 class Sequel::SQL::StringExpression < ::Sequel::SQL::ComplexExpression
   include ::Sequel::SQL::StringMethods
   include ::Sequel::SQL::StringConcatenationMethods
@@ -14376,7 +14378,7 @@ class Sequel::SQL::StringExpression < ::Sequel::SQL::ComplexExpression
 
   # Return self instead of creating a new object to save on memory.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1802
+  # pkg:gem/sequel#lib/sequel/sql.rb:1806
   def sql_string; end
 
   class << self
@@ -14403,7 +14405,7 @@ class Sequel::SQL::StringExpression < ::Sequel::SQL::ComplexExpression
     #   StringExpression.like(:a, 'a%', case_insensitive: true) # ("a" ILIKE 'a%' ESCAPE '\')
     #   StringExpression.like(:a, 'a%', /^a/i) # (("a" LIKE 'a%' ESCAPE '\') OR ("a" ~* '^a'))
     #
-    # pkg:gem/sequel#lib/sequel/sql.rb:1778
+    # pkg:gem/sequel#lib/sequel/sql.rb:1782
     def like(l, *ces); end
 
     private
@@ -14413,14 +14415,14 @@ class Sequel::SQL::StringExpression < ::Sequel::SQL::ComplexExpression
     # * Whether it is a regular expression
     # * Whether it is case insensitive
     #
-    # pkg:gem/sequel#lib/sequel/sql.rb:1792
+    # pkg:gem/sequel#lib/sequel/sql.rb:1796
     def like_element(re); end
   end
 end
 
 # Map of [regexp, case_insensitive] to +ComplexExpression+ operator symbol
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1753
+# pkg:gem/sequel#lib/sequel/sql.rb:1757
 Sequel::SQL::StringExpression::LIKE_MAP = T.let(T.unsafe(nil), Hash)
 
 # This module includes the +like+ and +ilike+ methods used for pattern matching that are defined on objects that can be
@@ -14447,11 +14449,11 @@ end
 
 # Represents an SQL array access, with multiple possible arguments.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1808
+# pkg:gem/sequel#lib/sequel/sql.rb:1812
 class Sequel::SQL::Subscript < ::Sequel::SQL::GenericExpression
   # Set the array column and subscripts to the given arguments
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1817
+  # pkg:gem/sequel#lib/sequel/sql.rb:1821
   def initialize(expression, sub); end
 
   # Create a new +Subscript+ by accessing a subarray of a multidimensional
@@ -14460,7 +14462,7 @@ class Sequel::SQL::Subscript < ::Sequel::SQL::GenericExpression
   #   Sequel[:a].sql_subscript(2) # a[2]
   #   Sequel[:a].sql_subscript(2)[1] # a[2][1]
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1837
+  # pkg:gem/sequel#lib/sequel/sql.rb:1841
   def [](sub); end
 
   # The SQL array column
@@ -14468,7 +14470,7 @@ class Sequel::SQL::Subscript < ::Sequel::SQL::GenericExpression
   # pkg:gem/sequel#lib/sequel/sql.rb:93
   def expression; end
 
-  # pkg:gem/sequel#lib/sequel/sql.rb:1811
+  # pkg:gem/sequel#lib/sequel/sql.rb:1815
   def f; end
 
   # The array of subscripts to use (should be an array of numbers)
@@ -14485,7 +14487,7 @@ class Sequel::SQL::Subscript < ::Sequel::SQL::GenericExpression
   #   Sequel[:a].sql_subscript(2) # a[2]
   #   Sequel[:a].sql_subscript(2) | 1 # a[2, 1]
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1828
+  # pkg:gem/sequel#lib/sequel/sql.rb:1832
   def |(sub); end
 end
 
@@ -14510,11 +14512,11 @@ end
 # ruby array of two element arrays as an SQL value list instead of an ordered
 # hash-like conditions specifier.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1847
+# pkg:gem/sequel#lib/sequel/sql.rb:1851
 class Sequel::SQL::ValueList < ::Array
   # Show that this is a value list and not just an array
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:1849
+  # pkg:gem/sequel#lib/sequel/sql.rb:1853
   def inspect; end
 end
 
@@ -14573,23 +14575,23 @@ end
 #
 # For a more detailed explanation, see the {Virtual Rows guide}[rdoc-ref:doc/virtual_rows.rdoc].
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1908
+# pkg:gem/sequel#lib/sequel/sql.rb:1912
 class Sequel::SQL::VirtualRow < ::Sequel::BasicObject
   include ::Sequel::SQL::OperatorBuilders
 
-  # pkg:gem/sequel#lib/sequel/sql.rb:1919
+  # pkg:gem/sequel#lib/sequel/sql.rb:1923
   def initialize; end
 
-  # pkg:gem/sequel#lib/sequel/sql.rb:1912
+  # pkg:gem/sequel#lib/sequel/sql.rb:1916
   def <(*args); end
 
-  # pkg:gem/sequel#lib/sequel/sql.rb:1912
+  # pkg:gem/sequel#lib/sequel/sql.rb:1916
   def <=(*args); end
 
-  # pkg:gem/sequel#lib/sequel/sql.rb:1912
+  # pkg:gem/sequel#lib/sequel/sql.rb:1916
   def >(*args); end
 
-  # pkg:gem/sequel#lib/sequel/sql.rb:1912
+  # pkg:gem/sequel#lib/sequel/sql.rb:1916
   def >=(*args); end
 end
 
@@ -14625,11 +14627,11 @@ Sequel::SQL::VirtualRow::Sequel = Sequel
 #   Sequel::SQL::Window.new(window: :named_window) # you can create a named window with Dataset#window
 #   # (named_window)
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:1975
+# pkg:gem/sequel#lib/sequel/sql.rb:1979
 class Sequel::SQL::Window < ::Sequel::SQL::Expression
   # Set the options to the options given
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:2004
+  # pkg:gem/sequel#lib/sequel/sql.rb:2008
   def initialize(opts = T.unsafe(nil)); end
 
   # The options for this window.  Options currently supported:
@@ -14668,11 +14670,11 @@ end
 # A +Wrapper+ is a simple way to wrap an existing object so that it supports
 # the Sequel DSL.
 #
-# pkg:gem/sequel#lib/sequel/sql.rb:2014
+# pkg:gem/sequel#lib/sequel/sql.rb:2018
 class Sequel::SQL::Wrapper < ::Sequel::SQL::GenericExpression
   # Set the value wrapped by the object.
   #
-  # pkg:gem/sequel#lib/sequel/sql.rb:2019
+  # pkg:gem/sequel#lib/sequel/sql.rb:2023
   def initialize(value); end
 
   # pkg:gem/sequel#lib/sequel/sql.rb:112
@@ -15468,7 +15470,7 @@ module Sequel::SequelMethods
 
   # Join the array or set.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:170
+  # pkg:gem/sequel#lib/sequel/core.rb:178
   def array_or_set_join(obj, arg); end
 
   # Returns true if the passed object could be a specifier of conditions, false otherwise.
@@ -15622,7 +15624,7 @@ module Sequel::SequelMethods
   # The elapsed seconds since the given timer object was created.  The
   # timer object should have been created via Sequel.start_timer.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:372
+  # pkg:gem/sequel#lib/sequel/core.rb:384
   def elapsed_seconds_since(timer); end
 
   # Load all Sequel extensions given.  Extensions are just files that exist under
@@ -15640,37 +15642,37 @@ module Sequel::SequelMethods
   # The exception classed raised if there is an error parsing JSON.
   # This can be overridden to use an alternative json implementation.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:164
+  # pkg:gem/sequel#lib/sequel/core.rb:172
   def json_parser_error_class; end
 
   # Convert given object to json and return the result.
   # This can be overridden to use an alternative json implementation.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:199
+  # pkg:gem/sequel#lib/sequel/core.rb:207
   def object_to_json(obj, *args, &block); end
 
   # Parse the string as JSON and return the result.
   # This can be overridden to use an alternative json implementation.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:205
+  # pkg:gem/sequel#lib/sequel/core.rb:213
   def parse_json(json); end
 
   # Convert each item in the array to the correct type, handling multi-dimensional
   # arrays.  For each element in the array or subarrays, call the converter,
   # unless the value is nil.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:223
+  # pkg:gem/sequel#lib/sequel/core.rb:235
   def recursive_map(array, converter); end
 
   # For backwards compatibility only.  require_relative should be used instead.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:234
+  # pkg:gem/sequel#lib/sequel/core.rb:246
   def require(files, subdir = T.unsafe(nil)); end
 
   # Create a new module using the block, and set the temporary name
   # on it using the given a containing module and name.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:185
+  # pkg:gem/sequel#lib/sequel/core.rb:193
   def set_temp_name(mod); end
 
   # Set whether Sequel is being used in single threaded mode. By default,
@@ -15703,7 +15705,7 @@ module Sequel::SequelMethods
   # For columns, these parts are the table, column, and alias.
   # For tables, these parts are the schema, table, and alias.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:250
+  # pkg:gem/sequel#lib/sequel/core.rb:262
   def split_symbol(sym); end
 
   # Setting this to true enables Sequel's historical behavior of splitting
@@ -15737,26 +15739,26 @@ module Sequel::SequelMethods
   #   Sequel.expr{table__column}  # table__column
   #   Sequel.expr{table[:column]} # table.column
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:302
+  # pkg:gem/sequel#lib/sequel/core.rb:314
   def split_symbols=(v); end
 
   # Whether Sequel currently splits symbols into qualified/aliased identifiers.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:309
+  # pkg:gem/sequel#lib/sequel/core.rb:321
   def split_symbols?; end
 
   # A timer object that can be passed to Sequel.elapsed_seconds_since
   # to return the number of seconds elapsed.
   # simplecov:disable
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:359
+  # pkg:gem/sequel#lib/sequel/core.rb:371
   def start_timer; end
 
   # Converts the given +string+ into a +Date+ object.
   #
   #   Sequel.string_to_date('2010-09-10') # Date.civil(2010, 09, 10)
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:317
+  # pkg:gem/sequel#lib/sequel/core.rb:329
   def string_to_date(string); end
 
   # Converts the given +string+ into a +Time+ or +DateTime+ object, depending on the
@@ -15764,7 +15766,7 @@ module Sequel::SequelMethods
   #
   #   Sequel.string_to_datetime('2010-09-10 10:20:30') # Time.local(2010, 09, 10, 10, 20, 30)
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:327
+  # pkg:gem/sequel#lib/sequel/core.rb:339
   def string_to_datetime(string); end
 
   # Converts the given +string+ into a <tt>Sequel::SQLTime</tt> object.
@@ -15772,7 +15774,7 @@ module Sequel::SequelMethods
   #   v = Sequel.string_to_time('10:20:30') # Sequel::SQLTime.parse('10:20:30')
   #   DB.literal(v) # => '10:20:30'
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:341
+  # pkg:gem/sequel#lib/sequel/core.rb:353
   def string_to_time(string); end
 
   # Unless in single threaded mode, protects access to any mutable
@@ -15781,14 +15783,14 @@ module Sequel::SequelMethods
   # In general, this should only be used around the minimal possible code
   # such as Hash#[], Hash#[]=, Hash#delete, Array#<<, and Array#delete.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:352
+  # pkg:gem/sequel#lib/sequel/core.rb:364
   def synchronize(&block); end
 
   # If a mutex is given, synchronize access using it.  If nil is given, just
   # yield to the block.  This is designed for cases where a mutex may or may
   # not be provided.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:212
+  # pkg:gem/sequel#lib/sequel/core.rb:224
   def synchronize_with(mutex); end
 
   # Uses a transaction on all given databases with the given options. This:
@@ -15814,7 +15816,7 @@ module Sequel::SequelMethods
   # have two-phase commit/prepared transactions (which Sequel supports on
   # some databases).
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:398
+  # pkg:gem/sequel#lib/sequel/core.rb:410
   def transaction(dbs, opts = T.unsafe(nil), &block); end
 
   # The timezone that incoming data that Sequel needs to typecast
@@ -15844,20 +15846,20 @@ module Sequel::SequelMethods
   #   Sequel.virtual_row{a} # Sequel::SQL::Identifier.new(:a)
   #   Sequel.virtual_row{|o| o.a} # Sequel::SQL::Function.new(:a)
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:422
+  # pkg:gem/sequel#lib/sequel/core.rb:434
   def virtual_row(&block); end
 
   private
 
   # Return a hash of date information parsed from the given string.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:435
+  # pkg:gem/sequel#lib/sequel/core.rb:447
   def _date_parse(string); end
 
   # Helper method that the database adapter class methods that are added to Sequel via
   # metaprogramming use to parse arguments.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:441
+  # pkg:gem/sequel#lib/sequel/core.rb:453
   def adapter_method(adapter, *args, &block); end
 
   # Convert the given +DateTime+ to the given input_timezone, keeping the
@@ -15910,7 +15912,7 @@ module Sequel::SequelMethods
   # Method that adds a database adapter class method to Sequel that calls
   # Sequel.adapter_method.
   #
-  # pkg:gem/sequel#lib/sequel/core.rb:454
+  # pkg:gem/sequel#lib/sequel/core.rb:466
   def def_adapter_method(*adapters); end
 
   # Takes a DateTime dt, and returns the correct local offset for that dt, daylight savings included, in fraction of a day.
@@ -15965,7 +15967,7 @@ Sequel::VERSION = T.let(T.unsafe(nil), String)
 # pkg:gem/sequel#lib/sequel/version.rb:19
 Sequel::VERSION_NUMBER = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/sequel#lib/sequel/sql.rb:1943
+# pkg:gem/sequel#lib/sequel/sql.rb:1947
 Sequel::VIRTUAL_ROW = T.let(T.unsafe(nil), Sequel::SQL::VirtualRow)
 
 # Exception class raised when +raise_on_save_failure+ is set and validation fails

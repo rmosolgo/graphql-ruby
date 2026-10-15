@@ -1084,7 +1084,7 @@ end
 # in realtime as the application runs, and periodically sends that
 # data to the NewRelic server.
 #
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:57
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:58
 class NewRelic::Agent::Agent
   include ::NewRelic::Agent::AgentHelpers::Connect
   include ::NewRelic::Agent::AgentHelpers::Harvest
@@ -1096,55 +1096,55 @@ class NewRelic::Agent::Agent
   include ::NewRelic::Agent::Agent::InstanceMethods
   extend ::NewRelic::Agent::Agent::ClassMethods
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:70
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:71
   def initialize; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:136
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:140
   def refresh_attribute_filter; end
 
   private
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:79
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:80
   def init_basics; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:92
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:95
   def init_components; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:113
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:116
   def init_event_handlers; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:126
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:130
   def setup_attribute_filter; end
 
   class << self
-    # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:58
+    # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:59
     def config; end
   end
 end
 
 # contains all the class-level methods for NewRelic::Agent::Agent
 #
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:141
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:145
 module NewRelic::Agent::Agent::ClassMethods
   # Should only be called by NewRelic::Control - returns a
   # memoized singleton instance of the agent, creating one if needed
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:144
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:148
   def instance; end
 end
 
 # Holds all the methods defined on NewRelic::Agent::Agent
 # instances
 #
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:151
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:155
 module NewRelic::Agent::Agent::InstanceMethods
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:186
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:193
   def adaptive_sampler; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:188
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:195
   def adaptive_sampler_remote_parent_not_sampled; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:187
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:194
   def adaptive_sampler_remote_parent_sampled; end
 
   # This method should be called in a forked process after a fork.
@@ -1167,75 +1167,78 @@ module NewRelic::Agent::Agent::InstanceMethods
   #   connection, this tells me to only try it once so this method returns
   #   quickly if there is some kind of latency with the server.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:222
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:229
   def after_fork(options = T.unsafe(nil)); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:199
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:206
   def agent_id=(agent_id); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:185
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:192
   def attribute_filter; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:181
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:190
+  def continuous_profiling_session; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:187
   def custom_event_aggregator; end
 
   # Clear out the metric data, errors, and transaction traces, etc.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:302
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:313
   def drop_buffered_data; end
 
   # error collector is a simple collection of recorded errors
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:160
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:166
   def error_collector; end
 
   # Global events dispatcher. This will provides our primary mechanism
   # for agent-wide events, such as finishing configuration, error notification
   # and request before/after from Rack.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:170
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:176
   def events; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:324
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:338
   def flush_pipe_data; end
 
   # the agent control health check file generator
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:153
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:159
   def health_check; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:252
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:263
   def install_pipe_service(channel_id); end
 
   # builder for JS agent scripts to inject
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:164
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:170
   def javascript_instrumentor; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:183
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:189
   def log_event_aggregator; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:351
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:395
   def merge_data_for_endpoint(endpoint, data); end
 
   # listens and responds to events that need to process headers
   # for synthetics and distributed tracing
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:174
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:180
   def monitors; end
 
   # GC::Profiler.total_time is not monotonic so we wrap it.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:180
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:186
   def monotonic_gc_profiler; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:237
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:248
   def needs_after_fork_work?; end
 
   # Pop the current trace execution status.  Restore trace execution status
   # to what it was before we pushed the current flag.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:297
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:308
   def pop_trace_execution_flag; end
 
   # Push flag indicating whether we should be tracing in this
@@ -1243,91 +1246,100 @@ module NewRelic::Agent::Agent::InstanceMethods
   # children of a transaction without affecting the tracing of
   # the whole transaction
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:291
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:302
   def push_trace_execution_flag(should_trace = T.unsafe(nil)); end
 
   # whether we should record raw, obfuscated, or no sql
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:162
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:168
   def record_sql; end
 
   # Clear out state for any objects that we know lock from our parents
   # This is necessary for cases where we're in a forked child and Ruby
   # might be holding locks for background thread that aren't there anymore.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:320
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:331
   def reset_objects_with_locks; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:263
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:274
   def revert_to_default_configuration; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:189
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:196
   def serverless_handler; end
 
   # service for communicating with collector
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:166
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:172
   def service; end
 
   # Sets a thread local variable as to whether we should or
   # should not record sql in the current thread. Returns the
   # previous value, if there is one
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:280
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:291
   def set_record_sql(should_record); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:182
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:188
   def span_event_aggregator; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:158
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:164
   def sql_sampler; end
 
   # the statistics engine that holds all the timeslice data
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:155
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:161
   def stats_engine; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:195
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:202
   def synthetics_event_aggregator; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:191
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:198
   def transaction_event_aggregator; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:184
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:191
   def transaction_event_recorder; end
 
   # Transaction and metric renaming rules as provided by the
   # collector on connect.  The former are applied during txns,
   # the latter during harvest.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:178
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:184
   def transaction_rules; end
 
   # Transaction and metric renaming rules as provided by the
   # collector on connect.  The former are applied during txns,
   # the latter during harvest.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:178
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:184
   def transaction_rules=(_arg0); end
 
   # the transaction sampler that handles recording transactions
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:157
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:163
   def transaction_sampler; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:268
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:279
   def trap_signals_for_litespeed; end
 
   private
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:337
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:351
   def container_for_endpoint(endpoint); end
 
   # A shorthand for NewRelic::Control.instance
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:333
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:347
   def control; end
+
+  # Forwarded off-thread so a slow export doesn't block other children's data; capped
+  # since forwarders serialize on NewRelicService's profiles request lock anyway.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:367
+  def forward_profiles_data(data); end
 end
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/agent.rb:156
+NewRelic::Agent::Agent::InstanceMethods::MAX_CONCURRENT_PROFILES_FORWARDERS = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/agent_helpers/connect.rb:7
 module NewRelic::Agent::AgentHelpers; end
@@ -2273,10 +2285,10 @@ class NewRelic::Agent::AuditLogger
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:13
   def initialize; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:59
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:66
   def allowed_endpoint?(uri); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:101
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:108
   def create_log_formatter; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:20
@@ -2285,11 +2297,17 @@ class NewRelic::Agent::AuditLogger
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:22
   def enabled?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:81
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:88
   def ensure_log_path; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:41
   def log_request(uri, data, marshaller); end
+
+  # Yielded, not passed: rendering a body eagerly would cost a marshal or protobuf decode on
+  # every request even when audit logging is off or the endpoint is filtered out.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:53
+  def log_request_body(uri); end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:30
   def log_request_headers(uri, headers); end
@@ -2297,10 +2315,10 @@ class NewRelic::Agent::AuditLogger
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:26
   def setup?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:63
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:70
   def setup_logger; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:97
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/audit_logger.rb:104
   def wants_stdout?; end
 end
 
@@ -2398,43 +2416,46 @@ end
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:17
 class NewRelic::Agent::Commands::AgentCommandRouter
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:22
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:25
   def initialize(event_listener = T.unsafe(nil)); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:20
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:23
   def backtrace_service; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:20
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:23
   def backtrace_service=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:125
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:135
   def call_handler_for(agent_command); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:39
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:49
   def check_for_and_handle_agent_commands; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:121
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:44
+  def continuous_profiling_session; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:131
   def error(err); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:85
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:95
   def get_agent_commands; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:18
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:21
   def handlers; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:52
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:62
   def harvest!; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:67
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:77
   def harvest_from_thread_profiler_session; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:104
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:114
   def invoke_command(agent_command); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:91
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:101
   def invoke_commands(agent_commands); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:76
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:86
   def log_profiles(profiles); end
 
   # We don't currently support merging thread profiles that failed to send
@@ -2442,41 +2463,47 @@ class NewRelic::Agent::Commands::AgentCommandRouter
   # Same with reset! - we don't support asynchronous cancellation of a
   # running thread profile currently.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:63
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:73
   def merge!(*args); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:35
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:40
   def new_relic_service; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:46
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:56
   def on_before_shutdown(*args); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:65
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:75
   def reset!; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:130
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:140
   def select_handler(agent_command); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:117
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:127
   def success; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:20
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:23
   def thread_profiler_session; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:20
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:23
   def thread_profiler_session=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:134
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:144
   def unrecognized_agent_command(agent_command); end
 end
 
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:101
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:111
 class NewRelic::Agent::Commands::AgentCommandRouter::AgentCommandError < ::StandardError; end
 
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:115
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:125
 NewRelic::Agent::Commands::AgentCommandRouter::ERROR_KEY = T.let(T.unsafe(nil), String)
 
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:114
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:18
+NewRelic::Agent::Commands::AgentCommandRouter::START_CONTINUOUS_PROFILING_COMMAND = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:19
+NewRelic::Agent::Commands::AgentCommandRouter::STOP_CONTINUOUS_PROFILING_COMMAND = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/agent_command_router.rb:124
 NewRelic::Agent::Commands::AgentCommandRouter::SUCCESS_RESULT = T.let(T.unsafe(nil), Hash)
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/commands/thread_profiler_session.rb:12
@@ -2548,7 +2575,7 @@ module NewRelic::Agent::Configuration
   end
 end
 
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:221
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:273
 NewRelic::Agent::Configuration::AUTOSTART_DENYLISTED_RAKE_TASKS = T.let(T.unsafe(nil), String)
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:34
@@ -2559,7 +2586,7 @@ class NewRelic::Agent::Configuration::Boolean
   end
 end
 
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:274
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:326
 NewRelic::Agent::Configuration::DEFAULTS = T.let(T.unsafe(nil), Hash)
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:40
@@ -2630,6 +2657,12 @@ class NewRelic::Agent::Configuration::DefaultSource
     # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:170
     def dispatcher; end
 
+    # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:228
+    def enforce_object_allocation_interval_range(value); end
+
+    # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:250
+    def enforce_sample_period_range(value); end
+
     # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:122
     def framework; end
 
@@ -2655,6 +2688,21 @@ end
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:154
 NewRelic::Agent::Configuration::DefaultSource::DEFAULT_LOG_DIR = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:220
+NewRelic::Agent::Configuration::DefaultSource::OBJECT_ALLOCATION_INTERVAL_MINIMUM = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:226
+NewRelic::Agent::Configuration::DefaultSource::SAMPLE_PERIOD_MAXIMUM_SECONDS = T.let(T.unsafe(nil), Float)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:225
+NewRelic::Agent::Configuration::DefaultSource::SAMPLE_PERIOD_MINIMUM_SECONDS = T.let(T.unsafe(nil), Float)
+
+# StackProf's C extension rejects any interval outside 1..999_999 (stackprof_start in
+# stackprof.c), whether it's microseconds or a raw allocation count.
+#
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/default_source.rb:224
+NewRelic::Agent::Configuration::DefaultSource::STACKPROF_INTERVAL_MAXIMUM = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/dotted_hash.rb:8
 class NewRelic::Agent::Configuration::DottedHash < ::Hash
@@ -2759,20 +2807,20 @@ class NewRelic::Agent::Configuration::HighSecuritySource < ::NewRelic::Agent::Co
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:11
   def initialize(local_settings); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:34
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:35
   def record_sql_setting(local_settings, key); end
 end
 
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:30
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:31
 NewRelic::Agent::Configuration::HighSecuritySource::OBFUSCATED = T.let(T.unsafe(nil), String)
 
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:28
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:29
 NewRelic::Agent::Configuration::HighSecuritySource::OFF = T.let(T.unsafe(nil), String)
 
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:29
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:30
 NewRelic::Agent::Configuration::HighSecuritySource::RAW = T.let(T.unsafe(nil), String)
 
-# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:32
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/high_security_source.rb:33
 NewRelic::Agent::Configuration::HighSecuritySource::SET_TO_OBFUSCATED = T.let(T.unsafe(nil), Array)
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/configuration/mask_defaults.rb:8
@@ -3191,6 +3239,252 @@ class NewRelic::Agent::Connect::ResponseHandler
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/connect/response_handler.rb:21
   def configure_agent(config_data); end
 end
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/stack_prof_sampler.rb:7
+module NewRelic::Agent::ContinuousProfiling; end
+
+# Server-side config and agent commands are independent activation paths; which one the
+# collector will standardize on isn't settled, so neither is folded into the other.
+#
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:13
+class NewRelic::Agent::ContinuousProfiling::Session
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:29
+  def initialize(events); end
+
+  # restart_if_forked can't cover a fork mid-profiling.delay: the delay thread doesn't survive
+  # it, and the transaction hooks it rides on are only subscribed once a session is running.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:149
+  def after_fork; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:128
+  def handle_start_command(agent_command); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:135
+  def handle_stop_command(agent_command); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:50
+  def maybe_start; end
+
+  # Replaces only the locks, which may be inherited mid-hold from the parent's profiling
+  # thread; @running/@starting_pid/@thread are left for restart_if_forked to detect and repair.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:141
+  def reset_after_fork_from_parent_thread; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:56
+  def running?; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:60
+  def start(from_delayed_start: T.unsafe(nil)); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:97
+  def stop(record_duration: T.unsafe(nil)); end
+
+  private
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:231
+  def clear_segment_ranges; end
+
+  # Sampling restarts in the ensure, ahead of the network-bound export, so a harvest leaves
+  # no sampling gap for as long as the export takes.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:500
+  def collect_and_restart_sampler; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:485
+  def collect_report; end
+
+  # handle_start_command, restart_if_forked and after_fork call #start directly: a delay is
+  # wrong for an explicit on-demand start or a fork repair.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:334
+  def delayed_start; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:274
+  def drain_segment_ranges; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:374
+  def duration_elapsed?; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:369
+  def duration_seconds; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:357
+  def enabled?; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:511
+  def encode_and_export(report); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:322
+  def evaluate_and_apply; end
+
+  # Duplicates #stop rather than calling it because this runs on @thread, which cannot join
+  # itself. A later #stop() early-returns on @running, so Disabled is not double-counted.
+  # @thread is deliberately left set: it still owns the sampler until finish_sampling runs.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:420
+  def finish_due_to_duration; end
+
+  # Stops rather than retrying: sampling would otherwise burn CPU for the life of the process
+  # while every export failed the same way, visible only as a log line.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:432
+  def finish_due_to_encoder_failure(message); end
+
+  # Stops sampling here and not in #stop: the sampler is restarted on this thread ahead of
+  # the export, so a #stop landing in that window would leave it running with no owner.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:400
+  def finish_sampling; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:217
+  def forked?; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:290
+  def gems_present?; end
+
+  # The drain happens whether or not the collection worked: ranges left buffered belong to a
+  # window that is already gone, and would otherwise pile up against MAX_SEGMENT_RANGES.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:467
+  def harvest_and_send; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:365
+  def harvest_period; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:523
+  def load_encoder!; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:450
+  def next_wait_seconds; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:353
+  def object_mode?; end
+
+  # trace_id_if_generated, not trace_id, so profiling never forces a trace_id into existence.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:237
+  def on_transaction_finished; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:361
+  def profile_type_metric; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:286
+  def protobuf_present?; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:317
+  def raise_already_started_error; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:307
+  def raise_command_error(msg); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:311
+  def raise_unsupported_error; end
+
+  # Deliberately not called on ordinary shutdown: only a duration elapsing or a server-side
+  # disable counts as a measured end for this metric.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:443
+  def record_duration_metric; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:221
+  def reset_state_after_fork; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:191
+  def restart_if_forked; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:379
+  def run_loop; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:282
+  def stackprof_present?; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:175
+  def subscribe_to_transaction_hooks; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:349
+  def supported?; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:183
+  def unsubscribe_from_transaction_hooks; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:303
+  def unsupported_message; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:294
+  def unsupported_reasons; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:458
+  def wait_for_next_tick_or_stop; end
+end
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:18
+NewRelic::Agent::ContinuousProfiling::Session::DISABLED_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:20
+NewRelic::Agent::ContinuousProfiling::Session::DURATION_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:17
+NewRelic::Agent::ContinuousProfiling::Session::ENABLED_METRIC = T.let(T.unsafe(nil), String)
+
+# Not retryable: a require that failed once fails the same way on every later harvest.
+#
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:15
+class NewRelic::Agent::ContinuousProfiling::Session::EncoderLoadError < ::StandardError; end
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:27
+NewRelic::Agent::ContinuousProfiling::Session::MAX_SEGMENT_RANGES = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:19
+NewRelic::Agent::ContinuousProfiling::Session::PROFILE_TYPE_METRIC_PREFIX = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:21
+NewRelic::Agent::ContinuousProfiling::Session::SAMPLING_DURATION_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:22
+NewRelic::Agent::ContinuousProfiling::Session::SAMPLING_FAILURE_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:23
+NewRelic::Agent::ContinuousProfiling::Session::SEGMENT_RANGES_LIMIT_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:24
+NewRelic::Agent::ContinuousProfiling::Session::SKIPPED_NOT_CONNECTED_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/session.rb:25
+NewRelic::Agent::ContinuousProfiling::Session::SKIPPED_NO_RESULTS_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/stack_prof_sampler.rb:8
+class NewRelic::Agent::ContinuousProfiling::StackProfSampler
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/stack_prof_sampler.rb:12
+  def start; end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/stack_prof_sampler.rb:35
+  def stop; end
+
+  # nil when this sampler has no window open: its last start failed, or the window was
+  # already collected.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/stack_prof_sampler.rb:42
+  def stop_and_collect; end
+
+  private
+
+  # StackProf's `interval` means microseconds of CPU time for :cpu, but a count of object
+  # allocations for :object.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/stack_prof_sampler.rb:65
+  def sample_interval(mode); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/stack_prof_sampler.rb:71
+  def sample_interval_in_microseconds; end
+end
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/stack_prof_sampler.rb:9
+NewRelic::Agent::ContinuousProfiling::StackProfSampler::MICROSECONDS_PER_SECOND = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/continuous_profiling/stack_prof_sampler.rb:10
+NewRelic::Agent::ContinuousProfiling::StackProfSampler::NANOSECONDS_PER_SECOND = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/custom_event_aggregator.rb:10
 class NewRelic::Agent::CustomEventAggregator < ::NewRelic::Agent::EventAggregator
@@ -4917,13 +5211,13 @@ class NewRelic::Agent::EventListener
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:14
   def initialize; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:25
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:36
   def check_for_runaway_subscriptions(event); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:30
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:41
   def clear; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:34
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:45
   def notify(event, *args); end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:12
@@ -4932,8 +5226,14 @@ class NewRelic::Agent::EventListener
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:12
   def runaway_threshold=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:19
+  # Copy-on-write, not `<<`, so a #notify iterating the old array is undisturbed; @write_lock
+  # stops two writers building copies from the same stale array and discarding each other.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:22
   def subscribe(event, &handler); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_listener.rb:28
+  def unsubscribe(event, handler); end
 end
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/event_loop.rb:9
@@ -7352,199 +7652,223 @@ end
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service/encoders.rb:12
 class NewRelic::Agent::NewRelicService
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:39
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:46
   def initialize(license_key = T.unsafe(nil), collector = T.unsafe(nil)); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:159
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:177
   def agent_command_results(results); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:37
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:44
   def agent_id; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:73
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:85
   def agent_id=(id); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:163
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:181
   def analytic_event_data(data); end
 
   # The collector wants to receive metric data in a format that's different
   # from how we store it internally, so this method handles the translation.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:108
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:126
   def build_metric_data_array(stats_hash); end
 
   # The path to the certificate file used to verify the SSL
   # connection if verify_peer is enabled
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:357
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:409
   def cert_file_path; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:251
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:303
   def close_shared_connection; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:37
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:44
   def collector; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:196
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:249
   def compress_request_if_needed(data, endpoint); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:81
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:93
   def connect(settings = T.unsafe(nil)); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:346
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:398
   def create_and_start_http_connection; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:320
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:372
   def create_http_connection; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:169
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:187
   def custom_event_data(data); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:133
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:151
   def error_data(unsent_errors); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:180
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:198
   def error_event_data(data); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:246
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:299
   def establish_shared_connection; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:102
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:119
   def force_restart; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:155
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:173
   def get_agent_commands; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:259
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:311
   def has_shared_connection?; end
 
   # Return a Net::HTTP connection object to make a call to the collector.
   # We'll reuse the same handle for cases where we're using keep-alive, or
   # otherwise create a new one.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:277
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:329
   def http_connection; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:175
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:193
   def log_event_data(data); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:37
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:44
   def marshaller; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:119
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:137
   def metric_data(stats_hash); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:92
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:107
   def preconnect; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:55
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:67
   def prep_audit_logger; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:329
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:381
   def prep_connection; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:62
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:74
   def prep_marshaller; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:336
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:388
   def prep_proxy_connection; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:151
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:169
   def profile_data(profile); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:36
+  # Its own connection, not the shared one: the profiling harvest runs on its own thread and
+  # a Net::HTTP connection is not safe to share across threads.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:216
+  def profiles_data(bytes); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:43
   def request_timeout; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:36
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:43
   def request_timeout=(_arg0); end
 
   # One session with the service's endpoint.  In this case the session
   # represents 1 tcp connection which may transmit multiple HTTP requests
   # via keep-alive.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:213
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:266
   def session(&block); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:232
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:285
   def session_with_keepalive(&block); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:237
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:290
   def session_without_keepalive(&block); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:297
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:349
   def set_cert_store(conn); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:285
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:337
   def setup_connection_for_ssl(conn); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:310
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:362
   def setup_connection_timeouts(conn); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:98
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:113
   def shutdown(time); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:188
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:206
   def span_event_data(data); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:146
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:164
   def sql_trace_data(sql_traces); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:263
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:315
   def ssl_cert_store; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:305
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:357
   def start_connection(conn); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:141
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:159
   def transaction_sample_data(traces); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:364
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:416
   def valid_to_marshal?(data); end
 
   private
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:423
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:541
   def attempt_request(request, opts); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:431
+  def build_profiles_request(bytes); end
 
   # Raises an UnrecoverableServerException if the post_string is longer
   # than the limit configured in the control object
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:587
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:705
   def check_post_size(post_string, endpoint); end
+
+  # Established outside @profiles_connection_lock, which blocks for up to open_timeout and
+  # would stall the worker thread's close_profiles_connection.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:450
+  def checkout_profiles_connection; end
+
+  # Expects @profiles_connection_lock held. Closes the socket only when no export holds it;
+  # otherwise release_profiles_connection does, so this never waits on a request.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:481
+  def close_profiles_connection; end
 
   # A shorthand for NewRelic::Control.instance
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:375
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:427
   def control; end
 
   # Decompresses the response from the server, if it is gzip
   # encoded, otherwise returns it verbatim
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:633
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:751
   def decompress_response(response); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:684
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:807
   def filtered_uri(uri); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:503
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:490
+  def finish_profiles_connection(connection); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:621
   def generate_remote_method_uri(method); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:429
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:547
   def handle_error_response(response, endpoint); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:487
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:605
   def handle_gone_response(response, endpoint); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:546
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:664
   def handle_serialization_error(method, e); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:471
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:589
   def handle_server_connection_exception(response, endpoint); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:482
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:600
   def handle_unauthorized_error_response(response, endpoint); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:476
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:594
   def handle_unrecoverable_server_exception(response, endpoint); end
 
   # send a message via post to the actual server. This attempts
@@ -7552,37 +7876,53 @@ class NewRelic::Agent::NewRelicService
   # enough to be worth compressing, and handles any errors the
   # server may return
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:530
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:648
   def invoke_remote(method, payload = T.unsafe(nil), options = T.unsafe(nil)); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:672
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:795
   def invoke_remote_send_request(method, payload, data, encoding); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:522
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:640
   def license_key; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:617
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:735
   def log_response(response); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:651
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:769
   def marshal_payload(method, payload, options); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:665
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:783
   def prep_collector(method); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:379
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:497
   def prep_headers(opts); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:388
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:506
   def prep_request(opts); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:627
+  # Guarded because this file never requires google-protobuf; only continuous profiling's
+  # soft dependency defines ProfileEncoder.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:830
+  def profiles_audit_body(bytes); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:820
+  def profiles_audit_uri; end
+
+  # Marks in-use only once the connection exists, so a raise while establishing one doesn't
+  # strand the flag. An invalidation that landed in the meantime means the connection points at
+  # a collector host we've been told to stop using, so it's used for this one export and dropped.
+  #
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:463
+  def publish_profiles_connection(connection, generation); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:745
   def record_endpoint_attempts_supportability_metrics(endpoint); end
 
   # Per protocol 17, this metric should be recorded for all error response codes
   # that cause data to be discarded.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:623
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:741
   def record_error_response_supportability_metrics(response_code); end
 
   # For these metrics, we use the following fields:
@@ -7594,22 +7934,28 @@ class NewRelic::Agent::NewRelicService
   # so we omit it for those methods that don't really take collections
   # of items as arguments.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:575
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:693
   def record_size_supportability_metrics(method, size_bytes, item_count); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:555
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:673
   def record_timing_supportability_metrics(method, start_ts, serialize_finish_ts, request_send_ts, response_check_ts); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:688
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:811
   def redacted_license_key; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:402
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:824
+  def redacted_profiles_headers(headers); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:520
   def relay_request(request, opts); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:493
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:471
+  def release_profiles_connection(connection); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:611
   def remote_method_uri(method); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:497
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:615
   def reset_remote_method_uris; end
 
   # Posts to the specified server
@@ -7623,7 +7969,7 @@ class NewRelic::Agent::NewRelicService
   #                    contact
   #  - :data => the data to send as the body of the request
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:605
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:723
   def send_request(opts); end
 
   # Sets the user agent for connections to the server, to
@@ -7631,7 +7977,7 @@ class NewRelic::Agent::NewRelicService
   # the ruby version and also zlib version if available since
   # that may cause corrupt compression if there is a problem.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:643
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:761
   def user_agent; end
 end
 
@@ -7738,6 +8084,24 @@ class NewRelic::Agent::NewRelicService::Marshaller
     def human_readable?; end
   end
 end
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:38
+NewRelic::Agent::NewRelicService::PROFILES_API_KEY_HEADER = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:37
+NewRelic::Agent::NewRelicService::PROFILES_CONTENT_TYPE = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:40
+NewRelic::Agent::NewRelicService::PROFILES_EXPORT_DURATION_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:41
+NewRelic::Agent::NewRelicService::PROFILES_EXPORT_FAILURE_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:39
+NewRelic::Agent::NewRelicService::PROFILES_OUTPUT_BYTES_METRIC = T.let(T.unsafe(nil), String)
+
+# pkg:gem/newrelic_rpm#lib/new_relic/agent/new_relic_service.rb:36
+NewRelic::Agent::NewRelicService::PROFILES_PATH = T.let(T.unsafe(nil), String)
 
 # Specifies the version of the agent's communication protocol with
 # the NewRelic hosted site.
@@ -7965,19 +8329,19 @@ class NewRelic::Agent::PipeChannelManager::Listener
 
   protected
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_channel_manager.rb:268
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_channel_manager.rb:269
   def clean_up_pipes; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_channel_manager.rb:279
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_channel_manager.rb:280
   def find_pipe_for_handle(out_handle); end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_channel_manager.rb:238
   def merge_data_from_pipe(pipe_handle); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_channel_manager.rb:264
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_channel_manager.rb:265
   def should_keep_listening?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_channel_manager.rb:256
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_channel_manager.rb:257
   def unmarshal(data); end
 end
 
@@ -8117,6 +8481,9 @@ class NewRelic::Agent::PipeService
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:8
   def pipe; end
 
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:67
+  def profiles_data(bytes); end
+
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:9
   def request_timeout; end
 
@@ -8127,10 +8494,10 @@ class NewRelic::Agent::PipeService
   # keep-alive in the NewRelicService, and is a required interface for any
   # Service class.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:81
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:85
   def session; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:67
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:71
   def shutdown; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:55
@@ -8145,15 +8512,15 @@ class NewRelic::Agent::PipeService
   # Validates that data can be marshalled. For PipeService, we always
   # use Marshal, so this always returns true.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:74
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:78
   def valid_to_marshal?(data); end
 
   private
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:87
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:91
   def marshal_payload(data); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:91
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/pipe_service.rb:95
   def write_to_pipe(endpoint, data); end
 end
 
@@ -9683,7 +10050,10 @@ NewRelic::Agent::SyntheticsEventAggregator::TIMESTAMP = T.let(T.unsafe(nil), Str
 
 # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:7
 class NewRelic::Agent::SyntheticsMonitor < ::NewRelic::Agent::InboundRequestMonitor
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:38
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:23
+  def accept_headers(encoded_header, info_header); end
+
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:41
   def load_json(header, key); end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:19
@@ -9693,16 +10063,16 @@ class NewRelic::Agent::SyntheticsMonitor < ::NewRelic::Agent::InboundRequestMoni
   def on_finished_configuring(events); end
 
   class << self
-    # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:46
+    # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:49
     def is_supported_version?(incoming_payload); end
 
-    # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:50
+    # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:53
     def is_trusted?(incoming_payload); end
 
-    # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:55
+    # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:58
     def is_valid_payload?(incoming_payload); end
 
-    # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:59
+    # pkg:gem/newrelic_rpm#lib/new_relic/agent/monitors/synthetics_monitor.rb:62
     def reject_messaging_synthetics_header(headers); end
   end
 end
@@ -10682,22 +11052,22 @@ class NewRelic::Agent::Transaction
   # Call this to ensure that the current transaction trace is not saved
   # To fully ignore all metrics and errors, use ignore! instead.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:532
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:536
   def abort_transaction!; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:185
   def add_agent_attribute(key, value, default_destinations); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:934
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:938
   def add_custom_attributes(p); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:947
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:951
   def add_log_event(event); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:938
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:942
   def add_transaction_log_attributes(params); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:869
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:873
   def apdex_bucket(duration, current_apdex_t); end
 
   # A Time instance used for calculating the apdex score, which
@@ -10714,59 +11084,59 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:64
   def apdex_start=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:900
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:904
   def apdex_t; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:772
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:776
   def append_apdex_perf_zone(payload); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:789
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:793
   def append_synthetics_to(payload); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:627
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:631
   def assign_agent_attributes; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:656
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:660
   def assign_intrinsics; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:620
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:624
   def assign_segment_dt_attributes; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:76
   def attributes; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:544
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:548
   def background_summary_metrics; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:415
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:419
   def best_name; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:689
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:693
   def calculate_gc_time; end
 
   # This method returns transport_duration in seconds. Transport duration
   # is stored in milliseconds on the payload, but it's needed in seconds
   # for metrics and intrinsics.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:697
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:701
   def calculate_transport_duration(distributed_trace_payload); end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:76
   def category; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:598
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:602
   def commit!(outermost_node_name); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:963
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:967
   def cpu_burn; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:482
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:486
   def create_initial_segment(options = T.unsafe(nil)); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:508
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:512
   def create_nested_segment(category, options); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:487
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:491
   def create_segment(name, options = T.unsafe(nil)); end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:278
@@ -10775,10 +11145,10 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:270
   def current_segment_key; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:382
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:386
   def default_name=(name); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:333
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:337
   def default_priority; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:292
@@ -10802,25 +11172,25 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:66
   def filtered_params=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:557
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:561
   def finish; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:478
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:482
   def finished?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:434
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:438
   def freeze_name_and_execute_if_not_ignored; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:76
   def gc_start_snapshot; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:718
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:722
   def generate_payload; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:76
   def guid; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:863
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:867
   def had_error_affecting_apdex?; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:66
@@ -10829,34 +11199,34 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:66
   def http_response_code=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:979
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:983
   def ignore!; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:983
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:987
   def ignore?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:987
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:991
   def ignore_apdex!; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:991
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:995
   def ignore_apdex?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:995
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:999
   def ignore_enduser!; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:999
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1003
   def ignore_enduser?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1003
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1007
   def ignore_trace?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:735
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:739
   def include_guid?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:411
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:415
   def influences_transaction_name?(category); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:474
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:478
   def initial_segment; end
 
   # This transaction-local hash may be used as temporary storage by
@@ -10873,13 +11243,13 @@ class NewRelic::Agent::Transaction
   # names dynamically, and to ensure that keys are removed upon return from
   # the method that creates them.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:374
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:378
   def instrumentation_state; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:739
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:743
   def is_synthetics_request?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:973
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:977
   def jruby_cpu_burn; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:66
@@ -10888,19 +11258,19 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:66
   def jruby_cpu_start=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:943
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:947
   def log_attributes; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:406
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:410
   def log_frozen_name(name); end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:76
   def logs; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:803
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:807
   def merge_metrics; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:386
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:390
   def merge_request_parameters(params); end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:198
@@ -10909,27 +11279,27 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:76
   def metrics; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:453
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:457
   def name_frozen?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:553
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:557
   def needs_middleware_summary_metrics?(name); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:525
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:529
   def nest_initial_segment; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:76
   def nesting_max_depth; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:967
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:971
   def normal_cpu_burn; end
 
   # Do not call this.  Invoke the class method instead.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:826
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:830
   def notice_error(error, options = T.unsafe(nil)); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:378
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:382
   def overridden_name=(name); end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:274
@@ -10944,7 +11314,7 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:76
   def payload; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:337
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:341
   def priority; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:88
@@ -10958,10 +11328,10 @@ class NewRelic::Agent::Transaction
 
   # End common interface
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:426
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:430
   def promoted_transaction_name(name); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:848
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:852
   def queue_time; end
 
   # Fields for tracking synthetics requests
@@ -10984,46 +11354,46 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:95
   def raw_synthetics_info_header=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:873
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:877
   def record_apdex; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:887
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:891
   def record_apdex_metrics(rollup_metric, transaction_prefix, current_apdex_t); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:815
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:819
   def record_exception(exception, options, error_recorded); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:807
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:811
   def record_exceptions; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:844
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:848
   def record_log_events; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:852
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:856
   def record_queue_time; end
 
   # The summary metrics recorded by this method all end up with a duration
   # equal to the transaction itself, and an exclusive time of zero.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:706
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:710
   def record_summary_metrics(outermost_node_name); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:840
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:844
   def record_transaction_event; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:951
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:955
   def recording_web_transaction?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:348
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:352
   def referer; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:288
   def remove_current_segment_by_thread_id(id); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:352
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:356
   def request_path; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:356
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:360
   def request_port; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:66
@@ -11056,22 +11426,22 @@ class NewRelic::Agent::Transaction
   # This event is fired when the transaction is fully completed. The metric
   # values and sampler can't be successfully modified from this event.
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:714
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:718
   def send_transaction_finished_event; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:284
   def set_current_segment(new_segment); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:390
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:394
   def set_default_transaction_name(name, category); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:399
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:403
   def set_overriding_transaction_name(name, category); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:959
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:963
   def similar_category?(category); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:457
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:461
   def start(options = T.unsafe(nil)); end
 
   # A Time instance for the start time, never nil
@@ -11087,16 +11457,16 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:266
   def state; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:536
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:540
   def summary_metrics; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:748
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:752
   def synthetics_account_id; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:682
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:686
   def synthetics_additional_attributes(&block); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:768
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:772
   def synthetics_info(key); end
 
   # Fields for tracking synthetics requests
@@ -11109,10 +11479,10 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:95
   def synthetics_info_payload=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:758
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:762
   def synthetics_job_id; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:763
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:767
   def synthetics_monitor_id; end
 
   # Fields for tracking synthetics requests
@@ -11125,13 +11495,13 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:95
   def synthetics_payload=(_arg0); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:753
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:757
   def synthetics_resource_id; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:743
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:747
   def synthetics_version; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:909
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:913
   def threshold; end
 
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:325
@@ -11140,15 +11510,18 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:329
   def trace_id=(value); end
 
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:333
+  def trace_id_if_generated; end
+
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:314
   def trace_ratio_sampled?(ratio); end
 
   # For common interface with Trace
   #
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:423
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:427
   def transaction_name; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:904
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:908
   def transaction_specific_apdex_t; end
 
   # Populated with the trace sample once this transaction is completed.
@@ -11156,30 +11529,30 @@ class NewRelic::Agent::Transaction
   # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:92
   def transaction_trace; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:589
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:593
   def user_defined_rules_ignore?; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:955
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:959
   def web_category?(category); end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:918
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:922
   def with_database_metric_name(model, method, product = T.unsafe(nil)); end
 
   private
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1032
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1036
   def agent; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1016
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1020
   def jruby_cpu_time; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1009
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1013
   def process_cpu; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1040
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1044
   def sql_sampler; end
 
-  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1036
+  # pkg:gem/newrelic_rpm#lib/new_relic/agent/transaction.rb:1040
   def transaction_sampler; end
 
   class << self

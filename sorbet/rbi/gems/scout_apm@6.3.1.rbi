@@ -3257,16 +3257,28 @@ class ScoutApm::Instruments::Grape
   def endpoint_owns_run?; end
 end
 
-# pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:54
+# pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:84
 module ScoutApm::Instruments::GrapeEndpointInstruments
-  # pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:55
+  # pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:85
   def run_with_scout_instruments(*args); end
 end
 
-# pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:91
+# pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:111
 module ScoutApm::Instruments::GrapeEndpointInstrumentsPrepend
-  # pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:92
+  # pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:112
   def run(*args); end
+end
+
+# pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:54
+module ScoutApm::Instruments::GrapeEndpointNaming
+  class << self
+    # Grape >= 4 moved endpoint route metadata off the public `options`
+    # Hash and onto `Endpoint#config` (a Grape::Endpoint::Options Data
+    # object). Support both so the instrument works across Grape 3 and 4.
+    #
+    # pkg:gem/scout_apm#lib/scout_apm/instruments/grape.rb:58
+    def name_for(endpoint); end
+  end
 end
 
 # pkg:gem/scout_apm#lib/scout_apm/instruments/graphql.rb:5

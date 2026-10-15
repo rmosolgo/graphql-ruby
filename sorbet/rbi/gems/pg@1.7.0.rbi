@@ -141,6 +141,11 @@ class PG::BasicTypeMapBasedOnResult < ::PG::TypeMapByOid
 
   # pkg:gem/pg#lib/pg/basic_type_map_based_on_result.rb:59
   def initialize(connection_or_coder_maps, registry: T.unsafe(nil)); end
+
+  # Returns the PG::BasicTypeRegistry::CoderMapsBundle used to translate result OIDs to encoders.
+  #
+  # pkg:gem/pg#lib/pg/basic_type_map_based_on_result.rb:69
+  def coder_maps_bundle; end
 end
 
 # Simple set of rules for type casting common Ruby types to PostgreSQL.
@@ -177,7 +182,12 @@ class PG::BasicTypeMapForQueries < ::PG::TypeMapByClass
   # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:52
   def initialize(connection_or_coder_maps, registry: T.unsafe(nil), if_undefined: T.unsafe(nil)); end
 
-  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:94
+  # Returns the PG::BasicTypeRegistry::CoderMapsBundle used to translate encoders to OIDs.
+  #
+  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:61
+  def coder_maps_bundle; end
+
+  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:99
   def encode_array_as; end
 
   # Change the mechanism that is used to encode ruby array values
@@ -192,27 +202,27 @@ class PG::BasicTypeMapForQueries < ::PG::TypeMapByClass
   #   If there's an encoder registered for the elements +type+, it will be used.
   #   Otherwise a string conversion (by +value.to_s+) is done.
   #
-  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:79
+  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:84
   def encode_array_as=(pg_type); end
 
   private
 
-  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:156
+  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:161
   def array_encoders_by_klass; end
 
-  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:104
+  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:109
   def coder_by_name(format, direction, name); end
 
-  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:163
+  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:168
   def get_array_type(value); end
 
-  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:98
+  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:103
   def init_encoders; end
 
-  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:113
+  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:118
   def populate_encoder_list; end
 
-  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:109
+  # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:114
   def undefined(name, format); end
 end
 
@@ -232,16 +242,16 @@ end
 # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:37
 class PG::BasicTypeMapForQueries::BinaryData < ::String; end
 
-# pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:196
+# pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:202
 PG::BasicTypeMapForQueries::DEFAULT_ARRAY_TYPE_MAP = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:179
+# pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:184
 PG::BasicTypeMapForQueries::DEFAULT_TYPE_MAP = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:60
+# pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:65
 class PG::BasicTypeMapForQueries::UndefinedDefault
   class << self
-    # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:61
+    # pkg:gem/pg#lib/pg/basic_type_map_for_queries.rb:66
     def call(oid_name, format); end
   end
 end
@@ -320,6 +330,11 @@ class PG::BasicTypeMapForResults < ::PG::TypeMapByOid
 
   # pkg:gem/pg#lib/pg/basic_type_map_for_results.rb:93
   def initialize(connection_or_coder_maps, registry: T.unsafe(nil)); end
+
+  # Returns the PG::BasicTypeRegistry::CoderMapsBundle used to translate result OIDs to decoders.
+  #
+  # pkg:gem/pg#lib/pg/basic_type_map_for_results.rb:106
+  def coder_maps_bundle; end
 end
 
 # pkg:gem/pg#lib/pg/basic_type_map_for_results.rb:73
@@ -981,7 +996,7 @@ class PG::ConfigurationLimitExceeded < ::PG::InsufficientResources; end
 # For example, to send query to the database on the localhost:
 #
 #    require 'pg'
-#    conn = PG::Connection.open(:dbname => 'test')
+#    conn = PG::Connection.open(dbname: 'test')
 #    res = conn.exec_params('SELECT $1 AS a, $2 AS b, $3 AS c', [1, 2, nil])
 #    # Equivalent to:
 #    #  res  = conn.exec('SELECT 1 AS a, 2 AS b, NULL AS c')
@@ -1001,7 +1016,7 @@ class PG::Connection
   include ::PG::Constants
   include ::PG::Connection::Pollable
 
-  # pkg:gem/pg#lib/pg/connection.rb:673
+  # pkg:gem/pg#lib/pg/connection.rb:668
   def async_cancel; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1016,7 +1031,7 @@ class PG::Connection
   # pkg:gem/pg#lib/pg.rb:52
   def async_describe_prepared(_arg0); end
 
-  # pkg:gem/pg#lib/pg/connection.rb:583
+  # pkg:gem/pg#lib/pg/connection.rb:577
   def async_encrypt_password(password, username, algorithm = T.unsafe(nil)); end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1031,40 +1046,40 @@ class PG::Connection
   # pkg:gem/pg#lib/pg.rb:52
   def async_flush; end
 
-  # pkg:gem/pg#lib/pg/connection.rb:439
+  # pkg:gem/pg#lib/pg/connection.rb:435
   def async_get_copy_data(async = T.unsafe(nil), decoder = T.unsafe(nil)); end
 
   # pkg:gem/pg#lib/pg.rb:52
   def async_get_last_result; end
 
-  # pkg:gem/pg#lib/pg/connection.rb:409
+  # pkg:gem/pg#lib/pg/connection.rb:405
   def async_get_result; end
 
-  # pkg:gem/pg#lib/pg/connection.rb:479
+  # pkg:gem/pg#lib/pg/connection.rb:475
   def async_isnonblocking; end
 
-  # pkg:gem/pg#lib/pg/connection.rb:555
+  # pkg:gem/pg#lib/pg/connection.rb:551
   def async_pipeline_sync(*args); end
 
   # pkg:gem/pg#lib/pg.rb:52
   def async_prepare(*_arg0); end
 
-  # pkg:gem/pg#lib/pg/connection.rb:516
+  # pkg:gem/pg#lib/pg/connection.rb:512
   def async_put_copy_data(buffer, encoder = T.unsafe(nil)); end
 
-  # pkg:gem/pg#lib/pg/connection.rb:537
+  # pkg:gem/pg#lib/pg/connection.rb:533
   def async_put_copy_end(*args); end
 
   # pkg:gem/pg#lib/pg.rb:52
   def async_query(*_arg0); end
 
-  # pkg:gem/pg#lib/pg/connection.rb:603
+  # pkg:gem/pg#lib/pg/connection.rb:598
   def async_reset; end
 
   # pkg:gem/pg#lib/pg.rb:52
   def async_set_client_encoding(_arg0); end
 
-  # pkg:gem/pg#lib/pg/connection.rb:467
+  # pkg:gem/pg#lib/pg/connection.rb:463
   def async_setnonblocking(enabled); end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1082,11 +1097,11 @@ class PG::Connection
   # Returns +nil+ on success, or a string containing the
   # error message if a failure occurs.
   #
-  # On PostgreSQL-17+ client libaray the class PG::CancelConnection is used.
+  # On PostgreSQL-17+ client library the class PG::CancelConnection is used.
   # On older client library a pure ruby implementation is used.
   # PostgreSQL < 17
   #
-  # pkg:gem/pg#lib/pg/connection.rb:626
+  # pkg:gem/pg#lib/pg/connection.rb:621
   def cancel; end
 
   # Read all pending socket input to internal memory and raise an exception in case of errors.
@@ -1100,7 +1115,7 @@ class PG::Connection
   # The method doesn't verify that the server is still responding.
   # To verify that the communication to the server works, it is recommended to use something like <tt>conn.exec('')</tt> instead.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:384
+  # pkg:gem/pg#lib/pg/connection.rb:380
   def check_socket; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1118,13 +1133,13 @@ class PG::Connection
   # Returns an array of Hashes with connection defaults. See ::conndefaults
   # for details.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:329
+  # pkg:gem/pg#lib/pg/connection.rb:325
   def conndefaults; end
 
   # Returns a Hash with connection defaults. See ::conndefaults_hash
   # for details.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:345
+  # pkg:gem/pg#lib/pg/connection.rb:341
   def conndefaults_hash; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1144,7 +1159,7 @@ class PG::Connection
   #
   # See also #conninfo
   #
-  # pkg:gem/pg#lib/pg/connection.rb:353
+  # pkg:gem/pg#lib/pg/connection.rb:349
   def conninfo_hash; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1241,7 +1256,7 @@ class PG::Connection
   #   ["some", "data", "to", "copy"]
   #   ["more", "data", "to", "copy"]
   #
-  # pkg:gem/pg#lib/pg/connection.rb:214
+  # pkg:gem/pg#lib/pg/connection.rb:213
   def copy_data(sql, coder = T.unsafe(nil)); end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1261,6 +1276,28 @@ class PG::Connection
 
   # pkg:gem/pg#lib/pg.rb:52
   def discard_results; end
+
+  # Compiles your prepared SQL statement and the given positional arguments into plain SQL string.
+  #
+  # The resulting SQL string can be used with +conn.exec+ like the prepared SQL statement and parameters with +conn.exec_params+.
+  # +conn.exec_params+ is usually preferred because it's faster and safer.
+  # +embed_params+ is intended for debugging messages with positional parameters.
+  # It avoids manual insertion for later inspection in +psql+ or so.
+  #
+  # When using PG::Connection#exec_params, it's possible to set the numeric database type OID of a parameter by either a hash with +:type+ key, or by PG::Coder#oid .
+  # +embed_params+ casts the parameter the same way, but needs the name of the type instead its OID.
+  # That name must be provided by either a +:typename+ key in addition to the +:type+ OID or by PG::Coder#name in addition to PG::Coder#oid.
+  #
+  # Only text parameter format can be embedded into SQL text.
+  # Binary data ( <tt>:format => 1</tt> or PG::Coder#format == 1 ) raises an ArgumentError.
+  # However the common pattern of sending BYTEA (OID 17) data as format 1, which avoids escapting large blobs, is recognized and probably escaped into the SQL result string.
+  #
+  # Example:
+  # 	conn.embed_params('SELECT $1 AS a, $2 AS b, $3 AS c', [1, 2, {value: "\0", type: 17, format: 1}])
+  # 	=> "SELECT '1' AS a, '2' AS b, '\\x00'::bytea AS c"
+  #
+  # pkg:gem/pg#lib/pg/connection.rb:710
+  def embed_params(sql, params, type_map: T.unsafe(nil)); end
 
   # pkg:gem/pg#lib/pg.rb:52
   def encoder_for_put_copy_data; end
@@ -1286,10 +1323,9 @@ class PG::Connection
   # Return value is the encrypted password.
   # The caller can assume the string doesn't contain any special characters that would require escaping.
   #
-  # Available since PostgreSQL-10.
   # See also corresponding {libpq function}[https://www.postgresql.org/docs/current/libpq-misc.html#LIBPQ-PQENCRYPTPASSWORDCONN].
   #
-  # pkg:gem/pg#lib/pg/connection.rb:579
+  # pkg:gem/pg#lib/pg/connection.rb:573
   def encrypt_password(password, username, algorithm = T.unsafe(nil)); end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1344,6 +1380,9 @@ class PG::Connection
   def flush; end
 
   # pkg:gem/pg#lib/pg.rb:52
+  def full_protocol_version; end
+
+  # pkg:gem/pg#lib/pg.rb:52
   def get_client_encoding; end
 
   # call-seq:
@@ -1363,7 +1402,7 @@ class PG::Connection
   #
   # See also #copy_data.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:428
+  # pkg:gem/pg#lib/pg/connection.rb:424
   def get_copy_data(async = T.unsafe(nil), decoder = T.unsafe(nil)); end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1384,7 +1423,7 @@ class PG::Connection
   # and the PG::Result object will  automatically be cleared when the block terminates.
   # In this instance, <code>conn.exec</code> returns the value of the block.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:405
+  # pkg:gem/pg#lib/pg/connection.rb:401
   def get_result; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1395,7 +1434,7 @@ class PG::Connection
 
   # Return a String representation of the object suitable for debugging.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:100
+  # pkg:gem/pg#lib/pg/connection.rb:99
   def inspect; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1413,7 +1452,7 @@ class PG::Connection
   # Returns the blocking status of the database connection.
   # Returns +true+ if the connection is set to nonblocking mode and +false+ if blocking.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:476
+  # pkg:gem/pg#lib/pg/connection.rb:472
   def isnonblocking; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1497,7 +1536,7 @@ class PG::Connection
   # pkg:gem/pg#lib/pg.rb:52
   def make_empty_pgresult(_arg0); end
 
-  # pkg:gem/pg#lib/pg/connection.rb:480
+  # pkg:gem/pg#lib/pg/connection.rb:476
   def nonblocking?; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1530,7 +1569,7 @@ class PG::Connection
   #
   # Available since PostgreSQL-14
   #
-  # pkg:gem/pg#lib/pg/connection.rb:551
+  # pkg:gem/pg#lib/pg/connection.rb:547
   def pipeline_sync(*args); end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1560,7 +1599,7 @@ class PG::Connection
   #
   # See also #copy_data.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:500
+  # pkg:gem/pg#lib/pg/connection.rb:496
   def put_copy_data(buffer, encoder = T.unsafe(nil)); end
 
   # call-seq:
@@ -1576,10 +1615,10 @@ class PG::Connection
   # not sent (*false* is only possible if the connection
   # is in nonblocking mode, and this command would block).
   #
-  # pkg:gem/pg#lib/pg/connection.rb:530
+  # pkg:gem/pg#lib/pg/connection.rb:526
   def put_copy_end(*args); end
 
-  # pkg:gem/pg#lib/pg/connection.rb:1084
+  # pkg:gem/pg#lib/pg/connection.rb:1174
   def query(*_arg0); end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1591,7 +1630,7 @@ class PG::Connection
   # Resets the backend connection. This method closes the
   # backend connection and tries to re-connect.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:591
+  # pkg:gem/pg#lib/pg/connection.rb:584
   def reset; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1667,7 +1706,7 @@ class PG::Connection
   #
   # Returns +nil+.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:462
+  # pkg:gem/pg#lib/pg/connection.rb:458
   def setnonblocking(enabled); end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1692,7 +1731,7 @@ class PG::Connection
   #
   # See also #ssl_attribute
   #
-  # pkg:gem/pg#lib/pg/connection.rb:368
+  # pkg:gem/pg#lib/pg/connection.rb:364
   def ssl_attributes; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1703,7 +1742,7 @@ class PG::Connection
 
   # PostgreSQL-17+
   #
-  # pkg:gem/pg#lib/pg/connection.rb:608
+  # pkg:gem/pg#lib/pg/connection.rb:603
   def sync_cancel; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1776,7 +1815,7 @@ class PG::Connection
   # and a +COMMIT+ at the end of the block, or
   # +ROLLBACK+ if any exception occurs.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:308
+  # pkg:gem/pg#lib/pg/connection.rb:307
   def transaction; end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -1811,11 +1850,14 @@ class PG::Connection
 
   private
 
-  # pkg:gem/pg#lib/pg/connection.rb:793
+  # pkg:gem/pg#lib/pg/connection.rb:874
   def async_connect_or_reset(poll_meth); end
 
   # pkg:gem/pg#lib/pg.rb:52
   def flush_data=(_arg0); end
+
+  # pkg:gem/pg#lib/pg/connection.rb:683
+  def quote_type_name(name); end
 
   # pkg:gem/pg#lib/pg.rb:52
   def reset_start2(_arg0); end
@@ -1837,16 +1879,16 @@ class PG::Connection
     # Do not use this method in production code.
     # Any issues with the default setting of <tt>async_api=true</tt> should be reported to the maintainers instead.
     #
-    # pkg:gem/pg#lib/pg/connection.rb:1080
+    # pkg:gem/pg#lib/pg/connection.rb:1170
     def async_api=(enable); end
 
-    # pkg:gem/pg#lib/pg/connection.rb:882
+    # pkg:gem/pg#lib/pg/connection.rb:963
     def async_connect(*args); end
 
-    # pkg:gem/pg#lib/pg/connection.rb:994
+    # pkg:gem/pg#lib/pg/connection.rb:1083
     def async_ping(*args); end
 
-    # pkg:gem/pg#lib/pg/connection.rb:1057
+    # pkg:gem/pg#lib/pg/connection.rb:1147
     def async_send_api=(enable); end
 
     # Returns an array of Hashes with connection defaults. See ::conndefaults
@@ -1860,17 +1902,17 @@ class PG::Connection
     #
     # See also #conndefaults
     #
-    # pkg:gem/pg#lib/pg/connection.rb:337
+    # pkg:gem/pg#lib/pg/connection.rb:333
     def conndefaults_hash; end
 
-    # pkg:gem/pg#lib/pg/connection.rb:883
+    # pkg:gem/pg#lib/pg/connection.rb:964
     def connect(*args); end
 
     # Convert Hash options to connection String
     #
     # Values are properly quoted and escaped.
     #
-    # pkg:gem/pg#lib/pg/connection.rb:44
+    # pkg:gem/pg#lib/pg/connection.rb:43
     def connect_hash_to_string(hash); end
 
     # pkg:gem/pg#lib/pg.rb:52
@@ -1897,7 +1939,6 @@ class PG::Connection
     # Return value is the encrypted password.
     # The caller can assume the string doesn't contain any special characters that would require escaping.
     #
-    # Available since PostgreSQL-10.
     # See also corresponding {libpq function}[https://www.postgresql.org/docs/current/libpq-misc.html#LIBPQ-PQENCRYPTPASSWORDCONN].
     #
     # pkg:gem/pg#lib/pg.rb:52
@@ -1912,7 +1953,7 @@ class PG::Connection
     # pkg:gem/pg#lib/pg.rb:52
     def escape_string(_arg0); end
 
-    # pkg:gem/pg#lib/pg/connection.rb:298
+    # pkg:gem/pg#lib/pg/connection.rb:297
     def isthreadsafe; end
 
     # call-seq:
@@ -1980,10 +2021,10 @@ class PG::Connection
     #   It's still possible to do load balancing with +load_balance_hosts+ set to +random+ and to increase the number of connections a node gets, when the hostname is provided multiple times in the host string.
     #   This is because in non-timeout cases the host is tried multiple times.
     #
-    # pkg:gem/pg#lib/pg/connection.rb:870
+    # pkg:gem/pg#lib/pg/connection.rb:951
     def new(*args); end
 
-    # pkg:gem/pg#lib/pg/connection.rb:884
+    # pkg:gem/pg#lib/pg/connection.rb:965
     def open(*args); end
 
     # Parse the connection +args+ into a connection-parameter string.
@@ -1999,7 +2040,7 @@ class PG::Connection
     # The method adds the option "fallback_application_name" if it isn't already set.
     # It returns a connection string with "key=value" pairs.
     #
-    # pkg:gem/pg#lib/pg/connection.rb:64
+    # pkg:gem/pg#lib/pg/connection.rb:63
     def parse_connect_args(*args); end
 
     # call-seq:
@@ -2026,21 +2067,21 @@ class PG::Connection
     #
     # See also check_socket for a way to check the connection without doing any server communication.
     #
-    # pkg:gem/pg#lib/pg/connection.rb:985
+    # pkg:gem/pg#lib/pg/connection.rb:1074
     def ping(*args); end
 
     # Quote a single +value+ for use in a connection-parameter string.
     #
-    # pkg:gem/pg#lib/pg/connection.rb:37
+    # pkg:gem/pg#lib/pg/connection.rb:36
     def quote_connstr(value); end
 
     # pkg:gem/pg#lib/pg.rb:52
     def quote_ident(_arg0); end
 
-    # pkg:gem/pg#lib/pg/connection.rb:885
+    # pkg:gem/pg#lib/pg/connection.rb:966
     def setdb(*args); end
 
-    # pkg:gem/pg#lib/pg/connection.rb:886
+    # pkg:gem/pg#lib/pg/connection.rb:967
     def setdblogin(*args); end
 
     # pkg:gem/pg#lib/pg.rb:52
@@ -2054,35 +2095,37 @@ class PG::Connection
 
     private
 
-    # pkg:gem/pg#lib/pg/connection.rb:922
+    # pkg:gem/pg#lib/pg/connection.rb:996
     def connect_to_hosts(*args); end
 
-    # pkg:gem/pg#lib/pg/connection.rb:955
+    # pkg:gem/pg#lib/pg/connection.rb:1044
     def host_is_named_pipe?(host_string); end
 
     # Resolve DNS in Ruby to avoid blocking state while connecting.
     # Multiple comma-separated values are generated, if the hostname resolves to both IPv4 and IPv6 addresses.
-    # This requires PostgreSQL-10+, so no DNS resolving is done on earlier versions.
     #
-    # pkg:gem/pg#lib/pg/connection.rb:891
+    # pkg:gem/pg#lib/pg/connection.rb:971
     def resolve_hosts(iopts); end
   end
 end
 
-# pkg:gem/pg#lib/pg/connection.rb:120
+# pkg:gem/pg#lib/pg/connection.rb:119
 PG::Connection::BinarySignature = T.let(T.unsafe(nil), String)
 
 # The order the options are passed to the ::connect method.
 #
-# pkg:gem/pg#lib/pg/connection.rb:33
+# pkg:gem/pg#lib/pg/connection.rb:32
 PG::Connection::CONNECT_ARGUMENT_ORDER = T.let(T.unsafe(nil), Array)
+
+# pkg:gem/pg#lib/pg/connection.rb:670
+PG::Connection::PLACEHOLDER_RE = T.let(T.unsafe(nil), Regexp)
 
 # Shareable program name for Ractor
 #
-# pkg:gem/pg#lib/pg/connection.rb:49
+# pkg:gem/pg#lib/pg/connection.rb:48
 PG::Connection::PROGRAM_NAME = T.let(T.unsafe(nil), String)
 
-# pkg:gem/pg#lib/pg/connection.rb:675
+# pkg:gem/pg#lib/pg/connection.rb:765
 module PG::Connection::Pollable
   private
 
@@ -2092,12 +2135,12 @@ module PG::Connection::Pollable
   # - All hosts are passed to PG::Connection.connect_start
   # - As soon as the host is tried to connect the related host is removed from the hosts list
   # - When the polling status changes to `PG::PGRES_POLLING_OK` the connection is returned and ready to use.
-  # - When the polling status changes to `PG::PGRES_POLLING_FAILED` connecting is aborted and a PG::ConnectionBad is raised with details to all connection attepts.
+  # - When the polling status changes to `PG::PGRES_POLLING_FAILED` connecting is aborted and a PG::ConnectionBad is raised with details to all connection attempts.
   # - When a timeout occurs, connecting is restarted with the remaining hosts.
   #
   # The downside is that this connects only once to hosts which are listed twice when they timeout.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:686
+  # pkg:gem/pg#lib/pg/connection.rb:776
   def polling_loop(poll_meth); end
 
   # Remove the host to which the connection is currently established from the option hash.
@@ -2108,9 +2151,12 @@ module PG::Connection::Pollable
   #
   # Return the number of remaining hosts.
   #
-  # pkg:gem/pg#lib/pg/connection.rb:762
+  # pkg:gem/pg#lib/pg/connection.rb:843
   def remove_current_host(iopts); end
 end
+
+# pkg:gem/pg#lib/pg/connection.rb:680
+PG::Connection::SAFE_TYPE_NAME_PART_RE = T.let(T.unsafe(nil), Regexp)
 
 # pkg:gem/pg#lib/pg.rb:52
 class PG::ConnectionBad < ::PG::Error; end
@@ -2854,6 +2900,9 @@ class PG::Result
   def each_row; end
 
   # pkg:gem/pg#lib/pg.rb:52
+  def each_tuple; end
+
+  # pkg:gem/pg#lib/pg.rb:52
   def error_field(_arg0); end
 
   # pkg:gem/pg#lib/pg.rb:52
@@ -3534,7 +3583,10 @@ class PG::Tuple
 end
 
 # pkg:gem/pg#lib/pg.rb:52
-class PG::TypeMap; end
+class PG::TypeMap
+  # pkg:gem/pg#lib/pg.rb:52
+  def query_param_encoders(_arg0); end
+end
 
 # pkg:gem/pg#lib/pg.rb:52
 module PG::TypeMap::DefaultTypeMappable

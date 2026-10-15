@@ -1008,24 +1008,24 @@ end
 #
 # A cache store implementation which stores everything on the filesystem.
 #
-# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:12
+# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:13
 class ActiveSupport::Cache::FileStore < ::ActiveSupport::Cache::Store
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:20
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:21
   def initialize(cache_path, **options); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:13
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:14
   def cache_path; end
 
   # Preemptively iterates through all stored keys and removes the ones which have expired.
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:40
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:41
   def cleanup(options = T.unsafe(nil)); end
 
   # Deletes all items from the cache. In this case it deletes all the entries in the specified
   # file store directory except for .keep or .gitkeep. Be careful which directory is specified in your
   # config file when using +FileStore+ because everything in that directory will be deleted.
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:33
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:34
   def clear(options = T.unsafe(nil)); end
 
   # Decrement a cached integer value. Returns the updated value.
@@ -1039,10 +1039,10 @@ class ActiveSupport::Cache::FileStore < ::ActiveSupport::Cache::Store
   #   cache.write("baz", 5)
   #   cache.decrement("baz") # => 4
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:80
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:81
   def decrement(name, amount = T.unsafe(nil), **options); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:89
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:90
   def delete_matched(matcher, options = T.unsafe(nil)); end
 
   # Increment a cached integer value. Returns the updated value.
@@ -1057,85 +1057,85 @@ class ActiveSupport::Cache::FileStore < ::ActiveSupport::Cache::Store
   #   cache.write("baz", 5)
   #   cache.increment("baz") # => 6
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:60
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:61
   def increment(name, amount = T.unsafe(nil), **options); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:101
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:102
   def inspect; end
 
   private
 
   # Delete empty directories in the cache.
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:195
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:196
   def delete_empty_directories(dir); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:131
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:132
   def delete_entry(key, **options); end
 
   # Make sure a file path's directories exist.
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:204
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:205
   def ensure_cache_path(path); end
 
   # Translate a file path into a key.
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:189
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:190
   def file_path_key(path); end
 
   # Lock a file for a block so only one process can modify it at a time.
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:148
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:149
   def lock_file(file_name, &block); end
 
   # Modifies the amount of an integer value that is stored in the cache.
   # If the key is not found it is created and set to +amount+.
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:222
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:223
   def modify_value(name, amount, options); end
 
   # Translate a key into a file path.
   #
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:162
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:163
   def normalize_key(key, options); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:106
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:107
   def read_entry(key, **options); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:113
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:114
   def read_serialized_entry(key, **); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:208
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:209
   def search_dir(dir, &callback); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:120
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:121
   def write_entry(key, entry, **options); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:124
+  # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:125
   def write_serialized_entry(key, payload, **options); end
 
   class << self
     # Advertise cache versioning support.
     #
-    # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:26
+    # pkg:gem/activesupport#lib/active_support/cache/file_store.rb:27
     def supports_cache_versioning?; end
   end
 end
 
-# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:15
+# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:16
 ActiveSupport::Cache::FileStore::DIR_FORMATTER = T.let(T.unsafe(nil), String)
 
-# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:16
+# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:17
 ActiveSupport::Cache::FileStore::FILENAME_MAX_SIZE = T.let(T.unsafe(nil), Integer)
 
 # max filename size on file system is 255, minus room for timestamp, pid, and random characters appended by Tempfile (used by atomic write)
 #
-# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:17
+# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:18
 ActiveSupport::Cache::FileStore::FILEPATH_MAX_SIZE = T.let(T.unsafe(nil), Integer)
 
 # max is 1024, plus some room
 #
-# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:18
+# pkg:gem/activesupport#lib/active_support/cache/file_store.rb:19
 ActiveSupport::Cache::FileStore::GITKEEP_FILES = T.let(T.unsafe(nil), Array)
 
 # = Memory \Cache \Store
@@ -1545,7 +1545,7 @@ class ActiveSupport::Cache::RedisCacheStore < ::ActiveSupport::Cache::Store
   # pkg:gem/activesupport#lib/active_support/cache/redis_cache_store.rb:434
   def deserialize_entry(payload, raw: T.unsafe(nil), **); end
 
-  # pkg:gem/activesupport#lib/active_support/cache/redis_cache_store.rb:490
+  # pkg:gem/activesupport#lib/active_support/cache/redis_cache_store.rb:498
   def failsafe(method, returning: T.unsafe(nil)); end
 
   # pkg:gem/activesupport#lib/active_support/cache/redis_cache_store.rb:325
@@ -1622,6 +1622,9 @@ ActiveSupport::Cache::RedisCacheStore::DEFAULT_ERROR_HANDLER = T.let(T.unsafe(ni
 
 # pkg:gem/activesupport#lib/active_support/cache/redis_cache_store.rb:38
 ActiveSupport::Cache::RedisCacheStore::DEFAULT_REDIS_OPTIONS = T.let(T.unsafe(nil), Hash)
+
+# pkg:gem/activesupport#lib/active_support/cache/redis_cache_store.rb:490
+ActiveSupport::Cache::RedisCacheStore::FAILSAFE_ERRORS = T.let(T.unsafe(nil), Array)
 
 # The maximum number of entries to receive per SCAN call.
 #
@@ -3363,7 +3366,7 @@ module ActiveSupport::CompareWithRange
   #
   # The given range must be fully bounded, with both start and end.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/range/compare_range.rb:41
+  # pkg:gem/activesupport#lib/active_support/core_ext/range/compare_range.rb:35
   def include?(value); end
 end
 
@@ -3728,13 +3731,13 @@ module ActiveSupport::Configurable::ClassMethods
   #     include ActiveSupport::Configurable
   #   end
   #
-  #   User.allowed_access # => nil
+  #   User.config.allowed_access # => nil
   #
   #   User.configure do |config|
   #     config.allowed_access = true
   #   end
   #
-  #   User.allowed_access # => true
+  #   User.config.allowed_access # => true
   #
   # pkg:gem/activesupport#lib/active_support/configurable.rb:73
   def configure; end
@@ -6260,7 +6263,7 @@ ActiveSupport::EventContext::FIBER_KEY = T.let(T.unsafe(nil), Symbol)
 #   payload: Hash, Object (The payload of the event, or the event object itself)
 #   tags: Hash (The tags of the event)
 #   context: Hash (The context of the event)
-#   timestamp: Float (The timestamp of the event, in nanoseconds)
+#   timestamp: Integer (The timestamp of the event, in nanoseconds)
 #   source_location: Hash (The source location of the event, containing the filepath, lineno, and label)
 #
 # Subscribers are responsible for encoding events to their desired format before emitting them to their
@@ -6519,7 +6522,7 @@ class ActiveSupport::EventReporter
   #   payload: Hash, Object (The payload of the event, or the event object itself)
   #   tags: Hash (The tags of the event)
   #   context: Hash (The context of the event)
-  #   timestamp: Float (The timestamp of the event, in nanoseconds)
+  #   timestamp: Integer (The timestamp of the event, in nanoseconds)
   #   source_location: Hash (The source location of the event, containing the filepath, lineno, and label)
   #
   # An optional filter proc can be provided to only receive a subset of events:
@@ -7137,7 +7140,7 @@ class ActiveSupport::HashWithIndifferentAccess < ::Hash
   # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:197
   def assoc(key); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:390
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:391
   def compact; end
 
   # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:334
@@ -7228,6 +7231,9 @@ class ActiveSupport::HashWithIndifferentAccess < ::Hash
   # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:267
   def fetch_values(*indices, &block); end
 
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:341
+  def filter(*args, &block); end
+
   # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:172
   def has_key?(key); end
 
@@ -7266,7 +7272,7 @@ class ActiveSupport::HashWithIndifferentAccess < ::Hash
   # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:89
   def regular_writer(_arg0, _arg1); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:342
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:343
   def reject(*args, &block); end
 
   # Replaces the contents of this hash with other_hash.
@@ -7295,10 +7301,10 @@ class ActiveSupport::HashWithIndifferentAccess < ::Hash
   # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:337
   def select(*args, &block); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:380
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:381
   def slice(*keys); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:385
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:386
   def slice!(*keys); end
 
   # Assigns a new value to the hash:
@@ -7320,7 +7326,7 @@ class ActiveSupport::HashWithIndifferentAccess < ::Hash
 
   # Convert to a regular hash with string keys.
   #
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:395
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:396
   def to_hash; end
 
   # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:333
@@ -7329,16 +7335,16 @@ class ActiveSupport::HashWithIndifferentAccess < ::Hash
   # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:335
   def to_options!; end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:401
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:402
   def to_proc; end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:354
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:355
   def transform_keys(hash = T.unsafe(nil), &block); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:366
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:367
   def transform_keys!(hash = T.unsafe(nil), &block); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:347
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:348
   def transform_values(&block); end
 
   # Updates the receiver in-place, merging in the hashes passed as arguments:
@@ -7397,22 +7403,22 @@ class ActiveSupport::HashWithIndifferentAccess < ::Hash
 
   private
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:406
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:407
   def cast(other); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:410
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:411
   def convert_key(key); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:414
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:415
   def convert_value(value, conversion: T.unsafe(nil)); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:427
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:428
   def convert_value_to_hash(value); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:438
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:439
   def copy_defaults(target); end
 
-  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:447
+  # pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:448
   def update_with_single_argument(other_hash, block); end
 
   class << self
@@ -7421,7 +7427,7 @@ class ActiveSupport::HashWithIndifferentAccess < ::Hash
   end
 end
 
-# pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:352
+# pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:353
 ActiveSupport::HashWithIndifferentAccess::NOT_GIVEN = T.let(T.unsafe(nil), Object)
 
 # pkg:gem/activesupport#lib/active_support/html_safe_translation.rb:4
@@ -7649,6 +7655,11 @@ module ActiveSupport::Inflector
   #   parameterize("Donald E. Knuth", separator: '_') # => "donald_e_knuth"
   #   parameterize("^très|Jolie__ ", separator: '_')  # => "tres_jolie"
   #
+  # To remove the unwanted characters instead of replacing them, pass an
+  # empty separator. +nil+ is treated the same way.
+  #
+  #   parameterize("Donald E. Knuth", separator: '') # => "donaldeknuth"
+  #
   # To preserve the case of the characters in a string, use the +preserve_case+ argument.
   #
   #   parameterize("Donald E. Knuth", preserve_case: true) # => "Donald-E-Knuth"
@@ -7665,7 +7676,7 @@ module ActiveSupport::Inflector
   # By default, this parameter is set to <tt>nil</tt> and it will use
   # the configured <tt>I18n.locale</tt>.
   #
-  # pkg:gem/activesupport#lib/active_support/inflector/transliterate.rb:123
+  # pkg:gem/activesupport#lib/active_support/inflector/transliterate.rb:131
   def parameterize(string, separator: T.unsafe(nil), preserve_case: T.unsafe(nil), locale: T.unsafe(nil)); end
 
   # Returns the plural form of the word in the string.
@@ -8227,7 +8238,7 @@ module ActiveSupport::JSON
     # pkg:gem/activesupport#lib/active_support/json/encoding.rb:47
     def encode(value, options = T.unsafe(nil)); end
 
-    # pkg:gem/activesupport#lib/active_support/json/decoding.rb:33
+    # pkg:gem/activesupport#lib/active_support/json/decoding.rb:37
     def load(json, options = T.unsafe(nil)); end
 
     # Returns the class of the error that will be raised when there is an
@@ -8241,12 +8252,12 @@ module ActiveSupport::JSON
     #     Rails.logger.warn("Attempted to decode invalid JSON: #{some_string}")
     #   end
     #
-    # pkg:gem/activesupport#lib/active_support/json/decoding.rb:45
+    # pkg:gem/activesupport#lib/active_support/json/decoding.rb:49
     def parse_error; end
 
     private
 
-    # pkg:gem/activesupport#lib/active_support/json/decoding.rb:50
+    # pkg:gem/activesupport#lib/active_support/json/decoding.rb:54
     def convert_dates_from(data); end
   end
 end
@@ -8262,22 +8273,22 @@ ActiveSupport::JSON::DATE_REGEX = T.let(T.unsafe(nil), Regexp)
 # pkg:gem/activesupport#lib/active_support/json/encoding.rb:59
 module ActiveSupport::JSON::Encoding
   class << self
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:241
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:251
     def encode_without_escape(value); end
 
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:237
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:247
     def encode_without_options(value); end
 
     # If true, encode >, <, & as escaped unicode sequences (e.g. > as \u003e)
     # as a safety measure.
     #
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:214
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:224
     def escape_html_entities_in_json; end
 
     # If true, encode >, <, & as escaped unicode sequences (e.g. > as \u003e)
     # as a safety measure.
     #
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:214
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:224
     def escape_html_entities_in_json=(_arg0); end
 
     # If true, encode LINE SEPARATOR (U+2028) and PARAGRAPH SEPARATOR (U+2029)
@@ -8286,7 +8297,7 @@ module ActiveSupport::JSON::Encoding
     # but that changed in ECMAScript 2019. As such it's no longer a concern in
     # modern browsers: https://caniuse.com/mdn-javascript_builtins_json_json_superset.
     #
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:221
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:231
     def escape_js_separators_in_json; end
 
     # If true, encode LINE SEPARATOR (U+2028) and PARAGRAPH SEPARATOR (U+2029)
@@ -8295,40 +8306,40 @@ module ActiveSupport::JSON::Encoding
     # but that changed in ECMAScript 2019. As such it's no longer a concern in
     # modern browsers: https://caniuse.com/mdn-javascript_builtins_json_json_superset.
     #
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:221
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:231
     def escape_js_separators_in_json=(_arg0); end
 
     # Sets the encoder used by \Rails to encode Ruby objects into JSON strings
     # in +Object#to_json+ and +ActiveSupport::JSON.encode+.
     #
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:229
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:239
     def json_encoder; end
 
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:231
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:241
     def json_encoder=(encoder); end
 
     # Sets the precision of encoded time values.
     # Defaults to 3 (equivalent to millisecond precision)
     #
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:225
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:235
     def time_precision; end
 
     # Sets the precision of encoded time values.
     # Defaults to 3 (equivalent to millisecond precision)
     #
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:225
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:235
     def time_precision=(_arg0); end
 
     # If true, use ISO 8601 format for dates and times. Otherwise, fall back
     # to the Active Support legacy format.
     #
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:210
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:220
     def use_standard_json_time_format; end
 
     # If true, use ISO 8601 format for dates and times. Otherwise, fall back
     # to the Active Support legacy format.
     #
-    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:210
+    # pkg:gem/activesupport#lib/active_support/json/encoding.rb:220
     def use_standard_json_time_format=(_arg0); end
   end
 end
@@ -8344,12 +8355,12 @@ ActiveSupport::JSON::Encoding::HTML_ENTITIES_REGEX = T.let(T.unsafe(nil), Regexp
 
 # pkg:gem/activesupport#lib/active_support/json/encoding.rb:150
 class ActiveSupport::JSON::Encoding::JSONGemCoderEncoder
-  # pkg:gem/activesupport#lib/active_support/json/encoding.rb:173
+  # pkg:gem/activesupport#lib/active_support/json/encoding.rb:183
   def initialize(options = T.unsafe(nil)); end
 
   # Encode the given object into a JSON string
   #
-  # pkg:gem/activesupport#lib/active_support/json/encoding.rb:185
+  # pkg:gem/activesupport#lib/active_support/json/encoding.rb:195
   def encode(value); end
 end
 
@@ -10173,8 +10184,8 @@ ActiveSupport::Multibyte::Unicode::UNICODE_VERSION = T.let(T.unsafe(nil), String
 #
 #   subscriber = ActiveSupport::Notifications.subscribe(/render/) { }
 #   ActiveSupport::Notifications.unsubscribe('render_template.action_view')
-#   subscriber.matches?('render_template.action_view') # => false
-#   subscriber.matches?('render_partial.action_view') # => true
+#   subscriber.subscribed_to?('render_template.action_view') # => false
+#   subscriber.subscribed_to?('render_partial.action_view') # => true
 #
 # == Default Queue
 #
@@ -11174,10 +11185,10 @@ end
 
 # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:12
 class ActiveSupport::NumberHelper::NumberConverter
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:124
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:127
   def initialize(number, options); end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:130
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:133
   def execute; end
 
   # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:14
@@ -11206,32 +11217,32 @@ class ActiveSupport::NumberHelper::NumberConverter
 
   private
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:149
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:152
   def default_format_options; end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:174
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:177
   def default_value(key); end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:145
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:148
   def format_options; end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:155
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:158
   def i18n_format_options; end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:141
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:144
   def options; end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:170
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:173
   def translate_in_locale(key, **i18n_options); end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:166
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:169
   def translate_number_value_with_default(key, **i18n_options); end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:178
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:181
   def valid_bigdecimal; end
 
   class << self
-    # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:120
+    # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:123
     def convert(number, options); end
 
     # pkg:gem/activesupport#lib/active_support/number_helper/number_converter.rb:14
@@ -11297,15 +11308,15 @@ end
 
 # pkg:gem/activesupport#lib/active_support/number_helper/number_to_delimited_converter.rb:7
 class ActiveSupport::NumberHelper::NumberToDelimitedConverter < ::ActiveSupport::NumberHelper::NumberConverter
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_delimited_converter.rb:12
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_delimited_converter.rb:10
   def convert; end
 
   private
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_delimited_converter.rb:40
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_delimited_converter.rb:39
   def delimiter_pattern; end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_delimited_converter.rb:17
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_delimited_converter.rb:15
   def parts; end
 
   class << self
@@ -11318,9 +11329,6 @@ class ActiveSupport::NumberHelper::NumberToDelimitedConverter < ::ActiveSupport:
     def __class_attr_validate_float=(new_value); end
   end
 end
-
-# pkg:gem/activesupport#lib/active_support/number_helper/number_to_delimited_converter.rb:10
-ActiveSupport::NumberHelper::NumberToDelimitedConverter::DEFAULT_DELIMITER_REGEX = T.let(T.unsafe(nil), Regexp)
 
 # pkg:gem/activesupport#lib/active_support/number_helper/number_to_human_converter.rb:7
 class ActiveSupport::NumberHelper::NumberToHumanConverter < ::ActiveSupport::NumberHelper::NumberConverter
@@ -11441,20 +11449,17 @@ class ActiveSupport::NumberHelper::NumberToPhoneConverter < ::ActiveSupport::Num
   # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:31
   def convert_without_area_code(number); end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:47
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:43
   def country_code(code); end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:43
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:39
   def delimiter; end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:51
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:47
   def phone_ext(ext); end
 
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:55
+  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:51
   def regexp_pattern(default_pattern); end
-
-  # pkg:gem/activesupport#lib/active_support/number_helper/number_to_phone_converter.rb:39
-  def start_with_delimiter?(number); end
 end
 
 # pkg:gem/activesupport#lib/active_support/number_helper/number_to_rounded_converter.rb:7
@@ -12430,7 +12435,12 @@ class ActiveSupport::SecureCompareRotator::InvalidMatch < ::StandardError; end
 module ActiveSupport::SecurityUtils
   private
 
-  # pkg:gem/activesupport#lib/active_support/security_utils.rb:11
+  # Constant time string comparison, for fixed length strings.
+  #
+  # The values compared should be of fixed length, such as strings
+  # that have already been processed by HMAC. Raises in case of length mismatch.
+  #
+  # pkg:gem/activesupport#lib/active_support/security_utils.rb:10
   def fixed_length_secure_compare(a, b); end
 
   # Secure string comparison for strings of variable length.
@@ -12440,14 +12450,14 @@ module ActiveSupport::SecurityUtils
   # the secret length. This should be considered when using secure_compare
   # to compare weak, short secrets to user input.
   #
-  # pkg:gem/activesupport#lib/active_support/security_utils.rb:33
+  # pkg:gem/activesupport#lib/active_support/security_utils.rb:32
   def secure_compare(a, b); end
 
   class << self
-    # pkg:gem/activesupport#lib/active_support/security_utils.rb:25
+    # pkg:gem/activesupport#lib/active_support/security_utils.rb:24
     def fixed_length_secure_compare(a, b); end
 
-    # pkg:gem/activesupport#lib/active_support/security_utils.rb:36
+    # pkg:gem/activesupport#lib/active_support/security_utils.rb:35
     def secure_compare(a, b); end
   end
 end
@@ -13073,6 +13083,11 @@ class ActiveSupport::TestCase < ::Minitest::Test
     #
     # pkg:gem/activesupport#lib/active_support/test_case.rb:172
     def parallelize_teardown(&block); end
+
+    # MT6 API change
+    #
+    # pkg:gem/activesupport#lib/active_support/test_case.rb:66
+    def run_order; end
 
     # Returns the order in which test cases are run.
     #
@@ -15270,7 +15285,7 @@ ActiveSupport::VERSION::MAJOR = T.let(T.unsafe(nil), Integer)
 ActiveSupport::VERSION::MINOR = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/activesupport#lib/active_support/gem_version.rb:13
-ActiveSupport::VERSION::PRE = T.let(T.unsafe(nil), String)
+ActiveSupport::VERSION::PRE = T.let(T.unsafe(nil), T.untyped)
 
 # pkg:gem/activesupport#lib/active_support/gem_version.rb:15
 ActiveSupport::VERSION::STRING = T.let(T.unsafe(nil), String)
@@ -16744,7 +16759,7 @@ class DateTime < ::Date
   # Layers additional behavior on DateTime#<=> so that Time and
   # ActiveSupport::TimeWithZone instances can be compared with a DateTime.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:208
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:209
   def <=>(other); end
 
   # Duck-types as a Date-like class. See Object#acts_like?.
@@ -16772,55 +16787,55 @@ class DateTime < ::Date
   # Returns a new DateTime representing the time a number of seconds ago.
   # Do not use this method in combination with x.months, use months_ago instead!
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:109
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:110
   def ago(seconds); end
 
   # pkg:gem/activesupport#lib/active_support/core_ext/object/json.rb:221
   def as_json(options = T.unsafe(nil)); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:127
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:128
   def at_beginning_of_day; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:149
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:150
   def at_beginning_of_hour; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:161
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:162
   def at_beginning_of_minute; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:143
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:144
   def at_end_of_day; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:155
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:156
   def at_end_of_hour; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:167
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:168
   def at_end_of_minute; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:135
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:136
   def at_midday; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:137
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:138
   def at_middle_of_day; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:126
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:127
   def at_midnight; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:136
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:137
   def at_noon; end
 
   # Returns a new DateTime representing the start of the day (0:00).
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:122
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:123
   def beginning_of_day; end
 
   # Returns a new DateTime representing the start of the hour (hh:00:00).
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:146
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:147
   def beginning_of_hour; end
 
   # Returns a new DateTime representing the start of the minute (hh:mm:00).
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:158
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:159
   def beginning_of_minute; end
 
   # No DateTime is ever blank:
@@ -16852,17 +16867,17 @@ class DateTime < ::Date
 
   # Returns a new DateTime representing the end of the day (23:59:59).
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:140
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:141
   def end_of_day; end
 
   # Returns a new DateTime representing the end of the hour (hh:59:59).
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:152
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:153
   def end_of_hour; end
 
   # Returns a new DateTime representing the end of the minute (hh:mm:59).
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:164
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:165
   def end_of_minute; end
 
   # Returns a formatted string of the offset from UTC, or an alternative
@@ -16875,19 +16890,19 @@ class DateTime < ::Date
   # pkg:gem/activesupport#lib/active_support/core_ext/date_time/conversions.rb:53
   def formatted_offset(colon = T.unsafe(nil), alternate_utc_string = T.unsafe(nil)); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:192
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:193
   def getgm; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:178
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:179
   def getlocal(utc_offset = T.unsafe(nil)); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:193
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:194
   def getutc; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:194
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:195
   def gmtime; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:119
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:120
   def in(seconds); end
 
   # pkg:gem/activesupport#lib/active_support/core_ext/date_time/conversions.rb:62
@@ -16895,21 +16910,21 @@ class DateTime < ::Date
 
   # Returns a <tt>Time</tt> instance of the simultaneous time in the system timezone.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:170
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:171
   def localtime(utc_offset = T.unsafe(nil)); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:133
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:134
   def midday; end
 
   # Returns a new DateTime representing the middle of the day (12:00)
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:130
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:131
   def middle_of_day; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:125
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:126
   def midnight; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:134
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:135
   def noon; end
 
   # Returns the fraction of a second as nanoseconds
@@ -16947,7 +16962,7 @@ class DateTime < ::Date
   # instance time. Do not use this method in combination with x.months, use
   # months_since instead!
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:116
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:117
   def since(seconds); end
 
   # Returns the fraction of a second as a +Rational+
@@ -17017,17 +17032,17 @@ class DateTime < ::Date
   #   DateTime.civil(2005, 2, 21, 10, 11, 12, Rational(-6, 24))     # => Mon, 21 Feb 2005 10:11:12 -0600
   #   DateTime.civil(2005, 2, 21, 10, 11, 12, Rational(-6, 24)).utc # => Mon, 21 Feb 2005 16:11:12 UTC
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:184
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:185
   def utc; end
 
   # Returns +true+ if <tt>offset == 0</tt>.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:197
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:198
   def utc?; end
 
   # Returns the offset value in seconds.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:202
+  # pkg:gem/activesupport#lib/active_support/core_ext/date_time/calculations.rb:203
   def utc_offset; end
 
   private
@@ -17901,7 +17916,7 @@ end
 
 # :stopdoc:
 #
-# pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:464
+# pkg:gem/activesupport#lib/active_support/hash_with_indifferent_access.rb:465
 HashWithIndifferentAccess = ActiveSupport::HashWithIndifferentAccess
 
 # :enddoc:
@@ -19473,7 +19488,7 @@ class Object < ::BasicObject
   #     end
   #   end
   #
-  #   C.new(0, 1).instance_variable_names # => ["@y", "@x"]
+  #   C.new(0, 1).instance_variable_names # => ["@x", "@y"]
   #
   # pkg:gem/activesupport#lib/active_support/core_ext/object/instance_variables.rb:29
   def instance_variable_names; end
@@ -19712,7 +19727,7 @@ class Range
   # pkg:gem/activesupport#lib/active_support/core_ext/object/json.rb:158
   def as_json(options = T.unsafe(nil)); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/range/compare_range.rb:41
+  # pkg:gem/activesupport#lib/active_support/core_ext/range/compare_range.rb:35
   def include?(value); end
 
   # pkg:gem/activesupport#lib/active_support/core_ext/range/overlap.rb:39
@@ -19725,7 +19740,7 @@ class Range
   #   (2..1).sole   # => Enumerable::SoleItemExpectedError: no item found
   #   (..1).sole    # => Enumerable::SoleItemExpectedError: infinite range cannot represent a sole item
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/range/sole.rb:10
+  # pkg:gem/activesupport#lib/active_support/core_ext/range/sole.rb:12
   def sole; end
 
   # Optimize range sum to use arithmetic progression if a block is not given and
@@ -20440,7 +20455,7 @@ class String
   #
   # Raises +ArgumentError+ when the bytesize of <tt>:omission</tt> exceeds <tt>truncate_to</tt>.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/string/filters.rb:101
+  # pkg:gem/activesupport#lib/active_support/core_ext/string/filters.rb:103
   def truncate_bytes(truncate_to, omission: T.unsafe(nil)); end
 
   # Truncates a given +text+ after a given number of words (<tt>words_count</tt>):
@@ -20458,7 +20473,7 @@ class String
   #   'And they found that many people were sleeping better.'.truncate_words(5, omission: '... (continued)')
   #   # => "And they found that many... (continued)"
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/string/filters.rb:142
+  # pkg:gem/activesupport#lib/active_support/core_ext/string/filters.rb:144
   def truncate_words(words_count, options = T.unsafe(nil)); end
 
   # The reverse of +camelize+. Makes an underscored, lowercase form from the expression in the string.
@@ -20545,13 +20560,13 @@ class Time
   include ::DateAndTime::Calculations
   include ::DateAndTime::Compatibility
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:298
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:302
   def +(other); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:308
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:312
   def -(other); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:338
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:342
   def <=>(other); end
 
   # Duck-types as a Time-like class. See Object#acts_like?.
@@ -20575,60 +20590,60 @@ class Time
   # largest to smallest. This order can affect the result around the end of a
   # month.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:194
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:197
   def advance(options); end
 
   # Returns a new Time representing the time a number of seconds ago, this is basically a wrapper around the Numeric extension
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:220
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:224
   def ago(seconds); end
 
   # pkg:gem/activesupport#lib/active_support/core_ext/object/json.rb:201
   def as_json(options = T.unsafe(nil)); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:236
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:240
   def at_beginning_of_day; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:263
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:267
   def at_beginning_of_hour; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:279
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:283
   def at_beginning_of_minute; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:257
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:261
   def at_end_of_day; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:273
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:277
   def at_end_of_hour; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:288
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:292
   def at_end_of_minute; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:244
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:248
   def at_midday; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:246
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:250
   def at_middle_of_day; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:235
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:239
   def at_midnight; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:245
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:249
   def at_noon; end
 
   # Returns a new Time representing the start of the day (0:00)
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:231
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:235
   def beginning_of_day; end
 
   # Returns a new Time representing the start of the hour (x:00)
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:260
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:264
   def beginning_of_hour; end
 
   # Returns a new Time representing the start of the minute (x:xx:00)
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:276
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:280
   def beginning_of_minute; end
 
   # No Time is blank:
@@ -20653,43 +20668,43 @@ class Time
   #   Time.new(2012, 8, 29, 22, 35, 0).change(year: 1981, day: 1)  # => Time.new(1981, 8, 1, 22, 35, 0)
   #   Time.new(2012, 8, 29, 22, 35, 0).change(year: 1981, hour: 0) # => Time.new(1981, 8, 29, 0, 0, 0)
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:123
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:126
   def change(options); end
 
   # Layers additional behavior on Time#<=> so that DateTime and ActiveSupport::TimeWithZone instances
   # can be chronologically compared with a Time
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:322
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:326
   def compare_with_coercion(other); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:337
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:341
   def compare_without_coercion(_arg0); end
 
   # Returns a new Time representing the end of the day, 23:59:59.999999
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:249
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:253
   def end_of_day; end
 
   # Returns a new Time representing the end of the hour, x:59:59.999999
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:266
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:270
   def end_of_hour; end
 
   # Returns a new Time representing the end of the minute, x:xx:59.999999
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:282
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:286
   def end_of_minute; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:348
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:352
   def eql?(other); end
 
   # Layers additional behavior on Time#eql? so that ActiveSupport::TimeWithZone instances
   # can be eql? to an equivalent Time
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:342
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:346
   def eql_with_coercion(other); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:347
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:351
   def eql_without_coercion(_arg0); end
 
   # Returns a formatted string of the offset from UTC, or an alternative
@@ -20701,58 +20716,58 @@ class Time
   # pkg:gem/activesupport#lib/active_support/core_ext/time/conversions.rb:69
   def formatted_offset(colon = T.unsafe(nil), alternate_utc_string = T.unsafe(nil)); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:228
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:232
   def in(seconds); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:242
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:246
   def midday; end
 
   # Returns a new Time representing the middle of the day (12:00)
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:239
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:243
   def middle_of_day; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:234
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:238
   def midnight; end
 
   # Time#- can also be used to determine the number of seconds between two Time instances.
   # We're layering on additional behavior so that ActiveSupport::TimeWithZone instances
   # are coerced into values that Time#- will recognize
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:313
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:317
   def minus_with_coercion(other); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:300
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:304
   def minus_with_duration(other); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:317
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:321
   def minus_without_coercion(other); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:307
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:311
   def minus_without_duration(_arg0); end
 
   # Returns a new time the specified number of days in the future.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:356
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:360
   def next_day(days = T.unsafe(nil)); end
 
   # Returns a new time the specified number of months in the future.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:366
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:370
   def next_month(months = T.unsafe(nil)); end
 
   # Returns a new time the specified number of years in the future.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:376
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:380
   def next_year(years = T.unsafe(nil)); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:243
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:247
   def noon; end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:290
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:294
   def plus_with_duration(other); end
 
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:297
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:301
   def plus_without_duration(_arg0); end
 
   # pkg:gem/activesupport#lib/active_support/core_ext/object/blank.rb:196
@@ -20760,17 +20775,17 @@ class Time
 
   # Returns a new time the specified number of days ago.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:351
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:355
   def prev_day(days = T.unsafe(nil)); end
 
   # Returns a new time the specified number of months ago.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:361
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:365
   def prev_month(months = T.unsafe(nil)); end
 
   # Returns a new time the specified number of years ago.
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:371
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:375
   def prev_year(years = T.unsafe(nil)); end
 
   # Aliased to +xmlschema+ for compatibility with +DateTime+
@@ -20782,7 +20797,7 @@ class Time
   #
   #   Time.new(2012, 8, 29, 0, 0, 0.5).sec_fraction # => (1/2)
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:107
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:110
   def sec_fraction; end
 
   # Returns the number of seconds since 00:00:00.
@@ -20791,7 +20806,7 @@ class Time
   #   Time.new(2012, 8, 29, 12, 34, 56).seconds_since_midnight # => 45296.0
   #   Time.new(2012, 8, 29, 23, 59, 59).seconds_since_midnight # => 86399.0
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:91
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:94
   def seconds_since_midnight; end
 
   # Returns the number of seconds until 23:59:59.
@@ -20800,12 +20815,12 @@ class Time
   #   Time.new(2012, 8, 29, 12, 34, 56).seconds_until_end_of_day # => 41103
   #   Time.new(2012, 8, 29, 23, 59, 59).seconds_until_end_of_day # => 0
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:100
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:103
   def seconds_until_end_of_day; end
 
   # Returns a new Time representing the time a number of seconds since the instance time
   #
-  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:225
+  # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:229
   def since(seconds); end
 
   # pkg:gem/activesupport#lib/active_support/core_ext/time/conversions.rb:62
@@ -20849,36 +20864,36 @@ class Time
   class << self
     # Overriding case equality method so that it returns true for ActiveSupport::TimeWithZone instances
     #
-    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:18
+    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:19
     def ===(other); end
 
-    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:60
+    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:61
     def at(time_or_number, *args, **); end
 
     # Layers additional behavior on Time.at so that ActiveSupport::TimeWithZone and DateTime
     # instances can be used when called with a single argument
     #
-    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:45
+    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:46
     def at_with_coercion(time_or_number, *args, **); end
 
-    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:59
+    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:60
     def at_without_coercion(time, subsec = T.unsafe(nil), unit = T.unsafe(nil), in: T.unsafe(nil)); end
 
     # Returns <tt>Time.zone.now</tt> when <tt>Time.zone</tt> or <tt>config.time_zone</tt> are set, otherwise just returns <tt>Time.now</tt>.
     #
-    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:39
+    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:40
     def current; end
 
     # Returns the number of days in the given month.
     # If no year is specified, it will use the current year.
     #
-    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:24
+    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:25
     def days_in_month(month, year = T.unsafe(nil)); end
 
     # Returns the number of days in the given year.
     # If no year is specified, it will use the current year.
     #
-    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:34
+    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:35
     def days_in_year(year = T.unsafe(nil)); end
 
     # Returns a TimeZone instance matching the time zone provided.
@@ -20913,7 +20928,7 @@ class Time
     #
     #   Time.rfc3339('1999-12-31') # => ArgumentError: invalid date
     #
-    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:69
+    # pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:72
     def rfc3339(str); end
 
     # Allows override of <tt>Time.zone</tt> locally inside supplied block;
@@ -20977,7 +20992,7 @@ class Time
   end
 end
 
-# pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:14
+# pkg:gem/activesupport#lib/active_support/core_ext/time/calculations.rb:15
 Time::COMMON_YEAR_DAYS_IN_MONTH = T.let(T.unsafe(nil), Array)
 
 # pkg:gem/activesupport#lib/active_support/core_ext/time/conversions.rb:8

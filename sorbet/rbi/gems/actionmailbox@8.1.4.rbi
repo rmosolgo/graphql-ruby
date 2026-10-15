@@ -154,7 +154,7 @@ end
 #
 #     private
 #       def ensure_sender_is_a_user
-#         unless User.exist?(email_address: mail.from)
+#         unless User.exists?(email_address: mail.from)
 #           bounce_with UserRequiredMailer.missing(inbound_email)
 #         end
 #       end
@@ -852,7 +852,7 @@ ActionMailbox::VERSION::MAJOR = T.let(T.unsafe(nil), Integer)
 ActionMailbox::VERSION::MINOR = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/actionmailbox#lib/action_mailbox/gem_version.rb:13
-ActionMailbox::VERSION::PRE = T.let(T.unsafe(nil), String)
+ActionMailbox::VERSION::PRE = T.let(T.unsafe(nil), T.untyped)
 
 # pkg:gem/actionmailbox#lib/action_mailbox/gem_version.rb:15
 ActionMailbox::VERSION::STRING = T.let(T.unsafe(nil), String)
