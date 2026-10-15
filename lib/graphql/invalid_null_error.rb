@@ -21,7 +21,7 @@ module GraphQL
 
     attr_accessor :path
 
-    def initialize(parent_type, field, ast_node_or_nodes, is_from_array: false, path: nil)
+    def initialize(parent_type, field, ast_node_or_nodes, is_from_array: false, path: nil, element_type: nil)
       @parent_type = parent_type
       @field = field
       @ast_nodes = Array(ast_node_or_nodes)
@@ -32,7 +32,8 @@ module GraphQL
       # whether it was caused by a null instead of the list or a
       # null element.
       if @is_from_array
-        super("Cannot return null for non-nullable element of type '#{@field.type.of_type.of_type.to_type_signature}' for #{@parent_type.graphql_name}.#{@field.graphql_name}")
+        element_type ||= @field.type.of_type.of_type
+        super("Cannot return null for non-nullable element of type '#{element_type.to_type_signature}' for #{@parent_type.graphql_name}.#{@field.graphql_name}")
       else
         super("Cannot return null for non-nullable field #{@parent_type.graphql_name}.#{@field.graphql_name}")
       end
