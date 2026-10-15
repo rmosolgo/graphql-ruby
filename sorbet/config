@@ -24,5 +24,6 @@
 --ignore=lib/graphql/tracing/appoptics_trace.rb
 --ignore=lib/graphql/tracing/appoptics_tracing.rb
 --parser=prism
+--enable-experimental-rbs-comments
 --suppress-payload-superclass-redefinition-for=Net::IMAP::Literal
 --suppress-payload-superclass-redefinition-for=Net::IMAP::QuotedString
