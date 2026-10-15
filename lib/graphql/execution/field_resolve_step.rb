@@ -25,6 +25,7 @@ module GraphQL
         @finish_extension_idx = nil
         @was_scoped = nil
         @pending_steps = nil
+        @field_authorization_objects = @field_authorization_results = nil
         @arguments_without_loads = @post_processors = @directive_finalizers = nil
       end
 
@@ -93,6 +94,8 @@ module GraphQL
           finish_extensions
         elsif @field_results
           build_results
+        elsif @field_authorization_results
+          finish_field_authorizations
         elsif @arguments
           execute_field
         else
@@ -242,50 +245,25 @@ module GraphQL
         end
 
         if @runner.authorizes?(@field_definition, ctx)
-          authorized_objects = []
-          authorized_results = []
-          l = objects.size
-          i = 0
-          while i < l
-            o = objects[i]
-            err = nil
-            begin
-              field_authed = @field_definition.authorized?(o, @arguments, ctx)
-              if @runner.resolves_lazies && @runner.lazy?(field_authed)
-                # TODO batch this properly...
-                field_authed = sync(field_authed)
-              end
-            rescue GraphQL::UnauthorizedFieldError => field_auth_err
-              err = field_auth_err
-              err.field ||= @field_definition
-              field_authed = false
-            end
-
-            if field_authed
-              authorized_results << @results[i]
-              authorized_objects << o
-            else
-              begin
-                err ||= GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
-                new_obj = query.schema.unauthorized_field(err)
-                if !new_obj.nil?
-                  authorized_objects << new_obj
-                  authorized_results << @results[i]
-                end
-              rescue GraphQL::ExecutionError => exec_err
-                add_graphql_error(@results[i], key, exec_err)
-              end
-            end
-            i += 1
-          end
-
-          if authorized_objects.size == 0
+          if objects.size > 1 && !@runner.dataloader.is_a?(GraphQL::Dataloader::NullDataloader)
+            # One job per object, so Dataloader sources loaded by `authorized?` batch across objects
+            enqueue_field_authorizations(objects, ctx)
             return
           end
-          @results = authorized_results
+          authorized_objects = collect_authorized_objects(objects, objects.map { |o| authorize_field_for(o, ctx) }, ctx)
+          return if authorized_objects.nil?
         else
           authorized_objects = objects
         end
+
+        execute_authorized_field(authorized_objects)
+      rescue StandardError => err
+        handle_execute_field_error(err)
+      end
+
+      def execute_authorized_field(authorized_objects)
+        query = @selections_step.query
+        ctx = query.context
 
         if @parent_type.default_relay? && SCOPED_RELAY_FIELD_NAMES.include?(@field_definition.original_name) && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
           @was_scoped = true
@@ -377,14 +355,102 @@ module GraphQL
             build_results
           end
         end
-      rescue GraphQL::ExecutionError => err
-        build_errors_result(nil, err)
-      rescue StandardError => stderr
-        begin
-          @selections_step.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
-        rescue GraphQL::ExecutionError => err
-          add_graphql_error(@results[0], key, err)
+      rescue StandardError => err
+        handle_execute_field_error(err)
+      end
+
+      def handle_execute_field_error(err)
+        if err.is_a?(GraphQL::ExecutionError)
+          build_errors_result(nil, err)
+        else
+          begin
+            @selections_step.query.handle_or_reraise(err, field: @field_definition, arguments: @arguments, object: nil)
+          rescue GraphQL::ExecutionError => exec_err
+            add_graphql_error(@results[0], key, exec_err)
+          end
         end
+      end
+
+      # @return [Array(Object, GraphQL::UnauthorizedFieldError, nil)] the (possibly synced) `authorized?` result, and the error it raised, if any
+      def authorize_field_for(object, ctx)
+        field_authed = @field_definition.authorized?(object, @arguments, ctx)
+        if @runner.resolves_lazies && @runner.lazy?(field_authed)
+          field_authed = sync(field_authed)
+        end
+        [field_authed, nil]
+      rescue GraphQL::UnauthorizedFieldError => field_auth_err
+        field_auth_err.field ||= @field_definition
+        [false, field_auth_err]
+      end
+
+      def enqueue_field_authorizations(objects, ctx)
+        auth_results = Array.new(objects.size)
+        @field_authorization_objects = objects
+        @field_authorization_results = auth_results
+        pending_count = objects.size
+        objects.each_with_index do |object, idx|
+          @runner.dataloader.append_job {
+            begin
+              set_current_field
+              auth_results[idx] = authorize_field_for(object, ctx)
+            rescue StandardError => err
+              auth_results[idx] = err
+            ensure
+              set_current_field(nil)
+            end
+            pending_count -= 1
+            if pending_count == 0
+              @runner.add_step(self)
+            end
+          }
+        end
+        nil
+      end
+
+      def finish_field_authorizations
+        objects = @field_authorization_objects
+        auth_results = @field_authorization_results
+        @field_authorization_objects = @field_authorization_results = nil
+        if (raised_err = auth_results.find { |r| r.is_a?(StandardError) })
+          raise raised_err
+        end
+        authorized_objects = collect_authorized_objects(objects, auth_results, @selections_step.query.context)
+        if authorized_objects
+          execute_authorized_field(authorized_objects)
+        end
+      rescue StandardError => err
+        handle_execute_field_error(err)
+      end
+
+      # Applies `unauthorized_field` for denied objects, in object order.
+      # @return [Array, nil] the objects to resolve, or `nil` if none are left
+      def collect_authorized_objects(objects, auth_results, ctx)
+        authorized_objects = []
+        authorized_results = []
+        objects.each_with_index do |o, i|
+          field_authed, err = auth_results[i]
+          if field_authed
+            authorized_results << @results[i]
+            authorized_objects << o
+          else
+            begin
+              err ||= GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
+              new_obj = ctx.schema.unauthorized_field(err)
+              if !new_obj.nil?
+                authorized_objects << new_obj
+                authorized_results << @results[i]
+              end
+            rescue GraphQL::ExecutionError => exec_err
+              add_graphql_error(@results[i], key, exec_err)
+            end
+          end
+        end
+
+        if authorized_objects.size == 0
+          return nil
+        end
+        @results = authorized_results
+        authorized_objects
       end
 
       def any_lazy_results?
