@@ -419,8 +419,6 @@
 
         <li ><a href="#method-c-parse_with_racc">parse_with_racc</a></li>
 
-        <li ><a href="#method-c-scan">scan</a></li>
-
         <li ><a href="#method-c-scan_with_ruby">scan_with_ruby</a></li>
 
       </ul>
@@ -582,7 +580,7 @@
 
 
           <div class="method-source-code" id="default_parser-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 50</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 52</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_parser</span>
   <span class="ruby-ivar">@default_parser</span> ||= <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Parser</span>
 <span class="ruby-keyword">end</span></pre>
@@ -624,6 +622,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() &rarr; void</code></pre>
+
           </div>
 
 
@@ -637,7 +637,7 @@
 
 
           <div class="method-source-code" id="eager_load-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 19</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">eager_load!</span>
   <span class="ruby-keyword">super</span>
   <span class="ruby-constant">Query</span>.<span class="ruby-identifier">eager_load!</span>
@@ -687,6 +687,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="GraphQL/Types/String.html" class="rbs-type">String</a>, ?trace: <a href="GraphQL/Tracing/Trace.html" class="rbs-type">GraphQL::Tracing::Trace</a>, ?filename: <a href="GraphQL/Types/String.html" class="rbs-type">String</a>?, ?max_tokens: Integer?) &rarr; <a href="GraphQL/Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a></code></pre>
+
           </div>
 
 
@@ -700,7 +702,7 @@
 
 
           <div class="method-source-code" id="parse-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 69</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 72</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">graphql_string</span>, <span class="ruby-value">trace:</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Tracing</span><span class="ruby-operator">::</span><span class="ruby-constant">NullTrace</span>, <span class="ruby-value">filename:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">max_tokens:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">default_parser</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">graphql_string</span>, <span class="ruby-value">trace</span><span class="ruby-value">:</span> <span class="ruby-identifier">trace</span>, <span class="ruby-value">filename</span><span class="ruby-value">:</span> <span class="ruby-identifier">filename</span>, <span class="ruby-value">max_tokens</span><span class="ruby-value">:</span> <span class="ruby-identifier">max_tokens</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -750,6 +752,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="GraphQL/Types/String.html" class="rbs-type">String</a>) &rarr; <a href="GraphQL/Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a></code></pre>
+
           </div>
 
 
@@ -763,7 +767,7 @@
 
 
           <div class="method-source-code" id="parse_file-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 85</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 89</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">parse_file</span>(<span class="ruby-identifier">filename</span>)
   <span class="ruby-identifier">content</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">read</span>(<span class="ruby-identifier">filename</span>)
   <span class="ruby-identifier">default_parser</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">content</span>, <span class="ruby-value">filename</span><span class="ruby-value">:</span> <span class="ruby-identifier">filename</span>)
@@ -824,7 +828,7 @@
 
 
           <div class="method-source-code" id="parse_with_racc-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 100</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 94</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">parse_with_racc</span>(<span class="ruby-identifier">string</span>, <span class="ruby-value">filename:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">trace:</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Tracing</span><span class="ruby-operator">::</span><span class="ruby-constant">NullTrace</span>)
   <span class="ruby-identifier">warn</span> <span class="ruby-string">&quot;</span><span class="ruby-string">`GraphQL.parse_with_racc` is deprecated; GraphQL-Ruby no longer uses racc for parsing. Call `GraphQL.parse` or `GraphQL::Language::Parser.parse` instead.</span><span class="ruby-string">&quot;</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Parser</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">string</span>, <span class="ruby-value">filename</span><span class="ruby-value">:</span> <span class="ruby-identifier">filename</span>, <span class="ruby-value">trace</span><span class="ruby-value">:</span> <span class="ruby-identifier">trace</span>)
@@ -837,62 +841,6 @@
 
 
           
-
-
-        </div>
-
-
-
-
-
-      </div>
-
-
-      <span id="scan-class_method" class="legacy-anchor"></span>
-<div id="method-c-scan" class="method-detail anchor-link ">
-        <div class="method-header">
-          <div class="method-heading-group">
-
-
-                <div class="method-heading">
-                  <a href="#method-c-scan" title="Link to this method">
-                    <span class="method-callseq">
-                      scan(graphql_string) &rarr; Array[Array]
-                    </span>
-                  </a>
-                </div>
-
-
-
-
-          </div>
-
-
-            <div class="method-controls">
-              <details class="method-source-toggle">
-                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
-              </details>
-            </div>
-
-        </div>
-
-
-          <div class="method-source-code" id="scan-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 96</span>
-<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">scan</span>(<span class="ruby-identifier">graphql_string</span>)
-  <span class="ruby-identifier">default_parser</span>.<span class="ruby-identifier">scan</span>(<span class="ruby-identifier">graphql_string</span>)
-<span class="ruby-keyword">end</span></pre>
-          </div>
-
-
-
-        <div class="method-description">
-
-
-          <p><strong>Returns</strong></p>
-<ul><li>
-<p><code>Array&lt;Array&gt;</code></p>
-</li></ul>
 
 
         </div>
@@ -931,7 +879,7 @@
 
 
           <div class="method-source-code" id="scan_with_ruby-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 105</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql.rb, line 99</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">scan_with_ruby</span>(<span class="ruby-identifier">graphql_string</span>)
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Lexer</span>.<span class="ruby-identifier">tokenize</span>(<span class="ruby-identifier">graphql_string</span>)
 <span class="ruby-keyword">end</span></pre>
