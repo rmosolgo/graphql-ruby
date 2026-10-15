@@ -371,7 +371,7 @@ module GraphQL
         end
       end
 
-      # @return [Array(Object, GraphQL::UnauthorizedFieldError, nil)] the (possibly synced) `authorized?` result, and the error it raised, if any
+      # Returns the (possibly synced) +authorized?+ result and the GraphQL::UnauthorizedFieldError it raised, if any
       def authorize_field_for(object, ctx)
         field_authed = @field_definition.authorized?(object, @arguments, ctx)
         if @runner.resolves_lazies && @runner.lazy?(field_authed)
@@ -422,8 +422,8 @@ module GraphQL
         handle_execute_field_error(err)
       end
 
-      # Applies `unauthorized_field` for denied objects, in object order.
-      # @return [Array, nil] the objects to resolve, or `nil` if none are left
+      # Applies +unauthorized_field+ for denied objects, in object order.
+      # Returns the objects to resolve, or +nil+ if none are left.
       def collect_authorized_objects(objects, auth_results, ctx)
         authorized_objects = []
         authorized_results = []
