@@ -127,6 +127,59 @@ describe GraphQL::Analysis::MaxQueryComplexity do
     end
   end
 
+  describe "count_introspection_fields: false on connections" do
+    class IntrospectionConnectionSchema < GraphQL::Schema
+      class Item < GraphQL::Schema::Object
+        field :id, Integer, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :items, Item.connection_type, null: false, max_page_size: 100
+      end
+
+      query(Query)
+      complexity_cost_calculation_mode(:future)
+    end
+
+    def complexity_of(query_str, count_introspection_fields:)
+      schema = Class.new(IntrospectionConnectionSchema) do
+        max_complexity 10_000, count_introspection_fields: count_introspection_fields
+      end
+      GraphQL::Analysis.analyze_query(
+        GraphQL::Query.new(schema, query_str),
+        [GraphQL::Analysis::QueryComplexity]
+      ).first
+    end
+
+    [
+      "nodes { id }",
+      "edges { node { id } }",
+      "nodes { id } pageInfo { hasNextPage }",
+    ].each do |selections|
+      it "doesn't lower the complexity of `#{selections}` when __typename is added" do
+        base = "{ items(first: 25) { #{selections} } }"
+        baseline = complexity_of(base, count_introspection_fields: false)
+
+        with_typename = [
+          "{ items(first: 25) { __typename #{selections} } }",
+          "{ items(first: 25) { #{selections} __typename } }",
+          "{ items(first: 25) { #{selections.sub("nodes {", "nodes { __typename").sub("node {", "node { __typename")} } }",
+        ]
+        with_typename << "{ items(first: 25) { #{selections.sub("pageInfo {", "pageInfo { __typename")} } }" if selections.include?("pageInfo")
+
+        with_typename.each do |q|
+          assert_equal baseline, complexity_of(q, count_introspection_fields: false), "#{q} should cost the same as #{base}"
+        end
+      end
+    end
+
+    it "still counts __typename on connections when count_introspection_fields is true" do
+      without = complexity_of("{ items(first: 25) { nodes { id } } }", count_introspection_fields: true)
+      with = complexity_of("{ items(first: 25) { __typename nodes { id } } }", count_introspection_fields: true)
+      assert_equal without + 1, with
+    end
+  end
+
   describe "across a multiplex" do
     before do
       schema.analysis_engine = GraphQL::Analysis::AST
