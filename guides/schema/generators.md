@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-title: Generators
-section: Schema
-desc: Use Rails generators to install GraphQL and scaffold new types.
-index: 3
----
+# Generators
 
 If you're using GraphQL with Ruby on Rails, you can use generators to:
 
@@ -33,7 +25,7 @@ This will:
 - Add a `Mutation` type definition with a base mutation class
 - Add a route and controller for executing queries
 - Install [`graphiql-rails`](https://github.com/rmosolgo/graphiql-rails)
-- Enable [`ActiveRecord::QueryLogs`](https://api.rubyonrails.org/classes/ActiveRecord/QueryLogs.html) and add GraphQL-related metadata (using {{ "GraphQL::Current" | api_doc }})
+- Enable [`ActiveRecord::QueryLogs`](https://api.rubyonrails.org/classes/ActiveRecord/QueryLogs.html) and add GraphQL-related metadata (using [GraphQL::Current](rdoc-ref:GraphQL::Current))
 
 After installing you can see your new schema by:
 

@@ -1,13 +1,22 @@
 # frozen_string_literal: true
 
 module GraphQL
-  # @see GraphQL::Railtie for automatic Rails integration
+  # See [GraphQL::Railtie](rdoc-ref:GraphQL::Railtie) for automatic Rails integration
   module Autoload
     # Register a constant named `const_name` to be loaded from `path`.
-    # This is like `Kernel#autoload` but it tracks the constants so they can be eager-loaded with {#eager_load!}
-    # @param const_name [Symbol]
-    # @param path [String]
-    # @return [void]
+    # This is like `Kernel#autoload` but it tracks the constants so they can be eager-loaded with [eager load!](rdoc-ref:#eager_load!)
+    #
+    # **Parameters**
+    #
+    # - `const_name` (`Symbol`)
+    # - `path` (`String`)
+    #
+    # **Returns**
+    #
+    # - `void`
+    #
+    # :call-seq:
+    #   autoload(Symbol const_name, String path) -> void
     def autoload(const_name, path)
       @_eagerloaded_constants ||= []
       @_eagerloaded_constants << const_name
@@ -16,7 +25,13 @@ module GraphQL
     end
 
     # Call this to load this constant's `autoload` dependents and continue calling recursively
-    # @return [void]
+    #
+    # **Returns**
+    #
+    # - `void`
+    #
+    # :call-seq:
+    #   eager_load!() -> void
     def eager_load!
       @_eager_loading = true
       if @_eagerloaded_constants
@@ -30,7 +45,12 @@ module GraphQL
 
     private
 
-    # @return [Boolean] `true` if GraphQL-Ruby is currently eager-loading its constants
+    # **Returns**
+    #
+    # - `Boolean` — `true` if GraphQL-Ruby is currently eager-loading its constants
+    #
+    # :call-seq:
+    #   eager_loading?() -> bool
     def eager_loading?
       @_eager_loading ||= false
     end

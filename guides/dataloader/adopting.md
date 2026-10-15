@@ -1,13 +1,6 @@
----
-layout: guide
-search: true
-section: Dataloader
-title: Dataloader vs. GraphQL-Batch
-desc: Comparing and Contrasting Batch Loading Options
-index: 3
----
+# Dataloader vs. GraphQL-Batch
 
-{{ "GraphQL::Dataloader" | api_doc }} solves the same problem as [`GraphQL::Batch`](https://github.com/shopify/graphql-batch). There are a few major differences between the modules:
+[GraphQL::Dataloader](rdoc-ref:GraphQL::Dataloader) solves the same problem as [`GraphQL::Batch`](https://github.com/shopify/graphql-batch). There are a few major differences between the modules:
 
 
 - __Concurrency Primitive:__ GraphQL-Batch uses `Promise`s from [`promise.rb`](https://github.com/lgierth/promise.rb); GraphQL::Dataloader uses Ruby's [`Fiber` API](https://ruby-doc.org/core-3.0.0/Fiber.html). These primitives dictate how batch loading code is written (see below for comparisons).

@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: GraphQL Pro
-title: Privacy
-desc: Privacy Policy for GraphQL::Pro
-index: 7
----
+# Privacy
 
 The following statement describes what data GraphQL::Pro collects during normal operation and how that data is used.
 

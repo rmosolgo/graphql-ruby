@@ -76,7 +76,12 @@ module GraphQL
 
       private
 
-      # @return [Array<Integer>] Byte offsets of each line break in the original string
+      # **Returns**
+      #
+      # - `Array<Integer>` — Byte offsets of each line break in the original string
+      #
+      # :call-seq:
+      #   lines_at() -> Array[Integer]
       def lines_at
         @lines_at ||= begin
           graphql_str = @graphql_str.b

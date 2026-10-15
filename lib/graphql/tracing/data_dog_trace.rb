@@ -4,12 +4,22 @@ require "graphql/tracing/monitor_trace"
 module GraphQL
   module Tracing
     # A tracer for reporting to DataDog
-    # @example Adding this tracer to your schema
-    #   class MySchema < GraphQL::Schema
-    #     trace_with GraphQL::Tracing::DataDogTrace
-    #   end
-    # @example Skipping `resolve_type` and `authorized` events
-    #   trace_with GraphQL::Tracing::DataDogTrace, trace_authorized: false, trace_resolve_type: false
+    #
+    # **Examples**
+    #
+    # **Example: Adding this tracer to your schema**
+    #
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   trace_with GraphQL::Tracing::DataDogTrace
+    # end
+    # ```
+    #
+    # **Example: Skipping `resolve_type` and `authorized` events**
+    #
+    # ```ruby
+    # trace_with GraphQL::Tracing::DataDogTrace, trace_authorized: false, trace_resolve_type: false
+    # ```
     DataDogTrace = MonitorTrace.create_module("datadog")
     module DataDogTrace
       class DatadogMonitor < MonitorTrace::Monitor

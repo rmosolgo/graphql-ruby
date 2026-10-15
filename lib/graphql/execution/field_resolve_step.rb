@@ -2,6 +2,10 @@
 module GraphQL
   module Execution
     class FieldResolveStep
+      # Only these built-in fields on Relay connection and edge types return already-scoped items.
+      # Custom fields on those types must still be authorized normally.
+      SCOPED_RELAY_FIELD_NAMES = [:node, :nodes, :edges].freeze
+
       def initialize(parent_type:, runner:, key:, selections_step:)
         @selections_step = selections_step
         @key = key
@@ -283,7 +287,7 @@ module GraphQL
           authorized_objects = objects
         end
 
-        if @parent_type.default_relay? && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
+        if @parent_type.default_relay? && SCOPED_RELAY_FIELD_NAMES.include?(@field_definition.original_name) && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
           @was_scoped = true
         end
 

@@ -1,13 +1,4 @@
----
-layout: guide
-search: true
-section: Authorization
-title: CanCan Integration
-desc: Hook up GraphQL to CanCan abilities
-index: 4
-pro: true
----
-
+# CanCan Integration
 
 [GraphQL::Pro](https://graphql.pro) includes an integration for powering GraphQL authorization with [CanCan](https://github.com/CanCanCommunity/cancancan).
 
@@ -82,13 +73,13 @@ end
 
 ### Handling Unauthorized Objects
 
-When any CanCan check returns `false`, the unauthorized object is passed to {{ "Schema.unauthorized_object" | api_doc }}, as described in {% internal_link "Handling unauthorized objects", "/authorization/authorization#handling-unauthorized-objects" %}.
+When any CanCan check returns `false`, the unauthorized object is passed to [Schema.unauthorized_object](rdoc-ref:GraphQL::Schema.unauthorized_object), as described in [Handling unauthorized objects](/authorization/authorization#handling-unauthorized-objects).
 
 ## Scopes
 
 #### ActiveRecord::Relation
 
-The CanCan integration adds [CanCan's `.accessible_by`](https://github.com/cancancommunity/cancancan/wiki/Fetching-Records) to GraphQL-Ruby's {% internal_link "list scoping", "/authorization/scoping" %}
+The CanCan integration adds [CanCan's `.accessible_by`](https://github.com/cancancommunity/cancancan/wiki/Fetching-Records) to GraphQL-Ruby's [list scoping](/authorization/scoping)
 
 To scope lists of interface or union type, include the integration in your base union class and base interface module _and_ set a base `can_can_action`, if desired:
 
@@ -193,7 +184,7 @@ class Types::BaseField
 end
 ```
 
-(See {{ "GraphQL::Schema::Field" | api_doc }} for the different values available for defaults.)
+(See [GraphQL::Schema::Field](rdoc-ref:GraphQL::Schema::Field) for the different values available for defaults.)
 
 ### Providing a Custom CanCan Subject
 
@@ -339,7 +330,7 @@ The method is called with:
 
 Since it's a mutation method, you can also access `context` in that method.
 
-Whatever that method returns will be treated as an early return value for the mutation, so for example, you could return {% internal_link "errors as data", "/mutations/mutation_errors" %}:
+Whatever that method returns will be treated as an early return value for the mutation, so for example, you could return [errors as data](/mutations/mutation_errors):
 
 ```ruby
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation

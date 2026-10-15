@@ -9,38 +9,43 @@ module GraphQL
       # You may wish to copy this code into your own base class,
       # so you can extend your own `BaseObject` instead of `GraphQL::Schema::Object`.
       #
-      # @example Implementation a connection and edge
-      #   class BaseObject < GraphQL::Schema::Object; end
+      # See [Relay::BaseEdge](rdoc-ref:Relay::BaseEdge) for edge types
       #
-      #   # Given some object in your app ...
-      #   class Types::Post < BaseObject
-      #   end
+      # **Examples**
       #
-      #   # Make a couple of base classes:
-      #   class Types::BaseEdge < GraphQL::Types::Relay::BaseEdge; end
-      #   class Types::BaseConnection < GraphQL::Types::Relay::BaseConnection; end
+      # **Example: Implementation a connection and edge**
       #
-      #   # Then extend them for the object in your app
-      #   class Types::PostEdge < Types::BaseEdge
-      #     node_type Types::Post
-      #   end
+      # ```ruby
+      # class BaseObject < GraphQL::Schema::Object; end
       #
-      #   class Types::PostConnection < Types::BaseConnection
-      #     edge_type Types::PostEdge,
-      #               edges_nullable: true,
-      #               edge_nullable: true,
-      #               node_nullable: true,
-      #               nodes_field: true
+      # # Given some object in your app ...
+      # class Types::Post < BaseObject
+      # end
       #
-      #     # Alternatively, you can call the class methods followed by your edge type
-      #     # edges_nullable true
-      #     # edge_nullable true
-      #     # node_nullable true
-      #     # has_nodes_field true
-      #     # edge_type Types::PostEdge
-      #   end
+      # # Make a couple of base classes:
+      # class Types::BaseEdge < GraphQL::Types::Relay::BaseEdge; end
+      # class Types::BaseConnection < GraphQL::Types::Relay::BaseConnection; end
       #
-      # @see Relay::BaseEdge for edge types
+      # # Then extend them for the object in your app
+      # class Types::PostEdge < Types::BaseEdge
+      #   node_type Types::Post
+      # end
+      #
+      # class Types::PostConnection < Types::BaseConnection
+      #   edge_type Types::PostEdge,
+      #             edges_nullable: true,
+      #             edge_nullable: true,
+      #             node_nullable: true,
+      #             nodes_field: true
+      #
+      #   # Alternatively, you can call the class methods followed by your edge type
+      #   # edges_nullable true
+      #   # edge_nullable true
+      #   # node_nullable true
+      #   # has_nodes_field true
+      #   # edge_type Types::PostEdge
+      # end
+      # ```
       class BaseConnection < Schema::Object
         include ConnectionBehaviors
       end

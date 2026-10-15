@@ -7,18 +7,22 @@ module GraphQL
     # By default, GraphQL enum values are translated into Ruby strings.
     # You can provide a custom value with the `value:` keyword.
     #
-    # @example
-    #   # equivalent to
-    #   # enum PizzaTopping {
-    #   #   MUSHROOMS
-    #   #   ONIONS
-    #   #   PEPPERS
-    #   # }
-    #   class PizzaTopping < GraphQL::Schema::Enum
-    #     value :MUSHROOMS
-    #     value :ONIONS
-    #     value :PEPPERS
-    #   end
+    # **Examples**
+    #
+    # **Example: # equivalent to**
+    #
+    # ```ruby
+    # # enum PizzaTopping {
+    # #   MUSHROOMS
+    # #   ONIONS
+    # #   PEPPERS
+    # # }
+    # class PizzaTopping < GraphQL::Schema::Enum
+    #   value :MUSHROOMS
+    #   value :ONIONS
+    #   value :PEPPERS
+    # end
+    # ```
     class Enum < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::ValidatesInput
 
@@ -29,7 +33,7 @@ module GraphQL
       #
       # In either case, the field should be modified so that the invalid value isn't returned.
       #
-      # {GraphQL::Schema::Enum} subclasses get their own subclass of this error, so that bug trackers can better show where they came from.
+      # [GraphQL::Schema::Enum](rdoc-ref:GraphQL::Schema::Enum) subclasses get their own subclass of this error, so that bug trackers can better show where they came from.
       class UnresolvedValueError < GraphQL::Error
         def initialize(value:, enum:, context:, authorized:)
           fix_message = if authorized == false
@@ -46,7 +50,7 @@ module GraphQL
         end
       end
 
-      # Raised when a {GraphQL::Schema::Enum} is defined to have no values.
+      # Raised when a [GraphQL::Schema::Enum](rdoc-ref:GraphQL::Schema::Enum) is defined to have no values.
       # This can also happen when all values return false for `.visible?`.
       class MissingValuesError < GraphQL::Error
         def initialize(enum_type)
@@ -57,15 +61,27 @@ module GraphQL
 
       class << self
         # Define a value for this enum
-        # @option kwargs [String, Symbol] :graphql_name the GraphQL value for this, usually `SCREAMING_CASE`
-        # @option kwargs [String] :description, the GraphQL description for this value, present in documentation
-        # @option kwargs [String] :comment, the GraphQL comment for this value, present in documentation
-        # @option kwargs [::Object] :value the translated Ruby value for this object (defaults to `graphql_name`)
-        # @option kwargs [::Object] :value_method, the method name to fetch `graphql_name` (defaults to `graphql_name.downcase`)
-        # @option kwargs [String] :deprecation_reason if this object is deprecated, include a message here
-        # @param value_method [Symbol, false] A method to generate for this value, or `false` to skip generation
-        # @return [void]
-        # @see {Schema::EnumValue} which handles these inputs by default
+        # See [Schema::EnumValue](rdoc-ref:Schema::EnumValue) which handles these inputs by default
+        #
+        # **Options**
+        #
+        # - `kwargs.:graphql_name` (`String, Symbol`) — the GraphQL value for this, usually `SCREAMING_CASE`
+        # - `kwargs.:description,` (`String`) — the GraphQL description for this value, present in documentation
+        # - `kwargs.:comment,` (`String`) — the GraphQL comment for this value, present in documentation
+        # - `kwargs.:value` (`::Object`) — the translated Ruby value for this object (defaults to `graphql_name`)
+        # - `kwargs.:value_method,` (`::Object`) — the method name to fetch `graphql_name` (defaults to `graphql_name.downcase`)
+        # - `kwargs.:deprecation_reason` (`String`) — if this object is deprecated, include a message here
+        #
+        # **Parameters**
+        #
+        # - `value_method` (`Symbol, false`) — A method to generate for this value, or `false` to skip generation
+        #
+        # **Returns**
+        #
+        # - `void`
+        #
+        # :call-seq:
+        #   value(*args, Symbol | false value_method:, **kwargs, &block) -> void
         def value(*args, value_method: nil, **kwargs, &block)
           kwargs[:owner] = self
           value = enum_value_class.new(*args, **kwargs, &block)
@@ -89,7 +105,12 @@ module GraphQL
           value
         end
 
-        # @return [Array<GraphQL::Schema::EnumValue>] Possible values of this enum
+        # **Returns**
+        #
+        # - `Array<GraphQL::Schema::EnumValue>` — Possible values of this enum
+        #
+        # :call-seq:
+        #   enum_values(context:) -> Array[GraphQL::Schema::EnumValue]
         def enum_values(context = GraphQL::Query::NullContext.instance)
           inherited_values = superclass.respond_to?(:enum_values) ? superclass.enum_values(context) : nil
           visible_values = []
@@ -126,7 +147,12 @@ module GraphQL
           visible_values
         end
 
-        # @return [Array<Schema::EnumValue>] An unfiltered list of all definitions
+        # **Returns**
+        #
+        # - `Array<Schema::EnumValue>` — An unfiltered list of all definitions
+        #
+        # :call-seq:
+        #   all_enum_value_definitions() -> Array[Schema::EnumValue]
         def all_enum_value_definitions
           all_defns = if superclass.respond_to?(:all_enum_value_definitions)
             superclass.all_enum_value_definitions
@@ -145,12 +171,22 @@ module GraphQL
           all_defns
         end
 
-        # @return [Hash<String => GraphQL::Schema::EnumValue>] Possible values of this enum, keyed by name.
+        # **Returns**
+        #
+        # - `Hash<String => GraphQL::Schema::EnumValue>` — Possible values of this enum, keyed by name.
+        #
+        # :call-seq:
+        #   values(context:) -> Hash[String, GraphQL::Schema::EnumValue]
         def values(context = GraphQL::Query::NullContext.instance)
           enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }
         end
 
-        # @return [Class] for handling `value(...)` inputs and building `GraphQL::Enum::EnumValue`s out of them
+        # **Returns**
+        #
+        # - `Class` — for handling `value(...)` inputs and building `GraphQL::Enum::EnumValue`s out of them
+        #
+        # :call-seq:
+        #   enum_value_class(new_enum_value_class) -> Class
         def enum_value_class(new_enum_value_class = nil)
           if new_enum_value_class
             @enum_value_class = new_enum_value_class
@@ -191,11 +227,23 @@ module GraphQL
         end
 
         # Called by the runtime when a field returns a value to give back to the client.
-        # This method checks that the incoming {value} matches one of the enum's defined values.
-        # @param value [Object] Any value matching the values for this enum.
-        # @param ctx [GraphQL::Query::Context]
-        # @raise [GraphQL::Schema::Enum::UnresolvedValueError] if {value} doesn't match a configured value or if the matching value isn't authorized.
-        # @return [String] The GraphQL-ready string for {value}
+        # This method checks that the incoming [value](rdoc-ref:value) matches one of the enum's defined values.
+        #
+        # **Parameters**
+        #
+        # - `value` (`Object`) — Any value matching the values for this enum.
+        # - `ctx` (`GraphQL::Query::Context`)
+        #
+        # **Raises**
+        #
+        # - `GraphQL::Schema::Enum::UnresolvedValueError` — if [value](rdoc-ref:value) doesn't match a configured value or if the matching value isn't authorized.
+        #
+        # **Returns**
+        #
+        # - `String` — The GraphQL-ready string for [value](rdoc-ref:value)
+        #
+        # :call-seq:
+        #   coerce_result(Object value, GraphQL::Query::Context ctx) -> String
         def coerce_result(value, ctx)
           types = ctx.types
           all_values = types ? types.enum_values(self) : values.each_value
@@ -209,10 +257,22 @@ module GraphQL
 
         # Called by the runtime with incoming string representations from a query.
         # It will match the string to a configured by name or by Ruby value.
-        # @param value_name [String, Object] A string from a GraphQL query, or a Ruby value matching a `value(..., value: ...)` configuration
-        # @param ctx [GraphQL::Query::Context]
-        # @raise [GraphQL::UnauthorizedEnumValueError] if an {EnumValue} matches but returns false for `.authorized?`. Goes to {Schema.unauthorized_object}.
-        # @return [Object] The Ruby value for the matched {GraphQL::Schema::EnumValue}
+        #
+        # **Parameters**
+        #
+        # - `value_name` (`String, Object`) — A string from a GraphQL query, or a Ruby value matching a `value(..., value: ...)` configuration
+        # - `ctx` (`GraphQL::Query::Context`)
+        #
+        # **Raises**
+        #
+        # - `GraphQL::UnauthorizedEnumValueError` — if an [EnumValue](rdoc-ref:EnumValue) matches but returns false for `.authorized?`. Goes to [Schema.unauthorized_object](rdoc-ref:Schema.unauthorized_object).
+        #
+        # **Returns**
+        #
+        # - `Object` — The Ruby value for the matched [GraphQL::Schema::EnumValue](rdoc-ref:GraphQL::Schema::EnumValue)
+        #
+        # :call-seq:
+        #   coerce_input(String | Object value_name, GraphQL::Query::Context ctx) -> Object
         def coerce_input(value_name, ctx)
           all_values = ctx.types ? ctx.types.enum_values(self) : values.each_value
 

@@ -14,28 +14,39 @@ module GraphQL
           cls.extend(ClassConfigured)
         end
 
-        # @param arg_name [Symbol] The underscore-cased name of this argument, `name:` keyword also accepted
-        # @param type_expr The GraphQL type of this argument; `type:` keyword also accepted
-        # @param desc [String] Argument description, `description:` keyword also accepted
-        # @option kwargs [Boolean, :nullable] :required if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
-        # @option kwargs [String] :description Positional argument also accepted
-        # @option kwargs [Class, Array<Class>] :type Input type; positional argument also accepted
-        # @option kwargs [Symbol] :name positional argument also accepted
-        # @option kwargs [Object] :default_value
-        # @option kwargs [Class, Array<Class>] :loads A GraphQL type to load for the given ID when one is present
-        # @option kwargs [Symbol] :as Override the keyword name when passed to a method
-        # @option kwargs [Symbol] :prepare A method to call to transform this argument's valuebefore sending it to field resolution
-        # @option kwargs [Boolean] :camelize if true, the name will be camelized when building the schema
-        # @option kwargs [Boolean] :from_resolver if true, a Resolver class defined this argument
-        # @option kwargs [Hash{Class => Hash}] :directives
-        # @option kwargs [String] :deprecation_reason
-        # @option kwargs [String] :comment Private, used by GraphQL-Ruby when parsing GraphQL schema files
-        # @option kwargs [GraphQL::Language::Nodes::InputValueDefinition] :ast_node Private, used by GraphQL-Ruby when parsing schema files
-        # @option kwargs [Hash, nil] :validates Options for building validators, if any should be applied
-        # @option kwargs [Boolean] :replace_null_with_default if `true`, incoming values of `null` will be replaced with the configured `default_value`
-        # @param definition_block [Proc] Called with the newly-created {Argument}
-        # @param kwargs [Hash] Keywords for defining an argument. Any keywords not documented here must be handled by your base Argument class.
-        # @return [GraphQL::Schema::Argument] An instance of {argument_class} created from these arguments
+        # **Parameters**
+        #
+        # - `arg_name` (`Symbol`) — The underscore-cased name of this argument, `name:` keyword also accepted
+        # - `type_expr` — The GraphQL type of this argument; `type:` keyword also accepted
+        # - `desc` (`String`) — Argument description, `description:` keyword also accepted
+        # - `definition_block` (`Proc`) — Called with the newly-created [Argument](rdoc-ref:Argument)
+        # - `kwargs` (`Hash`) — Keywords for defining an argument. Any keywords not documented here must be handled by your base Argument class.
+        #
+        # **Options**
+        #
+        # - `kwargs.:required` (`Boolean, :nullable`) — if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
+        # - `kwargs.:description` (`String`) — Positional argument also accepted
+        # - `kwargs.:type` (`Class, Array<Class>`) — Input type; positional argument also accepted
+        # - `kwargs.:name` (`Symbol`) — positional argument also accepted
+        # - `kwargs.:default_value` (`Object`)
+        # - `kwargs.:loads` (`Class, Array<Class>`) — A GraphQL type to load for the given ID when one is present
+        # - `kwargs.:as` (`Symbol`) — Override the keyword name when passed to a method
+        # - `kwargs.:prepare` (`Symbol`) — A method to call to transform this argument's valuebefore sending it to field resolution
+        # - `kwargs.:camelize` (`Boolean`) — if true, the name will be camelized when building the schema
+        # - `kwargs.:from_resolver` (`Boolean`) — if true, a Resolver class defined this argument
+        # - `kwargs.:directives` (`Hash{Class => Hash}`)
+        # - `kwargs.:deprecation_reason` (`String`)
+        # - `kwargs.:comment` (`String`) — Private, used by GraphQL-Ruby when parsing GraphQL schema files
+        # - `kwargs.:ast_node` (`GraphQL::Language::Nodes::InputValueDefinition`) — Private, used by GraphQL-Ruby when parsing schema files
+        # - `kwargs.:validates` (`Hash, nil`) — Options for building validators, if any should be applied
+        # - `kwargs.:replace_null_with_default` (`Boolean`) — if `true`, incoming values of `null` will be replaced with the configured `default_value`
+        #
+        # **Returns**
+        #
+        # - `GraphQL::Schema::Argument` — An instance of [argument_class](rdoc-ref:argument_class) created from these arguments
+        #
+        # :call-seq:
+        #   argument(Symbol arg_name, type_expr, String desc, Hash **kwargs, Proc &definition_block) -> GraphQL::Schema::Argument
         def argument(arg_name = nil, type_expr = nil, desc = nil, **kwargs, &definition_block)
           if kwargs[:loads]
             loads_name = arg_name || kwargs[:name]
@@ -65,8 +76,17 @@ module GraphQL
         end
 
         # Register this argument with the class.
-        # @param arg_defn [GraphQL::Schema::Argument]
-        # @return [GraphQL::Schema::Argument]
+        #
+        # **Parameters**
+        #
+        # - `arg_defn` (`GraphQL::Schema::Argument`)
+        #
+        # **Returns**
+        #
+        # - `GraphQL::Schema::Argument`
+        #
+        # :call-seq:
+        #   add_argument(GraphQL::Schema::Argument arg_defn) -> GraphQL::Schema::Argument
         def add_argument(arg_defn)
           @own_arguments ||= {}
           prev_defn = @own_arguments[arg_defn.name]
@@ -98,7 +118,12 @@ module GraphQL
           nil
         end
 
-        # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
+        # **Returns**
+        #
+        # - `Hash<String => GraphQL::Schema::Argument>` — Arguments defined on this thing, keyed by name. Includes inherited definitions
+        #
+        # :call-seq:
+        #   arguments(context:, _require_defined_arguments) -> Hash[String, GraphQL::Schema::Argument]
         def arguments(context = GraphQL::Query::NullContext.instance, _require_defined_arguments = nil)
           if !own_arguments.empty?
             own_arguments_that_apply = {}
@@ -230,7 +255,12 @@ module GraphQL
           end
         end
 
-        # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
+        # **Returns**
+        #
+        # - `GraphQL::Schema::Argument, nil` — Argument defined on this thing, fetched by name.
+        #
+        # :call-seq:
+        #   get_argument(argument_name, context:) -> GraphQL::Schema::Argument | nil
         def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
           warden = Warden.from_context(context)
           if (arg_config = own_arguments[argument_name]) && ((context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Profile)) || (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden)))
@@ -242,21 +272,27 @@ module GraphQL
           end
         end
 
-        # @param new_arg_class [Class] A class to use for building argument definitions
+        # **Parameters**
+        #
+        # - `new_arg_class` (`Class`) — A class to use for building argument definitions
+        #
+        # :call-seq:
+        #   argument_class(Class new_arg_class)
         def argument_class(new_arg_class = nil)
           self.class.argument_class(new_arg_class)
         end
 
-        # @api private
-        # If given a block, it will eventually yield the loaded args to the block.
+        # **Yields:** [Interpreter::Arguments, Execution::Lazy<Interpreter::Arguments>]
         #
-        # If no block is given, it will immediately dataload (but might return a Lazy).
+        # **Parameters**
         #
-        # @param values [Hash<String, Object>]
-        # @param context [GraphQL::Query::Context]
-        # @yield [Interpreter::Arguments, Execution::Lazy<Interpreter::Arguments>]
-        # @return [Interpreter::Arguments, Execution::Lazy<Interpreter::Arguments>]
-        def coerce_arguments(parent_object, values, context, &block)
+        # - `values` (`Hash<String, Object>`)
+        # - `context` (`GraphQL::Query::Context`)
+        #
+        # **Returns**
+        #
+        # - `Interpreter::Arguments, Execution::Lazy<Interpreter::Arguments>`
+        def coerce_arguments(parent_object, values, context, &block) # :nodoc:
           # Cache this hash to avoid re-merging it
           arg_defns = context.types.arguments(self)
           total_args_count = arg_defns.size
@@ -348,12 +384,17 @@ module GraphQL
 
         module ArgumentObjectLoader
           # Look up the corresponding object for a provided ID.
-          # By default, it uses Relay-style {Schema.object_from_id},
+          # By default, it uses Relay-style [Schema.object_from_id](rdoc-ref:Schema.object_from_id),
           # override this to find objects another way.
           #
-          # @param type [Class, Module] A GraphQL type definition
-          # @param id [String] A client-provided to look up
-          # @param context [GraphQL::Query::Context] the current context
+          # **Parameters**
+          #
+          # - `type` (`Class, Module`) — A GraphQL type definition
+          # - `id` (`String`) — A client-provided to look up
+          # - `context` (`GraphQL::Query::Context`) — the current context
+          #
+          # :call-seq:
+          #   object_from_id(Class | Module type, String id, GraphQL::Query::Context context)
           def object_from_id(type, id, context)
             context.schema.object_from_id(id, context)
           end
@@ -439,9 +480,18 @@ module GraphQL
           # Called when an argument's `loads:` configuration fails to fetch an application object.
           # By default, this method raises the given error, but you can override it to handle failures differently.
           #
-          # @param err [GraphQL::LoadApplicationObjectFailedError] The error that occurred
-          # @return [Object, nil] If a value is returned, it will be used instead of the failed load
-          # @api public
+          # **API:** public
+          #
+          # **Parameters**
+          #
+          # - `err` (`GraphQL::LoadApplicationObjectFailedError`) — The error that occurred
+          #
+          # **Returns**
+          #
+          # - `Object, nil` — If a value is returned, it will be used instead of the failed load
+          #
+          # :call-seq:
+          #   load_application_object_failed(GraphQL::LoadApplicationObjectFailedError err) -> Object | nil
           def load_application_object_failed(err)
             raise err
           end
