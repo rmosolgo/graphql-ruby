@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "delegate"
 require "json"
 require "set"
@@ -14,6 +15,7 @@ module GraphQL
   #
   # This is useful during application boot when autoloading is disabled or
   # when a framework needs to eager-load its namespaces.
+  #: () -> void
   def self.eager_load!
     super
     Query.eager_load!
@@ -66,6 +68,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   #
   # :call-seq:
   #   parse(String graphql_string, trace:, filename:, max_tokens:) -> GraphQL::Language::Nodes::Document
+  #: (String, ?trace: GraphQL::Tracing::Trace, ?filename: String?, ?max_tokens: Integer?) -> GraphQL::Language::Nodes::Document
   def self.parse(graphql_string, trace: GraphQL::Tracing::NullTrace, filename: nil, max_tokens: nil)
     default_parser.parse(graphql_string, trace: trace, filename: filename, max_tokens: max_tokens)
   end
@@ -82,19 +85,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   #
   # :call-seq:
   #   parse_file(String filename) -> GraphQL::Language::Nodes::Document
+  #: (String) -> GraphQL::Language::Nodes::Document
   def self.parse_file(filename)
     content = File.read(filename)
     default_parser.parse(content, filename: filename)
-  end
-
-  # **Returns**
-  #
-  # - `Array<Array>`
-  #
-  # :call-seq:
-  #   scan(graphql_string) -> Array[Array]
-  def self.scan(graphql_string)
-    default_parser.scan(graphql_string)
   end
 
   def self.parse_with_racc(string, filename: nil, trace: GraphQL::Tracing::NullTrace)

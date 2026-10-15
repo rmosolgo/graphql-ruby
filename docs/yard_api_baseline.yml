@@ -173,7 +173,6 @@ yard_api:
   - ["class_method","GraphQL.eager_load!"]
   - ["class_method","GraphQL.parse"]
   - ["class_method","GraphQL.parse_file"]
-  - ["class_method","GraphQL.scan"]
   - ["class_method","GraphQL::Analysis.analyze_multiplex"]
   - ["class_method","GraphQL::Analysis.analyze_query"]
   - ["class_method","GraphQL::Current.dataloader_source"]
