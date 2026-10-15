@@ -1,6 +1,11 @@
 name: CI Suite
 on:
-  - pull_request
+  pull_request:
+  # Runs on master save gem caches that pull requests can restore from
+  # (PRs can only read caches from their own ref or their base branch)
+  push:
+    branches:
+      - master
 
 jobs:
   lint:
@@ -151,4 +156,8 @@ jobs:
       with:
         ruby-version: 3.4
         bundler-cache: true
-    - run: bundle exec rake compile test
+    - run: bundle exec rake compile
+    # The rest of the suite is covered by other jobs; only test Mongoid integration here
+    - run: bundle exec rake test
+      env:
+        TEST: "spec/integration/mongoid/**/*_spec.rb,spec/graphql/pagination/mongoid_relation_connection_spec.rb"
