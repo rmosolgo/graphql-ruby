@@ -5,6 +5,9 @@ on:
     # Sequence of patterns matched against refs/tags
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    # Publish API docs for the current master branch under api-doc/master
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       publish_website:
@@ -18,11 +21,15 @@ on:
         type: string
 
 permissions: {}
+# Every job here pushes to gh-pages, so don't let runs race each other
+concurrency:
+  group: publish-website
+  cancel-in-progress: false
 env:
   BUNDLE_WITH: docs
 jobs:
   website:
-    if: ${{ inputs.publish_website || github.ref_name }}
+    if: ${{ inputs.publish_website || startsWith(github.ref, 'refs/tags/v') }}
     permissions:
       contents: write
     name: Publish Website
@@ -64,13 +71,14 @@ jobs:
           publish_dir: ./gh-pages
   api_docs:
     needs: website
-    if: ${{ inputs.publish_version || startsWith(github.ref, 'refs/tags/v') }}
+    # `website` is skipped on master pushes, so run as long as it didn't fail
+    if: ${{ !failure() && !cancelled() && (inputs.publish_version || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master') }}
     permissions:
       contents: write
     name: Publish API Docs
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout release tag
+      - name: Checkout release tag (or master)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.ref }}
