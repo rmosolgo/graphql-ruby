@@ -13,6 +13,8 @@ require_relative "redirects"
 module GraphQLDocs
   class Build
     VERSION_PATTERN = /\A\d+\.\d+\.\d+(?:[.-][0-9A-Za-z.]+)?\z/.freeze
+    # Built from the current checkout instead of a released gem
+    MASTER_VERSION = "master"
 
     attr_reader :root
 
@@ -29,6 +31,8 @@ module GraphQLDocs
     end
 
     def build_version(version, output: "tmp/rdoc-api/#{version}")
+      return build_master(output: output) if version == MASTER_VERSION
+
       validate_version!(version)
 
       Dir.mktmpdir("graphql-ruby-docs") do |directory|
@@ -44,6 +48,17 @@ module GraphQLDocs
         GraphQLDocs::LegacyAnchors.install(root: output_path)
         output_path
       end
+    end
+
+    def build_master(output: "tmp/rdoc-api/#{MASTER_VERSION}")
+      output_path = build(
+        source_root: root,
+        source_files: gem_sources(root),
+        output: output,
+        title: "GraphQL Ruby #{MASTER_VERSION} API Documentation",
+      )
+      GraphQLDocs::LegacyAnchors.install(root: output_path)
+      output_path
     end
 
     private
