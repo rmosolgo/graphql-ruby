@@ -113,7 +113,12 @@ module GraphQL
         new_var_type
       end
 
-      # @return [Integer] Returns the max depth of `array`, or `0` if it isn't an array at all
+      # **Returns**
+      #
+      # - `Integer` — Returns the max depth of `array`, or `0` if it isn't an array at all
+      #
+      # :call-seq:
+      #   depth_of_array(array) -> Integer
       def depth_of_array(array)
         case array
         when Array

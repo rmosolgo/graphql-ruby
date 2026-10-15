@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    # Default rules for {GraphQL::StaticValidation::Validator}
+    # Default rules for [GraphQL::StaticValidation::Validator](rdoc-ref:GraphQL::StaticValidation::Validator)
     #
     # Order is important here. Some validators skip later hooks.
     # which stops the visit on that node. That way it doesn't try to find fields on types that

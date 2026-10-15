@@ -13,25 +13,32 @@ module GraphQL
     # Note that this will stop a query _in between_ field resolutions, but
     # it doesn't interrupt long-running `resolve` functions. Be sure to use
     # timeout options for external connections. For more info, see
-    # www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/
+    # https://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/
     #
-    # @example Stop resolving fields after 2 seconds
-    #   class MySchema < GraphQL::Schema
-    #     use GraphQL::Schema::Timeout, max_seconds: 2
+    # **Examples**
+    #
+    # **Example: Stop resolving fields after 2 seconds**
+    #
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   use GraphQL::Schema::Timeout, max_seconds: 2
+    # end
+    # ```
+    #
+    # **Example: Notifying Bugsnag and logging a timeout**
+    #
+    # ```ruby
+    # class MyTimeout < GraphQL::Schema::Timeout
+    #   def handle_timeout(error, query)
+    #      Rails.logger.warn("GraphQL Timeout: #{error.message}: #{query.query_string}")
+    #      Bugsnag.notify(error, {query_string: query.query_string})
     #   end
+    # end
     #
-    # @example Notifying Bugsnag and logging a timeout
-    #   class MyTimeout < GraphQL::Schema::Timeout
-    #     def handle_timeout(error, query)
-    #        Rails.logger.warn("GraphQL Timeout: #{error.message}: #{query.query_string}")
-    #        Bugsnag.notify(error, {query_string: query.query_string})
-    #     end
-    #   end
-    #
-    #   class MySchema < GraphQL::Schema
-    #     use MyTimeout, max_seconds: 2
-    #   end
-    #
+    # class MySchema < GraphQL::Schema
+    #   use MyTimeout, max_seconds: 2
+    # end
+    # ```
     class Timeout
       def self.use(schema, max_seconds: nil)
         timeout = self.new(max_seconds: max_seconds)
@@ -43,7 +50,12 @@ module GraphQL
       end
 
       module Trace
-        # @param max_seconds [Numeric] how many seconds the query should be allowed to resolve new fields
+        # **Parameters**
+        #
+        # - `max_seconds` (`Numeric`) — how many seconds the query should be allowed to resolve new fields
+        #
+        # :call-seq:
+        #   initialize(timeout:, **rest)
         def initialize(timeout:, **rest)
           @timeout = timeout
           super
@@ -97,34 +109,57 @@ module GraphQL
       # Called at the start of each query.
       # The default implementation returns the `max_seconds:` value from installing this plugin.
       #
-      # @param query [GraphQL::Query] The query that's about to run
-      # @return [Numeric, false] The number of seconds after which to interrupt query execution and call {#handle_error}, or `false` to bypass the timeout.
+      # **Parameters**
+      #
+      # - `query` (`GraphQL::Query`) — The query that's about to run
+      #
+      # **Returns**
+      #
+      # - `Numeric, false` — The number of seconds after which to interrupt query execution and call `handle_error`, or `false` to bypass the timeout.
+      #
+      # :call-seq:
+      #   max_seconds(GraphQL::Query query) -> Numeric | false
       def max_seconds(query)
         @max_seconds
       end
 
       # Invoked when a query times out.
-      # @param error [GraphQL::Schema::Timeout::TimeoutError]
-      # @param query [GraphQL::Error]
+      #
+      # **Parameters**
+      #
+      # - `error` (`GraphQL::Schema::Timeout::TimeoutError`)
+      # - `query` (`GraphQL::Error`)
+      #
+      # :call-seq:
+      #   handle_timeout(GraphQL::Schema::Timeout::TimeoutError error, GraphQL::Error query)
       def handle_timeout(error, query)
         # override to do something interesting
       end
 
-      # Call this method (eg, from {#handle_timeout}) to disable timeout tracking
+      # Call this method (eg, from [handle timeout](rdoc-ref:#handle_timeout)) to disable timeout tracking
       # for the given query.
-      # @param query [GraphQL::Query]
-      # @return [void]
+      #
+      # **Parameters**
+      #
+      # - `query` (`GraphQL::Query`)
+      #
+      # **Returns**
+      #
+      # - `void`
+      #
+      # :call-seq:
+      #   disable_timeout(GraphQL::Query query) -> void
       def disable_timeout(query)
         query.context.namespace(self)[:state] = false
         nil
       end
 
       # This error is raised when a query exceeds `max_seconds`.
-      # Since it's a child of {GraphQL::ExecutionError},
+      # Since it's a child of [GraphQL::ExecutionError](rdoc-ref:GraphQL::ExecutionError),
       # its message will be added to the response's `errors` key.
       #
       # To raise an error that will stop query resolution, use a custom block
-      # to take this error and raise a new one which _doesn't_ descend from {GraphQL::ExecutionError},
+      # to take this error and raise a new one which _doesn't_ descend from [GraphQL::ExecutionError](rdoc-ref:GraphQL::ExecutionError),
       # such as `RuntimeError`.
       class TimeoutError < GraphQL::ExecutionError
         def initialize(field)

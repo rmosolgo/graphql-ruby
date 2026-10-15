@@ -17,12 +17,11 @@ module GraphQL
     #
     # If one query raises an application error, all queries will be in undefined states.
     #
-    # Validation errors and {GraphQL::ExecutionError}s are handled in isolation:
+    # Validation errors and [GraphQL::ExecutionError](rdoc-ref:GraphQL::ExecutionError)s are handled in isolation:
     # one of these errors in one query will not affect the other queries.
     #
-    # @see {Schema#multiplex} for public API
-    # @api private
-    class Multiplex
+    # See [Schema.multiplex](rdoc-ref:GraphQL::Schema::multiplex) for the public API
+    class Multiplex # :nodoc:
       include Tracing::Traceable
 
       attr_reader :context, :queries, :schema, :max_complexity, :dataloader, :current_trace
