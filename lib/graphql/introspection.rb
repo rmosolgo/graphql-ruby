@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Introspection
     def self.query(include_deprecated_args: false, include_schema_description: false, include_is_repeatable: false, include_specified_by_url: false, include_is_one_of: false)

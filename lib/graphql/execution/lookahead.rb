@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module Execution
     # Lookahead creates a uniform interface to inspect the forthcoming selections.

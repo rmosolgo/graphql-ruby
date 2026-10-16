@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Schema
     # A stand-in for a type which will be resolved in a given schema, by name.

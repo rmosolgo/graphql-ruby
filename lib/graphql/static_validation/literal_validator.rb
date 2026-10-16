@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module StaticValidation
     # Test whether `ast_value` is a valid input for `type`

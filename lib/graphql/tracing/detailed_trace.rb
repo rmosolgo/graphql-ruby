@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 if defined?(ActiveRecord)
   require "graphql/tracing/detailed_trace/active_record_backend"
 end

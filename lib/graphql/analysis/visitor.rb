@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module Analysis
     # Depth first traversal through a query AST, calling AST analyzers

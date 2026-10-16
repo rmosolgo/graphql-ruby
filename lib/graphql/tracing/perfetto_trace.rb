@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module Tracing
     # This produces a trace file for inspecting in the [Perfetto Trace Viewer](https://ui.perfetto.dev).

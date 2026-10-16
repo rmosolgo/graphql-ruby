@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   # This error is raised when `Types::Int` is asked to return a value outside of 32-bit integer range.
   #

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Backtrace
     # When [Backtrace](rdoc-ref:GraphQL::Backtrace) is enabled, raised errors are wrapped with [TracedError](rdoc-ref:GraphQL::Backtrace::TracedError).

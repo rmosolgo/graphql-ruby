@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   class Subscriptions
     # A subscriptions implementation that sends data

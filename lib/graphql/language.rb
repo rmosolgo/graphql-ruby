@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 require "graphql/language/block_string"
 require "graphql/language/comment"
 require "graphql/language/printer"

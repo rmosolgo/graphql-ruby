@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 require "graphql/tracing/trace"
 require "graphql/tracing/call_legacy_tracers"

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/schema/build_from_definition/resolve_map/default_resolve"
 
 module GraphQL

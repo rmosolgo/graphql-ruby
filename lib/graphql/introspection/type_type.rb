@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module Introspection
     class TypeType < Introspection::BaseObject

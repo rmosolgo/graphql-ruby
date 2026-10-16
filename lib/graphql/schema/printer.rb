@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   class Schema
     # Used to convert your [GraphQL::Schema](rdoc-ref:GraphQL::Schema) to a GraphQL schema string

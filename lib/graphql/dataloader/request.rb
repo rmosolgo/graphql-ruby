@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Dataloader
     # See [Source#request](rdoc-ref:Source#request) which returns an instance of this

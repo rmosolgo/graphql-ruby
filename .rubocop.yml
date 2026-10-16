@@ -5,6 +5,7 @@ require:
   - ./lib/graphql/rubocop/graphql/default_null_true
   - ./lib/graphql/rubocop/graphql/default_required_true
   - ./cop/development/context_is_passed_cop
+  - ./cop/development/sorbet_sigil_cop.rb
   - ./cop/development/trace_methods_cop.rb
 
 AllCops:
@@ -110,3 +111,7 @@ GraphQL/DefaultNullTrue:
 
 GraphQL/DefaultRequiredTrue:
   Enabled: true
+
+Development/SorbetSigilCop:
+  Include:
+    - "lib/**/*.rb"
