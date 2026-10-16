@@ -622,7 +622,7 @@
 <p><code>max_depth:</code> and <code>max_complexity:</code> override the corresponding schema limits for this query. <code>nil</code> uses the schema configuration.</p>
 </li></ul>
 
-<p>The <a href="/queries/executing_queries">executing queries guide</a> keeps examples for variables, context, scoped context, and root values. This class and the <code>Schema#execute</code>/<code>Schema#multiplex</code> method comments are the source of truth for option names, defaults, and execution behavior. migrated from guides/queries/executing_queries.md</p>
+<p>The <a href="/queries/executing_queries">executing queries guide</a> keeps examples for variables, context, scoped context, and root values. This class and the <code>Schema#execute</code>/<code>Schema#multiplex</code> method comments are the source of truth for option names, defaults, and execution behavior.</p>
 
   </section>
 
@@ -938,7 +938,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 213</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 212</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-identifier">query_string</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">query:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">document:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">variables:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">multiplex:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">validate:</span> <span class="ruby-keyword">true</span>, <span class="ruby-value">static_validator:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">visibility_profile:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">subscription_topic:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">operation_name:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">root_value:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">max_depth:</span> <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">max_depth</span>, <span class="ruby-value">max_complexity:</span> <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">max_complexity</span>, <span class="ruby-value">warden:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">use_visibility_profile:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-comment"># Even if `variables: nil` is passed, use an empty hash for simpler logic</span>
   <span class="ruby-identifier">variables</span> ||= {}
@@ -1100,7 +1100,7 @@
 
 
           <div class="method-source-code" id="current_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 309</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 308</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">current_trace</span>
   <span class="ruby-ivar">@current_trace</span> ||= <span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">trace</span>] <span class="ruby-operator">||</span> (<span class="ruby-identifier">multiplex</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">multiplex</span>.<span class="ruby-identifier">current_trace</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">new_trace</span>(<span class="ruby-value">multiplex</span><span class="ruby-value">:</span> <span class="ruby-identifier">multiplex</span>, <span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>))
 <span class="ruby-keyword">end</span></pre>
@@ -1156,7 +1156,7 @@
 
 
           <div class="method-source-code" id="document-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 166</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 165</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">document</span>
   <span class="ruby-comment"># It&#39;s ok if this hasn&#39;t been assigned yet</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@query_string</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@document</span>
@@ -1214,7 +1214,7 @@
 
 
           <div class="method-source-code" id="executed-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 399</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 398</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">executed?</span>
   <span class="ruby-ivar">@executed</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1267,7 +1267,7 @@
 
 
           <div class="method-source-code" id="fingerprint-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 476</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 475</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fingerprint</span>
   <span class="ruby-ivar">@fingerprint</span> ||= <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">operation_fingerprint</span><span class="ruby-string">}</span><span class="ruby-string">/</span><span class="ruby-string">#{</span><span class="ruby-identifier">variables_fingerprint</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1335,7 +1335,7 @@
 
 
           <div class="method-source-code" id="fragments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 346</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 345</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fragments</span>
   <span class="ruby-identifier">with_prepared_ast</span> { <span class="ruby-ivar">@fragments</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1385,7 +1385,7 @@
 
 
           <div class="method-source-code" id="get_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 520</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 519</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_field</span>(<span class="ruby-identifier">owner</span>, <span class="ruby-identifier">field_name</span>)
   <span class="ruby-identifier">types</span>.<span class="ruby-identifier">field</span>(<span class="ruby-identifier">owner</span>, <span class="ruby-identifier">field_name</span>) <span class="ruby-comment"># rubocop:disable Development/ContextIsPassedCop</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1435,7 +1435,7 @@
 
 
           <div class="method-source-code" id="get_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 516</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 515</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_type</span>(<span class="ruby-identifier">type_name</span>)
   <span class="ruby-identifier">types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">type_name</span>) <span class="ruby-comment"># rubocop:disable Development/ContextIsPassedCop</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1485,7 +1485,7 @@
 
 
           <div class="method-source-code" id="inspect-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 175</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 174</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inspect</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">query ...</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1538,7 +1538,7 @@
 
 
           <div class="method-source-code" id="lookahead-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 325</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 324</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">lookahead</span>
   <span class="ruby-ivar">@lookahead</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">selected_operation</span>.<span class="ruby-identifier">nil?</span>
@@ -1599,7 +1599,7 @@
 
 
           <div class="method-source-code" id="mutation-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 574</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 573</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">mutation?</span>
   <span class="ruby-identifier">with_prepared_ast</span> { <span class="ruby-ivar">@mutation</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1652,7 +1652,7 @@
 
 
           <div class="method-source-code" id="operation_fingerprint-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 486</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 485</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">operation_fingerprint</span>
   <span class="ruby-ivar">@operation_fingerprint</span> ||= <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">selected_operation_name</span> <span class="ruby-operator">||</span> <span class="ruby-string">&quot;</span><span class="ruby-string">anonymous</span><span class="ruby-string">&quot;</span><span class="ruby-string">}</span><span class="ruby-string">/</span><span class="ruby-string">#{</span><span class="ruby-constant">Fingerprint</span>.<span class="ruby-identifier">generate</span>(<span class="ruby-identifier">query_string</span> <span class="ruby-operator">||</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>)<span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1705,7 +1705,7 @@
 
 
           <div class="method-source-code" id="operations-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 350</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 349</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">operations</span>
   <span class="ruby-identifier">with_prepared_ast</span> { <span class="ruby-ivar">@operations</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1755,7 +1755,7 @@
 
 
           <div class="method-source-code" id="path-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 354</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 353</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">path</span>
   <span class="ruby-constant">EmptyObjects</span><span class="ruby-operator">::</span><span class="ruby-constant">EMPTY_ARRAY</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1805,7 +1805,7 @@
 
 
           <div class="method-source-code" id="possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 524</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 523</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">possible_types</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-identifier">types</span>.<span class="ruby-identifier">possible_types</span>(<span class="ruby-identifier">type</span>) <span class="ruby-comment"># rubocop:disable Development/ContextIsPassedCop</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1855,7 +1855,7 @@
 
 
           <div class="method-source-code" id="query-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 578</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 577</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query?</span>
   <span class="ruby-identifier">with_prepared_ast</span> { <span class="ruby-ivar">@query</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1905,7 +1905,7 @@
 
 
           <div class="method-source-code" id="query_string-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 292</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 291</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query_string</span>
   <span class="ruby-ivar">@query_string</span> ||= (<span class="ruby-identifier">document</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">document</span>.<span class="ruby-identifier">to_query_string</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1958,7 +1958,7 @@
 
 
           <div class="method-source-code" id="resolve_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 562</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 561</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_type</span>(<span class="ruby-identifier">abstract_type</span>, <span class="ruby-identifier">value</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Symbol</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">==</span> <span class="ruby-constant">NOT_CONFIGURED</span>
     <span class="ruby-comment"># Old method signature</span>
@@ -2031,7 +2031,7 @@
 
 
           <div class="method-source-code" id="result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 391</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 390</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">result</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@executed</span>
     <span class="ruby-identifier">execution_engine</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">default_execution_next</span> <span class="ruby-operator">?</span> <span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Next</span> <span class="ruby-operator">:</span> <span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Interpreter</span>
@@ -2090,7 +2090,7 @@
 
 
           <div class="method-source-code" id="root_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 541</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 540</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">root_type</span>
   <span class="ruby-identifier">root_type_for_operation</span>(<span class="ruby-identifier">selected_operation</span>.<span class="ruby-identifier">operation_type</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -2140,7 +2140,7 @@
 
 
           <div class="method-source-code" id="root_type_for_operation-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 528</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 527</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">root_type_for_operation</span>(<span class="ruby-identifier">op_type</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">op_type</span>
   <span class="ruby-keyword">when</span> <span class="ruby-string">&quot;</span><span class="ruby-string">query</span><span class="ruby-string">&quot;</span>, <span class="ruby-keyword">nil</span>
@@ -2202,7 +2202,7 @@
 
 
           <div class="method-source-code" id="run_partials-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 374</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 373</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_partials</span>(<span class="ruby-identifier">partials_hashes</span>)
   <span class="ruby-identifier">partials</span> = <span class="ruby-identifier">partials_hashes</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">partial_options</span><span class="ruby-operator">|</span> <span class="ruby-constant">Partial</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">partial_options</span>) }
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_execute_next</span>]
@@ -2270,7 +2270,7 @@
 
 
           <div class="method-source-code" id="sanitized_query_string-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 453</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 452</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">sanitized_query_string</span>(<span class="ruby-value">inline_variables:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-identifier">with_prepared_ast</span> {
     <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">sanitized_printer</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>, <span class="ruby-value">inline_variables</span><span class="ruby-value">:</span> <span class="ruby-identifier">inline_variables</span>).<span class="ruby-identifier">sanitized_query_string</span>
@@ -2330,7 +2330,7 @@
 
 
           <div class="method-source-code" id="selected_operation-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 416</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 415</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">selected_operation</span>
   <span class="ruby-identifier">with_prepared_ast</span> { <span class="ruby-ivar">@selected_operation</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -2388,7 +2388,7 @@
 
 
           <div class="method-source-code" id="selected_operation_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 185</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 184</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">selected_operation_name</span>
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">nil</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">selected_operation</span>
   <span class="ruby-identifier">selected_operation</span>.<span class="ruby-identifier">name</span>
@@ -2442,7 +2442,7 @@
 
 
           <div class="method-source-code" id="static_errors-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 403</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 402</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">static_errors</span>
   <span class="ruby-identifier">validation_errors</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">analysis_errors</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">errors</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2495,7 +2495,7 @@
 
 
           <div class="method-source-code" id="static_validator-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 148</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 147</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">static_validator=</span>(<span class="ruby-identifier">new_validator</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@validation_pipeline</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@validation_pipeline</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@validation_pipeline</span>.<span class="ruby-identifier">has_validated?</span>
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Can&#39;t reassign Query#static_validator= after validation has run, remove this assignment.</span><span class="ruby-string">&quot;</span>
@@ -2554,7 +2554,7 @@
 
 
           <div class="method-source-code" id="subscription-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 582</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 581</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscription?</span>
   <span class="ruby-identifier">with_prepared_ast</span> { <span class="ruby-ivar">@subscription</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -2604,7 +2604,7 @@
 
 
           <div class="method-source-code" id="subscription_update-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 313</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 312</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscription_update?</span>
   <span class="ruby-ivar">@subscription_topic</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">subscription?</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2654,7 +2654,7 @@
 
 
           <div class="method-source-code" id="types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 545</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 544</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">types</span>
   <span class="ruby-ivar">@visibility_profile</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">warden</span>.<span class="ruby-identifier">visibility_profile</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2704,7 +2704,7 @@
 
 
           <div class="method-source-code" id="valid-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 508</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 507</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">valid?</span>
   <span class="ruby-identifier">validation_pipeline</span>.<span class="ruby-identifier">valid?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">analysis_errors</span>.<span class="ruby-identifier">empty?</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2757,7 +2757,7 @@
 
 
           <div class="method-source-code" id="validate-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 129</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 128</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate=</span>(<span class="ruby-identifier">new_validate</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@validation_pipeline</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@validation_pipeline</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@validation_pipeline</span>.<span class="ruby-identifier">has_validated?</span>
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Can&#39;t reassign Query#validate= after validation has run, remove this assignment.</span><span class="ruby-string">&quot;</span>
@@ -2814,7 +2814,7 @@
 
 
           <div class="method-source-code" id="validation_pipeline-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 500</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 499</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validation_pipeline</span>
   <span class="ruby-identifier">with_prepared_ast</span> { <span class="ruby-ivar">@validation_pipeline</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -2867,7 +2867,7 @@
 
 
           <div class="method-source-code" id="variables-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 431</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 430</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">variables</span>
   <span class="ruby-ivar">@variables</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">with_prepared_ast</span> {
@@ -2935,7 +2935,7 @@
 
 
           <div class="method-source-code" id="variables_fingerprint-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 496</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 495</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">variables_fingerprint</span>
   <span class="ruby-ivar">@variables_fingerprint</span> ||= <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">provided_variables</span>.<span class="ruby-identifier">size</span><span class="ruby-string">}</span><span class="ruby-string">/</span><span class="ruby-string">#{</span><span class="ruby-constant">Fingerprint</span>.<span class="ruby-identifier">generate</span>(<span class="ruby-identifier">provided_variables</span>.<span class="ruby-identifier">to_json</span>)<span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2988,7 +2988,7 @@
 
 
           <div class="method-source-code" id="warden-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 512</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 511</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">warden</span>
   <span class="ruby-identifier">with_prepared_ast</span> { <span class="ruby-ivar">@warden</span> }
 <span class="ruby-keyword">end</span></pre>
