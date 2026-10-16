@@ -249,7 +249,6 @@ describe RDoc::Generator::GraphQLRuby do
 
   it "defines an order for every nested guide" do
     expected = Dir[File.expand_path("../../guides/*/*.md", __dir__)]
-      .reject { |path| path.include?("/guides/yardoc/") }
       .map { |path| path[%r{/guides/(.+)\.md\z}, 1] }
     actual = RDoc::Generator::GraphQLRuby::GUIDE_METADATA.fetch("order").flat_map do |directory, guides|
       guides.map { |guide| "#{directory}/#{guide}" }

@@ -120,7 +120,7 @@ module GraphQLDocs
 
     def generated_guide?(path)
       relative = Pathname.new(path).expand_path.relative_path_from(Pathname.new(root)).to_s
-      relative.match?(%r{\A(?:guides|docs)/(?:_site|yardoc|_includes|_layouts|_plugins)(?:/|\z)})
+      relative.match?(%r{\A(?:guides|docs)/_site(?:/|\z)})
     end
 
     def absolute_path(path)
