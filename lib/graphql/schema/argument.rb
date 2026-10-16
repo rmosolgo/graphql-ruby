@@ -2,7 +2,6 @@
 module GraphQL
   class Schema
     # Arguments describe the input accepted by a field or input object.
-    # This API reference was migrated from guides/fields/arguments.md.
     # Keep argument-specific behavior and examples here; the guide is only
     # an entry point for the broader fields documentation.
     #

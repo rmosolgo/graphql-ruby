@@ -36,7 +36,6 @@ module GraphQL
   # variables, context, scoped context, and root values. This class and the
   # `Schema#execute`/`Schema#multiplex` method comments are the source of truth
   # for option names, defaults, and execution behavior.
-  # migrated from guides/queries/executing_queries.md
   class Query
     extend Autoload
     include Tracing::Traceable

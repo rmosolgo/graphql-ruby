@@ -163,10 +163,6 @@ module GraphQL
   #   orphan_types ImageType, AudioType
   # end
   # ```
-  #
-  # The API-specific portions of `guides/schema/definition.md` were migrated
-  # here; the guide remains a standalone setup tutorial.
-  # migrated from guides/schema/definition.md
   class Schema
     extend GraphQL::Schema::Member::HasAstNode
     extend GraphQL::Schema::FindInheritedValue

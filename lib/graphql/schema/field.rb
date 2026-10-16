@@ -5,7 +5,6 @@ require "graphql/schema/field/scope_extension"
 module GraphQL
   class Schema
     # Field definitions are the primary way to expose data from an object type.
-    # This API reference was migrated from guides/fields/introduction.md.
     # Keep field-specific behavior and examples here; the guide is only an
     # entry point for the broader fields documentation.
     #
