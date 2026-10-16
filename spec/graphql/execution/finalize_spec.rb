@@ -247,6 +247,90 @@ class ExecutionFinalizeTest < Minitest::Test
     assert_equal expected, exec_test(schema, "{ test { req opt } }", source)
   end
 
+  def test_bubbles_null_for_nested_scalar_list_elements
+    ["[[Int!]!]", "[[Int!]!]!"].each do |type|
+      schema = "type Query { test: #{type} }"
+      source = { "test" => [[1], [nil], [3]] }
+      expected = {
+        "data" => type.end_with?("!") ? nil : { "test" => nil },
+        "errors" => [{
+          "message" => "Cannot return null for non-nullable element of type 'Int' for Query.test",
+          "path" => ["test", 1, 0],
+          "locations" => [{ "line" => 1, "column" => 3 }],
+        }],
+      }
+
+      assert_equal expected, exec_test(schema, "{ test }", source)
+    end
+  end
+
+  def test_bubbles_null_to_nullable_inner_scalar_lists
+    schema = "type Query { test: [[Int!]] }"
+    source = { "test" => [[nil], [2], [nil]] }
+    expected = {
+      "data" => { "test" => [nil, [2], nil] },
+      "errors" => [0, 2].map { |idx| {
+        "message" => "Cannot return null for non-nullable element of type 'Int' for Query.test",
+        "path" => ["test", idx, 0],
+        "locations" => [{ "line" => 1, "column" => 3 }],
+      } },
+    }
+
+    assert_equal expected, exec_test(schema, "{ test }", source)
+  end
+
+  def test_bubbles_null_for_deeply_nested_scalar_list_elements
+    schema = "type Query { test: [[[Int!]!]!] }"
+    source = { "test" => [[[1]], [[nil]], [[3]]] }
+    expected = {
+      "data" => { "test" => nil },
+      "errors" => [{
+        "message" => "Cannot return null for non-nullable element of type 'Int' for Query.test",
+        "path" => ["test", 1, 0, 0],
+        "locations" => [{ "line" => 1, "column" => 3 }],
+      }],
+    }
+
+    assert_equal expected, exec_test(schema, "{ test }", source)
+  end
+
+  def test_reports_null_inner_scalar_lists
+    schema = "type Query { test: [[[Int!]!]!] }"
+    source = { "test" => [[[1]], [nil], [[3]]] }
+    expected = {
+      "data" => { "test" => nil },
+      "errors" => [{
+        "message" => "Cannot return null for non-nullable element of type '[Int!]' for Query.test",
+        "path" => ["test", 1, 0],
+        "locations" => [{ "line" => 1, "column" => 3 }],
+      }],
+    }
+
+    assert_equal expected, exec_test(schema, "{ test }", source)
+  end
+
+  def test_reports_nested_scalar_list_errors_inside_objects
+    schema = "type Test { req: [[Int!]!] } type Query { test: [Test] }"
+    source = { "test" => [{ "req" => [[1]] }, { "req" => [[2], [nil]] }] }
+    expected = {
+      "data" => { "test" => [{ "nested" => [[1]] }, { "nested" => nil }] },
+      "errors" => [{
+        "message" => "Cannot return null for non-nullable element of type 'Int' for Test.req",
+        "path" => ["test", 1, "nested", 1, 0],
+        "locations" => [{ "line" => 1, "column" => 10 }],
+      }],
+    }
+
+    assert_equal expected, exec_test(schema, "{ test { nested: req } }", source)
+  end
+
+  def test_preserves_nullable_nested_scalar_list_elements
+    schema = "type Query { test: [[Int]] }"
+    source = { "test" => [[1], [nil], nil, [3]] }
+
+    assert_equal({ "data" => source }, exec_test(schema, "{ test }", source))
+  end
+
   def test_bubbles_null_for_nested_required_list_elements
     schema = "type Test { req: String! opt: String } type Query { test: [[Test!]] }"
     source = {
