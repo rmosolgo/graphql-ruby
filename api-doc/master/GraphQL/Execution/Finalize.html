@@ -574,11 +574,16 @@
           <span class="ruby-identifier">tf</span>[<span class="ruby-identifier">key</span>] = <span class="ruby-identifier">err</span>
           <span class="ruby-ivar">@finalizers_count</span> += <span class="ruby-value">1</span>
         <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">value_at_key</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>)
-          <span class="ruby-identifier">value_at_key</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">el</span>, <span class="ruby-identifier">idx</span><span class="ruby-operator">|</span>
-            <span class="ruby-keyword">if</span> <span class="ruby-identifier">el</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">err</span>)
-              <span class="ruby-identifier">tf</span> = <span class="ruby-ivar">@finalizers</span>[<span class="ruby-identifier">value_at_key</span>] ||= {}.<span class="ruby-identifier">compare_by_identity</span>
-              <span class="ruby-identifier">tf</span>[<span class="ruby-identifier">idx</span>] = <span class="ruby-identifier">err</span>
-              <span class="ruby-ivar">@finalizers_count</span> += <span class="ruby-value">1</span>
+          <span class="ruby-identifier">pending_arrays</span> = [<span class="ruby-identifier">value_at_key</span>]
+          <span class="ruby-keyword">while</span> (<span class="ruby-identifier">array</span> = <span class="ruby-identifier">pending_arrays</span>.<span class="ruby-identifier">pop</span>)
+            <span class="ruby-identifier">array</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">el</span>, <span class="ruby-identifier">idx</span><span class="ruby-operator">|</span>
+              <span class="ruby-keyword">if</span> <span class="ruby-identifier">el</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">err</span>)
+                <span class="ruby-identifier">tf</span> = <span class="ruby-ivar">@finalizers</span>[<span class="ruby-identifier">array</span>] ||= {}.<span class="ruby-identifier">compare_by_identity</span>
+                <span class="ruby-identifier">tf</span>[<span class="ruby-identifier">idx</span>] = <span class="ruby-identifier">err</span>
+                <span class="ruby-ivar">@finalizers_count</span> += <span class="ruby-value">1</span>
+              <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">el</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>)
+                <span class="ruby-identifier">pending_arrays</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">el</span>
+              <span class="ruby-keyword">end</span>
             <span class="ruby-keyword">end</span>
           <span class="ruby-keyword">end</span>
         <span class="ruby-keyword">end</span>
@@ -646,7 +651,7 @@
 
 
           <div class="method-source-code" id="run-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/finalize.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/finalize.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run</span>
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">selected_operation</span> = <span class="ruby-ivar">@query</span>.<span class="ruby-identifier">selected_operation</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@data</span>
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@data</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>)

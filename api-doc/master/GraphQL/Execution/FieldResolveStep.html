@@ -934,7 +934,7 @@
               <div class="method-heading">
                 <a href="#method-i-add_non_null_error" title="Link to this method">
                   <span class="method-name">add_non_null_error</span>
-                  <span class="method-args">(is_from_array)</span>
+                  <span class="method-args">(is_from_array, return_type: nil)</span>
                 </a>
               </div>
 
@@ -954,8 +954,14 @@
 
           <div class="method-source-code" id="add_non_null_error-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 612</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">add_non_null_error</span>(<span class="ruby-identifier">is_from_array</span>)
-  <span class="ruby-identifier">err</span> = <span class="ruby-ivar">@parent_type</span><span class="ruby-operator">::</span><span class="ruby-constant">InvalidNullError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@parent_type</span>, <span class="ruby-ivar">@field_definition</span>, <span class="ruby-identifier">ast_nodes</span>, <span class="ruby-value">is_from_array</span><span class="ruby-value">:</span> <span class="ruby-identifier">is_from_array</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">path</span>)
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">add_non_null_error</span>(<span class="ruby-identifier">is_from_array</span>, <span class="ruby-value">return_type:</span> <span class="ruby-keyword">nil</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">is_from_array</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">return_type</span>
+    <span class="ruby-identifier">list_type</span> = <span class="ruby-ivar">@field_definition</span>.<span class="ruby-identifier">type</span>
+    <span class="ruby-identifier">list_type</span> = <span class="ruby-identifier">list_type</span>.<span class="ruby-identifier">of_type</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">list_type</span>.<span class="ruby-identifier">non_null?</span>
+    <span class="ruby-comment"># Preserve existing messages for single-level lists.</span>
+    <span class="ruby-identifier">element_type</span> = <span class="ruby-identifier">return_type</span>.<span class="ruby-identifier">of_type</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">list_type</span>.<span class="ruby-identifier">of_type</span>.<span class="ruby-identifier">list?</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">err</span> = <span class="ruby-ivar">@parent_type</span><span class="ruby-operator">::</span><span class="ruby-constant">InvalidNullError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@parent_type</span>, <span class="ruby-ivar">@field_definition</span>, <span class="ruby-identifier">ast_nodes</span>, <span class="ruby-value">is_from_array</span><span class="ruby-value">:</span> <span class="ruby-identifier">is_from_array</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">path</span>, <span class="ruby-value">element_type</span><span class="ruby-value">:</span> <span class="ruby-identifier">element_type</span>)
   <span class="ruby-identifier">nn_result</span> = <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">type_error</span>(<span class="ruby-identifier">err</span>, <span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">nn_result</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">propagate_nulls</span>
@@ -1416,7 +1422,7 @@
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_leaf_result</span>(<span class="ruby-identifier">result_h</span>, <span class="ruby-identifier">result_key</span>, <span class="ruby-identifier">field_result</span>, <span class="ruby-identifier">return_type</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-identifier">is_from_array</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">field_result</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">return_type</span>.<span class="ruby-identifier">non_null?</span>
-      <span class="ruby-identifier">add_non_null_error</span>(<span class="ruby-identifier">is_from_array</span>)
+      <span class="ruby-identifier">add_non_null_error</span>(<span class="ruby-identifier">is_from_array</span>, <span class="ruby-value">return_type</span><span class="ruby-value">:</span> <span class="ruby-identifier">return_type</span>)
     <span class="ruby-keyword">else</span>
       <span class="ruby-keyword">nil</span>
     <span class="ruby-keyword">end</span>
@@ -2268,7 +2274,7 @@
 
 
           <div class="method-source-code" id="set_current_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 621</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 627</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_current_field</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-ivar">@field_definition</span>)
   <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_field</span>] = <span class="ruby-identifier">new_value</span>
 <span class="ruby-keyword">end</span></pre>
