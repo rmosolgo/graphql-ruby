@@ -1,10 +1,17 @@
 name: CI Suite
 on:
-  - pull_request
+  pull_request:
+  # Runs on master save gem caches that pull requests can restore from
+  # (PRs can only read caches from their own ref or their base branch)
+  push:
+    branches:
+      - master
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_GEMFILE: gemfiles/sorbet.gemfile
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
@@ -12,6 +19,7 @@ jobs:
         ruby-version: 3.4
         bundler-cache: true
     - run: bundle exec rake rubocop
+    - run: bundle exec srb tc
     - run: npx @herb-tools/linter@0.8.10
   system_tests:
     runs-on: ubuntu-latest
@@ -151,4 +159,8 @@ jobs:
       with:
         ruby-version: 3.4
         bundler-cache: true
-    - run: bundle exec rake compile test
+    - run: bundle exec rake compile
+    # The rest of the suite is covered by other jobs; only test Mongoid integration here
+    - run: bundle exec rake test
+      env:
+        TEST: "spec/integration/mongoid/**/*_spec.rb,spec/graphql/pagination/mongoid_relation_connection_spec.rb"
