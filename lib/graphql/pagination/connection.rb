@@ -209,7 +209,11 @@ module GraphQL
       # :call-seq:
       #   edges() -> Array[Edge]
       def edges
-        @edges ||= nodes.map { |n| @edge_class.new(n, self) }
+        @edges ||= nodes.each_with_index.map do |n, index|
+          edge = @edge_class.new(n, self)
+          edge.graphql_connection_position = index
+          edge
+        end
       end
 
       # **Returns**
@@ -270,7 +274,7 @@ module GraphQL
       # :call-seq:
       #   start_cursor() -> String
       def start_cursor
-        nodes.first && cursor_for(nodes.first)
+        nodes.first && cursor_for_position(nodes.first, 0)
       end
 
       # **Returns**
@@ -280,7 +284,7 @@ module GraphQL
       # :call-seq:
       #   end_cursor() -> String
       def end_cursor
-        nodes.last && cursor_for(nodes.last)
+        nodes.last && cursor_for_position(nodes.last, nodes.length - 1)
       end
 
       # Return a cursor for this item.
@@ -299,7 +303,21 @@ module GraphQL
         raise PaginationImplementationMissingError, "Implement #{self.class}#cursor_for(item) to return the cursor for #{item.inspect}"
       end
 
+      # @api private
+      def cursor_for_position(item, _position)
+        cursor_for(item)
+      end
+
       private
+
+      def cursor_index_for(item, collection)
+        @cursor_indexes ||= {}.compare_by_identity.tap do |indexes|
+          collection.each_with_index { |node, index| indexes[node] ||= index }
+        end
+        @cursor_indexes.fetch(item) do
+          raise GraphQL::ExecutionError, "Can't generate a cursor for an item outside this connection"
+        end
+      end
 
       def detect_was_authorized_by_scope_items
         if @context &&
@@ -346,6 +364,10 @@ module GraphQL
       class Edge
         attr_reader :node
 
+        # @api private
+        # @return [Integer, nil] The zero-based position of this edge in the page
+        attr_accessor :graphql_connection_position
+
         def initialize(node, connection)
           @connection = connection
           @node = node
@@ -356,7 +378,11 @@ module GraphQL
         end
 
         def cursor
-          @cursor ||= @connection.cursor_for(@node)
+          @cursor ||= if @graphql_connection_position
+            @connection.cursor_for_position(@node, @graphql_connection_position)
+          else
+            @connection.cursor_for(@node)
+          end
         end
 
         def was_authorized_by_scope_items?
