@@ -546,7 +546,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/visit.rb, line 6</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/visit.rb, line 7</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">visit_block</span>)
   <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">schema</span>
   <span class="ruby-ivar">@late_bound_types</span> = <span class="ruby-keyword">nil</span>
@@ -616,7 +616,7 @@
 
 
           <div class="method-source-code" id="entry_point_directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/visit.rb, line 28</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/visit.rb, line 29</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">entry_point_directives</span>
   <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">directives</span>.<span class="ruby-identifier">values</span>
 <span class="ruby-keyword">end</span></pre>
@@ -666,7 +666,7 @@
 
 
           <div class="method-source-code" id="entry_point_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/visit.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/visit.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">entry_point_types</span>
   <span class="ruby-identifier">ept</span> = [
     <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">query</span>,
@@ -724,7 +724,7 @@
 
 
           <div class="method-source-code" id="visit_each-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/visit.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/visit.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visit_each</span>(<span class="ruby-value">types:</span> <span class="ruby-identifier">entry_point_types</span>, <span class="ruby-value">directives:</span> <span class="ruby-identifier">entry_point_directives</span>)
   <span class="ruby-ivar">@unvisited_types</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">raise</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">Can&#39;t re-enter `visit_each` on this Visit (another visit is already in progress)</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-ivar">@unvisited_types</span> = <span class="ruby-identifier">types</span>

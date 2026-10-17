@@ -538,7 +538,7 @@
 
 
           <div class="method-source-code" id="decode-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/unique_within_type.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/unique_within_type.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">decode</span>(<span class="ruby-identifier">node_id</span>, <span class="ruby-value">separator:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">default_id_separator</span>)
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Base64Encoder</span>.<span class="ruby-identifier">decode</span>(<span class="ruby-identifier">node_id</span>).<span class="ruby-identifier">split</span>(<span class="ruby-identifier">separator</span>, <span class="ruby-value">2</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -599,7 +599,7 @@
 
 
           <div class="method-source-code" id="encode-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/unique_within_type.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/unique_within_type.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">encode</span>(<span class="ruby-identifier">type_name</span>, <span class="ruby-identifier">object_value</span>, <span class="ruby-value">separator:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">default_id_separator</span>)
   <span class="ruby-identifier">object_value_str</span> = <span class="ruby-identifier">object_value</span>.<span class="ruby-identifier">to_s</span>
 

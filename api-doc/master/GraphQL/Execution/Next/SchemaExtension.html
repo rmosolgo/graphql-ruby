@@ -516,7 +516,7 @@
 
 
           <div class="method-source-code" id="execute_next-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_next</span>(<span class="ruby-identifier">query_str</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">query:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">subscription_topic:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">document:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">operation_name:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">variables:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">warden:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">root_value:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">validate:</span> <span class="ruby-keyword">true</span>, <span class="ruby-value">visibility_profile:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">multiplex_context</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">context</span>
     {
@@ -590,7 +590,7 @@
 
 
           <div class="method-source-code" id="multiplex_next-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 69</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 70</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">multiplex_next</span>(<span class="ruby-identifier">query_options</span>, <span class="ruby-value">context:</span> {}, <span class="ruby-value">max_complexity:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">max_complexity</span>)
   <span class="ruby-constant">Next</span>.<span class="ruby-identifier">run_all</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">query_options</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>, <span class="ruby-value">max_complexity</span><span class="ruby-value">:</span> <span class="ruby-identifier">max_complexity</span>)
 <span class="ruby-keyword">end</span></pre>

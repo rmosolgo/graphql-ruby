@@ -559,7 +559,7 @@
 
 
           <div class="method-source-code" id="active-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 66</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 67</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">active?</span>(<span class="ruby-identifier">keyword</span>)
   <span class="ruby-ivar">@trace</span>.<span class="ruby-identifier">prometheus_keys_whitelist</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">keyword</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -609,7 +609,7 @@
 
 
           <div class="method-source-code" id="gettime-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 70</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 71</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">gettime</span>
   ::<span class="ruby-constant">Process</span>.<span class="ruby-identifier">clock_gettime</span>(::<span class="ruby-constant">Process</span><span class="ruby-operator">::</span><span class="ruby-constant">CLOCK_MONOTONIC</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -659,7 +659,7 @@
 
 
           <div class="method-source-code" id="instrument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 54</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 55</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">instrument</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">active?</span>(<span class="ruby-identifier">keyword</span>)
     <span class="ruby-identifier">start</span> = <span class="ruby-identifier">gettime</span>
@@ -717,7 +717,7 @@
 
 
           <div class="method-source-code" id="send_json-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 74</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 75</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">send_json</span>(<span class="ruby-identifier">duration</span>, <span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">event_name</span> = <span class="ruby-identifier">name_for</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-ivar">@trace</span>.<span class="ruby-identifier">prometheus_client</span>.<span class="ruby-identifier">send_json</span>(

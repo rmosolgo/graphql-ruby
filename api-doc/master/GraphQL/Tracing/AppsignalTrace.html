@@ -505,7 +505,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_trace.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_trace.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">set_action_name:</span> <span class="ruby-keyword">false</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)
   <span class="ruby-identifier">rest</span>[<span class="ruby-value">:</span><span class="ruby-value">set_transaction_name</span>] ||= <span class="ruby-identifier">set_action_name</span>
   <span class="ruby-identifier">setup_appsignal_monitor</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)

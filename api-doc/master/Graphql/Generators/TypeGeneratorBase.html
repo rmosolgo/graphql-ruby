@@ -588,7 +588,7 @@
 
 
           <div class="method-source-code" id="normalize_type_expression-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/type_generator.rb, line 50</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/type_generator.rb, line 51</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">normalize_type_expression</span>(<span class="ruby-identifier">type_expression</span>, <span class="ruby-value">mode:</span>, <span class="ruby-value">null:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">type_expression</span>.<span class="ruby-identifier">start_with?</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">!</span><span class="ruby-string">&quot;</span>)
     <span class="ruby-identifier">normalize_type_expression</span>(<span class="ruby-identifier">type_expression</span>[<span class="ruby-value">1</span>..-<span class="ruby-value">1</span>], <span class="ruby-value">mode</span><span class="ruby-value">:</span> <span class="ruby-identifier">mode</span>, <span class="ruby-value">null</span><span class="ruby-value">:</span> <span class="ruby-keyword">false</span>)
@@ -695,7 +695,7 @@
 
 
           <div class="method-source-code" id="create_type_file-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/type_generator.rb, line 30</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/type_generator.rb, line 31</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">create_type_file</span>
   <span class="ruby-identifier">template</span> <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">graphql_type</span><span class="ruby-string">}</span><span class="ruby-string">.erb</span><span class="ruby-string">&quot;</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">options</span>[<span class="ruby-value">:</span><span class="ruby-value">directory</span>]<span class="ruby-string">}</span><span class="ruby-string">/types</span><span class="ruby-string">#{</span><span class="ruby-identifier">subdirectory</span><span class="ruby-string">}</span><span class="ruby-string">/</span><span class="ruby-string">#{</span><span class="ruby-identifier">type_file_name</span><span class="ruby-string">}</span><span class="ruby-string">.rb</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>

@@ -553,7 +553,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 9</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">val</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">val</span>
 <span class="ruby-keyword">end</span></pre>
@@ -603,7 +603,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 12</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 13</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">val</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">val</span>
 <span class="ruby-keyword">end</span></pre>
@@ -653,7 +653,7 @@
 
 
           <div class="method-source-code" id="default_scalar-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_scalar</span>(<span class="ruby-identifier">is_default</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">is_default</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-ivar">@default_scalar</span> = <span class="ruby-identifier">is_default</span>
@@ -706,7 +706,7 @@
 
 
           <div class="method-source-code" id="default_scalar-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_scalar?</span>
   <span class="ruby-ivar">@default_scalar</span> ||= <span class="ruby-keyword">false</span>
 <span class="ruby-keyword">end</span></pre>
@@ -756,7 +756,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">SCALAR</span>
 <span class="ruby-keyword">end</span></pre>
@@ -806,7 +806,7 @@
 
 
           <div class="method-source-code" id="specified_by_url-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 20</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 21</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">specified_by_url</span>(<span class="ruby-identifier">new_url</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_url</span>
     <span class="ruby-identifier">directive</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Directive</span><span class="ruby-operator">::</span><span class="ruby-constant">SpecifiedBy</span>, <span class="ruby-value">url</span><span class="ruby-value">:</span> <span class="ruby-identifier">new_url</span>)
@@ -864,7 +864,7 @@
 
 
           <div class="method-source-code" id="validate_non_null_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_non_null_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-value">max_errors:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">coerced_result</span> = <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)

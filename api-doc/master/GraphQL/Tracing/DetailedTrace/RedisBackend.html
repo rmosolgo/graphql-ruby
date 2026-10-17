@@ -567,7 +567,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 9</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">redis:</span>, <span class="ruby-value">limit:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@redis</span> = <span class="ruby-identifier">redis</span>
   <span class="ruby-ivar">@key</span> = <span class="ruby-constant">KEY_PREFIX</span> <span class="ruby-operator">+</span> <span class="ruby-string">&quot;</span><span class="ruby-string">traces</span><span class="ruby-string">&quot;</span>
@@ -633,7 +633,7 @@
 
 
           <div class="method-source-code" id="delete_all_traces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_all_traces</span>
   <span class="ruby-ivar">@redis</span>.<span class="ruby-identifier">del</span>(<span class="ruby-ivar">@key</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -683,7 +683,7 @@
 
 
           <div class="method-source-code" id="delete_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_trace</span>(<span class="ruby-identifier">id</span>)
   <span class="ruby-ivar">@redis</span>.<span class="ruby-identifier">zremrangebyscore</span>(<span class="ruby-ivar">@key</span>, <span class="ruby-identifier">id</span>, <span class="ruby-identifier">id</span>)
   <span class="ruby-keyword">nil</span>
@@ -734,7 +734,7 @@
 
 
           <div class="method-source-code" id="find_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 36</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">find_trace</span>(<span class="ruby-identifier">id</span>)
   <span class="ruby-identifier">str_data</span> = <span class="ruby-ivar">@redis</span>.<span class="ruby-identifier">zrange</span>(<span class="ruby-ivar">@key</span>, <span class="ruby-identifier">id</span>, <span class="ruby-identifier">id</span>, <span class="ruby-value">byscore</span><span class="ruby-value">:</span> <span class="ruby-keyword">true</span>).<span class="ruby-identifier">first</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">str_data</span>.<span class="ruby-identifier">nil?</span>
@@ -789,7 +789,7 @@
 
 
           <div class="method-source-code" id="save_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">save_trace</span>(<span class="ruby-identifier">operation_name</span>, <span class="ruby-identifier">duration_ms</span>, <span class="ruby-identifier">begin_ms</span>, <span class="ruby-identifier">trace_data</span>)
   <span class="ruby-identifier">id</span> = <span class="ruby-identifier">begin_ms</span>
   <span class="ruby-identifier">data</span> = <span class="ruby-constant">JSON</span>.<span class="ruby-identifier">dump</span>({ <span class="ruby-string">&quot;</span><span class="ruby-string">o</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">operation_name</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">d</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">duration_ms</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">b</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">begin_ms</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">t</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-constant">Base64</span>.<span class="ruby-identifier">encode64</span>(<span class="ruby-identifier">trace_data</span>) })
@@ -847,7 +847,7 @@
 
 
           <div class="method-source-code" id="traces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 14</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/redis_backend.rb, line 15</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">traces</span>(<span class="ruby-value">last:</span>, <span class="ruby-value">before:</span>)
   <span class="ruby-identifier">before</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">before</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Numeric</span>

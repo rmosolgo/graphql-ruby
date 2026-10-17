@@ -610,7 +610,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 12</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">values:</span>)
   <span class="ruby-ivar">@query</span> = <span class="ruby-identifier">query</span>
   <span class="ruby-ivar">@to_h</span> = <span class="ruby-identifier">values</span>
@@ -678,7 +678,7 @@
 
 
           <div class="method-source-code" id="3D-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 60</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 61</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">==</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">other</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Hash</span>
@@ -752,7 +752,7 @@
 
 
           <div class="method-source-code" id="inspect-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inspect</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">#&lt;GraphQL::Query::Result @query=... @to_h=</span><span class="ruby-string">#{</span><span class="ruby-ivar">@to_h</span><span class="ruby-string">}</span><span class="ruby-string">&gt;</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -802,7 +802,7 @@
 
 
           <div class="method-source-code" id="method_missing-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">method_missing</span>(<span class="ruby-identifier">method_name</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@to_h</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">method_name</span>)
     <span class="ruby-ivar">@to_h</span>.<span class="ruby-identifier">public_send</span>(<span class="ruby-identifier">method_name</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
@@ -861,7 +861,7 @@
 
 
           <div class="method-source-code" id="respond_to_missing-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/result.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">respond_to_missing?</span>(<span class="ruby-identifier">method_name</span>, <span class="ruby-identifier">include_private</span> = <span class="ruby-keyword">false</span>)
   <span class="ruby-ivar">@to_h</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">method_name</span>) <span class="ruby-operator">||</span> <span class="ruby-keyword">super</span>
 <span class="ruby-keyword">end</span></pre>

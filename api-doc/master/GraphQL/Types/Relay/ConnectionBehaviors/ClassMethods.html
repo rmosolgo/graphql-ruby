@@ -594,7 +594,7 @@
 
 
           <div class="method-source-code" id="authorized-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 128</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 129</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized?</span>(<span class="ruby-identifier">obj</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-keyword">true</span> <span class="ruby-comment"># Let nodes be filtered out</span>
 <span class="ruby-keyword">end</span></pre>
@@ -644,7 +644,7 @@
 
 
           <div class="method-source-code" id="default_broadcastable-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 46</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 47</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_broadcastable</span>(<span class="ruby-identifier">new_value</span>)
   <span class="ruby-ivar">@default_broadcastable</span> = <span class="ruby-identifier">new_value</span>
 <span class="ruby-keyword">end</span></pre>
@@ -694,7 +694,7 @@
 
 
           <div class="method-source-code" id="default_broadcastable-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 42</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 43</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_broadcastable?</span>
   <span class="ruby-ivar">@default_broadcastable</span>
 <span class="ruby-keyword">end</span></pre>
@@ -744,7 +744,7 @@
 
 
           <div class="method-source-code" id="default_relay-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 38</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 39</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_relay?</span>
   <span class="ruby-keyword">true</span>
 <span class="ruby-keyword">end</span></pre>
@@ -794,7 +794,7 @@
 
 
           <div class="method-source-code" id="edge_nullable-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 159</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 160</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">edge_nullable</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@edge_nullable</span>) <span class="ruby-operator">?</span> <span class="ruby-ivar">@edge_nullable</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">edge_nullable</span>
@@ -851,7 +851,7 @@
 
 
           <div class="method-source-code" id="edge_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 77</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 78</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">edge_type</span>(<span class="ruby-identifier">edge_type_class</span>, <span class="ruby-value">edge_class:</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Pagination</span><span class="ruby-operator">::</span><span class="ruby-constant">Connection</span><span class="ruby-operator">::</span><span class="ruby-constant">Edge</span>, <span class="ruby-value">node_type:</span> <span class="ruby-identifier">edge_type_class</span>.<span class="ruby-identifier">node_type</span>, <span class="ruby-value">nodes_field:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">has_nodes_field</span>, <span class="ruby-value">node_nullable:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">node_nullable</span>, <span class="ruby-value">edges_nullable:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">edges_nullable</span>, <span class="ruby-value">edge_nullable:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">edge_nullable</span>, <span class="ruby-value">field_options:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-comment"># Set this connection&#39;s graphql name</span>
   <span class="ruby-identifier">node_type_name</span> = <span class="ruby-identifier">node_type</span>.<span class="ruby-identifier">graphql_name</span>
@@ -934,7 +934,7 @@
 
 
           <div class="method-source-code" id="edges_nullable-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 149</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 150</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">edges_nullable</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@edges_nullable</span>) <span class="ruby-operator">?</span> <span class="ruby-ivar">@edges_nullable</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">edges_nullable</span>
@@ -988,7 +988,7 @@
 
 
           <div class="method-source-code" id="has_nodes_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 169</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 170</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_nodes_field</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@nodes_field</span>) <span class="ruby-operator">?</span> <span class="ruby-ivar">@nodes_field</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">has_nodes_field</span>
@@ -1042,7 +1042,7 @@
 
 
           <div class="method-source-code" id="inherited-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">has_nodes_field</span>(<span class="ruby-identifier">has_nodes_field</span>)
@@ -1105,7 +1105,7 @@
 
 
           <div class="method-source-code" id="node_nullable-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 139</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 140</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">node_nullable</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@node_nullable</span>) <span class="ruby-operator">?</span> <span class="ruby-ivar">@node_nullable</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">node_nullable</span>
@@ -1159,7 +1159,7 @@
 
 
           <div class="method-source-code" id="nodes_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 124</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 125</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">nodes_field</span>(<span class="ruby-value">node_nullable:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">node_nullable</span>, <span class="ruby-value">field_options:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">define_nodes_field</span>(<span class="ruby-identifier">node_nullable</span>, <span class="ruby-value">field_options</span><span class="ruby-value">:</span> <span class="ruby-identifier">field_options</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1209,7 +1209,7 @@
 
 
           <div class="method-source-code" id="reauthorize_scoped_objects-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 111</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 112</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">reauthorize_scoped_objects</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@reauthorize_scoped_objects</span> <span class="ruby-operator">!=</span> <span class="ruby-keyword">nil</span>
@@ -1267,7 +1267,7 @@
 
 
           <div class="method-source-code" id="scope_items-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 106</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 107</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scope_items</span>(<span class="ruby-identifier">items</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">node_type</span>.<span class="ruby-identifier">scope_items</span>(<span class="ruby-identifier">items</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1317,7 +1317,7 @@
 
 
           <div class="method-source-code" id="visible-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 132</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 133</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible?</span>(<span class="ruby-identifier">ctx</span>)
   <span class="ruby-comment"># if this is an abstract base class, there may be no `node_type`</span>
   <span class="ruby-identifier">node_type</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">node_type</span>.<span class="ruby-identifier">visible?</span>(<span class="ruby-identifier">ctx</span>) <span class="ruby-operator">:</span> <span class="ruby-keyword">super</span>

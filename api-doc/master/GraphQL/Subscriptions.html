@@ -591,7 +591,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">schema:</span>, <span class="ruby-value">validate_update:</span> <span class="ruby-keyword">true</span>, <span class="ruby-value">broadcast:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">default_broadcastable:</span> <span class="ruby-keyword">false</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">broadcast</span>
     <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">query_analyzer</span>(<span class="ruby-constant">Subscriptions</span><span class="ruby-operator">::</span><span class="ruby-constant">BroadcastAnalyzer</span>)
@@ -651,7 +651,7 @@
 
 
           <div class="method-source-code" id="use-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">use</span>(<span class="ruby-identifier">defn</span>, <span class="ruby-identifier">options</span> = {})
   <span class="ruby-identifier">schema</span> = <span class="ruby-identifier">defn</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Class</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">defn</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">defn</span>.<span class="ruby-identifier">target</span>
 
@@ -727,7 +727,7 @@
 
 
           <div class="method-source-code" id="broadcastable-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 331</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 332</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">broadcastable?</span>(<span class="ruby-identifier">query_str</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">query_options</span>)
   <span class="ruby-identifier">query</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">query_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@schema</span>, <span class="ruby-identifier">query_str</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">query_options</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">query</span>.<span class="ruby-identifier">valid?</span>
@@ -788,7 +788,7 @@
 
 
           <div class="method-source-code" id="build_id-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 301</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 302</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_id</span>
   <span class="ruby-constant">SecureRandom</span>.<span class="ruby-identifier">uuid</span>
 <span class="ruby-keyword">end</span></pre>
@@ -844,7 +844,7 @@
 
 
           <div class="method-source-code" id="delete_subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 291</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 292</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_subscription</span>(<span class="ruby-identifier">subscription_id</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>
 <span class="ruby-keyword">end</span></pre>
@@ -907,7 +907,7 @@
 
 
           <div class="method-source-code" id="deliver-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 256</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 257</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">deliver</span>(<span class="ruby-identifier">subscription_id</span>, <span class="ruby-identifier">result</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>
 <span class="ruby-keyword">end</span></pre>
@@ -972,7 +972,7 @@
 
 
           <div class="method-source-code" id="execute-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 193</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 194</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute</span>(<span class="ruby-identifier">subscription_id</span>, <span class="ruby-identifier">event</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">res</span> = <span class="ruby-identifier">execute_update</span>(<span class="ruby-identifier">subscription_id</span>, <span class="ruby-identifier">event</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">res</span>.<span class="ruby-identifier">nil?</span>
@@ -1040,7 +1040,7 @@
 
 
           <div class="method-source-code" id="execute_all-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 221</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 222</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_all</span>(<span class="ruby-identifier">event</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1105,7 +1105,7 @@
 
 
           <div class="method-source-code" id="execute_update-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 128</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 129</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_update</span>(<span class="ruby-identifier">subscription_id</span>, <span class="ruby-identifier">event</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-comment"># Lookup the saved data for this subscription</span>
   <span class="ruby-identifier">query_data</span> = <span class="ruby-identifier">read_subscription</span>(<span class="ruby-identifier">subscription_id</span>)
@@ -1209,7 +1209,7 @@
 
 
           <div class="method-source-code" id="finalizer-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 378</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 379</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finalizer</span>
   <span class="ruby-constant">Finalizer</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1262,7 +1262,7 @@
 
 
           <div class="method-source-code" id="finish_subscriptions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 371</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 372</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finish_subscriptions</span>(<span class="ruby-identifier">query</span>)
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">events</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">subscriptions</span>)[<span class="ruby-value">:</span><span class="ruby-value">events</span>]) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">events</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">write_subscription</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">events</span>)
@@ -1328,7 +1328,7 @@
 
 
           <div class="method-source-code" id="initialize_subscriptions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 352</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 353</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize_subscriptions</span>(<span class="ruby-identifier">query</span>)
   <span class="ruby-identifier">subs_namespace</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">subscriptions</span>)
   <span class="ruby-identifier">subs_namespace</span>[<span class="ruby-value">:</span><span class="ruby-value">events</span>] = []
@@ -1394,7 +1394,7 @@
 
 
           <div class="method-source-code" id="normalize_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 321</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 322</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">normalize_name</span>(<span class="ruby-identifier">event_or_arg_name</span>)
   <span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Member</span><span class="ruby-operator">::</span><span class="ruby-constant">BuildType</span>.<span class="ruby-identifier">camelize</span>(<span class="ruby-identifier">event_or_arg_name</span>.<span class="ruby-identifier">to_s</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1459,7 +1459,7 @@
 
 
           <div class="method-source-code" id="read_subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 238</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 239</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">read_subscription</span>(<span class="ruby-identifier">subscription_id</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1522,7 +1522,7 @@
 
 
           <div class="method-source-code" id="trigger-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 76</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 77</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">trigger</span>(<span class="ruby-identifier">event_name</span>, <span class="ruby-identifier">args</span>, <span class="ruby-identifier">object</span>, <span class="ruby-value">scope:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span> {})
   <span class="ruby-comment"># Make something as context-like as possible, even though there isn&#39;t a current query:</span>
   <span class="ruby-identifier">dummy_query</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">query_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@schema</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">{ __typename }</span><span class="ruby-string">&quot;</span>, <span class="ruby-value">validate</span><span class="ruby-value">:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>)
@@ -1624,7 +1624,7 @@
 
 
           <div class="method-source-code" id="validate_update-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 179</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 180</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_update?</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">root_value:</span>, <span class="ruby-value">subscription_topic:</span>, <span class="ruby-value">operation_name:</span>, <span class="ruby-value">variables:</span>)
   <span class="ruby-ivar">@validate_update</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1682,7 +1682,7 @@
 
 
           <div class="method-source-code" id="write_subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 274</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions.rb, line 275</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">write_subscription</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">events</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>
 <span class="ruby-keyword">end</span></pre>

@@ -523,7 +523,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-comment"># holds { name =&gt; ast_node } pairs</span>
@@ -594,7 +594,7 @@
 
 
           <div class="method-source-code" id="on_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_argument</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">node_values</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>)
     <span class="ruby-identifier">node</span>.<span class="ruby-identifier">value</span>
@@ -681,7 +681,7 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 12</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@declared_variables</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">variables</span>.<span class="ruby-identifier">each_with_object</span>({}) { <span class="ruby-operator">|</span><span class="ruby-identifier">var</span>, <span class="ruby-identifier">memo</span><span class="ruby-operator">|</span> <span class="ruby-identifier">memo</span>[<span class="ruby-identifier">var</span>.<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">var</span> }
   <span class="ruby-keyword">super</span>

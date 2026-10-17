@@ -516,7 +516,7 @@
 
 
           <div class="method-source-code" id="freeze_error_handlers-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/ractor_shareable.rb, line 12</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/ractor_shareable.rb, line 13</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">freeze_error_handlers</span>(<span class="ruby-identifier">handlers</span>)
   <span class="ruby-identifier">handlers</span>[<span class="ruby-value">:</span><span class="ruby-value">subclass_handlers</span>].<span class="ruby-identifier">default_proc</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-identifier">handlers</span>[<span class="ruby-value">:</span><span class="ruby-value">subclass_handlers</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">_class</span>, <span class="ruby-identifier">subclass_handlers</span><span class="ruby-operator">|</span>
@@ -570,7 +570,7 @@
 
 
           <div class="method-source-code" id="freeze_schema-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/ractor_shareable.rb, line 20</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/ractor_shareable.rb, line 21</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">freeze_schema</span>
   <span class="ruby-comment"># warm some ivars:</span>
   <span class="ruby-identifier">default_analysis_engine</span>

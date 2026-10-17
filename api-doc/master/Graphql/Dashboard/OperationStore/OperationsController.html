@@ -533,7 +533,7 @@
 
 
           <div class="method-source-code" id="index-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/operation_store.rb, line 82</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/operation_store.rb, line 83</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">index</span>
   <span class="ruby-ivar">@client_operations</span> = <span class="ruby-identifier">client_name</span> = <span class="ruby-identifier">params</span>[<span class="ruby-value">:</span><span class="ruby-value">client_name</span>]
   <span class="ruby-identifier">per_page</span> = <span class="ruby-identifier">params</span>[<span class="ruby-value">:</span><span class="ruby-value">per_page</span>]&amp;.<span class="ruby-identifier">to_i</span> <span class="ruby-operator">||</span> <span class="ruby-value">25</span>
@@ -629,7 +629,7 @@
 
 
           <div class="method-source-code" id="show-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/operation_store.rb, line 132</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/operation_store.rb, line 133</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">show</span>
   <span class="ruby-identifier">digest</span> = <span class="ruby-identifier">params</span>[<span class="ruby-value">:</span><span class="ruby-value">digest</span>]
   <span class="ruby-ivar">@operation</span> = <span class="ruby-identifier">schema_class</span>.<span class="ruby-identifier">operation_store</span>.<span class="ruby-identifier">get_operation_by_digest</span>(<span class="ruby-identifier">digest</span>)
@@ -688,7 +688,7 @@
 
 
           <div class="method-source-code" id="update-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/operation_store.rb, line 145</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/operation_store.rb, line 146</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">update</span>
   <span class="ruby-identifier">is_archived</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">params</span>[<span class="ruby-value">:</span><span class="ruby-value">modification</span>]
   <span class="ruby-keyword">when</span> <span class="ruby-value">:</span><span class="ruby-value">archive</span>

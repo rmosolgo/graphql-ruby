@@ -608,7 +608,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_trace.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_trace.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">set_transaction_name:</span>, <span class="ruby-value">service:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">tracer:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">_rest</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">tracer</span>.<span class="ruby-identifier">nil?</span>
@@ -683,7 +683,7 @@
 
 
           <div class="method-source-code" id="instrument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_trace.rb, line 38</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_trace.rb, line 39</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">instrument</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">trace_key</span> = <span class="ruby-identifier">name_for</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-ivar">@tracer</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-identifier">trace_key</span>, <span class="ruby-value">service</span><span class="ruby-value">:</span> <span class="ruby-ivar">@service_name</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-string">&#39;</span><span class="ruby-string">custom</span><span class="ruby-string">&#39;</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">span</span><span class="ruby-operator">|</span>

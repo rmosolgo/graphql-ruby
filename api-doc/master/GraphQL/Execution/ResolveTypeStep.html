@@ -519,7 +519,7 @@
 
 
           <div class="method-source-code" id="assert_valid_resolved_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/resolve_type_step.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/resolve_type_step.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">assert_valid_resolved_type</span>(<span class="ruby-identifier">abstract_type</span>, <span class="ruby-identifier">resolved_type</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">field_resolution_step</span>, <span class="ruby-value">query:</span> <span class="ruby-identifier">field_resolution_step</span>.<span class="ruby-identifier">selections_step</span>.<span class="ruby-identifier">query</span>)
   <span class="ruby-identifier">possible_types</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">possible_types</span>(<span class="ruby-identifier">abstract_type</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">possible_types</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">resolved_type</span>)
@@ -574,7 +574,7 @@
 
 
           <div class="method-source-code" id="resolve_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/resolve_type_step.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/resolve_type_step.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_type</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">query</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">begin_resolve_type</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">resolved_type_response</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">resolve_type</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">object</span>)

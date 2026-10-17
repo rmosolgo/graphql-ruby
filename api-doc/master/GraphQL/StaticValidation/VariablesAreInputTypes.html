@@ -508,7 +508,7 @@
 
 
           <div class="method-source-code" id="on_variable_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_input_types.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_input_types.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_variable_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">type_name</span> = <span class="ruby-identifier">get_type_name</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>)
   <span class="ruby-identifier">type</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">type_name</span>)

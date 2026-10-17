@@ -590,7 +590,7 @@
 
 
           <div class="method-source-code" id="version-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">version</span>
   <span class="ruby-constant">Gem</span><span class="ruby-operator">::</span><span class="ruby-constant">Version</span>.<span class="ruby-identifier">new</span>(<span class="ruby-string">&#39;</span><span class="ruby-string">1.0.0</span><span class="ruby-string">&#39;</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -654,7 +654,7 @@
 
 
           <div class="method-source-code" id="authorized-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 96</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 97</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">data</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">super</span> <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-keyword">defined?</span>(<span class="ruby-constant">AppOpticsAPM</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">gql_config</span>[<span class="ruby-value">:</span><span class="ruby-value">enabled</span>] <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span>
   <span class="ruby-identifier">layer</span> = <span class="ruby-ivar">@platform_key_cache</span>[<span class="ruby-constant">AppOpticsTrace</span>].<span class="ruby-identifier">platform_authorized_key_cache</span>[<span class="ruby-identifier">data</span>[<span class="ruby-value">:</span><span class="ruby-value">type</span>]]
@@ -716,7 +716,7 @@
 
 
           <div class="method-source-code" id="authorized_lazy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 107</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 108</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized_lazy</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">data</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">super</span> <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-keyword">defined?</span>(<span class="ruby-constant">AppOpticsAPM</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">gql_config</span>[<span class="ruby-value">:</span><span class="ruby-value">enabled</span>] <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span>
   <span class="ruby-identifier">layer</span> = <span class="ruby-ivar">@platform_key_cache</span>[<span class="ruby-constant">AppOpticsTrace</span>].<span class="ruby-identifier">platform_authorized_key_cache</span>[<span class="ruby-identifier">data</span>[<span class="ruby-value">:</span><span class="ruby-value">type</span>]]
@@ -778,7 +778,7 @@
 
 
           <div class="method-source-code" id="execute_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 66</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 67</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_field</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">field:</span>, <span class="ruby-value">ast_node:</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">object:</span>)
   <span class="ruby-identifier">return_type</span> = <span class="ruby-identifier">field</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">unwrap</span>
   <span class="ruby-identifier">trace_field</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">return_type</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">scalar?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">return_type</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">enum?</span>
@@ -855,7 +855,7 @@
 
 
           <div class="method-source-code" id="execute_field_lazy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 92</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 93</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_field_lazy</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">field:</span>, <span class="ruby-value">ast_node:</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">object:</span>)  <span class="ruby-comment"># rubocop:disable Development/TraceCallsSuperCop</span>
   <span class="ruby-identifier">execute_field</span>(<span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>, <span class="ruby-value">field</span><span class="ruby-value">:</span> <span class="ruby-identifier">field</span>, <span class="ruby-value">ast_node</span><span class="ruby-value">:</span> <span class="ruby-identifier">ast_node</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-identifier">arguments</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -905,7 +905,7 @@
 
 
           <div class="method-source-code" id="platform_authorized_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 147</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 148</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_authorized_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">graphql.authorized.</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -955,7 +955,7 @@
 
 
           <div class="method-source-code" id="platform_field_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 143</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 144</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_field_key</span>(<span class="ruby-identifier">field</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">graphql.</span><span class="ruby-string">#{</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">owner</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1005,7 +1005,7 @@
 
 
           <div class="method-source-code" id="platform_resolve_type_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 151</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 152</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_resolve_type_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">graphql.resolve_type.</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1055,7 +1055,7 @@
 
 
           <div class="method-source-code" id="resolve_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 118</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 119</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_type</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">data</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">super</span> <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-keyword">defined?</span>(<span class="ruby-constant">AppOpticsAPM</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">gql_config</span>[<span class="ruby-value">:</span><span class="ruby-value">enabled</span>] <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span>
   <span class="ruby-identifier">layer</span> = <span class="ruby-ivar">@platform_key_cache</span>[<span class="ruby-constant">AppOpticsTrace</span>].<span class="ruby-identifier">platform_resolve_type_key_cache</span>[<span class="ruby-identifier">data</span>[<span class="ruby-value">:</span><span class="ruby-value">type</span>]]
@@ -1118,7 +1118,7 @@
 
 
           <div class="method-source-code" id="resolve_type_lazy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 130</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appoptics_trace.rb, line 131</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_type_lazy</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">data</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">super</span> <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-keyword">defined?</span>(<span class="ruby-constant">AppOpticsAPM</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">gql_config</span>[<span class="ruby-value">:</span><span class="ruby-value">enabled</span>] <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span>
   <span class="ruby-identifier">layer</span> = <span class="ruby-ivar">@platform_key_cache</span>[<span class="ruby-constant">AppOpticsTrace</span>].<span class="ruby-identifier">platform_resolve_type_key_cache</span>[<span class="ruby-identifier">data</span>[<span class="ruby-value">:</span><span class="ruby-value">type</span>]]

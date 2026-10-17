@@ -522,7 +522,7 @@
 
 
           <div class="method-source-code" id="find_handler_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/errors.rb, line 69</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/errors.rb, line 70</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">find_handler_for</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-identifier">error_class</span>)
   <span class="ruby-identifier">handlers</span> = <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">error_handlers</span>[<span class="ruby-value">:</span><span class="ruby-value">subclass_handlers</span>]
   <span class="ruby-identifier">handler</span> = <span class="ruby-keyword">nil</span>
@@ -610,7 +610,7 @@
 
 
           <div class="method-source-code" id="register_rescue_from-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/errors.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/errors.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">register_rescue_from</span>(<span class="ruby-identifier">error_class</span>, <span class="ruby-identifier">error_handlers</span>, <span class="ruby-identifier">error_handler</span>)
   <span class="ruby-identifier">subclasses_handlers</span> = {}
   <span class="ruby-identifier">this_level_subclasses</span> = []

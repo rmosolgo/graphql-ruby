@@ -573,7 +573,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">query</span>)
   <span class="ruby-ivar">@query</span> = <span class="ruby-identifier">query</span>
   <span class="ruby-ivar">@dataloader</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">dataloader</span>
@@ -636,7 +636,7 @@
 
 
           <div class="method-source-code" id="prepare_args_hash-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 60</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 61</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">prepare_args_hash</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">ast_arg_or_hash_or_value</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">ast_arg_or_hash_or_value</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Hash</span>
@@ -737,7 +737,7 @@
 
 
           <div class="method-source-code" id="cached_arguments_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cached_arguments_for</span>(<span class="ruby-identifier">ast_node</span>, <span class="ruby-identifier">argument_owner</span>)
   <span class="ruby-ivar">@storage</span>[<span class="ruby-identifier">argument_owner</span>][<span class="ruby-keyword">nil</span>][<span class="ruby-identifier">ast_node</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -787,7 +787,7 @@
 
 
           <div class="method-source-code" id="dataload_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 40</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 41</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataload_for</span>(<span class="ruby-identifier">ast_node</span>, <span class="ruby-identifier">argument_owner</span>, <span class="ruby-identifier">parent_object</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-comment"># First, normalize all AST or Ruby values to a plain Ruby hash</span>
   <span class="ruby-identifier">arg_storage</span> = <span class="ruby-ivar">@storage</span>[<span class="ruby-identifier">argument_owner</span>][<span class="ruby-identifier">parent_object</span>]
@@ -848,7 +848,7 @@
 
 
           <div class="method-source-code" id="fetch-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/arguments_cache.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">ast_node</span>, <span class="ruby-identifier">argument_owner</span>, <span class="ruby-identifier">parent_object</span>)
   <span class="ruby-comment"># This runs eagerly if no block is given</span>
   <span class="ruby-ivar">@storage</span>[<span class="ruby-identifier">argument_owner</span>][<span class="ruby-identifier">parent_object</span>][<span class="ruby-identifier">ast_node</span>] ||= <span class="ruby-keyword">begin</span>

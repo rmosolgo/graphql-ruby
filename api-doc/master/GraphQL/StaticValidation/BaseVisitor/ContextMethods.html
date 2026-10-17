@@ -560,7 +560,7 @@
 
 
           <div class="method-source-code" id="argument_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 253</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 254</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument_definition</span>
   <span class="ruby-comment"># Return the parent argument definition (not the current one).</span>
   <span class="ruby-ivar">@parent_argument_definition</span>
@@ -614,7 +614,7 @@
 
 
           <div class="method-source-code" id="child_positions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 199</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 200</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">child_positions</span>(<span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@child_positions</span>[<span class="ruby-identifier">parent</span>] ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">positions</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
@@ -671,7 +671,7 @@
 
 
           <div class="method-source-code" id="directive_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 243</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 244</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directive_definition</span>
   <span class="ruby-ivar">@current_directive_definition</span>
 <span class="ruby-keyword">end</span></pre>
@@ -727,7 +727,7 @@
 
 
           <div class="method-source-code" id="field_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 233</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 234</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_definition</span>
   <span class="ruby-ivar">@current_field_definition</span>
 <span class="ruby-keyword">end</span></pre>
@@ -780,7 +780,7 @@
 
 
           <div class="method-source-code" id="on_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 152</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 153</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_argument</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">argument_defn</span> = <span class="ruby-keyword">if</span> (<span class="ruby-identifier">arg</span> = <span class="ruby-ivar">@current_argument_definition</span>)
     <span class="ruby-identifier">arg_type</span> = <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">unwrap</span>
@@ -859,7 +859,7 @@
 
 
           <div class="method-source-code" id="on_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 144</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 145</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_directive</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">directive_defn</span> = <span class="ruby-ivar">@context</span>.<span class="ruby-identifier">schema_directives</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>]
   <span class="ruby-identifier">prev_directive_definition</span> = <span class="ruby-ivar">@current_directive_definition</span>
@@ -918,7 +918,7 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 123</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 124</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">parent_type</span> = <span class="ruby-ivar">@current_object_type</span>
   <span class="ruby-identifier">field_definition</span> = <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">field</span>(<span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>)
@@ -990,7 +990,7 @@
 
 
           <div class="method-source-code" id="on_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 85</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 86</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">object_type</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>
     <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">name</span>)
@@ -1058,7 +1058,7 @@
 
 
           <div class="method-source-code" id="on_fragment_spread-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 180</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 181</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_spread</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@path</span>[<span class="ruby-ivar">@path_depth</span>] = <span class="ruby-string">&quot;</span><span class="ruby-string">... </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
   <span class="ruby-ivar">@path_depth</span> += <span class="ruby-value">1</span>
@@ -1116,7 +1116,7 @@
 
 
           <div class="method-source-code" id="on_inline_fragment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 104</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 105</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_inline_fragment</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>
     <span class="ruby-identifier">object_type</span> = <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">name</span>)
@@ -1186,7 +1186,7 @@
 
 
           <div class="method-source-code" id="on_input_object-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 187</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 188</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_input_object</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">arg_defn</span> = <span class="ruby-ivar">@current_argument_definition</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">arg_defn</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">arg_defn</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">list?</span>
@@ -1249,7 +1249,7 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 72</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 73</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">object_type</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">root_type_for_operation</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span>)
   <span class="ruby-identifier">prev_parent_ot</span> = <span class="ruby-ivar">@parent_object_type</span>
@@ -1316,7 +1316,7 @@
 
 
           <div class="method-source-code" id="parent_type_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 223</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 224</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parent_type_definition</span>
   <span class="ruby-ivar">@parent_object_type</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1372,7 +1372,7 @@
 
 
           <div class="method-source-code" id="type_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 213</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 214</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_definition</span>
   <span class="ruby-ivar">@current_object_type</span>
 <span class="ruby-keyword">end</span></pre>

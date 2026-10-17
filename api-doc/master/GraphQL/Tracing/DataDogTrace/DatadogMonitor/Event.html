@@ -537,7 +537,7 @@
 
 
           <div class="method-source-code" id="finish-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_trace.rb, line 74</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_trace.rb, line 75</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finish</span>
   <span class="ruby-ivar">@dd_span</span>.<span class="ruby-identifier">finish</span>
 <span class="ruby-keyword">end</span></pre>
@@ -587,7 +587,7 @@
 
 
           <div class="method-source-code" id="start-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_trace.rb, line 69</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_trace.rb, line 70</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">start</span>
   <span class="ruby-identifier">name</span> = <span class="ruby-ivar">@monitor</span>.<span class="ruby-identifier">name_for</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-ivar">@dd_span</span> = <span class="ruby-ivar">@monitor</span>.<span class="ruby-identifier">tracer</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-identifier">name</span>, <span class="ruby-value">service</span><span class="ruby-value">:</span> <span class="ruby-ivar">@monitor</span>.<span class="ruby-identifier">service_name</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-string">&#39;</span><span class="ruby-string">custom</span><span class="ruby-string">&#39;</span>)

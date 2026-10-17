@@ -578,7 +578,7 @@
 
 
           <div class="method-source-code" id="all_enum_value_definitions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 156</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 157</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_enum_value_definitions</span>
   <span class="ruby-identifier">all_defns</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">all_enum_value_definitions</span>)
     <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">all_enum_value_definitions</span>
@@ -648,7 +648,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 276</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 277</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value_name</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">all_values</span> = <span class="ruby-identifier">ctx</span>.<span class="ruby-identifier">types</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">ctx</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">enum_values</span>(<span class="ruby-keyword">self</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">values</span>.<span class="ruby-identifier">each_value</span>
 
@@ -729,7 +729,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 247</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 248</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">types</span> = <span class="ruby-identifier">ctx</span>.<span class="ruby-identifier">types</span>
   <span class="ruby-identifier">all_values</span> = <span class="ruby-identifier">types</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">types</span>.<span class="ruby-identifier">enum_values</span>(<span class="ruby-keyword">self</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">values</span>.<span class="ruby-identifier">each_value</span>
@@ -806,7 +806,7 @@
 
 
           <div class="method-source-code" id="enum_value_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 190</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 191</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">enum_value_class</span>(<span class="ruby-identifier">new_enum_value_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_enum_value_class</span>
     <span class="ruby-ivar">@enum_value_class</span> = <span class="ruby-identifier">new_enum_value_class</span>
@@ -868,7 +868,7 @@
 
 
           <div class="method-source-code" id="enum_values-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 114</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 115</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">enum_values</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">inherited_values</span> = <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">enum_values</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">enum_values</span>(<span class="ruby-identifier">context</span>) <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
   <span class="ruby-identifier">visible_values</span> = []
@@ -953,7 +953,7 @@
 
 
           <div class="method-source-code" id="inherited-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 291</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 292</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">name</span>
     <span class="ruby-comment"># Don&#39;t assign a custom error class to anonymous classes</span>
@@ -1014,7 +1014,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 212</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 213</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">ENUM</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1064,7 +1064,7 @@
 
 
           <div class="method-source-code" id="validate_non_null_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 216</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 217</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_non_null_input</span>(<span class="ruby-identifier">value_name</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-value">max_errors:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">allowed_values</span> = <span class="ruby-identifier">ctx</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">enum_values</span>(<span class="ruby-keyword">self</span>)
   <span class="ruby-identifier">matching_value</span> = <span class="ruby-identifier">allowed_values</span>.<span class="ruby-identifier">find</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">v</span>.<span class="ruby-identifier">graphql_name</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">value_name</span> }
@@ -1126,7 +1126,7 @@
 
 
           <div class="method-source-code" id="value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 85</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 86</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">value</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-value">value_method:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">kwargs</span>[<span class="ruby-value">:</span><span class="ruby-value">owner</span>] = <span class="ruby-keyword">self</span>
   <span class="ruby-identifier">value</span> = <span class="ruby-identifier">enum_value_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
@@ -1220,7 +1220,7 @@
 
 
           <div class="method-source-code" id="value_methods-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 200</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 201</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">value_methods</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_value</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@value_methods</span> <span class="ruby-operator">!=</span> <span class="ruby-keyword">nil</span>
@@ -1281,7 +1281,7 @@
 
 
           <div class="method-source-code" id="values-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 180</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/enum.rb, line 181</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">values</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">enum_values</span>(<span class="ruby-identifier">context</span>).<span class="ruby-identifier">each_with_object</span>({}) { <span class="ruby-operator">|</span><span class="ruby-identifier">val</span>, <span class="ruby-identifier">obj</span><span class="ruby-operator">|</span> <span class="ruby-identifier">obj</span>[<span class="ruby-identifier">val</span>.<span class="ruby-identifier">graphql_name</span>] = <span class="ruby-identifier">val</span> }
 <span class="ruby-keyword">end</span></pre>

@@ -539,7 +539,7 @@
 
 
           <div class="method-source-code" id="field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 80</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 81</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">pt</span> = <span class="ruby-identifier">payload_type</span> <span class="ruby-comment"># make sure it&#39;s initialized with any inherited fields</span>
   <span class="ruby-identifier">field_defn</span> = <span class="ruby-keyword">super</span>
@@ -612,7 +612,7 @@
 
 
           <div class="method-source-code" id="field_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_class</span>(<span class="ruby-identifier">new_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_class</span>
     <span class="ruby-ivar">@field_class</span> = <span class="ruby-identifier">new_class</span>
@@ -671,7 +671,7 @@
 
 
           <div class="method-source-code" id="object_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 67</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 68</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">object_class</span>(<span class="ruby-identifier">new_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_class</span>
     <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@payload_type</span>)
@@ -741,7 +741,7 @@
 
 
           <div class="method-source-code" id="payload_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">payload_type</span>(<span class="ruby-identifier">new_payload_type</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_payload_type</span>
     <span class="ruby-ivar">@payload_type</span> = <span class="ruby-identifier">new_payload_type</span>
@@ -808,7 +808,7 @@
 
 
           <div class="method-source-code" id="type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver/has_payload_type.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type</span>(<span class="ruby-identifier">new_type</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">null:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_type</span>
     <span class="ruby-identifier">payload_type</span>(<span class="ruby-identifier">new_type</span>)

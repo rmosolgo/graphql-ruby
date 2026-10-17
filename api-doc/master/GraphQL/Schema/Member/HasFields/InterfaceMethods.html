@@ -525,7 +525,7 @@
 
 
           <div class="method-source-code" id="fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 259</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 260</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fields</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-comment"># Local overrides take precedence over inherited fields</span>
@@ -592,7 +592,7 @@
 
 
           <div class="method-source-code" id="get_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 240</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 241</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_field</span>(<span class="ruby-identifier">field_name</span>, <span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">skip_visible</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">types</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Visibility</span><span class="ruby-operator">::</span><span class="ruby-constant">Profile</span>)

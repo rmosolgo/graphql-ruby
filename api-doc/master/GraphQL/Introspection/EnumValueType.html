@@ -536,7 +536,7 @@
 
 
           <div class="method-source-code" id="resolve_is_deprecated-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/enum_value_type.rb, line 14</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/enum_value_type.rb, line 15</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_is_deprecated</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-identifier">object</span>.<span class="ruby-identifier">deprecation_reason</span>
 <span class="ruby-keyword">end</span></pre>
@@ -600,7 +600,7 @@
 
 
           <div class="method-source-code" id="is_deprecated-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/enum_value_type.rb, line 18</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/enum_value_type.rb, line 19</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">is_deprecated</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_is_deprecated</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>

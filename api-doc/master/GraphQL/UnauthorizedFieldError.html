@@ -539,7 +539,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/unauthorized_field_error.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/unauthorized_field_error.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">object:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">type:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">field:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">message</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> [<span class="ruby-identifier">field</span>, <span class="ruby-identifier">type</span>].<span class="ruby-identifier">any?</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">nil?</span>)
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string"> requires either a message or keywords</span><span class="ruby-string">&quot;</span>

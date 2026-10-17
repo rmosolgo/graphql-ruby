@@ -760,7 +760,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">multiplex</span>)
   <span class="ruby-ivar">@multiplex</span> = <span class="ruby-identifier">multiplex</span>
   <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">multiplex</span>.<span class="ruby-identifier">schema</span>
@@ -857,7 +857,7 @@
 
 
           <div class="method-source-code" id="add_finalizer-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 63</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 64</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_finalizer</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">result_value</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">finalizer</span>)
   <span class="ruby-ivar">@finalizers</span> ||= {}.<span class="ruby-identifier">compare_by_identity</span>
   <span class="ruby-identifier">f_for_query</span> = <span class="ruby-ivar">@finalizers</span>[<span class="ruby-identifier">query</span>] ||= {}.<span class="ruby-identifier">compare_by_identity</span>
@@ -922,7 +922,7 @@
 
 
           <div class="method-source-code" id="add_step-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 51</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 52</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_step</span>(<span class="ruby-identifier">step</span>)
   <span class="ruby-ivar">@dataloader</span>.<span class="ruby-identifier">append_job</span>(<span class="ruby-identifier">step</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -972,7 +972,7 @@
 
 
           <div class="method-source-code" id="authorizes-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorizes?</span>(<span class="ruby-identifier">graphql_definition</span>, <span class="ruby-identifier">query_context</span>)
   <span class="ruby-identifier">auth_cache</span> = <span class="ruby-ivar">@authorizes_cache</span>[<span class="ruby-identifier">query_context</span>]
   <span class="ruby-keyword">case</span> (<span class="ruby-identifier">auth_res</span> = <span class="ruby-identifier">auth_cache</span>[<span class="ruby-identifier">graphql_definition</span>])
@@ -1028,7 +1028,7 @@
 
 
           <div class="method-source-code" id="execute-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 79</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 80</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute</span>
   <span class="ruby-identifier">previous_multiplex</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_multiplex</span>]
   <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_multiplex</span>] = <span class="ruby-ivar">@multiplex</span>
@@ -1173,7 +1173,7 @@
 
 
           <div class="method-source-code" id="gather_selections-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 178</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 179</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">gather_selections</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">ast_selections</span>, <span class="ruby-identifier">selections_step</span>, <span class="ruby-identifier">query</span>, <span class="ruby-identifier">all_selections</span>, <span class="ruby-identifier">prototype_result</span>, <span class="ruby-value">into:</span>)
   <span class="ruby-identifier">ast_selections</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">ast_selection</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">directives_include?</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">ast_selection</span>)
@@ -1262,7 +1262,7 @@
 
 
           <div class="method-source-code" id="lazy-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 221</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 222</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">lazy?</span>(<span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">obj_class</span> = <span class="ruby-identifier">object</span>.<span class="ruby-identifier">class</span>
   <span class="ruby-identifier">is_lazy</span> = <span class="ruby-ivar">@lazy_cache</span>[<span class="ruby-identifier">obj_class</span>]
@@ -1317,7 +1317,7 @@
 
 
           <div class="method-source-code" id="type_condition_applies-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 230</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 231</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_condition_applies?</span>(<span class="ruby-identifier">context</span>, <span class="ruby-identifier">concrete_type</span>, <span class="ruby-identifier">type_name</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">type_name</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">concrete_type</span>.<span class="ruby-identifier">graphql_name</span>
     <span class="ruby-keyword">true</span>

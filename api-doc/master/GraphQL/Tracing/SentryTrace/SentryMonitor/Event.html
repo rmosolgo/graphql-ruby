@@ -537,7 +537,7 @@
 
 
           <div class="method-source-code" id="finish-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/sentry_trace.rb, line 93</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/sentry_trace.rb, line 94</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finish</span>
   <span class="ruby-ivar">@span</span>&amp;.<span class="ruby-identifier">finish</span>
 <span class="ruby-keyword">end</span></pre>
@@ -587,7 +587,7 @@
 
 
           <div class="method-source-code" id="start-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/sentry_trace.rb, line 86</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/sentry_trace.rb, line 87</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">start</span>
   <span class="ruby-keyword">if</span> <span class="ruby-constant">Sentry</span>.<span class="ruby-identifier">initialized?</span> <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-ivar">@span</span> = <span class="ruby-constant">Sentry</span>.<span class="ruby-identifier">get_current_scope</span>.<span class="ruby-identifier">get_span</span>)
     <span class="ruby-identifier">span_name</span> = <span class="ruby-ivar">@monitor</span>.<span class="ruby-identifier">name_for</span>(<span class="ruby-ivar">@keyword</span>, <span class="ruby-ivar">@object</span>)

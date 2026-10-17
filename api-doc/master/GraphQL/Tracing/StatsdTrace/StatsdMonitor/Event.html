@@ -537,7 +537,7 @@
 
 
           <div class="method-source-code" id="finish-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_trace.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_trace.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finish</span>
   <span class="ruby-identifier">elapsed</span> = <span class="ruby-constant">Process</span>.<span class="ruby-identifier">clock_gettime</span>(<span class="ruby-constant">Process</span><span class="ruby-operator">::</span><span class="ruby-constant">CLOCK_MONOTONIC</span>) <span class="ruby-operator">-</span> <span class="ruby-ivar">@start_time</span>
   <span class="ruby-ivar">@monitor</span>.<span class="ruby-identifier">statsd</span>.<span class="ruby-identifier">timing</span>(<span class="ruby-ivar">@monitor</span>.<span class="ruby-identifier">name_for</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>), <span class="ruby-identifier">elapsed</span>)
@@ -588,7 +588,7 @@
 
 
           <div class="method-source-code" id="start-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_trace.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_trace.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">start</span>
   <span class="ruby-ivar">@start_time</span> = <span class="ruby-constant">Process</span>.<span class="ruby-identifier">clock_gettime</span>(<span class="ruby-constant">Process</span><span class="ruby-operator">::</span><span class="ruby-constant">CLOCK_MONOTONIC</span>)
 <span class="ruby-keyword">end</span></pre>

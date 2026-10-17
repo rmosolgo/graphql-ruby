@@ -537,7 +537,7 @@
 
 
           <div class="method-source-code" id="analytics_enabled-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 71</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 72</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">analytics_enabled?</span>
   <span class="ruby-comment"># [Deprecated] options[:analytics_enabled] will be removed in the future</span>
   <span class="ruby-identifier">options</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-value">:</span><span class="ruby-value">analytics_enabled</span>, <span class="ruby-keyword">false</span>)
@@ -588,7 +588,7 @@
 
 
           <div class="method-source-code" id="analytics_sample_rate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 76</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 77</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">analytics_sample_rate</span>
   <span class="ruby-comment"># [Deprecated] options[:analytics_sample_rate] will be removed in the future</span>
   <span class="ruby-identifier">options</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-value">:</span><span class="ruby-value">analytics_sample_rate</span>, <span class="ruby-value">1.0</span>)
@@ -639,7 +639,7 @@
 
 
           <div class="method-source-code" id="platform_authorized_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 85</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 86</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_authorized_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.authorized</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -689,7 +689,7 @@
 
 
           <div class="method-source-code" id="platform_field_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 81</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_field_key</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">field</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -739,7 +739,7 @@
 
 
           <div class="method-source-code" id="platform_resolve_type_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 89</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_resolve_type_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.resolve_type</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -789,7 +789,7 @@
 
 
           <div class="method-source-code" id="platform_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_trace</span>(<span class="ruby-identifier">platform_key</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">data</span>)
   <span class="ruby-identifier">tracer</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-identifier">platform_key</span>, <span class="ruby-value">service</span><span class="ruby-value">:</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:</span><span class="ruby-value">service</span>], <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-string">&#39;</span><span class="ruby-string">custom</span><span class="ruby-string">&#39;</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">span</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">span</span>.<span class="ruby-identifier">set_tag</span>(<span class="ruby-string">&#39;</span><span class="ruby-string">component</span><span class="ruby-string">&#39;</span>, <span class="ruby-string">&#39;</span><span class="ruby-string">graphql</span><span class="ruby-string">&#39;</span>)
@@ -870,7 +870,7 @@
 
 
           <div class="method-source-code" id="prepare_span-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 61</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 62</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">prepare_span</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">data</span>, <span class="ruby-identifier">span</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -928,7 +928,7 @@
 
 
           <div class="method-source-code" id="tracer-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/data_dog_tracing.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">tracer</span>
   <span class="ruby-identifier">default_tracer</span> = <span class="ruby-keyword">defined?</span>(<span class="ruby-constant">Datadog</span><span class="ruby-operator">::</span><span class="ruby-constant">Tracing</span>) <span class="ruby-operator">?</span> <span class="ruby-constant">Datadog</span><span class="ruby-operator">::</span><span class="ruby-constant">Tracing</span> <span class="ruby-operator">:</span> <span class="ruby-constant">Datadog</span>.<span class="ruby-identifier">tracer</span>
 

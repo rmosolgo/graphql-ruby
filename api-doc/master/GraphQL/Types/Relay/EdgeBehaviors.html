@@ -527,7 +527,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/edge_behaviors.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/edge_behaviors.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">description</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">An edge in a connection.</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">field</span>(<span class="ruby-value">:</span><span class="ruby-value">cursor</span>, <span class="ruby-constant">String</span>, <span class="ruby-value">null</span><span class="ruby-value">:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">description</span><span class="ruby-value">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">A cursor for use in pagination.</span><span class="ruby-string">&quot;</span>)
@@ -596,7 +596,7 @@
 
 
           <div class="method-source-code" id="node-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/edge_behaviors.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/edge_behaviors.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">node</span>
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">current_runtime_state</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_runtime_info</span>])
     <span class="ruby-identifier">query_runtime_state</span> = <span class="ruby-identifier">current_runtime_state</span>[<span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>]

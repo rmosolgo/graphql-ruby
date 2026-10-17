@@ -741,7 +741,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 58</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 59</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">schema:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">schema</span>, <span class="ruby-value">values:</span>)
   <span class="ruby-ivar">@query</span> = <span class="ruby-identifier">query</span>
   <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">schema</span>
@@ -819,7 +819,7 @@
 
 
           <div class="method-source-code" id="5B-5D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 107</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 108</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">[]</span>(<span class="ruby-identifier">key</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@scoped_context</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>)
     <span class="ruby-ivar">@scoped_context</span>[<span class="ruby-identifier">key</span>]
@@ -884,7 +884,7 @@
 
 
           <div class="method-source-code" id="5B-5D-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 91</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 92</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">[]=</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-ivar">@provided_values</span>[<span class="ruby-identifier">key</span>] = <span class="ruby-identifier">value</span>
 <span class="ruby-keyword">end</span></pre>
@@ -937,7 +937,7 @@
 
 
           <div class="method-source-code" id="add_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 144</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 145</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_error</span>(<span class="ruby-identifier">error</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">error</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RuntimeError</span>)
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">TypeError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">expected error to be a GraphQL::RuntimeError, but was </span><span class="ruby-string">#{</span><span class="ruby-identifier">error</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
@@ -1004,7 +1004,7 @@
 
 
           <div class="method-source-code" id="backtrace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 180</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 181</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">backtrace</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Backtrace</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1064,7 +1064,7 @@
 
 
           <div class="method-source-code" id="current_path-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 188</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 189</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">current_path</span>
   <span class="ruby-identifier">current_runtime_state</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_runtime_info</span>]
   <span class="ruby-identifier">query_runtime_state</span> = <span class="ruby-identifier">current_runtime_state</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">current_runtime_state</span>[<span class="ruby-ivar">@query</span>]
@@ -1124,7 +1124,7 @@
 
 
           <div class="method-source-code" id="dataloader-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 81</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader</span>
   <span class="ruby-ivar">@dataloader</span> ||= <span class="ruby-keyword">self</span>[<span class="ruby-value">:</span><span class="ruby-value">dataloader</span>] <span class="ruby-operator">||</span> (<span class="ruby-identifier">query</span>.<span class="ruby-identifier">multiplex</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">multiplex</span>.<span class="ruby-identifier">dataloader</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">dataloader_class</span>.<span class="ruby-identifier">new</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1174,7 +1174,7 @@
 
 
           <div class="method-source-code" id="delete-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 202</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 203</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete</span>(<span class="ruby-identifier">key</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@scoped_context</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>)
     <span class="ruby-ivar">@scoped_context</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">key</span>)
@@ -1228,7 +1228,7 @@
 
 
           <div class="method-source-code" id="dig-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 230</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 231</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dig</span>(<span class="ruby-identifier">key</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">other_keys</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">RUNTIME_METADATA_KEYS</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">key</span>)
     (<span class="ruby-identifier">current_runtime_state</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_runtime_info</span>]) <span class="ruby-operator">&amp;&amp;</span>
@@ -1291,7 +1291,7 @@
 
 
           <div class="method-source-code" id="execution_errors-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 184</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 185</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execution_errors</span>
   <span class="ruby-ivar">@execution_errors</span> ||= <span class="ruby-constant">ExecutionErrors</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1341,7 +1341,7 @@
 
 
           <div class="method-source-code" id="fetch-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 212</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 213</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">default</span> = <span class="ruby-constant">UNSPECIFIED_FETCH_DEFAULT</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">RUNTIME_METADATA_KEYS</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">key</span>)
     (<span class="ruby-identifier">runtime</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_runtime_info</span>]) <span class="ruby-operator">&amp;&amp;</span>
@@ -1405,7 +1405,7 @@
 
 
           <div class="method-source-code" id="inspect-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 307</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 308</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inspect</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">#&lt;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string"> ...&gt;</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1455,7 +1455,7 @@
 
 
           <div class="method-source-code" id="key-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 257</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 258</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>)
   <span class="ruby-ivar">@scoped_context</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>) <span class="ruby-operator">||</span> <span class="ruby-ivar">@provided_values</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1505,7 +1505,7 @@
 
 
           <div class="method-source-code" id="logger-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 303</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 304</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">logger</span>
   <span class="ruby-ivar">@query</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@query</span>.<span class="ruby-identifier">logger</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1558,7 +1558,7 @@
 
 
           <div class="method-source-code" id="namespace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 285</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 286</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">namespace</span>(<span class="ruby-identifier">ns</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">ns</span> <span class="ruby-operator">==</span> <span class="ruby-value">:</span><span class="ruby-value">interpreter</span>
     <span class="ruby-keyword">self</span>
@@ -1625,7 +1625,7 @@
 
 
           <div class="method-source-code" id="namespace-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 299</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 300</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">namespace?</span>(<span class="ruby-identifier">ns</span>)
   <span class="ruby-ivar">@storage</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">ns</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1681,7 +1681,7 @@
 
 
           <div class="method-source-code" id="raw_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 162</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 163</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">raw_value</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Interpreter</span><span class="ruby-operator">::</span><span class="ruby-constant">RawValue</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">value</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1742,7 +1742,7 @@
 
 
           <div class="method-source-code" id="response_extensions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 77</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 78</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">response_extensions</span>
   <span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">__query_result_extensions__</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1800,7 +1800,7 @@
 
 
           <div class="method-source-code" id="scoped-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 341</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 342</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scoped</span>
   <span class="ruby-constant">Scoped</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@scoped_context</span>, <span class="ruby-identifier">current_path</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1866,7 +1866,7 @@
 
 
           <div class="method-source-code" id="scoped_merge-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 311</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 312</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scoped_merge!</span>(<span class="ruby-identifier">hash</span>)
   <span class="ruby-ivar">@scoped_context</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">hash</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1916,7 +1916,7 @@
 
 
           <div class="method-source-code" id="scoped_set-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 315</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 316</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scoped_set!</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">scoped_merge!</span>(<span class="ruby-identifier">key</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">nil</span>
@@ -1967,7 +1967,7 @@
 
 
           <div class="method-source-code" id="skip-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 128</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 129</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">skip</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Skip</span>.<span class="ruby-identifier">new</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2017,7 +2017,7 @@
 
 
           <div class="method-source-code" id="to_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 247</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 248</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_h</span>
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">current_scoped_context</span> = <span class="ruby-ivar">@scoped_context</span>.<span class="ruby-identifier">merged_context</span>)
     <span class="ruby-ivar">@provided_values</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">current_scoped_context</span>)
@@ -2116,7 +2116,7 @@
 
 
           <div class="method-source-code" id="types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 97</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 98</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">types</span>
   <span class="ruby-ivar">@types</span> ||= <span class="ruby-ivar">@query</span>.<span class="ruby-identifier">types</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2169,7 +2169,7 @@
 
 
           <div class="method-source-code" id="warden-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 267</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 268</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">warden</span>
   <span class="ruby-ivar">@warden</span> ||= (<span class="ruby-ivar">@query</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@query</span>.<span class="ruby-identifier">warden</span>)
 <span class="ruby-keyword">end</span></pre>

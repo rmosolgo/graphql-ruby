@@ -538,7 +538,7 @@
 
 
           <div class="method-source-code" id="build_arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 206</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 207</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_arguments</span>(<span class="ruby-identifier">arg_owner</span>, <span class="ruby-identifier">args</span>, <span class="ruby-identifier">type_resolver</span>)
   <span class="ruby-identifier">args</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">arg</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">kwargs</span> = {
@@ -612,7 +612,7 @@
 
 
           <div class="method-source-code" id="build_fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 182</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 183</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_fields</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">fields</span>, <span class="ruby-identifier">type_resolver</span>)
   <span class="ruby-identifier">loader</span> = <span class="ruby-keyword">self</span>
   <span class="ruby-identifier">fields</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field_hash</span><span class="ruby-operator">|</span>
@@ -699,7 +699,7 @@
 
 
           <div class="method-source-code" id="load-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load</span>(<span class="ruby-identifier">introspection_result</span>)
   <span class="ruby-identifier">schema</span> = <span class="ruby-identifier">introspection_result</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">data</span><span class="ruby-string">&quot;</span>).<span class="ruby-identifier">fetch</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">__schema</span><span class="ruby-string">&quot;</span>)
 

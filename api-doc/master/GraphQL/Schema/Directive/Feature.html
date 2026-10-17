@@ -564,7 +564,7 @@
 
 
           <div class="method-source-code" id="enabled-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 76</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 77</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">enabled?</span>(<span class="ruby-identifier">flag_name</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Implement `.enabled?(flag_name, object, context)` to return true or false for the feature flag (</span><span class="ruby-string">#{</span><span class="ruby-identifier">flag_name</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">)</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -628,7 +628,7 @@
 
 
           <div class="method-source-code" id="include-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 57</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 58</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">flag_name</span> = <span class="ruby-identifier">arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">flag</span>]
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">enabled?</span>(<span class="ruby-identifier">flag_name</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
@@ -679,7 +679,7 @@
 
 
           <div class="method-source-code" id="resolve_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 80</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 81</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_field</span>(...); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -727,7 +727,7 @@
 
 
           <div class="method-source-code" id="resolve_fragment_spread-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 81</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_fragment_spread</span>(...); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -775,7 +775,7 @@
 
 
           <div class="method-source-code" id="resolve_inline_fragment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 82</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/feature.rb, line 83</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_inline_fragment</span>(...); <span class="ruby-keyword">end</span></pre>
           </div>
 

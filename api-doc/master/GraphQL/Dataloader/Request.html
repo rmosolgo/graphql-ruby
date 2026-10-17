@@ -534,7 +534,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/request.rb, line 6</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/request.rb, line 7</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">source</span>, <span class="ruby-identifier">key</span>)
   <span class="ruby-ivar">@source</span> = <span class="ruby-identifier">source</span>
   <span class="ruby-ivar">@key</span> = <span class="ruby-identifier">key</span>
@@ -602,7 +602,7 @@
 
 
           <div class="method-source-code" id="load-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/request.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/request.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load</span>
   <span class="ruby-ivar">@source</span>.<span class="ruby-identifier">load</span>(<span class="ruby-ivar">@key</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -657,7 +657,7 @@
 
 
           <div class="method-source-code" id="load_with_deprecation_warning-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/request.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/request.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load_with_deprecation_warning</span>
   <span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">Returning `.request(...)` from GraphQL::Dataloader is deprecated, use `.load(...)` instead. (See usage of </span><span class="ruby-string">#{</span><span class="ruby-ivar">@source</span><span class="ruby-string">}</span><span class="ruby-string"> with </span><span class="ruby-string">#{</span><span class="ruby-ivar">@key</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">).</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-identifier">load</span>

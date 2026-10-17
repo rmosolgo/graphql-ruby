@@ -533,7 +533,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/flagged.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/flagged.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">schema_class</span>)
   <span class="ruby-identifier">schema_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-keyword">self</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -597,7 +597,7 @@
 
 
           <div class="method-source-code" id="visible-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/flagged.rb, line 47</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/flagged.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible?</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">dir</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">directives</span>.<span class="ruby-identifier">find</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">d</span><span class="ruby-operator">|</span> <span class="ruby-identifier">d</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Flagged</span>) }
     <span class="ruby-identifier">relevant_flags</span> = (<span class="ruby-identifier">f</span> = <span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">flags</span>]) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">dir</span>.<span class="ruby-identifier">arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">by</span>] <span class="ruby-operator">&amp;</span> <span class="ruby-identifier">f</span> <span class="ruby-comment"># rubocop:disable Development/ContextIsPassedCop -- definition-related</span>

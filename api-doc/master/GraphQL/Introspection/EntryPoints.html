@@ -540,7 +540,7 @@
 
 
           <div class="method-source-code" id="__schema-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/entry_points.rb, line 10</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/entry_points.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">__schema</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-comment"># Apply wrapping manually since this field isn&#39;t wrapped by instrumentation</span>
   <span class="ruby-identifier">schema</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>
@@ -593,7 +593,7 @@
 
 
           <div class="method-source-code" id="__type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/entry_points.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/entry_points.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">__type</span>(<span class="ruby-identifier">context</span>, <span class="ruby-value">name:</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">reachable_type?</span>(<span class="ruby-identifier">name</span>) <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">type</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">name</span>))
     <span class="ruby-identifier">type</span>
@@ -663,7 +663,7 @@
 
 
           <div class="method-source-code" id="__schema-source-2">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/entry_points.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/entry_points.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">__schema</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">__schema</span>(<span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -713,7 +713,7 @@
 
 
           <div class="method-source-code" id="__type-source-2">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/entry_points.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/entry_points.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">__type</span>(<span class="ruby-value">name:</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">__type</span>(<span class="ruby-identifier">context</span>, <span class="ruby-value">name</span><span class="ruby-value">:</span> <span class="ruby-identifier">name</span>)
 <span class="ruby-keyword">end</span></pre>

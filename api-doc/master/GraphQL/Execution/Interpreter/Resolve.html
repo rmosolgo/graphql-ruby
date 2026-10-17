@@ -512,7 +512,7 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/resolve.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/resolve.rb, line 50</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve</span>(<span class="ruby-identifier">results</span>, <span class="ruby-identifier">dataloader</span>)
   <span class="ruby-identifier">warn</span> <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">__method__</span><span class="ruby-string">}</span><span class="ruby-string"> is deprecated; Use `dataloader.run` instead.</span><span class="ruby-string">#{</span><span class="ruby-identifier">caller</span>(<span class="ruby-value">1</span>, <span class="ruby-value">5</span>).<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">l</span><span class="ruby-operator">|</span> <span class="ruby-string">&quot;</span><span class="ruby-string">\n    </span><span class="ruby-string">#{</span><span class="ruby-identifier">l</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>}.<span class="ruby-identifier">join</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
   <span class="ruby-comment"># There might be pending jobs here that _will_ write lazies</span>
@@ -610,7 +610,7 @@
 
 
           <div class="method-source-code" id="resolve_all-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/resolve.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/resolve.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_all</span>(<span class="ruby-identifier">results</span>, <span class="ruby-identifier">dataloader</span>)
   <span class="ruby-identifier">warn</span> <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">__method__</span><span class="ruby-string">}</span><span class="ruby-string"> is deprecated; Use `dataloader.run` instead.</span><span class="ruby-string">#{</span><span class="ruby-identifier">caller</span>(<span class="ruby-value">1</span>, <span class="ruby-value">5</span>).<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">l</span><span class="ruby-operator">|</span> <span class="ruby-string">&quot;</span><span class="ruby-string">\n    </span><span class="ruby-string">#{</span><span class="ruby-identifier">l</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>}.<span class="ruby-identifier">join</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
   <span class="ruby-identifier">dataloader</span>.<span class="ruby-identifier">append_job</span> { <span class="ruby-identifier">resolve</span>(<span class="ruby-identifier">results</span>, <span class="ruby-identifier">dataloader</span>) }
@@ -667,7 +667,7 @@
 
 
           <div class="method-source-code" id="resolve_each_depth-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/resolve.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/resolve.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_each_depth</span>(<span class="ruby-identifier">lazies_at_depth</span>, <span class="ruby-identifier">dataloader</span>)
   <span class="ruby-identifier">warn</span> <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">__method__</span><span class="ruby-string">}</span><span class="ruby-string"> is deprecated; Use `dataloader.run` instead.</span><span class="ruby-string">#{</span><span class="ruby-identifier">caller</span>(<span class="ruby-value">1</span>, <span class="ruby-value">5</span>).<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">l</span><span class="ruby-operator">|</span> <span class="ruby-string">&quot;</span><span class="ruby-string">\n    </span><span class="ruby-string">#{</span><span class="ruby-identifier">l</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>}.<span class="ruby-identifier">join</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 

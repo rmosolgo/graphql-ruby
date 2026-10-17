@@ -508,7 +508,7 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/subscription_root_exists_and_single_subscription_selection.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/subscription_root_exists_and_single_subscription_selection.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;</span><span class="ruby-string">subscription</span><span class="ruby-string">&quot;</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">subscription_root</span>.<span class="ruby-identifier">nil?</span>

@@ -629,7 +629,7 @@
 
 
           <div class="method-source-code" id="make_visit_methods-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 180</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 181</span>
       <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">make_visit_methods</span>(<span class="ruby-identifier">ast_node_class</span>)
         <span class="ruby-identifier">node_method</span> = <span class="ruby-identifier">ast_node_class</span>.<span class="ruby-identifier">visit_method</span>
         <span class="ruby-identifier">children_of_type</span> = <span class="ruby-identifier">ast_node_class</span>.<span class="ruby-identifier">children_of_type</span>
@@ -737,7 +737,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 47</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">document</span>)
   <span class="ruby-ivar">@document</span> = <span class="ruby-identifier">document</span>
   <span class="ruby-ivar">@result</span> = <span class="ruby-keyword">nil</span>
@@ -802,7 +802,7 @@
 
 
           <div class="method-source-code" id="on_argument_children-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 155</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 156</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_argument_children</span>(<span class="ruby-identifier">new_node</span>)
   <span class="ruby-identifier">new_node</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">value_node</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">new_child_and_node</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">value_node</span>
@@ -870,7 +870,7 @@
 
 
           <div class="method-source-code" id="on_document_children-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 77</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 78</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_document_children</span>(<span class="ruby-identifier">document_node</span>)
   <span class="ruby-identifier">new_node</span> = <span class="ruby-identifier">document_node</span>
   <span class="ruby-identifier">document_node</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">child_node</span><span class="ruby-operator">|</span>
@@ -929,7 +929,7 @@
 
 
           <div class="method-source-code" id="on_field_children-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 91</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field_children</span>(<span class="ruby-identifier">new_node</span>)
   <span class="ruby-identifier">new_node</span>.<span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">arg_node</span><span class="ruby-operator">|</span> <span class="ruby-comment"># rubocop:disable Development/ContextIsPassedCop</span>
     <span class="ruby-identifier">new_child_and_node</span> = <span class="ruby-identifier">on_argument_with_modifications</span>(<span class="ruby-identifier">arg_node</span>, <span class="ruby-identifier">new_node</span>)
@@ -988,7 +988,7 @@
 
 
           <div class="method-source-code" id="on_fragment_definition_children-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 134</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 135</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition_children</span>(<span class="ruby-identifier">new_node</span>)
   <span class="ruby-identifier">new_node</span> = <span class="ruby-identifier">visit_directives</span>(<span class="ruby-identifier">new_node</span>)
   <span class="ruby-identifier">new_node</span> = <span class="ruby-identifier">visit_selections</span>(<span class="ruby-identifier">new_node</span>)
@@ -1085,7 +1085,7 @@
 
 
           <div class="method-source-code" id="on_operation_definition_children-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 142</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 143</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition_children</span>(<span class="ruby-identifier">new_node</span>)
   <span class="ruby-identifier">new_node</span>.<span class="ruby-identifier">variables</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">arg_node</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">new_child_and_node</span> = <span class="ruby-identifier">on_variable_definition_with_modifications</span>(<span class="ruby-identifier">arg_node</span>, <span class="ruby-identifier">new_node</span>)
@@ -1147,7 +1147,7 @@
 
 
           <div class="method-source-code" id="visit-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 65</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 66</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visit</span>
   <span class="ruby-comment"># `@document` may be any kind of node:</span>
   <span class="ruby-identifier">visit_method</span> = <span class="ruby-value">:&quot;</span><span class="ruby-value">#{</span><span class="ruby-ivar">@document</span>.<span class="ruby-identifier">visit_method</span><span class="ruby-value">}</span><span class="ruby-value">_with_modifications</span><span class="ruby-value">&quot;</span>
@@ -1210,7 +1210,7 @@
 
 
           <div class="method-source-code" id="visit_directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 103</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 104</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visit_directives</span>(<span class="ruby-identifier">new_node</span>)
   <span class="ruby-identifier">new_node</span>.<span class="ruby-identifier">directives</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">dir_node</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">new_child_and_node</span> = <span class="ruby-identifier">on_directive_with_modifications</span>(<span class="ruby-identifier">dir_node</span>, <span class="ruby-identifier">new_node</span>)
@@ -1267,7 +1267,7 @@
 
 
           <div class="method-source-code" id="visit_selections-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 114</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/visitor.rb, line 115</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visit_selections</span>(<span class="ruby-identifier">new_node</span>)
   <span class="ruby-identifier">new_node</span>.<span class="ruby-identifier">selections</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">selection</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">new_child_and_node</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">selection</span>

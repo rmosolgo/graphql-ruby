@@ -580,7 +580,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 180</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 181</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">_result_name</span>, <span class="ruby-identifier">_result_type</span>, <span class="ruby-identifier">_application_value</span>, <span class="ruby-identifier">_parent_result</span>, <span class="ruby-identifier">_is_non_null_in_parent</span>, <span class="ruby-identifier">_selections</span>, <span class="ruby-identifier">_is_eager</span>, <span class="ruby-identifier">_ast_node</span>, <span class="ruby-identifier">_graphql_arguments</span>, <span class="ruby-identifier">graphql_field</span>) <span class="ruby-comment"># rubocop:disable Metrics/ParameterLists</span>
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@graphql_result_data</span> = []
@@ -650,7 +650,7 @@
 
 
           <div class="method-source-code" id="5B-5D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 223</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 224</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">[]</span>(<span class="ruby-identifier">idx</span>)
   (<span class="ruby-ivar">@graphql_metadata</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@graphql_result_data</span>)[<span class="ruby-identifier">idx</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -700,7 +700,7 @@
 
 
           <div class="method-source-code" id="graphql_skip_at-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 185</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 186</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">graphql_skip_at</span>(<span class="ruby-identifier">index</span>)
   <span class="ruby-comment"># Mark this index as dead. It&#39;s tricky because some indices may already be storing</span>
   <span class="ruby-comment"># `Lazy`s. So the runtime is still holding indexes _before_ skipping,</span>
@@ -758,7 +758,7 @@
 
 
           <div class="method-source-code" id="set_child_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 207</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 208</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_child_result</span>(<span class="ruby-identifier">idx</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@skip_indices</span>
     <span class="ruby-identifier">offset_by</span> = <span class="ruby-ivar">@skip_indices</span>.<span class="ruby-identifier">count</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">skipped_idx</span><span class="ruby-operator">|</span> <span class="ruby-identifier">skipped_idx</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">idx</span> }
@@ -816,7 +816,7 @@
 
 
           <div class="method-source-code" id="set_leaf-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 197</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 198</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_leaf</span>(<span class="ruby-identifier">idx</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@skip_indices</span>
     <span class="ruby-identifier">offset_by</span> = <span class="ruby-ivar">@skip_indices</span>.<span class="ruby-identifier">count</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">skipped_idx</span><span class="ruby-operator">|</span> <span class="ruby-identifier">skipped_idx</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">idx</span> }
@@ -872,7 +872,7 @@
 
 
           <div class="method-source-code" id="values-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 219</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 220</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">values</span>
   (<span class="ruby-ivar">@graphql_metadata</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@graphql_result_data</span>)
 <span class="ruby-keyword">end</span></pre>

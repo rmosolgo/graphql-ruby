@@ -561,7 +561,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_trace.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">client:</span> <span class="ruby-constant">PrometheusExporter</span><span class="ruby-operator">::</span><span class="ruby-constant">Client</span>.<span class="ruby-identifier">default</span>, <span class="ruby-value">keys_whitelist:</span> [<span class="ruby-value">:</span><span class="ruby-value">execute_field</span>], <span class="ruby-value">collector_type:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">graphql</span><span class="ruby-string">&quot;</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)
   <span class="ruby-ivar">@prometheus_client</span> = <span class="ruby-identifier">client</span>
   <span class="ruby-ivar">@prometheus_keys_whitelist</span> = <span class="ruby-identifier">keys_whitelist</span>.<span class="ruby-identifier">map</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">to_sym</span>) <span class="ruby-comment"># handle previous string keys</span>

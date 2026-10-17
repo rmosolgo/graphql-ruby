@@ -805,7 +805,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">parent_type:</span>, <span class="ruby-value">runner:</span>, <span class="ruby-value">key:</span>, <span class="ruby-value">selections_step:</span>)
   <span class="ruby-ivar">@selections_step</span> = <span class="ruby-identifier">selections_step</span>
   <span class="ruby-ivar">@key</span> = <span class="ruby-identifier">key</span>
@@ -887,7 +887,7 @@
 
 
           <div class="method-source-code" id="add_graphql_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 112</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 113</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_graphql_error</span>(<span class="ruby-identifier">result</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">err</span>, <span class="ruby-value">return_type:</span> <span class="ruby-ivar">@field_definition</span>.<span class="ruby-identifier">type</span>)
   <span class="ruby-identifier">err</span>.<span class="ruby-identifier">path</span> = <span class="ruby-identifier">path</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">err</span>.<span class="ruby-identifier">ast_node</span>.<span class="ruby-identifier">nil?</span>
@@ -953,7 +953,7 @@
 
 
           <div class="method-source-code" id="add_non_null_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 612</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 613</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_non_null_error</span>(<span class="ruby-identifier">is_from_array</span>, <span class="ruby-value">return_type:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">is_from_array</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">return_type</span>
     <span class="ruby-identifier">list_type</span> = <span class="ruby-ivar">@field_definition</span>.<span class="ruby-identifier">type</span>
@@ -1014,7 +1014,7 @@
 
 
           <div class="method-source-code" id="any_lazy_results-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 390</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 391</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">any_lazy_results?</span>
   <span class="ruby-identifier">lazies</span> = <span class="ruby-keyword">false</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">resolves_lazies</span> <span class="ruby-comment"># TODO extract this</span>
@@ -1082,7 +1082,7 @@
 
 
           <div class="method-source-code" id="append_selection-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">append_selection</span>(<span class="ruby-identifier">ast_node</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@ast_node</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-ivar">@ast_node</span> = <span class="ruby-identifier">ast_node</span>
@@ -1139,7 +1139,7 @@
 
 
           <div class="method-source-code" id="arguments_without_loads-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 193</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 194</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments_without_loads</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@arguments_without_loads</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-ivar">@arguments_without_loads</span>, <span class="ruby-identifier">_errors</span> = <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">input_values</span>[<span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">query</span>].<span class="ruby-identifier">argument_values</span>(<span class="ruby-ivar">@field_definition</span>, <span class="ruby-identifier">ast_node</span>.<span class="ruby-identifier">arguments</span>, <span class="ruby-keyword">nil</span>)
@@ -1192,7 +1192,7 @@
 
 
           <div class="method-source-code" id="ast_nodes-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 40</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 41</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">ast_nodes</span>
   <span class="ruby-ivar">@ast_nodes</span> ||= [<span class="ruby-ivar">@ast_node</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1242,7 +1242,7 @@
 
 
           <div class="method-source-code" id="authorized_finished-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 605</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 606</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized_finished</span>(<span class="ruby-identifier">step</span>)
   <span class="ruby-ivar">@pending_steps</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">step</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@enqueued_authorization</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@pending_steps</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
@@ -1295,7 +1295,7 @@
 
 
           <div class="method-source-code" id="build_arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 173</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 174</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_arguments</span>
   <span class="ruby-identifier">query</span> = <span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">query</span>
   <span class="ruby-identifier">field_name</span> = <span class="ruby-ivar">@ast_node</span>.<span class="ruby-identifier">name</span>
@@ -1360,7 +1360,7 @@
 
 
           <div class="method-source-code" id="build_errors_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 161</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 162</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_errors_result</span>(<span class="ruby-identifier">errors</span>, <span class="ruby-identifier">single_error</span>)
   <span class="ruby-identifier">first_error</span> = <span class="ruby-identifier">errors</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">single_error</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">errors</span>.<span class="ruby-identifier">pop</span>
   <span class="ruby-ivar">@field_results</span> = [<span class="ruby-identifier">first_error</span>]
@@ -1418,7 +1418,7 @@
 
 
           <div class="method-source-code" id="build_leaf_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 514</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 515</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_leaf_result</span>(<span class="ruby-identifier">result_h</span>, <span class="ruby-identifier">result_key</span>, <span class="ruby-identifier">field_result</span>, <span class="ruby-identifier">return_type</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-identifier">is_from_array</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">field_result</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">return_type</span>.<span class="ruby-identifier">non_null?</span>
@@ -1494,7 +1494,7 @@
 
 
           <div class="method-source-code" id="build_results-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 455</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 456</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_results</span>
   <span class="ruby-identifier">return_type</span> = <span class="ruby-ivar">@field_definition</span>.<span class="ruby-identifier">type</span>
   <span class="ruby-identifier">return_result_type</span> = <span class="ruby-identifier">return_type</span>.<span class="ruby-identifier">unwrap</span>
@@ -1592,7 +1592,7 @@
 
 
           <div class="method-source-code" id="call-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 86</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 87</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call</span>
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">nil</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">killed</span>
   <span class="ruby-identifier">set_current_field</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@field_definition</span>
@@ -1664,7 +1664,7 @@
 
 
           <div class="method-source-code" id="enqueue_next_steps-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 544</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 545</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">enqueue_next_steps</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@all_next_results</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-ivar">@all_next_objects</span>.<span class="ruby-identifier">compact!</span>
@@ -1771,7 +1771,7 @@
 
 
           <div class="method-source-code" id="execute_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 200</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 201</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_field</span>
   <span class="ruby-identifier">objects</span> = <span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">objects</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@arguments</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RuntimeError</span>)
@@ -2007,7 +2007,7 @@
 
 
           <div class="method-source-code" id="finish_extensions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 412</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 413</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finish_extensions</span>
   <span class="ruby-identifier">ctx</span> = <span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>
   <span class="ruby-identifier">memos</span> = <span class="ruby-ivar">@extended</span>.<span class="ruby-identifier">memos</span> <span class="ruby-operator">||</span> <span class="ruby-constant">EmptyObjects</span><span class="ruby-operator">::</span><span class="ruby-constant">EMPTY_HASH</span>
@@ -2096,7 +2096,7 @@
 
 
           <div class="method-source-code" id="finish_leaf_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 507</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 508</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finish_leaf_result</span>(<span class="ruby-identifier">result_h</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">field_result</span>, <span class="ruby-identifier">return_type</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">final_field_result</span> = <span class="ruby-identifier">build_leaf_result</span>(<span class="ruby-identifier">result_h</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">field_result</span>, <span class="ruby-identifier">return_type</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-keyword">false</span>)
 
@@ -2149,7 +2149,7 @@
 
 
           <div class="method-source-code" id="path-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 36</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">path</span>
   <span class="ruby-ivar">@path</span> ||= [<span class="ruby-operator">*</span><span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">path</span>, <span class="ruby-ivar">@key</span>].<span class="ruby-identifier">freeze</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2199,7 +2199,7 @@
 
 
           <div class="method-source-code" id="propagate_nulls-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 132</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 133</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">propagate_nulls</span>
   <span class="ruby-identifier">propagating_null</span> = <span class="ruby-keyword">true</span>
   <span class="ruby-identifier">highest_nulled_depth</span> = <span class="ruby-identifier">path</span>.<span class="ruby-identifier">size</span>
@@ -2274,7 +2274,7 @@
 
 
           <div class="method-source-code" id="set_current_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 627</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 628</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_current_field</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-ivar">@field_definition</span>)
   <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_field</span>] = <span class="ruby-identifier">new_value</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2324,7 +2324,7 @@
 
 
           <div class="method-source-code" id="sync-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 68</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 69</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">sync</span>(<span class="ruby-identifier">lazy</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">lazy</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>)
     <span class="ruby-identifier">lazy</span>.<span class="ruby-identifier">map!</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">l</span><span class="ruby-operator">|</span> <span class="ruby-identifier">sync</span>(<span class="ruby-identifier">l</span>)}
@@ -2388,7 +2388,7 @@
 
 
           <div class="method-source-code" id="value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 56</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">value</span>
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">nil</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">killed</span>
   <span class="ruby-identifier">query</span> = <span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">query</span>

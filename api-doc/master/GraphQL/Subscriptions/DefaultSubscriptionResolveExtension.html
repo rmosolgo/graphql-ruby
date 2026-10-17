@@ -538,7 +538,7 @@
 
 
           <div class="method-source-code" id="write_subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/default_subscription_resolve_extension.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/default_subscription_resolve_extension.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">write_subscription</span>(<span class="ruby-identifier">field</span>, <span class="ruby-identifier">value</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ExecutionError</span>)
     <span class="ruby-identifier">value</span>
@@ -643,7 +643,7 @@
 
 
           <div class="method-source-code" id="after_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/default_subscription_resolve_extension.rb, line 34</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/default_subscription_resolve_extension.rb, line 35</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">after_resolve</span>(<span class="ruby-value">values:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">value:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">objects:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">object:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">values</span>
     <span class="ruby-identifier">values</span>.<span class="ruby-identifier">map</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">value</span><span class="ruby-operator">|</span>
@@ -699,7 +699,7 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/default_subscription_resolve_extension.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/default_subscription_resolve_extension.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve</span>(<span class="ruby-value">context:</span>, <span class="ruby-value">object:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">objects:</span> <span class="ruby-keyword">nil</span>,  <span class="ruby-value">arguments:</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">objects</span>
     <span class="ruby-identifier">has_override_implementation</span> = <span class="ruby-ivar">@field</span>.<span class="ruby-identifier">execution_mode</span> <span class="ruby-operator">!=</span> <span class="ruby-value">:</span><span class="ruby-value">direct_send</span>

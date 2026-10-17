@@ -532,7 +532,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/timeout.rb, line 59</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/timeout.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">timeout:</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)
   <span class="ruby-ivar">@timeout</span> = <span class="ruby-identifier">timeout</span>
   <span class="ruby-keyword">super</span>
@@ -605,7 +605,7 @@
 
 
           <div class="method-source-code" id="begin_execute_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/timeout.rb, line 83</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/timeout.rb, line 84</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_execute_field</span>(<span class="ruby-identifier">field</span>, <span class="ruby-identifier">_arguments</span>, <span class="ruby-identifier">_objects</span>, <span class="ruby-identifier">query</span>)
   <span class="ruby-identifier">timeout_state</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-ivar">@timeout</span>).<span class="ruby-identifier">fetch</span>(<span class="ruby-value">:</span><span class="ruby-value">state</span>)
   <span class="ruby-comment"># If the `:state` is `false`, then `max_seconds(query)` opted out of timeout for this query.</span>
@@ -681,7 +681,7 @@
 
 
           <div class="method-source-code" id="execute_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/timeout.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/timeout.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_multiplex</span>(<span class="ruby-value">multiplex:</span>)
   <span class="ruby-identifier">multiplex</span>.<span class="ruby-identifier">queries</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">query</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">timeout_duration_s</span> = <span class="ruby-ivar">@timeout</span>.<span class="ruby-identifier">max_seconds</span>(<span class="ruby-identifier">query</span>)

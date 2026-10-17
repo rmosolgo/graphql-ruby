@@ -822,7 +822,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 50</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 51</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">_trace_class</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-constant">PROTOBUF_AVAILABLE</span>
     <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string"> can&#39;t be used because the `google-protobuf` gem wasn&#39;t available. Add it to your project, then try again.</span><span class="ruby-string">&quot;</span>
@@ -877,7 +877,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 88</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 89</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">active_support_notifications_pattern:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">save_profile:</span> <span class="ruby-keyword">false</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">_rest</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@active_support_notifications_pattern</span> = <span class="ruby-identifier">active_support_notifications_pattern</span>
@@ -1091,7 +1091,7 @@
 
 
           <div class="method-source-code" id="begin_analyze_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 301</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 302</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_analyze_multiplex</span>(<span class="ruby-identifier">m</span>, <span class="ruby-identifier">analyzers</span>)
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_SLICE_BEGIN</span>,
@@ -1157,7 +1157,7 @@
 
 
           <div class="method-source-code" id="begin_authorized-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 523</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 524</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_authorized</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">obj</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">packet</span> = <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_SLICE_BEGIN</span>,
@@ -1222,7 +1222,7 @@
 
 
           <div class="method-source-code" id="begin_dataloader-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 465</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 466</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_dataloader</span>(<span class="ruby-identifier">dl</span>)
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_COUNTER</span>,
@@ -1284,7 +1284,7 @@
 
 
           <div class="method-source-code" id="begin_dataloader_source-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 485</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 486</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_dataloader_source</span>(<span class="ruby-identifier">source</span>)
   <span class="ruby-identifier">fds</span> = <span class="ruby-ivar">@flow_ids</span>[<span class="ruby-identifier">source</span>]
   <span class="ruby-identifier">fds_copy</span> = <span class="ruby-identifier">fds</span>.<span class="ruby-identifier">dup</span>
@@ -1360,7 +1360,7 @@
 
 
           <div class="method-source-code" id="begin_execute_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 264</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 265</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_execute_field</span>(<span class="ruby-identifier">field</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">query</span>)
   <span class="ruby-identifier">packet</span> = <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_SLICE_BEGIN</span>,
@@ -1425,7 +1425,7 @@
 
 
           <div class="method-source-code" id="begin_resolve_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 553</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 554</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_resolve_type</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">value</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">packet</span> = <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_SLICE_BEGIN</span>,
@@ -1490,7 +1490,7 @@
 
 
           <div class="method-source-code" id="begin_validate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 348</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 349</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_validate</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">validate</span>)
   <span class="ruby-ivar">@begin_validate</span> = <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_SLICE_BEGIN</span>,
@@ -1555,7 +1555,7 @@
 
 
           <div class="method-source-code" id="dataloader_fiber_exit-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 453</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 454</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader_fiber_exit</span>
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_INSTANT</span>,
@@ -1618,7 +1618,7 @@
 
 
           <div class="method-source-code" id="dataloader_fiber_resume-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 434</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 435</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader_fiber_resume</span>(<span class="ruby-identifier">source</span>)
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_INSTANT</span>,
@@ -1688,7 +1688,7 @@
 
 
           <div class="method-source-code" id="dataloader_fiber_yield-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 412</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 413</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader_fiber_yield</span>(<span class="ruby-identifier">source</span>)
   <span class="ruby-identifier">ls</span> = <span class="ruby-identifier">fiber_flow_stack</span>.<span class="ruby-identifier">last</span>
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">flow_id</span> = <span class="ruby-identifier">ls</span>.<span class="ruby-identifier">track_event</span>.<span class="ruby-identifier">flow_ids</span>.<span class="ruby-identifier">first</span>)
@@ -1761,7 +1761,7 @@
 
 
           <div class="method-source-code" id="dataloader_spawn_execution_fiber-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 386</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 387</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader_spawn_execution_fiber</span>(<span class="ruby-identifier">jobs</span>)
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_INSTANT</span>,
@@ -1825,7 +1825,7 @@
 
 
           <div class="method-source-code" id="dataloader_spawn_source_fiber-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 399</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 400</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader_spawn_source_fiber</span>(<span class="ruby-identifier">pending_sources</span>)
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_INSTANT</span>,
@@ -1889,7 +1889,7 @@
 
 
           <div class="method-source-code" id="end_analyze_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 316</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 317</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_analyze_multiplex</span>(<span class="ruby-identifier">m</span>, <span class="ruby-identifier">analyzers</span>)
   <span class="ruby-identifier">end_ts</span> = <span class="ruby-identifier">ts</span>
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
@@ -1952,7 +1952,7 @@
 
 
           <div class="method-source-code" id="end_authorized-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 537</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 538</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_authorized</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">obj</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-identifier">is_authorized</span>)
   <span class="ruby-identifier">end_ts</span> = <span class="ruby-identifier">ts</span>
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
@@ -2019,7 +2019,7 @@
 
 
           <div class="method-source-code" id="end_dataloader-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 476</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 477</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_dataloader</span>(<span class="ruby-identifier">dl</span>)
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_COUNTER</span>,
@@ -2079,7 +2079,7 @@
 
 
           <div class="method-source-code" id="end_dataloader_source-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 510</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 511</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_dataloader_source</span>(<span class="ruby-identifier">source</span>)
   <span class="ruby-identifier">end_ts</span> = <span class="ruby-identifier">ts</span>
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
@@ -2143,7 +2143,7 @@
 
 
           <div class="method-source-code" id="end_execute_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 278</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 279</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_execute_field</span>(<span class="ruby-identifier">field</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">query</span>, <span class="ruby-identifier">app_result</span>)
   <span class="ruby-identifier">end_ts</span> = <span class="ruby-identifier">ts</span>
   <span class="ruby-identifier">start_field</span> = <span class="ruby-identifier">fiber_flow_stack</span>.<span class="ruby-identifier">pop</span>
@@ -2217,7 +2217,7 @@
 
 
           <div class="method-source-code" id="end_resolve_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 567</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 568</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_resolve_type</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">value</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">resolved_type</span>)
   <span class="ruby-identifier">end_ts</span> = <span class="ruby-identifier">ts</span>
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
@@ -2284,7 +2284,7 @@
 
 
           <div class="method-source-code" id="end_validate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 362</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 363</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_validate</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">validate</span>, <span class="ruby-identifier">validation_errors</span>)
   <span class="ruby-identifier">end_ts</span> = <span class="ruby-identifier">ts</span>
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
@@ -2359,7 +2359,7 @@
 
 
           <div class="method-source-code" id="execute_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 234</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 235</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_multiplex</span>(<span class="ruby-value">multiplex:</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Notifications</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@active_support_notifications_pattern</span> <span class="ruby-operator">!=</span> <span class="ruby-keyword">false</span>
     <span class="ruby-identifier">subscribe_to_active_support_notifications</span>(<span class="ruby-ivar">@active_support_notifications_pattern</span>)
@@ -2440,7 +2440,7 @@
 
 
           <div class="method-source-code" id="parse-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 328</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 329</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parse</span>(<span class="ruby-value">query_string:</span>)
   <span class="ruby-ivar">@packets</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">trace_packet</span>(
     <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-constant">TrackEvent</span><span class="ruby-operator">::</span><span class="ruby-constant">Type</span><span class="ruby-operator">::</span><span class="ruby-constant">TYPE_SLICE_BEGIN</span>,
@@ -2514,7 +2514,7 @@
 
 
           <div class="method-source-code" id="write-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 596</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 597</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">write</span>(<span class="ruby-value">file:</span>, <span class="ruby-value">debug_json:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-identifier">trace</span> = <span class="ruby-constant">Trace</span>.<span class="ruby-identifier">new</span>(
     <span class="ruby-value">packet</span><span class="ruby-value">:</span> <span class="ruby-ivar">@packets</span>,

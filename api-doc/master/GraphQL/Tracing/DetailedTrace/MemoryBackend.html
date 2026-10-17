@@ -546,7 +546,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">limit:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@limit</span> = <span class="ruby-identifier">limit</span>
   <span class="ruby-ivar">@traces</span> = {}
@@ -612,7 +612,7 @@
 
 
           <div class="method-source-code" id="delete_all_traces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 36</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_all_traces</span>
   <span class="ruby-ivar">@traces</span>.<span class="ruby-identifier">clear</span>
   <span class="ruby-keyword">nil</span>
@@ -663,7 +663,7 @@
 
 
           <div class="method-source-code" id="delete_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_trace</span>(<span class="ruby-identifier">id</span>)
   <span class="ruby-ivar">@traces</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">id</span>.<span class="ruby-identifier">to_i</span>)
   <span class="ruby-keyword">nil</span>
@@ -714,7 +714,7 @@
 
 
           <div class="method-source-code" id="find_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">find_trace</span>(<span class="ruby-identifier">id</span>)
   <span class="ruby-ivar">@traces</span>[<span class="ruby-identifier">id</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -764,7 +764,7 @@
 
 
           <div class="method-source-code" id="save_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">save_trace</span>(<span class="ruby-identifier">operation_name</span>, <span class="ruby-identifier">duration</span>, <span class="ruby-identifier">begin_ms</span>, <span class="ruby-identifier">trace_data</span>)
   <span class="ruby-identifier">id</span> = <span class="ruby-ivar">@next_id</span>
   <span class="ruby-ivar">@next_id</span> += <span class="ruby-value">1</span>
@@ -827,7 +827,7 @@
 
 
           <div class="method-source-code" id="traces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/memory_backend.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">traces</span>(<span class="ruby-value">last:</span>, <span class="ruby-value">before:</span>)
   <span class="ruby-identifier">page</span> = []
   <span class="ruby-ivar">@traces</span>.<span class="ruby-identifier">values</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">trace</span><span class="ruby-operator">|</span>

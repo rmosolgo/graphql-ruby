@@ -551,7 +551,7 @@
 
 
           <div class="method-source-code" id="all_possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_possible_types</span>
   <span class="ruby-identifier">type_memberships</span>.<span class="ruby-identifier">map</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">object_type</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -601,7 +601,7 @@
 
 
           <div class="method-source-code" id="inherited-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 9</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-identifier">add_unresolved_type_error</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-keyword">super</span>
@@ -657,7 +657,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">UNION</span>
 <span class="ruby-keyword">end</span></pre>
@@ -707,7 +707,7 @@
 
 
           <div class="method-source-code" id="possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 13</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 14</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">possible_types</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">types</span>, <span class="ruby-value">context:</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">options</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">types</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">types</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">t</span><span class="ruby-operator">|</span>
@@ -771,7 +771,7 @@
 
 
           <div class="method-source-code" id="type_membership_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_membership_class</span>(<span class="ruby-identifier">membership_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">membership_class</span>
     <span class="ruby-ivar">@type_membership_class</span> = <span class="ruby-identifier">membership_class</span>
@@ -825,7 +825,7 @@
 
 
           <div class="method-source-code" id="type_memberships-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 47</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/union.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_memberships</span>
   <span class="ruby-ivar">@type_memberships</span> ||= []
 <span class="ruby-keyword">end</span></pre>

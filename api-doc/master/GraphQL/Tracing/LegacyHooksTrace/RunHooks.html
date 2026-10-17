@@ -518,7 +518,7 @@
 
 
           <div class="method-source-code" id="call_after_hooks-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 62</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 63</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call_after_hooks</span>(<span class="ruby-identifier">instrumenters</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">after_hook_name</span>, <span class="ruby-identifier">ex</span>)
   <span class="ruby-identifier">instrumenters</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">instrumenter</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">begin</span>
@@ -575,7 +575,7 @@
 
 
           <div class="method-source-code" id="call_hooks-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call_hooks</span>(<span class="ruby-identifier">instrumenters</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">before_hook_name</span>, <span class="ruby-identifier">after_hook_name</span>)
   <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">successful</span> = []
@@ -646,7 +646,7 @@
 
 
           <div class="method-source-code" id="each_query_call_hooks-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">each_query_call_hooks</span>(<span class="ruby-identifier">instrumenters</span>, <span class="ruby-identifier">queries</span>, <span class="ruby-identifier">i</span> = <span class="ruby-value">0</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">i</span> &gt;= <span class="ruby-identifier">queries</span>.<span class="ruby-identifier">length</span>
     <span class="ruby-keyword">yield</span>

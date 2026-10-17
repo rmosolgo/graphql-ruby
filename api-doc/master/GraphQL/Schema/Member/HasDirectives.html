@@ -539,7 +539,7 @@
 
 
           <div class="method-source-code" id="add_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 56</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_directive</span>(<span class="ruby-identifier">schema_member</span>, <span class="ruby-identifier">directives</span>, <span class="ruby-identifier">directive_class</span>, <span class="ruby-identifier">directive_options</span>)
   <span class="ruby-identifier">remove_directive</span>(<span class="ruby-identifier">directives</span>, <span class="ruby-identifier">directive_class</span>) <span class="ruby-keyword">unless</span> <span class="ruby-identifier">directive_class</span>.<span class="ruby-identifier">repeatable?</span>
   <span class="ruby-identifier">directives</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">directive_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">schema_member</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">directive_options</span>)
@@ -590,7 +590,7 @@
 
 
           <div class="method-source-code" id="extended-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">extended</span>(<span class="ruby-identifier">child_cls</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">child_cls</span>.<span class="ruby-identifier">module_exec</span> { <span class="ruby-keyword">self</span>.<span class="ruby-identifier">own_directives</span> = <span class="ruby-keyword">nil</span> }
@@ -646,7 +646,7 @@
 
 
           <div class="method-source-code" id="get_directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_directives</span>(<span class="ruby-identifier">schema_member</span>, <span class="ruby-identifier">directives</span>, <span class="ruby-identifier">directives_method</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">schema_member</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Class</span>
@@ -733,7 +733,7 @@
 
 
           <div class="method-source-code" id="remove_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 60</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 61</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">remove_directive</span>(<span class="ruby-identifier">directives</span>, <span class="ruby-identifier">directive_class</span>)
   <span class="ruby-identifier">directives</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">directives</span>.<span class="ruby-identifier">reject!</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">d</span><span class="ruby-operator">|</span> <span class="ruby-identifier">d</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-identifier">directive_class</span>) }
 <span class="ruby-keyword">end</span></pre>
@@ -800,7 +800,7 @@
 
 
           <div class="method-source-code" id="directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directive</span>(<span class="ruby-identifier">dir_class</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">options</span>)
   <span class="ruby-ivar">@own_directives</span> ||= []
   <span class="ruby-constant">HasDirectives</span>.<span class="ruby-identifier">add_directive</span>(<span class="ruby-keyword">self</span>, <span class="ruby-ivar">@own_directives</span>, <span class="ruby-identifier">dir_class</span>, <span class="ruby-identifier">options</span>)
@@ -859,7 +859,7 @@
 
 
           <div class="method-source-code" id="directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 50</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 51</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directives</span>
   <span class="ruby-constant">HasDirectives</span>.<span class="ruby-identifier">get_directives</span>(<span class="ruby-keyword">self</span>, <span class="ruby-ivar">@own_directives</span>, <span class="ruby-value">:</span><span class="ruby-value">directives</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -909,7 +909,7 @@
 
 
           <div class="method-source-code" id="inherited-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 12</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 13</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">child_cls</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">child_cls</span>.<span class="ruby-identifier">own_directives</span> = <span class="ruby-keyword">nil</span>
@@ -968,7 +968,7 @@
 
 
           <div class="method-source-code" id="remove_directive-source-2">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_directives.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">remove_directive</span>(<span class="ruby-identifier">dir_class</span>)
   <span class="ruby-constant">HasDirectives</span>.<span class="ruby-identifier">remove_directive</span>(<span class="ruby-ivar">@own_directives</span>, <span class="ruby-identifier">dir_class</span>)
   <span class="ruby-keyword">nil</span>

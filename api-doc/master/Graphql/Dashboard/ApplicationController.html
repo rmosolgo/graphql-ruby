@@ -523,7 +523,7 @@
 
 
           <div class="method-source-code" id="schema_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/application_controller.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/application_controller.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">schema_class</span>
   <span class="ruby-ivar">@schema_class</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">configured_schemas</span> = <span class="ruby-constant">Array</span>(<span class="ruby-identifier">request</span>.<span class="ruby-identifier">path_parameters</span>[<span class="ruby-value">:</span><span class="ruby-value">schema</span>] <span class="ruby-operator">||</span> <span class="ruby-identifier">request</span>.<span class="ruby-identifier">path_parameters</span>[<span class="ruby-string">&quot;</span><span class="ruby-string">schema</span><span class="ruby-string">&quot;</span>])

@@ -537,7 +537,7 @@
 
 
           <div class="method-source-code" id="finish-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 69</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 70</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finish</span>
   <span class="ruby-ivar">@nr_ev</span>.<span class="ruby-identifier">finish</span>
 <span class="ruby-keyword">end</span></pre>
@@ -587,7 +587,7 @@
 
 
           <div class="method-source-code" id="start-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">start</span>
   <span class="ruby-identifier">name</span> = <span class="ruby-ivar">@monitor</span>.<span class="ruby-identifier">name_for</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-ivar">@nr_ev</span> = <span class="ruby-constant">NewRelic</span><span class="ruby-operator">::</span><span class="ruby-constant">Agent</span><span class="ruby-operator">::</span><span class="ruby-constant">Tracer</span>.<span class="ruby-identifier">start_transaction_or_segment</span>(<span class="ruby-value">partial_name</span><span class="ruby-value">:</span> <span class="ruby-identifier">name</span>, <span class="ruby-value">category</span><span class="ruby-value">:</span> <span class="ruby-value">:</span><span class="ruby-value">web</span>)

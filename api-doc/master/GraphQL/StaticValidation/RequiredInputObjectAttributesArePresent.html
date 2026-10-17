@@ -508,7 +508,7 @@
 
 
           <div class="method-source-code" id="on_input_object-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/required_input_object_attributes_are_present.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/required_input_object_attributes_are_present.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_input_object</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">Argument</span>
     <span class="ruby-identifier">validate_input_object</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">parent</span>)

@@ -570,7 +570,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 52</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
   <span class="ruby-ivar">@mock_broadcasted_messages</span> = []
 <span class="ruby-keyword">end</span></pre>
@@ -634,7 +634,7 @@
 
 
           <div class="method-source-code" id="stream_from-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 62</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 63</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">stream_from</span>(<span class="ruby-identifier">stream_name</span>, <span class="ruby-value">coder:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-comment"># Rails uses `coder`, we don&#39;t</span>
   <span class="ruby-identifier">block</span> ||= <span class="ruby-operator">-&gt;</span>(<span class="ruby-identifier">msg</span>) { <span class="ruby-ivar">@mock_broadcasted_messages</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">msg</span> }

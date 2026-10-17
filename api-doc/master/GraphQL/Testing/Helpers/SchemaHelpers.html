@@ -553,7 +553,7 @@
 
 
           <div class="method-source-code" id="for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 160</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 161</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">for</span>(<span class="ruby-identifier">schema_class</span>)
   <span class="ruby-constant">Module</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword">do</span>
     <span class="ruby-identifier">include</span> <span class="ruby-constant">SchemaHelpers</span>
@@ -620,7 +620,7 @@
 
 
           <div class="method-source-code" id="run_graphql_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 151</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 152</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_graphql_field</span>(<span class="ruby-identifier">field_path</span>, <span class="ruby-identifier">object</span>, <span class="ruby-value">arguments:</span> {}, <span class="ruby-value">context:</span> {}, <span class="ruby-value">visibility_profile:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">super</span>(<span class="ruby-identifier">@@schema_class_for_helpers</span>, <span class="ruby-identifier">field_path</span>, <span class="ruby-identifier">object</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-identifier">arguments</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>, <span class="ruby-value">visibility_profile</span><span class="ruby-value">:</span> <span class="ruby-identifier">visibility_profile</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -675,7 +675,7 @@
 
 
           <div class="method-source-code" id="with_resolution_context-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 155</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 156</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">with_resolution_context</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-comment"># schema will be added later</span>
   <span class="ruby-keyword">super</span>(<span class="ruby-keyword">nil</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)

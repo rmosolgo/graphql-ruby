@@ -610,7 +610,7 @@
 
 
           <div class="method-source-code" id="definition_methods-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">definition_methods</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-comment"># Use an instance variable to tell whether it&#39;s been included previously or not;</span>
   <span class="ruby-comment"># You can&#39;t use constant detection because constants are brought into scope</span>
@@ -669,7 +669,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 74</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 75</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">included</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Class</span>)
     <span class="ruby-comment"># In this case, it&#39;s been included into another interface.</span>
@@ -763,7 +763,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 152</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 153</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">INTERFACE</span>
 <span class="ruby-keyword">end</span></pre>
@@ -816,7 +816,7 @@
 
 
           <div class="method-source-code" id="orphan_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 132</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 133</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">orphan_types</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">types</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">types</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-ivar">@orphan_types</span> ||= []
@@ -899,7 +899,7 @@
 
 
           <div class="method-source-code" id="resolver_methods-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 50</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 51</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolver_methods</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@_resolver_methods</span>)
     <span class="ruby-identifier">resolver_methods_module</span> = <span class="ruby-constant">Module</span>.<span class="ruby-identifier">new</span>
@@ -966,7 +966,7 @@
 
 
           <div class="method-source-code" id="type_membership_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 65</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 66</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_membership_class</span>(<span class="ruby-identifier">membership_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">membership_class</span>
     <span class="ruby-ivar">@type_membership_class</span> = <span class="ruby-identifier">membership_class</span>
@@ -1020,7 +1020,7 @@
 
 
           <div class="method-source-code" id="visible-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 61</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 62</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible?</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">true</span>
 <span class="ruby-keyword">end</span></pre>

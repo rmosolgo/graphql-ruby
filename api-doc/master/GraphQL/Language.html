@@ -547,7 +547,7 @@
 
 
           <div class="method-source-code" id="add_space_between_numbers_and_names-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language.rb, line 110</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language.rb, line 111</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">add_space_between_numbers_and_names</span>(<span class="ruby-identifier">query_str</span>)
   <span class="ruby-comment"># Fast check for digit followed by identifier char. If this doesn&#39;t match, skip the more expensive regexp entirely.</span>
   <span class="ruby-keyword">return</span> <span class="ruby-identifier">query_str</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">query_str</span>.<span class="ruby-identifier">match?</span>(<span class="ruby-constant">MAYBE_INVALID_NUMBER</span>)
@@ -603,7 +603,7 @@
 
 
           <div class="method-source-code" id="escape_single_quoted_newlines-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language.rb, line 52</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">escape_single_quoted_newlines</span>(<span class="ruby-identifier">query_str</span>)
   <span class="ruby-identifier">scanner</span> = <span class="ruby-constant">StringScanner</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">query_str</span>)
   <span class="ruby-identifier">inside_single_quoted_string</span> = <span class="ruby-keyword">false</span>

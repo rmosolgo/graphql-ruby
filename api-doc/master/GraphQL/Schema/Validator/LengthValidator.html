@@ -553,7 +553,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/length_validator.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/length_validator.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(
   <span class="ruby-value">maximum:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">too_long:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">%{validated} is too long (maximum is %{count})</span><span class="ruby-string">&quot;</span>,
   <span class="ruby-value">minimum:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">too_short:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">%{validated} is too short (minimum is %{count})</span><span class="ruby-string">&quot;</span>,
@@ -655,7 +655,7 @@
 
 
           <div class="method-source-code" id="validate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/length_validator.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/length_validator.rb, line 56</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate</span>(<span class="ruby-identifier">_object</span>, <span class="ruby-identifier">_context</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">permitted_empty_value?</span>(<span class="ruby-identifier">value</span>) <span class="ruby-comment"># pass in this case</span>
   <span class="ruby-identifier">length</span> = <span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">?</span> <span class="ruby-value">0</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">length</span>

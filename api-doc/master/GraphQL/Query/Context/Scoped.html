@@ -544,7 +544,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 346</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 347</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">scoped_context</span>, <span class="ruby-identifier">path</span>)
   <span class="ruby-ivar">@path</span> = <span class="ruby-identifier">path</span>
   <span class="ruby-ivar">@scoped_context</span> = <span class="ruby-identifier">scoped_context</span>
@@ -609,7 +609,7 @@
 
 
           <div class="method-source-code" id="merge-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 351</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 352</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">hash</span>)
   <span class="ruby-ivar">@scoped_context</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">hash</span>, <span class="ruby-value">at</span><span class="ruby-value">:</span> <span class="ruby-ivar">@path</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -659,7 +659,7 @@
 
 
           <div class="method-source-code" id="set-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 355</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/context.rb, line 356</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set!</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-ivar">@scoped_context</span>.<span class="ruby-identifier">merge!</span>({ <span class="ruby-identifier">key</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">value</span> }, <span class="ruby-value">at</span><span class="ruby-value">:</span> <span class="ruby-ivar">@path</span>)
   <span class="ruby-keyword">nil</span>

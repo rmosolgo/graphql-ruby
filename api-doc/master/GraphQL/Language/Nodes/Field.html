@@ -542,7 +542,7 @@
 
 
           <div class="method-source-code" id="from_a-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 457</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 458</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">from_a</span>(<span class="ruby-identifier">filename</span>, <span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>, <span class="ruby-identifier">field_alias</span>, <span class="ruby-identifier">name</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">directives</span>, <span class="ruby-identifier">selections</span>) <span class="ruby-comment"># rubocop:disable Metrics/ParameterLists</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">filename</span><span class="ruby-value">:</span> <span class="ruby-identifier">filename</span>, <span class="ruby-value">line</span><span class="ruby-value">:</span> <span class="ruby-identifier">line</span>, <span class="ruby-value">col</span><span class="ruby-value">:</span> <span class="ruby-identifier">col</span>, <span class="ruby-value">field_alias</span><span class="ruby-value">:</span> <span class="ruby-identifier">field_alias</span>, <span class="ruby-value">name</span><span class="ruby-value">:</span> <span class="ruby-identifier">name</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-identifier">arguments</span>, <span class="ruby-value">directives</span><span class="ruby-value">:</span> <span class="ruby-identifier">directives</span>, <span class="ruby-value">selections</span><span class="ruby-value">:</span> <span class="ruby-identifier">selections</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -592,7 +592,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 443</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 444</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">name:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">arguments:</span> <span class="ruby-constant">NONE</span>, <span class="ruby-value">directives:</span> <span class="ruby-constant">NONE</span>, <span class="ruby-value">selections:</span> <span class="ruby-constant">NONE</span>, <span class="ruby-value">field_alias:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">line:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">col:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">pos:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">filename:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">source:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@name</span> = <span class="ruby-identifier">name</span>
   <span class="ruby-ivar">@arguments</span> = <span class="ruby-identifier">arguments</span> <span class="ruby-operator">||</span> <span class="ruby-constant">NONE</span>
@@ -666,7 +666,7 @@
 
 
           <div class="method-source-code" id="marshal_dump-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 461</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 462</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">marshal_dump</span>
   [<span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>, <span class="ruby-ivar">@filename</span>, <span class="ruby-ivar">@name</span>, <span class="ruby-ivar">@arguments</span>, <span class="ruby-ivar">@directives</span>, <span class="ruby-ivar">@selections</span>, <span class="ruby-ivar">@alias</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -716,7 +716,7 @@
 
 
           <div class="method-source-code" id="marshal_load-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 465</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 466</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">marshal_load</span>(<span class="ruby-identifier">values</span>)
   <span class="ruby-ivar">@line</span>, <span class="ruby-ivar">@col</span>, <span class="ruby-ivar">@filename</span>, <span class="ruby-ivar">@name</span>, <span class="ruby-ivar">@arguments</span>, <span class="ruby-ivar">@directives</span>, <span class="ruby-ivar">@selections</span>, <span class="ruby-ivar">@alias</span> = <span class="ruby-identifier">values</span>
 <span class="ruby-keyword">end</span></pre>

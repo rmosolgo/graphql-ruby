@@ -568,7 +568,7 @@
 
 
           <div class="method-source-code" id="resolve_enum_values-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 63</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 64</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_enum_values</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">enum?</span>
     <span class="ruby-keyword">nil</span>
@@ -628,7 +628,7 @@
 
 
           <div class="method-source-code" id="resolve_fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 119</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 120</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_fields</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">fields?</span>
     <span class="ruby-keyword">nil</span>
@@ -686,7 +686,7 @@
 
 
           <div class="method-source-code" id="resolve_input_fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 93</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 94</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_input_fields</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">input_object?</span>
     <span class="ruby-identifier">args</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">object</span>)
@@ -742,7 +742,7 @@
 
 
           <div class="method-source-code" id="resolve_interfaces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 81</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_interfaces</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">object?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">interface?</span>
     <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">interfaces</span>(<span class="ruby-identifier">object</span>).<span class="ruby-identifier">sort_by</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">graphql_name</span>)
@@ -796,7 +796,7 @@
 
 
           <div class="method-source-code" id="resolve_is_one_of-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 34</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 35</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_is_one_of</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">input_object?</span> <span class="ruby-operator">&amp;&amp;</span>
     <span class="ruby-identifier">object</span>.<span class="ruby-identifier">directives</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">d</span><span class="ruby-operator">|</span> <span class="ruby-identifier">d</span>.<span class="ruby-identifier">graphql_name</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;</span><span class="ruby-string">oneOf</span><span class="ruby-string">&quot;</span> }
@@ -847,7 +847,7 @@
 
 
           <div class="method-source-code" id="resolve_kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 56</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_kind</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">name</span>
 <span class="ruby-keyword">end</span></pre>
@@ -897,7 +897,7 @@
 
 
           <div class="method-source-code" id="resolve_of_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 135</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 136</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_of_type</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">wraps?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">object</span>.<span class="ruby-identifier">of_type</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -947,7 +947,7 @@
 
 
           <div class="method-source-code" id="resolve_possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 107</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 108</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_possible_types</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">abstract?</span>
     <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">possible_types</span>(<span class="ruby-identifier">object</span>).<span class="ruby-identifier">sort_by</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">graphql_name</span>)
@@ -1001,7 +1001,7 @@
 
 
           <div class="method-source-code" id="resolve_specified_by_url-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_specified_by_url</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">object</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">scalar?</span>
     <span class="ruby-identifier">object</span>.<span class="ruby-identifier">specified_by_url</span>
@@ -1069,7 +1069,7 @@
 
 
           <div class="method-source-code" id="enum_values-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 77</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 78</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">enum_values</span>(<span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_enum_values</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated</span><span class="ruby-value">:</span> <span class="ruby-identifier">include_deprecated</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1119,7 +1119,7 @@
 
 
           <div class="method-source-code" id="fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 131</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 132</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fields</span>(<span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_fields</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated</span><span class="ruby-value">:</span> <span class="ruby-identifier">include_deprecated</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1169,7 +1169,7 @@
 
 
           <div class="method-source-code" id="input_fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 103</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 104</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">input_fields</span>(<span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_input_fields</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated</span><span class="ruby-value">:</span> <span class="ruby-identifier">include_deprecated</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1219,7 +1219,7 @@
 
 
           <div class="method-source-code" id="interfaces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 89</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interfaces</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_interfaces</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1269,7 +1269,7 @@
 
 
           <div class="method-source-code" id="is_one_of-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">is_one_of</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_is_one_of</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1319,7 +1319,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 59</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_kind</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1369,7 +1369,7 @@
 
 
           <div class="method-source-code" id="of_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 139</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 140</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">of_type</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_of_type</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1419,7 +1419,7 @@
 
 
           <div class="method-source-code" id="possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 115</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 116</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">possible_types</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_possible_types</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1469,7 +1469,7 @@
 
 
           <div class="method-source-code" id="specified_by_url-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 51</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/type_type.rb, line 52</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">specified_by_url</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_specified_by_url</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>

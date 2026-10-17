@@ -542,7 +542,7 @@
 
 
           <div class="method-source-code" id="resolve_default_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_default_value</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">object</span>.<span class="ruby-identifier">default_value?</span>
     <span class="ruby-identifier">value</span> = <span class="ruby-identifier">object</span>.<span class="ruby-identifier">default_value</span>
@@ -608,7 +608,7 @@
 
 
           <div class="method-source-code" id="resolve_is_deprecated-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_is_deprecated</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-identifier">object</span>.<span class="ruby-identifier">deprecation_reason</span>
 <span class="ruby-keyword">end</span></pre>
@@ -658,7 +658,7 @@
 
 
           <div class="method-source-code" id="serialize_default_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 52</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">serialize_default_value</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">type</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-string">&#39;</span><span class="ruby-string">null</span><span class="ruby-string">&#39;</span>
@@ -740,7 +740,7 @@
 
 
           <div class="method-source-code" id="default_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_value</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_default_value</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -790,7 +790,7 @@
 
 
           <div class="method-source-code" id="is_deprecated-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 20</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/input_value_type.rb, line 21</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">is_deprecated</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_is_deprecated</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>

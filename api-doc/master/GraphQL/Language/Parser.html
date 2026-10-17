@@ -601,7 +601,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">graphql_str</span>, <span class="ruby-value">filename:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">trace:</span> <span class="ruby-constant">Tracing</span><span class="ruby-operator">::</span><span class="ruby-constant">NullTrace</span>, <span class="ruby-value">max_tokens:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">graphql_str</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ParseError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">No query string was present</span><span class="ruby-string">&quot;</span>, <span class="ruby-keyword">nil</span>, <span class="ruby-keyword">nil</span>, <span class="ruby-keyword">nil</span>)
@@ -659,7 +659,7 @@
 
 
           <div class="method-source-code" id="parse-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parse</span>(<span class="ruby-identifier">graphql_str</span>, <span class="ruby-value">filename:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">trace:</span> <span class="ruby-constant">Tracing</span><span class="ruby-operator">::</span><span class="ruby-constant">NullTrace</span>, <span class="ruby-value">max_tokens:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">graphql_str</span>, <span class="ruby-value">filename</span><span class="ruby-value">:</span> <span class="ruby-identifier">filename</span>, <span class="ruby-value">trace</span><span class="ruby-value">:</span> <span class="ruby-identifier">trace</span>, <span class="ruby-value">max_tokens</span><span class="ruby-value">:</span> <span class="ruby-identifier">max_tokens</span>).<span class="ruby-identifier">parse</span>
 <span class="ruby-keyword">end</span></pre>
@@ -709,7 +709,7 @@
 
 
           <div class="method-source-code" id="parse_file-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 20</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 21</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parse_file</span>(<span class="ruby-identifier">filename</span>, <span class="ruby-value">trace:</span> <span class="ruby-constant">Tracing</span><span class="ruby-operator">::</span><span class="ruby-constant">NullTrace</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">cache</span>
     <span class="ruby-identifier">cache</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">filename</span>) <span class="ruby-keyword">do</span>
@@ -779,7 +779,7 @@
 
 
           <div class="method-source-code" id="column_at-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 67</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 68</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">column_at</span>(<span class="ruby-identifier">pos</span>)
   <span class="ruby-identifier">next_line_idx</span> = <span class="ruby-identifier">lines_at</span>.<span class="ruby-identifier">bsearch_index</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">l</span><span class="ruby-operator">|</span> <span class="ruby-identifier">l</span> &gt;= <span class="ruby-identifier">pos</span> } <span class="ruby-operator">||</span> <span class="ruby-ivar">@lines_at</span>.<span class="ruby-identifier">size</span>
   <span class="ruby-identifier">line_start</span> = <span class="ruby-identifier">next_line_idx</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span> <span class="ruby-operator">?</span> <span class="ruby-value">0</span> <span class="ruby-operator">:</span> <span class="ruby-ivar">@lines_at</span>[<span class="ruby-identifier">next_line_idx</span> <span class="ruby-operator">-</span> <span class="ruby-value">1</span>] <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
@@ -835,7 +835,7 @@
 
 
           <div class="method-source-code" id="line_at-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 58</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 59</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">line_at</span>(<span class="ruby-identifier">pos</span>)
   <span class="ruby-identifier">line</span> = <span class="ruby-identifier">lines_at</span>.<span class="ruby-identifier">bsearch_index</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">l</span><span class="ruby-operator">|</span> <span class="ruby-identifier">l</span> &gt;= <span class="ruby-identifier">pos</span> }
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">line</span>.<span class="ruby-identifier">nil?</span>
@@ -890,7 +890,7 @@
 
 
           <div class="method-source-code" id="parse-source-2">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parse</span>
   <span class="ruby-ivar">@document</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-ivar">@trace</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-value">query_string</span><span class="ruby-value">:</span> <span class="ruby-ivar">@graphql_str</span>) <span class="ruby-keyword">do</span>
@@ -946,7 +946,7 @@
 
 
           <div class="method-source-code" id="tokens_count-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/parser.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">tokens_count</span>
   <span class="ruby-identifier">parse</span>
   <span class="ruby-ivar">@lexer</span>.<span class="ruby-identifier">tokens_count</span>

@@ -537,7 +537,7 @@
 
 
           <div class="method-source-code" id="finish-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_trace.rb, line 47</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_trace.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finish</span>
   <span class="ruby-ivar">@scout_req</span>.<span class="ruby-identifier">stop_layer</span>
 <span class="ruby-keyword">end</span></pre>
@@ -587,7 +587,7 @@
 
 
           <div class="method-source-code" id="start-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_trace.rb, line 40</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_trace.rb, line 41</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">start</span>
   <span class="ruby-identifier">layer</span> = <span class="ruby-constant">ScoutApm</span><span class="ruby-operator">::</span><span class="ruby-constant">Layer</span>.<span class="ruby-identifier">new</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL</span><span class="ruby-string">&quot;</span>, <span class="ruby-ivar">@monitor</span>.<span class="ruby-identifier">name_for</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>))
   <span class="ruby-identifier">layer</span>.<span class="ruby-identifier">subscopable!</span>

@@ -565,7 +565,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">definition_line:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">_rest</span>)
   <span class="ruby-ivar">@definition_line</span> = <span class="ruby-identifier">definition_line</span>
   <span class="ruby-keyword">super</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">_rest</span>)
@@ -635,7 +635,7 @@
 
 
           <div class="method-source-code" id="marshal_dump-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">marshal_dump</span>
   <span class="ruby-keyword">super</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-ivar">@definition_line</span>
 <span class="ruby-keyword">end</span></pre>
@@ -690,7 +690,7 @@
 
 
           <div class="method-source-code" id="marshal_load-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">marshal_load</span>(<span class="ruby-identifier">values</span>)
   <span class="ruby-ivar">@definition_line</span> = <span class="ruby-identifier">values</span>.<span class="ruby-identifier">pop</span>
   <span class="ruby-keyword">super</span>

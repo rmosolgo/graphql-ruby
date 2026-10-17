@@ -561,7 +561,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/printer.rb, line 12</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/printer.rb, line 13</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">truncate_size:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@out</span> = <span class="ruby-constant">String</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">capacity</span><span class="ruby-value">:</span> <span class="ruby-identifier">truncate_size</span> <span class="ruby-operator">||</span> <span class="ruby-constant">DEFAULT_INIT_CAPACITY</span>)
   <span class="ruby-ivar">@truncate_size</span> = <span class="ruby-identifier">truncate_size</span>
@@ -626,7 +626,7 @@
 
 
           <div class="method-source-code" id="append-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/printer.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/printer.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">append</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@truncate_size</span> <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-ivar">@out</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">other</span>.<span class="ruby-identifier">size</span>) <span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@truncate_size</span>
     <span class="ruby-ivar">@out</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">other</span>.<span class="ruby-identifier">slice</span>(<span class="ruby-value">0</span>, <span class="ruby-ivar">@truncate_size</span> <span class="ruby-operator">-</span> <span class="ruby-ivar">@out</span>.<span class="ruby-identifier">size</span>)
@@ -681,7 +681,7 @@
 
 
           <div class="method-source-code" id="to_string-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/printer.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/printer.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_string</span>
   <span class="ruby-ivar">@out</span>
 <span class="ruby-keyword">end</span></pre>

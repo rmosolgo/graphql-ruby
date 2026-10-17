@@ -630,7 +630,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/unauthorized_error.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/unauthorized_error.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">object:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">type:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">message</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">object</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">type</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string"> requires either a message or keywords</span><span class="ruby-string">&quot;</span>
@@ -709,7 +709,7 @@
 
 
           <div class="method-source-code" id="finalize_graphql_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/unauthorized_error.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/unauthorized_error.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finalize_graphql_result</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">result_data</span>, <span class="ruby-identifier">key</span>)
   <span class="ruby-identifier">result_data</span>[<span class="ruby-identifier">key</span>] = <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>

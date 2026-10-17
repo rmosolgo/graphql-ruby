@@ -553,7 +553,7 @@
 
 
           <div class="method-source-code" id="extended-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_validators.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_validators.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">extended</span>(<span class="ruby-identifier">child_cls</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">child_cls</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ClassConfigured</span>)
@@ -626,7 +626,7 @@
 
 
           <div class="method-source-code" id="validates-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_validators.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_validators.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validates</span>(<span class="ruby-identifier">validation_config</span>)
   <span class="ruby-identifier">new_validators</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Validator</span>.<span class="ruby-identifier">from_config</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">validation_config</span>)
   <span class="ruby-ivar">@own_validators</span> ||= []
@@ -692,7 +692,7 @@
 
 
           <div class="method-source-code" id="validators-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_validators.rb, line 34</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_validators.rb, line 35</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validators</span>
   <span class="ruby-ivar">@own_validators</span> <span class="ruby-operator">||</span> <span class="ruby-constant">EMPTY_ARRAY</span>
 <span class="ruby-keyword">end</span></pre>

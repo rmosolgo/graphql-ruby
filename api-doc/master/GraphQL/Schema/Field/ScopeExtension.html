@@ -529,7 +529,7 @@
 
 
           <div class="method-source-code" id="after_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/scope_extension.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/scope_extension.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">after_resolve</span>(<span class="ruby-value">object:</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">value:</span>, <span class="ruby-value">memo:</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">object</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Object</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span>

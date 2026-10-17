@@ -694,7 +694,7 @@
 
 
           <div class="method-source-code" id="default_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_directive</span>(<span class="ruby-identifier">new_default_directive</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_default_directive</span> <span class="ruby-operator">!=</span> <span class="ruby-keyword">nil</span>
     <span class="ruby-ivar">@default_directive</span> = <span class="ruby-identifier">new_default_directive</span>
@@ -750,7 +750,7 @@
 
 
           <div class="method-source-code" id="default_directive-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 63</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 64</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_directive?</span>
   <span class="ruby-identifier">default_directive</span>
 <span class="ruby-keyword">end</span></pre>
@@ -800,7 +800,7 @@
 
 
           <div class="method-source-code" id="default_graphql_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_graphql_name</span>
   <span class="ruby-ivar">@default_graphql_name</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">camelized_name</span> = <span class="ruby-keyword">super</span>.<span class="ruby-identifier">dup</span>
@@ -859,7 +859,7 @@
 
 
           <div class="method-source-code" id="include-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 68</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 69</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">include?</span>(<span class="ruby-identifier">_object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">static_include?</span>(<span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -909,7 +909,7 @@
 
 
           <div class="method-source-code" id="locations-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">locations</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">new_locations</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">new_locations</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">is_runtime</span> = <span class="ruby-keyword">false</span>
@@ -972,7 +972,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 143</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 144</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">owner</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">arguments</span>)
   <span class="ruby-ivar">@owner</span> = <span class="ruby-identifier">owner</span>
   <span class="ruby-identifier">assert_valid_owner</span>
@@ -1074,7 +1074,7 @@
 
 
           <div class="method-source-code" id="on_field-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 96</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 97</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field?</span>
   <span class="ruby-identifier">locations</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-constant">FIELD</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1124,7 +1124,7 @@
 
 
           <div class="method-source-code" id="on_fragment-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 100</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 101</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment?</span>
   <span class="ruby-identifier">locations</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-constant">FRAGMENT_SPREAD</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">locations</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-constant">INLINE_FRAGMENT</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1174,7 +1174,7 @@
 
 
           <div class="method-source-code" id="on_operation-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 104</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 105</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation?</span>
   <span class="ruby-identifier">locations</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-constant">QUERY</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">locations</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-constant">MUTATION</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">locations</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-constant">SUBSCRIPTION</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1224,7 +1224,7 @@
 
 
           <div class="method-source-code" id="path-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 18</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 19</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">path</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">@</span><span class="ruby-string">#{</span><span class="ruby-keyword">super</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1279,7 +1279,7 @@
 
 
           <div class="method-source-code" id="repeatable-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 112</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 113</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">repeatable</span>(<span class="ruby-identifier">new_value</span>)
   <span class="ruby-ivar">@repeatable</span> = <span class="ruby-identifier">new_value</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1329,7 +1329,7 @@
 
 
           <div class="method-source-code" id="repeatable-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 108</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 109</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">repeatable?</span>
   <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-ivar">@repeatable</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1379,7 +1379,7 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 78</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 79</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">yield</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1429,7 +1429,7 @@
 
 
           <div class="method-source-code" id="resolve_each-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 83</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 84</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_each</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">yield</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1479,7 +1479,7 @@
 
 
           <div class="method-source-code" id="resolve_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 87</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 88</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_field</span>(...); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1527,7 +1527,7 @@
 
 
           <div class="method-source-code" id="resolve_fragment_spread-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 88</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 89</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_fragment_spread</span>(...); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1575,7 +1575,7 @@
 
 
           <div class="method-source-code" id="resolve_inline_fragment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 89</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_inline_fragment</span>(...); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1623,7 +1623,7 @@
 
 
           <div class="method-source-code" id="resolve_operation-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 91</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_operation</span>(...); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1671,7 +1671,7 @@
 
 
           <div class="method-source-code" id="runtime-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 50</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">runtime?</span>
   <span class="ruby-ivar">@is_runtime</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1721,7 +1721,7 @@
 
 
           <div class="method-source-code" id="static_include-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 73</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 74</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">static_include?</span>(<span class="ruby-identifier">_arguments</span>, <span class="ruby-identifier">_context</span>)
   <span class="ruby-keyword">true</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1771,7 +1771,7 @@
 
 
           <div class="method-source-code" id="validate-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 92</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 93</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate!</span>(<span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Validator</span>.<span class="ruby-identifier">validate!</span>(<span class="ruby-identifier">validators</span>, <span class="ruby-keyword">self</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">arguments</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1835,7 +1835,7 @@
 
 
           <div class="method-source-code" id="graphql_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 199</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 200</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">graphql_name</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">graphql_name</span>
 <span class="ruby-keyword">end</span></pre>

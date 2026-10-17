@@ -556,7 +556,7 @@
 
 
           <div class="method-source-code" id="create_mutation_file-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/orm_mutations_base.rb, line 33</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/orm_mutations_base.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">create_mutation_file</span>
   <span class="ruby-identifier">template</span> <span class="ruby-string">&quot;</span><span class="ruby-string">mutation_</span><span class="ruby-string">#{</span><span class="ruby-identifier">operation_type</span><span class="ruby-string">}</span><span class="ruby-string">.erb</span><span class="ruby-string">&quot;</span>, <span class="ruby-constant">File</span>.<span class="ruby-identifier">join</span>(<span class="ruby-identifier">options</span>[<span class="ruby-value">:</span><span class="ruby-value">directory</span>], <span class="ruby-string">&quot;</span><span class="ruby-string">/mutations/</span><span class="ruby-string">&quot;</span>, <span class="ruby-identifier">class_path</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">file_name</span><span class="ruby-string">}</span><span class="ruby-string">_</span><span class="ruby-string">#{</span><span class="ruby-identifier">operation_type</span><span class="ruby-string">}</span><span class="ruby-string">.rb</span><span class="ruby-string">&quot;</span>)
 

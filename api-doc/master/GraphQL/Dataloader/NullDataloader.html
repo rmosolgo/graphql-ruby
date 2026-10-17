@@ -546,7 +546,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 10</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-ivar">@lazies_at_depth</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>,<span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">k</span>] = [] }
 <span class="ruby-keyword">end</span></pre>
@@ -610,7 +610,7 @@
 
 
           <div class="method-source-code" id="append_job-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 59</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">append_job</span>(<span class="ruby-identifier">callable</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">callable</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">callable</span>.<span class="ruby-identifier">call</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">yield</span>
   <span class="ruby-keyword">nil</span>
@@ -661,7 +661,7 @@
 
 
           <div class="method-source-code" id="clear_cache-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">clear_cache</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -709,7 +709,7 @@
 
 
           <div class="method-source-code" id="freeze-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 14</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 15</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">freeze</span>
   <span class="ruby-ivar">@lazies_at_depth</span>.<span class="ruby-identifier">default_proc</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-ivar">@lazies_at_depth</span>.<span class="ruby-identifier">freeze</span>
@@ -766,7 +766,7 @@
 
 
           <div class="method-source-code" id="run-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 20</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 21</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run</span>(<span class="ruby-value">trace_query_lazy:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">with_trace_query_lazy</span>(<span class="ruby-identifier">trace_query_lazy</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-keyword">while</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@lazies_at_depth</span>.<span class="ruby-identifier">empty?</span>
@@ -831,7 +831,7 @@
 
 
           <div class="method-source-code" id="run_isolated-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_isolated</span>
   <span class="ruby-comment"># Reuse this instance because execution code may already have a reference to _this_ `dataloader` inside the given block.</span>
   <span class="ruby-identifier">prev_lazies_at_depth</span> = <span class="ruby-ivar">@lazies_at_depth</span>
@@ -891,7 +891,7 @@
 
 
           <div class="method-source-code" id="with-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">with</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources.</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -941,7 +941,7 @@
 
 
           <div class="method-source-code" id="yield-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/null_dataloader.rb, line 56</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">yield</span>(<span class="ruby-identifier">_source</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources.</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>

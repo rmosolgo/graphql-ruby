@@ -660,7 +660,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 104</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 105</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">serializer:</span> <span class="ruby-constant">Serialize</span>, <span class="ruby-value">namespace:</span> <span class="ruby-string">&#39;</span><span class="ruby-string">&#39;</span>, <span class="ruby-value">action_cable:</span> <span class="ruby-constant">ActionCable</span>, <span class="ruby-value">action_cable_coder:</span> <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">JSON</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)
   <span class="ruby-comment"># A per-process map of subscriptions to deliver.</span>
   <span class="ruby-comment"># This is provided by Rails, so let&#39;s use it</span>
@@ -756,7 +756,7 @@
 
 
           <div class="method-source-code" id="delete_subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 245</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 246</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_subscription</span>(<span class="ruby-identifier">subscription_id</span>)
   <span class="ruby-identifier">query</span> = <span class="ruby-ivar">@subscriptions</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">subscription_id</span>)
   <span class="ruby-comment"># In case this came from the server, tell the client to unsubscribe:</span>
@@ -821,7 +821,7 @@
 
 
           <div class="method-source-code" id="deliver-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 140</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 141</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">deliver</span>(<span class="ruby-identifier">subscription_id</span>, <span class="ruby-identifier">result</span>)
   <span class="ruby-identifier">has_more</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">result</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">subscriptions</span>)[<span class="ruby-value">:</span><span class="ruby-value">final_update</span>]
   <span class="ruby-identifier">payload</span> = { <span class="ruby-value">result</span><span class="ruby-value">:</span> <span class="ruby-identifier">result</span>.<span class="ruby-identifier">to_h</span>, <span class="ruby-value">more</span><span class="ruby-value">:</span> <span class="ruby-identifier">has_more</span> }
@@ -873,7 +873,7 @@
 
 
           <div class="method-source-code" id="execute_all-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 132</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 133</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_all</span>(<span class="ruby-identifier">event</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">stream</span> = <span class="ruby-identifier">stream_event_name</span>(<span class="ruby-identifier">event</span>)
   <span class="ruby-identifier">message</span> = <span class="ruby-ivar">@serializer</span>.<span class="ruby-identifier">dump</span>(<span class="ruby-identifier">object</span>)
@@ -928,7 +928,7 @@
 
 
           <div class="method-source-code" id="load_action_cable_message-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 218</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 219</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load_action_cable_message</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@serialize_with_context</span>
     <span class="ruby-ivar">@serializer</span>.<span class="ruby-identifier">load</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">context</span>)
@@ -989,7 +989,7 @@
 
 
           <div class="method-source-code" id="read_subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 227</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 228</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">read_subscription</span>(<span class="ruby-identifier">subscription_id</span>)
   <span class="ruby-identifier">query</span> = <span class="ruby-ivar">@subscriptions</span>[<span class="ruby-identifier">subscription_id</span>]
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">nil?</span>
@@ -1052,7 +1052,7 @@
 
 
           <div class="method-source-code" id="setup_stream-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 181</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 182</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">setup_stream</span>(<span class="ruby-identifier">channel</span>, <span class="ruby-identifier">initial_event</span>)
   <span class="ruby-identifier">topic</span> = <span class="ruby-identifier">initial_event</span>.<span class="ruby-identifier">topic</span>
   <span class="ruby-identifier">event_stream</span> = <span class="ruby-identifier">stream_event_name</span>(<span class="ruby-identifier">initial_event</span>)
@@ -1129,7 +1129,7 @@
 
 
           <div class="method-source-code" id="write_subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 150</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 151</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">write_subscription</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">events</span>)
   <span class="ruby-keyword">unless</span> (<span class="ruby-identifier">channel</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">channel</span>])
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">This GraphQL Subscription client does not support the transport protocol expected</span><span class="ruby-string">&quot;</span>\

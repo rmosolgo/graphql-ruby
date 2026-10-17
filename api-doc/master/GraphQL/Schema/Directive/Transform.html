@@ -556,7 +556,7 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">path</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">interpreter</span>)[<span class="ruby-value">:</span><span class="ruby-value">current_path</span>]
   <span class="ruby-identifier">return_value</span> = <span class="ruby-keyword">yield</span>
@@ -624,7 +624,7 @@
 
 
           <div class="method-source-code" id="resolve_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 66</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 67</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_field</span>(<span class="ruby-identifier">ast_nodes</span>, <span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">field_defn</span>, <span class="ruby-identifier">objects</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">transform_name</span> = <span class="ruby-identifier">arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">by</span>]
   <span class="ruby-keyword">if</span> <span class="ruby-constant">TRANSFORMS</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">transform_name</span>)

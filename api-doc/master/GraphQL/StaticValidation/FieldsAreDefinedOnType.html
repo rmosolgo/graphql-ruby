@@ -508,7 +508,7 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_are_defined_on_type.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_are_defined_on_type.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">parent_type</span> = <span class="ruby-ivar">@parent_object_type</span>
   <span class="ruby-identifier">field</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">field</span>(<span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>)

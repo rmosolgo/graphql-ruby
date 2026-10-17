@@ -662,7 +662,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">ast_nodes:</span>, <span class="ruby-value">field:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">root_type:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">owner_type:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@ast_nodes</span> = <span class="ruby-identifier">ast_nodes</span>.<span class="ruby-identifier">freeze</span>
   <span class="ruby-ivar">@field</span> = <span class="ruby-identifier">field</span>
@@ -743,7 +743,7 @@
 
 
           <div class="method-source-code" id="alias_selection-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 206</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 207</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_selection</span>(<span class="ruby-identifier">alias_name</span>, <span class="ruby-value">selected_type:</span> <span class="ruby-ivar">@selected_type</span>, <span class="ruby-value">arguments:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">alias_cache_key</span> = [<span class="ruby-identifier">alias_name</span>, <span class="ruby-identifier">arguments</span>]
   <span class="ruby-keyword">return</span> <span class="ruby-identifier">alias_selections</span>[<span class="ruby-identifier">key</span>] <span class="ruby-keyword">if</span> <span class="ruby-identifier">alias_selections</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">alias_name</span>)
@@ -816,7 +816,7 @@
 
 
           <div class="method-source-code" id="arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 74</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 75</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments</span>
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@arguments</span>)
     <span class="ruby-ivar">@arguments</span>
@@ -886,7 +886,7 @@
 
 
           <div class="method-source-code" id="inspect-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 298</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 299</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inspect</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">#&lt;GraphQL::Execution::Lookahead </span><span class="ruby-string">#{</span><span class="ruby-ivar">@field</span> <span class="ruby-operator">?</span> <span class="ruby-string">&quot;</span><span class="ruby-string">@field=</span><span class="ruby-string">#{</span><span class="ruby-ivar">@field</span>.<span class="ruby-identifier">path</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span><span class="ruby-operator">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">@root_type=</span><span class="ruby-string">#{</span><span class="ruby-ivar">@root_type</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span><span class="ruby-string">}</span><span class="ruby-string"> @ast_nodes.size=</span><span class="ruby-string">#{</span><span class="ruby-ivar">@ast_nodes</span>.<span class="ruby-identifier">size</span><span class="ruby-string">}</span><span class="ruby-string">&gt;</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -939,7 +939,7 @@
 
 
           <div class="method-source-code" id="name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 294</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 295</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">name</span>
   <span class="ruby-ivar">@field</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@field</span>.<span class="ruby-identifier">original_name</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1007,7 +1007,7 @@
 
 
           <div class="method-source-code" id="selected-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 151</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 152</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">selected?</span>
   <span class="ruby-keyword">true</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1063,7 +1063,7 @@
 
 
           <div class="method-source-code" id="selection-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 168</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 169</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">selection</span>(<span class="ruby-identifier">field_name</span>, <span class="ruby-value">selected_type:</span> <span class="ruby-ivar">@selected_type</span>, <span class="ruby-value">arguments:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">next_field_defn</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">field_name</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">String</span>
@@ -1151,7 +1151,7 @@
 
 
           <div class="method-source-code" id="selections-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 253</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 254</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">selections</span>(<span class="ruby-value">arguments:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">subselections_by_type</span> = {}
   <span class="ruby-identifier">subselections_on_type</span> = <span class="ruby-identifier">subselections_by_type</span>[<span class="ruby-ivar">@selected_type</span>] = {}
@@ -1243,7 +1243,7 @@
 
 
           <div class="method-source-code" id="selects-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 116</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 117</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">selects?</span>(<span class="ruby-identifier">field_name</span>, <span class="ruby-value">selected_type:</span> <span class="ruby-ivar">@selected_type</span>, <span class="ruby-value">arguments:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">selection</span>(<span class="ruby-identifier">field_name</span>, <span class="ruby-value">selected_type</span><span class="ruby-value">:</span> <span class="ruby-identifier">selected_type</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-identifier">arguments</span>).<span class="ruby-identifier">selected?</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1310,7 +1310,7 @@
 
 
           <div class="method-source-code" id="selects_alias-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 141</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 142</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">selects_alias?</span>(<span class="ruby-identifier">alias_name</span>, <span class="ruby-value">arguments:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">alias_selection</span>(<span class="ruby-identifier">alias_name</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-identifier">arguments</span>).<span class="ruby-identifier">selected?</span>
 <span class="ruby-keyword">end</span></pre>

@@ -538,7 +538,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/load_argument_step.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/load_argument_step.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">field_resolve_step:</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">load_receiver:</span>, <span class="ruby-value">argument_value:</span>, <span class="ruby-value">argument_definition:</span>, <span class="ruby-value">argument_key:</span>)
   <span class="ruby-ivar">@field_resolve_step</span> = <span class="ruby-identifier">field_resolve_step</span>
   <span class="ruby-ivar">@load_receiver</span> = <span class="ruby-identifier">load_receiver</span>
@@ -609,7 +609,7 @@
 
 
           <div class="method-source-code" id="call-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/load_argument_step.rb, line 42</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/load_argument_step.rb, line 43</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call</span>
   <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">set_current_field</span>
   <span class="ruby-identifier">context</span> = <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">selections_step</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>
@@ -688,7 +688,7 @@
 
 
           <div class="method-source-code" id="value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/load_argument_step.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/load_argument_step.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">value</span>
   <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">set_current_field</span>
   <span class="ruby-identifier">schema</span> = <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">runner</span>.<span class="ruby-identifier">schema</span>

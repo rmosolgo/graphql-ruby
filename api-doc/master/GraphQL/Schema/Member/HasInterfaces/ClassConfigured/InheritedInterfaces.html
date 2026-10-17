@@ -528,7 +528,7 @@
 
 
           <div class="method-source-code" id="interface_type_memberships-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 89</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interface_type_memberships</span>
   <span class="ruby-identifier">own_tms</span> = <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">inherited_tms</span> = <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">interface_type_memberships</span>
@@ -589,7 +589,7 @@
 
 
           <div class="method-source-code" id="interfaces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 73</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 74</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interfaces</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">visible_interfaces</span> = <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">inherited_interfaces</span> = <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">interfaces</span>(<span class="ruby-identifier">context</span>)

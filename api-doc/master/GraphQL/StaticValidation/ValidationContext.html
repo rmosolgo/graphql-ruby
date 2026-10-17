@@ -697,7 +697,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">visitor_class</span>, <span class="ruby-identifier">max_errors</span>)
   <span class="ruby-ivar">@query</span> = <span class="ruby-identifier">query</span>
   <span class="ruby-ivar">@types</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span> <span class="ruby-comment"># TODO update migrated callers to use this accessor</span>
@@ -768,7 +768,7 @@
 
 
           <div class="method-source-code" id="did_you_mean_suggestion-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">did_you_mean_suggestion</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">options</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">did_you_mean</span> = <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">did_you_mean</span>
     <span class="ruby-identifier">suggestions</span> = <span class="ruby-identifier">did_you_mean</span><span class="ruby-operator">::</span><span class="ruby-constant">SpellChecker</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">dictionary</span><span class="ruby-value">:</span> <span class="ruby-identifier">options</span>).<span class="ruby-identifier">correct</span>(<span class="ruby-identifier">name</span>)
@@ -829,7 +829,7 @@
 
 
           <div class="method-source-code" id="on_dependency_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_dependency_resolve</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">handler</span>)
   <span class="ruby-ivar">@on_dependency_resolve_handlers</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">handler</span>
 <span class="ruby-keyword">end</span></pre>
@@ -879,7 +879,7 @@
 
 
           <div class="method-source-code" id="schema_directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 50</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">schema_directives</span>
   <span class="ruby-ivar">@schema_directives</span> ||= <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">directives</span>
 <span class="ruby-keyword">end</span></pre>
@@ -929,7 +929,7 @@
 
 
           <div class="method-source-code" id="too_many_errors-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">too_many_errors?</span>
   <span class="ruby-ivar">@errors</span>.<span class="ruby-identifier">length</span> &gt;= <span class="ruby-ivar">@max_errors</span>
 <span class="ruby-keyword">end</span></pre>
@@ -979,7 +979,7 @@
 
 
           <div class="method-source-code" id="validate_literal-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_literal</span>(<span class="ruby-identifier">ast_value</span>, <span class="ruby-identifier">type</span>)
   <span class="ruby-ivar">@literal_validator</span>.<span class="ruby-identifier">validate</span>(<span class="ruby-identifier">ast_value</span>, <span class="ruby-identifier">type</span>)
 <span class="ruby-keyword">end</span></pre>

@@ -550,7 +550,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 10</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@defdep_node_paths</span> = {}
@@ -640,7 +640,7 @@
 
 
           <div class="method-source-code" id="dependency_map-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 75</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 76</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dependency_map</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-ivar">@dependency_map</span> ||= <span class="ruby-identifier">resolve_dependencies</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -695,7 +695,7 @@
 
 
           <div class="method-source-code" id="on_document-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_document</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">node</span>.<span class="ruby-identifier">definitions</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">definition</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">definition</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">FragmentDefinition</span>
@@ -758,7 +758,7 @@
 
 
           <div class="method-source-code" id="on_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 51</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 52</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@defdep_node_paths</span>[<span class="ruby-identifier">node</span>] = <span class="ruby-constant">NodeWithPath</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">context</span>.<span class="ruby-identifier">path</span>)
   <span class="ruby-ivar">@defdep_current_parent</span> = <span class="ruby-identifier">node</span>
@@ -816,7 +816,7 @@
 
 
           <div class="method-source-code" id="on_fragment_spread-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 58</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 59</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_spread</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@defdep_node_paths</span>[<span class="ruby-identifier">node</span>] = <span class="ruby-constant">NodeWithPath</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">context</span>.<span class="ruby-identifier">path</span>)
 
@@ -876,7 +876,7 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/definition_dependencies.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">prev_node</span>)
   <span class="ruby-ivar">@defdep_node_paths</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>] = <span class="ruby-constant">NodeWithPath</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">context</span>.<span class="ruby-identifier">path</span>)
   <span class="ruby-ivar">@defdep_current_parent</span> = <span class="ruby-identifier">node</span>

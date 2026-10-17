@@ -624,7 +624,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 91</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">_filter</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">schema:</span>)
   <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">schema</span>
   <span class="ruby-ivar">@visibility_profile</span> = <span class="ruby-constant">Warden</span><span class="ruby-operator">::</span><span class="ruby-constant">VisibilityProfile</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>)
@@ -689,7 +689,7 @@
 
 
           <div class="method-source-code" id="arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 107</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 108</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">argument_owner</span>, <span class="ruby-identifier">ctx</span> = <span class="ruby-keyword">nil</span>); <span class="ruby-identifier">argument_owner</span>.<span class="ruby-identifier">all_argument_definitions</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -737,7 +737,7 @@
 
 
           <div class="method-source-code" id="directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 112</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 113</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directives</span>; <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">directives</span>.<span class="ruby-identifier">values</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -785,7 +785,7 @@
 
 
           <div class="method-source-code" id="enum_values-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 108</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 109</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">enum_values</span>(<span class="ruby-identifier">enum_defn</span>); <span class="ruby-identifier">enum_defn</span>.<span class="ruby-identifier">enum_values</span>(<span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -833,7 +833,7 @@
 
 
           <div class="method-source-code" id="fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 113</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 114</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fields</span>(<span class="ruby-identifier">type_defn</span>); <span class="ruby-identifier">type_defn</span>.<span class="ruby-identifier">all_field_definitions</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -881,7 +881,7 @@
 
 
           <div class="method-source-code" id="get_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 109</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 110</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_argument</span>(<span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">argument_name</span>); <span class="ruby-identifier">parent_type</span>.<span class="ruby-identifier">get_argument</span>(<span class="ruby-identifier">argument_name</span>); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -929,7 +929,7 @@
 
 
           <div class="method-source-code" id="get_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 114</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 115</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_field</span>(<span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">field_name</span>); <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">get_field</span>(<span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">field_name</span>); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -977,7 +977,7 @@
 
 
           <div class="method-source-code" id="get_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 106</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 107</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_type</span>(<span class="ruby-identifier">type_name</span>); <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">get_type</span>(<span class="ruby-identifier">type_name</span>, <span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>, <span class="ruby-keyword">false</span>); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1025,7 +1025,7 @@
 
 
           <div class="method-source-code" id="interface_type_memberships-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 105</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 106</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interface_type_memberships</span>(<span class="ruby-identifier">obj_type</span>, <span class="ruby-identifier">_ctx</span> = <span class="ruby-keyword">nil</span>); <span class="ruby-identifier">obj_type</span>.<span class="ruby-identifier">interface_type_memberships</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1073,7 +1073,7 @@
 
 
           <div class="method-source-code" id="interfaces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 120</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 121</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interfaces</span>(<span class="ruby-identifier">obj_type</span>); <span class="ruby-identifier">obj_type</span>.<span class="ruby-identifier">interfaces</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1121,7 +1121,7 @@
 
 
           <div class="method-source-code" id="loadable-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 116</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 117</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">loadable?</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">_ctx</span>); <span class="ruby-keyword">true</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1169,7 +1169,7 @@
 
 
           <div class="method-source-code" id="loadable_possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 117</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 118</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">loadable_possible_types</span>(<span class="ruby-identifier">abstract_type</span>, <span class="ruby-identifier">_ctx</span>); <span class="ruby-identifier">union_type</span>.<span class="ruby-identifier">possible_types</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1217,7 +1217,7 @@
 
 
           <div class="method-source-code" id="possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 119</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 120</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">possible_types</span>(<span class="ruby-identifier">type_defn</span>); <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">possible_types</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>, <span class="ruby-keyword">false</span>); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1265,7 +1265,7 @@
 
 
           <div class="method-source-code" id="reachable_type-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 115</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 116</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">reachable_type?</span>(<span class="ruby-identifier">type_name</span>); <span class="ruby-keyword">true</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1313,7 +1313,7 @@
 
 
           <div class="method-source-code" id="reachable_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 118</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 119</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">reachable_types</span>; <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">values</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1361,7 +1361,7 @@
 
 
           <div class="method-source-code" id="root_type_for_operation-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 111</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 112</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">root_type_for_operation</span>(<span class="ruby-identifier">op_name</span>); <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">root_type_for_operation</span>(<span class="ruby-identifier">op_name</span>); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1409,7 +1409,7 @@
 
 
           <div class="method-source-code" id="types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 110</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 111</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">types</span>; <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">types</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1457,7 +1457,7 @@
 
 
           <div class="method-source-code" id="visible_argument-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 101</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 102</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible_argument?</span>(<span class="ruby-identifier">arg_defn</span>, <span class="ruby-identifier">_ctx</span> = <span class="ruby-keyword">nil</span>); <span class="ruby-keyword">true</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1505,7 +1505,7 @@
 
 
           <div class="method-source-code" id="visible_enum_value-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 103</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 104</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible_enum_value?</span>(<span class="ruby-identifier">enum_value</span>, <span class="ruby-identifier">_ctx</span> = <span class="ruby-keyword">nil</span>); <span class="ruby-identifier">enum_value</span>.<span class="ruby-identifier">visible?</span>(<span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>); <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1553,7 +1553,7 @@
 
 
           <div class="method-source-code" id="visible_field-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 100</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 101</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible_field?</span>(<span class="ruby-identifier">field_defn</span>, <span class="ruby-identifier">_ctx</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">owner</span> = <span class="ruby-keyword">nil</span>); <span class="ruby-keyword">true</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1601,7 +1601,7 @@
 
 
           <div class="method-source-code" id="visible_type-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 102</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 103</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible_type?</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">_ctx</span> = <span class="ruby-keyword">nil</span>); <span class="ruby-keyword">true</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1649,7 +1649,7 @@
 
 
           <div class="method-source-code" id="visible_type_membership-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 104</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/warden.rb, line 105</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible_type_membership?</span>(<span class="ruby-identifier">type_membership</span>, <span class="ruby-identifier">_ctx</span> = <span class="ruby-keyword">nil</span>); <span class="ruby-keyword">true</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 

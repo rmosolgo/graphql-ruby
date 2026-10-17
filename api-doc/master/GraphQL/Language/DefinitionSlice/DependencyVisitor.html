@@ -544,7 +544,7 @@
 
 
           <div class="method-source-code" id="find_definition_dependencies-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/definition_slice.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/definition_slice.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">find_definition_dependencies</span>(<span class="ruby-identifier">definitions</span>, <span class="ruby-identifier">name</span>, <span class="ruby-identifier">names</span>)
   <span class="ruby-identifier">names</span>.<span class="ruby-identifier">add</span>(<span class="ruby-identifier">name</span>)
   <span class="ruby-identifier">visitor</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">definitions</span>[<span class="ruby-identifier">name</span>], <span class="ruby-identifier">definitions</span>, <span class="ruby-identifier">names</span>)
@@ -597,7 +597,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/definition_slice.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/definition_slice.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">doc</span>, <span class="ruby-identifier">definitions</span>, <span class="ruby-identifier">names</span>)
   <span class="ruby-ivar">@names</span> = <span class="ruby-identifier">names</span>
   <span class="ruby-ivar">@definitions</span> = <span class="ruby-identifier">definitions</span>
@@ -668,7 +668,7 @@
 
 
           <div class="method-source-code" id="on_fragment_spread-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/definition_slice.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/definition_slice.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_spread</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">fragment</span> = <span class="ruby-ivar">@definitions</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>]
     <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">find_definition_dependencies</span>(<span class="ruby-ivar">@definitions</span>, <span class="ruby-identifier">fragment</span>.<span class="ruby-identifier">name</span>, <span class="ruby-ivar">@names</span>)

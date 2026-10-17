@@ -564,7 +564,7 @@
 
 
           <div class="method-source-code" id="broadcast-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 98</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 99</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">broadcast</span>(<span class="ruby-identifier">stream_name</span>, <span class="ruby-identifier">message</span>)
   <span class="ruby-identifier">stream</span> = <span class="ruby-ivar">@mock_streams</span>[<span class="ruby-identifier">stream_name</span>]
   <span class="ruby-identifier">stream</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">stream</span>.<span class="ruby-identifier">mock_broadcast</span>(<span class="ruby-identifier">message</span>)
@@ -615,7 +615,7 @@
 
 
           <div class="method-source-code" id="clear_mocks-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 88</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 89</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">clear_mocks</span>
   <span class="ruby-ivar">@mock_streams</span> = {}
 <span class="ruby-keyword">end</span></pre>
@@ -668,7 +668,7 @@
 
 
           <div class="method-source-code" id="get_mock_channel-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 116</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 117</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_mock_channel</span>
   <span class="ruby-constant">MockChannel</span>.<span class="ruby-identifier">new</span>
 <span class="ruby-keyword">end</span></pre>
@@ -723,7 +723,7 @@
 
 
           <div class="method-source-code" id="mock_stream_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 104</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 105</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">mock_stream_for</span>(<span class="ruby-identifier">stream_name</span>)
   <span class="ruby-ivar">@mock_streams</span>[<span class="ruby-identifier">stream_name</span>] ||= <span class="ruby-constant">MockStream</span>.<span class="ruby-identifier">new</span>
 <span class="ruby-keyword">end</span></pre>
@@ -776,7 +776,7 @@
 
 
           <div class="method-source-code" id="mock_stream_names-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 126</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 127</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">mock_stream_names</span>
   <span class="ruby-ivar">@mock_streams</span>.<span class="ruby-identifier">keys</span>
 <span class="ruby-keyword">end</span></pre>
@@ -829,7 +829,7 @@
 
 
           <div class="method-source-code" id="server-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 93</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/mock_action_cable.rb, line 94</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">server</span>
   <span class="ruby-keyword">self</span>
 <span class="ruby-keyword">end</span></pre>

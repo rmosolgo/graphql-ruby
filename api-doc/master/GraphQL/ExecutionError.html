@@ -598,7 +598,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution_error.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution_error.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">ast_node:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">ast_nodes:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">options:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">extensions:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@ast_nodes</span> = <span class="ruby-identifier">ast_nodes</span> <span class="ruby-operator">||</span> [<span class="ruby-identifier">ast_node</span>]
   <span class="ruby-ivar">@options</span> = <span class="ruby-identifier">options</span>
@@ -670,7 +670,7 @@
 
 
           <div class="method-source-code" id="finalize_graphql_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution_error.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution_error.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finalize_graphql_result</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">result_data</span>, <span class="ruby-identifier">key</span>)
   <span class="ruby-identifier">add_this_error</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">errors</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">e</span><span class="ruby-operator">|</span> <span class="ruby-identifier">e</span>.<span class="ruby-identifier">eql?</span>(<span class="ruby-keyword">self</span>) }
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">add_this_error</span>
@@ -732,7 +732,7 @@
 
 
           <div class="method-source-code" id="to_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution_error.rb, line 50</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution_error.rb, line 51</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_h</span>
   <span class="ruby-identifier">hash</span> = {
     <span class="ruby-string">&quot;</span><span class="ruby-string">message</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">message</span>,

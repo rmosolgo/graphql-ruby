@@ -537,7 +537,7 @@
 
 
           <div class="method-source-code" id="finish-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 66</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 67</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finish</span>
   <span class="ruby-ivar">@asn_event</span>.<span class="ruby-identifier">finish!</span>
   <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Notifications</span>.<span class="ruby-identifier">publish_event</span>(<span class="ruby-ivar">@asn_event</span>)
@@ -588,7 +588,7 @@
 
 
           <div class="method-source-code" id="start-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 61</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 62</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">start</span>
   <span class="ruby-ivar">@asn_event</span> = <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Notifications</span>.<span class="ruby-identifier">instrumenter</span>.<span class="ruby-identifier">new_event</span>(<span class="ruby-ivar">@name</span>, <span class="ruby-ivar">@payload</span>)
   <span class="ruby-ivar">@asn_event</span>.<span class="ruby-identifier">start!</span>

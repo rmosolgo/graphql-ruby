@@ -525,7 +525,7 @@
 
 
           <div class="method-source-code" id="children-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 410</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 411</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">children</span>
   <span class="ruby-ivar">@children</span> ||= <span class="ruby-constant">Array</span>(<span class="ruby-identifier">value</span>).<span class="ruby-identifier">flatten</span>.<span class="ruby-identifier">tap</span> { <span class="ruby-identifier">_1</span>.<span class="ruby-identifier">select!</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">v</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">AbstractNode</span>) } }
 <span class="ruby-keyword">end</span></pre>

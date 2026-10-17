@@ -561,7 +561,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-comment"># `.validate_input` above is used for variables, but this method is used for arguments</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span>
@@ -615,7 +615,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 72</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 73</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">of_type</span>.<span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -665,7 +665,7 @@
 
 
           <div class="method-source-code" id="description-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 77</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 78</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">description</span>
   <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -715,7 +715,7 @@
 
 
           <div class="method-source-code" id="graphql_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 60</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 61</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">graphql_name</span>
   <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -765,7 +765,7 @@
 
 
           <div class="method-source-code" id="inspect-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inspect</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">#&lt;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string"> @of_type=</span><span class="ruby-string">#{</span><span class="ruby-ivar">@of_type</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">&gt;</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -818,7 +818,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">NON_NULL</span>
 <span class="ruby-keyword">end</span></pre>
@@ -874,7 +874,7 @@
 
 
           <div class="method-source-code" id="list-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">list?</span>
   <span class="ruby-ivar">@of_type</span>.<span class="ruby-identifier">list?</span>
 <span class="ruby-keyword">end</span></pre>
@@ -930,7 +930,7 @@
 
 
           <div class="method-source-code" id="non_null-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">non_null?</span>
   <span class="ruby-keyword">true</span>
 <span class="ruby-keyword">end</span></pre>
@@ -983,7 +983,7 @@
 
 
           <div class="method-source-code" id="to_type_signature-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_type_signature</span>
   <span class="ruby-ivar">@type_signature</span> ||= <span class="ruby-operator">-</span><span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-ivar">@of_type</span>.<span class="ruby-identifier">to_type_signature</span><span class="ruby-string">}</span><span class="ruby-string">!</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1033,7 +1033,7 @@
 
 
           <div class="method-source-code" id="validate_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/non_null.rb, line 50</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-value">max_errors:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">result</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">InputValidationResult</span>.<span class="ruby-identifier">new</span>

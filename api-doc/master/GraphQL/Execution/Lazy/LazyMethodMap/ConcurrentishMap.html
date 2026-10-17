@@ -572,7 +572,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lazy/lazy_method_map.rb, line 75</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lazy/lazy_method_map.rb, line 76</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
   <span class="ruby-ivar">@semaphore</span> = <span class="ruby-constant">Mutex</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-comment"># Access to this hash must always be managed by the mutex</span>
@@ -639,7 +639,7 @@
 
 
           <div class="method-source-code" id="5B-5D-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lazy/lazy_method_map.rb, line 82</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lazy/lazy_method_map.rb, line 83</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">[]=</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-ivar">@semaphore</span>.<span class="ruby-identifier">synchronize</span> {
     <span class="ruby-ivar">@storage</span>[<span class="ruby-identifier">key</span>] = <span class="ruby-identifier">value</span>
@@ -691,7 +691,7 @@
 
 
           <div class="method-source-code" id="compute_if_absent-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lazy/lazy_method_map.rb, line 88</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lazy/lazy_method_map.rb, line 89</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">compute_if_absent</span>(<span class="ruby-identifier">key</span>)
   <span class="ruby-ivar">@semaphore</span>.<span class="ruby-identifier">synchronize</span> {
     <span class="ruby-ivar">@storage</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">key</span>) { <span class="ruby-ivar">@storage</span>[<span class="ruby-identifier">key</span>] = <span class="ruby-keyword">yield</span> }
@@ -743,7 +743,7 @@
 
 
           <div class="method-source-code" id="initialize_copy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lazy/lazy_method_map.rb, line 94</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lazy/lazy_method_map.rb, line 95</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize_copy</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-ivar">@semaphore</span> = <span class="ruby-constant">Mutex</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-ivar">@storage</span> = <span class="ruby-identifier">other</span>.<span class="ruby-identifier">copy_storage</span>

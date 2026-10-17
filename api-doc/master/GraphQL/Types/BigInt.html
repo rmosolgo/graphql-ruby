@@ -521,7 +521,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 9</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-identifier">value</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">parse_int</span>(<span class="ruby-identifier">value</span>)
 <span class="ruby-keyword">rescue</span> <span class="ruby-constant">ArgumentError</span>
@@ -573,7 +573,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 14</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 15</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-identifier">value</span>.<span class="ruby-identifier">to_i</span>.<span class="ruby-identifier">to_s</span>
 <span class="ruby-keyword">end</span></pre>
@@ -623,7 +623,7 @@
 
 
           <div class="method-source-code" id="parse_int-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 18</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 19</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">parse_int</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Numeric</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">:</span> <span class="ruby-constant">Integer</span>(<span class="ruby-identifier">value</span>, <span class="ruby-value">10</span>)
 <span class="ruby-keyword">end</span></pre>

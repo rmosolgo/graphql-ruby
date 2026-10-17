@@ -830,7 +830,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 92</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 93</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">items</span>, <span class="ruby-value">parent:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">field:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">first:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">after:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">max_page_size:</span> <span class="ruby-constant">NOT_CONFIGURED</span>, <span class="ruby-value">default_page_size:</span> <span class="ruby-constant">NOT_CONFIGURED</span>, <span class="ruby-value">last:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">before:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">edge_class:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">arguments:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@items</span> = <span class="ruby-identifier">items</span>
   <span class="ruby-ivar">@parent</span> = <span class="ruby-identifier">parent</span>
@@ -942,7 +942,7 @@
 
 
           <div class="method-source-code" id="after-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">after</span>
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@after</span>)
     <span class="ruby-ivar">@after</span>
@@ -1002,7 +1002,7 @@
 
 
           <div class="method-source-code" id="before-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 50</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 51</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">before</span>
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@before</span>)
     <span class="ruby-ivar">@before</span>
@@ -1059,7 +1059,7 @@
 
 
           <div class="method-source-code" id="context-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 28</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 29</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">context=</span>(<span class="ruby-identifier">new_ctx</span>)
   <span class="ruby-ivar">@context</span> = <span class="ruby-identifier">new_ctx</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@was_authorized_by_scope_items</span>.<span class="ruby-identifier">nil?</span>
@@ -1116,7 +1116,7 @@
 
 
           <div class="method-source-code" id="cursor_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 298</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 299</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cursor_for</span>(<span class="ruby-identifier">item</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">PaginationImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#cursor_for(item) to return the cursor for </span><span class="ruby-string">#{</span><span class="ruby-identifier">item</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1176,7 +1176,7 @@
 
 
           <div class="method-source-code" id="default_page_size-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 148</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 149</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_page_size</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@has_default_page_size_override</span>
     <span class="ruby-ivar">@default_page_size</span>
@@ -1230,7 +1230,7 @@
 
 
           <div class="method-source-code" id="default_page_size-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 143</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 144</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_page_size=</span>(<span class="ruby-identifier">new_value</span>)
   <span class="ruby-ivar">@has_default_page_size_override</span> = <span class="ruby-keyword">true</span>
   <span class="ruby-ivar">@default_page_size</span> = <span class="ruby-identifier">new_value</span>
@@ -1281,7 +1281,7 @@
 
 
           <div class="method-source-code" id="edge_nodes-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 237</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 238</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">edge_nodes</span>
   <span class="ruby-identifier">nodes</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1334,7 +1334,7 @@
 
 
           <div class="method-source-code" id="edges-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 211</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 212</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">edges</span>
   <span class="ruby-ivar">@edges</span> ||= <span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">n</span><span class="ruby-operator">|</span> <span class="ruby-ivar">@edge_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">n</span>, <span class="ruby-keyword">self</span>) }
 <span class="ruby-keyword">end</span></pre>
@@ -1390,7 +1390,7 @@
 
 
           <div class="method-source-code" id="end_cursor-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 282</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 283</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_cursor</span>
   <span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">last</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">cursor_for</span>(<span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">last</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1446,7 +1446,7 @@
 
 
           <div class="method-source-code" id="first-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 167</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 168</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">first</span>
   <span class="ruby-ivar">@first</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">capped</span> = <span class="ruby-identifier">limit_pagination_argument</span>(<span class="ruby-ivar">@first_value</span>, <span class="ruby-identifier">max_page_size</span>)
@@ -1505,7 +1505,7 @@
 
 
           <div class="method-source-code" id="has_default_page_size_override-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 156</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 157</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_default_page_size_override?</span>
   <span class="ruby-ivar">@has_default_page_size_override</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1555,7 +1555,7 @@
 
 
           <div class="method-source-code" id="has_max_page_size_override-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 139</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 140</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_max_page_size_override?</span>
   <span class="ruby-ivar">@has_max_page_size_override</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1608,7 +1608,7 @@
 
 
           <div class="method-source-code" id="has_next_page-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 252</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 253</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_next_page</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">PaginationImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#has_next_page to return the next-page check</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1664,7 +1664,7 @@
 
 
           <div class="method-source-code" id="has_previous_page-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 262</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 263</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_previous_page</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">PaginationImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#has_previous_page to return the previous-page check</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1720,7 +1720,7 @@
 
 
           <div class="method-source-code" id="last-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 201</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 202</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">last</span>
   <span class="ruby-ivar">@last</span> ||= <span class="ruby-identifier">limit_pagination_argument</span>(<span class="ruby-ivar">@last_value</span>, <span class="ruby-identifier">max_page_size</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1773,7 +1773,7 @@
 
 
           <div class="method-source-code" id="max_page_size-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 131</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 132</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">max_page_size</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@has_max_page_size_override</span>
     <span class="ruby-ivar">@max_page_size</span>
@@ -1827,7 +1827,7 @@
 
 
           <div class="method-source-code" id="max_page_size-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 126</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 127</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">max_page_size=</span>(<span class="ruby-identifier">new_value</span>)
   <span class="ruby-ivar">@has_max_page_size_override</span> = <span class="ruby-keyword">true</span>
   <span class="ruby-ivar">@max_page_size</span> = <span class="ruby-identifier">new_value</span>
@@ -1881,7 +1881,7 @@
 
 
           <div class="method-source-code" id="nodes-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 231</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 232</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">nodes</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">PaginationImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#nodes to paginate `@items`</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1934,7 +1934,7 @@
 
 
           <div class="method-source-code" id="page_info-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 242</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 243</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">page_info</span>
   <span class="ruby-keyword">self</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1987,7 +1987,7 @@
 
 
           <div class="method-source-code" id="range_add_edge-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 190</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 191</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">range_add_edge</span>(<span class="ruby-identifier">item</span>)
   <span class="ruby-identifier">edge_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">item</span>, <span class="ruby-keyword">self</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -2050,7 +2050,7 @@
 
 
           <div class="method-source-code" id="start_cursor-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 272</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 273</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">start_cursor</span>
   <span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">first</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">cursor_for</span>(<span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">first</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -2103,7 +2103,7 @@
 
 
           <div class="method-source-code" id="was_authorized_by_scope_items-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 122</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 123</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">was_authorized_by_scope_items?</span>
   <span class="ruby-ivar">@was_authorized_by_scope_items</span>
 <span class="ruby-keyword">end</span></pre>

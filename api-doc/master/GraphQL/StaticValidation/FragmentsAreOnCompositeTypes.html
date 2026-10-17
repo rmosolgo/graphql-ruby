@@ -510,7 +510,7 @@
 
 
           <div class="method-source-code" id="on_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragments_are_on_composite_types.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragments_are_on_composite_types.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">validate_type_is_composite</span>(<span class="ruby-identifier">node</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-keyword">super</span>
 <span class="ruby-keyword">end</span></pre>
@@ -565,7 +565,7 @@
 
 
           <div class="method-source-code" id="on_inline_fragment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragments_are_on_composite_types.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragments_are_on_composite_types.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_inline_fragment</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">validate_type_is_composite</span>(<span class="ruby-identifier">node</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-keyword">super</span>
 <span class="ruby-keyword">end</span></pre>

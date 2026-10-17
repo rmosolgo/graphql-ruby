@@ -567,7 +567,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 128</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 129</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">test</span>, <span class="ruby-value">type_name:</span>, <span class="ruby-value">object:</span>, <span class="ruby-value">schema:</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">visibility_profile:</span>)
   <span class="ruby-ivar">@test</span> = <span class="ruby-identifier">test</span>
   <span class="ruby-ivar">@type_name</span> = <span class="ruby-identifier">type_name</span>
@@ -636,7 +636,7 @@
 
 
           <div class="method-source-code" id="run_graphql_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 139</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 140</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_graphql_field</span>(<span class="ruby-identifier">field_name</span>, <span class="ruby-value">arguments:</span> {})
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@schema</span>
     <span class="ruby-ivar">@test</span>.<span class="ruby-identifier">run_graphql_field</span>(<span class="ruby-ivar">@schema</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-ivar">@type_name</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">field_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>, <span class="ruby-ivar">@object</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-identifier">arguments</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-ivar">@context</span>, <span class="ruby-value">visibility_profile</span><span class="ruby-value">:</span> <span class="ruby-ivar">@visibility_profile</span>)

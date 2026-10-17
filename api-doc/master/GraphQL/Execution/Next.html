@@ -504,7 +504,7 @@
 
 
           <div class="method-source-code" id="run_all-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 79</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 80</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">run_all</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-identifier">query_options</span>, <span class="ruby-value">context:</span> {}, <span class="ruby-value">max_complexity:</span> <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">max_complexity</span>)
   <span class="ruby-identifier">queries</span> = <span class="ruby-identifier">query_options</span>.<span class="ruby-identifier">map</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">opts</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">query</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">opts</span>
@@ -568,7 +568,7 @@
 
 
           <div class="method-source-code" id="use-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 74</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 75</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">use</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-value">as_default:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">SchemaExtension</span>)
   <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">default_execution_next</span>(<span class="ruby-identifier">as_default</span>)

@@ -519,7 +519,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">object_type</span>)
   <span class="ruby-identifier">message</span> = <span class="ruby-string">&quot;</span><span class="ruby-string">Object types must have fields, but </span><span class="ruby-string">#{</span><span class="ruby-identifier">object_type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string"> doesn&#39;t have any. Define a field for this type, remove it from your schema, or add `has_no_fields(true)` to its definition.</span><span class="ruby-string">&quot;</span>
   <span class="ruby-keyword">super</span>(<span class="ruby-identifier">message</span>)

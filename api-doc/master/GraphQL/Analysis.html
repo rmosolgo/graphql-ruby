@@ -523,7 +523,7 @@
 
 
           <div class="method-source-code" id="analysis_errors-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis.rb, line 106</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis.rb, line 107</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">analysis_errors</span>(<span class="ruby-identifier">parent_errors</span>, <span class="ruby-identifier">results</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">results</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">results</span> = <span class="ruby-identifier">results</span>.<span class="ruby-identifier">flatten</span>
@@ -585,7 +585,7 @@
 
 
           <div class="method-source-code" id="analyze_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">analyze_multiplex</span>(<span class="ruby-identifier">multiplex</span>, <span class="ruby-identifier">analyzers</span>)
   <span class="ruby-identifier">multiplex_analyzers</span> = <span class="ruby-identifier">analyzers</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">analyzer</span><span class="ruby-operator">|</span> <span class="ruby-identifier">analyzer</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">multiplex</span>) }
 
@@ -672,7 +672,7 @@
 
 
           <div class="method-source-code" id="analyze_query-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis.rb, line 72</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis.rb, line 73</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">analyze_query</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">analyzers</span>, <span class="ruby-value">multiplex_analyzers:</span> [])
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">analyze_query</span>(<span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-identifier">query_analyzers</span> = <span class="ruby-identifier">analyzers</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">analyzer</span><span class="ruby-operator">|</span> <span class="ruby-identifier">analyzer</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">query</span>) }

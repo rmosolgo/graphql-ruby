@@ -632,7 +632,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">_result_name</span>, <span class="ruby-identifier">_result_type</span>, <span class="ruby-identifier">_application_value</span>, <span class="ruby-identifier">_parent_result</span>, <span class="ruby-identifier">_is_non_null_in_parent</span>, <span class="ruby-identifier">_selections</span>, <span class="ruby-identifier">_is_eager</span>, <span class="ruby-identifier">_ast_node</span>, <span class="ruby-identifier">_graphql_arguments</span>, <span class="ruby-identifier">graphql_field</span>) <span class="ruby-comment"># rubocop:disable Metrics/ParameterLists</span>
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@graphql_result_data</span> = {}
@@ -703,7 +703,7 @@
 
 
           <div class="method-source-code" id="5B-5D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 136</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 137</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">[]</span>(<span class="ruby-identifier">k</span>)
   (<span class="ruby-ivar">@graphql_metadata</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@graphql_result_data</span>)[<span class="ruby-identifier">k</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -753,7 +753,7 @@
 
 
           <div class="method-source-code" id="collect_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 172</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 173</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">collect_result</span>(<span class="ruby-identifier">result_name</span>, <span class="ruby-identifier">result_value</span>)
   <span class="ruby-keyword">false</span>
 <span class="ruby-keyword">end</span></pre>
@@ -803,7 +803,7 @@
 
 
           <div class="method-source-code" id="delete-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 119</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 120</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete</span>(<span class="ruby-identifier">key</span>)
   <span class="ruby-ivar">@graphql_metadata</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@graphql_metadata</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">key</span>)
   <span class="ruby-ivar">@graphql_result_data</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">key</span>)
@@ -854,7 +854,7 @@
 
 
           <div class="method-source-code" id="each-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 124</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 125</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">each</span>
   (<span class="ruby-ivar">@graphql_metadata</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@graphql_result_data</span>).<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">k</span>, <span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-keyword">yield</span>(<span class="ruby-identifier">k</span>, <span class="ruby-identifier">v</span>) }
 <span class="ruby-keyword">end</span></pre>
@@ -904,7 +904,7 @@
 
 
           <div class="method-source-code" id="fix_result_order-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 163</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 164</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fix_result_order</span>
   <span class="ruby-ivar">@ordered_result_keys</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">k</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@graphql_result_data</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">k</span>)
@@ -958,7 +958,7 @@
 
 
           <div class="method-source-code" id="key-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 132</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 133</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">key?</span>(<span class="ruby-identifier">k</span>)
   <span class="ruby-ivar">@graphql_result_data</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">k</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1008,7 +1008,7 @@
 
 
           <div class="method-source-code" id="merge_into-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 140</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 141</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge_into</span>(<span class="ruby-identifier">into_result</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">case</span> <span class="ruby-identifier">value</span>
@@ -1077,7 +1077,7 @@
 
 
           <div class="method-source-code" id="set_child_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 102</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 103</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_child_result</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">t</span> = <span class="ruby-ivar">@graphql_merged_into</span>)
     <span class="ruby-identifier">t</span>.<span class="ruby-identifier">set_child_result</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)
@@ -1140,7 +1140,7 @@
 
 
           <div class="method-source-code" id="set_leaf-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 76</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 77</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_leaf</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-comment"># This is a hack.</span>
   <span class="ruby-comment"># Basically, this object is merged into the root-level result at some point.</span>
@@ -1212,7 +1212,7 @@
 
 
           <div class="method-source-code" id="values-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 128</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/runtime/graphql_result.rb, line 129</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">values</span>
   (<span class="ruby-ivar">@graphql_metadata</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@graphql_result_data</span>).<span class="ruby-identifier">values</span>
 <span class="ruby-keyword">end</span></pre>

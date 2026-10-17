@@ -589,7 +589,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/parse_error.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/parse_error.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>, <span class="ruby-identifier">query</span>, <span class="ruby-value">filename:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">filename</span>
     <span class="ruby-identifier">message</span> += <span class="ruby-string">&quot;</span><span class="ruby-string"> (</span><span class="ruby-string">#{</span><span class="ruby-identifier">filename</span><span class="ruby-string">}</span><span class="ruby-string">)</span><span class="ruby-string">&quot;</span>
@@ -665,7 +665,7 @@
 
 
           <div class="method-source-code" id="to_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/parse_error.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/parse_error.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_h</span>
   <span class="ruby-identifier">locations</span> = <span class="ruby-identifier">line</span> <span class="ruby-operator">?</span> [{ <span class="ruby-string">&quot;</span><span class="ruby-string">line</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">line</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">column</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">col</span> }] <span class="ruby-operator">:</span> []
   {

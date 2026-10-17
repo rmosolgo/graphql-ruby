@@ -632,7 +632,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 65</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 66</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">nonblocking:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">default_nonblocking</span>, <span class="ruby-value">fiber_limit:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">default_fiber_limit</span>)
   <span class="ruby-ivar">@source_cache</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">k</span>] = {} }.<span class="ruby-identifier">compare_by_identity</span>
   <span class="ruby-ivar">@pending_source_set</span> = <span class="ruby-constant">Set</span>.<span class="ruby-identifier">new</span>.<span class="ruby-identifier">compare_by_identity</span>
@@ -690,7 +690,7 @@
 
 
           <div class="method-source-code" id="use-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">use</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-value">nonblocking:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">fiber_limit:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">dataloader_class</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">nonblocking</span>
     <span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">`nonblocking: true` is deprecated from `GraphQL::Dataloader`, please use `GraphQL::Dataloader::AsyncDataloader` instead. Docs: https://graphql-ruby.org/dataloader/async_dataloader.</span><span class="ruby-string">&quot;</span>)
@@ -752,7 +752,7 @@
 
 
           <div class="method-source-code" id="with_dataloading-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 56</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">with_dataloading</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">dataloader</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-identifier">result</span> = <span class="ruby-keyword">nil</span>
@@ -822,7 +822,7 @@
 
 
           <div class="method-source-code" id="cleanup_fiber-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 124</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 125</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cleanup_fiber</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -874,7 +874,7 @@
 
 
           <div class="method-source-code" id="clear_cache-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 196</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 197</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">clear_cache</span>
   <span class="ruby-ivar">@source_cache</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">_source_class</span>, <span class="ruby-identifier">batched_sources</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">batched_sources</span>.<span class="ruby-identifier">each_value</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">clear_cache</span>)
@@ -935,7 +935,7 @@
 
 
           <div class="method-source-code" id="get_fiber_variables-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 95</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 96</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_fiber_variables</span>
   <span class="ruby-identifier">fiber_vars</span> = {}
   <span class="ruby-constant">Thread</span>.<span class="ruby-identifier">current</span>.<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">fiber_var_key</span><span class="ruby-operator">|</span>
@@ -997,7 +997,7 @@
 
 
           <div class="method-source-code" id="merge_records-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 327</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 328</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge_records</span>(<span class="ruby-identifier">records</span>, <span class="ruby-value">index_by:</span> <span class="ruby-value">:</span><span class="ruby-value">id</span>)
   <span class="ruby-identifier">records_by_class</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">k</span>] = {} }
   <span class="ruby-identifier">records</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span>
@@ -1065,7 +1065,7 @@
 
 
           <div class="method-source-code" id="nonblocking-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 82</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 83</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">nonblocking?</span>
   <span class="ruby-ivar">@nonblocking</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1118,7 +1118,7 @@
 
 
           <div class="method-source-code" id="run-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 247</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 248</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run</span>(<span class="ruby-value">trace_query_lazy:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">trace</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_multiplex</span>]&amp;.<span class="ruby-identifier">current_trace</span>
   <span class="ruby-identifier">jobs_fiber_limit</span>, <span class="ruby-identifier">total_fiber_limit</span> = <span class="ruby-identifier">calculate_fiber_limit</span>
@@ -1212,7 +1212,7 @@
 
 
           <div class="method-source-code" id="run_fiber-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 292</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 293</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_fiber</span>(<span class="ruby-identifier">f</span>)
   <span class="ruby-identifier">f</span>.<span class="ruby-identifier">resume</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1262,7 +1262,7 @@
 
 
           <div class="method-source-code" id="run_isolated-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 204</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 205</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_isolated</span>
   <span class="ruby-identifier">prev_queue</span> = <span class="ruby-ivar">@pending_jobs</span>
   <span class="ruby-identifier">prev_pending_keys</span> = {}
@@ -1348,7 +1348,7 @@
 
 
           <div class="method-source-code" id="set_fiber_variables-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 117</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 118</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">set_fiber_variables</span>(<span class="ruby-identifier">vars</span>)
   <span class="ruby-identifier">vars</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">k</span>, <span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-constant">Thread</span>.<span class="ruby-identifier">current</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">v</span> }
   <span class="ruby-keyword">nil</span>
@@ -1411,7 +1411,7 @@
 
 
           <div class="method-source-code" id="spawn_fiber-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 300</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 301</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">spawn_fiber</span>
   <span class="ruby-identifier">fiber_vars</span> = <span class="ruby-identifier">get_fiber_variables</span>
   <span class="ruby-constant">Fiber</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">blocking</span><span class="ruby-value">:</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@nonblocking</span>) <span class="ruby-keyword">do</span>
@@ -1469,7 +1469,7 @@
 
 
           <div class="method-source-code" id="with-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 138</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 139</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">with</span>(<span class="ruby-identifier">source_class</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">batch_args</span>)
   <span class="ruby-identifier">batch_key</span> = <span class="ruby-identifier">source_class</span>.<span class="ruby-identifier">batch_key_for</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">batch_args</span>)
   <span class="ruby-ivar">@source_cache</span>[<span class="ruby-identifier">source_class</span>][<span class="ruby-identifier">batch_key</span>] ||= <span class="ruby-keyword">begin</span>
@@ -1527,7 +1527,7 @@
 
 
           <div class="method-source-code" id="yield-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 166</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader.rb, line 167</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">yield</span>(<span class="ruby-identifier">source</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_dataloader_source</span>])
   <span class="ruby-identifier">trace</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_multiplex</span>]&amp;.<span class="ruby-identifier">current_trace</span>
   <span class="ruby-identifier">trace</span>&amp;.<span class="ruby-identifier">dataloader_fiber_yield</span>(<span class="ruby-identifier">source</span>)

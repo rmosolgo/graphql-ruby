@@ -545,7 +545,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">options</span> = {})
   <span class="ruby-ivar">@set_action_name</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-value">:</span><span class="ruby-value">set_action_name</span>, <span class="ruby-keyword">false</span>)
   <span class="ruby-keyword">super</span>
@@ -618,7 +618,7 @@
 
 
           <div class="method-source-code" id="platform_authorized_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 47</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_authorized_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.authorized.graphql</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -668,7 +668,7 @@
 
 
           <div class="method-source-code" id="platform_field_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_field_key</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">field</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.graphql</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -718,7 +718,7 @@
 
 
           <div class="method-source-code" id="platform_resolve_type_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 51</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 52</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_resolve_type_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.resolve_type.graphql</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -768,7 +768,7 @@
 
 
           <div class="method-source-code" id="platform_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 30</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/appsignal_tracing.rb, line 31</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_trace</span>(<span class="ruby-identifier">platform_key</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">data</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">key</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;</span><span class="ruby-string">execute_query</span><span class="ruby-string">&quot;</span>
     <span class="ruby-identifier">set_this_txn_name</span> =  <span class="ruby-identifier">data</span>[<span class="ruby-value">:</span><span class="ruby-value">query</span>].<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">set_appsignal_action_name</span>]

@@ -611,7 +611,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 34</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 35</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-value">dynamic:</span>, <span class="ruby-value">preload:</span>, <span class="ruby-value">profiles:</span>, <span class="ruby-value">migration_errors:</span>, <span class="ruby-value">configuration_inherited:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">schema</span>
   <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">use_visibility_profile</span> = <span class="ruby-keyword">true</span>
@@ -686,7 +686,7 @@
 
 
           <div class="method-source-code" id="use-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">use</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-value">dynamic:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">profiles:</span> <span class="ruby-constant">EmptyObjects</span><span class="ruby-operator">::</span><span class="ruby-constant">EMPTY_HASH</span>, <span class="ruby-value">preload:</span> (<span class="ruby-keyword">defined?</span>(<span class="ruby-constant">Rails</span>.<span class="ruby-identifier">env</span>) <span class="ruby-operator">?</span> (<span class="ruby-constant">Rails</span>.<span class="ruby-identifier">env</span>.<span class="ruby-identifier">production?</span> <span class="ruby-operator">||</span> <span class="ruby-constant">Rails</span>.<span class="ruby-identifier">env</span>.<span class="ruby-identifier">staging?</span> <span class="ruby-operator">||</span> <span class="ruby-keyword">nil</span>) <span class="ruby-operator">:</span> <span class="ruby-keyword">false</span>), <span class="ruby-value">migration_errors:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-identifier">profiles</span>&amp;.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">name</span>, <span class="ruby-identifier">ctx</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">ctx</span>[<span class="ruby-value">:</span><span class="ruby-value">visibility_profile</span>] = <span class="ruby-identifier">name</span>
@@ -763,7 +763,7 @@
 
 
           <div class="method-source-code" id="all_directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 68</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 69</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_directives</span>
   <span class="ruby-identifier">load_all</span>
   <span class="ruby-ivar">@directives</span>
@@ -814,7 +814,7 @@
 
 
           <div class="method-source-code" id="all_interface_type_memberships-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 73</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 74</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_interface_type_memberships</span>
   <span class="ruby-identifier">load_all</span>
   <span class="ruby-ivar">@interface_type_memberships</span>
@@ -865,7 +865,7 @@
 
 
           <div class="method-source-code" id="all_references-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 78</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 79</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_references</span>
   <span class="ruby-identifier">load_all</span>
   <span class="ruby-ivar">@all_references</span>
@@ -916,7 +916,7 @@
 
 
           <div class="method-source-code" id="freeze-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 60</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 61</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">freeze</span>
   <span class="ruby-identifier">load_all</span>
   <span class="ruby-ivar">@visit</span> = <span class="ruby-keyword">true</span>
@@ -975,7 +975,7 @@
 
 
           <div class="method-source-code" id="get_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 83</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 84</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_type</span>(<span class="ruby-identifier">type_name</span>)
   <span class="ruby-identifier">load_all</span>
   <span class="ruby-ivar">@types</span>[<span class="ruby-identifier">type_name</span>]
@@ -1026,7 +1026,7 @@
 
 
           <div class="method-source-code" id="migration_errors-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 152</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 153</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">migration_errors?</span>
   <span class="ruby-ivar">@migration_errors</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1076,7 +1076,7 @@
 
 
           <div class="method-source-code" id="preload-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 94</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 95</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">preload</span>
   <span class="ruby-comment"># Traverse the schema now (and in the *_configured hooks below)</span>
   <span class="ruby-comment"># To make sure things are loaded during boot</span>
@@ -1144,7 +1144,7 @@
 
 
           <div class="method-source-code" id="preload-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 91</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">preload?</span>
   <span class="ruby-ivar">@preload</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1194,7 +1194,7 @@
 
 
           <div class="method-source-code" id="profile_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 158</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 159</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">profile_for</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@profiles</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">visibility_profile</span> = <span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">visibility_profile</span>]
@@ -1264,7 +1264,7 @@
 
 
           <div class="method-source-code" id="top_level_profile-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 186</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility.rb, line 187</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">top_level_profile</span>(<span class="ruby-value">refresh:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">refresh</span>
     <span class="ruby-ivar">@top_level_profile</span> = <span class="ruby-keyword">nil</span>

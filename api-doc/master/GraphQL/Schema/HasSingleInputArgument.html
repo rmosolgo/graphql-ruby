@@ -523,7 +523,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">base</span>)
   <span class="ruby-identifier">base</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ClassMethods</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -587,7 +587,7 @@
 
 
           <div class="method-source-code" id="call-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call</span>
   <span class="ruby-ivar">@prepared_arguments</span> = <span class="ruby-identifier">flatten_arguments</span>(<span class="ruby-ivar">@prepared_arguments</span>)
   <span class="ruby-keyword">super</span>
@@ -643,7 +643,7 @@
 
 
           <div class="method-source-code" id="resolve_with_support-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 6</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 7</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_with_support</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">inputs</span>)
   <span class="ruby-identifier">input_kwargs</span> = <span class="ruby-identifier">flatten_arguments</span>(<span class="ruby-identifier">inputs</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">input_kwargs</span>.<span class="ruby-identifier">empty?</span>

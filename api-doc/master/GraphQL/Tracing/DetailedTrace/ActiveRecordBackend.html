@@ -550,7 +550,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 10</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">limit:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">model_class:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@limit</span> = <span class="ruby-identifier">limit</span>
   <span class="ruby-ivar">@model_class</span> = <span class="ruby-identifier">model_class</span> <span class="ruby-operator">||</span> <span class="ruby-constant">GraphqlDetailedTrace</span>
@@ -615,7 +615,7 @@
 
 
           <div class="method-source-code" id="delete_all_traces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_all_traces</span>
   <span class="ruby-ivar">@model_class</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">destroy_all</span>
 <span class="ruby-keyword">end</span></pre>
@@ -665,7 +665,7 @@
 
 
           <div class="method-source-code" id="delete_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_trace</span>(<span class="ruby-identifier">id</span>)
   <span class="ruby-ivar">@model_class</span>.<span class="ruby-identifier">where</span>(<span class="ruby-value">id</span><span class="ruby-value">:</span> <span class="ruby-identifier">id</span>).<span class="ruby-identifier">destroy_all</span>
   <span class="ruby-keyword">nil</span>
@@ -716,7 +716,7 @@
 
 
           <div class="method-source-code" id="find_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">find_trace</span>(<span class="ruby-identifier">id</span>)
   <span class="ruby-identifier">gdt</span> = <span class="ruby-ivar">@model_class</span>.<span class="ruby-identifier">find_by</span>(<span class="ruby-value">id</span><span class="ruby-value">:</span> <span class="ruby-identifier">id</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">gdt</span>
@@ -771,7 +771,7 @@
 
 
           <div class="method-source-code" id="save_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">save_trace</span>(<span class="ruby-identifier">operation_name</span>, <span class="ruby-identifier">duration_ms</span>, <span class="ruby-identifier">begin_ms</span>, <span class="ruby-identifier">trace_data</span>)
   <span class="ruby-identifier">gdt</span> = <span class="ruby-ivar">@model_class</span>.<span class="ruby-identifier">create!</span>(
     <span class="ruby-value">begin_ms</span><span class="ruby-value">:</span> <span class="ruby-identifier">begin_ms</span>,
@@ -832,7 +832,7 @@
 
 
           <div class="method-source-code" id="traces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/detailed_trace/active_record_backend.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">traces</span>(<span class="ruby-value">last:</span>, <span class="ruby-value">before:</span>)
   <span class="ruby-identifier">gdts</span> = <span class="ruby-ivar">@model_class</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">order</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">begin_ms DESC</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">before</span>

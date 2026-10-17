@@ -519,7 +519,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/boolean.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/boolean.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   (<span class="ruby-identifier">value</span> <span class="ruby-operator">==</span> <span class="ruby-keyword">true</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -569,7 +569,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/boolean.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/boolean.rb, line 12</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-identifier">value</span>
 <span class="ruby-keyword">end</span></pre>

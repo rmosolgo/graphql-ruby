@@ -523,7 +523,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/installable.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/installable.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">child_module</span>)
   <span class="ruby-identifier">child_module</span>.<span class="ruby-identifier">before_action</span>(<span class="ruby-value">:</span><span class="ruby-value">check_installed</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -587,7 +587,7 @@
 
 
           <div class="method-source-code" id="check_installed-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/installable.rb, line 13</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/installable.rb, line 14</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">check_installed</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">feature_installed?</span>
     <span class="ruby-ivar">@component_header_html</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">::</span><span class="ruby-constant">INSTALLABLE_COMPONENT_HEADER_HTML</span>
@@ -641,7 +641,7 @@
 
 
           <div class="method-source-code" id="feature_installed-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/installable.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/installable.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">feature_installed?</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#feature_installed? to check whether this should render `not_installed` or not.</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>

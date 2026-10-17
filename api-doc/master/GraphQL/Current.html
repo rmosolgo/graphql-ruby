@@ -522,7 +522,7 @@
 
 
           <div class="method-source-code" id="dataloader_source-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/current.rb, line 83</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/current.rb, line 84</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">dataloader_source</span>
   <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_dataloader_source</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -578,7 +578,7 @@
 
 
           <div class="method-source-code" id="dataloader_source_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/current.rb, line 73</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/current.rb, line 74</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">dataloader_source_class</span>
   <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_dataloader_source</span>]&amp;.<span class="ruby-identifier">class</span>
 <span class="ruby-keyword">end</span></pre>
@@ -634,7 +634,7 @@
 
 
           <div class="method-source-code" id="field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/current.rb, line 57</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/current.rb, line 58</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">field</span>
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">interpreter_info</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_runtime_info</span>])
     <span class="ruby-identifier">interpreter_info</span>.<span class="ruby-identifier">values</span>&amp;.<span class="ruby-identifier">first</span>&amp;.<span class="ruby-identifier">current_field</span>
@@ -698,7 +698,7 @@
 
 
           <div class="method-source-code" id="operation_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/current.rb, line 34</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/current.rb, line 35</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">operation_name</span>
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">m</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_multiplex</span>])
     <span class="ruby-identifier">m</span>.<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_operation_name</span>] ||= <span class="ruby-keyword">begin</span>

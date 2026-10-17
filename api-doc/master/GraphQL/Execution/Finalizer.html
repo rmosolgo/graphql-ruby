@@ -554,7 +554,7 @@
 
 
           <div class="method-source-code" id="ast_node-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">ast_node</span>
   <span class="ruby-identifier">ast_nodes</span>&amp;.<span class="ruby-identifier">first</span>
 <span class="ruby-keyword">end</span></pre>
@@ -604,7 +604,7 @@
 
 
           <div class="method-source-code" id="ast_node-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">ast_node=</span>(<span class="ruby-identifier">new_node</span>)
   <span class="ruby-ivar">@ast_nodes</span> = [<span class="ruby-identifier">new_node</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -654,7 +654,7 @@
 
 
           <div class="method-source-code" id="finalize_graphql_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/next.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finalize_graphql_result</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">result_data</span>, <span class="ruby-identifier">result_key</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">RequiredImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string"> must implement #finalize_graphql_result(query, result_data, result_key)\n\nresult_data: </span><span class="ruby-string">#{</span><span class="ruby-identifier">result_data</span><span class="ruby-string">}</span><span class="ruby-string">\nresult_key: </span><span class="ruby-string">#{</span><span class="ruby-identifier">result_key</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>

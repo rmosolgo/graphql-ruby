@@ -559,7 +559,7 @@
 
 
           <div class="method-source-code" id="authorizes-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorizes?</span>(<span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">of_type</span>.<span class="ruby-identifier">authorizes?</span>(<span class="ruby-identifier">ctx</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -609,7 +609,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">nil</span>
@@ -664,7 +664,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 50</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">value</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">i</span><span class="ruby-operator">|</span> <span class="ruby-identifier">i</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">?</span> <span class="ruby-keyword">nil</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">of_type</span>.<span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">i</span>, <span class="ruby-identifier">ctx</span>) }
 <span class="ruby-keyword">end</span></pre>
@@ -714,7 +714,7 @@
 
 
           <div class="method-source-code" id="description-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">description</span>
   <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -764,7 +764,7 @@
 
 
           <div class="method-source-code" id="graphql_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 40</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 41</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">graphql_name</span>
   <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -817,7 +817,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">LIST</span>
 <span class="ruby-keyword">end</span></pre>
@@ -873,7 +873,7 @@
 
 
           <div class="method-source-code" id="list-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">list?</span>
   <span class="ruby-keyword">true</span>
 <span class="ruby-keyword">end</span></pre>
@@ -926,7 +926,7 @@
 
 
           <div class="method-source-code" id="to_type_signature-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_type_signature</span>
   <span class="ruby-ivar">@type_signature</span> ||= <span class="ruby-operator">-</span><span class="ruby-string">&quot;</span><span class="ruby-string">[</span><span class="ruby-string">#{</span><span class="ruby-ivar">@of_type</span>.<span class="ruby-identifier">to_type_signature</span><span class="ruby-string">}</span><span class="ruby-string">]</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -976,7 +976,7 @@
 
 
           <div class="method-source-code" id="validate_non_null_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 62</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/list.rb, line 63</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_non_null_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-value">max_errors:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">result</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">InputValidationResult</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-identifier">ensure_array</span>(<span class="ruby-identifier">value</span>).<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">item</span>, <span class="ruby-identifier">index</span><span class="ruby-operator">|</span>

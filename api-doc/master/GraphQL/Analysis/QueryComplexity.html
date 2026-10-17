@@ -536,7 +536,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/query_complexity.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/query_complexity.rb, line 9</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">query</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@skip_introspection_fields</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">query</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">max_complexity_count_introspection_fields</span>
@@ -609,7 +609,7 @@
 
 
           <div class="method-source-code" id="on_enter_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/query_complexity.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/query_complexity.rb, line 91</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_enter_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>, <span class="ruby-identifier">visitor</span>)
   <span class="ruby-comment"># We don&#39;t want to visit fragment definitions,</span>
   <span class="ruby-comment"># we&#39;ll visit them when we hit the spreads instead</span>
@@ -673,7 +673,7 @@
 
 
           <div class="method-source-code" id="on_leave_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/query_complexity.rb, line 108</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/query_complexity.rb, line 109</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_leave_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>, <span class="ruby-identifier">visitor</span>)
   <span class="ruby-comment"># We don&#39;t want to visit fragment definitions,</span>
   <span class="ruby-comment"># we&#39;ll visit them when we hit the spreads instead</span>
@@ -729,7 +729,7 @@
 
 
           <div class="method-source-code" id="result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/query_complexity.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/query_complexity.rb, line 18</span>
       <span class="ruby-keyword">def</span> <span class="ruby-identifier">result</span>
         <span class="ruby-keyword">case</span> <span class="ruby-identifier">subject</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">complexity_cost_calculation_mode_for</span>(<span class="ruby-identifier">subject</span>.<span class="ruby-identifier">context</span>)
         <span class="ruby-keyword">when</span> <span class="ruby-value">:</span><span class="ruby-value">future</span>

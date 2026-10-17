@@ -649,7 +649,7 @@
 
 
           <div class="method-source-code" id="inspect-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/invalid_null_error.rb, line 62</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/invalid_null_error.rb, line 63</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inspect</span>
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">name</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">parent_class</span>&amp;.<span class="ruby-identifier">name</span>.<span class="ruby-identifier">nil?</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">parent_class</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">mutation</span>) <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">mutation</span> = <span class="ruby-identifier">parent_class</span>.<span class="ruby-identifier">mutation</span>)
     <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">mutation</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">::</span><span class="ruby-string">#{</span><span class="ruby-identifier">parent_class</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">::InvalidNullError</span><span class="ruby-string">&quot;</span>
@@ -708,7 +708,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/invalid_null_error.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/invalid_null_error.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">field</span>, <span class="ruby-identifier">ast_node_or_nodes</span>, <span class="ruby-value">is_from_array:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">path:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">element_type:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@parent_type</span> = <span class="ruby-identifier">parent_type</span>
   <span class="ruby-ivar">@field</span> = <span class="ruby-identifier">field</span>
@@ -777,7 +777,7 @@
 
 
           <div class="method-source-code" id="subclass_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/invalid_null_error.rb, line 56</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/invalid_null_error.rb, line 57</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subclass_for</span>(<span class="ruby-identifier">parent_class</span>)
   <span class="ruby-identifier">subclass</span> = <span class="ruby-constant">Class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>)
   <span class="ruby-identifier">subclass</span>.<span class="ruby-identifier">parent_class</span> = <span class="ruby-identifier">parent_class</span>
@@ -846,7 +846,7 @@
 
 
           <div class="method-source-code" id="ast_node-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/invalid_null_error.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/invalid_null_error.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">ast_node</span>
   <span class="ruby-ivar">@ast_nodes</span>.<span class="ruby-identifier">first</span>
 <span class="ruby-keyword">end</span></pre>

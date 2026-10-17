@@ -549,7 +549,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/exclusion_validator.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/exclusion_validator.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">message:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">%{validated} is reserved</span><span class="ruby-string">&quot;</span>, <span class="ruby-value">in:</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">default_options</span>)
   <span class="ruby-comment"># `in` is a reserved word, so work around that</span>
   <span class="ruby-ivar">@in_list</span> = <span class="ruby-identifier">binding</span>.<span class="ruby-identifier">local_variable_get</span>(<span class="ruby-value">:</span><span class="ruby-value">in</span>)
@@ -626,7 +626,7 @@
 
 
           <div class="method-source-code" id="validate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/exclusion_validator.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/exclusion_validator.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate</span>(<span class="ruby-identifier">_object</span>, <span class="ruby-identifier">_context</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">permitted_empty_value?</span>(<span class="ruby-identifier">value</span>)
     <span class="ruby-comment"># pass</span>

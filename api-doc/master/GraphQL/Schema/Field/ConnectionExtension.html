@@ -533,7 +533,7 @@
 
 
           <div class="method-source-code" id="after_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">after_resolve</span>(<span class="ruby-value">value:</span>, <span class="ruby-value">object:</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">memo:</span>)
   <span class="ruby-identifier">original_arguments</span> = <span class="ruby-identifier">memo</span>
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">after_lazy</span>(<span class="ruby-identifier">value</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">resolved_value</span><span class="ruby-operator">|</span>
@@ -586,7 +586,7 @@
 
 
           <div class="method-source-code" id="apply-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">apply</span>
   <span class="ruby-identifier">field</span>.<span class="ruby-identifier">argument</span> <span class="ruby-value">:</span><span class="ruby-value">after</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">String</span><span class="ruby-string">&quot;</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Returns the elements in the list that come after the specified cursor.</span><span class="ruby-string">&quot;</span>, <span class="ruby-value">required</span><span class="ruby-value">:</span> <span class="ruby-keyword">false</span>
   <span class="ruby-identifier">field</span>.<span class="ruby-identifier">argument</span> <span class="ruby-value">:</span><span class="ruby-value">before</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">String</span><span class="ruby-string">&quot;</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Returns the elements in the list that come before the specified cursor.</span><span class="ruby-string">&quot;</span>, <span class="ruby-value">required</span><span class="ruby-value">:</span> <span class="ruby-keyword">false</span>
@@ -639,7 +639,7 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve</span>(<span class="ruby-value">object:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">objects:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">context:</span>)
   <span class="ruby-identifier">next_args</span> = <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">dup</span>
   <span class="ruby-identifier">next_args</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:</span><span class="ruby-value">first</span>)

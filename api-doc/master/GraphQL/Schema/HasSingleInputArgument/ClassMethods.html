@@ -530,7 +530,7 @@
 
 
           <div class="method-source-code" id="all_field_argument_definitions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 85</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 86</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_field_argument_definitions</span>
   <span class="ruby-identifier">dummy</span>.<span class="ruby-identifier">all_argument_definitions</span>
 <span class="ruby-keyword">end</span></pre>
@@ -580,7 +580,7 @@
 
 
           <div class="method-source-code" id="any_field_arguments-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 81</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">any_field_arguments?</span>
   <span class="ruby-identifier">dummy</span>.<span class="ruby-identifier">any_arguments?</span>
 <span class="ruby-keyword">end</span></pre>
@@ -630,7 +630,7 @@
 
 
           <div class="method-source-code" id="argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 91</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-value">own_argument:</span> <span class="ruby-keyword">false</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">it</span> = <span class="ruby-identifier">input_type</span> <span class="ruby-comment"># make sure any inherited arguments are already added to it</span>
   <span class="ruby-identifier">arg</span> = <span class="ruby-keyword">super</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
@@ -704,7 +704,7 @@
 
 
           <div class="method-source-code" id="dummy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 58</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 59</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dummy</span>
   <span class="ruby-ivar">@dummy</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">d</span> = <span class="ruby-constant">Class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Resolver</span>)
@@ -761,7 +761,7 @@
 
 
           <div class="method-source-code" id="field_arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 69</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 70</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_arguments</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">dummy</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -811,7 +811,7 @@
 
 
           <div class="method-source-code" id="get_field_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 73</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 74</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_field_argument</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">dummy</span>.<span class="ruby-identifier">get_argument</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -864,7 +864,7 @@
 
 
           <div class="method-source-code" id="input_object_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 125</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 126</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">input_object_class</span>(<span class="ruby-identifier">new_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_class</span>
     <span class="ruby-ivar">@input_object_class</span> = <span class="ruby-identifier">new_class</span>
@@ -930,7 +930,7 @@
 
 
           <div class="method-source-code" id="input_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 142</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 143</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">input_type</span>(<span class="ruby-identifier">new_input_type</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_input_type</span>
     <span class="ruby-ivar">@input_type</span> = <span class="ruby-identifier">new_input_type</span>
@@ -991,7 +991,7 @@
 
 
           <div class="method-source-code" id="own_field_arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 77</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/has_single_input_argument.rb, line 78</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">own_field_arguments</span>
   <span class="ruby-identifier">dummy</span>.<span class="ruby-identifier">own_arguments</span>
 <span class="ruby-keyword">end</span></pre>

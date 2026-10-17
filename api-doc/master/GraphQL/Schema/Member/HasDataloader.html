@@ -525,7 +525,7 @@
 
 
           <div class="method-source-code" id="dataload-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 29</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 30</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataload</span>(<span class="ruby-identifier">source_class</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">source_args</span>, <span class="ruby-identifier">load_key</span>)
   <span class="ruby-identifier">dataloader</span>.<span class="ruby-identifier">with</span>(<span class="ruby-identifier">source_class</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">source_args</span>).<span class="ruby-identifier">load</span>(<span class="ruby-identifier">load_key</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -587,7 +587,7 @@
 
 
           <div class="method-source-code" id="dataload_all-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 54</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 55</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataload_all</span>(<span class="ruby-identifier">source_class</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">source_args</span>, <span class="ruby-identifier">load_keys</span>)
   <span class="ruby-identifier">dataloader</span>.<span class="ruby-identifier">with</span>(<span class="ruby-identifier">source_class</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">source_args</span>).<span class="ruby-identifier">load_all</span>(<span class="ruby-identifier">load_keys</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -655,7 +655,7 @@
 
 
           <div class="method-source-code" id="dataload_all_associations-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 144</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 145</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataload_all_associations</span>(<span class="ruby-identifier">records</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-value">scope:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">source</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">scope</span>
     <span class="ruby-identifier">dataloader</span>.<span class="ruby-identifier">with</span>(<span class="ruby-constant">Dataloader</span><span class="ruby-operator">::</span><span class="ruby-constant">ActiveRecordAssociationSource</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">scope</span>)
@@ -710,7 +710,7 @@
 
 
           <div class="method-source-code" id="dataload_all_records-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 97</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 98</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataload_all_records</span>(<span class="ruby-identifier">model</span>, <span class="ruby-identifier">find_by_values</span>, <span class="ruby-value">find_by:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">source</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">find_by</span>
     <span class="ruby-identifier">dataloader</span>.<span class="ruby-identifier">with</span>(<span class="ruby-constant">Dataloader</span><span class="ruby-operator">::</span><span class="ruby-constant">ActiveRecordSource</span>, <span class="ruby-identifier">model</span>, <span class="ruby-value">find_by</span><span class="ruby-value">:</span> <span class="ruby-identifier">find_by</span>)
@@ -768,7 +768,7 @@
 
 
           <div class="method-source-code" id="dataload_association-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 134</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 135</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataload_association</span>(<span class="ruby-identifier">record</span> = <span class="ruby-identifier">object</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-value">scope:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">source</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">scope</span>
     <span class="ruby-identifier">dataloader</span>.<span class="ruby-identifier">with</span>(<span class="ruby-constant">Dataloader</span><span class="ruby-operator">::</span><span class="ruby-constant">ActiveRecordAssociationSource</span>, <span class="ruby-identifier">association_name</span>, <span class="ruby-identifier">scope</span>)
@@ -852,7 +852,7 @@
 
 
           <div class="method-source-code" id="dataload_record-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 86</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 87</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataload_record</span>(<span class="ruby-identifier">model</span>, <span class="ruby-identifier">find_by_value</span>, <span class="ruby-value">find_by:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">source</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">find_by</span>
     <span class="ruby-identifier">dataloader</span>.<span class="ruby-identifier">with</span>(<span class="ruby-constant">Dataloader</span><span class="ruby-operator">::</span><span class="ruby-constant">ActiveRecordSource</span>, <span class="ruby-identifier">model</span>, <span class="ruby-value">find_by</span><span class="ruby-value">:</span> <span class="ruby-identifier">find_by</span>)
@@ -937,7 +937,7 @@
 
 
           <div class="method-source-code" id="dataloader-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 14</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_dataloader.rb, line 15</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader</span>
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">dataloader</span>
 <span class="ruby-keyword">end</span></pre>

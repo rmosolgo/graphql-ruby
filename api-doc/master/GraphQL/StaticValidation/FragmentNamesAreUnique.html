@@ -523,7 +523,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_names_are_unique.rb, line 6</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_names_are_unique.rb, line 7</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@fragments_by_name</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">k</span>] = [] }
@@ -593,7 +593,7 @@
 
 
           <div class="method-source-code" id="on_document-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_names_are_unique.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_names_are_unique.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_document</span>(<span class="ruby-identifier">_n</span>, <span class="ruby-identifier">_p</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@fragments_by_name</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">name</span>, <span class="ruby-identifier">fragments</span><span class="ruby-operator">|</span>
@@ -657,7 +657,7 @@
 
 
           <div class="method-source-code" id="on_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_names_are_unique.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_names_are_unique.rb, line 12</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@fragments_by_name</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">node</span>
   <span class="ruby-keyword">super</span>

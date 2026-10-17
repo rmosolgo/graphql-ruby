@@ -562,7 +562,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">options</span> = {})
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">include</span> <span class="ruby-constant">ScoutApm</span><span class="ruby-operator">::</span><span class="ruby-constant">Tracer</span>
   <span class="ruby-ivar">@set_transaction_name</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-value">:</span><span class="ruby-value">set_transaction_name</span>, <span class="ruby-keyword">false</span>)
@@ -636,7 +636,7 @@
 
 
           <div class="method-source-code" id="platform_authorized_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 50</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 51</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_authorized_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.authorized</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -686,7 +686,7 @@
 
 
           <div class="method-source-code" id="platform_field_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 46</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 47</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_field_key</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">field</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -736,7 +736,7 @@
 
 
           <div class="method-source-code" id="platform_resolve_type_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 54</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 55</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_resolve_type_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.resolve_type</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -786,7 +786,7 @@
 
 
           <div class="method-source-code" id="platform_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 33</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/scout_tracing.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_trace</span>(<span class="ruby-identifier">platform_key</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">data</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">key</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;</span><span class="ruby-string">execute_query</span><span class="ruby-string">&quot;</span>
     <span class="ruby-identifier">set_this_txn_name</span> = <span class="ruby-identifier">data</span>[<span class="ruby-value">:</span><span class="ruby-value">query</span>].<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">set_scout_transaction_name</span>]

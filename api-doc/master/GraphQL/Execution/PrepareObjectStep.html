@@ -544,7 +544,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">object:</span>, <span class="ruby-value">runner:</span>, <span class="ruby-value">graphql_result:</span>, <span class="ruby-value">key:</span>, <span class="ruby-value">is_non_null:</span>, <span class="ruby-value">field_resolve_step:</span>, <span class="ruby-value">next_objects:</span>, <span class="ruby-value">next_results:</span>, <span class="ruby-value">is_from_array:</span>)
   <span class="ruby-ivar">@object</span> = <span class="ruby-identifier">object</span>
   <span class="ruby-ivar">@runner</span> = <span class="ruby-identifier">runner</span>
@@ -620,7 +620,7 @@
 
 
           <div class="method-source-code" id="add_field_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 76</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 77</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_field_error</span>(<span class="ruby-identifier">err</span>)
   <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">add_graphql_error</span>(<span class="ruby-ivar">@graphql_result</span>, <span class="ruby-ivar">@key</span>, <span class="ruby-identifier">err</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -670,7 +670,7 @@
 
 
           <div class="method-source-code" id="authorize-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 80</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 81</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorize</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">was_scoped</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@resolved_type</span>.<span class="ruby-identifier">reauthorize_scoped_objects</span>
     <span class="ruby-ivar">@authorized_value</span> = <span class="ruby-ivar">@object</span>
@@ -749,7 +749,7 @@
 
 
           <div class="method-source-code" id="call-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call</span>
   <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">set_current_field</span>
   <span class="ruby-keyword">case</span> <span class="ruby-ivar">@next_step</span>
@@ -827,7 +827,7 @@
 
 
           <div class="method-source-code" id="create_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 113</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 114</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">create_result</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@authorized_value</span>
     <span class="ruby-ivar">@authorization_error</span> ||= <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-ivar">@object</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-ivar">@resolved_type</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">selections_step</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>)
@@ -910,7 +910,7 @@
 
 
           <div class="method-source-code" id="value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">value</span>
   <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">set_current_field</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@authorized_value</span>

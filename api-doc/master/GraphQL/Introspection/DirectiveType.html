@@ -536,7 +536,7 @@
 
 
           <div class="method-source-code" id="resolve_args-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/directive_type.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/directive_type.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_args</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-identifier">args</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">args</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">reject</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">deprecation_reason</span>) <span class="ruby-keyword">unless</span> <span class="ruby-identifier">include_deprecated</span>
@@ -602,7 +602,7 @@
 
 
           <div class="method-source-code" id="args-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/directive_type.rb, line 30</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/directive_type.rb, line 31</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">args</span>(<span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_args</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated</span><span class="ruby-value">:</span> <span class="ruby-identifier">include_deprecated</span>)
 <span class="ruby-keyword">end</span></pre>

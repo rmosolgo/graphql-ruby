@@ -554,7 +554,7 @@
 
 
           <div class="method-source-code" id="filter_param-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 635</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/perfetto_trace.rb, line 636</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">filter_param</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">key</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-constant">SENSITIVE_KEY</span>.<span class="ruby-identifier">match?</span>(<span class="ruby-identifier">key</span>)) <span class="ruby-operator">||</span>
           (<span class="ruby-identifier">key</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Symbol</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-constant">SENSITIVE_KEY</span>.<span class="ruby-identifier">match?</span>(<span class="ruby-identifier">key</span>.<span class="ruby-identifier">name</span>))

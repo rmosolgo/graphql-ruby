@@ -528,7 +528,7 @@
 
 
           <div class="method-source-code" id="validate-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/name_validator.rb, line 6</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/name_validator.rb, line 7</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">validate!</span>(<span class="ruby-identifier">name</span>)
   <span class="ruby-identifier">name</span> = <span class="ruby-identifier">name</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">name</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">InvalidNameError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">name</span>, <span class="ruby-constant">VALID_NAME_REGEX</span>) <span class="ruby-keyword">unless</span> <span class="ruby-identifier">name</span>.<span class="ruby-identifier">match?</span>(<span class="ruby-constant">VALID_NAME_REGEX</span>)

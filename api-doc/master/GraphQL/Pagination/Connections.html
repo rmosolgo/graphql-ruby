@@ -560,7 +560,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">schema:</span>)
   <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">schema</span>
   <span class="ruby-ivar">@wrappers</span> = {}
@@ -626,7 +626,7 @@
 
 
           <div class="method-source-code" id="add-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 38</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 39</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add</span>(<span class="ruby-identifier">nodes_class</span>, <span class="ruby-identifier">implementation</span>)
   <span class="ruby-ivar">@wrappers</span>[<span class="ruby-identifier">nodes_class</span>] = <span class="ruby-identifier">implementation</span>
 <span class="ruby-keyword">end</span></pre>
@@ -676,7 +676,7 @@
 
 
           <div class="method-source-code" id="all_wrappers-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 46</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 47</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_wrappers</span>
   <span class="ruby-identifier">all_wrappers</span> = {}
   <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">ancestors</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">schema_class</span><span class="ruby-operator">|</span>
@@ -732,7 +732,7 @@
 
 
           <div class="method-source-code" id="delete-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 42</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 43</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete</span>(<span class="ruby-identifier">nodes_class</span>)
   <span class="ruby-ivar">@wrappers</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">nodes_class</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -782,7 +782,7 @@
 
 
           <div class="method-source-code" id="populate_connection-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 93</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 94</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">populate_connection</span>(<span class="ruby-identifier">field</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">value</span>, <span class="ruby-identifier">original_arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ExecutionError</span>
     <span class="ruby-identifier">raise</span> <span class="ruby-identifier">value</span>
@@ -859,7 +859,7 @@
 
 
           <div class="method-source-code" id="wrapper_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 56</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 57</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">wrapper_for</span>(<span class="ruby-identifier">items</span>, <span class="ruby-value">wrappers:</span> <span class="ruby-identifier">all_wrappers</span>)
   <span class="ruby-identifier">impl</span> = <span class="ruby-keyword">nil</span>
 

@@ -648,7 +648,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/selections_step.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/selections_step.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">parent_type:</span>, <span class="ruby-value">field_resolve_step:</span>, <span class="ruby-value">selections:</span>, <span class="ruby-value">objects:</span>, <span class="ruby-value">results:</span>, <span class="ruby-value">runner:</span>, <span class="ruby-value">query:</span>, <span class="ruby-value">path:</span>, <span class="ruby-value">clobber:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-ivar">@path</span> = <span class="ruby-identifier">path</span>
   <span class="ruby-ivar">@field_resolve_step</span> = <span class="ruby-identifier">field_resolve_step</span>
@@ -723,7 +723,7 @@
 
 
           <div class="method-source-code" id="call-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/selections_step.rb, line 30</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/selections_step.rb, line 31</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call</span>
   <span class="ruby-ivar">@all_selections</span> = [{}, (<span class="ruby-identifier">prototype_result</span> = {})]
   <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">gather_selections</span>(<span class="ruby-ivar">@parent_type</span>, <span class="ruby-ivar">@selections</span>, <span class="ruby-keyword">self</span>, <span class="ruby-keyword">self</span>.<span class="ruby-identifier">query</span>, <span class="ruby-ivar">@all_selections</span>, <span class="ruby-ivar">@all_selections</span>[<span class="ruby-value">1</span>], <span class="ruby-value">into</span><span class="ruby-value">:</span> <span class="ruby-ivar">@all_selections</span>[<span class="ruby-value">0</span>])
@@ -833,7 +833,7 @@
 
 
           <div class="method-source-code" id="graphql_objects-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/selections_step.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/selections_step.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">graphql_objects</span>
   <span class="ruby-ivar">@graphql_objects</span> ||= <span class="ruby-ivar">@objects</span>.<span class="ruby-identifier">map</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">obj</span><span class="ruby-operator">|</span>
     <span class="ruby-ivar">@parent_type</span>.<span class="ruby-identifier">scoped_new</span>(<span class="ruby-identifier">obj</span>, <span class="ruby-ivar">@query</span>.<span class="ruby-identifier">context</span>)

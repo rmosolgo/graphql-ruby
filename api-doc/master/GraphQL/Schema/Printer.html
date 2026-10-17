@@ -619,7 +619,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 56</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-value">context:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">introspection:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-ivar">@document_from_schema</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">DocumentFromSchemaDefinition</span>.<span class="ruby-identifier">new</span>(
     <span class="ruby-identifier">schema</span>,
@@ -683,7 +683,7 @@
 
 
           <div class="method-source-code" id="print_introspection_schema-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 67</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 68</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">print_introspection_schema</span>
   <span class="ruby-identifier">query_root</span> = <span class="ruby-constant">Class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Object</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-identifier">graphql_name</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Root</span><span class="ruby-string">&quot;</span>
@@ -757,7 +757,7 @@
 
 
           <div class="method-source-code" id="print_schema-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 103</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 104</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">print_schema</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">args</span>)
   <span class="ruby-identifier">printer</span> = <span class="ruby-identifier">new</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">args</span>)
   <span class="ruby-identifier">printer</span>.<span class="ruby-identifier">print_schema</span>
@@ -833,7 +833,7 @@
 
 
           <div class="method-source-code" id="print_schema-source-2">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 109</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 110</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_schema</span>
   <span class="ruby-identifier">print</span>(<span class="ruby-ivar">@document</span>) <span class="ruby-operator">+</span> <span class="ruby-string">&quot;</span><span class="ruby-string">\n</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -883,7 +883,7 @@
 
 
           <div class="method-source-code" id="print_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 113</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/printer.rb, line 114</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_type</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-identifier">node</span> = <span class="ruby-ivar">@document_from_schema</span>.<span class="ruby-identifier">build_type_definition_node</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-identifier">print</span>(<span class="ruby-identifier">node</span>)

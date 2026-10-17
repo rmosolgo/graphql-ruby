@@ -514,7 +514,7 @@
 
 
           <div class="method-source-code" id="column_type_string-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/field_extractor.rb, line 36</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/field_extractor.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">column_type_string</span>(<span class="ruby-identifier">column</span>)
   <span class="ruby-identifier">column</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;</span><span class="ruby-string">id</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">?</span> <span class="ruby-string">&quot;</span><span class="ruby-string">ID</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">column</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">camelize</span>
 <span class="ruby-keyword">end</span></pre>
@@ -564,7 +564,7 @@
 
 
           <div class="method-source-code" id="fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/field_extractor.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/field_extractor.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fields</span>
   <span class="ruby-identifier">columns</span> = []
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">model_columns</span> = <span class="ruby-identifier">klass</span>&amp;.<span class="ruby-identifier">columns</span>)
@@ -632,7 +632,7 @@
 
 
           <div class="method-source-code" id="generate_column_string-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/field_extractor.rb, line 29</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/field_extractor.rb, line 30</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">generate_column_string</span>(<span class="ruby-identifier">column</span>)
   <span class="ruby-identifier">name</span> = <span class="ruby-identifier">column</span>.<span class="ruby-identifier">name</span>
   <span class="ruby-identifier">required</span> = <span class="ruby-identifier">column</span>.<span class="ruby-identifier">null</span> <span class="ruby-operator">?</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">!</span><span class="ruby-string">&quot;</span>
@@ -685,7 +685,7 @@
 
 
           <div class="method-source-code" id="klass-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/field_extractor.rb, line 40</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/field_extractor.rb, line 41</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">klass</span>
   <span class="ruby-ivar">@klass</span> ||= <span class="ruby-constant">Module</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-identifier">name</span>.<span class="ruby-identifier">camelize</span>)
 <span class="ruby-keyword">rescue</span> <span class="ruby-constant">NameError</span>

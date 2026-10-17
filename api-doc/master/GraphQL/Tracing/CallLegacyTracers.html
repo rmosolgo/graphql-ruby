@@ -530,7 +530,7 @@
 
 
           <div class="method-source-code" id="analyze_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">analyze_multiplex</span>(<span class="ruby-value">multiplex:</span>)
   <span class="ruby-identifier">multiplex</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">analyze_multiplex</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">multiplex</span><span class="ruby-value">:</span> <span class="ruby-identifier">multiplex</span> }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -585,7 +585,7 @@
 
 
           <div class="method-source-code" id="analyze_query-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">analyze_query</span>(<span class="ruby-value">query:</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">analyze_query</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span> }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -640,7 +640,7 @@
 
 
           <div class="method-source-code" id="authorized-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 50</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">type:</span>, <span class="ruby-value">object:</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">authorized</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-identifier">type</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">current_path</span>] }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -695,7 +695,7 @@
 
 
           <div class="method-source-code" id="authorized_lazy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized_lazy</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">type:</span>, <span class="ruby-value">object:</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">authorized_lazy</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-identifier">type</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">current_path</span>] }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -750,7 +750,7 @@
 
 
           <div class="method-source-code" id="execute_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_field</span>(<span class="ruby-value">field:</span>, <span class="ruby-value">query:</span>, <span class="ruby-value">ast_node:</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">object:</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">execute_field</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">field</span><span class="ruby-value">:</span> <span class="ruby-identifier">field</span>, <span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>, <span class="ruby-value">ast_node</span><span class="ruby-value">:</span> <span class="ruby-identifier">ast_node</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-identifier">arguments</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">owner</span><span class="ruby-value">:</span> <span class="ruby-identifier">field</span>.<span class="ruby-identifier">owner</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">current_path</span>] }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -805,7 +805,7 @@
 
 
           <div class="method-source-code" id="execute_field_lazy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_field_lazy</span>(<span class="ruby-value">field:</span>, <span class="ruby-value">query:</span>, <span class="ruby-value">ast_node:</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">object:</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">execute_field_lazy</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">field</span><span class="ruby-value">:</span> <span class="ruby-identifier">field</span>, <span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>, <span class="ruby-value">ast_node</span><span class="ruby-value">:</span> <span class="ruby-identifier">ast_node</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-identifier">arguments</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">owner</span><span class="ruby-value">:</span> <span class="ruby-identifier">field</span>.<span class="ruby-identifier">owner</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">current_path</span>] }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -860,7 +860,7 @@
 
 
           <div class="method-source-code" id="execute_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 29</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 30</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_multiplex</span>(<span class="ruby-value">multiplex:</span>)
   <span class="ruby-identifier">multiplex</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">execute_multiplex</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">multiplex</span><span class="ruby-value">:</span> <span class="ruby-identifier">multiplex</span> }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -915,7 +915,7 @@
 
 
           <div class="method-source-code" id="execute_query-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 33</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_query</span>(<span class="ruby-value">query:</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">execute_query</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span> }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -970,7 +970,7 @@
 
 
           <div class="method-source-code" id="execute_query_lazy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_query_lazy</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">multiplex:</span>)
   <span class="ruby-identifier">multiplex</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">execute_query_lazy</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">multiplex</span><span class="ruby-value">:</span> <span class="ruby-identifier">multiplex</span>, <span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span> }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1025,7 +1025,7 @@
 
 
           <div class="method-source-code" id="lex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">lex</span>(<span class="ruby-value">query_string:</span>)
   (<span class="ruby-ivar">@multiplex</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@query</span>).<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">lex</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">query_string</span><span class="ruby-value">:</span> <span class="ruby-identifier">query_string</span> }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1080,7 +1080,7 @@
 
 
           <div class="method-source-code" id="parse-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 13</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 14</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parse</span>(<span class="ruby-value">query_string:</span>)
   (<span class="ruby-ivar">@multiplex</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@query</span>).<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">parse</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">query_string</span><span class="ruby-value">:</span> <span class="ruby-identifier">query_string</span> }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1135,7 +1135,7 @@
 
 
           <div class="method-source-code" id="resolve_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 57</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 58</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_type</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">type:</span>, <span class="ruby-value">object:</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">resolve_type</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-identifier">type</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">current_path</span>] }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1190,7 +1190,7 @@
 
 
           <div class="method-source-code" id="resolve_type_lazy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 61</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 62</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_type_lazy</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">type:</span>, <span class="ruby-value">object:</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">resolve_type_lazy</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-identifier">type</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">current_path</span>] }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1245,7 +1245,7 @@
 
 
           <div class="method-source-code" id="validate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/call_legacy_tracers.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">validate:</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">trace</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">validate</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">validate</span><span class="ruby-value">:</span> <span class="ruby-identifier">validate</span>, <span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span> }) { <span class="ruby-keyword">super</span> }
 <span class="ruby-keyword">end</span></pre>

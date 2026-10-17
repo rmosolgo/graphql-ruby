@@ -594,7 +594,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 13</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 14</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">of_type</span>)
   <span class="ruby-ivar">@of_type</span> = <span class="ruby-identifier">of_type</span>
 <span class="ruby-keyword">end</span></pre>
@@ -658,7 +658,7 @@
 
 
           <div class="method-source-code" id="3D-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">==</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">other</span>.<span class="ruby-identifier">class</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">of_type</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">other</span>.<span class="ruby-identifier">of_type</span>
 <span class="ruby-keyword">end</span></pre>
@@ -708,7 +708,7 @@
 
 
           <div class="method-source-code" id="deconstruct_keys-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">deconstruct_keys</span>(<span class="ruby-identifier">_keys</span>)
   { <span class="ruby-value">of_type</span><span class="ruby-value">:</span> <span class="ruby-identifier">of_type</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -758,7 +758,7 @@
 
 
           <div class="method-source-code" id="freeze-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">freeze</span>
   <span class="ruby-identifier">unwrap</span>
   <span class="ruby-identifier">to_type_signature</span>
@@ -815,7 +815,7 @@
 
 
           <div class="method-source-code" id="unwrap-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/wrapper.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">unwrap</span>
   <span class="ruby-ivar">@unwrapped</span> ||= <span class="ruby-ivar">@of_type</span>.<span class="ruby-identifier">unwrap</span>
 <span class="ruby-keyword">end</span></pre>

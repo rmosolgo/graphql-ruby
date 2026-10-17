@@ -591,7 +591,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_trace.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_trace.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">statsd:</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">_rest</span>)
   <span class="ruby-ivar">@statsd</span> = <span class="ruby-identifier">statsd</span>
   <span class="ruby-keyword">super</span>
@@ -661,7 +661,7 @@
 
 
           <div class="method-source-code" id="instrument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_trace.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_trace.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">instrument</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-ivar">@statsd</span>.<span class="ruby-identifier">time</span>(<span class="ruby-identifier">name_for</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">object</span>)) <span class="ruby-keyword">do</span>
     <span class="ruby-keyword">yield</span>

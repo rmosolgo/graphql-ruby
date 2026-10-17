@@ -533,7 +533,7 @@
 
 
           <div class="method-source-code" id="extended-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 130</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 131</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">extended</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ClassConfigured</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -597,7 +597,7 @@
 
 
           <div class="method-source-code" id="implements-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">implements</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">new_interfaces</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">options</span>)
   <span class="ruby-identifier">new_memberships</span> = []
   <span class="ruby-identifier">new_interfaces</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">int</span><span class="ruby-operator">|</span>
@@ -689,7 +689,7 @@
 
 
           <div class="method-source-code" id="interface_type_memberships-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 57</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 58</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interface_type_memberships</span>
   <span class="ruby-identifier">own_interface_type_memberships</span>
 <span class="ruby-keyword">end</span></pre>
@@ -739,7 +739,7 @@
 
 
           <div class="method-source-code" id="interfaces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 102</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 103</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interfaces</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">visible_interfaces</span> = <span class="ruby-keyword">nil</span>
@@ -811,7 +811,7 @@
 
 
           <div class="method-source-code" id="own_interface_type_memberships-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">own_interface_type_memberships</span>
   <span class="ruby-ivar">@own_interface_type_memberships</span> ||= []
 <span class="ruby-keyword">end</span></pre>

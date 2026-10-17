@@ -624,7 +624,7 @@
 
 
           <div class="method-source-code" id="from_config-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 89</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">from_config</span>(<span class="ruby-identifier">schema_member</span>, <span class="ruby-identifier">validates_hash</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">validates_hash</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">validates_hash</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-constant">EMPTY_ARRAY</span>
@@ -718,7 +718,7 @@
 
 
           <div class="method-source-code" id="install-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 138</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 139</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">install</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">validator_class</span>)
   <span class="ruby-identifier">all_validators</span>[<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">validator_class</span>
   <span class="ruby-keyword">nil</span>
@@ -784,7 +784,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">validated:</span>, <span class="ruby-value">allow_blank:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">allow_null:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-ivar">@validated</span> = <span class="ruby-identifier">validated</span>
   <span class="ruby-ivar">@allow_blank</span> = <span class="ruby-identifier">allow_blank</span>
@@ -846,7 +846,7 @@
 
 
           <div class="method-source-code" id="uninstall-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 155</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 156</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">uninstall</span>(<span class="ruby-identifier">name</span>)
   <span class="ruby-identifier">all_validators</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">name</span>)
   <span class="ruby-keyword">nil</span>
@@ -910,7 +910,7 @@
 
 
           <div class="method-source-code" id="validate-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 194</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 195</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">validate!</span>(<span class="ruby-identifier">validators</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">value</span>, <span class="ruby-value">as:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-comment"># Assuming the default case is no errors, reduce allocations in that case.</span>
   <span class="ruby-comment"># This will be replaced with a mutable array if we actually get any errors.</span>
@@ -1019,7 +1019,7 @@
 
 
           <div class="method-source-code" id="partial_format-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">partial_format</span>(<span class="ruby-identifier">string</span>, <span class="ruby-identifier">substitutions</span>)
   <span class="ruby-identifier">substitutions</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">sub_v</span> = <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">to_s</span>
@@ -1076,7 +1076,7 @@
 
 
           <div class="method-source-code" id="permitted_empty_value-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 73</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 74</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">permitted_empty_value?</span>(<span class="ruby-identifier">value</span>)
   (<span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@allow_null</span>) <span class="ruby-operator">||</span>
     (<span class="ruby-ivar">@allow_blank</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">blank?</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">blank?</span>)
@@ -1133,7 +1133,7 @@
 
 
           <div class="method-source-code" id="validate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Validator classes should implement #validate</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1198,7 +1198,7 @@
 
 
           <div class="method-source-code" id="validation_parameter-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 59</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validation_parameter</span>(<span class="ruby-identifier">config_value</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">config_value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Proc</span>)
     <span class="ruby-identifier">config_value</span>.<span class="ruby-identifier">call</span>

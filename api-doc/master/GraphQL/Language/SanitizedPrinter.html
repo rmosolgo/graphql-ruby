@@ -585,7 +585,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">query</span>, <span class="ruby-value">inline_variables:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-ivar">@query</span> = <span class="ruby-identifier">query</span>
   <span class="ruby-ivar">@current_type</span> = <span class="ruby-keyword">nil</span>
@@ -653,7 +653,7 @@
 
 
           <div class="method-source-code" id="coerce_argument_value_to_list-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 109</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 110</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_argument_value_to_list?</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">type</span>.<span class="ruby-identifier">list?</span> <span class="ruby-operator">&amp;&amp;</span>
     <span class="ruby-operator">!</span><span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>) <span class="ruby-operator">&amp;&amp;</span>
@@ -706,7 +706,7 @@
 
 
           <div class="method-source-code" id="print_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 85</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 86</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_argument</span>(<span class="ruby-identifier">argument</span>)
   <span class="ruby-comment"># We won&#39;t have type information if we&#39;re recursing into a custom scalar</span>
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">super</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@current_input_type</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@current_input_type</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">scalar?</span>
@@ -781,7 +781,7 @@
 
 
           <div class="method-source-code" id="print_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 154</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 155</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_directive</span>(<span class="ruby-identifier">directive</span>)
   <span class="ruby-ivar">@current_directive</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">directives</span>[<span class="ruby-identifier">directive</span>.<span class="ruby-identifier">name</span>]
 
@@ -840,7 +840,7 @@
 
 
           <div class="method-source-code" id="print_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 125</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 126</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_field</span>(<span class="ruby-identifier">field</span>, <span class="ruby-value">indent:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-ivar">@current_field</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">field</span>(<span class="ruby-ivar">@current_type</span>, <span class="ruby-identifier">field</span>.<span class="ruby-identifier">name</span>)
   <span class="ruby-identifier">old_type</span> = <span class="ruby-ivar">@current_type</span>
@@ -899,7 +899,7 @@
 
 
           <div class="method-source-code" id="print_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 145</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 146</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_fragment_definition</span>(<span class="ruby-identifier">fragment_def</span>, <span class="ruby-value">indent:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-identifier">old_type</span> = <span class="ruby-ivar">@current_type</span>
   <span class="ruby-ivar">@current_type</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">get_type</span>(<span class="ruby-identifier">fragment_def</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">name</span>)
@@ -959,7 +959,7 @@
 
 
           <div class="method-source-code" id="print_inline_fragment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 133</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 134</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_inline_fragment</span>(<span class="ruby-identifier">inline_fragment</span>, <span class="ruby-value">indent:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-identifier">old_type</span> = <span class="ruby-ivar">@current_type</span>
 
@@ -1022,7 +1022,7 @@
 
 
           <div class="method-source-code" id="print_node-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 50</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_node</span>(<span class="ruby-identifier">node</span>, <span class="ruby-value">indent:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">node</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">FalseClass</span>, <span class="ruby-constant">Float</span>, <span class="ruby-constant">Integer</span>, <span class="ruby-constant">String</span>, <span class="ruby-constant">TrueClass</span>
@@ -1095,7 +1095,7 @@
 
 
           <div class="method-source-code" id="print_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 164</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 165</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_operation_definition</span>(<span class="ruby-identifier">operation_definition</span>, <span class="ruby-value">indent:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-identifier">old_type</span> = <span class="ruby-ivar">@current_type</span>
   <span class="ruby-ivar">@current_type</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">public_send</span>(<span class="ruby-identifier">operation_definition</span>.<span class="ruby-identifier">operation_type</span>)
@@ -1162,7 +1162,7 @@
 
 
           <div class="method-source-code" id="print_variable_identifier-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 116</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 117</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print_variable_identifier</span>(<span class="ruby-identifier">variable_id</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@inline_variables</span>
     <span class="ruby-identifier">variable_value</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">variables</span>[<span class="ruby-identifier">variable_id</span>.<span class="ruby-identifier">name</span>]
@@ -1222,7 +1222,7 @@
 
 
           <div class="method-source-code" id="redact_argument_value-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 73</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 74</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">redact_argument_value?</span>(<span class="ruby-identifier">argument</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-comment"># Default to redacting any strings or custom scalars encoded as strings</span>
   <span class="ruby-identifier">type</span> = <span class="ruby-identifier">argument</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">unwrap</span>
@@ -1274,7 +1274,7 @@
 
 
           <div class="method-source-code" id="redacted_argument_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 81</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">redacted_argument_value</span>(<span class="ruby-identifier">argument</span>)
   <span class="ruby-constant">REDACTED</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1327,7 +1327,7 @@
 
 
           <div class="method-source-code" id="sanitized_query_string-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/sanitized_printer.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">sanitized_query_string</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">valid?</span>
     <span class="ruby-identifier">print</span>(<span class="ruby-identifier">query</span>.<span class="ruby-identifier">document</span>)

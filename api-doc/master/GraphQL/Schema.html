@@ -1048,7 +1048,7 @@
 
 
           <div class="method-source-code" id="allow_legacy_invalid_empty_selections_on_union-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2304</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2305</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">allow_legacy_invalid_empty_selections_on_union</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_value</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@allow_legacy_invalid_empty_selections_on_union</span>)
@@ -1125,7 +1125,7 @@
 
 
           <div class="method-source-code" id="allow_legacy_invalid_return_type_conflicts-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2382</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2383</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">allow_legacy_invalid_return_type_conflicts</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_value</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@allow_legacy_invalid_return_type_conflicts</span>)
@@ -1197,7 +1197,7 @@
 
 
           <div class="method-source-code" id="analysis_engine-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1202</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1203</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">analysis_engine</span>
   <span class="ruby-ivar">@analysis_engine</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">analysis_engine</span>, <span class="ruby-keyword">self</span>.<span class="ruby-identifier">default_analysis_engine</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1250,7 +1250,7 @@
 
 
           <div class="method-source-code" id="as_json-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 424</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 425</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">as_json</span>(<span class="ruby-value">context:</span> {}, <span class="ruby-value">include_deprecated_args:</span> <span class="ruby-keyword">true</span>, <span class="ruby-value">include_schema_description:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">include_is_repeatable:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">include_specified_by_url:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">include_is_one_of:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-identifier">introspection_query</span> = <span class="ruby-constant">Introspection</span>.<span class="ruby-identifier">query</span>(
     <span class="ruby-value">include_deprecated_args</span><span class="ruby-value">:</span> <span class="ruby-identifier">include_deprecated_args</span>,
@@ -1328,7 +1328,7 @@
 
 
           <div class="method-source-code" id="build_trace_mode-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 347</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 348</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_trace_mode</span>(<span class="ruby-identifier">mode</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">mode</span>
   <span class="ruby-keyword">when</span> <span class="ruby-value">:</span><span class="ruby-value">default</span>
@@ -1402,7 +1402,7 @@
 
 
           <div class="method-source-code" id="complexity_cost_calculation_mode-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2453</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2454</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">complexity_cost_calculation_mode</span>(<span class="ruby-identifier">new_mode</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_mode</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@complexity_cost_calculation_mode</span>)
@@ -1491,7 +1491,7 @@
 
 
           <div class="method-source-code" id="complexity_cost_calculation_mode_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2511</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2512</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">complexity_cost_calculation_mode_for</span>(<span class="ruby-identifier">multiplex_context</span>)
   <span class="ruby-identifier">complexity_cost_calculation_mode</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1587,7 +1587,7 @@
 
 
           <div class="method-source-code" id="connections-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 630</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 631</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">connections</span>
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@connections</span>)
     <span class="ruby-ivar">@connections</span>
@@ -1654,7 +1654,7 @@
 
 
           <div class="method-source-code" id="context_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1423</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1424</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">context_class</span>(<span class="ruby-identifier">new_context_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_context_class</span>
     <span class="ruby-ivar">@context_class</span> = <span class="ruby-identifier">new_context_class</span>
@@ -1711,7 +1711,7 @@
 
 
           <div class="method-source-code" id="count_introspection_fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1230</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1231</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">count_introspection_fields</span>
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@count_introspection_fields</span>)
     <span class="ruby-ivar">@count_introspection_fields</span>
@@ -1765,7 +1765,7 @@
 
 
           <div class="method-source-code" id="cursor_encoder-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1041</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1042</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cursor_encoder</span>(<span class="ruby-identifier">new_encoder</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_encoder</span>
     <span class="ruby-ivar">@cursor_encoder</span> = <span class="ruby-identifier">new_encoder</span>
@@ -1818,7 +1818,7 @@
 
 
           <div class="method-source-code" id="default_analysis_engine-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1362</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1363</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_analysis_engine</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">superclass</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span>
     <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">default_analysis_engine</span>
@@ -1872,7 +1872,7 @@
 
 
           <div class="method-source-code" id="default_directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1835</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1836</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_directives</span>
   <span class="ruby-ivar">@default_directives</span> ||= {
     <span class="ruby-string">&quot;</span><span class="ruby-string">include</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Directive</span><span class="ruby-operator">::</span><span class="ruby-constant">Include</span>,
@@ -1928,7 +1928,7 @@
 
 
           <div class="method-source-code" id="default_execution_next-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2150</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2151</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_execution_next</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_value</span>)
     <span class="ruby-ivar">@default_execution_next</span> = <span class="ruby-identifier">new_value</span>
@@ -1986,7 +1986,7 @@
 
 
           <div class="method-source-code" id="default_execution_strategy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1354</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1355</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_execution_strategy</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">superclass</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span>
     <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">default_execution_strategy</span>
@@ -2043,7 +2043,7 @@
 
 
           <div class="method-source-code" id="default_logger-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1377</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1378</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_logger</span>(<span class="ruby-identifier">new_default_logger</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_default_logger</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@default_logger</span>)
@@ -2112,7 +2112,7 @@
 
 
           <div class="method-source-code" id="default_max_page_size-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1048</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1049</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_max_page_size</span>(<span class="ruby-identifier">new_default_max_page_size</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_default_max_page_size</span>
     <span class="ruby-ivar">@default_max_page_size</span> = <span class="ruby-identifier">new_default_max_page_size</span>
@@ -2166,7 +2166,7 @@
 
 
           <div class="method-source-code" id="default_page_size-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1073</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1074</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_page_size</span>(<span class="ruby-identifier">new_default_page_size</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_default_page_size</span>
     <span class="ruby-ivar">@default_page_size</span> = <span class="ruby-identifier">new_default_page_size</span>
@@ -2223,7 +2223,7 @@
 
 
           <div class="method-source-code" id="default_trace_mode-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 274</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 275</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_trace_mode</span>(<span class="ruby-identifier">new_mode</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_mode</span>)
     <span class="ruby-ivar">@default_trace_mode</span> = <span class="ruby-identifier">new_mode</span>
@@ -2286,7 +2286,7 @@
 
 
           <div class="method-source-code" id="deprecated_graphql_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 250</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 251</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">deprecated_graphql_definition</span>
   <span class="ruby-identifier">graphql_definition</span>(<span class="ruby-value">silence_deprecation_warning</span><span class="ruby-value">:</span> <span class="ruby-keyword">true</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -2339,7 +2339,7 @@
 
 
           <div class="method-source-code" id="description-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 470</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 471</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">description</span>(<span class="ruby-identifier">new_description</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_description</span>
     <span class="ruby-ivar">@description</span> = <span class="ruby-identifier">new_description</span>
@@ -2401,7 +2401,7 @@
 
 
           <div class="method-source-code" id="detailed_trace-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1862</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1863</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">detailed_trace?</span>(<span class="ruby-identifier">query</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string"> must implement `def.detailed_trace?(query)` to use DetailedTrace. Implement this method in your schema definition.</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2461,7 +2461,7 @@
 
 
           <div class="method-source-code" id="did_you_mean-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2271</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2272</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">did_you_mean</span>(<span class="ruby-identifier">new_dym</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_dym</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@did_you_mean</span>)
@@ -2522,7 +2522,7 @@
 
 
           <div class="method-source-code" id="directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1827</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1828</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directive</span>(<span class="ruby-identifier">new_directive</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">use_visibility_profile?</span>
     <span class="ruby-identifier">own_directives</span>[<span class="ruby-identifier">new_directive</span>.<span class="ruby-identifier">graphql_name</span>] = <span class="ruby-identifier">new_directive</span>
@@ -2589,7 +2589,7 @@
 
 
           <div class="method-source-code" id="directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1802</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1803</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directives</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">new_directives</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">new_directives</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">new_directives</span>.<span class="ruby-identifier">flatten</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">d</span><span class="ruby-operator">|</span> <span class="ruby-identifier">directive</span>(<span class="ruby-identifier">d</span>) }
@@ -2653,7 +2653,7 @@
 
 
           <div class="method-source-code" id="disable_introspection_entry_points-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1238</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1239</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">disable_introspection_entry_points</span>
   <span class="ruby-ivar">@disable_introspection_entry_points</span> = <span class="ruby-keyword">true</span>
   <span class="ruby-comment"># TODO: this clears the cache made in `def types`. But this is not a great solution.</span>
@@ -2705,7 +2705,7 @@
 
 
           <div class="method-source-code" id="disable_introspection_entry_points-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1256</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1257</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">disable_introspection_entry_points?</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">instance_variable_defined?</span>(<span class="ruby-value">:</span><span class="ruby-value">@disable_introspection_entry_points</span>)
     <span class="ruby-ivar">@disable_introspection_entry_points</span>
@@ -2759,7 +2759,7 @@
 
 
           <div class="method-source-code" id="disable_schema_introspection_entry_point-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1244</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1245</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">disable_schema_introspection_entry_point</span>
   <span class="ruby-ivar">@disable_schema_introspection_entry_point</span> = <span class="ruby-keyword">true</span>
   <span class="ruby-comment"># TODO: this clears the cache made in `def types`. But this is not a great solution.</span>
@@ -2811,7 +2811,7 @@
 
 
           <div class="method-source-code" id="disable_schema_introspection_entry_point-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1264</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1265</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">disable_schema_introspection_entry_point?</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">instance_variable_defined?</span>(<span class="ruby-value">:</span><span class="ruby-value">@disable_schema_introspection_entry_point</span>)
     <span class="ruby-ivar">@disable_schema_introspection_entry_point</span>
@@ -2865,7 +2865,7 @@
 
 
           <div class="method-source-code" id="disable_type_introspection_entry_point-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1250</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1251</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">disable_type_introspection_entry_point</span>
   <span class="ruby-ivar">@disable_type_introspection_entry_point</span> = <span class="ruby-keyword">true</span>
   <span class="ruby-comment"># TODO: this clears the cache made in `def types`. But this is not a great solution.</span>
@@ -2917,7 +2917,7 @@
 
 
           <div class="method-source-code" id="disable_type_introspection_entry_point-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1272</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1273</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">disable_type_introspection_entry_point?</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">instance_variable_defined?</span>(<span class="ruby-value">:</span><span class="ruby-value">@disable_type_introspection_entry_point</span>)
     <span class="ruby-ivar">@disable_type_introspection_entry_point</span>
@@ -2971,7 +2971,7 @@
 
 
           <div class="method-source-code" id="error_bubbling-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1206</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1207</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">error_bubbling</span>(<span class="ruby-identifier">new_error_bubbling</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">new_error_bubbling</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">error_bubbling(</span><span class="ruby-string">#{</span><span class="ruby-identifier">new_error_bubbling</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">) is deprecated; the default value of `false` will be the only option in GraphQL-Ruby 3.0</span><span class="ruby-string">&quot;</span>)
@@ -3026,7 +3026,7 @@
 
 
           <div class="method-source-code" id="error_handlers-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1467</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1468</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">error_handlers</span>
   <span class="ruby-ivar">@error_handlers</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">new_handler_hash</span> = <span class="ruby-operator">-&gt;</span>(<span class="ruby-identifier">h</span>, <span class="ruby-identifier">k</span>) {
@@ -3092,7 +3092,7 @@
 
 
           <div class="method-source-code" id="execute-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2075</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2076</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute</span>(<span class="ruby-identifier">query_str</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">default_execution_next</span>
     <span class="ruby-identifier">execute_next</span>(<span class="ruby-identifier">query_str</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
@@ -3153,7 +3153,7 @@
 
 
           <div class="method-source-code" id="execute_legacy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2083</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2084</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_legacy</span>(<span class="ruby-identifier">query_str</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">query_str</span>
     <span class="ruby-identifier">kwargs</span>[<span class="ruby-value">:</span><span class="ruby-value">query</span>] = <span class="ruby-identifier">query_str</span>
@@ -3223,7 +3223,7 @@
 
 
           <div class="method-source-code" id="extra_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1290</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1291</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">extra_types</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">new_extra_types</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">new_extra_types</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">new_extra_types</span> = <span class="ruby-identifier">new_extra_types</span>.<span class="ruby-identifier">flatten</span>
@@ -3295,7 +3295,7 @@
 
 
           <div class="method-source-code" id="find-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 480</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 481</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">find</span>(<span class="ruby-identifier">path</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@finder</span>
     <span class="ruby-ivar">@find_cache</span> = {}
@@ -3352,7 +3352,7 @@
 
 
           <div class="method-source-code" id="from_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 227</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 228</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">from_definition</span>(<span class="ruby-identifier">definition_or_path</span>, <span class="ruby-value">default_resolve:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">parser:</span> <span class="ruby-constant">GraphQL</span>.<span class="ruby-identifier">default_parser</span>, <span class="ruby-value">using:</span> {}, <span class="ruby-value">base_types:</span> {})
   <span class="ruby-comment"># If the file ends in `.graphql` or `.graphqls`, treat it like a filepath</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">definition_or_path</span>.<span class="ruby-identifier">end_with?</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">.graphql</span><span class="ruby-string">&quot;</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">definition_or_path</span>.<span class="ruby-identifier">end_with?</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">.graphqls</span><span class="ruby-string">&quot;</span>)
@@ -3440,7 +3440,7 @@
 
 
           <div class="method-source-code" id="from_introspection-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 208</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 209</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">from_introspection</span>(<span class="ruby-identifier">introspection_result</span>)
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Loader</span>.<span class="ruby-identifier">load</span>(<span class="ruby-identifier">introspection_result</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -3500,7 +3500,7 @@
 
 
           <div class="method-source-code" id="get_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 961</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 962</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_field</span>(<span class="ruby-identifier">type_or_name</span>, <span class="ruby-identifier">field_name</span>, <span class="ruby-identifier">context</span> = <span class="ruby-identifier">null_context</span>, <span class="ruby-identifier">use_visibility_profile</span> = <span class="ruby-identifier">use_visibility_profile?</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">use_visibility_profile</span>
     <span class="ruby-identifier">profile</span> = <span class="ruby-constant">Visibility</span><span class="ruby-operator">::</span><span class="ruby-constant">Profile</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>, <span class="ruby-keyword">self</span>)
@@ -3583,7 +3583,7 @@
 
 
           <div class="method-source-code" id="get_fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 998</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 999</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_fields</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">context</span> = <span class="ruby-identifier">null_context</span>)
   <span class="ruby-identifier">type</span>.<span class="ruby-identifier">fields</span>(<span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -3636,7 +3636,7 @@
 
 
           <div class="method-source-code" id="get_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 573</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 574</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_type</span>(<span class="ruby-identifier">type_name</span>, <span class="ruby-identifier">context</span> = <span class="ruby-identifier">null_context</span>, <span class="ruby-identifier">use_visibility_profile</span> = <span class="ruby-identifier">use_visibility_profile?</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">use_visibility_profile</span>
     <span class="ruby-identifier">profile</span> = <span class="ruby-constant">Visibility</span><span class="ruby-operator">::</span><span class="ruby-constant">Profile</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>, <span class="ruby-keyword">self</span>)
@@ -3736,7 +3736,7 @@
 
 
           <div class="method-source-code" id="has_defined_type-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 618</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 619</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_defined_type?</span>(<span class="ruby-identifier">type_name</span>)
   <span class="ruby-identifier">own_types</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">type_name</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">introspection_system</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">type_name</span>) <span class="ruby-operator">||</span> (<span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">has_defined_type?</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">has_defined_type?</span>(<span class="ruby-identifier">type_name</span>) <span class="ruby-operator">:</span> <span class="ruby-keyword">false</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -3792,7 +3792,7 @@
 
 
           <div class="method-source-code" id="id_from_object-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1642</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1643</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">id_from_object</span>(<span class="ruby-identifier">application_object</span>, <span class="ruby-identifier">graphql_type</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">.id_from_object(application_object, graphql_type, context) must be implemented to create global ids (tried to create an id for `</span><span class="ruby-string">#{</span><span class="ruby-identifier">application_object</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">`)</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -3867,7 +3867,7 @@
 
 
           <div class="method-source-code" id="inherited-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1565</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1566</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">self</span> <span class="ruby-operator">==</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span>
     <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">directives</span>(<span class="ruby-identifier">default_directives</span>.<span class="ruby-identifier">values</span>)
@@ -3938,7 +3938,7 @@
 
 
           <div class="method-source-code" id="instrument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1784</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1785</span>
       <span class="ruby-keyword">def</span> <span class="ruby-identifier">instrument</span>(<span class="ruby-identifier">instrument_step</span>, <span class="ruby-identifier">instrumenter</span>, <span class="ruby-identifier">options</span> = {})
         <span class="ruby-identifier">warn</span> <span class="ruby-string">&lt;&lt;~WARN</span>
 <span class="ruby-string">        Schema.instrument is deprecated, use `trace_with` instead: https://graphql-ruby.org/queries/tracing.html&quot;</span>
@@ -3994,7 +3994,7 @@
 
 
           <div class="method-source-code" id="instrumenters-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2162</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2163</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">instrumenters</span>
   <span class="ruby-identifier">inherited_instrumenters</span> = <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">instrumenters</span>) <span class="ruby-operator">||</span> <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>,<span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">k</span>] = [] }
   <span class="ruby-identifier">inherited_instrumenters</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">own_instrumenters</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">_step</span>, <span class="ruby-identifier">inherited</span>, <span class="ruby-identifier">own</span><span class="ruby-operator">|</span>
@@ -4050,7 +4050,7 @@
 
 
           <div class="method-source-code" id="introspection-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1014</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1015</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">introspection</span>(<span class="ruby-identifier">new_introspection_namespace</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_introspection_namespace</span>
     <span class="ruby-ivar">@introspection</span> = <span class="ruby-identifier">new_introspection_namespace</span>
@@ -4122,7 +4122,7 @@
 
 
           <div class="method-source-code" id="introspection_system-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1033</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1034</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">introspection_system</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@introspection_system</span>
     <span class="ruby-ivar">@introspection_system</span> = <span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">IntrospectionSystem</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>)
@@ -4182,7 +4182,7 @@
 
 
           <div class="method-source-code" id="lazy-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2249</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2250</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">lazy?</span>(<span class="ruby-identifier">obj</span>)
   <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-identifier">lazy_method_name</span>(<span class="ruby-identifier">obj</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -4238,7 +4238,7 @@
 
 
           <div class="method-source-code" id="lazy_method_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2239</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2240</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">lazy_method_name</span>(<span class="ruby-identifier">obj</span>)
   <span class="ruby-identifier">lazy_methods</span>.<span class="ruby-identifier">get</span>(<span class="ruby-identifier">obj</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -4291,7 +4291,7 @@
 
 
           <div class="method-source-code" id="lazy_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1770</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1771</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">lazy_resolve</span>(<span class="ruby-identifier">lazy_class</span>, <span class="ruby-identifier">value_method</span>)
   <span class="ruby-identifier">lazy_methods</span>.<span class="ruby-identifier">set</span>(<span class="ruby-identifier">lazy_class</span>, <span class="ruby-identifier">value_method</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -4344,7 +4344,7 @@
 
 
           <div class="method-source-code" id="legacy_complexity_cost_calculation_mismatch-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2545</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2546</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">legacy_complexity_cost_calculation_mismatch</span>(<span class="ruby-identifier">multiplex</span>, <span class="ruby-identifier">future_complexity_cost</span>, <span class="ruby-identifier">legacy_complexity_cost</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string">.legacy_complexity_cost(multiplex, future_complexity_cost, legacy_complexity_cost) to handle this mismatch (</span><span class="ruby-string">#{</span><span class="ruby-identifier">future_complexity_cost</span><span class="ruby-string">}</span><span class="ruby-string"> vs. </span><span class="ruby-string">#{</span><span class="ruby-identifier">legacy_complexity_cost</span><span class="ruby-string">}</span><span class="ruby-string">) and return a value to use</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -4425,7 +4425,7 @@
 
 
           <div class="method-source-code" id="legacy_invalid_empty_selections_on_union-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2337</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2338</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">legacy_invalid_empty_selections_on_union</span>(<span class="ruby-identifier">query</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Implement `def self.legacy_invalid_empty_selections_on_union_with_type(query, type)` or `def self.legacy_invalid_empty_selections_on_union(query)` to handle this scenario</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -4496,7 +4496,7 @@
 
 
           <div class="method-source-code" id="legacy_invalid_empty_selections_on_union_with_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2361</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2362</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">legacy_invalid_empty_selections_on_union_with_type</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">type</span>)
   <span class="ruby-identifier">legacy_invalid_empty_selections_on_union</span>(<span class="ruby-identifier">query</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -4567,7 +4567,7 @@
 
 
           <div class="method-source-code" id="legacy_invalid_return_type_conflicts-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2418</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2419</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">legacy_invalid_return_type_conflicts</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">type1</span>, <span class="ruby-identifier">type2</span>, <span class="ruby-identifier">node1</span>, <span class="ruby-identifier">node2</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string">.legacy_invalid_return_type_conflicts to handle this invalid selection</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -4641,7 +4641,7 @@
 
 
           <div class="method-source-code" id="load_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1660</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1661</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load_type</span>(<span class="ruby-identifier">type_name</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">get_type</span>(<span class="ruby-identifier">type_name</span>, <span class="ruby-identifier">ctx</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -4694,7 +4694,7 @@
 
 
           <div class="method-source-code" id="logger_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1407</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1408</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">logger_for</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">context</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">logger</span>] <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span>
     <span class="ruby-constant">Logger</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">IO</span><span class="ruby-operator">::</span><span class="ruby-constant">NULL</span>)
@@ -4758,7 +4758,7 @@
 
 
           <div class="method-source-code" id="max_complexity-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1181</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1182</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">max_complexity</span>(<span class="ruby-identifier">max_complexity</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">count_introspection_fields:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">max_complexity</span>
     <span class="ruby-ivar">@max_complexity</span> = <span class="ruby-identifier">max_complexity</span>
@@ -4815,7 +4815,7 @@
 
 
           <div class="method-source-code" id="max_complexity_count_introspection_fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1192</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1193</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">max_complexity_count_introspection_fields</span>
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@max_complexity_count_introspection_fields</span>)
     <span class="ruby-ivar">@max_complexity_count_introspection_fields</span>
@@ -4869,7 +4869,7 @@
 
 
           <div class="method-source-code" id="max_depth-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1219</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1220</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">max_depth</span>(<span class="ruby-identifier">new_max_depth</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">count_introspection_fields:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_max_depth</span>
     <span class="ruby-ivar">@max_depth</span> = <span class="ruby-identifier">new_max_depth</span>
@@ -4929,7 +4929,7 @@
 
 
           <div class="method-source-code" id="max_query_string_tokens-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1065</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1066</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">max_query_string_tokens</span>(<span class="ruby-identifier">new_max_tokens</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_max_tokens</span>)
     <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@max_query_string_tokens</span>) <span class="ruby-operator">?</span> <span class="ruby-ivar">@max_query_string_tokens</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">max_query_string_tokens</span>)
@@ -4991,7 +4991,7 @@
 
 
           <div class="method-source-code" id="multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2142</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2143</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">multiplex</span>(<span class="ruby-identifier">queries</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@default_execution_next</span>
     <span class="ruby-identifier">multiplex_next</span>(<span class="ruby-identifier">queries</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
@@ -5083,7 +5083,7 @@
 
 
           <div class="method-source-code" id="multiplex_analyzer-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2045</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2046</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">multiplex_analyzer</span>(<span class="ruby-identifier">new_analyzer</span>)
   <span class="ruby-identifier">own_multiplex_analyzers</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">new_analyzer</span>
 <span class="ruby-keyword">end</span></pre>
@@ -5138,7 +5138,7 @@
 
 
           <div class="method-source-code" id="multiplex_analyzers-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2049</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2050</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">multiplex_analyzers</span>
   <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">multiplex_analyzers</span>, <span class="ruby-constant">EMPTY_ARRAY</span>) <span class="ruby-operator">+</span> <span class="ruby-identifier">own_multiplex_analyzers</span>
 <span class="ruby-keyword">end</span></pre>
@@ -5191,7 +5191,7 @@
 
 
           <div class="method-source-code" id="mutation-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 718</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 719</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">mutation</span>(<span class="ruby-identifier">new_mutation_object</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">lazy_load_block</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_mutation_object</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">block_given?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@mutation_object</span>
@@ -5287,7 +5287,7 @@
 
 
           <div class="method-source-code" id="mutation_execution_strategy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1093</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1094</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">mutation_execution_strategy</span>(<span class="ruby-identifier">new_mutation_execution_strategy</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">deprecation_warning:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">deprecation_warning</span>
     <span class="ruby-identifier">warn</span> <span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL::Schema.mutation_execution_strategy is deprecated without replacement. Use `GraphQL::Query.new` directly to create and execute a custom query instead.</span><span class="ruby-string">&quot;</span>
@@ -5348,7 +5348,7 @@
 
 
           <div class="method-source-code" id="new_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1991</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1992</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">new_trace</span>(<span class="ruby-value">mode:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">options</span>)
   <span class="ruby-identifier">should_sample</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">detailed_trace</span>
     <span class="ruby-keyword">if</span> (<span class="ruby-identifier">query</span> = <span class="ruby-identifier">options</span>[<span class="ruby-value">:</span><span class="ruby-value">query</span>])
@@ -5439,7 +5439,7 @@
 
 
           <div class="method-source-code" id="null_context-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 519</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 520</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">null_context</span>
   <span class="ruby-ivar">@null_context</span> <span class="ruby-operator">||</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>
 <span class="ruby-keyword">end</span></pre>
@@ -5492,7 +5492,7 @@
 
 
           <div class="method-source-code" id="object_from_id-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1612</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1613</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">object_from_id</span>(<span class="ruby-identifier">object_id</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">.object_from_id(object_id, context) must be implemented to load by ID (tried to load from id `</span><span class="ruby-string">#{</span><span class="ruby-identifier">object_id</span><span class="ruby-string">}</span><span class="ruby-string">`)</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -5569,7 +5569,7 @@
 
 
           <div class="method-source-code" id="orphan_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1323</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1324</span>
       <span class="ruby-keyword">def</span> <span class="ruby-identifier">orphan_types</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">new_orphan_types</span>)
         <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">new_orphan_types</span>.<span class="ruby-identifier">empty?</span>
           <span class="ruby-identifier">new_orphan_types</span> = <span class="ruby-identifier">new_orphan_types</span>.<span class="ruby-identifier">flatten</span>
@@ -5658,7 +5658,7 @@
 
 
           <div class="method-source-code" id="own_trace_modes-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 343</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 344</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">own_trace_modes</span>
   <span class="ruby-ivar">@own_trace_modes</span> ||= {}
 <span class="ruby-keyword">end</span></pre>
@@ -5708,7 +5708,7 @@
 
 
           <div class="method-source-code" id="own_trace_modules-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 375</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 376</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">own_trace_modules</span>
   <span class="ruby-ivar">@own_trace_modules</span> ||= <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">k</span>] = [] }
 <span class="ruby-keyword">end</span></pre>
@@ -5761,7 +5761,7 @@
 
 
           <div class="method-source-code" id="parse_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1766</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1767</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parse_error</span>(<span class="ruby-identifier">parse_err</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">ctx</span>.<span class="ruby-identifier">errors</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">parse_err</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -5825,7 +5825,7 @@
 
 
           <div class="method-source-code" id="plugins-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 513</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 514</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">plugins</span>
   <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">plugins</span>, <span class="ruby-constant">EMPTY_ARRAY</span>) <span class="ruby-operator">+</span> <span class="ruby-identifier">own_plugins</span>
 <span class="ruby-keyword">end</span></pre>
@@ -5878,7 +5878,7 @@
 
 
           <div class="method-source-code" id="possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 878</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 879</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">possible_types</span>(<span class="ruby-identifier">type</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">context</span> = <span class="ruby-identifier">null_context</span>, <span class="ruby-identifier">use_visibility_profile</span> = <span class="ruby-identifier">use_visibility_profile?</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">use_visibility_profile</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">type</span>
@@ -5977,7 +5977,7 @@
 
 
           <div class="method-source-code" id="query-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 666</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 667</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query</span>(<span class="ruby-identifier">new_query_object</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">lazy_load_block</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_query_object</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">block_given?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@query_object</span>
@@ -6076,7 +6076,7 @@
 
 
           <div class="method-source-code" id="query_analyzer-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2028</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2029</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query_analyzer</span>(<span class="ruby-identifier">new_analyzer</span>)
   <span class="ruby-identifier">own_query_analyzers</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">new_analyzer</span>
 <span class="ruby-keyword">end</span></pre>
@@ -6131,7 +6131,7 @@
 
 
           <div class="method-source-code" id="query_analyzers-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2032</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2033</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query_analyzers</span>
   <span class="ruby-identifier">inherited_qa</span> = <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">query_analyzers</span>, <span class="ruby-constant">EMPTY_ARRAY</span>)
   <span class="ruby-identifier">inherited_qa</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">own_query_analyzers</span> <span class="ruby-operator">:</span> (<span class="ruby-identifier">inherited_qa</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">own_query_analyzers</span>)
@@ -6185,7 +6185,7 @@
 
 
           <div class="method-source-code" id="query_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1161</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1162</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query_class</span>(<span class="ruby-identifier">new_query_class</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_query_class</span>)
     <span class="ruby-ivar">@query_class</span> <span class="ruby-operator">||</span> (<span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">query_class</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">query_class</span> <span class="ruby-operator">:</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span>)
@@ -6242,7 +6242,7 @@
 
 
           <div class="method-source-code" id="query_execution_strategy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1081</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1082</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query_execution_strategy</span>(<span class="ruby-identifier">new_query_execution_strategy</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">deprecation_warning:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">deprecation_warning</span>
     <span class="ruby-identifier">warn</span> <span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL::Schema.query_execution_strategy is deprecated without replacement. Use `GraphQL::Query.new` directly to create and execute a custom query instead.</span><span class="ruby-string">&quot;</span>
@@ -6303,7 +6303,7 @@
 
 
           <div class="method-source-code" id="query_stack_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2195</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2196</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query_stack_error</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">err</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">errors</span>.<span class="ruby-identifier">push</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ExecutionError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">This query is too large to execute.</span><span class="ruby-string">&quot;</span>))
 <span class="ruby-keyword">end</span></pre>
@@ -6365,7 +6365,7 @@
 
 
           <div class="method-source-code" id="references_to-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 936</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 937</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">references_to</span>(<span class="ruby-identifier">to_type</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">from:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">to_type</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">from</span>
@@ -6435,7 +6435,7 @@
 
 
           <div class="method-source-code" id="rescue_from-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1461</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1462</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">rescue_from</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">err_classes</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">handler_block</span>)
   <span class="ruby-identifier">err_classes</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">err_class</span><span class="ruby-operator">|</span>
     <span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Errors</span>.<span class="ruby-identifier">register_rescue_from</span>(<span class="ruby-identifier">err_class</span>, <span class="ruby-identifier">error_handlers</span>[<span class="ruby-value">:</span><span class="ruby-value">subclass_handlers</span>], <span class="ruby-identifier">handler_block</span>)
@@ -6524,7 +6524,7 @@
 
 
           <div class="method-source-code" id="resolve_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1560</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1561</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_type</span>(<span class="ruby-identifier">abstract_type</span>, <span class="ruby-identifier">application_object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">.resolve_type(abstract_type, application_object, context) must be implemented to use Union types, Interface types, `loads:`, or `run_partials` (tried to resolve: </span><span class="ruby-string">#{</span><span class="ruby-identifier">abstract_type</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">)</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -6602,7 +6602,7 @@
 
 
           <div class="method-source-code" id="resolves_lazies-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1774</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1775</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolves_lazies?</span>
   <span class="ruby-identifier">lazy_method_count</span> = <span class="ruby-value">0</span>
   <span class="ruby-identifier">lazy_methods</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">k</span>, <span class="ruby-identifier">v</span><span class="ruby-operator">|</span>
@@ -6661,7 +6661,7 @@
 
 
           <div class="method-source-code" id="root_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 823</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 824</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">root_types</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">use_visibility_profile?</span>
     [<span class="ruby-identifier">query</span>, <span class="ruby-identifier">mutation</span>, <span class="ruby-identifier">subscription</span>].<span class="ruby-identifier">compact</span>
@@ -6718,7 +6718,7 @@
 
 
           <div class="method-source-code" id="sanitized_printer-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2053</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2054</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">sanitized_printer</span>(<span class="ruby-identifier">new_sanitized_printer</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_sanitized_printer</span>
     <span class="ruby-ivar">@own_sanitized_printer</span> = <span class="ruby-identifier">new_sanitized_printer</span>
@@ -6772,7 +6772,7 @@
 
 
           <div class="method-source-code" id="schema_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1650</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1651</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">schema_directive</span>(<span class="ruby-identifier">dir_class</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">options</span>)
   <span class="ruby-ivar">@own_schema_directives</span> ||= []
   <span class="ruby-constant">Member</span><span class="ruby-operator">::</span><span class="ruby-constant">HasDirectives</span>.<span class="ruby-identifier">add_directive</span>(<span class="ruby-keyword">self</span>, <span class="ruby-ivar">@own_schema_directives</span>, <span class="ruby-identifier">dir_class</span>, <span class="ruby-identifier">options</span>)
@@ -6823,7 +6823,7 @@
 
 
           <div class="method-source-code" id="schema_directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1655</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1656</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">schema_directives</span>
   <span class="ruby-constant">Member</span><span class="ruby-operator">::</span><span class="ruby-constant">HasDirectives</span>.<span class="ruby-identifier">get_directives</span>(<span class="ruby-keyword">self</span>, <span class="ruby-ivar">@own_schema_directives</span>, <span class="ruby-value">:</span><span class="ruby-value">schema_directives</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -6873,7 +6873,7 @@
 
 
           <div class="method-source-code" id="static_validator-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 488</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 489</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">static_validator</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">StaticValidation</span><span class="ruby-operator">::</span><span class="ruby-constant">Validator</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">schema</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -6926,7 +6926,7 @@
 
 
           <div class="method-source-code" id="subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 770</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 771</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscription</span>(<span class="ruby-identifier">new_subscription_object</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">lazy_load_block</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_subscription_object</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">block_given?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@subscription_object</span>
@@ -7025,7 +7025,7 @@
 
 
           <div class="method-source-code" id="subscription_execution_strategy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1105</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1106</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscription_execution_strategy</span>(<span class="ruby-identifier">new_subscription_execution_strategy</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">deprecation_warning:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">deprecation_warning</span>
     <span class="ruby-identifier">warn</span> <span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL::Schema.subscription_execution_strategy is deprecated without replacement. Use `GraphQL::Query.new` directly to create and execute a custom query instead.</span><span class="ruby-string">&quot;</span>
@@ -7086,7 +7086,7 @@
 
 
           <div class="method-source-code" id="subscriptions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 260</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 261</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscriptions</span>(<span class="ruby-value">inherited:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@subscriptions</span>) <span class="ruby-operator">?</span> <span class="ruby-ivar">@subscriptions</span> <span class="ruby-operator">:</span> (<span class="ruby-identifier">inherited</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">subscriptions</span>, <span class="ruby-keyword">nil</span>) <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -7139,7 +7139,7 @@
 
 
           <div class="method-source-code" id="subscriptions-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 264</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 265</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscriptions=</span>(<span class="ruby-identifier">new_implementation</span>)
   <span class="ruby-ivar">@subscriptions</span> = <span class="ruby-identifier">new_implementation</span>
 <span class="ruby-keyword">end</span></pre>
@@ -7192,7 +7192,7 @@
 
 
           <div class="method-source-code" id="to_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 448</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 449</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_definition</span>(<span class="ruby-value">context:</span> {})
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Printer</span>.<span class="ruby-identifier">print_schema</span>(<span class="ruby-keyword">self</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -7255,7 +7255,7 @@
 
 
           <div class="method-source-code" id="to_document-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 460</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 461</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_document</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">DocumentFromSchemaDefinition</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>).<span class="ruby-identifier">document</span>
 <span class="ruby-keyword">end</span></pre>
@@ -7313,7 +7313,7 @@
 
 
           <div class="method-source-code" id="to_json-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 403</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 404</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_json</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">args</span>)
   <span class="ruby-constant">JSON</span>.<span class="ruby-identifier">pretty_generate</span>(<span class="ruby-identifier">as_json</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">args</span>))
 <span class="ruby-keyword">end</span></pre>
@@ -7368,7 +7368,7 @@
 
 
           <div class="method-source-code" id="trace_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 288</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 289</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">trace_class</span>(<span class="ruby-identifier">new_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_class</span>
     <span class="ruby-comment"># If any modules were already added for `:default`,</span>
@@ -7429,7 +7429,7 @@
 
 
           <div class="method-source-code" id="trace_class_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 306</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 307</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">trace_class_for</span>(<span class="ruby-identifier">mode</span>, <span class="ruby-value">build:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">trace_class</span> = <span class="ruby-identifier">own_trace_modes</span>[<span class="ruby-identifier">mode</span>])
     <span class="ruby-identifier">trace_class</span>
@@ -7493,7 +7493,7 @@
 
 
           <div class="method-source-code" id="trace_mode-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 338</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 339</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">trace_mode</span>(<span class="ruby-identifier">mode_name</span>, <span class="ruby-identifier">trace_class</span>)
   <span class="ruby-identifier">own_trace_modes</span>[<span class="ruby-identifier">mode_name</span>] = <span class="ruby-identifier">trace_class</span>
   <span class="ruby-keyword">nil</span>
@@ -7563,7 +7563,7 @@
 
 
           <div class="method-source-code" id="trace_modules_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 385</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 386</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">trace_modules_for</span>(<span class="ruby-identifier">trace_mode</span>)
   <span class="ruby-identifier">modules</span> = <span class="ruby-identifier">own_trace_modules</span>[<span class="ruby-identifier">trace_mode</span>]
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">trace_modules_for</span>)
@@ -7623,7 +7623,7 @@
 
 
           <div class="method-source-code" id="trace_options_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1958</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1959</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">trace_options_for</span>(<span class="ruby-identifier">mode</span>)
   <span class="ruby-ivar">@trace_options_for_mode</span> ||= {}
   <span class="ruby-ivar">@trace_options_for_mode</span>[<span class="ruby-identifier">mode</span>] ||= <span class="ruby-keyword">begin</span>
@@ -7692,7 +7692,7 @@
 
 
           <div class="method-source-code" id="trace_with-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1922</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1923</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">trace_with</span>(<span class="ruby-identifier">trace_mod</span>, <span class="ruby-value">mode:</span> <span class="ruby-value">:</span><span class="ruby-value">default</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">options</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">mode</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>)
     <span class="ruby-identifier">mode</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">m</span><span class="ruby-operator">|</span> <span class="ruby-identifier">trace_with</span>(<span class="ruby-identifier">trace_mod</span>, <span class="ruby-value">mode</span><span class="ruby-value">:</span> <span class="ruby-identifier">m</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">options</span>) }
@@ -7794,7 +7794,7 @@
 
 
           <div class="method-source-code" id="tracer-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1866</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1867</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">tracer</span>(<span class="ruby-identifier">new_tracer</span>, <span class="ruby-value">silence_deprecation_warning:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">silence_deprecation_warning</span>
     <span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">`Schema.tracer(</span><span class="ruby-string">#{</span><span class="ruby-identifier">new_tracer</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">)` is deprecated; use module-based `trace_with` instead. See: https://graphql-ruby.org/queries/tracing.html</span><span class="ruby-string">&quot;</span>)
@@ -7853,7 +7853,7 @@
 
 
           <div class="method-source-code" id="tracers-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1879</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1880</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">tracers</span>
   <span class="ruby-identifier">inherited</span> = <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">tracers</span>, <span class="ruby-constant">EMPTY_ARRAY</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">inherited</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>
@@ -7915,7 +7915,7 @@
 
 
           <div class="method-source-code" id="type_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1736</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1737</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_error</span>(<span class="ruby-identifier">type_error</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">type_error</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">InvalidNullError</span>
@@ -7997,7 +7997,7 @@
 
 
           <div class="method-source-code" id="type_from_ast-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 957</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 958</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_from_ast</span>(<span class="ruby-identifier">ast_node</span>, <span class="ruby-value">context:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">query_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">{ __typename }</span><span class="ruby-string">&quot;</span>).<span class="ruby-identifier">context</span>)
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeExpression</span>.<span class="ruby-identifier">build_type</span>(<span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span>, <span class="ruby-identifier">ast_node</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -8050,7 +8050,7 @@
 
 
           <div class="method-source-code" id="types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 532</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 533</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">types</span>(<span class="ruby-identifier">context</span> = <span class="ruby-identifier">null_context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">use_visibility_profile?</span>
     <span class="ruby-identifier">types</span> = <span class="ruby-constant">Visibility</span><span class="ruby-operator">::</span><span class="ruby-constant">Profile</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>, <span class="ruby-keyword">self</span>)
@@ -8133,7 +8133,7 @@
 
 
           <div class="method-source-code" id="unauthorized_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1710</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1711</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">unauthorized_field</span>(<span class="ruby-identifier">unauthorized_error</span>)
   <span class="ruby-identifier">unauthorized_object</span>(<span class="ruby-identifier">unauthorized_error</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -8202,7 +8202,7 @@
 
 
           <div class="method-source-code" id="unauthorized_object-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1686</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1687</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">unauthorized_object</span>(<span class="ruby-identifier">unauthorized_error</span>)
   <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -8268,7 +8268,7 @@
 
 
           <div class="method-source-code" id="union_memberships-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 914</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 915</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">union_memberships</span>(<span class="ruby-identifier">type</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">type</span>
     <span class="ruby-identifier">own_um</span> = <span class="ruby-identifier">own_union_memberships</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span>, <span class="ruby-constant">EMPTY_ARRAY</span>)
@@ -8332,7 +8332,7 @@
 
 
           <div class="method-source-code" id="use-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 504</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 505</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">use</span>(<span class="ruby-identifier">plugin</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">kwargs</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">plugin</span>.<span class="ruby-identifier">use</span>(<span class="ruby-keyword">self</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
@@ -8400,7 +8400,7 @@
 
 
           <div class="method-source-code" id="validate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1141</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1142</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate</span>(<span class="ruby-identifier">string_or_document</span>, <span class="ruby-value">rules:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">doc</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">string_or_document</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>)
     <span class="ruby-constant">GraphQL</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">string_or_document</span>, <span class="ruby-value">max_tokens</span><span class="ruby-value">:</span> <span class="ruby-identifier">max_query_string_tokens</span>)
@@ -8470,7 +8470,7 @@
 
 
           <div class="method-source-code" id="validate_max_errors-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1171</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1172</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_max_errors</span>(<span class="ruby-identifier">new_validate_max_errors</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_validate_max_errors</span>)
     <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@validate_max_errors</span>) <span class="ruby-operator">?</span> <span class="ruby-ivar">@validate_max_errors</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">validate_max_errors</span>)
@@ -8524,7 +8524,7 @@
 
 
           <div class="method-source-code" id="validate_timeout-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1119</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1120</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_timeout</span>(<span class="ruby-identifier">new_validate_timeout</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_validate_timeout</span>)
     <span class="ruby-ivar">@validate_timeout</span> = <span class="ruby-identifier">new_validate_timeout</span>
@@ -8580,7 +8580,7 @@
 
 
           <div class="method-source-code" id="visible-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1646</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 1647</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible?</span>(<span class="ruby-identifier">member</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">member</span>.<span class="ruby-identifier">visible?</span>(<span class="ruby-identifier">ctx</span>)
 <span class="ruby-keyword">end</span></pre>

@@ -522,7 +522,7 @@
 
 
           <div class="method-source-code" id="coerce_isolated_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_isolated_input</span>(<span class="ruby-identifier">v</span>)
   <span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">v</span>, <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -572,7 +572,7 @@
 
 
           <div class="method-source-code" id="coerce_isolated_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_isolated_result</span>(<span class="ruby-identifier">v</span>)
   <span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">v</span>, <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -622,7 +622,7 @@
 
 
           <div class="method-source-code" id="valid_input-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">valid_input?</span>(<span class="ruby-identifier">val</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">validate_input</span>(<span class="ruby-identifier">val</span>, <span class="ruby-identifier">ctx</span>).<span class="ruby-identifier">valid?</span>
 <span class="ruby-keyword">end</span></pre>
@@ -672,7 +672,7 @@
 
 
           <div class="method-source-code" id="valid_isolated_input-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">valid_isolated_input?</span>(<span class="ruby-identifier">v</span>)
   <span class="ruby-identifier">valid_input?</span>(<span class="ruby-identifier">v</span>, <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -722,7 +722,7 @@
 
 
           <div class="method-source-code" id="validate_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/validates_input.rb, line 12</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_input</span>(<span class="ruby-identifier">val</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-value">max_errors:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">val</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">InputValidationResult</span><span class="ruby-operator">::</span><span class="ruby-constant">VALID</span>

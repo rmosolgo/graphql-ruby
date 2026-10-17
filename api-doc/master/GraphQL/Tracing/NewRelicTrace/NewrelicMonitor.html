@@ -586,7 +586,7 @@
 
 
           <div class="method-source-code" id="instrument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 36</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">instrument</span>(<span class="ruby-identifier">keyword</span>, <span class="ruby-identifier">payload</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">keyword</span> <span class="ruby-operator">==</span> <span class="ruby-value">:</span><span class="ruby-value">execute</span>
     <span class="ruby-identifier">query</span> = <span class="ruby-identifier">payload</span>.<span class="ruby-identifier">queries</span>.<span class="ruby-identifier">first</span>
@@ -643,7 +643,7 @@
 
 
           <div class="method-source-code" id="platform_authorized_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 56</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_authorized_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL/Authorized/</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -693,7 +693,7 @@
 
 
           <div class="method-source-code" id="platform_field_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 51</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 52</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_field_key</span>(<span class="ruby-identifier">field</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL/</span><span class="ruby-string">#{</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">owner</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">/</span><span class="ruby-string">#{</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -743,7 +743,7 @@
 
 
           <div class="method-source-code" id="platform_resolve_type_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 59</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_resolve_type_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL/ResolveType/</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -793,7 +793,7 @@
 
 
           <div class="method-source-code" id="platform_source_class_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 47</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/new_relic_trace.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_source_class_key</span>(<span class="ruby-identifier">source_class</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">GraphQL/Source/</span><span class="ruby-string">#{</span><span class="ruby-identifier">source_class</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>

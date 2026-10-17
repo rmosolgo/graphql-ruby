@@ -584,7 +584,7 @@
 
 
           <div class="method-source-code" id="delete_all-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/detailed_traces.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/detailed_traces.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_all</span>
   <span class="ruby-identifier">schema_class</span>.<span class="ruby-identifier">detailed_trace</span>.<span class="ruby-identifier">delete_all_traces</span>
   <span class="ruby-identifier">flash</span>[<span class="ruby-value">:</span><span class="ruby-value">success</span>] = <span class="ruby-string">&quot;</span><span class="ruby-string">Deleted all traces.</span><span class="ruby-string">&quot;</span>
@@ -636,7 +636,7 @@
 
 
           <div class="method-source-code" id="destroy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/detailed_traces.rb, line 20</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/detailed_traces.rb, line 21</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">destroy</span>
   <span class="ruby-identifier">schema_class</span>.<span class="ruby-identifier">detailed_trace</span>.<span class="ruby-identifier">delete_trace</span>(<span class="ruby-identifier">params</span>[<span class="ruby-value">:</span><span class="ruby-value">id</span>])
   <span class="ruby-identifier">flash</span>[<span class="ruby-value">:</span><span class="ruby-value">success</span>] = <span class="ruby-string">&quot;</span><span class="ruby-string">Trace deleted.</span><span class="ruby-string">&quot;</span>
@@ -688,7 +688,7 @@
 
 
           <div class="method-source-code" id="index-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/detailed_traces.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/detailed_traces.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">index</span>
   <span class="ruby-ivar">@last</span> = <span class="ruby-identifier">params</span>[<span class="ruby-value">:</span><span class="ruby-value">last</span>]&amp;.<span class="ruby-identifier">to_i</span> <span class="ruby-operator">||</span> <span class="ruby-value">50</span>
   <span class="ruby-ivar">@before</span> = <span class="ruby-identifier">params</span>[<span class="ruby-value">:</span><span class="ruby-value">before</span>]&amp;.<span class="ruby-identifier">to_i</span>
@@ -740,7 +740,7 @@
 
 
           <div class="method-source-code" id="show-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/detailed_traces.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dashboard/detailed_traces.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">show</span>
   <span class="ruby-identifier">trace</span> = <span class="ruby-identifier">schema_class</span>.<span class="ruby-identifier">detailed_trace</span>.<span class="ruby-identifier">find_trace</span>(<span class="ruby-identifier">params</span>[<span class="ruby-value">:</span><span class="ruby-value">id</span>].<span class="ruby-identifier">to_i</span>)
   <span class="ruby-identifier">send_data</span>(<span class="ruby-identifier">trace</span>.<span class="ruby-identifier">trace_data</span>)

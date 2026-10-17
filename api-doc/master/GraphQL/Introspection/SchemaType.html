@@ -546,7 +546,7 @@
 
 
           <div class="method-source-code" id="schema_description-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 18</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 19</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">schema_description</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">description</span>
 <span class="ruby-keyword">end</span></pre>
@@ -610,7 +610,7 @@
 
 
           <div class="method-source-code" id="directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directives</span>
   <span class="ruby-ivar">@context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">directives</span>.<span class="ruby-identifier">sort_by</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">graphql_name</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -660,7 +660,7 @@
 
 
           <div class="method-source-code" id="mutation_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">mutation_type</span>
   <span class="ruby-ivar">@context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">mutation_root</span>
 <span class="ruby-keyword">end</span></pre>
@@ -710,7 +710,7 @@
 
 
           <div class="method-source-code" id="query_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 33</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query_type</span>
   <span class="ruby-ivar">@context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">query_root</span>
 <span class="ruby-keyword">end</span></pre>
@@ -760,7 +760,7 @@
 
 
           <div class="method-source-code" id="schema_description-source-2">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">schema_description</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">schema_description</span>(<span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -810,7 +810,7 @@
 
 
           <div class="method-source-code" id="subscription_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscription_type</span>
   <span class="ruby-ivar">@context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">subscription_root</span>
 <span class="ruby-keyword">end</span></pre>
@@ -860,7 +860,7 @@
 
 
           <div class="method-source-code" id="types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/schema_type.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">types</span>
   <span class="ruby-identifier">query_types</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">all_types</span>
   <span class="ruby-identifier">types</span> = <span class="ruby-identifier">query_types</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">extra_types</span>

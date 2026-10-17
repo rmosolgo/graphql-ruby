@@ -527,7 +527,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">base</span>)
   <span class="ruby-identifier">base</span>.<span class="ruby-identifier">send</span>(
     <span class="ruby-value">:</span><span class="ruby-value">class_option</span>,
@@ -597,7 +597,7 @@
 
 
           <div class="method-source-code" id="create_dir-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">create_dir</span>(<span class="ruby-identifier">dir</span>)
   <span class="ruby-identifier">empty_directory</span>(<span class="ruby-identifier">dir</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">options</span>[<span class="ruby-value">:</span><span class="ruby-value">skip_keeps</span>]
@@ -650,7 +650,7 @@
 
 
           <div class="method-source-code" id="insert_root_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">insert_root_type</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">name</span>)
   <span class="ruby-identifier">log</span> <span class="ruby-value">:</span><span class="ruby-value">add_root_type</span>, <span class="ruby-identifier">type</span>
   <span class="ruby-identifier">sentinel</span> = <span class="ruby-regexp">/&lt; GraphQL::Schema\s*\n/m</span>
@@ -707,7 +707,7 @@
 
 
           <div class="method-source-code" id="module_namespacing_when_supported-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">module_namespacing_when_supported</span>
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-identifier">module_namespacing</span>)
     <span class="ruby-identifier">module_namespacing</span> { <span class="ruby-keyword">yield</span> }
@@ -761,7 +761,7 @@
 
 
           <div class="method-source-code" id="schema_file_path-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 28</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/generators/graphql/core.rb, line 29</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">schema_file_path</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">options</span>[<span class="ruby-value">:</span><span class="ruby-value">directory</span>]<span class="ruby-string">}</span><span class="ruby-string">/</span><span class="ruby-string">#{</span><span class="ruby-identifier">schema_name</span>.<span class="ruby-identifier">underscore</span><span class="ruby-string">}</span><span class="ruby-string">.rb</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>

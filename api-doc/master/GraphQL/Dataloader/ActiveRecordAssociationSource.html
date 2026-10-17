@@ -557,7 +557,7 @@
 
 
           <div class="method-source-code" id="batch_key_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/active_record_association_source.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/active_record_association_source.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">batch_key_for</span>(<span class="ruby-identifier">association</span>, <span class="ruby-identifier">scope</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">scope</span>
     [<span class="ruby-identifier">association</span>, <span class="ruby-identifier">scope</span>.<span class="ruby-identifier">to_sql</span>]
@@ -611,7 +611,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/active_record_association_source.rb, line 10</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/active_record_association_source.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">association</span>, <span class="ruby-identifier">scope</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@association</span> = <span class="ruby-identifier">association</span>
   <span class="ruby-ivar">@scope</span> = <span class="ruby-identifier">scope</span>
@@ -676,7 +676,7 @@
 
 
           <div class="method-source-code" id="fetch-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/active_record_association_source.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/active_record_association_source.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">records</span>)
   <span class="ruby-identifier">record_classes</span> = <span class="ruby-constant">Set</span>.<span class="ruby-identifier">new</span>.<span class="ruby-identifier">compare_by_identity</span>
   <span class="ruby-identifier">associated_classes</span> = <span class="ruby-constant">Set</span>.<span class="ruby-identifier">new</span>.<span class="ruby-identifier">compare_by_identity</span>
@@ -774,7 +774,7 @@
 
 
           <div class="method-source-code" id="load-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/active_record_association_source.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/active_record_association_source.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load</span>(<span class="ruby-identifier">record</span>)
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">assoc</span> = <span class="ruby-identifier">record</span>.<span class="ruby-identifier">association</span>(<span class="ruby-ivar">@association</span>)).<span class="ruby-identifier">loaded?</span>
     <span class="ruby-identifier">assoc</span>.<span class="ruby-identifier">target</span>

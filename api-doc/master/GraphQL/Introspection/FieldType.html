@@ -540,7 +540,7 @@
 
 
           <div class="method-source-code" id="resolve_args-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/field_type.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/field_type.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_args</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-identifier">args</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">args</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">reject</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">deprecation_reason</span>) <span class="ruby-keyword">unless</span> <span class="ruby-identifier">include_deprecated</span>
@@ -592,7 +592,7 @@
 
 
           <div class="method-source-code" id="resolve_is_deprecated-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/field_type.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/field_type.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_is_deprecated</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">_context</span>)
   <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-identifier">object</span>.<span class="ruby-identifier">deprecation_reason</span>
 <span class="ruby-keyword">end</span></pre>
@@ -656,7 +656,7 @@
 
 
           <div class="method-source-code" id="args-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/field_type.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/field_type.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">args</span>(<span class="ruby-value">include_deprecated:</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_args</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-value">include_deprecated</span><span class="ruby-value">:</span> <span class="ruby-identifier">include_deprecated</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -706,7 +706,7 @@
 
 
           <div class="method-source-code" id="is_deprecated-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/field_type.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/introspection/field_type.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">is_deprecated</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">resolve_is_deprecated</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>

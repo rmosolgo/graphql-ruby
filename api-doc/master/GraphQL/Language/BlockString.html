@@ -508,7 +508,7 @@
 
 
           <div class="method-source-code" id="break_line-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 89</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">break_line</span>(<span class="ruby-identifier">line</span>, <span class="ruby-identifier">length</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">yield</span>(<span class="ruby-identifier">line</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">line</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">length</span> <span class="ruby-operator">+</span> <span class="ruby-value">5</span>
 
@@ -570,7 +570,7 @@
 
 
           <div class="method-source-code" id="contains_only_whitespace-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 105</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 106</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">contains_only_whitespace?</span>(<span class="ruby-identifier">line</span>)
   <span class="ruby-identifier">line</span>.<span class="ruby-identifier">match?</span>(<span class="ruby-regexp">/^\s*$/</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -620,7 +620,7 @@
 
 
           <div class="method-source-code" id="print-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 56</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 57</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">print</span>(<span class="ruby-identifier">str</span>, <span class="ruby-value">indent:</span> <span class="ruby-string">&#39;</span><span class="ruby-string">&#39;</span>)
   <span class="ruby-identifier">line_length</span> = <span class="ruby-value">120</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">indent</span>.<span class="ruby-identifier">length</span>
   <span class="ruby-identifier">block_str</span> = <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>.<span class="ruby-identifier">dup</span>
@@ -697,7 +697,7 @@
 
 
           <div class="method-source-code" id="trim_whitespace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">trim_whitespace</span>(<span class="ruby-identifier">str</span>)
   <span class="ruby-comment"># Early return for the most common cases:</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">str</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>

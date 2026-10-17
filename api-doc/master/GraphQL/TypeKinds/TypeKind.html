@@ -604,7 +604,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 9</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">name</span>, <span class="ruby-value">abstract:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">leaf:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">fields:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">wraps:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">input:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">description:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@name</span> = <span class="ruby-identifier">name</span>
   <span class="ruby-ivar">@abstract</span> = <span class="ruby-identifier">abstract</span>
@@ -676,7 +676,7 @@
 
 
           <div class="method-source-code" id="abstract-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">abstract?</span>; <span class="ruby-ivar">@abstract</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -724,7 +724,7 @@
 
 
           <div class="method-source-code" id="composite-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">composite?</span>; <span class="ruby-ivar">@composite</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -772,7 +772,7 @@
 
 
           <div class="method-source-code" id="enum-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">enum?</span>
   <span class="ruby-keyword">self</span> <span class="ruby-operator">==</span> <span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">ENUM</span>
 <span class="ruby-keyword">end</span></pre>
@@ -822,7 +822,7 @@
 
 
           <div class="method-source-code" id="fields-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fields?</span>;    <span class="ruby-ivar">@fields</span>;    <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -870,7 +870,7 @@
 
 
           <div class="method-source-code" id="input-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 30</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 31</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">input?</span>;     <span class="ruby-ivar">@input</span>;     <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -918,7 +918,7 @@
 
 
           <div class="method-source-code" id="input_object-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 57</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 58</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">input_object?</span>
   <span class="ruby-keyword">self</span> <span class="ruby-operator">==</span> <span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">INPUT_OBJECT</span>
 <span class="ruby-keyword">end</span></pre>
@@ -968,7 +968,7 @@
 
 
           <div class="method-source-code" id="interface-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interface?</span>
   <span class="ruby-keyword">self</span> <span class="ruby-operator">==</span> <span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">INTERFACE</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1018,7 +1018,7 @@
 
 
           <div class="method-source-code" id="leaf-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 33</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">leaf?</span>; <span class="ruby-ivar">@leaf</span>; <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1066,7 +1066,7 @@
 
 
           <div class="method-source-code" id="list-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 61</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 62</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">list?</span>
   <span class="ruby-keyword">self</span> <span class="ruby-operator">==</span> <span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">LIST</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1116,7 +1116,7 @@
 
 
           <div class="method-source-code" id="non_null-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 65</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 66</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">non_null?</span>
   <span class="ruby-keyword">self</span> <span class="ruby-operator">==</span> <span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">NON_NULL</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1166,7 +1166,7 @@
 
 
           <div class="method-source-code" id="object-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">object?</span>
   <span class="ruby-keyword">self</span> <span class="ruby-operator">==</span> <span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">OBJECT</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1216,7 +1216,7 @@
 
 
           <div class="method-source-code" id="resolves-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolves?</span>;  <span class="ruby-ivar">@abstract</span>;  <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1264,7 +1264,7 @@
 
 
           <div class="method-source-code" id="scalar-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scalar?</span>
   <span class="ruby-keyword">self</span> <span class="ruby-operator">==</span> <span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">SCALAR</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1314,7 +1314,7 @@
 
 
           <div class="method-source-code" id="to_s-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_s</span>;       <span class="ruby-ivar">@name</span>;      <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1362,7 +1362,7 @@
 
 
           <div class="method-source-code" id="union-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 50</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">union?</span>
   <span class="ruby-keyword">self</span> <span class="ruby-operator">==</span> <span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">UNION</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1412,7 +1412,7 @@
 
 
           <div class="method-source-code" id="wraps-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 28</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/type_kinds.rb, line 29</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">wraps?</span>;     <span class="ruby-ivar">@wraps</span>;     <span class="ruby-keyword">end</span></pre>
           </div>
 

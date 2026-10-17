@@ -622,7 +622,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">definition</span>, <span class="ruby-identifier">owner_type</span>, <span class="ruby-identifier">parents</span>)
   <span class="ruby-ivar">@node</span> = <span class="ruby-identifier">node</span>
   <span class="ruby-ivar">@definition</span> = <span class="ruby-identifier">definition</span>
@@ -689,7 +689,7 @@
 
 
           <div class="method-source-code" id="comparison_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">comparison_key</span>
   <span class="ruby-ivar">@comparison_key</span> ||= [<span class="ruby-ivar">@node</span>, <span class="ruby-ivar">@parents</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -739,7 +739,7 @@
 
 
           <div class="method-source-code" id="return_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">return_type</span>
   <span class="ruby-ivar">@return_type</span> ||= <span class="ruby-ivar">@definition</span>&amp;.<span class="ruby-identifier">type</span>
 <span class="ruby-keyword">end</span></pre>
@@ -789,7 +789,7 @@
 
 
           <div class="method-source-code" id="unwrapped_return_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">unwrapped_return_type</span>
   <span class="ruby-ivar">@unwrapped_return_type</span> ||= <span class="ruby-identifier">return_type</span>&amp;.<span class="ruby-identifier">unwrap</span>
 <span class="ruby-keyword">end</span></pre>

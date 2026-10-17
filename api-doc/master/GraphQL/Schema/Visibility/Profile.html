@@ -628,7 +628,7 @@
 
 
           <div class="method-source-code" id="from_context-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">ctx</span>, <span class="ruby-identifier">schema</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">ctx</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">types</span>) <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">types</span> = <span class="ruby-identifier">ctx</span>.<span class="ruby-identifier">types</span>).<span class="ruby-identifier">is_a?</span>(<span class="ruby-keyword">self</span>)
     <span class="ruby-identifier">types</span>
@@ -685,7 +685,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 89</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">name:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">schema:</span>, <span class="ruby-value">visibility:</span>)
   <span class="ruby-ivar">@name</span> = <span class="ruby-identifier">name</span>
   <span class="ruby-ivar">@context</span> = <span class="ruby-identifier">context</span>
@@ -806,7 +806,7 @@
 
 
           <div class="method-source-code" id="null_profile-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 30</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 31</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">null_profile</span>(<span class="ruby-value">context:</span>, <span class="ruby-value">schema:</span>)
   <span class="ruby-identifier">profile</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">name</span><span class="ruby-value">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">NullProfile</span><span class="ruby-string">&quot;</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>, <span class="ruby-value">schema</span><span class="ruby-value">:</span> <span class="ruby-identifier">schema</span>)
   <span class="ruby-identifier">profile</span>.<span class="ruby-identifier">instance_variable_set</span>(<span class="ruby-value">:</span><span class="ruby-value">@cached_visible</span>, <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">k</span>, <span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">k</span>[<span class="ruby-identifier">v</span>] = <span class="ruby-keyword">true</span> }.<span class="ruby-identifier">compare_by_identity</span>)
@@ -872,7 +872,7 @@
 
 
           <div class="method-source-code" id="all_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 251</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 252</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_types</span>
   <span class="ruby-identifier">load_all_types</span>
   <span class="ruby-ivar">@all_types</span>.<span class="ruby-identifier">values</span>
@@ -923,7 +923,7 @@
 
 
           <div class="method-source-code" id="all_types_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 256</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 257</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_types_h</span>
   <span class="ruby-identifier">load_all_types</span>
   <span class="ruby-ivar">@all_types</span>
@@ -974,7 +974,7 @@
 
 
           <div class="method-source-code" id="argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 204</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 205</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument</span>(<span class="ruby-identifier">owner</span>, <span class="ruby-identifier">arg_name</span>)
   <span class="ruby-identifier">arg</span> = <span class="ruby-ivar">@cached_parent_arguments</span>[<span class="ruby-identifier">owner</span>][<span class="ruby-identifier">arg_name</span>]
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>)
@@ -1043,7 +1043,7 @@
 
 
           <div class="method-source-code" id="arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 200</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 201</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">owner</span>)
   <span class="ruby-ivar">@cached_arguments</span>[<span class="ruby-identifier">owner</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1093,7 +1093,7 @@
 
 
           <div class="method-source-code" id="directive_exists-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 265</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 266</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directive_exists?</span>(<span class="ruby-identifier">dir_name</span>)
   <span class="ruby-identifier">directives</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">d</span><span class="ruby-operator">|</span> <span class="ruby-identifier">d</span>.<span class="ruby-identifier">graphql_name</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">dir_name</span> }
 <span class="ruby-keyword">end</span></pre>
@@ -1143,7 +1143,7 @@
 
 
           <div class="method-source-code" id="directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 269</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 270</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directives</span>
   <span class="ruby-ivar">@all_directives</span> ||= <span class="ruby-ivar">@visibility</span>.<span class="ruby-identifier">all_directives</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">dir</span><span class="ruby-operator">|</span>
     <span class="ruby-ivar">@cached_visible</span>[<span class="ruby-identifier">dir</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@visibility</span>.<span class="ruby-identifier">all_references</span>[<span class="ruby-identifier">dir</span>].<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">ref</span><span class="ruby-operator">|</span> <span class="ruby-identifier">ref</span> <span class="ruby-operator">==</span> <span class="ruby-keyword">true</span> <span class="ruby-operator">||</span> (<span class="ruby-ivar">@cached_visible</span>[<span class="ruby-identifier">ref</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">referenced?</span>(<span class="ruby-identifier">ref</span>)) }
@@ -1195,7 +1195,7 @@
 
 
           <div class="method-source-code" id="enum_values-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 261</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 262</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">enum_values</span>(<span class="ruby-identifier">owner</span>)
   <span class="ruby-ivar">@cached_enum_values</span>[<span class="ruby-identifier">owner</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1245,7 +1245,7 @@
 
 
           <div class="method-source-code" id="field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 192</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 193</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field</span>(<span class="ruby-identifier">owner</span>, <span class="ruby-identifier">field_name</span>)
   <span class="ruby-ivar">@cached_field_result</span>[<span class="ruby-identifier">owner</span>][<span class="ruby-identifier">field_name</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1295,7 +1295,7 @@
 
 
           <div class="method-source-code" id="field_on_visible_interface-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 164</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 165</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_on_visible_interface?</span>(<span class="ruby-identifier">field</span>, <span class="ruby-identifier">owner</span>)
   <span class="ruby-identifier">ints</span> = <span class="ruby-identifier">owner</span>.<span class="ruby-identifier">interface_type_memberships</span>.<span class="ruby-identifier">map</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">abstract_type</span>)
   <span class="ruby-identifier">field_name</span> = <span class="ruby-identifier">field</span>.<span class="ruby-identifier">graphql_name</span>
@@ -1365,7 +1365,7 @@
 
 
           <div class="method-source-code" id="fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 196</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 197</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fields</span>(<span class="ruby-identifier">owner</span>)
   <span class="ruby-ivar">@cached_fields</span>[<span class="ruby-identifier">owner</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1415,7 +1415,7 @@
 
 
           <div class="method-source-code" id="freeze-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">freeze</span>
   <span class="ruby-ivar">@cached_visible</span>.<span class="ruby-identifier">default_proc</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-ivar">@cached_visible</span>.<span class="ruby-identifier">freeze</span>
@@ -1514,7 +1514,7 @@
 
 
           <div class="method-source-code" id="interfaces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 231</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 232</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interfaces</span>(<span class="ruby-identifier">obj_or_int_type</span>)
   <span class="ruby-identifier">ints</span> = <span class="ruby-identifier">obj_or_int_type</span>.<span class="ruby-identifier">interface_type_memberships</span>
     .<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">itm</span><span class="ruby-operator">|</span> <span class="ruby-ivar">@cached_visible</span>[<span class="ruby-identifier">itm</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@cached_visible</span>[<span class="ruby-identifier">itm</span>.<span class="ruby-identifier">abstract_type</span>] }
@@ -1568,7 +1568,7 @@
 
 
           <div class="method-source-code" id="loadable-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 275</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 276</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">loadable?</span>(<span class="ruby-identifier">t</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-ivar">@cached_visible</span>[<span class="ruby-identifier">t</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">referenced?</span>(<span class="ruby-identifier">t</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1618,7 +1618,7 @@
 
 
           <div class="method-source-code" id="loadable_possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 279</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 280</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">loadable_possible_types</span>(<span class="ruby-identifier">t</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-ivar">@loadable_possible_types</span>[<span class="ruby-identifier">t</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1668,7 +1668,7 @@
 
 
           <div class="method-source-code" id="loaded_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 283</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 284</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">loaded_types</span>
   <span class="ruby-ivar">@all_types</span>.<span class="ruby-identifier">values</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1718,7 +1718,7 @@
 
 
           <div class="method-source-code" id="mutation_root-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 243</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 244</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">mutation_root</span>
   ((<span class="ruby-identifier">t</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">mutation</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@cached_visible</span>[<span class="ruby-identifier">t</span>]) <span class="ruby-operator">?</span> <span class="ruby-identifier">t</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1768,7 +1768,7 @@
 
 
           <div class="method-source-code" id="possible_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 227</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 228</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">possible_types</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-ivar">@cached_possible_types</span>[<span class="ruby-identifier">type</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1818,7 +1818,7 @@
 
 
           <div class="method-source-code" id="preload-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 296</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 297</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">preload</span>
   <span class="ruby-identifier">load_all_types</span>
   <span class="ruby-ivar">@all_types</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">type_name</span>, <span class="ruby-identifier">type_defn</span><span class="ruby-operator">|</span>
@@ -1935,7 +1935,7 @@
 
 
           <div class="method-source-code" id="query_root-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 239</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 240</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">query_root</span>
   ((<span class="ruby-identifier">t</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">query</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@cached_visible</span>[<span class="ruby-identifier">t</span>]) <span class="ruby-operator">?</span> <span class="ruby-identifier">t</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1985,7 +1985,7 @@
 
 
           <div class="method-source-code" id="reachable_type-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 287</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 288</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">reachable_type?</span>(<span class="ruby-identifier">type_name</span>)
   <span class="ruby-identifier">load_all_types</span>
   <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-ivar">@all_types</span>[<span class="ruby-identifier">type_name</span>]
@@ -2036,7 +2036,7 @@
 
 
           <div class="method-source-code" id="subscription_root-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 247</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 248</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscription_root</span>
   ((<span class="ruby-identifier">t</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">subscription</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@cached_visible</span>[<span class="ruby-identifier">t</span>]) <span class="ruby-operator">?</span> <span class="ruby-identifier">t</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2086,7 +2086,7 @@
 
 
           <div class="method-source-code" id="type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 188</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 189</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type</span>(<span class="ruby-identifier">type_name</span>)
   <span class="ruby-ivar">@cached_type_result</span>[<span class="ruby-identifier">type_name</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -2136,7 +2136,7 @@
 
 
           <div class="method-source-code" id="visible_enum_value-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 292</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/profile.rb, line 293</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible_enum_value?</span>(<span class="ruby-identifier">enum_value</span>, <span class="ruby-identifier">_ctx</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@cached_visible</span>[<span class="ruby-identifier">enum_value</span>]
 <span class="ruby-keyword">end</span></pre>

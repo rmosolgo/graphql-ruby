@@ -577,7 +577,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 79</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 80</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">engine:</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)
   <span class="ruby-identifier">adapter</span> = <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-constant">Dry</span><span class="ruby-operator">::</span><span class="ruby-constant">Monitor</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">engine</span> <span class="ruby-operator">==</span> <span class="ruby-constant">Dry</span><span class="ruby-operator">::</span><span class="ruby-constant">Monitor</span>
     <span class="ruby-constant">DryMonitoringAdapter</span>
@@ -657,7 +657,7 @@
 
 
           <div class="method-source-code" id="begin_analyze_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 109</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 110</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_analyze_multiplex</span>(<span class="ruby-identifier">multiplex</span>, <span class="ruby-identifier">analyzers</span>)
   <span class="ruby-identifier">begin_notifications_event</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">analyze.graphql</span><span class="ruby-string">&quot;</span>, {<span class="ruby-value">multiplex</span><span class="ruby-value">:</span> <span class="ruby-identifier">multiplex</span>, <span class="ruby-value">analyzers</span><span class="ruby-value">:</span> <span class="ruby-identifier">analyzers</span>})
   <span class="ruby-keyword">super</span>
@@ -713,7 +713,7 @@
 
 
           <div class="method-source-code" id="begin_authorized-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 148</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 149</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_authorized</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">begin_notifications_event</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">authorized.graphql</span><span class="ruby-string">&quot;</span>, {<span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-identifier">type</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>})
   <span class="ruby-keyword">super</span>
@@ -769,7 +769,7 @@
 
 
           <div class="method-source-code" id="begin_dataloader_source-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 168</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 169</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_dataloader_source</span>(<span class="ruby-identifier">source</span>)
   <span class="ruby-identifier">begin_notifications_event</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">dataloader_source.graphql</span><span class="ruby-string">&quot;</span>, { <span class="ruby-value">source</span><span class="ruby-value">:</span> <span class="ruby-identifier">source</span> })
   <span class="ruby-keyword">super</span>
@@ -825,7 +825,7 @@
 
 
           <div class="method-source-code" id="begin_execute_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 125</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 126</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_execute_field</span>(<span class="ruby-identifier">field</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">query</span>)
   <span class="ruby-identifier">begin_notifications_event</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">execute_field.graphql</span><span class="ruby-string">&quot;</span>, {<span class="ruby-value">field</span><span class="ruby-value">:</span> <span class="ruby-identifier">field</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-identifier">arguments</span>, <span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>})
   <span class="ruby-keyword">super</span>
@@ -881,7 +881,7 @@
 
 
           <div class="method-source-code" id="begin_resolve_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 158</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 159</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">begin_resolve_type</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">begin_notifications_event</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">resolve_type.graphql</span><span class="ruby-string">&quot;</span>, {<span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-identifier">type</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>})
   <span class="ruby-keyword">super</span>
@@ -937,7 +937,7 @@
 
 
           <div class="method-source-code" id="dataloader_fiber_resume-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 140</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 141</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader_fiber_resume</span>(<span class="ruby-identifier">source</span>)
   <span class="ruby-identifier">prev_ev</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-constant">PREVIOUS_EV_KEY</span>]
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">prev_ev</span>
@@ -996,7 +996,7 @@
 
 
           <div class="method-source-code" id="dataloader_fiber_yield-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 135</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 136</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader_fiber_yield</span>(<span class="ruby-identifier">source</span>)
   <span class="ruby-constant">Fiber</span>[<span class="ruby-constant">PREVIOUS_EV_KEY</span>] = <span class="ruby-identifier">finish_notifications_event</span>
   <span class="ruby-keyword">super</span>
@@ -1052,7 +1052,7 @@
 
 
           <div class="method-source-code" id="end_analyze_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 114</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 115</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_analyze_multiplex</span>(<span class="ruby-identifier">_multiplex</span>, <span class="ruby-identifier">_analyzers</span>)
   <span class="ruby-identifier">finish_notifications_event</span>
   <span class="ruby-keyword">super</span>
@@ -1108,7 +1108,7 @@
 
 
           <div class="method-source-code" id="end_authorized-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 153</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 154</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_authorized</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">result</span>)
   <span class="ruby-identifier">finish_notifications_event</span>
   <span class="ruby-keyword">super</span>
@@ -1164,7 +1164,7 @@
 
 
           <div class="method-source-code" id="end_dataloader_source-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 173</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 174</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_dataloader_source</span>(<span class="ruby-identifier">source</span>)
   <span class="ruby-identifier">finish_notifications_event</span>
   <span class="ruby-keyword">super</span>
@@ -1220,7 +1220,7 @@
 
 
           <div class="method-source-code" id="end_execute_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 130</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 131</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_execute_field</span>(<span class="ruby-identifier">_field</span>, <span class="ruby-identifier">_object</span>, <span class="ruby-identifier">_arguments</span>, <span class="ruby-identifier">_query</span>, <span class="ruby-identifier">_result</span>)
   <span class="ruby-identifier">finish_notifications_event</span>
   <span class="ruby-keyword">super</span>
@@ -1276,7 +1276,7 @@
 
 
           <div class="method-source-code" id="end_resolve_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 163</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 164</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_resolve_type</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">resolved_type</span>)
   <span class="ruby-identifier">finish_notifications_event</span>
   <span class="ruby-keyword">super</span>
@@ -1332,7 +1332,7 @@
 
 
           <div class="method-source-code" id="execute_multiplex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 119</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 120</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_multiplex</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">payload</span>)
   <span class="ruby-ivar">@notifications</span>.<span class="ruby-identifier">instrument</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">execute.graphql</span><span class="ruby-string">&quot;</span>, <span class="ruby-identifier">payload</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-keyword">super</span>
@@ -1389,7 +1389,7 @@
 
 
           <div class="method-source-code" id="lex-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 97</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 98</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">lex</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">payload</span>)
   <span class="ruby-ivar">@notifications</span>.<span class="ruby-identifier">instrument</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">lex.graphql</span><span class="ruby-string">&quot;</span>, <span class="ruby-identifier">payload</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-keyword">super</span>
@@ -1446,7 +1446,7 @@
 
 
           <div class="method-source-code" id="parse-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 91</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 92</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parse</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">payload</span>)
   <span class="ruby-ivar">@notifications</span>.<span class="ruby-identifier">instrument</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">parse.graphql</span><span class="ruby-string">&quot;</span>, <span class="ruby-identifier">payload</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-keyword">super</span>
@@ -1503,7 +1503,7 @@
 
 
           <div class="method-source-code" id="validate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 103</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/notifications_trace.rb, line 104</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">payload</span>)
   <span class="ruby-ivar">@notifications</span>.<span class="ruby-identifier">instrument</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">validate.graphql</span><span class="ruby-string">&quot;</span>, <span class="ruby-identifier">payload</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-keyword">super</span>

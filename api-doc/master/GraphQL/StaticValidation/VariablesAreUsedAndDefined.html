@@ -529,7 +529,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@variable_usages_for_context</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">hash</span>, <span class="ruby-identifier">key</span><span class="ruby-operator">|</span> <span class="ruby-identifier">hash</span>[<span class="ruby-identifier">key</span>] = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">k</span>] = <span class="ruby-constant">VariableUsage</span>.<span class="ruby-identifier">new</span> } }
@@ -601,7 +601,7 @@
 
 
           <div class="method-source-code" id="on_document-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 78</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 79</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_document</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">fragment_definitions</span> = <span class="ruby-ivar">@variable_usages_for_context</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span><span class="ruby-operator">|</span> <span class="ruby-identifier">key</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">FragmentDefinition</span>) }
@@ -663,7 +663,7 @@
 
 
           <div class="method-source-code" id="on_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 48</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 49</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-comment"># initialize the hash of vars for this context:</span>
   <span class="ruby-ivar">@variable_usages_for_context</span>[<span class="ruby-identifier">node</span>]
@@ -722,7 +722,7 @@
 
 
           <div class="method-source-code" id="on_fragment_spread-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 59</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_spread</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">variable_context</span> = <span class="ruby-ivar">@variable_context_stack</span>.<span class="ruby-identifier">last</span>
   <span class="ruby-ivar">@spreads_for_context</span>[<span class="ruby-identifier">variable_context</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>
@@ -779,7 +779,7 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 33</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-comment"># initialize the hash of vars for this context:</span>
   <span class="ruby-ivar">@variable_usages_for_context</span>[<span class="ruby-identifier">node</span>]
@@ -845,7 +845,7 @@
 
 
           <div class="method-source-code" id="on_variable_identifier-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 68</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_used_and_defined.rb, line 69</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_variable_identifier</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">usage_context</span> = <span class="ruby-ivar">@variable_context_stack</span>.<span class="ruby-identifier">last</span>
   <span class="ruby-identifier">declared_variables</span> = <span class="ruby-ivar">@variable_usages_for_context</span>[<span class="ruby-identifier">usage_context</span>]

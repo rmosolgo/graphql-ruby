@@ -584,7 +584,7 @@
 
 
           <div class="method-source-code" id="from_problem-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">from_problem</span>(<span class="ruby-identifier">explanation</span>, <span class="ruby-identifier">path</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">extensions:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">message:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">result</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-identifier">result</span>.<span class="ruby-identifier">add_problem</span>(<span class="ruby-identifier">explanation</span>, <span class="ruby-identifier">path</span>, <span class="ruby-value">extensions</span><span class="ruby-value">:</span> <span class="ruby-identifier">extensions</span>, <span class="ruby-value">message</span><span class="ruby-value">:</span> <span class="ruby-identifier">message</span>)
@@ -636,7 +636,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 13</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 14</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">valid:</span> <span class="ruby-keyword">true</span>, <span class="ruby-value">problems:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@valid</span> = <span class="ruby-identifier">valid</span>
   <span class="ruby-ivar">@problems</span> = <span class="ruby-identifier">problems</span>
@@ -701,7 +701,7 @@
 
 
           <div class="method-source-code" id="add_problem-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_problem</span>(<span class="ruby-identifier">explanation</span>, <span class="ruby-identifier">path</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">extensions:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">message:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@problems</span> ||= []
   <span class="ruby-ivar">@valid</span> = <span class="ruby-keyword">false</span>
@@ -760,7 +760,7 @@
 
 
           <div class="method-source-code" id="merge_result-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge_result!</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">inner_result</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">inner_result</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">inner_result</span>.<span class="ruby-identifier">valid?</span>
 
@@ -819,7 +819,7 @@
 
 
           <div class="method-source-code" id="valid-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 18</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 19</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">valid?</span>
   <span class="ruby-ivar">@valid</span>
 <span class="ruby-keyword">end</span></pre>

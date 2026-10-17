@@ -608,7 +608,7 @@
 
 
           <div class="method-source-code" id="children_of_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 202</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 203</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">children_of_type</span>
   <span class="ruby-ivar">@children_methods</span>
 <span class="ruby-keyword">end</span></pre>
@@ -658,7 +658,7 @@
 
 
           <div class="method-source-code" id="inherited-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 179</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 180</span>
           <span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">child_class</span>)
             <span class="ruby-keyword">super</span>
             <span class="ruby-identifier">name_underscored</span> = <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">name</span>
@@ -749,7 +749,7 @@
 
 
           <div class="method-source-code" id="3D-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 59</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">==</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-identifier">other</span>.<span class="ruby-identifier">kind_of?</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>) <span class="ruby-operator">&amp;&amp;</span>
@@ -810,7 +810,7 @@
 
 
           <div class="method-source-code" id="children-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 74</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 75</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">children</span>
   <span class="ruby-constant">NO_CHILDREN</span>
 <span class="ruby-keyword">end</span></pre>
@@ -863,7 +863,7 @@
 
 
           <div class="method-source-code" id="children_method_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 95</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 96</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">children_method_name</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">children_method_name</span>
 <span class="ruby-keyword">end</span></pre>
@@ -913,7 +913,7 @@
 
 
           <div class="method-source-code" id="col-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 44</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">col</span>
   <span class="ruby-ivar">@col</span> ||= <span class="ruby-ivar">@source</span>&amp;.<span class="ruby-identifier">column_at</span>(<span class="ruby-ivar">@pos</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -963,7 +963,7 @@
 
 
           <div class="method-source-code" id="definition_line-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 47</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">definition_line</span>
   <span class="ruby-ivar">@definition_line</span> ||= (<span class="ruby-ivar">@source</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@definition_pos</span>) <span class="ruby-operator">?</span> <span class="ruby-ivar">@source</span>.<span class="ruby-identifier">line_at</span>(<span class="ruby-ivar">@definition_pos</span>) <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1013,7 +1013,7 @@
 
 
           <div class="method-source-code" id="delete_child-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 154</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 155</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_child</span>(<span class="ruby-identifier">previous_child</span>)
   <span class="ruby-comment"># Figure out which list `previous_child` may be found in</span>
   <span class="ruby-identifier">method_name</span> = <span class="ruby-identifier">previous_child</span>.<span class="ruby-identifier">children_method_name</span>
@@ -1071,7 +1071,7 @@
 
 
           <div class="method-source-code" id="initialize_copy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 89</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize_copy</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-ivar">@children</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-ivar">@scalars</span> = <span class="ruby-keyword">nil</span>
@@ -1123,7 +1123,7 @@
 
 
           <div class="method-source-code" id="line-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">line</span>
   <span class="ruby-ivar">@line</span> ||= <span class="ruby-ivar">@source</span>&amp;.<span class="ruby-identifier">line_at</span>(<span class="ruby-ivar">@pos</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1176,7 +1176,7 @@
 
 
           <div class="method-source-code" id="merge-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 127</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 128</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge</span>(<span class="ruby-identifier">new_options</span>)
   <span class="ruby-identifier">dup</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">new_options</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1236,7 +1236,7 @@
 
 
           <div class="method-source-code" id="position-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 99</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 100</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">position</span>
   [<span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1286,7 +1286,7 @@
 
 
           <div class="method-source-code" id="replace_child-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 132</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 133</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">replace_child</span>(<span class="ruby-identifier">previous_child</span>, <span class="ruby-identifier">new_child</span>)
   <span class="ruby-comment"># Figure out which list `previous_child` may be found in</span>
   <span class="ruby-identifier">method_name</span> = <span class="ruby-identifier">previous_child</span>.<span class="ruby-identifier">children_method_name</span>
@@ -1356,7 +1356,7 @@
 
 
           <div class="method-source-code" id="scalars-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 84</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 85</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scalars</span>
   <span class="ruby-constant">NO_CHILDREN</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1409,7 +1409,7 @@
 
 
           <div class="method-source-code" id="to_query_string-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 103</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 104</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_query_string</span>(<span class="ruby-value">printer:</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Printer</span>.<span class="ruby-identifier">new</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">printer</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Printer</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">frozen?</span>

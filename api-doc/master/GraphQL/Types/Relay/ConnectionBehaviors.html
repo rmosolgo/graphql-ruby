@@ -555,7 +555,7 @@
 
 
           <div class="method-source-code" id="add_page_info_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 201</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 202</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_page_info_field</span>(<span class="ruby-identifier">obj_type</span>)
   <span class="ruby-identifier">obj_type</span>.<span class="ruby-identifier">field</span> <span class="ruby-value">:</span><span class="ruby-value">page_info</span>, <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Types</span><span class="ruby-operator">::</span><span class="ruby-constant">Relay</span><span class="ruby-operator">::</span><span class="ruby-constant">PageInfo</span>, <span class="ruby-value">null</span><span class="ruby-value">:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">description</span><span class="ruby-value">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Information to aid in pagination.</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -605,7 +605,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 10</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ClassMethods</span>)
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">has_nodes_field</span>(<span class="ruby-keyword">true</span>)
@@ -680,7 +680,7 @@
 
 
           <div class="method-source-code" id="edges-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 206</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 207</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">edges</span>
   <span class="ruby-comment"># Assume that whatever authorization needed to happen</span>
   <span class="ruby-comment"># already happened at the connection level.</span>
@@ -736,7 +736,7 @@
 
 
           <div class="method-source-code" id="nodes-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 216</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/connection_behaviors.rb, line 217</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">nodes</span>
   <span class="ruby-comment"># Assume that whatever authorization needed to happen</span>
   <span class="ruby-comment"># already happened at the connection level.</span>

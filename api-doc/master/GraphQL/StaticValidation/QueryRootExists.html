@@ -508,7 +508,7 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/query_root_exists.rb, line 5</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/query_root_exists.rb, line 6</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span> <span class="ruby-operator">==</span> <span class="ruby-string">&#39;</span><span class="ruby-string">query</span><span class="ruby-string">&#39;</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span>.<span class="ruby-identifier">nil?</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">query_root</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">add_error</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">StaticValidation</span><span class="ruby-operator">::</span><span class="ruby-constant">QueryRootExistsError</span>.<span class="ruby-identifier">new</span>(

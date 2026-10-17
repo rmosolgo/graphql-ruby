@@ -616,7 +616,7 @@
 
 
           <div class="method-source-code" id="default_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 65</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 66</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_argument</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">argument_args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">argument_kwargs</span>)
   <span class="ruby-identifier">configs</span> = <span class="ruby-ivar">@own_default_argument_configurations</span> ||= []
   <span class="ruby-identifier">configs</span> <span class="ruby-operator">&lt;&lt;</span> [<span class="ruby-identifier">argument_args</span>, <span class="ruby-identifier">argument_kwargs</span>]
@@ -670,7 +670,7 @@
 
 
           <div class="method-source-code" id="default_argument_configurations-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 51</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 52</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_argument_configurations</span>
   <span class="ruby-identifier">args</span> = <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">default_argument_configurations</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">default_argument_configurations</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@own_default_argument_configurations</span>
@@ -734,7 +734,7 @@
 
 
           <div class="method-source-code" id="extras-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 84</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 85</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">extras</span>(<span class="ruby-identifier">new_extras</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_extras</span>
     <span class="ruby-ivar">@own_extras</span> = <span class="ruby-identifier">new_extras</span>
@@ -812,7 +812,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">field:</span>, <span class="ruby-value">options:</span>)
   <span class="ruby-ivar">@field</span> = <span class="ruby-identifier">field</span>
   <span class="ruby-ivar">@options</span> = <span class="ruby-identifier">options</span> <span class="ruby-operator">||</span> {}
@@ -889,7 +889,7 @@
 
 
           <div class="method-source-code" id="after_define-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 125</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 126</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">after_define</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -946,7 +946,7 @@
 
 
           <div class="method-source-code" id="after_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 205</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 206</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">after_resolve</span>(<span class="ruby-value">object:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">objects:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">values:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">value:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">memo:</span>)
   <span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">values</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">value</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1023,7 +1023,7 @@
 
 
           <div class="method-source-code" id="apply-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 113</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 114</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">apply</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -1080,7 +1080,7 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 180</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field_extension.rb, line 181</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve</span>(<span class="ruby-value">object:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">objects:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">context:</span>)
   <span class="ruby-keyword">yield</span>(<span class="ruby-identifier">object</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">objects</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-keyword">nil</span>)
 <span class="ruby-keyword">end</span></pre>

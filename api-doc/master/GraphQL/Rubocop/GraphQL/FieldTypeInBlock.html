@@ -558,7 +558,7 @@
 
 
           <div class="method-source-code" id="on_block-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rubocop/graphql/field_type_in_block.rb, line 42</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rubocop/graphql/field_type_in_block.rb, line 43</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_block</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-identifier">ignore_node</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-identifier">field_config_with_inline_type_and_block</span>(<span class="ruby-identifier">node</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">type_const</span><span class="ruby-operator">|</span>
@@ -621,7 +621,7 @@
 
 
           <div class="method-source-code" id="on_send-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rubocop/graphql/field_type_in_block.rb, line 59</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rubocop/graphql/field_type_in_block.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_send</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">part_of_ignored_node?</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-identifier">field_config_with_inline_type</span>(<span class="ruby-identifier">node</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">type_const</span><span class="ruby-operator">|</span>

@@ -575,7 +575,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">opts</span> = {})
   <span class="ruby-ivar">@client</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-value">:</span><span class="ruby-value">client</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">PrometheusExporter</span><span class="ruby-operator">::</span><span class="ruby-constant">Client</span>.<span class="ruby-identifier">default</span>
   <span class="ruby-ivar">@keys_whitelist</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-value">:</span><span class="ruby-value">keys_whitelist</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">DEFAULT_WHITELIST</span>
@@ -648,7 +648,7 @@
 
 
           <div class="method-source-code" id="platform_authorized_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_authorized_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.authorized</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -698,7 +698,7 @@
 
 
           <div class="method-source-code" id="platform_field_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 38</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_field_key</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">field</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -748,7 +748,7 @@
 
 
           <div class="method-source-code" id="platform_resolve_type_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_resolve_type_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.resolve_type</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -798,7 +798,7 @@
 
 
           <div class="method-source-code" id="platform_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/prometheus_tracing.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_trace</span>(<span class="ruby-identifier">platform_key</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">_data</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">yield</span> <span class="ruby-keyword">unless</span> <span class="ruby-ivar">@keys_whitelist</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">key</span>)
   <span class="ruby-identifier">instrument_execution</span>(<span class="ruby-identifier">platform_key</span>, <span class="ruby-identifier">key</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)

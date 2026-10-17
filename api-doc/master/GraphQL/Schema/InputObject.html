@@ -682,7 +682,7 @@
 
 
           <div class="method-source-code" id="argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 156</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 157</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">argument_defn</span> = <span class="ruby-keyword">super</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">one_of?</span>
@@ -750,7 +750,7 @@
 
 
           <div class="method-source-code" id="authorized-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 129</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 130</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized?</span>(<span class="ruby-identifier">obj</span>, <span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-comment"># Authorize each argument (but this doesn&#39;t apply if `prepare` is implemented):</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">key?</span>)
@@ -810,7 +810,7 @@
 
 
           <div class="method-source-code" id="authorizes-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 125</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 126</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorizes?</span>(<span class="ruby-identifier">ctx</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">method</span>(<span class="ruby-value">:</span><span class="ruby-value">authorized?</span>).<span class="ruby-identifier">owner</span> <span class="ruby-operator">!=</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">InputObject</span>
 <span class="ruby-keyword">end</span></pre>
@@ -860,7 +860,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 173</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 174</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">INPUT_OBJECT</span>
 <span class="ruby-keyword">end</span></pre>
@@ -910,7 +910,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 33</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">arguments</span>, <span class="ruby-value">ruby_kwargs:</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">defaults_used:</span>)
   <span class="ruby-ivar">@context</span> = <span class="ruby-identifier">context</span>
   <span class="ruby-ivar">@ruby_style_hash</span> = <span class="ruby-identifier">ruby_kwargs</span>
@@ -975,7 +975,7 @@
 
 
           <div class="method-source-code" id="one_of-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 143</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 144</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">one_of</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">one_of?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">all_argument_definitions</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">arg</span><span class="ruby-operator">|</span> <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">non_null?</span> }
@@ -1030,7 +1030,7 @@
 
 
           <div class="method-source-code" id="one_of-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 152</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 153</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">one_of?</span>
   <span class="ruby-keyword">false</span> <span class="ruby-comment"># Re-defined when `OneOf` is added</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1097,7 +1097,7 @@
 
 
           <div class="method-source-code" id="5B-5D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 98</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 99</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">[]</span>(<span class="ruby-identifier">key</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@ruby_style_hash</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>)
     <span class="ruby-ivar">@ruby_style_hash</span>[<span class="ruby-identifier">key</span>]
@@ -1158,7 +1158,7 @@
 
 
           <div class="method-source-code" id="deconstruct_keys-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 60</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 61</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">deconstruct_keys</span>(<span class="ruby-identifier">keys</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">keys</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-ivar">@ruby_style_hash</span>
@@ -1214,7 +1214,7 @@
 
 
           <div class="method-source-code" id="key-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 108</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 109</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>)
   <span class="ruby-ivar">@ruby_style_hash</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>) <span class="ruby-operator">||</span> (<span class="ruby-ivar">@arguments</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@arguments</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>)) <span class="ruby-operator">||</span> <span class="ruby-keyword">false</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1264,7 +1264,7 @@
 
 
           <div class="method-source-code" id="prepare-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 70</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 71</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">prepare</span>
   <span class="ruby-keyword">self</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1314,7 +1314,7 @@
 
 
           <div class="method-source-code" id="to_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 52</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_h</span>
   <span class="ruby-identifier">unwrap_value</span>(<span class="ruby-ivar">@ruby_style_hash</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1364,7 +1364,7 @@
 
 
           <div class="method-source-code" id="to_hash-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 56</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 57</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_hash</span>
   <span class="ruby-identifier">to_h</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1414,7 +1414,7 @@
 
 
           <div class="method-source-code" id="to_kwargs-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 113</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 114</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_kwargs</span>
   <span class="ruby-ivar">@ruby_style_hash</span>.<span class="ruby-identifier">dup</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1464,7 +1464,7 @@
 
 
           <div class="method-source-code" id="unwrap_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 74</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 75</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">unwrap_value</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">value</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Array</span>

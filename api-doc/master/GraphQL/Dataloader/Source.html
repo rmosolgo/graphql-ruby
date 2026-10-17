@@ -635,7 +635,7 @@
 
 
           <div class="method-source-code" id="batch_key_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 253</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 254</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">batch_key_for</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">batch_args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">batch_kwargs</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">batch_kwargs</span>.<span class="ruby-identifier">any?</span> <span class="ruby-comment"># rubocop:disable Development/NoneWithoutBlockCop</span>
     [<span class="ruby-operator">*</span><span class="ruby-identifier">batch_args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">batch_kwargs</span>]
@@ -722,7 +722,7 @@
 
 
           <div class="method-source-code" id="clear_cache-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 269</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 270</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">clear_cache</span>
   <span class="ruby-ivar">@results</span>.<span class="ruby-identifier">clear</span>
   <span class="ruby-keyword">nil</span>
@@ -781,7 +781,7 @@
 
 
           <div class="method-source-code" id="fetch-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 144</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 145</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">keys</span>)
   <span class="ruby-comment"># somehow retrieve these from the backend</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Implement `</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#fetch(</span><span class="ruby-string">#{</span><span class="ruby-identifier">keys</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">) to return a record for each of the keys</span><span class="ruby-string">&quot;</span>
@@ -845,7 +845,7 @@
 
 
           <div class="method-source-code" id="load-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 92</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 93</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">result_key</span> = <span class="ruby-identifier">result_key_for</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@results</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">result_key</span>)
@@ -913,7 +913,7 @@
 
 
           <div class="method-source-code" id="load_all-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 113</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 114</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load_all</span>(<span class="ruby-identifier">values</span>)
   <span class="ruby-identifier">result_keys</span> = []
   <span class="ruby-identifier">pending_keys</span> = []
@@ -989,7 +989,7 @@
 
 
           <div class="method-source-code" id="merge-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 196</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 197</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge</span>(<span class="ruby-identifier">new_results</span>)
   <span class="ruby-identifier">new_results</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">new_k</span>, <span class="ruby-identifier">new_v</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">key</span> = <span class="ruby-identifier">result_key_for</span>(<span class="ruby-identifier">new_k</span>)
@@ -1056,7 +1056,7 @@
 
 
           <div class="method-source-code" id="normalize_fetch_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 64</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">normalize_fetch_key</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">value</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1121,7 +1121,7 @@
 
 
           <div class="method-source-code" id="pending-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 179</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 180</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">pending?</span>
   <span class="ruby-operator">!</span><span class="ruby-ivar">@pending</span>.<span class="ruby-identifier">empty?</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1177,7 +1177,7 @@
 
 
           <div class="method-source-code" id="request-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">request</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">res_key</span> = <span class="ruby-identifier">result_key_for</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">add_pending_key</span>(<span class="ruby-identifier">res_key</span>, <span class="ruby-identifier">value</span>)
@@ -1235,7 +1235,7 @@
 
 
           <div class="method-source-code" id="request_all-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 74</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 75</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">request_all</span>(<span class="ruby-identifier">values</span>)
   <span class="ruby-identifier">values</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">res_key</span> = <span class="ruby-identifier">result_key_for</span>(<span class="ruby-identifier">v</span>)
@@ -1295,7 +1295,7 @@
 
 
           <div class="method-source-code" id="result_key_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">result_key_for</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">value</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1358,7 +1358,7 @@
 
 
           <div class="method-source-code" id="sync-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 159</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/source.rb, line 160</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">sync</span>(<span class="ruby-identifier">pending_result_keys</span>)
   <span class="ruby-ivar">@dataloader</span>.<span class="ruby-identifier">queue_pending_source</span>(<span class="ruby-keyword">self</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">pending?</span>
   <span class="ruby-ivar">@dataloader</span>.<span class="ruby-identifier">yield</span>(<span class="ruby-keyword">self</span>)

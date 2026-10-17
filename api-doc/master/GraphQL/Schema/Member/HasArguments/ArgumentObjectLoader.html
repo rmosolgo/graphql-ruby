@@ -528,7 +528,7 @@
 
 
           <div class="method-source-code" id="authorize_application_object-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 415</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 416</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorize_application_object</span>(<span class="ruby-identifier">argument</span>, <span class="ruby-identifier">id</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">loaded_application_object</span>)
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">after_lazy</span>(<span class="ruby-identifier">loaded_application_object</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">application_object</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">application_object</span>.<span class="ruby-identifier">nil?</span>
@@ -639,7 +639,7 @@
 
 
           <div class="method-source-code" id="load_and_authorize_application_object-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 410</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 411</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load_and_authorize_application_object</span>(<span class="ruby-identifier">argument</span>, <span class="ruby-identifier">id</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">loaded_application_object</span> = <span class="ruby-identifier">load_application_object</span>(<span class="ruby-identifier">argument</span>, <span class="ruby-identifier">id</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">authorize_application_object</span>(<span class="ruby-identifier">argument</span>, <span class="ruby-identifier">id</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">loaded_application_object</span>)
@@ -690,7 +690,7 @@
 
 
           <div class="method-source-code" id="load_application_object-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 402</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 403</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load_application_object</span>(<span class="ruby-identifier">argument</span>, <span class="ruby-identifier">id</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-comment"># See if any object can be found for this ID</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">id</span>.<span class="ruby-identifier">nil?</span>
@@ -747,7 +747,7 @@
 
 
           <div class="method-source-code" id="load_application_object_failed-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 495</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 496</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load_application_object_failed</span>(<span class="ruby-identifier">err</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-identifier">err</span>
 <span class="ruby-keyword">end</span></pre>
@@ -812,7 +812,7 @@
 
 
           <div class="method-source-code" id="object_from_id-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 398</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 399</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">object_from_id</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">id</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">object_from_id</span>(<span class="ruby-identifier">id</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>

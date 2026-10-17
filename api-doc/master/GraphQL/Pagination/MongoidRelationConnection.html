@@ -529,7 +529,7 @@
 
 
           <div class="method-source-code" id="null_relation-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/mongoid_relation_connection.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/mongoid_relation_connection.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">null_relation</span>(<span class="ruby-identifier">relation</span>)
   <span class="ruby-identifier">relation</span>.<span class="ruby-identifier">without_options</span>.<span class="ruby-identifier">none</span>
 <span class="ruby-keyword">end</span></pre>
@@ -579,7 +579,7 @@
 
 
           <div class="method-source-code" id="relation_count-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/mongoid_relation_connection.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/mongoid_relation_connection.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">relation_count</span>(<span class="ruby-identifier">relation</span>)
   <span class="ruby-identifier">relation</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">count</span>(<span class="ruby-identifier">relation</span>.<span class="ruby-identifier">options</span>.<span class="ruby-identifier">slice</span>(<span class="ruby-value">:</span><span class="ruby-value">limit</span>, <span class="ruby-value">:</span><span class="ruby-value">skip</span>))
 <span class="ruby-keyword">end</span></pre>
@@ -629,7 +629,7 @@
 
 
           <div class="method-source-code" id="relation_limit-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/mongoid_relation_connection.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/mongoid_relation_connection.rb, line 12</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">relation_limit</span>(<span class="ruby-identifier">relation</span>)
   <span class="ruby-identifier">relation</span>.<span class="ruby-identifier">options</span>.<span class="ruby-identifier">limit</span>
 <span class="ruby-keyword">end</span></pre>
@@ -679,7 +679,7 @@
 
 
           <div class="method-source-code" id="relation_offset-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/mongoid_relation_connection.rb, line 7</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/mongoid_relation_connection.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">relation_offset</span>(<span class="ruby-identifier">relation</span>)
   <span class="ruby-identifier">relation</span>.<span class="ruby-identifier">options</span>.<span class="ruby-identifier">skip</span>
 <span class="ruby-keyword">end</span></pre>

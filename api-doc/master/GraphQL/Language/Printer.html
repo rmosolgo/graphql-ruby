@@ -543,7 +543,7 @@
 
 
           <div class="method-source-code" id="print-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/printer.rb, line 68</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/printer.rb, line 69</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">print</span>(<span class="ruby-identifier">node</span>, <span class="ruby-value">indent:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>, <span class="ruby-value">truncate_size:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">truncate_size</span> = <span class="ruby-identifier">truncate_size</span> <span class="ruby-operator">?</span> [<span class="ruby-identifier">truncate_size</span> <span class="ruby-operator">-</span> <span class="ruby-constant">OMISSION</span>.<span class="ruby-identifier">size</span>, <span class="ruby-value">0</span>].<span class="ruby-identifier">max</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
   <span class="ruby-ivar">@out</span> = <span class="ruby-constant">TruncatableBuffer</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">truncate_size</span><span class="ruby-value">:</span> <span class="ruby-identifier">truncate_size</span>)

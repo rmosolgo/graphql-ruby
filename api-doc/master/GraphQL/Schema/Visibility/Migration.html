@@ -583,7 +583,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/migration.rb, line 82</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/migration.rb, line 83</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">context:</span>, <span class="ruby-value">schema:</span>, <span class="ruby-value">name:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">visibility:</span>)
   <span class="ruby-ivar">@name</span> = <span class="ruby-identifier">name</span>
   <span class="ruby-ivar">@skip_error</span> = <span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">skip_visibility_migration_error</span>] <span class="ruby-operator">||</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>)
@@ -668,7 +668,7 @@
 
 
           <div class="method-source-code" id="call_method_and_compare-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/migration.rb, line 139</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/migration.rb, line 140</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call_method_and_compare</span>(<span class="ruby-identifier">method</span>, <span class="ruby-identifier">args</span>)
   <span class="ruby-identifier">res_1</span> = <span class="ruby-ivar">@profile_types</span>.<span class="ruby-identifier">public_send</span>(<span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@skip_error</span>
@@ -732,7 +732,7 @@
 
 
           <div class="method-source-code" id="equivalent_schema_members-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/migration.rb, line 157</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/migration.rb, line 158</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">equivalent_schema_members?</span>(<span class="ruby-identifier">member1</span>, <span class="ruby-identifier">member2</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">member1</span>.<span class="ruby-identifier">class</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">member2</span>.<span class="ruby-identifier">class</span>
     <span class="ruby-keyword">return</span> <span class="ruby-keyword">false</span>
@@ -810,7 +810,7 @@
 
 
           <div class="method-source-code" id="loaded_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/migration.rb, line 107</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/visibility/migration.rb, line 108</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">loaded_types</span>
   <span class="ruby-ivar">@profile_types</span>.<span class="ruby-identifier">loaded_types</span>
 <span class="ruby-keyword">end</span></pre>

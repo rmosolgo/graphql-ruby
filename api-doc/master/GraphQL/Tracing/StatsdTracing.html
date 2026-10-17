@@ -545,7 +545,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">statsd:</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)
   <span class="ruby-ivar">@statsd</span> = <span class="ruby-identifier">statsd</span>
   <span class="ruby-keyword">super</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">rest</span>)
@@ -618,7 +618,7 @@
 
 
           <div class="method-source-code" id="platform_authorized_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 40</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 41</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_authorized_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">graphql.authorized.</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -668,7 +668,7 @@
 
 
           <div class="method-source-code" id="platform_field_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 36</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_field_key</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">field</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">graphql.</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">.</span><span class="ruby-string">#{</span><span class="ruby-identifier">field</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -718,7 +718,7 @@
 
 
           <div class="method-source-code" id="platform_resolve_type_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_resolve_type_key</span>(<span class="ruby-identifier">type</span>)
   <span class="ruby-string">&quot;</span><span class="ruby-string">graphql.resolve_type.</span><span class="ruby-string">#{</span><span class="ruby-identifier">type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -768,7 +768,7 @@
 
 
           <div class="method-source-code" id="platform_trace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 30</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/statsd_tracing.rb, line 31</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">platform_trace</span>(<span class="ruby-identifier">platform_key</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">data</span>)
   <span class="ruby-ivar">@statsd</span>.<span class="ruby-identifier">time</span>(<span class="ruby-identifier">platform_key</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-keyword">yield</span>

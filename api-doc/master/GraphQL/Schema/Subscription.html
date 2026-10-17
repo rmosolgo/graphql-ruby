@@ -611,7 +611,7 @@
 
 
           <div class="method-source-code" id="subscription_scope-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 177</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 178</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">subscription_scope</span>(<span class="ruby-identifier">new_scope</span> = <span class="ruby-constant">NOT_CONFIGURED</span>, <span class="ruby-value">optional:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_scope</span> <span class="ruby-operator">!=</span> <span class="ruby-constant">NOT_CONFIGURED</span>
     <span class="ruby-ivar">@subscription_scope</span> = <span class="ruby-identifier">new_scope</span>
@@ -680,7 +680,7 @@
 
 
           <div class="method-source-code" id="subscription_scope_optional-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 188</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 189</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">subscription_scope_optional?</span>
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@subscription_scope_optional</span>)
     <span class="ruby-ivar">@subscription_scope_optional</span>
@@ -737,7 +737,7 @@
 
 
           <div class="method-source-code" id="topic_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 221</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 222</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">topic_for</span>(<span class="ruby-value">arguments:</span>, <span class="ruby-value">field:</span>, <span class="ruby-value">scope:</span>)
   <span class="ruby-constant">Subscriptions</span><span class="ruby-operator">::</span><span class="ruby-constant">Serialize</span>.<span class="ruby-identifier">dump_recursive</span>([<span class="ruby-identifier">scope</span>, <span class="ruby-identifier">field</span>.<span class="ruby-identifier">graphql_name</span>, <span class="ruby-identifier">arguments</span>])
 <span class="ruby-keyword">end</span></pre>
@@ -824,7 +824,7 @@
 
 
           <div class="method-source-code" id="event-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 266</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 267</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">event</span>
   <span class="ruby-ivar">@event</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@original_arguments</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@field_resolve_step</span>
@@ -888,7 +888,7 @@
 
 
           <div class="method-source-code" id="load_application_object_failed-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 133</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 134</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">load_application_object_failed</span>(<span class="ruby-identifier">err</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@mode</span> <span class="ruby-operator">==</span> <span class="ruby-value">:</span><span class="ruby-value">update</span>
     <span class="ruby-identifier">unsubscribe</span>
@@ -946,7 +946,7 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 89</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">args</span>)
   <span class="ruby-comment"># Dispatch based on `@mode`, which will raise a `NoMethodError` if we ever</span>
   <span class="ruby-comment"># have an unexpected `@mode`</span>
@@ -998,7 +998,7 @@
 
 
           <div class="method-source-code" id="subscribe-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 108</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 109</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscribe</span>(<span class="ruby-identifier">args</span> = {})
   <span class="ruby-value">:</span><span class="ruby-value">no_response</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1051,7 +1051,7 @@
 
 
           <div class="method-source-code" id="subscription_written-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 256</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 257</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">subscription_written?</span>
   <span class="ruby-ivar">@subscription_written</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1107,7 +1107,7 @@
 
 
           <div class="method-source-code" id="unsubscribe-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 152</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 153</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">unsubscribe</span>(<span class="ruby-identifier">update_value</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">subscriptions</span>)[<span class="ruby-value">:</span><span class="ruby-value">unsubscribed</span>] = <span class="ruby-keyword">true</span>
   <span class="ruby-identifier">err</span> = <span class="ruby-constant">EarlyUnsubscribe</span>.<span class="ruby-identifier">new</span>
@@ -1170,7 +1170,7 @@
 
 
           <div class="method-source-code" id="update-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 126</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 127</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">update</span>(<span class="ruby-identifier">args</span> = {})
   <span class="ruby-identifier">object</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1223,7 +1223,7 @@
 
 
           <div class="method-source-code" id="write_subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 240</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/subscription.rb, line 241</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">write_subscription</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">subscription_written?</span>
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">`write_subscription` was called but `</span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#subscription_written?` is already true. Remove a call to `write subscription`.</span><span class="ruby-string">&quot;</span>
