@@ -1,7 +1,9 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module RequiredArgumentsArePresent
       def initialize(*)
         super
@@ -30,7 +32,7 @@ module GraphQL
           required_argument_names = @required_args_cache[defn]
         else
           args = @types.arguments(defn)
-          required_argument_names = nil
+          required_argument_names = nil #: untyped
           if !args.empty?
             args.each do |a|
               if a.type.kind.non_null? && !a.default_value? && @types.argument(defn, a.name)

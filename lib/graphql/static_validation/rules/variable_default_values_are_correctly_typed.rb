@@ -1,7 +1,9 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariableDefaultValuesAreCorrectlyTyped
       def on_variable_definition(node, parent)
         if !node.default_value.nil?
