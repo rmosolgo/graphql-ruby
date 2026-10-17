@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Execution
@@ -69,7 +69,7 @@ module GraphQL
       #   find_handler_for(schema, error_class) -> Proc | nil
       def self.find_handler_for(schema, error_class)
         handlers = schema.error_handlers[:subclass_handlers]
-        handler = nil
+        handler = nil #: untyped
         while (handlers) do
           _err_class, next_handler = handlers.find { |err_class, handler| error_class <= err_class }
           if next_handler
