@@ -30,3 +30,4 @@
 --suppress-payload-superclass-redefinition-for=RDoc::Markup::List
 --suppress-payload-superclass-redefinition-for=RDoc::Markup::ListItem
 --suppress-payload-superclass-redefinition-for=RDoc::Markup::Raw
+--enable-experimental-requires-ancestor

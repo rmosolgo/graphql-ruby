@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Pagination
@@ -55,7 +55,7 @@ module GraphQL
       end
 
       def wrapper_for(items, wrappers: all_wrappers)
-        impl = nil
+        impl = nil #: untyped
 
         items.class.ancestors.each { |cls|
           impl = wrappers[cls]

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     # Arguments describe the input accepted by a field or input object.
@@ -511,7 +511,7 @@ module GraphQL
           default_used = true
         end
 
-        loaded_value = nil
+        loaded_value = nil #: untyped
         coerced_value = begin
           type.coerce_input(value, context)
         rescue StandardError => err
