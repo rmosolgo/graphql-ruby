@@ -5,6 +5,7 @@ module GraphQL
     # Generates GraphQL-compliant validation message.
     class Error
       # Convenience for validators
+      #--
       # @requires_ancestor: Kernel
       module ErrorHelper
         # Error `error_message` is located at `node`

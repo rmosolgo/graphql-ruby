@@ -3,6 +3,7 @@
 
 module GraphQL
   # See [GraphQL::Railtie](rdoc-ref:GraphQL::Railtie) for automatic Rails integration
+  #--
   # @requires_ancestor: Module
   module Autoload
     # Register a constant named `const_name` to be loaded from `path`.

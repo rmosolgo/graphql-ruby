@@ -15,6 +15,8 @@ module GraphQL
         end
       end
 
+      #--
+
       # @requires_ancestor: Kernel
 
       module RunHooks

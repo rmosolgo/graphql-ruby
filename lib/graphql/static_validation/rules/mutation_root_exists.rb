@@ -2,6 +2,7 @@
 # typed: true
 module GraphQL
   module StaticValidation
+    #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module MutationRootExists
       def on_operation_definition(node, _parent)
