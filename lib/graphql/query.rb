@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 
 module GraphQL
   # A combination of query string and [Schema](rdoc-ref:GraphQL::Schema) instance which can be reduced to a [result](rdoc-ref:#result).

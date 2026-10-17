@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/query/context"
 module GraphQL
   class Query

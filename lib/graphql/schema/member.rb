@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require 'graphql/schema/member/base_dsl_methods'
 require 'graphql/schema/member/graphql_type_names'
 require 'graphql/schema/member/has_ast_node'

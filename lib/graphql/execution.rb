@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/execution/directive_checks"
 require "graphql/execution/next"
 require "graphql/execution/interpreter"

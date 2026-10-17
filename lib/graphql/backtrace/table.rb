@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   class Backtrace
     # A class for turning a context into a human-readable table or array

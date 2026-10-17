@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 require "graphql/query/null_context"
 

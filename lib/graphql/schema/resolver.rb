@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 require "graphql/schema/resolver/has_payload_type"
 
 module GraphQL

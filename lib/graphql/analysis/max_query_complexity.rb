@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Analysis
     # Used under the hood to implement complexity validation,

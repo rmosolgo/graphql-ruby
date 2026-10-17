@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
     # Default rules for [GraphQL::StaticValidation::Validator](rdoc-ref:GraphQL::StaticValidation::Validator)

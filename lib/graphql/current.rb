@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   # This module exposes Fiber-level runtime information.

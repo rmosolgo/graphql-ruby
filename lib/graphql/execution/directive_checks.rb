@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Execution
     # Boolean checks for how an AST node's directives should

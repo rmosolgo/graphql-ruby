@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: ignore
 require 'generators/graphql/type_generator'
 require 'generators/graphql/field_extractor'
 

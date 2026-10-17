@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   # Raised when a argument is configured with `loads:` and the client provides an `ID`,

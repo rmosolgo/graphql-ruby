@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "fileutils"
 require "rake"
 require "graphql/rake_task/validate"

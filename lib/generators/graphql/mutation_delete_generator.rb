@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: ignore
 require_relative 'orm_mutations_base'
 
 module Graphql

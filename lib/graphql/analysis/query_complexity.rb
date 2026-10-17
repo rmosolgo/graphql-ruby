@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module Analysis
     # Calculate the complexity of a query, using [Field#complexity](rdoc-ref:GraphQL::Schema::Field#complexity) values.

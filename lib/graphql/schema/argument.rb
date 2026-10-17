@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   class Schema
     # Arguments describe the input accepted by a field or input object.

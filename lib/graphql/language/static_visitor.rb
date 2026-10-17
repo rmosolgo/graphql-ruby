@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module Language
     # Like `GraphQL::Language::Visitor` except it doesn't support

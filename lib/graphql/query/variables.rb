@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Query
     # Read-only access to query variables, applying default values if needed.

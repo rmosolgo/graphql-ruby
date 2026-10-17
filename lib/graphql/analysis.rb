@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/analysis/visitor"
 require "graphql/analysis/analyzer"
 require "graphql/analysis/field_usage"
