@@ -259,14 +259,15 @@ namespace :docs do
   end
 
   desc "Build the documentation twice and compare generated files"
-  task :build_twice do
+  # Reuses the `docs:rdoc:build` output as the first build, so running
+  # `rake docs:check docs:build_twice` builds the site only twice in total.
+  task build_twice: "docs:rdoc:build" do
     require_relative "tool/docs/build"
     require "digest"
     require "fileutils"
     require "pathname"
-    builder = GraphQLDocs::Build.new
-    first = builder.build_site(output: "tmp/rdoc-site-first")
-    second = builder.build_site(output: "tmp/rdoc-site-second")
+    first = "tmp/rdoc-site"
+    second = GraphQLDocs::Build.new.build_site(output: "tmp/rdoc-site-second")
     digest = lambda do |root|
       Dir[File.join(root, "**", "*")].select { |path| File.file?(path) }.sort.to_h do |path|
         [Pathname.new(path).relative_path_from(Pathname.new(root)).to_s, Digest::SHA256.file(path).hexdigest]
@@ -275,7 +276,6 @@ namespace :docs do
     raise "RDoc output is not reproducible" unless digest.call(first) == digest.call(second)
     puts "RDoc output is reproducible"
   ensure
-    FileUtils.rm_rf("tmp/rdoc-site-first")
     FileUtils.rm_rf("tmp/rdoc-site-second")
   end
 

@@ -165,7 +165,7 @@ module RDoc
         html = File.read(path)
         current_directory = path.relative_path_from(output).to_s[%r{\Aguides/([^/]+)/}, 1]
         cleaned = html.gsub(%r{(<nav\b.*?</nav>)}m) do |nav|
-          nav.gsub(%r{(<li>\s*<details[^>]*>\s*<summary>.*?\bguides\b.*?</summary>\s*)<ul class="link-list">\s*(.*?)\s*</ul>\s*</details>\s*</li>}m) do
+          nav.gsub(%r{(<li>\s*<details[^>]*>\s*<summary>(?:(?!</summary>).)*?\bguides\b(?:(?!</summary>).)*?</summary>\s*)<ul class="link-list">\s*(.*?)\s*</ul>\s*</details>\s*</li>}m) do
             section_match = Regexp.last_match
             prefix = section_match[1].sub(/\bguides\b/, "Guides")
             links = section_match[2]
@@ -251,11 +251,15 @@ module RDoc
         return if page_titles.empty?
 
         html = File.read(path)
+        # Every page repeats the same sidebar links, so resolve each
+        # (directory, href) pair once instead of once per page.
+        titles = (@sidebar_titles ||= {})[path.dirname.to_s] ||= Hash.new do |cache, href|
+          cache[href] = page_titles[(path.dirname + href).cleanpath.relative_path_from(output).to_s]
+        end
         cleaned = html.gsub(%r{(<nav\b.*?</nav>)}m) do |nav|
           nav.gsub(%r{(<a href=")([^"]+\.html)(">\s*)([^<]*?)(\s*)(</a>)}) do
             match = Regexp.last_match
-            target = (path.dirname + match[2]).cleanpath
-            title = page_titles[target.relative_path_from(output).to_s]
+            title = titles[match[2]]
             title ? "#{match[1]}#{match[2]}#{match[3]}#{title}#{match[5]}#{match[6]}" : match[0]
           end
         end
