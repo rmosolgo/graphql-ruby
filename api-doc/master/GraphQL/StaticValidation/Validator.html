@@ -685,7 +685,7 @@
           <div class="method-source-code" id="validate-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validator.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate</span>(<span class="ruby-identifier">query</span>, <span class="ruby-value">validate:</span> <span class="ruby-keyword">true</span>, <span class="ruby-value">timeout:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">max_errors:</span> <span class="ruby-keyword">nil</span>)
-  <span class="ruby-identifier">errors</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">errors</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">begin_validate</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">validate</span>)
   <span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">validate</span>(<span class="ruby-value">validate</span><span class="ruby-value">:</span> <span class="ruby-identifier">validate</span>, <span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-identifier">begin_t</span> = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>

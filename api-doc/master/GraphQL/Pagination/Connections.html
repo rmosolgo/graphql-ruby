@@ -861,7 +861,7 @@
           <div class="method-source-code" id="wrapper_for-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connections.rb, line 57</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">wrapper_for</span>(<span class="ruby-identifier">items</span>, <span class="ruby-value">wrappers:</span> <span class="ruby-identifier">all_wrappers</span>)
-  <span class="ruby-identifier">impl</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">impl</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
 
   <span class="ruby-identifier">items</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">ancestors</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">cls</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">impl</span> = <span class="ruby-identifier">wrappers</span>[<span class="ruby-identifier">cls</span>]

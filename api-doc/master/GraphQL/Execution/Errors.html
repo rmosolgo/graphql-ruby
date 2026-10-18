@@ -525,7 +525,7 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/errors.rb, line 70</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">find_handler_for</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-identifier">error_class</span>)
   <span class="ruby-identifier">handlers</span> = <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">error_handlers</span>[<span class="ruby-value">:</span><span class="ruby-value">subclass_handlers</span>]
-  <span class="ruby-identifier">handler</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">handler</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
   <span class="ruby-keyword">while</span> (<span class="ruby-identifier">handlers</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-identifier">_err_class</span>, <span class="ruby-identifier">next_handler</span> = <span class="ruby-identifier">handlers</span>.<span class="ruby-identifier">find</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">err_class</span>, <span class="ruby-identifier">handler</span><span class="ruby-operator">|</span> <span class="ruby-identifier">error_class</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-identifier">err_class</span> }
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">next_handler</span>

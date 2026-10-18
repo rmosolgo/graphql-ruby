@@ -508,7 +508,7 @@
 
 
           <div class="method-source-code" id="on_variable_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_default_values_are_correctly_typed.rb, line 6</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_default_values_are_correctly_typed.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_variable_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">default_value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">value</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">default_value</span>

@@ -902,7 +902,7 @@
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@scoped_contexts</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">EmptyObjects</span><span class="ruby-operator">::</span><span class="ruby-constant">EMPTY_HASH</span>
   <span class="ruby-keyword">else</span>
-    <span class="ruby-identifier">merged_ctx</span> = {}
+    <span class="ruby-identifier">merged_ctx</span> = {} <span class="ruby-comment">#: untyped</span>
     <span class="ruby-identifier">each_present_path_ctx</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">path_ctx</span><span class="ruby-operator">|</span>
       <span class="ruby-identifier">merged_ctx</span> = <span class="ruby-identifier">path_ctx</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">merged_ctx</span>)
     <span class="ruby-keyword">end</span>

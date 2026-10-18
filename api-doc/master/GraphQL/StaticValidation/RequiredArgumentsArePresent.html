@@ -523,7 +523,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/required_arguments_are_present.rb, line 6</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/required_arguments_are_present.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@required_args_cache</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
@@ -593,7 +593,7 @@
 
 
           <div class="method-source-code" id="on_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/required_arguments_are_present.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/required_arguments_are_present.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_directive</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-identifier">directive_defn</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema_directives</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>]
   <span class="ruby-identifier">assert_required_args</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">directive_defn</span>)
@@ -650,7 +650,7 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/required_arguments_are_present.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/required_arguments_are_present.rb, line 13</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-identifier">assert_required_args</span>(<span class="ruby-identifier">node</span>, <span class="ruby-ivar">@current_field_definition</span>)
   <span class="ruby-keyword">super</span>

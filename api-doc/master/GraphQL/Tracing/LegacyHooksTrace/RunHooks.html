@@ -15,7 +15,7 @@
 
     <meta
       name="description"
-      content="Documentation for the GraphQL::Tracing::LegacyHooksTrace::RunHooks module"
+      content="module GraphQL::Tracing::LegacyHooksTrace::RunHooks: @requires_ancestor: Kernel"
     >
 
 
@@ -28,10 +28,7 @@
 
 
 
-    <meta
-      property="og:description"
-      content="Documentation for GraphQL::Tracing::LegacyHooksTrace::RunHooks module - API reference and code examples"
-    >
+    <meta property="og:description" content="@requires_ancestor: Kernel">
 
 
 
@@ -43,10 +40,7 @@
 
 
 
-    <meta
-      name="twitter:description"
-      content="Documentation for GraphQL::Tracing::LegacyHooksTrace::RunHooks module - API reference and code examples"
-    >
+    <meta name="twitter:description" content="@requires_ancestor: Kernel">
 
 
 
@@ -462,6 +456,8 @@
 
   <section class="description">
     
+<p>@requires_ancestor: Kernel</p>
+
   </section>
 
 
@@ -518,7 +514,7 @@
 
 
           <div class="method-source-code" id="call_after_hooks-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 63</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 67</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call_after_hooks</span>(<span class="ruby-identifier">instrumenters</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">after_hook_name</span>, <span class="ruby-identifier">ex</span>)
   <span class="ruby-identifier">instrumenters</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">instrumenter</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">begin</span>
@@ -575,7 +571,7 @@
 
 
           <div class="method-source-code" id="call_hooks-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 38</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call_hooks</span>(<span class="ruby-identifier">instrumenters</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">before_hook_name</span>, <span class="ruby-identifier">after_hook_name</span>)
   <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">successful</span> = []
@@ -646,7 +642,7 @@
 
 
           <div class="method-source-code" id="each_query_call_hooks-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/tracing/legacy_hooks_trace.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">each_query_call_hooks</span>(<span class="ruby-identifier">instrumenters</span>, <span class="ruby-identifier">queries</span>, <span class="ruby-identifier">i</span> = <span class="ruby-value">0</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">i</span> &gt;= <span class="ruby-identifier">queries</span>.<span class="ruby-identifier">length</span>
     <span class="ruby-keyword">yield</span>

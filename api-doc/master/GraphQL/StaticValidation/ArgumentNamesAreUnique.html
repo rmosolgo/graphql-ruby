@@ -536,7 +536,7 @@
 
 
           <div class="method-source-code" id="on_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 13</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 15</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_directive</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">validate_arguments</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-keyword">super</span>
@@ -592,7 +592,7 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">validate_arguments</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-keyword">super</span>
@@ -648,7 +648,7 @@
 
 
           <div class="method-source-code" id="validate_arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 18</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_arguments</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-identifier">argument_defns</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">arguments</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">argument_defns</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">1</span>
