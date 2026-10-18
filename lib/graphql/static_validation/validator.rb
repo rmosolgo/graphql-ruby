@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "timeout"
 
 module GraphQL
@@ -46,7 +46,7 @@ module GraphQL
       # :call-seq:
       #   validate(GraphQL::Query query, bool validate:, Float timeout:, Integer max_errors:) -> Array[Hash]
       def validate(query, validate: true, timeout: nil, max_errors: nil)
-        errors = nil
+        errors = nil #: untyped
         query.current_trace.begin_validate(query, validate)
         query.current_trace.validate(validate: validate, query: query) do
           begin_t = Time.now

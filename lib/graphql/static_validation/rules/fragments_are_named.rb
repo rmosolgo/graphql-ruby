@@ -1,7 +1,9 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module FragmentsAreNamed
       def on_fragment_definition(node, _parent)
         if node.name.nil?

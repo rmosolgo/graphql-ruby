@@ -1,7 +1,9 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module FieldsAreDefinedOnType
       def on_field(node, parent)
         parent_type = @parent_object_type

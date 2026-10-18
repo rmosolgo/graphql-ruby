@@ -12,7 +12,7 @@ module GraphQLDocs
       errors = []
       ruby_files.each do |path|
         File.foreach(path).with_index(1) do |line, number|
-          errors << "#{path}:#{number}: YARD tag" if line.match?(/^\s*# @(?:[A-Za-z0-9_!]+)/)
+          errors << "#{path}:#{number}: YARD tag" if line.match?(/^\s*# @(?:[A-Za-z0-9_!]+)/) && !line.match?(/^\s*# @requires_ancestor:/) # Sorbet annotation
           if line.match?(/^\s*#\s*(?:@api\s+private|\*\*API:\*\*\s+[Pp]rivate)/)
             errors << "#{path}:#{number}: private API marker must use :nodoc:"
           end

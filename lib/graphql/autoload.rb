@@ -1,8 +1,10 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   # See [GraphQL::Railtie](rdoc-ref:GraphQL::Railtie) for automatic Rails integration
+  #--
+  # @requires_ancestor: Module
   module Autoload
     # Register a constant named `const_name` to be loaded from `path`.
     # This is like `Kernel#autoload` but it tracks the constants so they can be eager-loaded with [eager load!](rdoc-ref:#eager_load!)

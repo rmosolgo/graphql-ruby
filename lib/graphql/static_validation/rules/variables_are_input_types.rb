@@ -1,7 +1,9 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariablesAreInputTypes
       def on_variable_definition(node, parent)
         type_name = get_type_name(node.type)
