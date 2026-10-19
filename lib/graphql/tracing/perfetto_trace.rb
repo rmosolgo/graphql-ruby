@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Tracing
     # This produces a trace file for inspecting in the [Perfetto Trace Viewer](https://ui.perfetto.dev).
@@ -33,6 +33,8 @@ module GraphQL
     #   result.trace.write(file: ...)
     # end
     # ```
+    #--
+    # @requires_ancestor: Kernel
     module PerfettoTrace
       # TODOs:
       # - Make debug annotations visible on both parts when dataloader is involved
