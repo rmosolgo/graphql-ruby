@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 require 'rubygems'
 require 'bundler'
+
+# `rake test` runs specs with parallel_tests, which sets TEST_ENV_NUMBER for each worker:
+# "" for the first one, then "2", "3", ... Use this to give each worker its own databases and tmp files.
+# It's "" when running serially, too.
+TEST_ENV_SUFFIX = ENV["TEST_ENV_NUMBER"].to_s
+
 require 'simplecov'
 require 'simplecov-lcov'
 SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
@@ -10,6 +16,8 @@ SimpleCov.formatters = [
 ]
 SimpleCov.start do
   enable_coverage :branch
+  # Parallel workers' results are merged into one report. Serial runs shouldn't pick up leftovers from those.
+  use_merging(!ENV["TEST_ENV_NUMBER"].nil?)
   add_filter "spec/"
   add_group "Generators", "lib/generators"
   add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /tracing/, /introspection/, /backtrace/]
@@ -113,6 +121,28 @@ unless running_in_rubymine
 end
 
 Minitest::Spec.make_my_diffs_pretty!
+
+# Record how long each file took, so that `rake test:parallel` can balance its workers next time.
+# (parallel_tests' own runtime logger doesn't support Minitest 6.)
+if ENV["PARALLEL_RUNTIME_LOG"]
+  module RecordParallelRuntime
+    RUNTIMES = Hash.new(0.0)
+
+    def record(result)
+      path = result.source_location.first.to_s.sub("#{Dir.pwd}/", "")
+      RUNTIMES[path] += result.time
+      super
+    end
+  end
+  Minitest::StatisticsReporter.prepend(RecordParallelRuntime)
+
+  Minitest.after_run do
+    File.open(ENV["PARALLEL_RUNTIME_LOG"], File::WRONLY | File::APPEND | File::CREAT) do |f|
+      f.flock(File::LOCK_EX)
+      RecordParallelRuntime::RUNTIMES.each { |path, time| f.puts("#{path}:#{time.round(3)}") }
+    end
+  end
+end
 
 module CheckWardenShape
   DEFAULT_SHAPE = GraphQL::Schema::Warden.new(context: {}, schema: GraphQL::Schema).instance_variables
