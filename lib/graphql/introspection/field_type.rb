@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Introspection
     class FieldType < Introspection::BaseObject
@@ -9,6 +9,7 @@ module GraphQL
       field :name, String, null: false
       field :description, String
       field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false, scope: false, resolve_each: :resolve_args do
+        #: self as GraphQL::Schema::Field
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
       field :type, GraphQL::Schema::LateBoundType.new("__Type"), null: false

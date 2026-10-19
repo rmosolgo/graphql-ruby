@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class RakeTask
@@ -39,10 +39,12 @@ module GraphQL
       require "net/http"
       github_uri = URI("https://raw.githubusercontent.com/rmosolgo/graphql-ruby/master/guides/pro/checksums/graphql-pro-#{version}.txt")
       # Remove final newline from .txt file
-      github_digest = Net::HTTP.get(github_uri).chomp
+      github_digest = Net::HTTP.get(github_uri) #: as String
+      github_digest = github_digest.chomp
 
       docs_uri = URI("https://graphql-ruby.org/pro/checksums/graphql-pro-#{version}.txt")
-      docs_digest = Net::HTTP.get(docs_uri).chomp
+      docs_digest = Net::HTTP.get(docs_uri) #: as String
+      docs_digest = docs_digest.chomp
 
       if docs_digest == gem_digest && github_digest == gem_digest
         puts "    #{check} validated from GitHub"

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Introspection
     class BaseObject < GraphQL::Schema::Object
@@ -7,7 +7,7 @@ module GraphQL
 
       def self.field(*args, **kwargs, &block)
         kwargs[:introspection] = true
-        super(*args, **kwargs, &block)
+        super
       end
     end
   end
