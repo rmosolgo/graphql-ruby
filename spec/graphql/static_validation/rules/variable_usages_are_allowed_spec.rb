@@ -378,6 +378,17 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
     end
   end
 
+  describe "variables in nested list literals" do
+    it "checks each variable against the list items at its depth" do
+      schema = GraphQL::Schema.from_definition("type Query { f(ll: [[String]], lln: [[String!]!]): String }")
+      query_str = 'query($a: Boolean, $b: String, $c: [String], $d: String) { f(ll: [[$a], [$b], $c]) x: f(lln: [[$d]]) }'
+      assert_equal [
+        "Type mismatch on variable $a and argument ll ([[Boolean]!]! / [[String]])",
+        "Nullability mismatch on variable $d and argument lln ([[String]!]! / [[String!]!])",
+      ], schema.validate(query_str).map(&:message)
+    end
+  end
+
   describe "variables with a null default value" do
     let(:query_string) {'
       query getCheese($nullId: Int = null, $id: Int = 1) {

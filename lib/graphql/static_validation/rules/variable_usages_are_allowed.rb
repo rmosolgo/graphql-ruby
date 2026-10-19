@@ -6,7 +6,8 @@ module GraphQL
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariableUsagesAreAllowed
       # A variable in a fragment. It's checked after the visit, against each operation which uses the fragment.
-      FragmentVariableUsage = Struct.new(:argument_owner, :arg_node, :variable_name, :path, :checked_variable_types)
+      # `list_depth` is the number of list literals around the variable.
+      FragmentVariableUsage = Struct.new(:argument_owner, :arg_node, :variable_name, :list_depth, :path, :checked_variable_types)
 
       def initialize(*)
         super
@@ -60,21 +61,16 @@ module GraphQL
               checked = (usage.checked_variable_types ||= {}.compare_by_identity)
               next if checked.key?(var_type)
               checked[var_type] = true
-              validate_usage(usage.argument_owner, usage.arg_node, var_defn_ast, path: usage.path, var_type: var_type)
+              validate_usage(usage.argument_owner, usage.arg_node, var_defn_ast, usage.list_depth, path: usage.path, var_type: var_type)
             end
           end
         end
       end
 
       def on_argument(node, parent)
-        node_values = if node.value.is_a?(Array)
-          node.value
-        else
-          [node.value]
-        end
-        node_values = node_values.select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
+        variables = variables_in_value(node.value, 0, nil)
 
-        if !node_values.empty?
+        if variables
           argument_owner = case parent
           when GraphQL::Language::Nodes::Field
             context.field_definition
@@ -96,16 +92,16 @@ module GraphQL
             if argument_owner
               usages = ((@fragment_variable_usages ||= {}.compare_by_identity)[fragment_definition] ||= [])
               path = context.path
-              node_values.each do |node_value|
-                usages << FragmentVariableUsage.new(argument_owner, node, node_value.name, path)
+              variables.each do |(variable, list_depth)|
+                usages << FragmentVariableUsage.new(argument_owner, node, variable.name, list_depth, path)
               end
             end
           else
-            node_values.each do |node_value|
-              var_defn_ast = @declared_variables[node_value.name]
+            variables.each do |(variable, list_depth)|
+              var_defn_ast = @declared_variables[variable.name]
               # Might be undefined :(
               # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
-              var_defn_ast && argument_owner && validate_usage(argument_owner, node, var_defn_ast)
+              var_defn_ast && argument_owner && validate_usage(argument_owner, node, var_defn_ast, list_depth)
             end
           end
         end
@@ -113,6 +109,18 @@ module GraphQL
       end
 
       private
+
+      # Variables inside input objects are found when their own arguments are visited.
+      #: (untyped value, Integer list_depth, Array[[GraphQL::Language::Nodes::VariableIdentifier, Integer]]? variables) -> Array[[GraphQL::Language::Nodes::VariableIdentifier, Integer]]?
+      def variables_in_value(value, list_depth, variables)
+        case value
+        when GraphQL::Language::Nodes::VariableIdentifier
+          (variables ||= []) << [value, list_depth]
+        when Array
+          value.each { |item| variables = variables_in_value(item, list_depth + 1, variables) }
+        end
+        variables
+      end
 
       #: (GraphQL::Language::Nodes::VariableDefinition ast_var) -> untyped
       def usage_variable_type(ast_var)
@@ -131,8 +139,8 @@ module GraphQL
         var_type
       end
 
-      #: (untyped argument_owner, GraphQL::Language::Nodes::Argument arg_node, GraphQL::Language::Nodes::VariableDefinition ast_var, ?path: Array[String]?, ?var_type: untyped) -> void
-      def validate_usage(argument_owner, arg_node, ast_var, path: nil, var_type: usage_variable_type(ast_var))
+      #: (untyped argument_owner, GraphQL::Language::Nodes::Argument arg_node, GraphQL::Language::Nodes::VariableDefinition ast_var, Integer list_depth, ?path: Array[String]?, ?var_type: untyped) -> void
+      def validate_usage(argument_owner, arg_node, ast_var, list_depth, path: nil, var_type: usage_variable_type(ast_var))
         return if var_type.nil?
 
         arg_defn = @types.argument(argument_owner, arg_node.name)
@@ -147,7 +155,7 @@ module GraphQL
         var_inner_type = var_type.unwrap
         arg_inner_type = arg_defn_type.unwrap
 
-        var_type = wrap_var_type_with_depth_of_arg(var_type, arg_node)
+        var_type = wrap_var_type_in_lists(var_type, list_depth)
 
         if var_inner_type != arg_inner_type
           create_error("Type mismatch", var_type, ast_var, arg_defn, arg_node, path)
@@ -178,40 +186,15 @@ module GraphQL
         ), path: path)
       end
 
-      def wrap_var_type_with_depth_of_arg(var_type, arg_node)
-        arg_node_value = arg_node.value
-        return var_type unless arg_node_value.is_a?(Array)
-        new_var_type = var_type
-
-        depth_of_array(arg_node_value).times do
+      # A variable in list literals is used as a list item, so wrap its type in one list for each list literal.
+      #: (untyped var_type, Integer list_depth) -> untyped
+      def wrap_var_type_in_lists(var_type, list_depth)
+        list_depth.times do
           # Since the array _is_ present, treat it like a non-null type
           # (It satisfies a non-null requirement AND a nullable requirement)
-          new_var_type = new_var_type.to_list_type.to_non_null_type
+          var_type = var_type.to_list_type.to_non_null_type
         end
-
-        new_var_type
-      end
-
-      # **Returns**
-      #
-      # - `Integer` — Returns the max depth of `array`, or `0` if it isn't an array at all
-      #
-      # :call-seq:
-      #   depth_of_array(array) -> Integer
-      def depth_of_array(array)
-        case array
-        when Array
-          max_child_depth = 0 #: untyped
-          array.each do |item|
-            item_depth = depth_of_array(item)
-            if item_depth > max_child_depth
-              max_child_depth = item_depth
-            end
-          end
-          1 + max_child_depth
-        else
-          0
-        end
+        var_type
       end
 
       def list_dimension(type)
