@@ -646,8 +646,9 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
-    it "passes rule" do
-      assert_equal [], errors
+    # The spec only treats fields on different object types as mutually exclusive.
+    it "fails rule" do
+      assert_equal ["Field 'volume' has a field conflict: meowVolume or barkVolume?"], error_messages
     end
   end
 
@@ -677,7 +678,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
-  describe "allows different args where no conflict is possible" do
+  describe "different args on the same interface, inside different object types" do
     let(:query_string) {%|
       {
         pet {
@@ -699,11 +700,11 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
-    it "passes rule" do
-      assert_equal [], errors
+    it "fails rule" do
+      assert_equal ["Field 'name' has an argument conflict: {surname:\"true\"} or {}?"], error_messages
     end
 
-    describe "allows different args where no conflict is possible" do
+    describe "with an inline fragment on the interface" do
       let(:query_string) {%|
         {
           pet {
@@ -719,12 +720,13 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         }
       |}
 
-      it "passes rule" do
-        assert_equal [], errors
+      # `Pet` isn't an object type, so the spec requires the same arguments.
+      it "fails rule" do
+        assert_equal ["Field 'name' has an argument conflict: {} or {surname:\"true\"}?"], error_messages
       end
     end
 
-    describe "allows different args where no conflict is possible with uneven abstract scoping" do
+    describe "allows different args on different object types with uneven abstract scoping" do
       let(:query_string) {%|
         {
           pet {
@@ -746,7 +748,47 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
-  describe "allows different args where no conflict is possible deep" do
+  describe "conflicting args between a fragment spread and a field in the same inline fragment" do
+    let(:query_string) {%|
+      {
+        pet {
+          ... on Dog {
+            ...dogName
+            name(surname: true)
+          }
+        }
+      }
+
+      fragment dogName on Dog {
+        name
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal ["Field 'name' has an argument conflict: {surname:\"true\"} or {}?"], error_messages
+    end
+  end
+
+  describe "conflicting fields at different depths of type conditions" do
+    let(:query_string) {%|
+      {
+        pet {
+          name
+        }
+        pet {
+          ... on Dog {
+            name: nickname
+          }
+        }
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal ["Field 'name' has a field conflict: name or nickname?"], error_messages
+    end
+  end
+
+  describe "different args on the same interface, inside different object types, deep" do
     let(:query_string) {%|
       {
         pet {
@@ -770,8 +812,8 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       }
     |}
 
-    it "passes rule" do
-      assert_equal [], errors
+    it "fails rule" do
+      assert_equal ["Field 'name' has an argument conflict: {surname:\"true\"} or {}?"], error_messages
     end
   end
 
@@ -1395,8 +1437,6 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         type T { x: String a: String b: String }
       GRAPHQL
 
-      # Both fragments at the same depth — avoids the preexisting uneven
-      # parent length limitation in mutually_exclusive?
       query_str = <<~GRAPHQL
         {
           field { ...F }
@@ -1419,8 +1459,6 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       # F and I are both at depth 1, G and J at depth 2.
       # x: a (depth 1, from F) conflicts with x: b (depth 1, from I) — same depth.
       # y: c (depth 2, from G) conflicts with y: d (depth 2, from J) — same depth.
-      # NOTE: cross-depth comparisons (e.g. F.x vs J.x at depth 1 vs 2) are a
-      # known limitation — mutually_exclusive? treats uneven parent lengths as exclusive.
       query_str = <<~GRAPHQL
         {
           field { ...F ...I }
@@ -1435,6 +1473,26 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       field_conflicts = res.select { |e| e.message.include?("field conflict") }
       assert field_conflicts.any? { |e| e.message.include?("'x'") }
       assert field_conflicts.any? { |e| e.message.include?("'y'") }
+    end
+
+    it "detects conflicts between fragments at different depths" do
+      deep_schema = GraphQL::Schema.from_definition <<~GRAPHQL
+        type Query { field: T }
+        type T { x: String a: String b: String }
+      GRAPHQL
+
+      # x: a is at depth 1 (from F), x: b is at depth 2 (from J, through I)
+      query_str = <<~GRAPHQL
+        {
+          field { ...F ...I }
+        }
+        fragment F on T { x: a }
+        fragment I on T { ...J }
+        fragment J on T { x: b }
+      GRAPHQL
+
+      res = deep_schema.validate(query_str)
+      assert_equal ["Field 'x' has a field conflict: a or b?"], res.map(&:message)
     end
   end
 

@@ -20,13 +20,12 @@ module GraphQL
       NONEXCLUSIVE_COMPARISON = 2
 
       class Field
-        attr_reader :node, :definition, :owner_type, :parents
+        attr_reader :node, :definition, :owner_type
 
-        def initialize(node, definition, owner_type, parents)
+        def initialize(node, definition, owner_type)
           @node = node
           @definition = definition
           @owner_type = owner_type
-          @parents = parents
         end
 
         def return_type
@@ -38,7 +37,7 @@ module GraphQL
         end
 
         def comparison_key
-          @comparison_key ||= [@node, @parents]
+          @comparison_key ||= [@node, @owner_type]
         end
       end
 
@@ -53,8 +52,6 @@ module GraphQL
         @compared_field_groups = {}
         @field_group_signatures = {}.compare_by_identity
         @field_selection_signatures = {}.compare_by_identity
-        # Cache mutually_exclusive? results for type pairs
-        @mutually_exclusive_cache = {}.compare_by_identity
         # Cache collect_fields results for sub-selection comparison
         @sub_fields_cache = {}.compare_by_identity
       end
@@ -130,7 +127,7 @@ module GraphQL
         return if node.selections.empty?
 
         # Collect all fields from this selection set, expanding fragments transitively
-        response_keys = collect_fields(node.selections, owner_type: parent_type, parents: [])
+        response_keys = collect_fields(node.selections, owner_type: parent_type)
 
         # Find conflicts within each response key group
         find_conflicts_within(response_keys)
@@ -138,13 +135,13 @@ module GraphQL
 
       # Collect all fields from selections, expanding fragment spreads inline.
       # Returns a Hash of { response_key => Field | [Field, ...] }
-      def collect_fields(selections, owner_type:, parents:)
+      def collect_fields(selections, owner_type:)
         response_keys = {}
-        collect_fields_inner(selections, owner_type: owner_type, parents: parents, response_keys: response_keys, visited_fragments: nil)
+        collect_fields_inner(selections, owner_type: owner_type, response_keys: response_keys, visited_fragments: nil)
         response_keys
       end
 
-      def collect_fields_inner(selections, owner_type:, parents:, response_keys:, visited_fragments:)
+      def collect_fields_inner(selections, owner_type:, response_keys:, visited_fragments:)
         deferred_spreads = nil
         sel_idx = 0
         sel_len = selections.size
@@ -156,7 +153,7 @@ module GraphQL
           when GraphQL::Language::Nodes::Field
             definition = @types.field(owner_type, sel.name)
             key = sel.alias || sel.name
-            field = Field.new(sel, definition, owner_type, parents)
+            field = Field.new(sel, definition, owner_type)
             existing = response_keys[key]
 
             if existing.nil?
@@ -170,9 +167,7 @@ module GraphQL
             frag_type = sel.type ? @types.type(sel.type.name) : owner_type
 
             if frag_type
-              new_parents = parents.dup
-              new_parents << frag_type
-              collect_fields_inner(sel.selections, owner_type: frag_type, parents: new_parents, response_keys: response_keys, visited_fragments: visited_fragments)
+              collect_fields_inner(sel.selections, owner_type: frag_type, response_keys: response_keys, visited_fragments: visited_fragments)
             end
           when GraphQL::Language::Nodes::FragmentSpread
             (deferred_spreads ||= []) << sel
@@ -198,9 +193,7 @@ module GraphQL
             frag_type = @types.type(frag.type.name)
             next unless frag_type
 
-            new_parents = parents.dup
-            new_parents << frag_type
-            collect_fields_inner(frag.selections, owner_type: frag_type, parents: new_parents, response_keys: response_keys, visited_fragments: visited_fragments)
+            collect_fields_inner(frag.selections, owner_type: frag_type, response_keys: response_keys, visited_fragments: visited_fragments)
           end
         end
       end
@@ -314,7 +307,7 @@ module GraphQL
         node1 = field1.node
         node2 = field2.node
 
-        are_mutually_exclusive = mutually_exclusive || mutually_exclusive?(field1.parents, field2.parents)
+        are_mutually_exclusive = mutually_exclusive || mutually_exclusive?(field1, field2)
 
         if !are_mutually_exclusive
           different_names = node1.name != node2.name
@@ -458,7 +451,7 @@ module GraphQL
         if inner && inner.key?(return_type)
           inner[return_type]
         else
-          result = collect_fields(node.selections, owner_type: return_type, parents: [return_type])
+          result = collect_fields(node.selections, owner_type: return_type)
           inner ||= {}.compare_by_identity
           inner[return_type] = result
           @sub_fields_cache[node] = inner
@@ -551,46 +544,13 @@ module GraphQL
         serialized_args
       end
 
-      # Given two list of parents, find out if they are mutually exclusive
-      def mutually_exclusive?(parents1, parents2)
-        if parents1.empty? || parents2.empty?
-          false
-        elsif parents1.length == parents2.length
-          i = 0
-          len = parents1.length
-
-          while i < len
-            type1 = parents1[i - 1]
-            type2 = parents2[i - 1]
-            unless type1.equal?(type2)
-              inner = @mutually_exclusive_cache[type1]
-              if inner
-                cached = inner[type2]
-                if cached.nil?
-                  cached = types_mutually_exclusive?(type1, type2)
-                  inner[type2] = cached
-                end
-              else
-                cached = types_mutually_exclusive?(type1, type2)
-                inner = {}.compare_by_identity
-                inner[type2] = cached
-                @mutually_exclusive_cache[type1] = inner
-              end
-              return true if cached
-            end
-            i += 1
-          end
-
-          false
-        else
-          true
-        end
-      end
-
-      def types_mutually_exclusive?(type1, type2)
-        possible_right_types = @types.possible_types(type1)
-        possible_left_types = @types.possible_types(type2)
-        (possible_right_types & possible_left_types).empty?
+      # As in the spec (FieldsInSetCanMerge), only fields on different object types are mutually exclusive,
+      # even if no runtime object can be selected by both of them.
+      #: (Field field1, Field field2) -> bool
+      def mutually_exclusive?(field1, field2)
+        owner_type1 = field1.owner_type
+        owner_type2 = field2.owner_type
+        !owner_type1.equal?(owner_type2) && owner_type1.kind.object? && owner_type2.kind.object?
       end
     end
   end
