@@ -26,7 +26,7 @@ describe GraphQL::Execution::VariableValues do
 
     it "returns a hash representation including default values" do
       expected_hash = {
-        "animals" => ["YAK"],
+        "animals" => "YAK", # This is converted to a single-item list later on
         "intDefaultNull" => nil,
         "intWithDefault" => 10,
       }

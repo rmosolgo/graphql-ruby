@@ -79,9 +79,9 @@ describe GraphQL::Execution::InputValues do
     it "adds error when nil is given for nested non-null" do
       input = get_input_values(variables_string: "$count: [Int!]!", variables: { "count" => [nil]})
       assert_equal [{
-        "message" => "Variable $count of type [Int!]! was provided invalid value",
+        "message" => "Variable $count of type [Int!]! was provided invalid value for 0 (Expected value to not be null)",
         "locations" => [{"line" => 1, "column" => 7}],
-        "extensions" => { "value" => nil, "problems" => [{"path" => [], "explanation" => "Expected value to not be null"}]}
+        "extensions" => { "value" => [nil], "problems" => [{"path" => [0], "explanation" => "Expected value to not be null"}]}
       }], input.variable_values.errors.map(&:to_h)
     end
   end
@@ -107,6 +107,65 @@ describe GraphQL::Execution::InputValues do
       assert_equal_input({input: [{ string: "xyz" }]}, input.argument_values(InputValuesTestSchema.find("Mutation.testListInput"), get_argument_nodes("input: { string: $string2 }"), nil))
       assert_equal_input({input: [{ string: "nested" }]}, input.argument_values(InputValuesTestSchema.find("Mutation.testListInput"), get_argument_nodes("input: $input"), nil))
       assert_equal_input({input: [{}, {string: "Str"}, {string: "abc"}, {string: "xyz"}, {string: "nested"}]}, input.argument_values(InputValuesTestSchema.find("Mutation.testListInput"), get_argument_nodes("input: [{string: $s}, {string: \"Str\"}, {string: $string }, { string: $string2 }, $input]"), nil))
+    end
+  end
+
+  describe "coercion count" do
+    class CoercionCountSchema < GraphQL::Schema
+      class CountedScalar < GraphQL::Schema::Scalar
+        def self.coerce_input(value, ctx)
+          ctx[:coerced] << value
+          value.to_s.upcase
+        end
+      end
+
+      class CountedInput < GraphQL::Schema::InputObject
+        argument :value, CountedScalar
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :echo, [String], resolve_static: true do
+          argument :value, CountedScalar, required: false
+          argument :input, CountedInput, required: false
+          argument :values, [CountedScalar], required: false
+        end
+
+        def self.echo(context, value: nil, input: nil, values: nil)
+          [value, input&.value, *values].compact
+        end
+
+        def echo(**kwargs)
+          self.class.echo(context, **kwargs)
+        end
+      end
+
+      query(Query)
+      use GraphQL::Execution::Next
+    end
+
+    def run_counted(query_str, variables: {})
+      context = { coerced: [] }
+      result = CoercionCountSchema.execute_next(query_str, variables: variables, context: context)
+      [result["data"]["echo"], context[:coerced]]
+    end
+
+    it "coerces variable values once" do
+      data, coerced = run_counted("query($v: CountedScalar, $i: CountedInput, $vs: [CountedScalar!]) { echo(value: $v, input: $i, values: $vs) }", variables: { "v" => "a", "i" => { "value" => "b" }, "vs" => ["c", "d"] })
+      assert_equal ["A", "B", "C", "D"], data
+      assert_equal ["a", "b", "c", "d"], coerced
+    end
+
+    it "coerces literal values once" do
+      data, coerced = run_counted("{ echo(value: \"a\", input: { value: \"b\" }, values: [\"c\", \"d\"]) }")
+      assert_equal ["A", "B", "C", "D"], data
+      assert_equal ["a", "b", "c", "d"], coerced
+    end
+
+    it "coerces each literal once when a field is selected more than once" do
+      context = { coerced: [] }
+      result = CoercionCountSchema.execute_next("{ a: echo(value: \"a\") b: echo(value: \"b\") }", context: context)
+      assert_equal({ "a" => ["A"], "b" => ["B"] }, result["data"])
+      assert_equal ["a", "b"], context[:coerced]
     end
   end
 

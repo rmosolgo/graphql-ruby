@@ -39,13 +39,18 @@ module GraphQL
         @on_dependency_resolve_handlers << handler
       end
 
-      INVALID_RESULT = GraphQL::Query::InputValidationResult.new(valid: false, problems: [])
-      VALID_RESULT = GraphQL::Query::InputValidationResult.new(valid: true, problems: [])
+      INVALID_RESULT = GraphQL::Query::InputValidationResult.new(valid: false, problems: EmptyObjects::EMPTY_ARRAY).freeze
+      private_constant :INVALID_RESULT
+
       def validate_literal(ast_value, type)
-        _result = @input_values.value_from_ast(ast_value, type)
-        VALID_RESULT
-      rescue Execution::InputValues::AstCoercionFailed
-        INVALID_RESULT
+        @input_values.value_from_ast(ast_value, type, validate: true)
+        GraphQL::Query::InputValidationResult::VALID
+      rescue Execution::InputValues::InvalidLiteralError => err
+        if err.explanation
+          Query::InputValidationResult.from_problem(err.explanation)
+        else
+          INVALID_RESULT
+        end
       rescue CoercionError => coercion_err
         Query::InputValidationResult.from_problem(coercion_err.message, message: coercion_err.message, extensions: coercion_err.extensions)
       end

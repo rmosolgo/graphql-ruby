@@ -285,8 +285,7 @@ module GraphQL
               raise GraphQL::UnauthorizedEnumValueError.new(type: self, enum_value: v, context: ctx)
             end
           else
-            raise Execution::InputValues::AstCoercionFailed
-            # raise GraphQL::CoercionError, "Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{all_values.map(&:graphql_name).join(', ')}"
+            nil
           end
         end
 
