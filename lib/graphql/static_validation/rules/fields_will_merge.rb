@@ -389,24 +389,16 @@ module GraphQL
         )
       end
 
+      # SameResponseShape in the spec. Compare one wrapper at a time: `list?` is also true for a non-null list.
+      #: (untyped type1, untyped type2) -> bool
       def return_types_conflict?(type1, type2)
-        if type1.list?
-          if type2.list?
-            return_types_conflict?(type1.of_type, type2.of_type)
-          else
-            true
-          end
-        elsif type2.list?
-          true
-        elsif type1.non_null?
-          if type2.non_null?
-            return_types_conflict?(type1.of_type, type2.of_type)
-          else
-            true
-          end
-        elsif type2.non_null?
-          true
-        elsif type1.kind.leaf? && type2.kind.leaf?
+        kind1 = type1.kind
+        kind2 = type2.kind
+        if kind1.non_null? || kind2.non_null?
+          !(kind1.non_null? && kind2.non_null?) || return_types_conflict?(type1.of_type, type2.of_type)
+        elsif kind1.list? || kind2.list?
+          !(kind1.list? && kind2.list?) || return_types_conflict?(type1.of_type, type2.of_type)
+        elsif kind1.leaf? || kind2.leaf?
           type1 != type2
         else
           false

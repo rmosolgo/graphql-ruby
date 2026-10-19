@@ -1056,6 +1056,51 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       end
     end
 
+    describe "disallows a scalar and an object type despite no overlap" do
+      let(:query_string) {%|
+        {
+          someBox {
+            ... on IntBox {
+              scalar
+            }
+            ... on StringBox {
+              scalar: stringBox { scalar }
+            }
+          }
+        }
+      |}
+
+      it "fails rule" do
+        schema.allow_legacy_invalid_return_type_conflicts(false)
+        assert_equal ["Field 'scalar' has a return_type conflict: `Int` or `StringBox`?"], error_messages
+      end
+    end
+
+    describe "disallows differing nullability inside nested lists despite no overlap" do
+      let(:schema) {
+        GraphQL::Schema.from_definition(%|
+          type Query { box: Box }
+          union Box = A \| B
+          type A { lists: [[String]]! }
+          type B { lists: [[String]!] }
+        |)
+      }
+
+      let(:query_string) {%|
+        {
+          box {
+            ... on A { lists }
+            ... on B { lists }
+          }
+        }
+      |}
+
+      it "fails rule" do
+        schema.allow_legacy_invalid_return_type_conflicts(false)
+        assert_equal ["Field 'lists' has a return_type conflict: `[[String]]!` or `[[String]!]`?"], error_messages
+      end
+    end
+
     describe "disallows differing return type list on object types" do
       let(:query_string) {%|
         {
