@@ -20,10 +20,9 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true
-      - name: Run strict documentation checks
-        run: bundle exec rake docs:check
-      - name: Check reproducible output
-        run: bundle exec rake docs:build_twice
+      # One invocation so build_twice reuses the site docs:check already built
+      - name: Run strict documentation checks and check reproducible output
+        run: bundle exec rake docs:check docs:build_twice
       - name: Check gem installation documentation
         run: bundle exec ruby tool/docs/gem_install_check.rb
       - name: Upload RDoc artifact
