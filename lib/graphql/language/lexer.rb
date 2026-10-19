@@ -36,6 +36,9 @@ module GraphQL
           @scanner.skip(IGNORE_REGEXP)
           if @scanner.skip(COMMENT_REGEXP)
             @tokens_count += 1
+            if @tokens_count > @max_tokens
+              raise_parse_error("This query is too large to execute.")
+            end
             next
           end
           break
