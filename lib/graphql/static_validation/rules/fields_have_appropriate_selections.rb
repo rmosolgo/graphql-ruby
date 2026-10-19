@@ -4,6 +4,9 @@ module GraphQL
   module StaticValidation
     # Scalars _can't_ have selections
     # Objects _must_ have selections
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor::ContextMethods
     module FieldsHaveAppropriateSelections
       include GraphQL::StaticValidation::Error::ErrorHelper
 

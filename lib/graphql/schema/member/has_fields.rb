@@ -5,6 +5,10 @@ module GraphQL
   class Schema
     class Member
       # Shared code for Objects, Interfaces, Mutations, Subscriptions
+      #--
+      # @requires_ancestor: Kernel
+      # @requires_ancestor: Module
+      # @requires_ancestor: GraphQL::Schema::Member::BaseDSLMethods
       module HasFields
         include EmptyObjects
         # Add a field to this object or interface with the given definition
@@ -182,6 +186,7 @@ module GraphQL
           type = self
           field field_name, "ID", **kwargs, null: false, resolve_each: true
           define_method(field_name) do
+            #: self as GraphQL::Schema::Object
             context.schema.id_from_object(object, type, context)
           end
 
@@ -237,6 +242,8 @@ module GraphQL
           all_fields
         end
 
+        #--
+        # @requires_ancestor: Module
         module InterfaceMethods
           def get_field(field_name, context = GraphQL::Query::NullContext.instance)
             warden = Warden.from_context(context)
@@ -276,6 +283,10 @@ module GraphQL
           end
         end
 
+        #--
+        # @requires_ancestor: Kernel
+        # @requires_ancestor: Module
+        # @requires_ancestor: GraphQL::Schema::Member::HasFields
         module ObjectMethods
           def get_field(field_name, context = GraphQL::Query::NullContext.instance)
             # Objects need to check that the interface implementation is visible, too

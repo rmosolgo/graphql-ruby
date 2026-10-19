@@ -4,6 +4,8 @@
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: GraphQL::Schema::Member::HasDirectives
       module HasDeprecationReason
         # **Returns**
         #

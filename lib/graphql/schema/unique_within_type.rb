@@ -4,6 +4,8 @@ require "base64"
 
 module GraphQL
   class Schema
+    #--
+    # @requires_ancestor: Kernel
     module UniqueWithinType
       class << self
         attr_accessor :default_id_separator
