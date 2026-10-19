@@ -312,6 +312,85 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
     end
   end
 
+  describe "variables used in fragments" do
+    describe "when the fragment comes before the operation" do
+      let(:query_string) {'
+        fragment cheeseFields on Cheese {
+          similarCheese(source: $animals) { id }
+        }
+
+        query getCheese($animals: Boolean) {
+          cheese(id: 1) { ...cheeseFields }
+        }
+      '}
+
+      it "checks the usage against the operation" do
+        expected = [
+          {
+            "message"=>"Type mismatch on variable $animals and argument source (Boolean / [DairyAnimal!]!)",
+            "locations"=>[{"line"=>3, "column"=>25}],
+            "path"=>["fragment cheeseFields", "similarCheese", "source"],
+            "extensions"=>{"code"=>"variableMismatch", "variableName"=>"animals", "typeName"=>"Boolean", "argumentName"=>"source", "errorMessage"=>"Type mismatch"}
+          },
+        ]
+        assert_equal(expected, errors)
+      end
+    end
+
+    describe "when the fragment is used through another fragment" do
+      let(:query_string) {'
+        fragment innerFields on Cheese {
+          similarCheese(source: $animals) { id }
+        }
+
+        fragment outerFields on Cheese {
+          ...innerFields
+        }
+
+        query getCheese($animals: Boolean) {
+          cheese(id: 1) { ...outerFields }
+        }
+      '}
+
+      it "checks the usage against the operation" do
+        assert_equal ["Type mismatch on variable $animals and argument source (Boolean / [DairyAnimal!]!)"], error_messages
+      end
+    end
+
+    describe "when many operations use the fragment" do
+      let(:query_string) {'
+        query getCheese1($id: Boolean) { ...cheeseFields }
+        query getCheese2($id: Int!) { ...cheeseFields }
+        query getCheese3($id: String) { ...cheeseFields }
+        query getCheese4($id: Boolean) { ...cheeseFields }
+
+        fragment cheeseFields on Query {
+          cheese(id: $id) { id }
+        }
+      '}
+
+      it "checks the usage against each operation, without duplicate errors" do
+        assert_equal [
+          "Type mismatch on variable $id and argument id (Boolean / Int!)",
+          "Type mismatch on variable $id and argument id (String / Int!)",
+        ], error_messages
+      end
+    end
+  end
+
+  describe "variables with a null default value" do
+    let(:query_string) {'
+      query getCheese($nullId: Int = null, $id: Int = 1) {
+        nullCheese: cheese(id: $nullId) { id }
+        cheese(id: $id) { id }
+      }
+    '}
+
+    it "doesn't treat them as non-null" do
+      assert_equal ["Nullability mismatch on variable $nullId and argument id (Int / Int!)"], error_messages
+    end
+  end
+
   describe "non-null arguments with default values" do
     it "doesn't require a value in the query" do
       schema_graphql = <<~GRAPHQL
