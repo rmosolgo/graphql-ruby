@@ -54,12 +54,7 @@ end
 namespace :test do
   desc "Run the test suite with parallel_tests (PARALLEL_TEST_PROCESSORS=n to pick the number of workers)"
   task :parallel do
-    begin
-      require "parallel_tests"
-    rescue LoadError
-      warn "parallel_tests isn't available, running tests serially"
-      next Rake::Task["test:serial"].invoke
-    end
+    require "parallel_tests"
 
     # Each run records file runtimes for the next run, so workers get evenly-sized groups.
     runtime_log = "tmp/parallel_runtime_test.log"
