@@ -317,7 +317,8 @@ module GraphQL
         are_mutually_exclusive = mutually_exclusive || mutually_exclusive?(field1.parents, field2.parents)
 
         if !are_mutually_exclusive
-          if node1.name != node2.name
+          different_names = node1.name != node2.name
+          if different_names
             conflict = conflicts[:field][response_key]
 
             conflict.add_conflict(node1, node1.name)
@@ -326,7 +327,8 @@ module GraphQL
             @conflict_count += 1
           end
 
-          if !same_arguments?(node1, node2)
+          different_arguments = !same_arguments?(node1, node2)
+          if different_arguments
             conflict = conflicts[:argument][response_key]
 
             conflict.add_conflict(node1, GraphQL::Language.serialize(serialize_field_args(node1)))
@@ -334,6 +336,9 @@ module GraphQL
 
             @conflict_count += 1
           end
+
+          # Like graphql-js, stop here: the document is already invalid, and comparing sub-selections can be slow.
+          return if different_names || different_arguments
         end
 
         if !conflicts[:field].key?(response_key) &&
