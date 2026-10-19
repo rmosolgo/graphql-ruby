@@ -167,7 +167,7 @@ bundle exec rake sorbet:check_bumpable # fail if a `# typed: false` file already
 bundle exec rake sorbet:check_sigils   # fail if a sigil is weaker than on origin/master
 ```
 
-CI runs all of these. If `sorbet:check_bumpable` fails, run `bundle exec spoom srb bump --from false --to true lib` to update the sigils and commit the result. `typed: ignore` files and paths ignored in `sorbet/config` are left alone. If `sorbet:check_sigils` fails, keep the stronger sigil and fix the type errors instead.
+CI runs all of these. If `sorbet:check_bumpable` fails, run `bundle exec rake sorbet:bump` to update the sigils and commit the result. `typed: ignore` files and paths ignored in `sorbet/config` are left alone. If `sorbet:check_sigils` fails, keep the stronger sigil and fix the type errors instead.
 
 ## Website
 

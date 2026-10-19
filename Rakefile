@@ -321,12 +321,33 @@ namespace :sorbet do
     end
   end
 
+  # Spoom runs `bundle exec srb` in an unbundled env, which drops BUNDLE_GEMFILE,
+  # so give it the Sorbet binary from this bundle instead.
+  def spoom_bump(*args)
+    require "open3"
+    sorbet_bin = File.join(Gem::Specification.find_by_name("sorbet-static").full_gem_path, "libexec", "sorbet")
+    Open3.capture2e("spoom", "srb", "bump", "--from", "false", "--to", "true", "--sorbet", sorbet_bin, *args, "lib")
+  end
+
+  desc "Change `# typed: false` files in lib/ to `# typed: true` when they pass"
+  task :bump do
+    output, status = spoom_bump
+    puts output
+    $stdout.flush
+    status.success? || output.include?("Bumped") || abort("spoom srb bump failed")
+  end
+
   desc "Fail if any `# typed: false` file in lib/ would pass at `# typed: true`"
   task :check_bumpable do
-    sh "spoom", "srb", "bump", "--from", "false", "--to", "true", "--dry",
-      "--suggest-bump-command", "BUNDLE_GEMFILE=gemfiles/sorbet.gemfile bundle exec spoom srb bump --from false --to true lib",
-      "lib" do |ok, _status|
-      ok || abort("These files pass at `# typed: true`, update their sigils to lock in that progress.")
+    output, status = spoom_bump("--dry", "--suggest-bump-command", "BUNDLE_GEMFILE=gemfiles/sorbet.gemfile bundle exec rake sorbet:bump")
+    puts output
+    $stdout.flush
+    if status.success?
+      # No files to bump
+    elsif output.include?("Can bump")
+      abort("These files pass at `# typed: true`, update their sigils to lock in that progress.")
+    else
+      abort("spoom srb bump couldn't type check the project (exit #{status.exitstatus}), see output above.")
     end
   end
 
