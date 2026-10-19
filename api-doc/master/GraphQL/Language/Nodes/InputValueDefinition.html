@@ -393,7 +393,55 @@
   
 
   
+  <div class="nav-section">
+    <details class="nav-section-collapsible" open>
+      <summary class="nav-section-header">
+        <span class="nav-section-icon">
+          <svg><use href="#icon-class-methods"></use></svg>
+        </span>
+        <span class="nav-section-title">Class Methods</span>
+        <span class="nav-section-chevron">
+          <svg><use href="#icon-chevron"></use></svg>
+        </span>
+      </summary>
+      <ul class="nav-list" role="directory">
 
+        <li ><a href="#method-c-from_a">from_a</a></li>
+
+        <li ><a href="#method-c-new">new</a></li>
+
+      </ul>
+    </details>
+  </div>
+
+
+
+  <div class="nav-section">
+    <details class="nav-section-collapsible" open>
+      <summary class="nav-section-header">
+        <span class="nav-section-icon">
+          <svg><use href="#icon-instance-methods"></use></svg>
+        </span>
+        <span class="nav-section-title">Instance Methods</span>
+        <span class="nav-section-chevron">
+          <svg><use href="#icon-chevron"></use></svg>
+        </span>
+      </summary>
+      <ul class="nav-list" role="directory">
+
+        <li ><a href="#method-i-marshal_dump">marshal_dump</a></li>
+
+        <li ><a href="#method-i-marshal_load">marshal_load</a></li>
+
+        <li ><a href="#method-i-merge_directive">merge_directive</a></li>
+
+        <li ><a href="#method-i-scalars">scalars</a></li>
+
+        <li ><a href="#method-i-visit_method">visit_method</a></li>
+
+      </ul>
+    </details>
+  </div>
 
 
   <div id="classindex-section" class="nav-section">
@@ -472,12 +520,52 @@
       </header>
 
 
+      <div id="attribute-i-children" class="method-detail anchor-link">
+        <div class="method-heading attribute-method-heading">
+          <a href="#attribute-i-children" title="Link to this attribute">
+            <span class="method-name">children</span>
+            <span class="attribute-access-type">[R]</span>
+          </a>
+
+          <span class="method-type-signature"><code>Array[Directive]</code></span>
+
+        </div>
+
+        <div class="method-description">
+
+
+        
+
+        </div>
+      </div>
+
       <div id="attribute-i-comment" class="method-detail anchor-link">
         <div class="method-heading attribute-method-heading">
           <a href="#attribute-i-comment" title="Link to this attribute">
             <span class="method-name">comment</span>
             <span class="attribute-access-type">[R]</span>
           </a>
+
+          <span class="method-type-signature"><code><a href="../../Types/String.html" class="rbs-type">String</a>?</code></span>
+
+        </div>
+
+        <div class="method-description">
+
+
+        
+
+        </div>
+      </div>
+
+      <div id="attribute-i-default_value" class="method-detail anchor-link">
+        <div class="method-heading attribute-method-heading">
+          <a href="#attribute-i-default_value" title="Link to this attribute">
+            <span class="method-name">default_value</span>
+            <span class="attribute-access-type">[R]</span>
+          </a>
+
+          <span class="method-type-signature"><code>untyped</code></span>
 
         </div>
 
@@ -496,6 +584,65 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="../../Types/String.html" class="rbs-type">String</a>?</code></span>
+
+        </div>
+
+        <div class="method-description">
+
+
+        
+
+        </div>
+      </div>
+
+      <div id="attribute-i-directives" class="method-detail anchor-link">
+        <div class="method-heading attribute-method-heading">
+          <a href="#attribute-i-directives" title="Link to this attribute">
+            <span class="method-name">directives</span>
+            <span class="attribute-access-type">[R]</span>
+          </a>
+
+          <span class="method-type-signature"><code>Array[Directive]</code></span>
+
+        </div>
+
+        <div class="method-description">
+
+
+        
+
+        </div>
+      </div>
+
+      <div id="attribute-i-name" class="method-detail anchor-link">
+        <div class="method-heading attribute-method-heading">
+          <a href="#attribute-i-name" title="Link to this attribute">
+            <span class="method-name">name</span>
+            <span class="attribute-access-type">[R]</span>
+          </a>
+
+          <span class="method-type-signature"><code><a href="../../Types/String.html" class="rbs-type">String</a></code></span>
+
+        </div>
+
+        <div class="method-description">
+
+
+        
+
+        </div>
+      </div>
+
+      <div id="attribute-i-type" class="method-detail anchor-link">
+        <div class="method-heading attribute-method-heading">
+          <a href="#attribute-i-type" title="Link to this attribute">
+            <span class="method-name">type</span>
+            <span class="attribute-access-type">[R]</span>
+          </a>
+
+          <span class="method-type-signature"><code><a href="TypeName.html" class="rbs-type">TypeName</a> | <a href="ListType.html" class="rbs-type">ListType</a> | <a href="NonNullType.html" class="rbs-type">NonNullType</a></code></span>
+
         </div>
 
         <div class="method-description">
@@ -513,11 +660,398 @@
 
 
 
+     <section id="public-class-untitled-method-details" class="method-section anchor-link">
+       <header>
+         <h3 id="public-class-untitled-methods"><a href="#public-class-untitled-methods">Public Class Methods</a></h3>
+       </header>
+
+
+      <span id="from_a-class_method" class="legacy-anchor"></span>
+<div id="method-c-from_a" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-c-from_a" title="Link to this method">
+                  <span class="method-name">from_a</span>
+                  <span class="method-args">(filename, line, col, name, type, default_value, description, directives, comment: nil)</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="from_a-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 1498</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">from_a</span>(<span class="ruby-identifier">filename</span>, <span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>, <span class="ruby-identifier">name</span>, <span class="ruby-identifier">type</span>, <span class="ruby-identifier">default_value</span>, <span class="ruby-identifier">description</span>, <span class="ruby-identifier">directives</span>, <span class="ruby-value">comment:</span> <span class="ruby-keyword">nil</span>) <span class="ruby-comment"># rubocop:disable Metrics/ParameterLists</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">filename</span><span class="ruby-value">:</span> <span class="ruby-identifier">filename</span>, <span class="ruby-value">line</span><span class="ruby-value">:</span> <span class="ruby-identifier">line</span>, <span class="ruby-value">col</span><span class="ruby-value">:</span> <span class="ruby-identifier">col</span>, <span class="ruby-value">name</span><span class="ruby-value">:</span> <span class="ruby-identifier">name</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-identifier">type</span>, <span class="ruby-value">default_value</span><span class="ruby-value">:</span> <span class="ruby-identifier">default_value</span>, <span class="ruby-value">description</span><span class="ruby-value">:</span> <span class="ruby-identifier">description</span>, <span class="ruby-value">comment</span><span class="ruby-value">:</span> <span class="ruby-identifier">comment</span>, <span class="ruby-value">directives</span><span class="ruby-value">:</span> <span class="ruby-identifier">directives</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+        </div>
 
 
 
 
 
+      </div>
+
+
+      <span id="new-class_method" class="legacy-anchor"></span>
+<div id="method-c-new" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-c-new" title="Link to this method">
+                  <span class="method-name">new</span>
+                  <span class="method-args">(name: nil, type: nil, default_value: nil, description: nil, comment: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)</span>
+                </a>
+              </div>
+
+
+
+            <pre class="method-type-signature"><code>(?name: untyped, ?type: untyped, ?default_value: untyped, ?description: untyped, ?comment: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: <a href="../../Types/String.html" class="rbs-type">String</a>?, ?source: untyped, ?definition_pos: Integer?) &rarr; void</code></pre>
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="new-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 1483</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">name:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">type:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">default_value:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">description:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">comment:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">directives:</span> <span class="ruby-constant">NO_CHILDREN</span>, <span class="ruby-value">line:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">col:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">pos:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">filename:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">source:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">definition_pos:</span> <span class="ruby-keyword">nil</span>)
+  <span class="ruby-ivar">@line</span> = <span class="ruby-identifier">line</span>
+  <span class="ruby-ivar">@col</span> = <span class="ruby-identifier">col</span>
+  <span class="ruby-ivar">@pos</span> = <span class="ruby-identifier">pos</span>
+  <span class="ruby-ivar">@filename</span> = <span class="ruby-identifier">filename</span>
+  <span class="ruby-ivar">@source</span> = <span class="ruby-identifier">source</span>
+  <span class="ruby-ivar">@name</span> = <span class="ruby-identifier">name</span>
+  <span class="ruby-ivar">@type</span> = <span class="ruby-identifier">type</span>
+  <span class="ruby-ivar">@default_value</span> = <span class="ruby-identifier">default_value</span>
+  <span class="ruby-ivar">@description</span> = <span class="ruby-identifier">description</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">-</span><span class="ruby-identifier">description</span>
+  <span class="ruby-ivar">@comment</span> = <span class="ruby-identifier">comment</span>
+  <span class="ruby-ivar">@directives</span> = <span class="ruby-identifier">directives</span>.<span class="ruby-identifier">freeze</span>
+  <span class="ruby-ivar">@definition_pos</span> = <span class="ruby-identifier">definition_pos</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+    </section>
+
+
+
+
+
+
+
+     <section id="public-instance-untitled-method-details" class="method-section anchor-link">
+       <header>
+         <h3 id="public-instance-untitled-methods"><a href="#public-instance-untitled-methods">Public Instance Methods</a></h3>
+       </header>
+
+
+      <span id="marshal_dump-instance_method" class="legacy-anchor"></span>
+<div id="method-i-marshal_dump" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-i-marshal_dump" title="Link to this method">
+                  <span class="method-name">marshal_dump</span>
+                  <span class="method-args">()</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="marshal_dump-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 1502</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">marshal_dump</span>
+  [
+    <span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>, <span class="ruby-comment"># use methods here to force them to be calculated</span>
+    <span class="ruby-ivar">@filename</span>,
+    <span class="ruby-ivar">@name</span>,
+    <span class="ruby-ivar">@type</span>,
+    <span class="ruby-ivar">@default_value</span>,
+    <span class="ruby-ivar">@description</span>,
+    <span class="ruby-ivar">@directives</span>,
+  ]
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="marshal_load-instance_method" class="legacy-anchor"></span>
+<div id="method-i-marshal_load" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-i-marshal_load" title="Link to this method">
+                  <span class="method-name">marshal_load</span>
+                  <span class="method-args">(values)</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="marshal_load-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 1514</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">marshal_load</span>(<span class="ruby-identifier">values</span>)
+  <span class="ruby-ivar">@line</span>, <span class="ruby-ivar">@col</span>, <span class="ruby-ivar">@filename</span>, <span class="ruby-ivar">@name</span>, <span class="ruby-ivar">@type</span>, <span class="ruby-ivar">@default_value</span>, <span class="ruby-ivar">@description</span>, <span class="ruby-ivar">@directives</span> = <span class="ruby-identifier">values</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="merge_directive-instance_method" class="legacy-anchor"></span>
+<div id="method-i-merge_directive" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-i-merge_directive" title="Link to this method">
+                  <span class="method-name">merge_directive</span>
+                  <span class="method-args">(**node_opts)</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="merge_directive-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 1476</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">merge_directive</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">node_opts</span>)
+  <span class="ruby-identifier">merge</span>(<span class="ruby-value">directives</span><span class="ruby-value">:</span> <span class="ruby-identifier">directives</span> <span class="ruby-operator">+</span> [<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">Directive</span>.<span class="ruby-identifier">new</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">node_opts</span>)])
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="scalars-instance_method" class="legacy-anchor"></span>
+<div id="method-i-scalars" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-i-scalars" title="Link to this method">
+                  <span class="method-name">scalars</span>
+                  <span class="method-args">()</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="scalars-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 1469</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">scalars</span>
+  <span class="ruby-ivar">@scalars</span> ||= [<span class="ruby-ivar">@name</span>, <span class="ruby-ivar">@type</span>, <span class="ruby-ivar">@default_value</span>].<span class="ruby-identifier">freeze</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="visit_method-instance_method" class="legacy-anchor"></span>
+<div id="method-i-visit_method" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-i-visit_method" title="Link to this method">
+                  <span class="method-name">visit_method</span>
+                  <span class="method-args">()</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="visit_method-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 1454</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">visit_method</span>
+  <span class="ruby-value">:</span><span class="ruby-value">on_input_value_definition</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+    </section>
 
 
 

@@ -449,6 +449,8 @@
 
         <li ><a href="#method-i-to_query_string">to_query_string</a></li>
 
+        <li ><a href="#method-i-visit_method">visit_method</a></li>
+
       </ul>
     </details>
   </div>
@@ -551,12 +553,53 @@
       </header>
 
 
+      <div id="attribute-c-children_method_name" class="method-detail anchor-link">
+        <div class="method-heading attribute-method-heading">
+          <a href="#attribute-c-children_method_name" title="Link to this attribute">
+            <span class="method-name">children_method_name</span>
+            <span class="attribute-access-type">[RW]</span>
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+
+        
+
+        </div>
+      </div>
+
+      <div id="attribute-c-visit_method" class="method-detail anchor-link">
+        <div class="method-heading attribute-method-heading">
+          <a href="#attribute-c-visit_method" title="Link to this attribute">
+            <span class="method-name">visit_method</span>
+            <span class="attribute-access-type">[R]</span>
+          </a>
+
+          <span class="method-type-signature"><code>Symbol?</code></span>
+
+        </div>
+
+        <div class="method-description">
+
+
+        <p><strong>Returns</strong></p>
+<ul><li>
+<p><code>Symbol</code> — the method that <a href="../Visitor.html"><code>GraphQL::Language::Visitor</code></a> calls for this kind of node</p>
+</li></ul>
+
+        </div>
+      </div>
+
       <div id="attribute-i-filename" class="method-detail anchor-link">
         <div class="method-heading attribute-method-heading">
           <a href="#attribute-i-filename" title="Link to this attribute">
             <span class="method-name">filename</span>
             <span class="attribute-access-type">[R]</span>
           </a>
+
+          <span class="method-type-signature"><code><a href="../../Types/String.html" class="rbs-type">String</a>?</code></span>
 
         </div>
 
@@ -586,12 +629,15 @@
         <div class="method-header">
           <div class="method-heading-group">
 
-              <div class="method-heading">
-                <a href="#method-c-children_of_type" title="Link to this method">
-                  <span class="method-name">children_of_type</span>
-                  <span class="method-args">()</span>
-                </a>
-              </div>
+
+                <div class="method-heading">
+                  <a href="#method-c-children_of_type" title="Link to this method">
+                    <span class="method-callseq">
+                      children_of_type() &rarr; Hash[Symbol, Class | nil] | nil
+                    </span>
+                  </a>
+                </div>
+
 
 
 
@@ -608,7 +654,7 @@
 
 
           <div class="method-source-code" id="children_of_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 203</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 224</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">children_of_type</span>
   <span class="ruby-ivar">@children_methods</span>
 <span class="ruby-keyword">end</span></pre>
@@ -619,7 +665,10 @@
         <div class="method-description">
 
 
-          
+          <p><strong>Returns</strong></p>
+<ul><li>
+<p><code>Hash{Symbol =&gt; Class, nil}, nil</code> — child reader methods and the kind of node each one returns, if known</p>
+</li></ul>
 
 
         </div>
@@ -658,29 +707,17 @@
 
 
           <div class="method-source-code" id="inherited-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 180</span>
-          <span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">child_class</span>)
-            <span class="ruby-keyword">super</span>
-            <span class="ruby-identifier">name_underscored</span> = <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">name</span>
-              .<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">::</span><span class="ruby-string">&quot;</span>).<span class="ruby-identifier">last</span>
-              .<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/([a-z])([A-Z])/</span>,<span class="ruby-string">&#39;</span><span class="ruby-string">\1_\2</span><span class="ruby-string">&#39;</span>) <span class="ruby-comment"># insert underscores</span>
-              .<span class="ruby-identifier">downcase</span> <span class="ruby-comment"># remove caps</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 207</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">child_class</span>)
+  <span class="ruby-keyword">super</span>
+  <span class="ruby-identifier">name_underscored</span> = <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">name</span>
+    .<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">::</span><span class="ruby-string">&quot;</span>).<span class="ruby-identifier">last</span>
+    .<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/([a-z])([A-Z])/</span>,<span class="ruby-string">&#39;</span><span class="ruby-string">\1_\2</span><span class="ruby-string">&#39;</span>) <span class="ruby-comment"># insert underscores</span>
+    .<span class="ruby-identifier">downcase</span> <span class="ruby-comment"># remove caps</span>
 
-            <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">module_eval</span> <span class="ruby-string">&lt;&lt;-RUBY</span>, <span class="ruby-keyword">__FILE__</span>, <span class="ruby-keyword">__LINE__</span>
-<span class="ruby-string">              def visit_method
-                :on_</span><span class="ruby-string">#{</span><span class="ruby-identifier">name_underscored</span><span class="ruby-string">}</span><span class="ruby-string">
-              end
-
-              class &lt;&lt; self
-                attr_accessor :children_method_name
-
-                def visit_method
-                  :on_</span><span class="ruby-string">#{</span><span class="ruby-identifier">name_underscored</span><span class="ruby-string">}</span><span class="ruby-string">
-                end
-              end
-              self.children_method_name = :</span><span class="ruby-string">#{</span><span class="ruby-identifier">name_underscored</span><span class="ruby-string">}</span><span class="ruby-string">s</span>
-<span class="ruby-string">            RUBY</span>
-          <span class="ruby-keyword">end</span></pre>
+  <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">instance_variable_set</span>(<span class="ruby-value">:</span><span class="ruby-value">@visit_method</span>, <span class="ruby-value">:&quot;</span><span class="ruby-value">on_</span><span class="ruby-value">#{</span><span class="ruby-identifier">name_underscored</span><span class="ruby-value">}</span><span class="ruby-value">&quot;</span>)
+  <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">children_method_name</span> = <span class="ruby-value">:&quot;</span><span class="ruby-value">#{</span><span class="ruby-identifier">name_underscored</span><span class="ruby-value">}</span><span class="ruby-value">s</span><span class="ruby-value">&quot;</span>
+<span class="ruby-keyword">end</span></pre>
           </div>
 
 
@@ -688,7 +725,7 @@
         <div class="method-description">
 
 
-          <p>Add a default <code>#visit_method</code> and <a href="AbstractNode.html#method-i-children_method_name"><code>children_method_name</code></a> using the class name</p>
+          <p>Add a default <code>.visit_method</code> and <code>.children_method_name</code> using the class name</p>
 
 
             <div class="method-calls-super">
@@ -749,7 +786,7 @@
 
 
           <div class="method-source-code" id="3D-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 60</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">==</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-identifier">other</span>.<span class="ruby-identifier">kind_of?</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>) <span class="ruby-operator">&amp;&amp;</span>
@@ -797,6 +834,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Array[<a href="AbstractNode.html" class="rbs-type">AbstractNode</a>]</code></pre>
+
           </div>
 
 
@@ -810,7 +849,7 @@
 
 
           <div class="method-source-code" id="children-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 75</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 81</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">children</span>
   <span class="ruby-constant">NO_CHILDREN</span>
 <span class="ruby-keyword">end</span></pre>
@@ -863,7 +902,7 @@
 
 
           <div class="method-source-code" id="children_method_name-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 96</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 103</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">children_method_name</span>
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">children_method_name</span>
 <span class="ruby-keyword">end</span></pre>
@@ -900,6 +939,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Integer?</code></pre>
+
           </div>
 
 
@@ -913,7 +954,7 @@
 
 
           <div class="method-source-code" id="col-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">col</span>
   <span class="ruby-ivar">@col</span> ||= <span class="ruby-ivar">@source</span>&amp;.<span class="ruby-identifier">column_at</span>(<span class="ruby-ivar">@pos</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -950,6 +991,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Integer?</code></pre>
+
           </div>
 
 
@@ -963,7 +1006,7 @@
 
 
           <div class="method-source-code" id="definition_line-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 48</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">definition_line</span>
   <span class="ruby-ivar">@definition_line</span> ||= (<span class="ruby-ivar">@source</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@definition_pos</span>) <span class="ruby-operator">?</span> <span class="ruby-ivar">@source</span>.<span class="ruby-identifier">line_at</span>(<span class="ruby-ivar">@definition_pos</span>) <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1013,7 +1056,7 @@
 
 
           <div class="method-source-code" id="delete_child-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 155</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 176</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">delete_child</span>(<span class="ruby-identifier">previous_child</span>)
   <span class="ruby-comment"># Figure out which list `previous_child` may be found in</span>
   <span class="ruby-identifier">method_name</span> = <span class="ruby-identifier">previous_child</span>.<span class="ruby-identifier">children_method_name</span>
@@ -1071,7 +1114,7 @@
 
 
           <div class="method-source-code" id="initialize_copy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 97</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize_copy</span>(<span class="ruby-identifier">other</span>)
   <span class="ruby-ivar">@children</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-ivar">@scalars</span> = <span class="ruby-keyword">nil</span>
@@ -1110,6 +1153,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Integer?</code></pre>
+
           </div>
 
 
@@ -1123,7 +1168,7 @@
 
 
           <div class="method-source-code" id="line-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 40</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 43</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">line</span>
   <span class="ruby-ivar">@line</span> ||= <span class="ruby-ivar">@source</span>&amp;.<span class="ruby-identifier">line_at</span>(<span class="ruby-ivar">@pos</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1176,7 +1221,7 @@
 
 
           <div class="method-source-code" id="merge-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 128</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 149</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge</span>(<span class="ruby-identifier">new_options</span>)
   <span class="ruby-identifier">dup</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">new_options</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1223,6 +1268,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; [Integer?, Integer?]</code></pre>
+
           </div>
 
 
@@ -1236,7 +1283,7 @@
 
 
           <div class="method-source-code" id="position-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 100</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 120</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">position</span>
   [<span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1286,7 +1333,7 @@
 
 
           <div class="method-source-code" id="replace_child-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 133</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 154</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">replace_child</span>(<span class="ruby-identifier">previous_child</span>, <span class="ruby-identifier">new_child</span>)
   <span class="ruby-comment"># Figure out which list `previous_child` may be found in</span>
   <span class="ruby-identifier">method_name</span> = <span class="ruby-identifier">previous_child</span>.<span class="ruby-identifier">children_method_name</span>
@@ -1296,7 +1343,7 @@
     <span class="ruby-comment"># Copy that list, and replace `previous_child` with `new_child`</span>
     <span class="ruby-comment"># in the list.</span>
     <span class="ruby-identifier">new_children</span> = <span class="ruby-identifier">prev_children</span>.<span class="ruby-identifier">dup</span>
-    <span class="ruby-identifier">prev_idx</span> = <span class="ruby-identifier">new_children</span>.<span class="ruby-identifier">index</span>(<span class="ruby-identifier">previous_child</span>)
+    <span class="ruby-identifier">prev_idx</span> = <span class="ruby-identifier">new_children</span>.<span class="ruby-identifier">index</span>(<span class="ruby-identifier">previous_child</span>) <span class="ruby-comment">#: as Integer</span>
     <span class="ruby-identifier">new_children</span>[<span class="ruby-identifier">prev_idx</span>] = <span class="ruby-identifier">new_child</span>
   <span class="ruby-keyword">else</span>
     <span class="ruby-comment"># Use the new value for the given attribute</span>
@@ -1343,6 +1390,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Array[untyped]</code></pre>
+
           </div>
 
 
@@ -1356,7 +1405,7 @@
 
 
           <div class="method-source-code" id="scalars-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 85</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 92</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scalars</span>
   <span class="ruby-constant">NO_CHILDREN</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1396,6 +1445,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(?printer: untyped) &rarr; <a href="../../Types/String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -1409,7 +1460,7 @@
 
 
           <div class="method-source-code" id="to_query_string-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 104</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 125</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_query_string</span>(<span class="ruby-value">printer:</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Printer</span>.<span class="ruby-identifier">new</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">printer</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Printer</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">frozen?</span>
@@ -1429,6 +1480,64 @@
 
 
           
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="visit_method-instance_method" class="legacy-anchor"></span>
+<div id="method-i-visit_method" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+
+                <div class="method-heading">
+                  <a href="#method-i-visit_method" title="Link to this method">
+                    <span class="method-callseq">
+                      visit_method() &rarr; Symbol
+                    </span>
+                  </a>
+                </div>
+
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="visit_method-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 115</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">visit_method</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">visit_method</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          <p>Built-in node classes override this with a literal Symbol.</p>
+
+<p><strong>Returns</strong></p>
+<ul><li>
+<p><code>Symbol</code> — the method that <a href="../Visitor.html"><code>GraphQL::Language::Visitor</code></a> calls for this node</p>
+</li></ul>
 
 
         </div>
