@@ -4,5 +4,5 @@
 #include <ruby/encoding.h>
 #include "lexer.h"
 #include "parser.h"
-void Init_graphql_c_parser_ext();
+void Init_graphql_c_parser_ext(void);
 #endif

@@ -1,11 +1,12 @@
 # frozen_string_literal: true
+# typed: false
 require "graphql/schema/build_from_definition/resolve_map"
 
 module GraphQL
   class Schema
     module BuildFromDefinition
       class << self
-        # @see {Schema.from_definition}
+        # See [Schema.from_definition](rdoc-ref:Schema.from_definition)
         def from_definition(schema_superclass, definition_string, parser: GraphQL.default_parser, **kwargs)
           if defined?(parser::SchemaParser)
             parser = parser::SchemaParser
@@ -25,8 +26,7 @@ module GraphQL
         end
       end
 
-      # @api private
-      module Builder
+      module Builder # :nodoc:
         include GraphQL::EmptyObjects
         extend self
 
@@ -293,7 +293,13 @@ module GraphQL
         # with their actual definitions.
         #
         # (Schema definitions are allowed to reference those built-ins without redefining them.)
-        # @return void
+        #
+        # **Returns**
+        #
+        # - `Object` — void
+        #
+        # :call-seq:
+        #   replace_late_bound_types_with_built_in(types) -> Object
         def replace_late_bound_types_with_built_in(types)
           GraphQL::Schema::BUILT_IN_TYPES.each do |scalar_name, built_in_scalar|
             existing_type = types[scalar_name]

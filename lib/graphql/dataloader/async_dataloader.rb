@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 
 module GraphQL
   class Dataloader
@@ -23,8 +24,7 @@ module GraphQL
         create_pending_run
       end
 
-      # @api private
-      attr_reader :pending_sources
+      attr_reader :pending_sources # :nodoc:
 
       def create_pending_run
         jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
@@ -254,6 +254,8 @@ module GraphQL
           task = Async::Task.new do |root_task|
             run.root_task = root_task
             root_task.graphql_async_dataloader_run = run
+            # Tasks inherit the spawning fiber's storage; give this run its own execution state.
+            Fiber[:__graphql_runtime_info] = nil
             set_fiber_variables(fiber_vars)
 
             while first_pass || run.running? || !jobs.empty?

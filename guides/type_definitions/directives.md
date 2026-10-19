@@ -1,13 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Type Definitions
-title: Directives
-desc: Special instructions for the GraphQL runtime
-index: 10
----
-
+# Directives
 
 Directives are system-defined keywords with two kinds of uses:
 
@@ -33,12 +24,12 @@ query ProfileView($renderingDetailedProfile: Boolean!){
 
 Here's how the two built-in directives work:
 
-- `@skip(if: ...)` skips the selection if the `if: ...` value is truthy ({{ "GraphQL::Schema::Directive::Skip" | api_doc }})
-- `@include(if: ...)` includes the selection if the `if: ...` value is truthy ({{ "GraphQL::Schema::Directive::Include" | api_doc }})
+- `@skip(if: ...)` skips the selection if the `if: ...` value is truthy ([GraphQL::Schema::Directive::Skip](rdoc-ref:GraphQL::Schema::Directive::Skip))
+- `@include(if: ...)` includes the selection if the `if: ...` value is truthy ([GraphQL::Schema::Directive::Include](rdoc-ref:GraphQL::Schema::Directive::Include))
 
 ### Custom Runtime Directives
 
-Custom directives extend {{ "GraphQL::Schema::Directive" | api_doc }}:
+Custom directives extend [GraphQL::Schema::Directive](rdoc-ref:GraphQL::Schema::Directive):
 
 ```ruby
 # app/graphql/directives/my_directive.rb
@@ -67,7 +58,7 @@ query {
 }
 ```
 
-{{ "GraphQL::Schema::Directive::Feature" | api_doc }} and {{ "GraphQL::Schema::Directive::Transform" | api_doc }} are included in the library as examples.
+[GraphQL::Schema::Directive::Feature](rdoc-ref:GraphQL::Schema::Directive::Feature) and [GraphQL::Schema::Directive::Transform](rdoc-ref:GraphQL::Schema::Directive::Transform) are included in the library as examples.
 
 ### Runtime hooks
 
@@ -76,7 +67,7 @@ Directive classes may implement the following class methods to interact with the
 - `def self.include?(obj, args, ctx)`: If this hook returns `false`, the nodes flagged by this directive will be skipped at runtime.
 - `def self.resolve(obj, args, ctx)`: Wraps the resolution of flagged nodes. Resolution is passed as a __block__, so `yield` will continue resolution.
 
-Looking for a runtime hook that isn't listed here? {% open_an_issue "New directive hook: @something", "<!-- Describe how the directive would be used and then how you might implement it --> " %} to start the conversation!
+Looking for a runtime hook that isn't listed here? [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?title=New+directive+hook%3A+%40something&body=%3C%21--+Describe+how+the+directive+would+be+used+and+then+how+you+might+implement+it+--%3E+) to start the conversation!
 
 ## Schema Directives
 
@@ -94,7 +85,7 @@ In the schema definition, directives express metadata about types, fields, and a
 
 ### Custom Schema Directives
 
-To make a custom schema directive, extend {{ "GraphQL::Schema::Directive" | api_doc }}:
+To make a custom schema directive, extend [GraphQL::Schema::Directive](rdoc-ref:GraphQL::Schema::Directive):
 
 ```ruby
 # app/graphql/directives/permission.rb
@@ -122,14 +113,14 @@ field :salary, Integer, null: false,
 After that:
 
 - the configured object's `.directives` method will return an array containing an instance of the specified directive
-- IDL dumps (from {{ "Schema.to_definition" | api_doc }}) will include the configured directives
+- IDL dumps (from [Schema.to_definition](rdoc-ref:GraphQL::Schema.to_definition)) will include the configured directives
 
-Similarly, {{ "Schema.from_definition" | api_doc }} parses directives from IDL strings.
+Similarly, [Schema.from_definition](rdoc-ref:GraphQL::Schema.from_definition) parses directives from IDL strings.
 
 For a couple of built-in examples, check out:
 
-- {{ "GraphQL::Schema::Directive::Deprecated" | api_doc }} which implements `deprecation_reason` (via {{ "GraphQL::Schema::Member::HasDeprecationReason" | api_doc}})
-- {{ "GraphQL::Schema::Directive::Flagged" | api_doc }}, which is an example of using schema directives to implement {% internal_link "visibility", "/authorization/visibility" %}
+- [GraphQL::Schema::Directive::Deprecated](rdoc-ref:GraphQL::Schema::Directive::Deprecated) which implements `deprecation_reason` (via [GraphQL::Schema::Member::HasDeprecationReason](rdoc-ref:GraphQL::Schema::Member::HasDeprecationReason))
+- [GraphQL::Schema::Directive::Flagged](rdoc-ref:GraphQL::Schema::Directive::Flagged), which is an example of using schema directives to implement [visibility](/authorization/visibility)
 
 ## Custom Name
 
@@ -143,7 +134,7 @@ end
 
 ## Arguments
 
-Like fields, directives may have {% internal_link "arguments", "/fields/arguments" %} :
+Like fields, directives may have [arguments](/fields/arguments) :
 
 ```ruby
 argument :if, Boolean,

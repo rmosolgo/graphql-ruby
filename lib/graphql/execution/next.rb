@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 require "graphql/execution/prepare_object_step"
 require "graphql/execution/input_values"
 require "graphql/execution/variable_values"

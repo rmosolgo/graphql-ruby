@@ -6,7 +6,8 @@
   BLANK   =       [, \t]+;
   COMMENT =       '#' [^\n\r]*;
   INT =           '-'? ('0'|[1-9][0-9]*);
-  FLOAT =         INT ('.'[0-9]+) (('e' | 'E')?('+' | '-')?[0-9]+)?;
+  EXPONENT =      ('e' | 'E') ('+' | '-')? [0-9]+;
+  FLOAT =         INT ('.'[0-9]+ EXPONENT? | EXPONENT);
   ON =            'on';
   FRAGMENT =      'fragment';
   TRUE_LITERAL =  'true';
@@ -421,7 +422,7 @@ VALUE tokenize(VALUE query_rbstr, int fstring_identifiers, int reject_numbers_fo
   rb_global_variable(&var_name); \
   rb_str_freeze(var_name); \
 
-void setup_static_token_variables() {
+void setup_static_token_variables(void) {
   SETUP_STATIC_TOKEN_VARIABLE(ON, "on")
   SETUP_STATIC_TOKEN_VARIABLE(FRAGMENT, "fragment")
   SETUP_STATIC_TOKEN_VARIABLE(QUERY, "query")

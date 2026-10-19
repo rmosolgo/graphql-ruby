@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   class Schema
     class IntrospectionSystem
@@ -64,9 +65,11 @@ module GraphQL
       # Replace those with the objects that they refer to, since LateBoundTypes
       # aren't handled at runtime.
       #
-      # @api private
-      # @return void
-      def resolve_late_bindings
+      #
+      # **Returns**
+      #
+      # - `Object` — void
+      def resolve_late_bindings # :nodoc:
         @types.each do |name, t|
           if t.kind.fields?
             t.all_field_definitions.each do |field_defn|

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module StaticValidation
     # Track fragment dependencies for operations
@@ -65,7 +66,13 @@ module GraphQL
       end
 
       # A map of operation definitions to an array of that operation's dependencies
-      # @return [DependencyMap]
+      #
+      # **Returns**
+      #
+      # - `DependencyMap`
+      #
+      # :call-seq:
+      #   dependency_map(&block) -> DependencyMap
       def dependency_map(&block)
         @dependency_map ||= resolve_dependencies(&block)
       end
@@ -73,13 +80,19 @@ module GraphQL
       # Map definition AST nodes to the definition AST nodes they depend on.
       # Expose circular dependencies.
       class DependencyMap
-        # @return [Array<GraphQL::Language::Nodes::FragmentDefinition>]
+        # **Returns**
+        #
+        # - `Array<GraphQL::Language::Nodes::FragmentDefinition>`
         attr_reader :cyclical_definitions
 
-        # @return [Hash<Node, Array<GraphQL::Language::Nodes::FragmentSpread>>]
+        # **Returns**
+        #
+        # - `Hash<Node, Array<GraphQL::Language::Nodes::FragmentSpread>>`
         attr_reader :unmet_dependencies
 
-        # @return [Array<GraphQL::Language::Nodes::FragmentDefinition>]
+        # **Returns**
+        #
+        # - `Array<GraphQL::Language::Nodes::FragmentDefinition>`
         attr_reader :unused_dependencies
 
         def initialize
@@ -89,7 +102,12 @@ module GraphQL
           @unused_dependencies = []
         end
 
-        # @return [Array<GraphQL::Language::Nodes::AbstractNode>] dependencies for `definition_node`
+        # **Returns**
+        #
+        # - `Array<GraphQL::Language::Nodes::AbstractNode>` — dependencies for `definition_node`
+        #
+        # :call-seq:
+        #   [](definition_node) -> Array[GraphQL::Language::Nodes::AbstractNode]
         def [](definition_node)
           @dependencies[definition_node]
         end
@@ -190,9 +208,9 @@ module GraphQL
           end
         end
 
-        # Anything left in @immediate_dependencies is cyclical
+        # Anything left in `@immediate_dependencies` is cyclical
         cyclical_nodes = @defdep_immediate_dependencies.keys.map { |n| @defdep_node_paths[n] }
-        # @immediate_dependencies also includes operation names, but we don't care about
+        # `@immediate_dependencies` also includes operation names, but we don't care about
         # those. They became nil when we looked them up on `@fragment_definitions`, so remove them.
         cyclical_nodes.compact!
         dependency_map.cyclical_definitions.concat(cyclical_nodes)

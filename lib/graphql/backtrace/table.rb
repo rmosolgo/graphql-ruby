@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Backtrace
     # A class for turning a context into a human-readable table or array
@@ -18,12 +19,22 @@ module GraphQL
         @override_value = value
       end
 
-      # @return [String] A table layout of backtrace with metadata
+      # **Returns**
+      #
+      # - `String` — A table layout of backtrace with metadata
+      #
+      # :call-seq:
+      #   to_table() -> String
       def to_table
         @to_table ||= render_table(rows)
       end
 
-      # @return [Array<String>] An array of position + field name entries
+      # **Returns**
+      #
+      # - `Array<String>` — An array of position + field name entries
+      #
+      # :call-seq:
+      #   to_backtrace() -> Array[String]
       def to_backtrace
         @to_backtrace ||= begin
           backtrace = rows.map { |r| "#{r[0]}: #{r[1]}" }
@@ -43,7 +54,7 @@ module GraphQL
           result = runtime_inst.instance_variable_get(:@response)
           rows = []
           result_path = []
-          last_part = nil
+          last_part = nil #: untyped
           path = @context.current_path
           path.each do |path_part|
             value = value_at(runtime_inst, result_path)
@@ -79,7 +90,7 @@ module GraphQL
           end
 
           object = result.graphql_application_value.object.inspect
-          ast_node = nil
+          ast_node = nil #: untyped
           result.graphql_selections.each do |s|
             found_ast_node = find_ast_node(s, last_part)
             if found_ast_node
@@ -134,7 +145,12 @@ module GraphQL
         nil
       end
 
-      # @return [String]
+      # **Returns**
+      #
+      # - `String`
+      #
+      # :call-seq:
+      #   render_table(rows) -> String
       def render_table(rows)
         max = Array.new(HEADERS.length, MIN_COL_WIDTH)
 

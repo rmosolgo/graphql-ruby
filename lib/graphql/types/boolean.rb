@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Types
     class Boolean < GraphQL::Schema::Scalar

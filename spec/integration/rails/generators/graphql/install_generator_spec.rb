@@ -10,12 +10,16 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     prepare_destination
 
     FileUtils.cd(File.join(destination_root, '..')) do
-      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
+      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install --skip-bootsnap`
     end
   end
 
   def refute_file(path)
     assert !File.exist?(path), "No file at #{path.inspect}"
+  end
+
+  test "the generated test app doesn't load Bootsnap" do
+    refute_includes File.read(File.join(destination_root, "config/boot.rb")), "bootsnap/setup"
   end
 
   test "it generates a folder structure" do

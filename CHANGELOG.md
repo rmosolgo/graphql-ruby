@@ -10,6 +10,45 @@
 
 ### Bug fixes
 
+# 2.6.12 (14 Oct 2026)
+
+**Security**: This version contains a patch for [GHSA-965v-9v76-5hg2](https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-965v-9v76-5hg2)
+
+### Bug fixes
+
+- `Visibility::Profile#preload`: preload more type information #5748 #5758
+- Variables: use defaults for omitted non-null variables #5754
+- `Visibility::Profile`: freeze hashes when fully loaded #5750
+- `Dataloader`: give nested dataloader calls their own state #5760
+- `RelationConnection`: reject invalid cursors #5752
+- Legacy execution: Set `current_field` and `current_arguments` for list item dataloader fibers #5759
+- Propagate list errors through non-null items #5756
+- Fix error paths and performance on input objects in lists #5751
+- `Execution::Next`: Don't call `.size` on non-Array list results #5765
+- Subscriptions: reject multiple root selections and introspection root selections #5770
+- `Parser`: fix source locations after multibyte input #5771
+- `RelationConnection`: fix detection of AsyncDataloader to avoid duplicate queries #5773
+
+# 2.6.11 (21 Sep 2026)
+
+### Bug fixes
+
+- AsyncDataloader: call fiber cleanup hooks after errors #5718
+- RelationConnection: support initialization without context #5716
+- CParser: support exponent-only floats #5719
+- CParser: fix compiler warnings #5721
+- ArrayConnection: reject cursors pointing to malformed, zero, or negative indexes
+- AsyncDataloader: prevent duplicate count queries #5717
+- Subscriptions: improve serializer #5722, #5723
+- Sentry: support `data_collection` configuration
+- Execution::Next: preserve multiplex results after setup errors #5728
+- Execution::Next: use it for `Query#result` when `as_default: true` #5742
+- Execution::Next: skip `lazy?` check when schema doesn't use `resolve_lazy` for Partials on scalars #5740
+- Execution::Next: treat unimplemented directive hooks as no-ops #5739
+- Schema::Visibility: improve profile preloading #5743
+- Execution::Next: fix Query#result_values when an error is raised #5744
+- `loads:`: correctly type-check loaded objects when `loads:` is a `loads:`-only Object type #5745
+
 # 2.6.10 (27 Aug 2026)
 
 ### New features

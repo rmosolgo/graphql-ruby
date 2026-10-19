@@ -290,10 +290,11 @@ module ConnectionAssertions
         end
 
         it "handles out-of-bounds cursors" do
-          # It treats negative cursors like zero
+          # Negative cursors don't wrap around to the end
           bogus_negative_cursor = NonceEnabledEncoder.encode("-10")
           res = exec_query(query_str, first: 3, after: bogus_negative_cursor)
-          assert_names(["Avocado", "Beet", "Cucumber"], res)
+          assert_nil res.dig("data", "items", "nodes")
+          assert_includes res["errors"].first["message"], "Invalid cursor"
 
           # It returns nothing for cursors beyond the array
           bogus_huge_cursor = NonceEnabledEncoder.encode("100")
@@ -340,6 +341,21 @@ module ConnectionAssertions
           assert_names(["Eggplant", "Fennel", "Ginger", "Horseradish", "I Can't Believe It's Not Butter", "Jicama"], res)
           assert_equal false, get_page_info(res, "hasNextPage")
           assert_equal true, get_page_info(res, "hasPreviousPage")
+        end
+
+        it "rejects malformed before cursors without bypassing max_page_size" do
+          query = <<~GRAPHQL
+            query($before: String!) {
+              limitedItems(last: 3, before: $before) { nodes { name } }
+            }
+          GRAPHQL
+
+          ["-1", "0", "abc", "1e10"].each do |cursor|
+            encoded_cursor = NonceEnabledEncoder.encode(cursor)
+            result = schema.execute(query, variables: { "before" => encoded_cursor })
+            assert_nil result.dig("data", "limitedItems", "nodes")
+            assert_includes result["errors"].first["message"], "Invalid cursor"
+          end
         end
 
         it "applies default_page_size to first when first and last are unspecified" do

@@ -762,7 +762,11 @@ describe GraphQL::Analysis::QueryComplexity do
       end
 
       class Query < GraphQL::Schema::Object
-        field :entity, Entity, fallback_value: nil
+        field :entity, Entity, fallback_value: nil, resolve_static: true
+
+        def self.entity(ctx)
+          nil
+        end
       end
 
       def self.resolve_type

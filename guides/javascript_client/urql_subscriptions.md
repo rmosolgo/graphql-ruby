@@ -1,14 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: JavaScript Client
-title: urql Subscriptions
-desc: GraphQL subscriptions with GraphQL-Ruby and urql
-index: 4
----
+# urql Subscriptions
 
-GraphQL-Ruby currently supports using `urql` with the {% internal_link "ActionCable", "/subscriptions/action_cable_implementation" %} and {% internal_link "Pusher implementation", "/subscriptions/pusher_implementation" %}.
+GraphQL-Ruby currently supports using `urql` with the [ActionCable](/subscriptions/action_cable_implementation) and [Pusher implementation](/subscriptions/pusher_implementation).
 
 ## Pusher
 
@@ -51,4 +43,4 @@ const client = new Client({
 });
 ```
 
-Want to use `urql` with another subscription backend? Please {% open_an_issue "Using urql with ..." %}.
+Want to use `urql` with another subscription backend? Please [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?title=Using+urql+with+...&body=).

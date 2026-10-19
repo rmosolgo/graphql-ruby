@@ -1,3 +1,6 @@
+plugins:
+  - rubocop-sorbet
+
 require:
   - ./cop/development/none_without_block_cop
   - ./cop/development/no_eval_cop
@@ -19,6 +22,9 @@ AllCops:
     - 'vendor/**/*'
     - 'spec/integration/tmp/**/*'
     - 'spec/fixtures/cop/*.rb'
+
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
 
 Development/ContextIsPassedCop:
   Exclude:
@@ -92,9 +98,6 @@ Layout/IndentationWidth:
 Style/LambdaCall:
   EnforcedStyle: call
 
-Layout/LeadingCommentSpace:
-  Enabled: true
-
 Naming/MethodName:
   EnforcedStyle: snake_case
 
@@ -110,3 +113,8 @@ GraphQL/DefaultNullTrue:
 
 GraphQL/DefaultRequiredTrue:
   Enabled: true
+
+Sorbet/HasSigil:
+  Enabled: true
+  Include:
+    - "lib/**/*.rb"

@@ -342,9 +342,9 @@ describe GraphQL::ExecutionError do
 
     describe "more than one ExecutionError on a field defined to return a list" do
       let(:query_string) { %|{ multipleErrorsOnNonNullableListField} |}
-      it "the errors are inserted into the errors key and the data is nil even for a NonNullable field" do
+      it "propagates null through non-null list items" do
         expected_result = {
-          "data"=>{"multipleErrorsOnNonNullableListField"=>[nil, nil]},
+          "data"=>nil,
           "errors"=>
             [{"message"=>"The first error message for a field defined to return a list of strings.",
               "locations"=>[{"line"=>1, "column"=>3}],
@@ -398,6 +398,19 @@ describe GraphQL::ExecutionError do
       }
     ]
     assert_equal(expected_errors, result["errors"])
+  end
+
+  it "propagates null for arrays containing only execution errors with non-null items" do
+    schema = GraphQL::Schema.from_definition <<-GRAPHQL
+      type Query {
+        nullableList: [String!]
+      }
+    GRAPHQL
+    root_value = OpenStruct.new(nullableList: [GraphQL::ExecutionError.new("boom!"), GraphQL::ExecutionError.new("bang!")])
+
+    result = schema.execute("{ nullableList }", root_value: root_value)
+    assert_equal({ "nullableList" => nil }, result["data"])
+    assert_equal([["nullableList", 0], ["nullableList", 1]], result["errors"].map { |error| error["path"] })
   end
 
   describe "when ExecutionError is raised in resolve_type" do

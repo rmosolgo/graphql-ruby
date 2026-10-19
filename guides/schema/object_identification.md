@@ -1,24 +1,16 @@
----
-layout: guide
-doc_stub: false
-search: true
-title: Object Identification
-section: Schema
-desc: Working with unique global IDs
-index: 8
----
+# Object Identification
 
 GraphQL-Ruby ships with some helpers to implement [Relay-style object identification](https://relay.dev/graphql/objectidentification.htm).
 
 ## Schema methods
 
-See {% internal_link "the Schema definition guide", "/schema/definition#object-identification" %} for required top-level hooks.
+See [the Schema definition guide](/schema/definition#object-identification) for required top-level hooks.
 
 ## Node interface
 
 One requirement for Relay's object management is implementing the `"Node"` interface.
 
-To implement the node interface, add {{ "GraphQL::Types::Relay::Node" | api_doc }} to your definition:
+To implement the node interface, add [GraphQL::Types::Relay::Node](rdoc-ref:GraphQL::Types::Relay::Node) to your definition:
 
 ```ruby
 class Types::PostType < GraphQL::Schema::Object
@@ -51,7 +43,7 @@ end
 
 Nodes must have a field named `"id"` which returns a globally unique ID.
 
-To add a UUID field named `"id"`, implement the {{ "GraphQL::Types::Relay::Node" | api_doc }} interface::
+To add a UUID field named `"id"`, implement the [GraphQL::Types::Relay::Node](rdoc-ref:GraphQL::Types::Relay::Node) interface::
 
 ```ruby
 class Types::PostType < GraphQL::Schema::Object

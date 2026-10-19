@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 
 module GraphQL
   class Schema
@@ -6,14 +7,19 @@ module GraphQL
       # This class filters the types, fields, arguments, enum values, and directives in a schema
       # based on the given `context`.
       #
-      # It's like {Warden}, but has some differences:
+      # It's like `Warden`, but has some differences:
       #
-      # - It doesn't use {Schema}'s top-level caches (eg {Schema.references_to}, {Schema.possible_types}, {Schema.types})
+      # - It doesn't use [Schema](rdoc-ref:GraphQL::Schema)'s top-level caches (eg [Schema.references_to](rdoc-ref:GraphQL::Schema.references_to), [Schema.possible_types](rdoc-ref:GraphQL::Schema.possible_types), [Schema.types](rdoc-ref:GraphQL::Schema.types))
       # - It doesn't hide Interface or Union types when all their possible types are hidden. (Instead, those types should implement `.visible?` to hide in that case.)
       # - It checks `.visible?` on root introspection types
       # - It can be used to cache profiles by name for re-use across queries
       class Profile
-        # @return [Schema::Visibility::Profile]
+        # **Returns**
+        #
+        # - `Schema::Visibility::Profile`
+        #
+        # :call-seq:
+        #   from_context(ctx, schema) -> Schema::Visibility::Profile
         def self.from_context(ctx, schema)
           if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
             types
@@ -28,35 +34,56 @@ module GraphQL
           profile
         end
 
-        # @return [Symbol, nil]
+        # **Returns**
+        #
+        # - `Symbol, nil`
         attr_reader :name
 
         def freeze
           @cached_visible.default_proc = nil
+          @cached_visible.freeze
           @cached_visible_fields.default_proc = nil
           @cached_visible_fields.each do |type, fields|
             fields.default_proc = nil
+            fields.freeze
           end
+          @cached_visible_fields.freeze
           @cached_visible_arguments.default_proc = nil
           @cached_visible_arguments.each do |type, fields|
             fields.default_proc = nil
+            fields.freeze
           end
+          @cached_visible_arguments.freeze
           @cached_parent_fields.default_proc = nil
           @cached_parent_fields.each do |type, fields|
             fields.default_proc = nil
+            fields.freeze
           end
+          @cached_parent_fields.freeze
           @cached_parent_arguments.default_proc = nil
           @cached_parent_arguments.each do |type, args|
             args.default_proc = nil
+            args.freeze
           end
+          @cached_parent_arguments.freeze
           @cached_possible_types.default_proc = nil
+          @cached_possible_types.freeze
           @cached_enum_values.default_proc = nil
+          @cached_enum_values.freeze
           @cached_fields.default_proc = nil
+          @cached_fields.freeze
           @cached_arguments.default_proc = nil
+          @cached_arguments.freeze
           @loadable_possible_types.default_proc = nil
+          @loadable_possible_types.freeze
           @cached_field_result.default_proc = nil
-          @cached_field_result.each { |_, h| h.default_proc = nil }
+          @cached_field_result.each do |_, h|
+            h.default_proc = nil
+            h.freeze
+          end
+          @cached_field_result.freeze
           @cached_type_result.default_proc = nil
+          @cached_type_result.freeze
           super
         end
 
@@ -277,18 +304,31 @@ module GraphQL
                 arguments(f).each do |arg|
                   argument(f, arg.graphql_name)
                 end
+
+                resolver_class = f.resolver
+                if resolver_class
+                  arguments(resolver_class).each do |arg|
+                    argument(resolver_class, arg.graphql_name)
+                  end
+                end
               end
               @schema.introspection_system.dynamic_fields.each do |f|
                 field(type_defn, f.graphql_name)
               end
+              interfaces(type_defn)
             elsif type_defn.kind.input_object?
               arguments(type_defn).each do |arg|
                 argument(type_defn, arg.graphql_name)
               end
             elsif type_defn.kind.enum?
               enum_values(type_defn)
+            elsif type_defn.kind.union?
+              loadable_possible_types(type_defn, @context)
+              @schema.introspection_system.dynamic_fields.each do |f|
+                field(type_defn, f.graphql_name)
+              end
             end
-            # Lots more to do here
+            possible_types(type_defn)
           end
           if @schema.query
             @schema.introspection_system.entry_points.each do |f|
@@ -304,6 +344,25 @@ module GraphQL
             end
           end
 
+          directives.each do |directive|
+            arguments(directive).each do |directive_argument|
+              argument(directive, directive_argument.graphql_name)
+            end
+          end
+
+          @cached_arguments.each do |owner, args|
+            @cached_parent_arguments[owner]
+
+            args.each do |arg|
+              if (loads_type = arg.loads)
+                loadable?(loads_type, @context)
+                possible_types(loads_type)
+                if loads_type.kind.union?
+                  loadable_possible_types(loads_type, @context)
+                end
+              end
+            end
+          end
         end
 
         private

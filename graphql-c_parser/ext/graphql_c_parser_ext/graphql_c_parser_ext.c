@@ -9,7 +9,7 @@ VALUE GraphQL_CParser_Parser_c_parse(VALUE self) {
   return Qnil;
 }
 
-void Init_graphql_c_parser_ext() {
+void Init_graphql_c_parser_ext(void) {
   VALUE GraphQL = rb_define_module("GraphQL");
   VALUE CParser = rb_define_module_under(GraphQL, "CParser");
   VALUE Lexer = rb_define_module_under(CParser, "Lexer");

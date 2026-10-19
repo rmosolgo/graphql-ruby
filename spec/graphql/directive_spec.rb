@@ -160,7 +160,6 @@ describe "GraphQL::Directive" do
   end
   describe "merging @skip and @include" do
     let(:field_included?) { r = result["data"]["cheese"]; r.has_key?('flavor') && r.has_key?('withVariables') }
-    let(:skip?) { false }
     let(:include?) { true }
     let(:variables) { {"skip" => skip?, "include" => include?} }
     let(:query_string) {"

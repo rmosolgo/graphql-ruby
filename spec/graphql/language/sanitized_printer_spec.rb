@@ -352,8 +352,12 @@ describe GraphQL::Language::SanitizedPrinter do
       end
 
       class Query < GraphQL::Schema::Object
-        field :things, [String] do
+        field :things, [String], resolve_static: true do
           argument :group, Grouping
+        end
+
+        def self.things(ctx, group:)
+          [group]
         end
 
         def things(group:)

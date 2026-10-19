@@ -1,11 +1,11 @@
 # frozen_string_literal: true
+# typed: false
 require "date"
 require "set"
 module GraphQL
   class Subscriptions
     # Serialization helpers for passing subscription data around.
-    # @api private
-    module Serialize
+    module Serialize # :nodoc:
       GLOBALID_KEY = "__gid__"
       SYMBOL_KEY = "__sym__"
       SYMBOL_KEYS_KEY = "__sym_keys__"
@@ -13,26 +13,53 @@ module GraphQL
       TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%N%z" # eg '2020-01-01 23:59:59.123456789+05:00'
       TIMESTAMP_CLASS_NAMES = ["Date", "DateTime", "Time"].freeze
       OPEN_STRUCT_KEY = "__ostruct__"
+      HASH_KEY = "__graphql_hash__"
+      RESERVED_KEYS = [GLOBALID_KEY, SYMBOL_KEY, SYMBOL_KEYS_KEY, TIMESTAMP_KEY, OPEN_STRUCT_KEY, HASH_KEY].freeze
 
       module_function
 
-      # @param str [String] A serialized object from {.dump}
-      # @return [Object] An object equivalent to the one passed to {.dump}
+      # **Parameters**
+      #
+      # - `str` (`String`) — A serialized object from [.dump](rdoc-ref:.dump)
+      #
+      # **Returns**
+      #
+      # - `Object` — An object equivalent to the one passed to [.dump](rdoc-ref:.dump)
+      #
+      # :call-seq:
+      #   load(String str) -> Object
       def load(str)
         parsed_obj = JSON.parse(str)
         load_value(parsed_obj)
       end
 
-      # @param obj [Object] Some subscription-related data to dump
-      # @return [String] The stringified object
+      # **Parameters**
+      #
+      # - `obj` (`Object`) — Some subscription-related data to dump
+      #
+      # **Returns**
+      #
+      # - `String` — The stringified object
+      #
+      # :call-seq:
+      #   dump(Object obj) -> String
       def dump(obj)
         JSON.generate(dump_value(obj))
       end
 
       # This is for turning objects into subscription scopes.
       # It's a one-way transformation, can't reload this :'(
-      # @param obj [Object]
-      # @return [String]
+      #
+      # **Parameters**
+      #
+      # - `obj` (`Object`)
+      #
+      # **Returns**
+      #
+      # - `String`
+      #
+      # :call-seq:
+      #   dump_recursive(Object obj) -> String
       def dump_recursive(obj)
         case
         when obj.is_a?(Array)
@@ -53,11 +80,19 @@ module GraphQL
       class << self
         private
 
-        # @param value [Object] A parsed JSON object
-        # @return [Object] An object that load Global::Identification recursive
+        # **Parameters**
+        #
+        # - `value` (`Object`) — A parsed JSON object
+        #
+        # **Returns**
+        #
+        # - `Object` — An object that load Global::Identification recursive
+        #
+        # :call-seq:
+        #   load_value(Object value) -> Object
         def load_value(value)
           if value.is_a?(Array)
-            is_gids = (v1 = value[0]).is_a?(Hash) && v1.size == 1 && v1[GLOBALID_KEY]
+            is_gids = !value.empty? && value.all? { |v| v.is_a?(Hash) && v.size == 1 && v[GLOBALID_KEY] }
             if is_gids
               # Assume it's an array of global IDs
               ids = value.map { |v| v[GLOBALID_KEY] }
@@ -91,6 +126,10 @@ module GraphQL
               when OPEN_STRUCT_KEY
                 ostruct_values = load_value(value[OPEN_STRUCT_KEY])
                 OpenStruct.new(ostruct_values)
+              when HASH_KEY
+                value[HASH_KEY].each_with_object({}) do |(k, v), loaded_h|
+                  loaded_h[load_value(k)] = load_value(v)
+                end
               else
                 key = value.keys.first
                 { key => load_value(value[key]) }
@@ -98,14 +137,20 @@ module GraphQL
             else
               loaded_h = {}
               sym_keys = value.fetch(SYMBOL_KEYS_KEY, [])
+              symbol_key_values = sym_keys.is_a?(Hash) ? sym_keys : nil
               value.each do |k, v|
                 if k == SYMBOL_KEYS_KEY
                   next
                 end
-                if sym_keys.include?(k)
+                if !symbol_key_values && sym_keys.include?(k)
                   k = k.to_sym
                 end
                 loaded_h[k] = load_value(v)
+              end
+              if symbol_key_values
+                symbol_key_values.each do |k, v|
+                  loaded_h[k.to_sym] = load_value(v)
+                end
               end
               loaded_h
             end
@@ -114,22 +159,45 @@ module GraphQL
           end
         end
 
-        # @param obj [Object] Some subscription-related data to dump
-        # @return [Object] The object that converted Global::Identification
+        # **Parameters**
+        #
+        # - `obj` (`Object`) — Some subscription-related data to dump
+        #
+        # **Returns**
+        #
+        # - `Object` — The object that converted Global::Identification
+        #
+        # :call-seq:
+        #   dump_value(Object obj) -> Object
         def dump_value(obj)
           if obj.is_a?(Array)
             obj.map{|item| dump_value(item)}
           elsif obj.is_a?(Hash)
+            has_colliding_symbol_key = obj.any? { |k, _v| k.is_a?(Symbol) && obj.key?(k.to_s) }
+            if obj.any? { |k, _v| RESERVED_KEYS.include?(k.to_s) }
+              return {
+                HASH_KEY => obj.map { |k, v| [dump_value(k.is_a?(Symbol) ? k : k.to_s), dump_value(v)] },
+              }
+            end
             symbol_keys = nil
+            symbol_key_values = nil
             dumped_h = {}
             obj.each do |k, v|
-              dumped_h[k.to_s] = dump_value(v)
-              if k.is_a?(Symbol)
+              dumped_v = dump_value(v)
+              if has_colliding_symbol_key && k.is_a?(Symbol)
+                symbol_key_values ||= {}
+                symbol_key_values[k.to_s] = dumped_v
+              else
+                dumped_h[k.to_s] = dumped_v
+              end
+              if !has_colliding_symbol_key && k.is_a?(Symbol)
                 symbol_keys ||= Set.new
                 symbol_keys << k.to_s
               end
             end
-            if symbol_keys
+            if symbol_key_values
+              dumped_h[SYMBOL_KEYS_KEY] = symbol_key_values
+            elsif symbol_keys
               dumped_h[SYMBOL_KEYS_KEY] = symbol_keys.to_a
             end
             dumped_h

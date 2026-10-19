@@ -1,12 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: JavaScript Client
-title: Apollo Subscriptions
-desc: GraphQL subscriptions with GraphQL-Ruby and Apollo Client
-index: 2
----
+# Apollo Subscriptions
 
 GraphQL-Ruby's JavaScript client includes several kinds of support for Apollo Client:
 
@@ -63,7 +55,7 @@ const client = new ApolloClient({
 
 This link will check responses for the `X-Subscription-ID` header, and if it's present, it will use that value to subscribe to Pusher for future updates.
 
-If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#payload-compression" %}, configure a `decompress:` function, too:
+If you're using [compressed payloads](/subscriptions/pusher_implementation#payload-compression), configure a `decompress:` function, too:
 
 ```javascript
 // Add `pako` to the project for gunzipping
@@ -124,7 +116,7 @@ This link will check responses for the `X-Subscription-ID` header, and if it's p
 
 For your __app key__, make a key with "Subscribe" and "Presence" privileges and use that:
 
-{{ "/javascript_client/ably_key.png" | link_to_img:"Ably Subscription Key Privileges" }}
+![Ably Subscription Key Privileges](/javascript_client/ably_key.png)
 
 ## Apollo Link -- ActionCable
 
@@ -171,11 +163,11 @@ Note that for Rails 5, the ActionCable client package is `actioncable`, not `@ra
 
 ## Apollo 1
 
-`graphql-ruby-client` includes support for Apollo 1 client subscriptions over {% internal_link "Pusher", "/subscriptions/pusher_implementation" %} or {% internal_link "ActionCable", "/subscriptions/action_cable_implementation" %}.
+`graphql-ruby-client` includes support for Apollo 1 client subscriptions over [Pusher](/subscriptions/pusher_implementation) or [ActionCable](/subscriptions/action_cable_implementation).
 
 To use it, require `subscriptions/addGraphQLSubscriptions` and call the function with your network interface and transport client (example below).
 
-See the {% internal_link "Subscriptions guide", "/subscriptions/overview" %} for information about server-side setup.
+See the [Subscriptions guide](/subscriptions/overview) for information about server-side setup.
 
 ### Apollo 1 -- Pusher
 
@@ -195,7 +187,7 @@ var OperationStoreClient = require("./OperationStoreClient")
 RailsNetworkInterface.use([OperationStoreClient.apolloMiddleware])
 ```
 
-If you're using {% internal_link "compressed payloads", "/subscriptions/pusher_implementation#payload-compression" %}, configure a `decompress:` function, too:
+If you're using [compressed payloads](/subscriptions/pusher_implementation#payload-compression), configure a `decompress:` function, too:
 
 ```javascript
 // Add `pako` to the project for gunzipping

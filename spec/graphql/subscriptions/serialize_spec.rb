@@ -58,6 +58,12 @@ describe GraphQL::Subscriptions::Serialize do
       assert_equal false, user_a.located_many?
       assert_equal [true, true], loaded["users"].map(&:located_many?)
     end
+
+    it "deserializes arrays containing global ids and other values" do
+      value = [GlobalIDUser.new("a"), 1, "two"]
+
+      assert_equal value, serialize_load(serialize_dump(value))
+    end
   end
 
   it "can deserialize symbols" do
@@ -68,6 +74,12 @@ describe GraphQL::Subscriptions::Serialize do
     assert_equal expected_dumped, dumped
     loaded = serialize_load(dumped)
     assert_equal value, loaded
+  end
+
+  it "preserves symbol and string keys with the same name" do
+    value = { a: 1, "a" => 2 }
+
+    assert_equal value, serialize_load(serialize_dump(value))
   end
 
   it "can deserialize date/times" do
@@ -154,5 +166,27 @@ describe GraphQL::Subscriptions::Serialize do
     serialized = os.to_json
     reloaded = serialize_load(serialized)
     assert_equal os, reloaded
+  end
+
+  it "round trips hashes with reserved serializer keys" do
+    reserved_values = {
+      "__gid__" => "gid://app/User/1",
+      "__sym__" => "user-value",
+      "__sym_keys__" => ["user-value"],
+      "__timestamp__" => ["UserClass", "user-value"],
+      "__ostruct__" => { "user-value" => true },
+      "__graphql_hash__" => [["user-value"]],
+    }
+
+    reserved_values.each do |key, value|
+      input = { "nested" => [{ key => value }] }
+      assert_equal input, serialize_load(serialize_dump(input)), key
+    end
+
+    input = { "__sym_keys__" => ["user-value"], "user-value" => true }
+    assert_equal input, serialize_load(serialize_dump(input))
+
+    input = { __gid__: "gid://app/User/1" }
+    assert_equal input, serialize_load(serialize_dump(input))
   end
 end

@@ -143,7 +143,6 @@ describe GraphQL::Analysis do
   describe "skip and include behaviors" do
     let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [AstSkipInclude]) }
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
-    let(:query_string) {%|{}|}
 
     describe "for fields" do
       let(:query_string) {%|

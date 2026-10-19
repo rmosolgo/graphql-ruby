@@ -25,6 +25,11 @@ describe GraphQL::Tracing::SentryTrace do
 
       field :thing, Thing, resolve_legacy_instance_method: true
       def thing; :thing; end
+
+      field :echo, Integer, null: false, resolve_legacy_instance_method: true do
+        argument :value, Integer
+      end
+      def echo(value:); value; end
     end
 
     class SchemaWithoutTransactionName < GraphQL::Schema
@@ -50,8 +55,8 @@ describe GraphQL::Tracing::SentryTrace do
     Sentry.clear_all
   end
 
-  def exec_query(query_str, context: {}, schema: SentryTraceTest::SchemaWithoutTransactionName)
-    schema.execute(query_str, context: context)
+  def exec_query(query_str, context: {}, variables: {}, schema: SentryTraceTest::SchemaWithoutTransactionName)
+    schema.execute(query_str, context: context, variables: variables)
   end
 
   it "works with other trace modules" do
@@ -119,6 +124,26 @@ describe GraphQL::Tracing::SentryTrace do
     ].compact
 
     assert_equal expected_span_data.sort, Sentry::SPAN_DATA.sort
+  end
+
+  it "does not collect the document when configured not to" do
+    Sentry.configuration.data_collection.graphql.document = false
+    exec_query("query Ab { int }")
+
+    refute Sentry::SPAN_DATA.any? { |key, _value| key == "graphql.document" }
+  end
+
+  it "sets span data for query variables when configured to do so" do
+    exec_query("query($value: Int!) { echo(value: $value) }", variables: {"value" => 1})
+
+    assert_includes Sentry::SPAN_DATA, ["graphql.variables", {"value" => 1}]
+  end
+
+  it "does not collect query variables when configured not to" do
+    Sentry.configuration.data_collection.graphql.variables = false
+    exec_query("query($value: Int!) { echo(value: $value) }", variables: {"value" => 1})
+
+    refute Sentry::SPAN_DATA.any? { |key, _value| key == "graphql.variables" }
   end
 
   it "sets span descriptions for a named query" do

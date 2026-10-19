@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 require "graphql/language/block_string"
 require "graphql/language/comment"
 require "graphql/language/printer"
@@ -16,8 +17,7 @@ require "strscan"
 
 module GraphQL
   module Language
-    # @api private
-    def self.serialize(value)
+    def self.serialize(value) # :nodoc:
       if value.is_a?(Hash)
         serialized_hash = value.map do |k, v|
           "#{k}:#{serialize v}"
@@ -43,7 +43,13 @@ module GraphQL
 
     # Returns a new string if any single-quoted newlines were escaped.
     # Otherwise, returns `query_str` unchanged.
-    # @return [String]
+    #
+    # **Returns**
+    #
+    # - `String`
+    #
+    # :call-seq:
+    #   escape_single_quoted_newlines(query_str) -> String
     def self.escape_single_quoted_newlines(query_str)
       scanner = StringScanner.new(query_str)
       inside_single_quoted_string = false

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module Language
     # Like `GraphQL::Language::Visitor` except it doesn't support
@@ -9,7 +10,13 @@ module GraphQL
       end
 
       # Visit `document` and all children
-      # @return [void]
+      #
+      # **Returns**
+      #
+      # - `void`
+      #
+      # :call-seq:
+      #   visit() -> void
       def visit
         # `@document` may be any kind of node:
         visit_method = @document.visit_method
@@ -104,9 +111,17 @@ module GraphQL
           # To customize this hook, override one of its make_visit_methods (or the base method?)
           # in your subclasses.
           #
-          # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
-          # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
-          # @return [void]
+          # **Parameters**
+          #
+          # - `node` (`GraphQL::Language::Nodes::AbstractNode`) — the node being visited
+          # - `parent` (`GraphQL::Language::Nodes::AbstractNode, nil`) — the previously-visited node, or `nil` if this is the root node.
+          #
+          # **Returns**
+          #
+          # - `void`
+          #
+          # :call-seq:
+          #   #{node_method}(GraphQL::Language::Nodes::AbstractNode node, GraphQL::Language::Nodes::AbstractNode | nil parent) -> void
           def #{node_method}(node, parent)
             #{
               if method_defined?(child_visit_method)

@@ -191,12 +191,19 @@ describe GraphQL::Query::Partial do
     end
 
     def self.resolve_type(abs_type, object, ctx)
+      raise GraphQL::ExecutionError, "Root type resolution failed" if object[:resolve_type_error]
+
       object[:is_market] ? Market : Farm
     end
 
     use GraphQL::Dataloader
     use GraphQL::Execution::Next
     lazy_resolve Proc, :call
+  end
+
+  class NoLazyPartialSchema < GraphQL::Schema
+    query PartialSchema::Query
+    use GraphQL::Execution::Next
   end
 
   before do
@@ -426,6 +433,12 @@ describe GraphQL::Query::Partial do
     assert results[2].partial.leaf?
   end
 
+  it "runs scalar partials without configured lazy resolvers" do
+    query = GraphQL::Query.new(NoLazyPartialSchema, "{ entity { name } }", context: { __graphql_execute_next: true })
+    result = query.run_partials([{ path: ["entity", "name"], object: "Whisper Hill" }]).first
+
+    assert_equal({ "data" => "Whisper Hill" }, result.to_h)
+  end
 
   it "runs on union selections" do
     str = "{
@@ -442,6 +455,25 @@ describe GraphQL::Query::Partial do
 
     assert_equal({ "name" => "Whisper Hill" }, results[0]["data"])
     assert_equal({ "name" => "Crozet Farmers Market", "isYearRound" => false }, results[1]["data"])
+  end
+
+  it "keeps results aligned when a partial fails before producing a result" do
+    exec_next_only("Execution::Next runner result bookkeeping")
+
+    str = "{
+      thing {
+        ...on Farm { name }
+      }
+    }"
+
+    results = run_partials(str, [
+      { path: ["thing"], object: OpenStruct.new({ resolve_type_error: true }) },
+      { path: ["thing"], object: OpenStruct.new({ name: "Whisper Hill" }) },
+    ])
+
+    assert_nil results[0]["data"]
+    assert_equal ["Root type resolution failed"], results[0]["errors"].map { |err| err["message"] }
+    assert_equal({ "data" => { "name" => "Whisper Hill" } }, results[1].to_h)
   end
 
   it "runs on interface selections" do

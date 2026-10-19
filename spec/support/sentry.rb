@@ -11,12 +11,41 @@ module Sentry
   SPAN_DESCRIPTIONS = []
   TRANSACTION_NAMES = []
 
+  class DataCollection
+    class GraphQL
+      attr_accessor :document, :variables
+
+      def initialize
+        @document = true
+        @variables = true
+      end
+    end
+
+    attr_reader :graphql
+
+    def initialize
+      @graphql = GraphQL.new
+    end
+  end
+
+  class Configuration
+    attr_reader :data_collection
+
+    def initialize
+      @data_collection = DataCollection.new
+    end
+  end
+
   class << self
     attr_accessor :use_nil_span
   end
 
   def self.initialized?
     true
+  end
+
+  def self.configuration
+    @configuration ||= Configuration.new
   end
 
   def self.utc_now
@@ -45,6 +74,8 @@ module Sentry
     SPAN_DESCRIPTIONS.clear
     SPAN_OPS.clear
     TRANSACTION_NAMES.clear
+    configuration.data_collection.graphql.document = true
+    configuration.data_collection.graphql.variables = true
   end
 
   module DummySpan

@@ -1,27 +1,35 @@
 name: CI Suite
 on:
-  - pull_request
+  pull_request:
+  # Runs on master save gem caches that pull requests can restore from
+  # (PRs can only read caches from their own ref or their base branch)
+  push:
+    branches:
+      - master
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_GEMFILE: gemfiles/sorbet.gemfile
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+    - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
       with:
         ruby-version: 3.4
         bundler-cache: true
     - run: bundle exec rake rubocop
+    - run: bundle exec srb tc
     - run: npx @herb-tools/linter@0.8.10
   system_tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: shogo82148/actions-setup-redis@260698946aaa92b2a6858999fccb1a4444981d56 # v1.56.1
+    - uses: shogo82148/actions-setup-redis@ffaf3c39499b2917543d84f6acc818277580b531 # v1.58.1
       with:
         redis-version: "7.x"
     - run: redis-cli ping
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+    - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
       with:
         ruby-version: 3.4
         bundler-cache: true
@@ -69,14 +77,14 @@ jobs:
       if: ${{ !!matrix.graphql_future }}
     - run: echo ISOLATION_LEVEL_FIBER=1 > "$GITHUB_ENV"
       if: ${{ !!matrix.isolation_level_fiber }}
-    - uses: shogo82148/actions-setup-redis@260698946aaa92b2a6858999fccb1a4444981d56 # v1.56.1
+    - uses: shogo82148/actions-setup-redis@ffaf3c39499b2917543d84f6acc818277580b531 # v1.58.1
       with:
         redis-version: "7.x"
       if: ${{ !!matrix.redis }}
     - run: redis-cli ping
       if: ${{ !!matrix.redis }}
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+    - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
@@ -126,7 +134,7 @@ jobs:
     - run: echo ISOLATION_LEVEL_FIBER=1 > "$GITHUB_ENV"
       if: ${{ !!matrix.isolation_level_fiber }}
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+    - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
       with:
         ruby-version: "3.3"
         bundler-cache: true
@@ -147,8 +155,12 @@ jobs:
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > "$GITHUB_ENV"
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+    - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
       with:
         ruby-version: 3.4
         bundler-cache: true
-    - run: bundle exec rake compile test
+    - run: bundle exec rake compile
+    # The rest of the suite is covered by other jobs; only test Mongoid integration here
+    - run: bundle exec rake test
+      env:
+        TEST: "spec/integration/mongoid/**/*_spec.rb,spec/graphql/pagination/mongoid_relation_connection_spec.rb"
