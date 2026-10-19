@@ -202,9 +202,8 @@ module GraphQL
         response_keys.each do |key, fields|
           next unless fields.is_a?(Array)
 
-          # Optimization: group fields by signature (name + definition + arguments).
-          # Fields with the same signature can only conflict on sub-selections,
-          # so we only need to compare one pair within each group.
+          # Optimization: compare only one of the fields which have the same signature
+          # (name + definition + arguments), parent type and sub-selections.
           if fields.size > 4
             f0 = fields[0]
             all_same = true
@@ -218,27 +217,23 @@ module GraphQL
             end
 
             if all_same
+              # These fields can only conflict on sub-selections.
               find_conflicts_between_selection_groups(key, fields)
             else
-              groups = fields.group_by { |f| field_signature(f) }
-              unique_groups = groups.values
+              representatives = {}
+              fields.each do |field|
+                representatives[[field_signature(field), field.owner_type, field_selection_signature(field)]] ||= field
+              end
+              representatives = representatives.values
 
-              # Compare representatives across different groups
-              gi = 0
-              while gi < unique_groups.size
-                gj = gi + 1
-                while gj < unique_groups.size
-                  find_conflict(key, unique_groups[gi][0], unique_groups[gj][0])
-                  gj += 1
+              i = 0
+              while i < representatives.size
+                j = i + 1
+                while j < representatives.size
+                  find_conflict(key, representatives[i], representatives[j])
+                  j += 1
                 end
-
-                # Within the same group, fields can only conflict on sub-selections.
-                group = unique_groups[gi]
-                if group.size >= 2
-                  find_conflicts_between_selection_groups(key, group)
-                end
-
-                gi += 1
+                i += 1
               end
             end
           else
@@ -284,6 +279,7 @@ module GraphQL
         n2 = f2.node
 
         f1.definition.equal?(f2.definition) &&
+          f1.owner_type.equal?(f2.owner_type) &&
           n1.name == n2.name &&
           same_arguments?(n1, n2)
       end

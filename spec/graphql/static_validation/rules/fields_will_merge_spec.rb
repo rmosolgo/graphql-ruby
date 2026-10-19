@@ -1592,6 +1592,69 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         assert error_messages.any? { |m| m.include?("Field 'doesKnowCommand' has an argument conflict") }
       end
     end
+
+    describe "grouped path, conflict between sub-selections of fields in different groups" do
+      let(:query_string) {%|
+        {
+          pet {
+            ... on Dog { x: toys { a: name } }
+            ... on Dog { x: toys { b: name } }
+            ... on Cat { x: toys { a: name } }
+            ... on Cat { x: toys { b: size } }
+            ... on Dog { x: toys { a: name } }
+          }
+        }
+      |}
+
+      it "detects the conflict, like with 4 fields" do
+        schema.allow_legacy_invalid_return_type_conflicts(false)
+        assert_equal ["Field 'b' has a return_type conflict: `String!` or `ToySize!`?"], error_messages
+      end
+    end
+
+    describe "grouped path, one field definition on many object types" do
+      let(:schema) {
+        option_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Option"
+          field :id, GraphQL::Types::ID
+        end
+        has_options = Module.new do
+          include GraphQL::Schema::Interface
+          graphql_name "HasOptions"
+          field :options, [option_type] do
+            argument :first, Integer, required: false
+          end
+        end
+        # These types inherit the same `options` field definition
+        product = Class.new(GraphQL::Schema::Object) { graphql_name("Product"); implements(has_options) }
+        collection = Class.new(GraphQL::Schema::Object) { graphql_name("Collection"); implements(has_options) }
+        query = Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+          field :node, has_options
+        end
+        Class.new(GraphQL::Schema) do
+          query(query)
+          orphan_types(product, collection)
+        end
+      }
+
+      let(:query_string) {%|
+        {
+          node {
+            ... on Collection { options(first: 2) { id } }
+            ... on Product { options { id } }
+            ... on Product { options { id } }
+            ... on Product { options { id } }
+            ... on Product { options { id } }
+            ... on Product { options(first: 2) { id } }
+          }
+        }
+      |}
+
+      it "compares the fields on each object type" do
+        assert_equal ["Field 'options' has an argument conflict: {} or {first:\"2\"}?"], error_messages
+      end
+    end
   end
 
   describe "many identical sub-selections from a shared fragment" do
