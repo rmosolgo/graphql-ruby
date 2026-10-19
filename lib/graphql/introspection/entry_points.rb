@@ -1,10 +1,11 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Introspection
     class EntryPoints < Introspection::BaseObject
       field :__schema, GraphQL::Schema::LateBoundType.new("__Schema"), "This GraphQL schema", null: false, dynamic_introspection: true, resolve_static: true
       field :__type, GraphQL::Schema::LateBoundType.new("__Type"), "A type in the GraphQL system", dynamic_introspection: true, resolve_static: true do
+        #: self as GraphQL::Schema::Field
         argument :name, String
       end
 

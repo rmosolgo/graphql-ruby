@@ -759,6 +759,16 @@ describe GraphQL::Execution::Lookahead do
         # Mismatching `arguments:` filters to nothing:
         assert_equal [], lookahead.alias_selection("egret", arguments: {by_name: "Macaw"}).selections.map(&:name)
       end
+
+      it "caches aliased lookaheads by alias and arguments" do
+        lookahead = query.lookahead
+        egret = lookahead.alias_selection("egret")
+        assert_same egret, lookahead.alias_selection("egret")
+        egret_by_name = lookahead.alias_selection("egret", arguments: {by_name: "Great Egret"})
+        assert_same egret_by_name, lookahead.alias_selection("egret", arguments: {by_name: "Great Egret"})
+        refute_same egret, egret_by_name
+        refute_same egret, lookahead.alias_selection("otherEgret")
+      end
     end
 
     describe "when field name is passed" do

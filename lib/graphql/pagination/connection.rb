@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Pagination
@@ -100,7 +100,7 @@ module GraphQL
         @last_value = last
         @before_value = before
         @arguments = arguments
-        @edge_class = edge_class || self.class::Edge
+        @edge_class = edge_class || self.class.const_get(:Edge)
         # This is only true if the object was _initialized_ with an override
         # or if one is assigned later.
         @has_max_page_size_override = max_page_size != NOT_CONFIGURED
