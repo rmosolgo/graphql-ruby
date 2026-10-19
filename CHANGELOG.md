@@ -10,7 +10,7 @@
 
 ### Bug fixes
 
-- `FieldsHaveAppropriateSelections`: don't crash on inline fragments without type conditions inside leaf selections
+- `FieldsHaveAppropriateSelections`: don't crash on inline fragments without type conditions inside leaf selections #5791
 
 # 2.6.12 (14 Oct 2026)
 
