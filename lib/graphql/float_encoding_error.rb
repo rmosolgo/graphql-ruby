@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   # This error is raised when `Types::Float` is asked to return a non-finite value.
   class FloatEncodingError < GraphQL::RuntimeTypeError

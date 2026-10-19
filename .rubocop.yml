@@ -1,3 +1,6 @@
+plugins:
+  - rubocop-sorbet
+
 require:
   - ./cop/development/none_without_block_cop
   - ./cop/development/no_eval_cop
@@ -110,3 +113,8 @@ GraphQL/DefaultNullTrue:
 
 GraphQL/DefaultRequiredTrue:
   Enabled: true
+
+Sorbet/HasSigil:
+  Enabled: true
+  Include:
+    - "lib/**/*.rb"

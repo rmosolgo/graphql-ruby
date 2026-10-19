@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "fiber"
 require "graphql/execution/interpreter/argument_value"
 require "graphql/execution/interpreter/arguments"

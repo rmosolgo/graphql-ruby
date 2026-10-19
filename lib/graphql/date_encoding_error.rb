@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   # This error is raised when `Types::ISO8601Date` is asked to return a value
   # that cannot be parsed to a Ruby Date.

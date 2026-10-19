@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Query
     class Context
@@ -13,7 +14,7 @@ module GraphQL
           if @scoped_contexts.nil?
             GraphQL::EmptyObjects::EMPTY_HASH
           else
-            merged_ctx = {}
+            merged_ctx = {} #: untyped
             each_present_path_ctx do |path_ctx|
               merged_ctx = path_ctx.merge(merged_ctx)
             end

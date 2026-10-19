@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   class Query
     # This class is _like_ a [GraphQL::Query](rdoc-ref:GraphQL::Query), except it can run on an arbitrary path within a query string.

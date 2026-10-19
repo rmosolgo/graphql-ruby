@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: ignore
 
 require "graphql/tracing/platform_tracing"
 

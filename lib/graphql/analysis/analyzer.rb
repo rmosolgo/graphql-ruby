@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Analysis
     # Query analyzer for query ASTs. Query analyzers respond to visitor style methods

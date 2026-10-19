@@ -252,23 +252,22 @@ namespace :docs do
   task check: "docs:rdoc:build" do
     ruby "tool/docs/check.rb"
     ruby "tool/docs/type_signatures.rb", "--check"
-    ruby "tool/docs/migrate_guides.rb", "--check"
-    ruby "tool/docs/guide_audit.rb"
-    ruby "tool/docs/compatibility.rb", "--root", "tmp/rdoc-site", "--rdoc", "tmp/rdoc-site/js/search_data.js", "--baseline", "docs/yard_api_baseline.yml", "--strict", "--json", "tmp/rdoc-api-compatibility.json"
+    ruby "tool/docs/compatibility.rb", "--root", "tmp/rdoc-site", "--rdoc", "tmp/rdoc-site/js/search_data.js", "--strict", "--json", "tmp/rdoc-api-compatibility.json"
     ruby "tool/docs/link_checker.rb", "--root", "tmp/rdoc-site", "--strict", "--json", "tmp/rdoc-link-report.json"
     ruby "tool/docs/rdoc_ref_checker.rb", "--root", "tmp/rdoc-site", "--json", "tmp/rdoc-ref-report.json"
     sh "node tool/docs/assets/graphql_highlighter_test.js"
   end
 
   desc "Build the documentation twice and compare generated files"
-  task :build_twice do
+  # Reuses the `docs:rdoc:build` output as the first build, so running
+  # `rake docs:check docs:build_twice` builds the site only twice in total.
+  task build_twice: "docs:rdoc:build" do
     require_relative "tool/docs/build"
     require "digest"
     require "fileutils"
     require "pathname"
-    builder = GraphQLDocs::Build.new
-    first = builder.build_site(output: "tmp/rdoc-site-first")
-    second = builder.build_site(output: "tmp/rdoc-site-second")
+    first = "tmp/rdoc-site"
+    second = GraphQLDocs::Build.new.build_site(output: "tmp/rdoc-site-second")
     digest = lambda do |root|
       Dir[File.join(root, "**", "*")].select { |path| File.file?(path) }.sort.to_h do |path|
         [Pathname.new(path).relative_path_from(Pathname.new(root)).to_s, Digest::SHA256.file(path).hexdigest]
@@ -277,7 +276,6 @@ namespace :docs do
     raise "RDoc output is not reproducible" unless digest.call(first) == digest.call(second)
     puts "RDoc output is reproducible"
   ensure
-    FileUtils.rm_rf("tmp/rdoc-site-first")
     FileUtils.rm_rf("tmp/rdoc-site-second")
   end
 

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Types
     # This scalar takes `Duration`s and transmits them as strings,

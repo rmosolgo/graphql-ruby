@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   class Schema
     # Extend this class to make field-level customizations to resolve behavior.

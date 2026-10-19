@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class NameValidator
     VALID_NAME_REGEX = /^[_a-zA-Z][_a-zA-Z0-9]*$/

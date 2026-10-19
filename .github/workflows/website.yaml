@@ -51,8 +51,7 @@ jobs:
         run: bundle exec ruby tool/docs/publish_check.rb snapshot --pages gh-pages --snapshot tmp/gh-pages-api-doc-before.json
       - name: Build RDoc site
         run: |
-          bundle exec rake docs:check
-          bundle exec rake docs:build_twice
+          bundle exec rake docs:check docs:build_twice
           bundle exec ruby tool/docs/gem_install_check.rb
           rsync -a --delete --exclude '.git' --exclude 'api-doc' tmp/rdoc-site/ gh-pages/
           touch gh-pages/.nojekyll

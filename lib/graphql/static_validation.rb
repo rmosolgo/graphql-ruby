@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/static_validation/error"
 require "graphql/static_validation/definition_dependencies"
 require "graphql/static_validation/validator"

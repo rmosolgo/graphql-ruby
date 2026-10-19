@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/execution/lazy/lazy_method_map"
 
 module GraphQL

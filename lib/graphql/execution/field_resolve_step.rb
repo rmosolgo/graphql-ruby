@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module Execution
     class FieldResolveStep
@@ -514,7 +515,7 @@ module GraphQL
       def build_leaf_result(result_h, result_key, field_result, return_type, ctx, is_from_array)
         if field_result.nil?
           if return_type.non_null?
-            add_non_null_error(is_from_array)
+            add_non_null_error(is_from_array, return_type: return_type)
           else
             nil
           end
@@ -609,8 +610,14 @@ module GraphQL
         end
       end
 
-      def add_non_null_error(is_from_array)
-        err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path)
+      def add_non_null_error(is_from_array, return_type: nil)
+        if is_from_array && return_type
+          list_type = @field_definition.type
+          list_type = list_type.of_type if list_type.non_null?
+          # Preserve existing messages for single-level lists.
+          element_type = return_type.of_type if list_type.of_type.list?
+        end
+        err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path, element_type: element_type)
         nn_result = @runner.schema.type_error(err, @selections_step.query.context)
         if nn_result.nil?
           propagate_nulls

@@ -1,6 +1,9 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module InputObjectNamesAreUnique
       def on_input_object(node, parent)
         validate_input_fields(node)

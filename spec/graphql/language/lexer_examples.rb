@@ -260,6 +260,13 @@ string with \\"""
 
           result4 = parent_schema.execute(query_str2)
           assert_equal({ "__typename" => "Query" }, result4["data"])
+
+          # Leading comments alone exceed the limit before any real tokens are seen.
+          # Previously the count check was skipped for comments, so the lexer would
+          # return false (EOF) instead of raising a ParseError.
+          query_str3 = "#{5001.times.map { |n| "# comment #{n}\n" }.join}{ __typename }"
+          result5 = child_schema.execute(query_str3)
+          assert_equal ["This query is too large to execute."], result5["errors"].map { |e| e["message"] }
         end
       end
     end

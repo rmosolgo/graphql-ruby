@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Schema
     # Arguments describe the input accepted by a field or input object.
-    # This API reference was migrated from guides/fields/arguments.md.
     # Keep argument-specific behavior and examples here; the guide is only
     # an entry point for the broader fields documentation.
     #
@@ -511,7 +511,7 @@ module GraphQL
           default_used = true
         end
 
-        loaded_value = nil
+        loaded_value = nil #: untyped
         coerced_value = begin
           type.coerce_input(value, context)
         rescue StandardError => err

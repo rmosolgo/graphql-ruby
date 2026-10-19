@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   # If a field's resolve function returns an [ExecutionError](rdoc-ref:GraphQL::ExecutionError),
   # the error will be inserted into the response's `"errors"` key

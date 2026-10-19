@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 require_relative "./base_cop"
 
 module GraphQL

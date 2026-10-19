@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 require "digest/sha2"
 require "net/http"
 require "erb"

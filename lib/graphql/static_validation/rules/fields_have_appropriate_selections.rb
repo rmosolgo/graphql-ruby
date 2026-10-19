@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module StaticValidation
     # Scalars _can't_ have selections
@@ -40,7 +41,11 @@ module GraphQL
             selection_strs = ast_node.selections.map do |n|
               case n
               when GraphQL::Language::Nodes::InlineFragment
-                "\"... on #{n.type.name} { ... }\""
+                if n.type
+                  "\"... on #{n.type.name} { ... }\""
+                else
+                  "\"... { ... }\""
+                end
               when GraphQL::Language::Nodes::Field
                 "\"#{n.name}\""
               when GraphQL::Language::Nodes::FragmentSpread

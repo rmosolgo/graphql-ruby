@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 require 'graphql/version'
 require 'digest/sha2'

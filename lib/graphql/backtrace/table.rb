@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Backtrace
     # A class for turning a context into a human-readable table or array
@@ -53,7 +54,7 @@ module GraphQL
           result = runtime_inst.instance_variable_get(:@response)
           rows = []
           result_path = []
-          last_part = nil
+          last_part = nil #: untyped
           path = @context.current_path
           path.each do |path_part|
             value = value_at(runtime_inst, result_path)
@@ -89,7 +90,7 @@ module GraphQL
           end
 
           object = result.graphql_application_value.object.inspect
-          ast_node = nil
+          ast_node = nil #: untyped
           result.graphql_selections.each do |s|
             found_ast_node = find_ast_node(s, last_part)
             if found_ast_node
