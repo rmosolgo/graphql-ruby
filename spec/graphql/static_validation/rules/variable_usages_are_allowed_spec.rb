@@ -313,6 +313,8 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
   end
 
   describe "variables used in fragments" do
+    let(:schema) { Class.new(Dummy::Schema) { allow_legacy_invalid_variable_usages(false) } }
+
     describe "when the fragment comes before the operation" do
       let(:query_string) {'
         fragment cheeseFields on Cheese {
@@ -381,6 +383,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
   describe "variables in nested list literals" do
     it "checks each variable against the list items at its depth" do
       schema = GraphQL::Schema.from_definition("type Query { f(ll: [[String]], lln: [[String!]!]): String }")
+      schema.allow_legacy_invalid_variable_usages(false)
       query_str = 'query($a: Boolean, $b: String, $c: [String], $d: String) { f(ll: [[$a], [$b], $c]) x: f(lln: [[$d]]) }'
       assert_equal [
         "Type mismatch on variable $a and argument ll ([[Boolean]!]! / [[String]])",
@@ -390,6 +393,8 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
   end
 
   describe "variables with a null default value" do
+    let(:schema) { Class.new(Dummy::Schema) { allow_legacy_invalid_variable_usages(false) } }
+
     let(:query_string) {'
       query getCheese($nullId: Int = null, $id: Int = 1) {
         nullCheese: cheese(id: $nullId) { id }
@@ -399,6 +404,63 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
 
     it "doesn't treat them as non-null" do
       assert_equal ["Nullability mismatch on variable $nullId and argument id (Int / Int!)"], error_messages
+    end
+  end
+
+  describe "allow_legacy_invalid_variable_usages" do
+    let(:schema) { GraphQL::Schema.from_definition("type Query { f(s: String!): Query g(i: Int!): Query x: String }") }
+
+    # Previous versions didn't check `$s` (the fragment comes before the operation) or `$i` (`= null`), but they checked `$j`.
+    let(:query_str) { <<~GRAPHQL }
+      fragment F on Query { f(s: $s) { x } }
+      query Q($s: Boolean, $i: Int = null, $j: Boolean) { ...F g(i: $i) { x } y: g(i: $j) { x } }
+    GRAPHQL
+
+    let(:j_error) { "Type mismatch on variable $j and argument i (Boolean / Int!)" }
+
+    it "warns by default" do
+      res = nil
+      stdout, _stderr = capture_io do
+        res = schema.validate(query_str)
+      end
+      assert_equal [j_error], res.map(&:message)
+      expected_warning = [
+        "GraphQL-Ruby encountered an invalid variable usage in this query: `$s` (at 2:9) for argument `s` (at 1:25).",
+        "This will return an error in future GraphQL-Ruby versions, as per the GraphQL specification",
+        "Learn about migrating here: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_variable_usages-class_method"
+      ].join("\n")
+      assert_includes stdout, expected_warning
+      assert_includes stdout, "invalid variable usage in this query: `$i` (at 2:22) for argument `i` (at 2:60)."
+    end
+
+    it "calls the handler when legacy is enabled" do
+      calls = []
+      legacy_schema = Class.new(schema) do
+        allow_legacy_invalid_variable_usages(true)
+        define_singleton_method(:legacy_invalid_variable_usages) do |query, variable_definition, argument|
+          calls << [query.class, variable_definition.name, argument.name, argument.position]
+          variable_definition.name == "s" ? nil : "Don't use $#{variable_definition.name} here"
+        end
+      end
+
+      res = legacy_schema.validate(query_str)
+      assert_equal ["Don't use $i here", j_error], res.map(&:message)
+      assert_equal [[GraphQL::Query, "i", "i", [2, 60]], [GraphQL::Query, "s", "s", [1, 25]]], calls
+    end
+
+    it "adds errors when legacy is disabled" do
+      future_schema = Class.new(schema) { allow_legacy_invalid_variable_usages(false) }
+      assert_equal [
+        "Nullability mismatch on variable $i and argument i (Int / Int!)",
+        j_error,
+        "Type mismatch on variable $s and argument s (Boolean / String!)",
+      ], future_schema.validate(query_str).map(&:message)
+    end
+
+    it "inherits allow_legacy_invalid_variable_usages" do
+      base_schema = Class.new(schema) { allow_legacy_invalid_variable_usages(true) }
+      ext_schema = Class.new(base_schema)
+      assert ext_schema.allow_legacy_invalid_variable_usages
     end
   end
 
