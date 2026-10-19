@@ -56,25 +56,13 @@ namespace :test do
   task :parallel do
     require "parallel_tests"
 
-    # Each run records file runtimes for the next run, so workers get evenly-sized groups.
-    runtime_log = "tmp/parallel_runtime_test.log"
-    next_runtime_log = "tmp/parallel_runtime_test.next.log"
-    FileUtils.mkdir_p("tmp")
-    FileUtils.rm_f(next_runtime_log)
     # Don't merge coverage from a previous run into this one
     FileUtils.rm_f("coverage/.resultset.json")
-    ENV["PARALLEL_RUNTIME_LOG"] = next_runtime_log
     ENV["PARALLEL_TESTS_EXECUTABLE"] = ["ruby", ("-w" if TEST_WARNINGS), *TEST_LIBS.map { |l| "-I#{l}" }].compact.join(" ")
 
-    # parallel_tests groups by recorded runtime when the log covers enough files, otherwise by file size.
-    args = ["--type", "test", "--serialize-stdout", "--combine-stderr", "--runtime-log", runtime_log]
-    begin
-      ParallelTests::CLI.new.run(args + graphql_test_files.to_a)
-    ensure
-      if File.exist?(next_runtime_log)
-        FileUtils.mv(next_runtime_log, runtime_log)
-      end
-    end
+    # spec_helper.rb records runtimes in tmp/parallel_runtime_test.log. When it covers enough files,
+    # parallel_tests uses it to group files by runtime; otherwise it groups them by file size.
+    ParallelTests::CLI.new.run(["--type", "test", "--serialize-stdout", "--combine-stderr", *graphql_test_files])
   end
 end
 

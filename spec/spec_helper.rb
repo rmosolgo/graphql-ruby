@@ -122,26 +122,10 @@ end
 
 Minitest::Spec.make_my_diffs_pretty!
 
-# Record how long each file took, so that `rake test:parallel` can balance its workers next time.
-# (parallel_tests' own runtime logger doesn't support Minitest 6.)
-if ENV["PARALLEL_RUNTIME_LOG"]
-  module RecordParallelRuntime
-    RUNTIMES = Hash.new(0.0)
-
-    def record(result)
-      path = result.source_location.first.to_s.sub("#{Dir.pwd}/", "")
-      RUNTIMES[path] += result.time
-      super
-    end
-  end
-  Minitest::StatisticsReporter.prepend(RecordParallelRuntime)
-
-  Minitest.after_run do
-    File.open(ENV["PARALLEL_RUNTIME_LOG"], File::WRONLY | File::APPEND | File::CREAT) do |f|
-      f.flock(File::LOCK_EX)
-      RecordParallelRuntime::RUNTIMES.each { |path, time| f.puts("#{path}:#{time.round(3)}") }
-    end
-  end
+# In parallel workers, record how long each file took (in tmp/parallel_runtime_test.log)
+# so that the next `rake test:parallel` can balance its workers.
+if ENV["TEST_ENV_NUMBER"]
+  require "parallel_tests/test/runtime_logger"
 end
 
 module CheckWardenShape
