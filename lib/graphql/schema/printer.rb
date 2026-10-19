@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     # Used to convert your [GraphQL::Schema](rdoc-ref:GraphQL::Schema) to a GraphQL schema string
@@ -69,9 +69,8 @@ module GraphQL
         query_root = Class.new(GraphQL::Schema::Object) do
           graphql_name "Root"
           field :throwaway_field, String
-          def self.visible?(ctx)
-            false
-          end
+          # Not `def self.visible?`: Sorbet would treat it as a definition of `Printer.visible?`
+          define_singleton_method(:visible?) { |ctx| false }
         end
         schema = Class.new(GraphQL::Schema) {
           query(query_root)
