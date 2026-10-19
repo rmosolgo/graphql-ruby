@@ -5,7 +5,7 @@ require "generators/graphql/mutation_update_generator"
 class GraphQLGeneratorsMutationUpdateGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::MutationUpdateGenerator
 
-  destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
+  destination File.join(GENERATOR_TMP_DIR, "dummy")
 
   setup :prepare_destination
 

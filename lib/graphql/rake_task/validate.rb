@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "digest/sha2"
 require "net/http"
 require "erb"
@@ -46,11 +46,11 @@ module GraphQL
       # Returns the SHA512 hex digest of the downloaded gem, or `nil` if the download failed.
       def fetch_gem_digest(version, creds)
         user, pass = creds.split(":", 2)
-        uri = URI("https://gems.graphql.pro/gems/graphql-pro-#{version}.gem")
+        uri = URI.parse("https://gems.graphql.pro/gems/graphql-pro-#{version}.gem")
         req = Net::HTTP::Get.new(uri)
         req.basic_auth(user, pass)
         res = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |http| http.request(req) }
-        res.is_a?(Net::HTTPSuccess) ? Digest::SHA512.hexdigest(res.body) : nil
+        res.is_a?(Net::HTTPSuccess) ? Digest::SHA512.hexdigest(res.body.to_s) : nil
       end
 
       # Returns the published digest at `uri`, or `nil` if it couldn't be fetched.
@@ -58,7 +58,7 @@ module GraphQL
         res = Net::HTTP.get_response(uri)
         return nil unless res.is_a?(Net::HTTPSuccess)
         # Remove final newline from .txt file
-        digest = res.body.strip
+        digest = res.body.to_s.strip
         digest.match?(DIGEST_PATTERN) ? digest : nil
       end
     end

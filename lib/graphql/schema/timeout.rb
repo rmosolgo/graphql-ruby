@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
@@ -43,12 +43,16 @@ module GraphQL
     class Timeout
       def self.use(schema, max_seconds: nil)
         timeout = self.new(max_seconds: max_seconds)
-        schema.trace_with(self::Trace, timeout: timeout)
+        schema.trace_with(const_get(:Trace), timeout: timeout)
       end
 
       def initialize(max_seconds:)
         @max_seconds = max_seconds
       end
+
+      #--
+
+      # @requires_ancestor: Kernel
 
       module Trace
         # **Parameters**
