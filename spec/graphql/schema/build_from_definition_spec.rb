@@ -166,7 +166,7 @@ input InputC {
       SCHEMA
 
       parsed_schema = GraphQL::Schema.from_definition(schema)
-      assert_equal ["deprecated", "foo", "include", "skip"], parsed_schema.directives.keys.sort
+      assert_equal ["bar", "deprecated", "foo", "include", "oneOf", "skip", "specifiedBy"], parsed_schema.directives.keys.sort
       parsed_schema.directives.values.each do |dir_class|
         assert dir_class < GraphQL::Schema::Directive
       end
