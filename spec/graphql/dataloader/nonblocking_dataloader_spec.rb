@@ -124,9 +124,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
           it "runs IO in parallel by default" do
             dataloader = GraphQL::Dataloader.new(nonblocking: true)
             results = {}
-            dataloader.append_job { sleep(0.1); results[:a] = 1 }
-            dataloader.append_job { sleep(0.2); results[:b] = 2 }
-            dataloader.append_job { sleep(0.3); results[:c] = 3 }
+            dataloader.append_job { sleep(0.05); results[:a] = 1 }
+            dataloader.append_job { sleep(0.1); results[:b] = 2 }
+            dataloader.append_job { sleep(0.15); results[:c] = 3 }
 
             assert_equal({}, results, "Nothing ran yet")
             started_at = Time.now
@@ -134,14 +134,14 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             ended_at = Time.now
 
             assert_equal({ a: 1, b: 2, c: 3 }, results, "All the jobs ran")
-            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
+            assert_in_delta 0.15, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "works with sources" do
             dataloader = GraphQL::Dataloader.new(nonblocking: true)
-            r1 = dataloader.with(NonblockingSchema::SleepSource).request(0.1)
-            r2 = dataloader.with(NonblockingSchema::SleepSource).request(0.2)
-            r3 = dataloader.with(NonblockingSchema::SleepSource).request(0.3)
+            r1 = dataloader.with(NonblockingSchema::SleepSource).request(0.05)
+            r2 = dataloader.with(NonblockingSchema::SleepSource).request(0.1)
+            r3 = dataloader.with(NonblockingSchema::SleepSource).request(0.15)
 
             v1 = nil
             dataloader.append_job {
@@ -150,46 +150,46 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             started_at = Time.now
             with_scheduler { dataloader.run }
             ended_at = Time.now
-            assert_equal 0.3, v1
+            assert_equal 0.15, v1
             started_at_2 = Time.now
             # These should take no time at all since they're already resolved
             v2 = r2.load
             v3 = r3.load
             ended_at_2 = Time.now
 
-            assert_equal 0.3, v2
-            assert_equal 0.3, v3
+            assert_equal 0.15, v2
+            assert_equal 0.15, v3
             assert_in_delta 0.0, started_at_2 - ended_at_2, 0.06, "Already-loaded values returned instantly"
 
-            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
+            assert_in_delta 0.15, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "works with GraphQL" do
             started_at = Time.now
             res = with_scheduler {
-              NonblockingSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+              NonblockingSchema.execute("{ s1: sleep(duration: 0.05) s2: sleep(duration: 0.1) s3: sleep(duration: 0.15) }")
             }
             ended_at = Time.now
-            assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
-            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
+            assert_equal({"s1"=>0.05, "s2"=>0.1, "s3"=>0.15}, res["data"])
+            assert_in_delta 0.15, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "nested fields don't wait for slower higher-level fields" do
             query_str = <<-GRAPHQL
             {
-              s1: sleeper(duration: 0.1) {
-                sleeper(duration: 0.1) {
-                  sleeper(duration: 0.1) {
+              s1: sleeper(duration: 0.05) {
+                sleeper(duration: 0.05) {
+                  sleeper(duration: 0.05) {
                     duration
                   }
                 }
               }
-              s2: sleeper(duration: 0.2) {
-                sleeper(duration: 0.1) {
+              s2: sleeper(duration: 0.1) {
+                sleeper(duration: 0.05) {
                   duration
                 }
               }
-              s3: sleeper(duration: 0.3) {
+              s3: sleeper(duration: 0.15) {
                 duration
               }
             }
@@ -201,40 +201,40 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             ended_at = Time.now
 
             expected_data = {
-              "s1" => { "sleeper" => { "sleeper" => { "duration" => 0.1 } } },
-              "s2" => { "sleeper" => { "duration" => 0.1 } },
-              "s3" => { "duration" => 0.3 }
+              "s1" => { "sleeper" => { "sleeper" => { "duration" => 0.05 } } },
+              "s2" => { "sleeper" => { "duration" => 0.05 } },
+              "s3" => { "duration" => 0.15 }
             }
             assert_graphql_equal expected_data, res["data"]
-            assert_in_delta 0.3, ended_at - started_at, 0.06, "Fields ran without any waiting"
+            assert_in_delta 0.15, ended_at - started_at, 0.06, "Fields ran without any waiting"
           end
 
           it "runs dataloaders in parallel across branches" do
             query_str = <<-GRAPHQL
             {
-              w1: waitFor(tag: "a", wait: 0.2) {
-                waitFor(tag: "b", wait: 0.2) {
-                  waitFor(tag: "c", wait: 0.2) {
+              w1: waitFor(tag: "a", wait: 0.1) {
+                waitFor(tag: "b", wait: 0.1) {
+                  waitFor(tag: "c", wait: 0.1) {
                     tag
                   }
                 }
               }
               # After the first, these are returned eagerly from cache
-              w2: waitFor(tag: "a", wait: 0.2) {
-                waitFor(tag: "a", wait: 0.2) {
-                  waitFor(tag: "a", wait: 0.2) {
+              w2: waitFor(tag: "a", wait: 0.1) {
+                waitFor(tag: "a", wait: 0.1) {
+                  waitFor(tag: "a", wait: 0.1) {
                     tag
                   }
                 }
               }
-              w3: waitFor(tag: "a", wait: 0.2) {
-                waitFor(tag: "b", wait: 0.2) {
-                  waitFor(tag: "d", wait: 0.2) {
+              w3: waitFor(tag: "a", wait: 0.1) {
+                waitFor(tag: "b", wait: 0.1) {
+                  waitFor(tag: "d", wait: 0.1) {
                     tag
                   }
                 }
               }
-              w4: waitFor(tag: "e", wait: 0.6) {
+              w4: waitFor(tag: "e", wait: 0.3) {
                 tag
               }
             }
@@ -255,7 +255,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
-            assert_in_delta 1.0, ended_at - started_at, 0.5, "Sources were executed in parallel"
+            assert_in_delta 0.5, ended_at - started_at, 0.25, "Sources were executed in parallel"
           end
         end
       end
