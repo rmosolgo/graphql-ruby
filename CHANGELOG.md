@@ -10,6 +10,8 @@
 
 ### Bug fixes
 
+- `FieldsHaveAppropriateSelections`: don't crash on inline fragments without type conditions inside leaf selections
+
 # 2.6.12 (14 Oct 2026)
 
 **Security**: This version contains a patch for [GHSA-965v-9v76-5hg2](https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-965v-9v76-5hg2)
