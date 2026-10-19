@@ -19,8 +19,8 @@ module GraphQL
         if self.is_a?(Class)
           superclass.respond_to?(method_name, true) ? superclass.send(method_name) : default_value
         else
-          ancestors_except_self = ancestors - [self]
-          ancestors_except_self.each do |ancestor|
+          ancestors.each do |ancestor|
+            next if ancestor.equal?(self)
             if ancestor.respond_to?(method_name, true)
               return ancestor.send(method_name)
             end
