@@ -307,5 +307,71 @@ namespace :docs do
   end
 end
 
+# These tasks need Sorbet and Spoom, so run them with `BUNDLE_GEMFILE=gemfiles/sorbet.gemfile`.
+namespace :sorbet do
+  # Weakest to strongest
+  STRICTNESS_LEVELS = ["ignore", "false", "true", "strict", "strong"].freeze
+  SIGIL_PATTERN = /^# typed: (\w+)/
+
+  # @return [Hash<String, String>] lib/ file paths to their sigils
+  def lib_sigils
+    Dir["lib/**/*.rb"].sort.to_h do |path|
+      sigil = File.foreach(path).first(5).join[SIGIL_PATTERN, 1]
+      [path, sigil]
+    end
+  end
+
+  desc "Fail if any `# typed: false` file in lib/ would pass at `# typed: true`"
+  task :check_bumpable do
+    sh "spoom", "srb", "bump", "--from", "false", "--to", "true", "--dry",
+      "--suggest-bump-command", "BUNDLE_GEMFILE=gemfiles/sorbet.gemfile bundle exec spoom srb bump --from false --to true lib",
+      "lib" do |ok, _status|
+      ok || abort("These files pass at `# typed: true`, update their sigils to lock in that progress.")
+    end
+  end
+
+  desc "Fail if any lib/ file's sigil is weaker than on BASE_REF (default: origin/master)"
+  task :check_sigils, [:base_ref] do |_task, args|
+    base_ref = args[:base_ref] || ENV["SORBET_BASE_REF"] || "origin/master"
+    base_sigils = {}
+    # Lines look like "origin/master:lib/graphql.rb:# typed: true"
+    `git grep --no-color "^# typed: " #{base_ref} -- lib`.each_line do |line|
+      _ref, path, sigil_line = line.split(":", 3)
+      base_sigils[path] ||= sigil_line[SIGIL_PATTERN, 1]
+    end
+    $?.success? || abort("Couldn't read sigils from #{base_ref.inspect}")
+
+    downgrades = lib_sigils.select do |path, sigil|
+      base_sigil = base_sigils[path]
+      base_sigil && STRICTNESS_LEVELS.index(sigil).to_i < STRICTNESS_LEVELS.index(base_sigil).to_i
+    end
+
+    if downgrades.any?
+      message = "#{downgrades.size} lib/ file(s) have weaker sigils than #{base_ref}:\n\n".dup
+      downgrades.each { |path, sigil| message << "  #{path}: #{base_sigils[path]} -> #{sigil || "(none)"}\n" }
+      message << "\nKeep the stronger sigil and fix the type errors instead."
+      abort(message)
+    else
+      puts "No lib/ sigils were weakened compared to #{base_ref}"
+    end
+  end
+
+  desc "Print Sorbet adoption progress: sigil counts for lib/ and errors at `--typed=true`"
+  task :coverage do
+    require "open3"
+    sigils = lib_sigils
+    counts = sigils.values.tally
+    puts "Sigils in lib/ (#{sigils.size} files):"
+    (STRICTNESS_LEVELS + [nil]).each do |level|
+      count = counts[level] || next
+      puts "  #{(level || "(none)").ljust(8)} #{count.to_s.rjust(4)} (#{(100.0 * count / sigils.size).round}%)"
+    end
+
+    output, _status = Open3.capture2e("srb", "tc", "--typed=true")
+    errors = output[/^Errors: (\d+)/, 1] || (output.include?("No errors!") ? "0" : "unknown")
+    puts "\nErrors with every file at `--typed=true`: #{errors}"
+  end
+end
+
 desc "Build the C Extension"
 task build_ext: [:build_c_lexer, :build_yacc_parser, "compile:graphql_c_parser_ext", :move_binary]

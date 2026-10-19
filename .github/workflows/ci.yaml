@@ -20,6 +20,15 @@ jobs:
         bundler-cache: true
     - run: bundle exec rake rubocop
     - run: bundle exec srb tc
+    - run: bundle exec rake sorbet:check_bumpable
+    - name: bundle exec rake sorbet:check_sigils
+      if: github.event_name == 'pull_request'
+      run: |
+        git fetch --no-tags --depth=1 origin "$BASE_REF"
+        bundle exec rake "sorbet:check_sigils[FETCH_HEAD]"
+      env:
+        BASE_REF: ${{ github.base_ref }}
+    - run: bundle exec rake sorbet:coverage
     - run: npx @herb-tools/linter@0.8.10
   system_tests:
     runs-on: ubuntu-latest
