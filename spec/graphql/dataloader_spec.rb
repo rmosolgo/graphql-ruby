@@ -103,7 +103,7 @@ describe GraphQL::Dataloader do
 
       def fetch(keys)
         t = Thread.new {
-          sleep 0.5
+          sleep 0.2
           Database.mget(keys)
         }
         dataloader.yield
@@ -816,9 +816,9 @@ describe GraphQL::Dataloader do
 
           # For some reason Async adds some overhead to this manual parallelism.
           # But who cares, you wouldn't use Thread#join in that case
-          delta = schema.dataloader_class == GraphQL::Dataloader ? 0.1 : 0.5
-          # Each load slept for 0.5 second, so sequentially, this would have been 2s sequentially
-          assert_in_delta 1, finish - start, delta, "Load threads are executed in parallel"
+          delta = schema.dataloader_class == GraphQL::Dataloader ? 0.1 : 0.2
+          # Each load slept for 0.2 second, so sequentially, this would have been 0.8s
+          assert_in_delta 0.4, finish - start, delta, "Load threads are executed in parallel"
           expected_log = [
             # These were separated because of different recipe IDs:
             [:mget, ["5"]],
