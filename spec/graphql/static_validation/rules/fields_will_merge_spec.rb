@@ -648,6 +648,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
     # The spec only treats fields on different object types as mutually exclusive.
     it "fails rule" do
+      schema.allow_legacy_invalid_field_conflicts(false)
       assert_equal ["Field 'volume' has a field conflict: meowVolume or barkVolume?"], error_messages
     end
   end
@@ -701,6 +702,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
+      schema.allow_legacy_invalid_field_conflicts(false)
       assert_equal ["Field 'name' has an argument conflict: {surname:\"true\"} or {}?"], error_messages
     end
 
@@ -722,6 +724,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
       # `Pet` isn't an object type, so the spec requires the same arguments.
       it "fails rule" do
+        schema.allow_legacy_invalid_field_conflicts(false)
         assert_equal ["Field 'name' has an argument conflict: {} or {surname:\"true\"}?"], error_messages
       end
     end
@@ -765,6 +768,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
+      schema.allow_legacy_invalid_field_conflicts(false)
       assert_equal ["Field 'name' has an argument conflict: {surname:\"true\"} or {}?"], error_messages
     end
   end
@@ -784,6 +788,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
+      schema.allow_legacy_invalid_field_conflicts(false)
       assert_equal ["Field 'name' has a field conflict: name or nickname?"], error_messages
     end
   end
@@ -813,6 +818,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
+      schema.allow_legacy_invalid_field_conflicts(false)
       assert_equal ["Field 'name' has an argument conflict: {surname:\"true\"} or {}?"], error_messages
     end
   end
@@ -1361,6 +1367,100 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "allow_legacy_invalid_field_conflicts" do
+    let(:schema) { GraphQL::Schema.from_definition(<<-GRAPHQL)
+      interface Node {
+        id: ID!
+      }
+
+      type Option {
+        name: String
+      }
+
+      type Product implements Node {
+        id: ID!
+        options(first: Int): [Option]
+      }
+
+      type Query {
+        node: Node
+      }
+      GRAPHQL
+    }
+
+    # Previous versions treated these `options` fields as mutually exclusive
+    let(:query_str) { <<-GRAPHQL
+        {
+          node {
+            ... on Product {
+              ...ProductFields
+              options(first: 2) { name }
+            }
+          }
+        }
+
+        fragment ProductFields on Product { options { name } }
+      GRAPHQL
+    }
+
+    it "warns by default" do
+      res = nil
+      stdout, _stderr = capture_io do
+        res = schema.validate(query_str)
+      end
+      assert_equal [], res
+      expected_warning = [
+        "GraphQL-Ruby encountered fields which can't be merged in this query: `options` (at 5:15) vs. `options` (at 10:45).",
+        "This will return an error in future GraphQL-Ruby versions, as per the GraphQL specification",
+        "Learn about migrating here: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_field_conflicts-class_method"
+      ].join("\n")
+      assert_includes stdout, expected_warning
+    end
+
+    it "calls the handler when legacy is enabled" do
+      legacy_schema = Class.new(schema) do
+        allow_legacy_invalid_field_conflicts(true)
+        def self.legacy_invalid_field_conflicts(query, node1, node2)
+          "#{query.class} / #{node1.position} / #{node2.position}"
+        end
+      end
+
+      assert_equal ["GraphQL::Query / [5, 15] / [10, 45]"], legacy_schema.validate(query_str).map(&:message)
+    end
+
+    it "adds an error when legacy is disabled" do
+      future_schema = Class.new(schema) { allow_legacy_invalid_field_conflicts(false) }
+      expected_error = {
+        "message"=>"Field 'options' has an argument conflict: {first:\"2\"} or {}?",
+        "locations"=>[{"line"=>5, "column"=>15}, {"line"=>10, "column"=>45}],
+        "path"=>[],
+        "extensions"=>
+          {"code"=>"fieldConflict",
+           "fieldName"=>"options",
+           "conflicts"=>"{first:\"2\"} or {}"}
+        }
+      assert_equal [expected_error], future_schema.validate(query_str).map(&:to_h)
+    end
+
+    it "doesn't call the handler for conflicts which previous versions also found" do
+      legacy_schema = Class.new(schema) do
+        allow_legacy_invalid_field_conflicts(true)
+        def self.legacy_invalid_field_conflicts(query, node1, node2)
+          raise "Not a legacy conflict"
+        end
+      end
+
+      query_str = "{ node { ... on Product { options { name } options(first: 2) { name } } } }"
+      assert_equal ["Field 'options' has an argument conflict: {} or {first:\"2\"}?"], legacy_schema.validate(query_str).map(&:message)
+    end
+
+    it "inherits allow_legacy_invalid_field_conflicts" do
+      base_schema = Class.new(schema) { allow_legacy_invalid_field_conflicts(true) }
+      ext_schema = Class.new(base_schema)
+      assert ext_schema.allow_legacy_invalid_field_conflicts
+    end
+  end
+
   describe "conflicting list / non-list fields" do
     it "requires matching list/non-list structure" do
       schema = GraphQL::Schema.from_definition <<~GRAPHQL
@@ -1536,6 +1636,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         fragment J on T { x: b }
       GRAPHQL
 
+      deep_schema.allow_legacy_invalid_field_conflicts(false)
       res = deep_schema.validate(query_str)
       assert_equal ["Field 'x' has a field conflict: a or b?"], res.map(&:message)
     end
@@ -1608,6 +1709,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
       it "detects the conflict, like with 4 fields" do
         schema.allow_legacy_invalid_return_type_conflicts(false)
+        schema.allow_legacy_invalid_field_conflicts(false)
         assert_equal ["Field 'b' has a return_type conflict: `String!` or `ToySize!`?"], error_messages
       end
     end
@@ -1652,7 +1754,15 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       |}
 
       it "compares the fields on each object type" do
+        schema.allow_legacy_invalid_field_conflicts(false)
         assert_equal ["Field 'options' has an argument conflict: {} or {first:\"2\"}?"], error_messages
+      end
+
+      it "warns by default, because previous versions didn't compare these fields" do
+        stdout, _stderr = capture_io do
+          assert_equal [], errors
+        end
+        assert_includes stdout, "GraphQL-Ruby encountered fields which can't be merged in this query: `options` (at 5:30) vs. `options` (at 9:30)."
       end
     end
   end
