@@ -6,7 +6,7 @@ module GraphQL
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariableUsagesAreAllowed
       # A variable in a fragment. It's checked after the visit, against each operation which uses the fragment.
-      FragmentVariableUsage = Struct.new(:argument_owner, :arg_node, :variable_name, :path)
+      FragmentVariableUsage = Struct.new(:argument_owner, :arg_node, :variable_name, :path, :checked_variable_types)
 
       def initialize(*)
         super
@@ -41,6 +41,7 @@ module GraphQL
         @operation_declared_variables.each do |definition, declared_variables|
           next if declared_variables.empty?
 
+          variable_types = {} #: Hash[String, untyped]
           checked_fragments = {}.compare_by_identity
           dependencies[definition].each do |fragment_definition|
             next if checked_fragments.key?(fragment_definition)
@@ -51,7 +52,15 @@ module GraphQL
             usages.each do |usage|
               var_defn_ast = declared_variables[usage.variable_name]
               # If it's undefined, VariablesAreUsedAndDefined adds an error
-              var_defn_ast && validate_usage(usage.argument_owner, usage.arg_node, var_defn_ast, path: usage.path)
+              next if var_defn_ast.nil?
+              var_type = variable_types.fetch(usage.variable_name) { variable_types[usage.variable_name] = usage_variable_type(var_defn_ast) }
+              next if var_type.nil?
+              # The result depends only on the usage and the variable type, so check each pair once.
+              # (`type_from_ast` returns the same object for the same type.)
+              checked = (usage.checked_variable_types ||= {}.compare_by_identity)
+              next if checked.key?(var_type)
+              checked[var_type] = true
+              validate_usage(usage.argument_owner, usage.arg_node, var_defn_ast, path: usage.path, var_type: var_type)
             end
           end
         end
@@ -105,12 +114,10 @@ module GraphQL
 
       private
 
-      #: (untyped argument_owner, GraphQL::Language::Nodes::Argument arg_node, GraphQL::Language::Nodes::VariableDefinition ast_var, ?path: Array[String]?) -> void
-      def validate_usage(argument_owner, arg_node, ast_var, path: nil)
+      #: (GraphQL::Language::Nodes::VariableDefinition ast_var) -> untyped
+      def usage_variable_type(ast_var)
         var_type = context.schema.type_from_ast(ast_var.type, context: context)
-        if var_type.nil?
-          return
-        end
+        return nil if var_type.nil?
         default_value = ast_var.default_value
         # An explicit `= null` default doesn't make the variable non-null
         if !default_value.nil? && !default_value.is_a?(GraphQL::Language::Nodes::NullValue)
@@ -121,6 +128,12 @@ module GraphQL
             var_type = var_type.to_non_null_type
           end
         end
+        var_type
+      end
+
+      #: (untyped argument_owner, GraphQL::Language::Nodes::Argument arg_node, GraphQL::Language::Nodes::VariableDefinition ast_var, ?path: Array[String]?, ?var_type: untyped) -> void
+      def validate_usage(argument_owner, arg_node, ast_var, path: nil, var_type: usage_variable_type(ast_var))
+        return if var_type.nil?
 
         arg_defn = @types.argument(argument_owner, arg_node.name)
         arg_defn_type = arg_defn.type
