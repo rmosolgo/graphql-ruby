@@ -608,7 +608,7 @@
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument_values</span>(<span class="ruby-identifier">owner_defn</span>, <span class="ruby-identifier">argument_nodes</span>, <span class="ruby-identifier">field_resolve_step</span>)
   <span class="ruby-identifier">arg_defns</span> = <span class="ruby-ivar">@query</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">owner_defn</span>)
   <span class="ruby-identifier">argument_values</span> = {}
-  <span class="ruby-identifier">errors</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">errors</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
 
   <span class="ruby-identifier">arg_defns</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">argument_definition</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">arg_ruby_key</span> = <span class="ruby-identifier">argument_definition</span>.<span class="ruby-identifier">keyword</span>

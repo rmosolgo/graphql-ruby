@@ -841,7 +841,7 @@
   <span class="ruby-ivar">@last_value</span> = <span class="ruby-identifier">last</span>
   <span class="ruby-ivar">@before_value</span> = <span class="ruby-identifier">before</span>
   <span class="ruby-ivar">@arguments</span> = <span class="ruby-identifier">arguments</span>
-  <span class="ruby-ivar">@edge_class</span> = <span class="ruby-identifier">edge_class</span> <span class="ruby-operator">||</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">::</span><span class="ruby-constant">Edge</span>
+  <span class="ruby-ivar">@edge_class</span> = <span class="ruby-identifier">edge_class</span> <span class="ruby-operator">||</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">Edge</span>)
   <span class="ruby-comment"># This is only true if the object was _initialized_ with an override</span>
   <span class="ruby-comment"># or if one is assigned later.</span>
   <span class="ruby-ivar">@has_max_page_size_override</span> = <span class="ruby-identifier">max_page_size</span> <span class="ruby-operator">!=</span> <span class="ruby-constant">NOT_CONFIGURED</span>

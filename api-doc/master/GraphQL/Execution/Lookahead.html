@@ -745,8 +745,8 @@
           <div class="method-source-code" id="alias_selection-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/lookahead.rb, line 207</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">alias_selection</span>(<span class="ruby-identifier">alias_name</span>, <span class="ruby-value">selected_type:</span> <span class="ruby-ivar">@selected_type</span>, <span class="ruby-value">arguments:</span> <span class="ruby-keyword">nil</span>)
-  <span class="ruby-identifier">alias_cache_key</span> = [<span class="ruby-identifier">alias_name</span>, <span class="ruby-identifier">arguments</span>]
-  <span class="ruby-keyword">return</span> <span class="ruby-identifier">alias_selections</span>[<span class="ruby-identifier">key</span>] <span class="ruby-keyword">if</span> <span class="ruby-identifier">alias_selections</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">alias_name</span>)
+  <span class="ruby-identifier">alias_cache_key</span> = [<span class="ruby-identifier">alias_name</span>, <span class="ruby-identifier">selected_type</span>, <span class="ruby-identifier">arguments</span>]
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">alias_selections</span>[<span class="ruby-identifier">alias_cache_key</span>] <span class="ruby-keyword">if</span> <span class="ruby-identifier">alias_selections</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">alias_cache_key</span>)
 
   <span class="ruby-identifier">alias_node</span> = <span class="ruby-identifier">lookup_alias_node</span>(<span class="ruby-identifier">ast_nodes</span>, <span class="ruby-identifier">alias_name</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-constant">NULL_LOOKAHEAD</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">alias_node</span>

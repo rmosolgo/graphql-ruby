@@ -771,7 +771,7 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">did_you_mean_suggestion</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">options</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">did_you_mean</span> = <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">did_you_mean</span>
-    <span class="ruby-identifier">suggestions</span> = <span class="ruby-identifier">did_you_mean</span><span class="ruby-operator">::</span><span class="ruby-constant">SpellChecker</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">dictionary</span><span class="ruby-value">:</span> <span class="ruby-identifier">options</span>).<span class="ruby-identifier">correct</span>(<span class="ruby-identifier">name</span>)
+    <span class="ruby-identifier">suggestions</span> = <span class="ruby-identifier">did_you_mean</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">SpellChecker</span>).<span class="ruby-identifier">new</span>(<span class="ruby-value">dictionary</span><span class="ruby-value">:</span> <span class="ruby-identifier">options</span>).<span class="ruby-identifier">correct</span>(<span class="ruby-identifier">name</span>)
     <span class="ruby-keyword">case</span> <span class="ruby-identifier">suggestions</span>.<span class="ruby-identifier">size</span>
     <span class="ruby-keyword">when</span> <span class="ruby-value">0</span>
       <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>
