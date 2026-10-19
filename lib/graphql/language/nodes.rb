@@ -18,6 +18,7 @@ module GraphQL
           # **Returns**
           #
           # - `Integer` — The first line of the definition (not the description)
+          #: Integer?
           attr_reader :definition_line
 
           def initialize(definition_line: nil, **_rest)
@@ -35,16 +36,20 @@ module GraphQL
           end
         end
 
+        #: String?
         attr_reader :filename
 
+        #: -> Integer?
         def line
           @line ||= @source&.line_at(@pos)
         end
 
+        #: -> Integer?
         def col
           @col ||= @source&.column_at(@pos)
         end
 
+        #: -> Integer?
         def definition_line
           @definition_line ||= (@source && @definition_pos) ? @source.line_at(@definition_pos) : nil
         end
@@ -72,6 +77,7 @@ module GraphQL
         #
         # :call-seq:
         #   children() -> Array[GraphQL::Language::Nodes::AbstractNode]
+        #: -> Array[AbstractNode]
         def children
           NO_CHILDREN
         end
@@ -82,6 +88,7 @@ module GraphQL
         #
         # :call-seq:
         #   scalars() -> Array[Integer | Float | String | bool | Array]
+        #: -> Array[untyped]
         def scalars
           NO_CHILDREN
         end
@@ -102,14 +109,19 @@ module GraphQL
         # **Returns**
         #
         # - `Symbol` — the method that GraphQL::Language::Visitor calls for this node
+        #
+        # :call-seq:
+        #   visit_method() -> Symbol
         def visit_method
           self.class.visit_method
         end
 
+        #: -> [Integer?, Integer?]
         def position
           [line, col]
         end
 
+        #: (?printer: untyped) -> String
         def to_query_string(printer: GraphQL::Language::Printer.new)
           if printer.is_a?(GraphQL::Language::Printer)
             if frozen?
@@ -186,6 +198,7 @@ module GraphQL
           # **Returns**
           #
           # - `Symbol` — the method that GraphQL::Language::Visitor calls for this kind of node
+          #: Symbol?
           attr_reader :visit_method
 
           attr_accessor :children_method_name
@@ -205,6 +218,9 @@ module GraphQL
           # **Returns**
           #
           # - `Hash{Symbol => Class, nil}, nil` — child reader methods and the kind of node each one returns, if known
+          #
+          # :call-seq:
+          #   children_of_type() -> Hash[Symbol, Class | nil] | nil
           def children_of_type
             @children_methods
           end
@@ -217,12 +233,14 @@ module GraphQL
           :on_wrapper_type
         end
 
+        #: TypeName | ListType | NonNullType
         attr_reader :of_type
 
         def scalars
           @scalars ||= [@of_type].freeze
         end
 
+        #: (?of_type: untyped, ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(of_type: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -257,12 +275,14 @@ module GraphQL
           :on_name_only_node
         end
 
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: (?name: untyped, ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -297,12 +317,23 @@ module GraphQL
           :on_argument
         end
 
-        attr_reader :name, :value
+        # **Returns**
+        #
+        # - `String` — the key for this argument
+        #: String
+        attr_reader :name
+
+        # **Returns**
+        #
+        # - `String, Float, Integer, Boolean, Array, InputObject, VariableIdentifier, Enum, NullValue` — The value passed for this key
+        #: untyped
+        attr_reader :value
 
         def scalars
           @scalars ||= [@name, @value].freeze
         end
 
+        #: (?name: untyped, ?value: untyped, ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, value: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -332,14 +363,6 @@ module GraphQL
 
         @children_methods = {}.freeze
 
-        # **Attributes**
-        #
-        # - `name` (`String`) — the key for this argument
-
-        # **Attributes**
-        #
-        # - `value` (`String, Float, Integer, Boolean, Array, InputObject, VariableIdentifier`) — The value passed for this key
-
         def children
           @children ||= Array(value).flatten.tap { _1.select! { |v| v.is_a?(AbstractNode) } }
         end
@@ -350,12 +373,14 @@ module GraphQL
           :on_directive
         end
 
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Argument]
         attr_reader :arguments
 
         def merge_argument(**node_opts)
@@ -364,6 +389,7 @@ module GraphQL
 
         alias :children arguments
 
+        #: (?name: untyped, ?arguments: Array[Argument], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, arguments: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -400,7 +426,6 @@ module GraphQL
         def visit_method
           :on_directive_location
         end
-
       end
 
       class DirectiveDefinition < AbstractNode
@@ -408,14 +433,20 @@ module GraphQL
           :on_directive_definition
         end
 
+        #: String?
         attr_reader :description
-        attr_reader :name, :repeatable
+        #: String
+        attr_reader :name
+        #: bool
+        attr_reader :repeatable
 
         def scalars
           @scalars ||= [@name, @repeatable].freeze
         end
 
+        #: Array[InputValueDefinition]
         attr_reader :arguments
+        #: Array[DirectiveLocation]
         attr_reader :locations
 
         def merge_argument(**node_opts)
@@ -440,6 +471,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?repeatable: untyped, ?description: untyped, ?arguments: Array[InputValueDefinition], ?locations: Array[DirectiveLocation], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, repeatable: nil, description: nil, arguments: NO_CHILDREN, locations: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -486,7 +518,6 @@ module GraphQL
         def visit_method
           :on_enum
         end
-
       end
 
       # A null value literal.
@@ -494,7 +525,6 @@ module GraphQL
         def visit_method
           :on_null_value
         end
-
       end
 
       # A single selection in a GraphQL query.
@@ -503,6 +533,7 @@ module GraphQL
           :on_field
         end
 
+        #: (?name: untyped, ?arguments: Array[Argument]?, ?directives: Array[Directive]?, ?selections: (Array[Field | FragmentSpread | InlineFragment])?, ?field_alias: String?, ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @name = name
           @arguments = arguments || NONE
@@ -529,14 +560,20 @@ module GraphQL
           @line, @col, @filename, @name, @arguments, @directives, @selections, @alias = values
         end
 
-        attr_reader :name, :alias
+        #: String
+        attr_reader :name
+        #: String?
+        attr_reader :alias
 
         def scalars
           @scalars ||= [@name, @alias].freeze
         end
 
+        #: Array[Argument]
         attr_reader :arguments
+        #: Array[Field | FragmentSpread | InlineFragment]
         attr_reader :selections
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_argument(**node_opts)
@@ -582,6 +619,7 @@ module GraphQL
           :on_fragment_definition
         end
 
+        #: (?name: untyped, ?type: untyped, ?directives: Array[Directive], ?selections: Array[Field | FragmentSpread | InlineFragment], ?filename: String?, ?pos: Integer?, ?source: untyped, ?line: Integer?, ?col: Integer?) -> void
         def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source: nil, line: nil, col: nil)
           @name = name
           @type = type
@@ -606,13 +644,18 @@ module GraphQL
           @line, @col, @filename, @name, @type, @directives, @selections = values
         end
 
-        attr_reader :name, :type
+        #: String
+        attr_reader :name
+        #: TypeName
+        attr_reader :type
 
         def scalars
           @scalars ||= [@name, @type].freeze
         end
 
+        #: Array[Field | FragmentSpread | InlineFragment]
         attr_reader :selections
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_selection(**node_opts)
@@ -651,12 +694,17 @@ module GraphQL
           :on_fragment_spread
         end
 
+        # **Returns**
+        #
+        # - `String` — The identifier of the fragment to apply, corresponds with [FragmentDefinition#name](rdoc-ref:FragmentDefinition#name)
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -665,6 +713,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?name: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -697,10 +746,6 @@ module GraphQL
         }.freeze
 
         self.children_method_name = :selections
-
-        # **Attributes**
-        #
-        # - `name` (`String`) — The identifier of the fragment to apply, corresponds with [FragmentDefinition#name](rdoc-ref:FragmentDefinition#name)
       end
 
       # An unnamed fragment, defined directly in the query with `... {  }`
@@ -709,13 +754,19 @@ module GraphQL
           :on_inline_fragment
         end
 
+        # **Returns**
+        #
+        # - `TypeName, nil` — Name of the type this fragment applies to, or `nil` if this fragment applies to any type
+        #: TypeName?
         attr_reader :type
 
         def scalars
           @scalars ||= [@type].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
+        #: Array[Field | FragmentSpread | InlineFragment]
         attr_reader :selections
 
         def merge_directive(**node_opts)
@@ -740,6 +791,7 @@ module GraphQL
           end
         end
 
+        #: (?type: untyped, ?directives: Array[Directive], ?selections: Array[Field | FragmentSpread | InlineFragment], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(type: nil, directives: NO_CHILDREN, selections: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -775,10 +827,6 @@ module GraphQL
         }.freeze
 
         self.children_method_name = :selections
-
-        # **Attributes**
-        #
-        # - `type` (`String, nil`) — Name of the type this fragment applies to, or `nil` if this fragment applies to any type
       end
 
       # A collection of key-value inputs which may be a field argument
@@ -787,6 +835,10 @@ module GraphQL
           :on_input_object
         end
 
+        # **Returns**
+        #
+        # - `Array<Nodes::Argument>` — A list of key-value pairs inside this input object
+        #: Array[Argument]
         attr_reader :arguments
 
         def merge_argument(**node_opts)
@@ -795,6 +847,7 @@ module GraphQL
 
         alias :children arguments
 
+        #: (?arguments: Array[Argument], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(arguments: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -823,10 +876,6 @@ module GraphQL
         @children_methods = {
           arguments: GraphQL::Language::Nodes::Argument,
         }.freeze
-
-        # **Attributes**
-        #
-        # - `arguments` (`Array<Nodes::Argument>`) — A list of key-value pairs inside this input object
 
         # **Returns**
         #
@@ -869,7 +918,6 @@ module GraphQL
         def visit_method
           :on_list_type
         end
-
       end
 
       # A non-null type definition, denoted with `...!` (used for variable type definitions)
@@ -877,7 +925,6 @@ module GraphQL
         def visit_method
           :on_non_null_type
         end
-
       end
 
       # An operation-level query variable
@@ -886,12 +933,29 @@ module GraphQL
           :on_variable_definition
         end
 
-        attr_reader :name, :type, :default_value
+        # **Returns**
+        #
+        # - `String` — The identifier for this variable, _without_ `$`
+        #: String
+        attr_reader :name
+
+        # **Returns**
+        #
+        # - `TypeName, NonNullType, ListType` — The expected type of this value
+        #: TypeName | ListType | NonNullType
+        attr_reader :type
+
+        # **Returns**
+        #
+        # - `String, Integer, Float, Boolean, Array, NullValue` — A Ruby value to use if no other value is provided
+        #: untyped
+        attr_reader :default_value
 
         def scalars
           @scalars ||= [@name, @type, @default_value].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -900,6 +964,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?name: untyped, ?type: untyped, ?default_value: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, type: nil, default_value: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -935,17 +1000,6 @@ module GraphQL
         @children_methods = {
           directives: GraphQL::Language::Nodes::Directive,
         }.freeze
-        # **Attributes**
-        #
-        # - `default_value` (`String, Integer, Float, Boolean, Array, NullValue`) — A Ruby value to use if no other value is provided
-
-        # **Attributes**
-        #
-        # - `type` (`TypeName, NonNullType, ListType`) — The expected type of this value
-
-        # **Attributes**
-        #
-        # - `name` (`String`) — The identifier for this variable, _without_ `$`
 
         self.children_method_name = :variables
       end
@@ -958,14 +1012,34 @@ module GraphQL
           :on_operation_definition
         end
 
-        attr_reader :operation_type, :name
+        # **Returns**
+        #
+        # - `String` — The root type for this operation: `"query"` (including implicit queries), `"mutation"` or `"subscription"`
+        #: String
+        attr_reader :operation_type
+
+        # **Returns**
+        #
+        # - `String, nil` — The name for this operation, or `nil` if unnamed
+        #: String?
+        attr_reader :name
 
         def scalars
           @scalars ||= [@operation_type, @name].freeze
         end
 
+        # **Returns**
+        #
+        # - `Array<VariableDefinition>` — Variable $definitions for this operation
+        #: Array[VariableDefinition]
         attr_reader :variables
+        #: Array[Directive]
         attr_reader :directives
+
+        # **Returns**
+        #
+        # - `Array<Field, FragmentSpread, InlineFragment>` — Root-level fields on this operation
+        #: Array[Field | FragmentSpread | InlineFragment]
         attr_reader :selections
 
         def merge_variable(**node_opts)
@@ -995,6 +1069,7 @@ module GraphQL
           end
         end
 
+        #: (?operation_type: untyped, ?name: untyped, ?variables: Array[VariableDefinition], ?directives: Array[Directive], ?selections: Array[Field | FragmentSpread | InlineFragment], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(operation_type: nil, name: nil, variables: NO_CHILDREN, directives: NO_CHILDREN, selections: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -1035,22 +1110,6 @@ module GraphQL
           selections: GraphQL::Language::Nodes::Field,
         }.freeze
 
-        # **Attributes**
-        #
-        # - `variables` (`Array<VariableDefinition>`) — Variable $definitions for this operation
-
-        # **Attributes**
-        #
-        # - `selections` (`Array<Field>`) — Root-level fields on this operation
-
-        # **Attributes**
-        #
-        # - `operation_type` (`String, nil`) — The root type for this operation, or `nil` for implicit `"query"`
-
-        # **Attributes**
-        #
-        # - `name` (`String, nil`) — The name for this operation, or `nil` if unnamed
-
         self.children_method_name = :definitions
       end
 
@@ -1087,10 +1146,15 @@ module GraphQL
           :on_document
         end
 
+        # **Returns**
+        #
+        # - `Array<OperationDefinition, FragmentDefinition, AbstractNode>` — top-level GraphQL units: operations or fragments
+        #: Array[AbstractNode]
         attr_reader :definitions
 
         alias :children definitions
 
+        #: (?definitions: Array[AbstractNode], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(definitions: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -1119,9 +1183,6 @@ module GraphQL
         @children_methods = {
           definitions: nil,
         }.freeze
-        # **Attributes**
-        #
-        # - `definitions` (`Array<OperationDefinition, FragmentDefinition>`) — top-level GraphQL units: operations or fragments
 
         def slice_definition(name)
           GraphQL::Language::DefinitionSlice.slice(self, name)
@@ -1133,7 +1194,6 @@ module GraphQL
         def visit_method
           :on_type_name
         end
-
       end
 
       # Usage of a variable in a query. Name does _not_ include `$`.
@@ -1150,12 +1210,18 @@ module GraphQL
           :on_schema_definition
         end
 
-        attr_reader :query, :mutation, :subscription
+        #: String?
+        attr_reader :query
+        #: String?
+        attr_reader :mutation
+        #: String?
+        attr_reader :subscription
 
         def scalars
           @scalars ||= [@query, @mutation, @subscription].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -1164,6 +1230,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?query: untyped, ?mutation: untyped, ?subscription: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(query: nil, mutation: nil, subscription: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -1207,12 +1274,18 @@ module GraphQL
           :on_schema_extension
         end
 
-        attr_reader :query, :mutation, :subscription
+        #: String?
+        attr_reader :query
+        #: String?
+        attr_reader :mutation
+        #: String?
+        attr_reader :subscription
 
         def scalars
           @scalars ||= [@query, @mutation, @subscription].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -1221,6 +1294,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?query: untyped, ?mutation: untyped, ?subscription: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(query: nil, mutation: nil, subscription: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -1263,13 +1337,18 @@ module GraphQL
           :on_scalar_type_definition
         end
 
-        attr_reader :description, :comment
+        #: String?
+        attr_reader :description
+        #: String?
+        attr_reader :comment
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -1278,6 +1357,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?name: untyped, ?description: untyped, ?comment: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, description: nil, comment: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -1320,12 +1400,14 @@ module GraphQL
           :on_scalar_type_extension
         end
 
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -1334,6 +1416,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?name: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -1372,13 +1455,22 @@ module GraphQL
           :on_input_value_definition
         end
 
-        attr_reader :description, :comment
-        attr_reader :name, :type, :default_value
+        #: String?
+        attr_reader :description
+        #: String?
+        attr_reader :comment
+        #: String
+        attr_reader :name
+        #: TypeName | ListType | NonNullType
+        attr_reader :type
+        #: untyped
+        attr_reader :default_value
 
         def scalars
           @scalars ||= [@name, @type, @default_value].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -1387,6 +1479,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?name: untyped, ?type: untyped, ?default_value: untyped, ?description: untyped, ?comment: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, type: nil, default_value: nil, description: nil, comment: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -1433,14 +1526,22 @@ module GraphQL
           :on_field_definition
         end
 
-        attr_reader :description, :comment
-        attr_reader :name, :type
+        #: String?
+        attr_reader :description
+        #: String?
+        attr_reader :comment
+        #: String
+        attr_reader :name
+        #: TypeName | ListType | NonNullType
+        attr_reader :type
 
         def scalars
           @scalars ||= [@name, @type].freeze
         end
 
+        #: Array[InputValueDefinition]
         attr_reader :arguments
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_argument(**node_opts)
@@ -1465,6 +1566,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?type: untyped, ?description: untyped, ?comment: untyped, ?arguments: Array[InputValueDefinition], ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, type: nil, description: nil, comment: nil, arguments: NO_CHILDREN, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -1522,14 +1624,22 @@ module GraphQL
           :on_object_type_definition
         end
 
-        attr_reader :description, :comment
-        attr_reader :name, :interfaces
+        #: String?
+        attr_reader :description
+        #: String?
+        attr_reader :comment
+        #: String
+        attr_reader :name
+        #: Array[TypeName]
+        attr_reader :interfaces
 
         def scalars
           @scalars ||= [@name, @interfaces].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
+        #: Array[FieldDefinition]
         attr_reader :fields
 
         def merge_directive(**node_opts)
@@ -1554,6 +1664,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?interfaces: untyped, ?description: untyped, ?comment: untyped, ?directives: Array[Directive], ?fields: Array[FieldDefinition], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, interfaces: nil, description: nil, comment: nil, directives: NO_CHILDREN, fields: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -1601,13 +1712,18 @@ module GraphQL
           :on_object_type_extension
         end
 
-        attr_reader :name, :interfaces
+        #: String
+        attr_reader :name
+        #: Array[TypeName]
+        attr_reader :interfaces
 
         def scalars
           @scalars ||= [@name, @interfaces].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
+        #: Array[FieldDefinition]
         attr_reader :fields
 
         def merge_directive(**node_opts)
@@ -1632,6 +1748,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?interfaces: untyped, ?directives: Array[Directive], ?fields: Array[FieldDefinition], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, interfaces: nil, directives: NO_CHILDREN, fields: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -1675,15 +1792,22 @@ module GraphQL
           :on_interface_type_definition
         end
 
-        attr_reader :description, :comment
+        #: String?
+        attr_reader :description
+        #: String?
+        attr_reader :comment
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[TypeName]
         attr_reader :interfaces
+        #: Array[Directive]
         attr_reader :directives
+        #: Array[FieldDefinition]
         attr_reader :fields
 
         def merge_interface(**node_opts)
@@ -1713,6 +1837,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?description: untyped, ?comment: untyped, ?interfaces: Array[TypeName], ?directives: Array[Directive], ?fields: Array[FieldDefinition], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, description: nil, comment: nil, interfaces: NO_CHILDREN, directives: NO_CHILDREN, fields: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -1761,14 +1886,18 @@ module GraphQL
           :on_interface_type_extension
         end
 
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[TypeName]
         attr_reader :interfaces
+        #: Array[Directive]
         attr_reader :directives
+        #: Array[FieldDefinition]
         attr_reader :fields
 
         def merge_interface(**node_opts)
@@ -1798,6 +1927,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?interfaces: Array[TypeName], ?directives: Array[Directive], ?fields: Array[FieldDefinition], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, interfaces: NO_CHILDREN, directives: NO_CHILDREN, fields: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -1842,13 +1972,20 @@ module GraphQL
           :on_union_type_definition
         end
 
-        attr_reader :description, :comment, :types
+        #: String?
+        attr_reader :description
+        #: String?
+        attr_reader :comment
+        #: Array[TypeName]
+        attr_reader :types
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -1857,6 +1994,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?name: untyped, ?types: untyped, ?description: untyped, ?comment: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, types: nil, description: nil, comment: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -1901,13 +2039,16 @@ module GraphQL
           :on_union_type_extension
         end
 
+        #: Array[TypeName]
         attr_reader :types
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -1916,6 +2057,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?name: untyped, ?types: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, types: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -1956,13 +2098,18 @@ module GraphQL
           :on_enum_value_definition
         end
 
-        attr_reader :description, :comment
+        #: String?
+        attr_reader :description
+        #: String?
+        attr_reader :comment
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
 
         def merge_directive(**node_opts)
@@ -1971,6 +2118,7 @@ module GraphQL
 
         alias :children directives
 
+        #: (?name: untyped, ?description: untyped, ?comment: untyped, ?directives: Array[Directive], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, description: nil, comment: nil, directives: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -2013,14 +2161,20 @@ module GraphQL
           :on_enum_type_definition
         end
 
-        attr_reader :description, :comment
+        #: String?
+        attr_reader :description
+        #: String?
+        attr_reader :comment
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
+        #: Array[EnumValueDefinition]
         attr_reader :values
 
         def merge_directive(**node_opts)
@@ -2045,6 +2199,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?description: untyped, ?comment: untyped, ?directives: Array[Directive], ?values: Array[EnumValueDefinition], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, description: nil, comment: nil, directives: NO_CHILDREN, values: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -2090,13 +2245,16 @@ module GraphQL
           :on_enum_type_extension
         end
 
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
+        #: Array[EnumValueDefinition]
         attr_reader :values
 
         def merge_directive(**node_opts)
@@ -2121,6 +2279,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?directives: Array[Directive], ?values: Array[EnumValueDefinition], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, directives: NO_CHILDREN, values: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
@@ -2162,14 +2321,20 @@ module GraphQL
           :on_input_object_type_definition
         end
 
-        attr_reader :description, :comment
+        #: String?
+        attr_reader :description
+        #: String?
+        attr_reader :comment
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
+        #: Array[InputValueDefinition]
         attr_reader :fields
 
         def merge_directive(**node_opts)
@@ -2194,6 +2359,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?description: untyped, ?comment: untyped, ?directives: Array[Directive], ?fields: Array[InputValueDefinition], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped, ?definition_pos: Integer?) -> void
         def initialize(name: nil, description: nil, comment: nil, directives: NO_CHILDREN, fields: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil, definition_pos: nil)
           @line = line
           @col = col
@@ -2239,13 +2405,16 @@ module GraphQL
           :on_input_object_type_extension
         end
 
+        #: String
         attr_reader :name
 
         def scalars
           @scalars ||= [@name].freeze
         end
 
+        #: Array[Directive]
         attr_reader :directives
+        #: Array[InputValueDefinition]
         attr_reader :fields
 
         def merge_directive(**node_opts)
@@ -2270,6 +2439,7 @@ module GraphQL
           end
         end
 
+        #: (?name: untyped, ?directives: Array[Directive], ?fields: Array[InputValueDefinition], ?line: Integer?, ?col: Integer?, ?pos: Integer?, ?filename: String?, ?source: untyped) -> void
         def initialize(name: nil, directives: NO_CHILDREN, fields: NO_CHILDREN, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @line = line
           @col = col
