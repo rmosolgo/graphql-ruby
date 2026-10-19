@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     class Member
@@ -19,12 +19,16 @@ module GraphQL
           true
         end
 
+        #--
+        # @requires_ancestor: Kernel
         module InstanceConfigured
           def authorizes?(context)
             raise RequiredImplementationMissingError, "#{self.class} must implement #authorizes?(context)"
           end
         end
 
+        #--
+        # @requires_ancestor: Kernel
         module ClassConfigured
           def authorizes?(context)
             method(:authorized?).owner != GraphQL::Schema::Member::HasAuthorization

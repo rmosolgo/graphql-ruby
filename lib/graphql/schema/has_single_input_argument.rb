@@ -3,6 +3,8 @@
 
 module GraphQL
   class Schema
+    #--
+    # @requires_ancestor: GraphQL::Schema::Resolver
     module HasSingleInputArgument
       def resolve_with_support(**inputs)
         input_kwargs = flatten_arguments(inputs)
@@ -55,6 +57,8 @@ module GraphQL
         input_kwargs
       end
 
+      #--
+      # @requires_ancestor: singleton(GraphQL::Schema::Resolver)
       module ClassMethods
         def dummy
           @dummy ||= begin
@@ -162,6 +166,7 @@ module GraphQL
           mutation_args = all_argument_definitions
           mutation_class = self
           Class.new(input_object_class) do
+            #: self as singleton(GraphQL::Schema::InputObject)
             class << self
               def default_graphql_name
                 "#{self.mutation.graphql_name}Input"

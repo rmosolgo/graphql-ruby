@@ -3,6 +3,8 @@
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: Kernel
       module HasArguments
         def self.included(cls)
           cls.extend(ArgumentClassAccessor)
@@ -148,6 +150,8 @@ module GraphQL
             child_class.extend(InheritedArguments)
           end
 
+          #--
+          # @requires_ancestor: singleton(Object)
           module InheritedArguments
             def arguments(context = GraphQL::Query::NullContext.instance, require_defined_arguments = true)
               own_arguments = super(context, require_defined_arguments)
@@ -197,6 +201,9 @@ module GraphQL
           end
         end
 
+        #--
+        # @requires_ancestor: Kernel
+        # @requires_ancestor: GraphQL::Schema::Member::HasArguments
         module FieldConfigured
           def arguments(context = GraphQL::Query::NullContext.instance, _require_defined_arguments = nil)
             own_arguments = super
@@ -355,6 +362,8 @@ module GraphQL
           nil
         end
 
+        #--
+        # @requires_ancestor: Kernel
         module HasDirectiveArguments
           def validate_directive_argument(arg_defn, value)
             if value.nil? && arg_defn.type.non_null?
@@ -371,6 +380,8 @@ module GraphQL
           end
         end
 
+        #--
+        # @requires_ancestor: singleton(Object)
         module ArgumentClassAccessor
           def argument_class(new_arg_class = nil)
             if new_arg_class
@@ -383,6 +394,8 @@ module GraphQL
           end
         end
 
+        #--
+        # @requires_ancestor: Kernel
         module ArgumentObjectLoader
           # Look up the corresponding object for a provided ID.
           # By default, it uses Relay-style [Schema.object_from_id](rdoc-ref:Schema.object_from_id),

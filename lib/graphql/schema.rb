@@ -2694,6 +2694,8 @@ module GraphQL
       end
     end
 
+    #--
+    # @requires_ancestor: singleton(GraphQL::Schema)
     module SubclassGetReferencesTo
       def get_references_to(type_defn)
         own_refs = own_references_to[type_defn]

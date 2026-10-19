@@ -4,6 +4,9 @@
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: Kernel
+      # @requires_ancestor: Module
       module HasInterfaces
         def implements(*new_interfaces, **options)
           new_memberships = []
@@ -70,6 +73,8 @@ module GraphQL
             child_class.extend(InheritedInterfaces)
           end
 
+          #--
+          # @requires_ancestor: singleton(Object)
           module InheritedInterfaces
             def interfaces(context = GraphQL::Query::NullContext.instance)
               visible_interfaces = super

@@ -4,6 +4,9 @@
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: Module
+      # @requires_ancestor: GraphQL::Schema::Member::BaseDSLMethods
       module RelayShortcuts
         def edge_type_class(new_edge_type_class = nil)
           if new_edge_type_class

@@ -8,6 +8,9 @@ module GraphQL
       # generate payload types.
       #
       # Or, an already-defined one can be attached with `payload_type(...)`.
+      #--
+      # @requires_ancestor: singleton(GraphQL::Schema::Resolver)
+      # @requires_ancestor: GraphQL::Schema::Member::HasFields
       module HasPayloadType
         # Call this method to get the derived return type of the mutation,
         # or use it as a configuration method to assign a return type
