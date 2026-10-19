@@ -16,7 +16,7 @@ module GraphQL
 
       module_function
 
-      # @return [String, nil] A normalized version string, or `nil` if `version` isn't a valid gem version
+      # Returns a normalized version string, or `nil` if `version` isn't a valid gem version.
       def normalize_version(version)
         # `Gem::Version.correct?` accepts `nil` and `""`, so check those first
         if !version.is_a?(String) || version.strip.empty? || !Gem::Version.correct?(version)
@@ -27,7 +27,7 @@ module GraphQL
         end
       end
 
-      # @return [String, nil] `user:pass` for gems.graphql.pro, if configured
+      # Returns `user:pass` for gems.graphql.pro, or `nil` if it isn't configured.
       def credentials
         creds = if defined?(Bundler) && Bundler.respond_to?(:settings)
           Bundler.settings["gems.graphql.pro"]
@@ -43,7 +43,7 @@ module GraphQL
         nil
       end
 
-      # @return [String, nil] The SHA512 hex digest of the downloaded gem, or `nil` if the download failed
+      # Returns the SHA512 hex digest of the downloaded gem, or `nil` if the download failed.
       def fetch_gem_digest(version, creds)
         user, pass = creds.split(":", 2)
         uri = URI("https://gems.graphql.pro/gems/graphql-pro-#{version}.gem")
@@ -53,7 +53,7 @@ module GraphQL
         res.is_a?(Net::HTTPSuccess) ? Digest::SHA512.hexdigest(res.body) : nil
       end
 
-      # @return [String, nil] The published digest at `uri`, or `nil` if it couldn't be fetched
+      # Returns the published digest at `uri`, or `nil` if it couldn't be fetched.
       def fetch_published_digest(uri)
         res = Net::HTTP.get_response(uri)
         return nil unless res.is_a?(Net::HTTPSuccess)
