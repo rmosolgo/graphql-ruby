@@ -16,6 +16,20 @@ module GraphQL
       class PaginationImplementationMissingError < GraphQL::Error
       end
 
+      class << self
+        # Subclasses may override `cursor_for` to build their own cursors (for example, value-based cursors).
+        # In that case, position-based cursors from the parent class would be wrong, so `cursor_for_position`
+        # should call the overridden `cursor_for` instead.
+        #
+        # The result is cached on each class, since it's the same for every instance.
+        def custom_cursor_for?(default_owner) # :nodoc:
+          if !defined?(@custom_cursor_for)
+            @custom_cursor_for = instance_method(:cursor_for).owner != default_owner
+          end
+          @custom_cursor_for
+        end
+      end
+
       # **Returns**
       #
       # - `Object` — A list object, from the application. This is the unpaginated value passed into the connection.

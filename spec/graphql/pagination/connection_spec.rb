@@ -117,6 +117,61 @@ describe GraphQL::Pagination::RelationConnection do
     assert_equal "Can't generate a cursor for an item outside this connection", error.message
   end
 
+  it "uses overridden cursor_for for edges and page info cursors" do
+    connection_class = Class.new(GraphQL::Pagination::ArrayConnection) do
+      def cursor_for(item)
+        "value:#{item}"
+      end
+    end
+    relation_connection_class = Class.new(GraphQL::Pagination::RelationConnection) do
+      def cursor_for(item)
+        "value:#{item}"
+      end
+
+      private
+
+      def relation_offset(_relation)
+        nil
+      end
+
+      def relation_limit(_relation)
+        nil
+      end
+
+      def relation_count(relation)
+        relation.length
+      end
+
+      def null_relation(_relation)
+        []
+      end
+
+      def set_offset(relation, offset)
+        relation.drop(offset)
+      end
+
+      def set_limit(relation, limit)
+        relation.first(limit)
+      end
+    end
+    value_cursors = Module.new do
+      def cursor_for(item)
+        "value:#{item}"
+      end
+    end
+    module_connection_class = Class.new(GraphQL::Pagination::ArrayConnection) do
+      include value_cursors
+    end
+    context = GraphQL::Query.new(GraphQL::Schema, "{ __typename }").context
+
+    [connection_class, relation_connection_class, module_connection_class].each do |conn_class|
+      connection = conn_class.new(["a", "b", "c"], first: 2, context: context, max_page_size: nil)
+      assert_equal ["value:a", "value:b"], connection.edges.map(&:cursor)
+      assert_equal "value:a", connection.start_cursor
+      assert_equal "value:b", connection.end_cursor
+    end
+  end
+
   it "loads nodes without context" do
     connection_class = Class.new(GraphQL::Pagination::RelationConnection) do
       private

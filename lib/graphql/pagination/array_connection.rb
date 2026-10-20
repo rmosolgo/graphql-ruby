@@ -25,8 +25,12 @@ module GraphQL
         encode((index + 1).to_s)
       end
 
-      def cursor_for_position(_item, position) # :nodoc:
-        encode((@paged_nodes_offset + position + 1).to_s)
+      def cursor_for_position(item, position) # :nodoc:
+        if self.class.custom_cursor_for?(ArrayConnection)
+          super
+        else
+          encode((@paged_nodes_offset + position + 1).to_s)
+        end
       end
 
       private
