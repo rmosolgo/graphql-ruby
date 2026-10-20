@@ -607,8 +607,7 @@ module GraphQL
 
           # The already-defined directive class named `name`, or `nil` if there isn't one yet
           def directive_class(name)
-            dir_class = @directives[name]
-            dir_class.respond_to?(:all_argument_definitions) ? dir_class : nil
+            @directives[name]
           end
 
           def call(ast_node)
