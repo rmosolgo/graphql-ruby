@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Execution
     # Lookahead creates a uniform interface to inspect the forthcoming selections.
@@ -205,8 +205,8 @@ module GraphQL
       # :call-seq:
       #   alias_selection(alias_name, selected_type:, arguments:) -> GraphQL::Execution::Lookahead
       def alias_selection(alias_name, selected_type: @selected_type, arguments: nil)
-        alias_cache_key = [alias_name, arguments]
-        return alias_selections[key] if alias_selections.key?(alias_name)
+        alias_cache_key = [alias_name, selected_type, arguments]
+        return alias_selections[alias_cache_key] if alias_selections.key?(alias_cache_key)
 
         alias_node = lookup_alias_node(ast_nodes, alias_name)
         return NULL_LOOKAHEAD unless alias_node

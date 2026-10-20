@@ -98,7 +98,7 @@ module GraphQLDocs
     end
 
     def fragments(path)
-      File.read(path, encoding: "UTF-8").scan(FRAGMENT_PATTERN).flatten.to_set
+      (@fragments ||= {})[path] ||= File.read(path, encoding: "UTF-8").scan(FRAGMENT_PATTERN).flatten.to_set
     end
 
     def fragment_present?(path, fragment, visited = Set.new)

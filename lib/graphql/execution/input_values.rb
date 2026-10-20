@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Execution
     # Coerces input values (variables and arguments) for a query.
@@ -27,7 +27,7 @@ module GraphQL
         if arg_defns.empty?
           return [EmptyObjects::EMPTY_HASH, nil]
         end
-        errors = nil
+        errors = nil #: untyped
         argument_values = {}
 
         arg_defns.each do |argument_definition|

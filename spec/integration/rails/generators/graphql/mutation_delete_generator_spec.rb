@@ -5,7 +5,7 @@ require "generators/graphql/mutation_delete_generator"
 class GraphQLGeneratorsMutationDeleteGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::MutationDeleteGenerator
 
-  destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
+  destination File.join(GENERATOR_TMP_DIR, "dummy")
 
   setup :prepare_destination
 

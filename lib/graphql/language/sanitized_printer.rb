@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Language
     # A custom printer used to print sanitized queries. It inlines provided variables

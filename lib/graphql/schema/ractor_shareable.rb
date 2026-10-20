@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     module RactorShareable
@@ -8,6 +8,8 @@ module GraphQL
         schema_class.freeze_schema
       end
 
+      #--
+      # @requires_ancestor: singleton(GraphQL::Schema)
       module SchemaExtension
 
         def freeze_error_handlers(handlers)
@@ -26,7 +28,7 @@ module GraphQL
           default_logger
           freeze_error_handlers(error_handlers)
           # TODO: this freezes errors of parent classes which could cause trouble
-          parent_class = superclass
+          parent_class = superclass #: untyped
           while parent_class.respond_to?(:error_handlers)
             freeze_error_handlers(parent_class.error_handlers)
             parent_class = parent_class.superclass
@@ -59,7 +61,8 @@ module GraphQL
           extend(FrozenMethods)
 
           Ractor.make_shareable(self)
-          superclass.respond_to?(:freeze_schema) && superclass.freeze_schema
+          parent_class = superclass #: untyped
+          parent_class.respond_to?(:freeze_schema) && parent_class.freeze_schema
         end
 
         module FrozenMethods

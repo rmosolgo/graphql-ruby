@@ -587,35 +587,35 @@ describe GraphQL::Analysis do
         def initialize(...)
           super
           if query.context[:initialize_sleep]
-            sleep 0.6
+            sleep 0.12
           end
         end
 
         def on_enter_field(node, parent, visitor)
           if node.name != "__typename"
-            sleep 0.1
+            sleep 0.02
           end
           super
         end
 
         def on_enter_directive(...)
-          sleep 0.1
+          sleep 0.02
           super
         end
 
         def on_enter_argument(...)
-          sleep 0.1
+          sleep 0.02
           super
         end
 
         def on_enter_inline_fragment(...)
-          sleep 0.1
+          sleep 0.02
           super
         end
 
         def on_enter_fragment_spread(node, _parent, _visitor)
           if !node.name.include?("NoSleep")
-            sleep 0.1
+            sleep 0.02
           end
           super
         end
@@ -655,7 +655,7 @@ describe GraphQL::Analysis do
 
       query(Query)
       query_analyzer(SlowAnalyzer)
-      validate_timeout 0.5
+      validate_timeout 0.1
     end
 
     it "covers analysis too" do

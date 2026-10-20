@@ -137,6 +137,79 @@ type Word {
       assert_schema_and_compare_output(schema)
     end
 
+    it 'can build a schema with directives whose inputs have a cycle' do
+      schema = <<-SCHEMA
+schema {
+  query: Hello
+}
+
+directive @bar(arg: InputA) on FIELD_DEFINITION
+
+directive @foo(arg: InputA) on FIELD
+
+type Hello {
+  int: Int @bar(arg: {int: 1})
+}
+
+input InputA {
+  int: Int
+  value: InputB
+  value2: InputC
+}
+
+input InputB {
+  value: InputA
+}
+
+input InputC {
+  value: InputB
+}
+      SCHEMA
+
+      parsed_schema = GraphQL::Schema.from_definition(schema)
+      assert_equal ["bar", "deprecated", "foo", "include", "oneOf", "skip", "specifiedBy"], parsed_schema.directives.keys.sort
+      parsed_schema.directives.values.each do |dir_class|
+        assert dir_class < GraphQL::Schema::Directive
+      end
+
+      assert_schema_and_compare_output(schema)
+    end
+
+    it 'can apply a directive whose argument is the input object being built' do
+      schema = <<-SCHEMA
+directive @limit(arg: Limit) on INPUT_FIELD_DEFINITION
+
+input Limit {
+  max: Int @limit(arg: {max: 5})
+}
+
+type Query {
+  f(l: Limit): Int
+}
+      SCHEMA
+
+      parsed_schema = assert_schema_and_compare_output(schema)
+      limit_directive = parsed_schema.get_type("Limit").arguments["max"].directives.first
+      assert_equal({ max: 5 }, limit_directive.arguments[:arg].to_h)
+    end
+
+    it 'applies @oneOf before building input object arguments' do
+      schema = <<-SCHEMA
+input OneOfInput @oneOf {
+  a: Int!
+}
+
+type Query {
+  f(i: OneOfInput): Int
+}
+      SCHEMA
+
+      err = assert_raises ArgumentError do
+        GraphQL::Schema.from_definition(schema)
+      end
+      assert_equal "Argument 'OneOfInput.a' must be nullable because it is part of a OneOf type, add `required: false`.", err.message
+    end
+
     it 'supports descriptions and definition_line' do
       schema = <<-SCHEMA
 schema {

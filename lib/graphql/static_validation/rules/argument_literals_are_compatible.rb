@@ -1,7 +1,10 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
+    # @requires_ancestor: GraphQL::StaticValidation::ArgumentsAreDefined
     module ArgumentLiteralsAreCompatible
       def on_argument(node, parent)
         # Check the child arguments first;

@@ -18,6 +18,9 @@ else
   false
 end
 
+# Generator specs write apps here. Each parallel worker gets its own directory.
+GENERATOR_TMP_DIR = File.expand_path("../tmp#{TEST_ENV_SUFFIX}", __dir__)
+
 require_relative "generators/base_generator_test"
 require_relative "data"
 

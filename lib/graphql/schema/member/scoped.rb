@@ -1,9 +1,11 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: GraphQL::Schema::FindInheritedValue
       module Scoped
         # This is called when a field has `scope: true`.
         # The field's return type class receives this call.

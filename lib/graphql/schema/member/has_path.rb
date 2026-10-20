@@ -1,9 +1,11 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: Kernel
       module HasPath
         # **Returns**
         #
@@ -12,15 +14,16 @@ module GraphQL
         # :call-seq:
         #   path() -> String
         def path
-          path_str = if self.respond_to?(:graphql_name)
-            self.graphql_name
+          member = self #: untyped
+          path_str = if member.respond_to?(:graphql_name)
+            member.graphql_name
           elsif self.class.respond_to?(:graphql_name)
             # Instances of resolvers
             self.class.graphql_name
           end
 
-          if self.respond_to?(:owner) && owner.respond_to?(:path)
-            path_str = "#{owner.path}.#{path_str}"
+          if member.respond_to?(:owner) && member.owner.respond_to?(:path)
+            path_str = "#{member.owner.path}.#{path_str}"
           end
 
           path_str

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Query
     # This class is _like_ a [GraphQL::Query](rdoc-ref:GraphQL::Query), except it can run on an arbitrary path within a query string.
@@ -153,9 +153,9 @@ module GraphQL
       private
 
       def set_type_info_from_path
-        selections = [@query.selected_operation]
+        selections = [@query.selected_operation] #: Array[GraphQL::Language::Nodes::OperationDefinition | GraphQL::Language::Nodes::Field]
         type = @query.root_type
-        field_defn = nil
+        field_defn = nil #: GraphQL::Schema::Field?
 
         @path.each do |name_in_doc|
           if name_in_doc.is_a?(Integer)
@@ -167,9 +167,9 @@ module GraphQL
             end
           end
 
-          next_selections = []
+          next_selections = [] #: Array[GraphQL::Language::Nodes::Field]
           selections.each do |selection|
-            selections_to_check = []
+            selections_to_check = [] #: Array[GraphQL::Language::Nodes::Field | GraphQL::Language::Nodes::InlineFragment | GraphQL::Language::Nodes::FragmentSpread]
             selections_to_check.concat(selection.selections)
             while (sel = selections_to_check.shift)
               case sel
@@ -184,6 +184,7 @@ module GraphQL
                 end
               else
                 raise "Unexpected selection in partial path: #{sel.class}, #{sel.inspect}"
+                sel #: absurd
               end
             end
           end
@@ -191,7 +192,8 @@ module GraphQL
           if next_selections.empty?
             raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
           end
-          field_name = next_selections.first.name
+          first_selection = next_selections.first #: as !nil
+          field_name = first_selection.name
           field_defn = @schema.get_field(type, field_name, @query.context) || raise("Invariant: no field called #{field_name} on #{type.graphql_name}")
           type = field_defn.type
           if type.non_null?

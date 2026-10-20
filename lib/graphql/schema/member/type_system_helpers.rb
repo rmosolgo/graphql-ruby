@@ -1,9 +1,11 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: Kernel
       module TypeSystemHelpers
         def initialize(...)
           super
@@ -66,7 +68,9 @@ module GraphQL
         end
 
         def to_type_signature
-          graphql_name
+          # Each host provides `graphql_name`, but they have no common ancestor
+          member = self #: untyped
+          member.graphql_name
         end
 
         # **Returns**

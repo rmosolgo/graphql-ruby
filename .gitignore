@@ -24,7 +24,7 @@ node_modules/
 yarn.lock
 OperationStoreClient.js
 DumpPayloadExample.json
-spec/integration/tmp
+spec/integration/tmp*
 .vscode/
 *.swp
 *.swo

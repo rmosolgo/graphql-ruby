@@ -128,7 +128,7 @@ class DummyScheduler
   def timeout_after(duration, klass, message, &block)
     fiber = Fiber.current
 
-    self.fiber do
+    timer = self.fiber do
       sleep(duration)
 
       if fiber && fiber.alive?
@@ -140,6 +140,8 @@ class DummyScheduler
       yield(duration)
     ensure
       fiber = nil
+      # Wake the timer now instead of making `run` wait out the full duration:
+      @waiting[timer] = current_time if timer && @waiting.key?(timer)
     end
   end
 

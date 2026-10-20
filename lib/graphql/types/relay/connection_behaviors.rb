@@ -4,6 +4,8 @@
 module GraphQL
   module Types
     module Relay
+      #--
+      # @requires_ancestor: GraphQL::Schema::Object
       module ConnectionBehaviors
         extend Forwardable
         def_delegators :@object, :cursor_from_node, :parent
@@ -15,6 +17,7 @@ module GraphQL
           child_class.edges_nullable(true)
           child_class.edge_nullable(true)
           child_class.module_exec {
+            #: self as GraphQL::Types::Relay::ConnectionBehaviors::ClassMethods
             self.edge_type = nil
             self.node_type = nil
             self.edge_class = nil
@@ -23,6 +26,8 @@ module GraphQL
           add_page_info_field(child_class)
         end
 
+        #--
+        # @requires_ancestor: singleton(GraphQL::Schema::Object)
         module ClassMethods
           def inherited(child_class)
             super

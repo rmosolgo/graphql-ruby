@@ -21,10 +21,11 @@ on:
         type: string
 
 permissions: {}
-# Every job here pushes to gh-pages, so don't let runs race each other
+# A new push to master supersedes an in-progress master run, but releases
+# and manual runs are never cancelled.
 concurrency:
-  group: publish-website
-  cancel-in-progress: false
+  group: publish-website-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 env:
   BUNDLE_WITH: docs
 jobs:
@@ -33,6 +34,10 @@ jobs:
     permissions:
       contents: write
     name: Publish Website
+    # Every job here pushes to gh-pages, so don't let jobs race each other
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
@@ -51,8 +56,7 @@ jobs:
         run: bundle exec ruby tool/docs/publish_check.rb snapshot --pages gh-pages --snapshot tmp/gh-pages-api-doc-before.json
       - name: Build RDoc site
         run: |
-          bundle exec rake docs:check
-          bundle exec rake docs:build_twice
+          bundle exec rake docs:check docs:build_twice
           bundle exec ruby tool/docs/gem_install_check.rb
           rsync -a --delete --exclude '.git' --exclude 'api-doc' tmp/rdoc-site/ gh-pages/
           touch gh-pages/.nojekyll
@@ -76,6 +80,9 @@ jobs:
     permissions:
       contents: write
     name: Publish API Docs
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout release tag (or master)
