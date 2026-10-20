@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Tracing
@@ -7,7 +7,7 @@ module GraphQL
       def initialize(trace_scalars: false, **_options)
         @trace_scalars = trace_scalars
 
-        @platform_key_cache = Hash.new { |h, mod| h[mod] = mod::KeyCache.new }
+        @platform_key_cache = Hash.new { |h, mod| h[mod] = mod.const_get(:KeyCache).new }
         super
       end
 
@@ -23,6 +23,7 @@ module GraphQL
 
 
       def platform_execute_field_lazy(*args, &block)
+        args = args #: untyped
         platform_execute_field(*args, &block)
       end
 
