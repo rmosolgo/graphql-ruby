@@ -707,7 +707,7 @@
   <span class="ruby-keyword">end</span>
 
   <span class="ruby-identifier">lines</span> = <span class="ruby-identifier">has_newline</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">str</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">\n</span><span class="ruby-string">&quot;</span>) <span class="ruby-operator">:</span> [<span class="ruby-identifier">str</span>]
-  <span class="ruby-identifier">common_indent</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">common_indent</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Integer?</span>
 
   <span class="ruby-comment"># find the common whitespace</span>
   <span class="ruby-identifier">lines</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">line</span>, <span class="ruby-identifier">idx</span><span class="ruby-operator">|</span>

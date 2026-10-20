@@ -732,10 +732,10 @@
   <span class="ruby-identifier">l</span> = <span class="ruby-ivar">@all_selections</span>.<span class="ruby-identifier">length</span>
   <span class="ruby-keyword">while</span> <span class="ruby-identifier">i</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">l</span>
     <span class="ruby-identifier">grouped_selections</span> = <span class="ruby-ivar">@all_selections</span>[<span class="ruby-identifier">i</span>]
-    <span class="ruby-identifier">selections_prototype_result</span> = <span class="ruby-ivar">@all_selections</span>[<span class="ruby-identifier">i</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>]
+    <span class="ruby-identifier">selections_prototype_result</span> = <span class="ruby-ivar">@all_selections</span>[<span class="ruby-identifier">i</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>] <span class="ruby-comment">#: as !nil</span>
     <span class="ruby-keyword">if</span> (<span class="ruby-identifier">directives_owner</span> = <span class="ruby-identifier">grouped_selections</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:</span><span class="ruby-value">__node</span>))
       <span class="ruby-identifier">directives</span> = <span class="ruby-identifier">directives_owner</span>.<span class="ruby-identifier">directives</span>
-      <span class="ruby-identifier">continue_execution</span> = <span class="ruby-keyword">true</span>
+      <span class="ruby-identifier">continue_execution</span> = <span class="ruby-keyword">true</span> <span class="ruby-comment">#: bool</span>
       <span class="ruby-identifier">directives</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">dir_node</span><span class="ruby-operator">|</span>
         <span class="ruby-identifier">dir_defn</span> = <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">runtime_directives</span>[<span class="ruby-identifier">dir_node</span>.<span class="ruby-identifier">name</span>]
         <span class="ruby-keyword">if</span> <span class="ruby-identifier">dir_defn</span> <span class="ruby-comment"># not present for `skip` or `include`</span>

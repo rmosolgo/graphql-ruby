@@ -611,7 +611,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/type_system_helpers.rb, line 80</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/type_system_helpers.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RequiredImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">No `.kind` defined for </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -904,7 +904,9 @@
           <div class="method-source-code" id="to_type_signature-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/type_system_helpers.rb, line 70</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_type_signature</span>
-  <span class="ruby-identifier">graphql_name</span>
+  <span class="ruby-comment"># Each host provides `graphql_name`, but they have no common ancestor</span>
+  <span class="ruby-identifier">member</span> = <span class="ruby-keyword">self</span> <span class="ruby-comment">#: untyped</span>
+  <span class="ruby-identifier">member</span>.<span class="ruby-identifier">graphql_name</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 

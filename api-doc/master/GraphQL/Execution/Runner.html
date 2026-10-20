@@ -774,7 +774,7 @@
     <span class="ruby-identifier">h</span>[<span class="ruby-identifier">query</span>] = <span class="ruby-constant">InputValues</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">query</span>, <span class="ruby-keyword">self</span>)
   <span class="ruby-keyword">end</span>.<span class="ruby-identifier">compare_by_identity</span>
 
-  <span class="ruby-ivar">@runtime_directives</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-ivar">@runtime_directives</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[String, singleton(GraphQL::Schema::Directive)]?</span>
   <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">directives</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">name</span>, <span class="ruby-identifier">dir_class</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">dir_class</span>.<span class="ruby-identifier">runtime?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">name</span> <span class="ruby-operator">!=</span> <span class="ruby-string">&quot;</span><span class="ruby-string">include</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">name</span> <span class="ruby-operator">!=</span> <span class="ruby-string">&quot;</span><span class="ruby-string">skip</span><span class="ruby-string">&quot;</span>
       <span class="ruby-ivar">@runtime_directives</span> ||= {}

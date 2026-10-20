@@ -520,13 +520,14 @@
 
 
           <div class="method-source-code" id="connection_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/relay_shortcuts.rb, line 57</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/relay_shortcuts.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">connection_type</span>
   <span class="ruby-identifier">initialize_relay_metadata</span>
   <span class="ruby-ivar">@connection_type</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">conn_name</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">graphql_name</span> <span class="ruby-operator">+</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Connection</span><span class="ruby-string">&quot;</span>
     <span class="ruby-identifier">edge_type_class</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">edge_type</span>
     <span class="ruby-constant">Class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">connection_type_class</span>) <span class="ruby-keyword">do</span>
+      <span class="ruby-comment">#: self as untyped</span>
       <span class="ruby-identifier">graphql_name</span>(<span class="ruby-identifier">conn_name</span>)
       <span class="ruby-identifier">edge_type</span>(<span class="ruby-identifier">edge_type_class</span>)
     <span class="ruby-keyword">end</span>
@@ -578,7 +579,7 @@
 
 
           <div class="method-source-code" id="connection_type_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/relay_shortcuts.rb, line 28</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/relay_shortcuts.rb, line 29</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">connection_type_class</span>(<span class="ruby-identifier">new_connection_type_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_connection_type_class</span>
     <span class="ruby-identifier">initialize_relay_metadata</span>
@@ -587,7 +588,8 @@
     <span class="ruby-comment"># Don&#39;t call `ancestor.connection_type_class`</span>
     <span class="ruby-comment"># because we don&#39;t want a fallback from any ancestors --</span>
     <span class="ruby-comment"># only apply the fallback if _no_ ancestor has a configured value!</span>
-    <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">ancestors</span>
+    <span class="ruby-identifier">all_ancestors</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
+    <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">all_ancestors</span>
       <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">configured_connection_type_class</span>, <span class="ruby-keyword">true</span>) <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">ctc</span> = <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">configured_connection_type_class</span>)
         <span class="ruby-keyword">return</span> <span class="ruby-identifier">ctc</span>
       <span class="ruby-keyword">end</span>
@@ -641,13 +643,14 @@
 
 
           <div class="method-source-code" id="edge_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/relay_shortcuts.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/relay_shortcuts.rb, line 47</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">edge_type</span>
   <span class="ruby-identifier">initialize_relay_metadata</span>
   <span class="ruby-ivar">@edge_type</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">edge_name</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">graphql_name</span> <span class="ruby-operator">+</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Edge</span><span class="ruby-string">&quot;</span>
     <span class="ruby-identifier">node_type_class</span> = <span class="ruby-keyword">self</span>
     <span class="ruby-constant">Class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">edge_type_class</span>) <span class="ruby-keyword">do</span>
+      <span class="ruby-comment">#: self as untyped</span>
       <span class="ruby-identifier">graphql_name</span>(<span class="ruby-identifier">edge_name</span>)
       <span class="ruby-identifier">node_type</span>(<span class="ruby-identifier">node_type_class</span>)
     <span class="ruby-keyword">end</span>
@@ -708,7 +711,8 @@
     <span class="ruby-comment"># Don&#39;t call `ancestor.edge_type_class`</span>
     <span class="ruby-comment"># because we don&#39;t want a fallback from any ancestors --</span>
     <span class="ruby-comment"># only apply the fallback if _no_ ancestor has a configured value!</span>
-    <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">ancestors</span>
+    <span class="ruby-identifier">all_ancestors</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
+    <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">all_ancestors</span>
       <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">configured_edge_type_class</span>, <span class="ruby-keyword">true</span>) <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">etc</span> = <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">configured_edge_type_class</span>)
         <span class="ruby-keyword">return</span> <span class="ruby-identifier">etc</span>
       <span class="ruby-keyword">end</span>

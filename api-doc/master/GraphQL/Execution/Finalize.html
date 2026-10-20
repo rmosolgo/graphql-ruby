@@ -578,8 +578,8 @@
           <span class="ruby-keyword">while</span> (<span class="ruby-identifier">array</span> = <span class="ruby-identifier">pending_arrays</span>.<span class="ruby-identifier">pop</span>)
             <span class="ruby-identifier">array</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">el</span>, <span class="ruby-identifier">idx</span><span class="ruby-operator">|</span>
               <span class="ruby-keyword">if</span> <span class="ruby-identifier">el</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">err</span>)
-                <span class="ruby-identifier">tf</span> = <span class="ruby-ivar">@finalizers</span>[<span class="ruby-identifier">array</span>] ||= {}.<span class="ruby-identifier">compare_by_identity</span>
-                <span class="ruby-identifier">tf</span>[<span class="ruby-identifier">idx</span>] = <span class="ruby-identifier">err</span>
+                <span class="ruby-identifier">array_tf</span> = <span class="ruby-ivar">@finalizers</span>[<span class="ruby-identifier">array</span>] ||= {}.<span class="ruby-identifier">compare_by_identity</span>
+                <span class="ruby-identifier">array_tf</span>[<span class="ruby-identifier">idx</span>] = <span class="ruby-identifier">err</span>
                 <span class="ruby-ivar">@finalizers_count</span> += <span class="ruby-value">1</span>
               <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">el</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>)
                 <span class="ruby-identifier">pending_arrays</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">el</span>

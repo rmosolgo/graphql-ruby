@@ -770,7 +770,7 @@
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run</span>(<span class="ruby-value">trace_query_lazy:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">with_trace_query_lazy</span>(<span class="ruby-identifier">trace_query_lazy</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-keyword">while</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@lazies_at_depth</span>.<span class="ruby-identifier">empty?</span>
-      <span class="ruby-identifier">smallest_depth</span> = <span class="ruby-keyword">nil</span>
+      <span class="ruby-identifier">smallest_depth</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Integer?</span>
       <span class="ruby-ivar">@lazies_at_depth</span>.<span class="ruby-identifier">each_key</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">depth_key</span><span class="ruby-operator">|</span>
         <span class="ruby-identifier">smallest_depth</span> ||= <span class="ruby-identifier">depth_key</span>
         <span class="ruby-keyword">if</span> <span class="ruby-identifier">depth_key</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">smallest_depth</span>
@@ -836,7 +836,7 @@
   <span class="ruby-comment"># Reuse this instance because execution code may already have a reference to _this_ `dataloader` inside the given block.</span>
   <span class="ruby-identifier">prev_lazies_at_depth</span> = <span class="ruby-ivar">@lazies_at_depth</span>
   <span class="ruby-ivar">@lazies_at_depth</span> = <span class="ruby-ivar">@lazies_at_depth</span>.<span class="ruby-identifier">dup</span>.<span class="ruby-identifier">clear</span>
-  <span class="ruby-identifier">res</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">res</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
   <span class="ruby-identifier">append_job</span> {
     <span class="ruby-identifier">res</span> = <span class="ruby-keyword">yield</span>
   }
