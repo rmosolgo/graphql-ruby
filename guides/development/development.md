@@ -156,19 +156,6 @@ GraphQL-Ruby uses a thorough test suite to make sure things work reliably day-af
 
 Don't fret about coding style or organization.  There's a minimal Rubocop config in `.rubocop.yml` which runs during CI. You can run it manually with `bundle exec rake rubocop`.
 
-### Sorbet
-
-GraphQL-Ruby is adopting [Sorbet](https://sorbet.org) gradually, using inline RBS comments (no `sorbet-runtime`). Every file in `lib/` needs a `# typed:` sigil. Sorbet and [Spoom](https://github.com/Shopify/spoom) are installed by `gemfiles/sorbet.gemfile`, so run these commands with `BUNDLE_GEMFILE=gemfiles/sorbet.gemfile`:
-
-```
-bundle exec srb tc                     # type check the project
-bundle exec rake sorbet:coverage       # print sigil counts and the error count at `--typed=true`
-bundle exec rake sorbet:check_bumpable # fail if a `# typed: false` file already passes at `# typed: true`
-bundle exec rake sorbet:check_sigils   # fail if a sigil is weaker than on origin/master
-```
-
-CI runs all of these. If `sorbet:check_bumpable` fails, run `bundle exec rake sorbet:bump` to update the sigils and commit the result. `typed: ignore` files and paths ignored in `sorbet/config` are left alone. If `sorbet:check_sigils` fails, keep the stronger sigil and fix the type errors instead.
-
 ## Website
 
 To update the website, update the `.md` files in `guides/`.

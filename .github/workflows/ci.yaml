@@ -20,15 +20,9 @@ jobs:
         bundler-cache: true
     - run: bundle exec rake rubocop
     - run: bundle exec srb tc
-    - run: bundle exec rake sorbet:check_bumpable
-    - name: bundle exec rake sorbet:check_sigils
-      if: github.event_name == 'pull_request'
-      run: |
-        git fetch --no-tags --depth=1 origin "$BASE_REF"
-        bundle exec rake "sorbet:check_sigils[FETCH_HEAD]"
-      env:
-        BASE_REF: ${{ github.base_ref }}
-    - run: bundle exec rake sorbet:coverage
+    # Fails if any `# typed: false` file passes at `typed: true`.
+    # Spoom drops BUNDLE_GEMFILE when it shells out, so pass the full command (https://github.com/Shopify/spoom/issues/349)
+    - run: bundle exec spoom srb bump --from false --to true --dry --sorbet "BUNDLE_GEMFILE=gemfiles/sorbet.gemfile bundle exec srb tc" lib
     - run: npx @herb-tools/linter@0.8.10
   system_tests:
     runs-on: ubuntu-latest
