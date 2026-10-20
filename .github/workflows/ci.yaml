@@ -20,6 +20,9 @@ jobs:
         bundler-cache: true
     - run: bundle exec rake rubocop
     - run: bundle exec srb tc
+    # Fails if any `# typed: false` file passes at `typed: true`.
+    # Spoom drops BUNDLE_GEMFILE when it shells out, so pass the full command (https://github.com/Shopify/spoom/issues/349)
+    - run: bundle exec spoom srb bump --from false --to true --dry --sorbet "BUNDLE_GEMFILE=gemfiles/sorbet.gemfile bundle exec srb tc" lib
     - run: npx @herb-tools/linter@0.8.10
   system_tests:
     runs-on: ubuntu-latest
