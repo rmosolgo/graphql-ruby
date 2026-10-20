@@ -52,8 +52,7 @@ module GraphQL
         cursor_for_position(item, position)
       end
 
-      # @api private
-      def cursor_for_position(_item, position)
+      def cursor_for_position(_item, position) # :nodoc:
         # position in nodes + existing offset + 1 (because it's offset, not index)
         offset = position + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
         encode(offset.to_s)

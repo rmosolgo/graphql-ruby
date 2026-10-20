@@ -304,8 +304,7 @@ module GraphQL
         raise PaginationImplementationMissingError, "Implement #{self.class}#cursor_for(item) to return the cursor for #{item.inspect}"
       end
 
-      # @api private
-      def cursor_for_position(item, _position)
+      def cursor_for_position(item, _position) # :nodoc:
         cursor_for(item)
       end
 
@@ -365,9 +364,8 @@ module GraphQL
       class Edge
         attr_reader :node
 
-        # @api private
-        # @return [Integer, nil] The zero-based position of this edge in the page
-        attr_accessor :graphql_connection_position
+        # The zero-based position of this edge in the page
+        attr_accessor :graphql_connection_position # :nodoc:
 
         def initialize(node, connection)
           @connection = connection
