@@ -1671,6 +1671,33 @@ type ReachableType implements Node {
     assert_equal ["id", "name", "nationality"], schema.types.fetch("Person").fields.keys.sort
   end
 
+  it "adds possible types for indirect interfaces that are defined later in the document" do
+    schema = GraphQL::Schema.from_definition <<~GRAPHQL
+      type Query {
+        node: Node
+        resource: Resource
+      }
+
+      type Thing implements Resource & Node {
+        id: ID!
+        name: String
+      }
+
+      interface Resource implements Node {
+        id: ID!
+        name: String
+      }
+
+      interface Node {
+        id: ID!
+      }
+    GRAPHQL
+
+    assert_equal ["Thing"], schema.possible_types(schema.types["Node"]).map(&:graphql_name)
+    assert_equal ["Thing"], schema.possible_types(schema.types["Resource"]).map(&:graphql_name)
+    assert_equal [], schema.validate("{ node { ... on Thing { name } } }")
+  end
+
   it "supports extending schemas with directives" do
     schema_sdl = <<~EOS
     extend schema
