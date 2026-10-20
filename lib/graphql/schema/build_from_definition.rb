@@ -58,14 +58,14 @@ module GraphQL
           queued_directives = []
           type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name| types[type_name] ||= Schema::LateBoundType.new(type_name) }
           # Make a different type resolver because directive argument types must be real classes (not late-bound)
-          # when queued directives are applied. It builds types eagerly, registering each one in `types`
-          # before building its members so that cycles between input objects terminate.
+          # when queued directives are applied. It builds types eagerly. (Each type registers itself in `types`
+          # before building its members, so cycles between input objects terminate.)
           directive_type_resolver = nil
           directive_type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name|
             types[type_name] ||= begin
               defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
               if defn
-                build_definition_from_node(defn, directive_type_resolver, default_resolve, base_types) { |type_defn| types[type_name] = type_defn }
+                build_definition_from_node(defn, directive_type_resolver, default_resolve, base_types)
               elsif (built_in_defn = GraphQL::Schema::BUILT_IN_TYPES[type_name])
                 built_in_defn
               else
@@ -120,7 +120,7 @@ module GraphQL
                   end
                 end
 
-                types[definition.name] = build_definition_from_node(definition, type_resolver, default_resolve, base_types)
+                build_definition_from_node(definition, type_resolver, default_resolve, base_types)
               end
             end
           end
@@ -278,20 +278,20 @@ module GraphQL
           raise(GraphQL::RequiredImplementationMissingError, "Generated Schema cannot use Interface or Union types for execution. Implement resolve_type on your resolver.")
         }
 
-        def build_definition_from_node(definition, type_resolver, default_resolve, base_types, &on_create)
+        def build_definition_from_node(definition, type_resolver, default_resolve, base_types)
           case definition
           when GraphQL::Language::Nodes::EnumTypeDefinition
-            build_enum_type(definition, type_resolver, base_types[:enum], &on_create)
+            build_enum_type(definition, type_resolver, base_types[:enum])
           when GraphQL::Language::Nodes::ObjectTypeDefinition
-            build_object_type(definition, type_resolver, base_types[:object], &on_create)
+            build_object_type(definition, type_resolver, base_types[:object])
           when GraphQL::Language::Nodes::InterfaceTypeDefinition
-            build_interface_type(definition, type_resolver, base_types[:interface], &on_create)
+            build_interface_type(definition, type_resolver, base_types[:interface])
           when GraphQL::Language::Nodes::UnionTypeDefinition
-            build_union_type(definition, type_resolver, base_types[:union], &on_create)
+            build_union_type(definition, type_resolver, base_types[:union])
           when GraphQL::Language::Nodes::ScalarTypeDefinition
-            build_scalar_type(definition, type_resolver, base_types[:scalar], default_resolve: default_resolve, &on_create)
+            build_scalar_type(definition, type_resolver, base_types[:scalar], default_resolve: default_resolve)
           when GraphQL::Language::Nodes::InputObjectTypeDefinition
-            build_input_object_type(definition, type_resolver, base_types[:input_object], &on_create)
+            build_input_object_type(definition, type_resolver, base_types[:input_object])
           when GraphQL::Language::Nodes::DirectiveDefinition
             build_directive(definition, type_resolver)
           end
@@ -384,11 +384,11 @@ module GraphQL
           end
         end
 
-        def build_enum_type(enum_type_definition, type_resolver, base_type, &on_create)
+        def build_enum_type(enum_type_definition, type_resolver, base_type)
           builder = self
           Class.new(base_type) do
             graphql_name(enum_type_definition.name)
-            on_create&.call(self)
+            type_resolver.register(self)
             builder.build_directives(self, enum_type_definition, type_resolver)
             description(enum_type_definition.description)
             ast_node(enum_type_definition)
@@ -418,11 +418,11 @@ module GraphQL
           reason.value
         end
 
-        def build_scalar_type(scalar_type_definition, type_resolver, base_type, default_resolve:, &on_create)
+        def build_scalar_type(scalar_type_definition, type_resolver, base_type, default_resolve:)
           builder = self
           Class.new(base_type) do
             graphql_name(scalar_type_definition.name)
-            on_create&.call(self)
+            type_resolver.register(self)
             description(scalar_type_definition.description)
             ast_node(scalar_type_definition)
             builder.build_directives(self, scalar_type_definition, type_resolver)
@@ -442,11 +442,11 @@ module GraphQL
           end
         end
 
-        def build_union_type(union_type_definition, type_resolver, base_type, &on_create)
+        def build_union_type(union_type_definition, type_resolver, base_type)
           builder = self
           Class.new(base_type) do
             graphql_name(union_type_definition.name)
-            on_create&.call(self)
+            type_resolver.register(self)
             description(union_type_definition.description)
             possible_types(*union_type_definition.types.map { |type_name| type_resolver.call(type_name) })
             ast_node(union_type_definition)
@@ -454,12 +454,12 @@ module GraphQL
           end
         end
 
-        def build_object_type(object_type_definition, type_resolver, base_type, &on_create)
+        def build_object_type(object_type_definition, type_resolver, base_type)
           builder = self
 
           Class.new(base_type) do
             graphql_name(object_type_definition.name)
-            on_create&.call(self)
+            type_resolver.register(self)
             description(object_type_definition.description)
             ast_node(object_type_definition)
             builder.build_directives(self, object_type_definition, type_resolver)
@@ -474,11 +474,11 @@ module GraphQL
           end
         end
 
-        def build_input_object_type(input_object_type_definition, type_resolver, base_type, &on_create)
+        def build_input_object_type(input_object_type_definition, type_resolver, base_type)
           builder = self
           Class.new(base_type) do
             graphql_name(input_object_type_definition.name)
-            on_create&.call(self)
+            type_resolver.register(self)
             description(input_object_type_definition.description)
             ast_node(input_object_type_definition)
             builder.build_directives(self, input_object_type_definition, type_resolver)
@@ -537,12 +537,12 @@ module GraphQL
           end
         end
 
-        def build_interface_type(interface_type_definition, type_resolver, base_type, &on_create)
+        def build_interface_type(interface_type_definition, type_resolver, base_type)
           builder = self
           Module.new do
             include base_type
             graphql_name(interface_type_definition.name)
-            on_create&.call(self)
+            type_resolver.register(self)
             description(interface_type_definition.description)
             builder.build_interfaces(self, interface_type_definition.interfaces, type_resolver)
             ast_node(interface_type_definition)
@@ -604,6 +604,11 @@ module GraphQL
 
           # Directive applications waiting for {Builder#apply_queued_directives}
           attr_reader :queued_directives
+
+          # Add `type` to the lookup hash. Types call this before building their members, so that references back to them (including cycles) find this type.
+          def register(type)
+            @lookup_hash[type.graphql_name] = type
+          end
 
           # The already-defined directive class named `name`, or `nil` if there isn't one yet
           def directive_class(name)
