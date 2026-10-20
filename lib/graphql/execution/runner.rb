@@ -16,7 +16,7 @@ module GraphQL
           h[query] = InputValues.new(query, self)
         end.compare_by_identity
 
-        @runtime_directives = nil #: Hash[String, untyped]?
+        @runtime_directives = nil #: Hash[String, singleton(GraphQL::Schema::Directive)]?
         @schema.directives.each do |name, dir_class|
           if dir_class.runtime? && name != "include" && name != "skip"
             @runtime_directives ||= {}
