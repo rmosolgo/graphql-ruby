@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
@@ -7,7 +7,10 @@ module GraphQL
       module HasDirectives
         def self.extended(child_cls)
           super
-          child_cls.module_exec { self.own_directives = nil }
+          child_cls.module_exec {
+            #: self as GraphQL::Schema::Member::HasDirectives
+            self.own_directives = nil
+          }
         end
 
         def inherited(child_cls)
@@ -71,7 +74,7 @@ module GraphQL
                 GraphQL::EmptyObjects::EMPTY_ARRAY
               end
               if !inherited_directives.empty? && directives
-                dirs = []
+                dirs = [] #: Array[GraphQL::Schema::Directive]?
                 merge_directives(dirs, inherited_directives)
                 merge_directives(dirs, directives)
                 dirs
@@ -83,8 +86,9 @@ module GraphQL
                 GraphQL::EmptyObjects::EMPTY_ARRAY
               end
             when Module
-              dirs = nil
-              schema_member.ancestors.reverse_each do |ancestor|
+              dirs = nil #: Array[GraphQL::Schema::Directive]?
+              ancestors = schema_member.ancestors #: Array[untyped]
+              ancestors.reverse_each do |ancestor|
                 if ancestor.respond_to?(:own_directives) &&
                     !(anc_dirs = ancestor.own_directives).empty?
                   dirs ||= []

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
@@ -77,8 +77,8 @@ module GraphQL
         when Array
           value.map { |item| unwrap_value(item) }
         when Hash
-          value.reduce({}) do |h, (key, value)|
-            h.merge!(key => unwrap_value(value))
+          value.reduce({}) do |h, (key, nested_value)|
+            h.merge!(key => unwrap_value(nested_value))
           end
         when InputObject
           value.to_h
@@ -155,6 +155,7 @@ module GraphQL
         end
 
         def argument(*args, **kwargs, &block)
+          args = args #: untyped
           argument_defn = super(*args, **kwargs, &block)
           if one_of?
             if argument_defn.type.non_null?
@@ -191,7 +192,7 @@ module GraphQL
           end
 
 
-          result = nil
+          result = nil #: GraphQL::Query::InputValidationResult?
 
 
           input.each do |argument_name, value|
@@ -324,7 +325,10 @@ module GraphQL
         end
 
         def define_accessor_method(method_name)
-          define_method(method_name) { self[method_name] }
+          define_method(method_name) {
+            #: self as GraphQL::Schema::InputObject
+            self[method_name]
+          }
           alias_method(method_name, method_name)
         end
       end

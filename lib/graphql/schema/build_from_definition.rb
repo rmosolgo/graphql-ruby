@@ -548,7 +548,7 @@ module GraphQL
         def build_interface_type(interface_type_definition, type_resolver, base_type)
           builder = self
           Module.new do
-            #: self as Module & GraphQL::Schema::Interface::DefinitionMethods
+            #: self as GraphQL::Schema::Member::interface_definition
             include base_type
             graphql_name(interface_type_definition.name)
             type_resolver.register(self)

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   # A combination of query string and [Schema](rdoc-ref:GraphQL::Schema) instance which can be reduced to a [result](rdoc-ref:#result).
@@ -372,7 +372,7 @@ module GraphQL
     # :call-seq:
     #   run_partials(Array[Hash[Symbol, Object]] partials_hashes) -> Array[GraphQL::Query::Result]
     def run_partials(partials_hashes)
-      partials = partials_hashes.map { |partial_options| Partial.new(query: self, **partial_options) }
+      partials = partials_hashes.map { |partial_options| Partial.new(**partial_options, query: self) }
       if context[:__graphql_execute_next]
         Execution::Next.run_all(@schema, partials, context: @context)
       else

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "securerandom"
 require "graphql/subscriptions/broadcast_analyzer"
 require "graphql/subscriptions/event"
@@ -413,10 +413,12 @@ module GraphQL
       when GraphQL::Schema::Field, Class
         return args if args.nil?
 
+        arg_owner = arg_owner #: as GraphQL::Schema::Field | GraphQL::Schema::Member::type_definition
         if arg_owner.is_a?(Class) && !arg_owner.kind.input_object?
           # it's a type, but not an input object
           return args
         end
+        arg_owner = arg_owner #: as GraphQL::Schema::Field | singleton(GraphQL::Schema::InputObject)
         normalized_args = {}
         missing_arg_names = []
         args.each do |k, v|
@@ -455,10 +457,8 @@ module GraphQL
         if !missing_arg_names.empty?
           arg_owner_name = if arg_owner.is_a?(GraphQL::Schema::Field)
             arg_owner.path
-          elsif arg_owner.is_a?(Class)
-            arg_owner.graphql_name
           else
-            arg_owner.to_s
+            arg_owner.graphql_name
           end
           raise InvalidTriggerError, "Can't trigger Subscription.#{event_name}, received undefined arguments: #{missing_arg_names.join(", ")}. (Should match arguments of #{arg_owner_name}.)"
         end

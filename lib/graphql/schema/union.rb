@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     class Union < GraphQL::Schema::Member
@@ -72,11 +72,13 @@ module GraphQL
         def assert_valid_union_member(type_defn)
           case type_defn
           when Class
+            type_defn = type_defn #: as GraphQL::Schema::Member::type_definition
             if !type_defn.kind.object?
               raise ArgumentError, "Union possible_types can only be object types (not #{type_defn.kind.name}, #{type_defn.inspect})"
             end
           when Module
             # it's an interface type, defined as a module
+            type_defn = type_defn #: as GraphQL::Schema::Member::type_definition
             raise ArgumentError, "Union possible_types can only be object types (not interface types), remove #{type_defn.graphql_name} (#{type_defn.inspect})"
           when String, GraphQL::Schema::LateBoundType
             # Ok - assume it will get checked later
