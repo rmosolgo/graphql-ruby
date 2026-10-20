@@ -47,6 +47,16 @@ describe "Next Execution" do
     class PlantFamily < GraphQL::Schema::Object
       implements Nameable
       field :name, String, null: false
+      field :guarded_name, String, resolve_legacy_instance_method: true do
+        def authorized?(object, arguments, context)
+          object.name != "Legumes"
+        end
+      end
+
+      def guarded_name
+        "legacy-#{object.name}"
+      end
+
       field :grows_in, [Season]
       field :species, [PlantSpecies]
       field :plant_count, Integer, resolve_each: :resolve_plant_count
@@ -208,6 +218,14 @@ describe "Next Execution" do
       "p3" => { "growsIn" => ["SPRING", "SUMMER"], "family" => { "plantCount" => 4 }}
     } }
     assert_graphql_equal(expected_result, result)
+  end
+
+  it "keeps legacy field results aligned after field authorization" do
+    result = run_next("{ families { guardedName } }")
+
+    assert_equal \
+      [nil, "legacy-Nightshades", "legacy-Curcurbits"],
+      result["data"]["families"].map { |family| family["guardedName"] }
   end
 
   describe "non-null root mutation fields" do
