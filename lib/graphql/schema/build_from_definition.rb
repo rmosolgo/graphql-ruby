@@ -55,12 +55,15 @@ module GraphQL
           schema_definition = schema_defns.first
           types = {}
           directives = schema_superclass.directives.dup
-          type_resolver = build_resolve_type(types, directives, ->(type_name) { types[type_name] ||= Schema::LateBoundType.new(type_name)})
-          # Make a different type resolver because we need to coerce directive arguments
-          # _while_ building the schema.
-          # It will dig for a type if it encounters a custom type. This could be a problem if there are cycles.
+          # Directive applications are queued while types are built, then applied once every type is complete,
+          # because applying a directive coerces its arguments, which requires fully-built input types.
+          queued_directives = []
+          type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name| types[type_name] ||= Schema::LateBoundType.new(type_name) }
+          # Make a different type resolver because directive argument types must be real classes (not late-bound)
+          # when queued directives are applied. It builds types eagerly. (Each type registers itself in `types`
+          # before building its members, so cycles between input objects terminate.)
           directive_type_resolver = nil
-          directive_type_resolver = build_resolve_type(types, directives, ->(type_name) {
+          directive_type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name|
             types[type_name] ||= begin
               defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
               if defn
@@ -71,7 +74,7 @@ module GraphQL
                 raise "No definition for #{type_name.inspect} found in schema document or built-in types. Add a definition for it or remove it."
               end
             end
-          })
+          }
 
           directives.merge!(GraphQL::Schema.default_directives)
           document.definitions.each do |definition|
@@ -119,7 +122,7 @@ module GraphQL
                   end
                 end
 
-                types[definition.name] = build_definition_from_node(definition, type_resolver, default_resolve, base_types)
+                build_definition_from_node(definition, type_resolver, default_resolve, base_types)
               end
             end
           end
@@ -187,6 +190,9 @@ module GraphQL
             end
           end
 
+          # All types are built now, so directive arguments can be coerced
+          apply_queued_directives(queued_directives)
+
           builder = self
 
           found_types = types.values
@@ -231,6 +237,7 @@ module GraphQL
             if schema_definition
               ast_node(schema_definition)
               builder.build_directives(self, schema_definition, type_resolver)
+              builder.apply_queued_directives(queued_directives)
             end
 
             using.each do |plugin, options|
@@ -265,6 +272,7 @@ module GraphQL
               build_directives(schema_class, ext, type_resolver)
             end
           end
+          apply_queued_directives(queued_directives)
 
           schema_class
         end
@@ -312,7 +320,26 @@ module GraphQL
           end
         end
 
+        # Apply `ast_node`'s directives to `definition`. If any of those directives has arguments,
+        # they're queued for {apply_queued_directives} because coercing arguments requires fully-built types.
+        # Directives without arguments are applied right away, since some (like `@oneOf`) affect how the rest of the type is built.
         def build_directives(definition, ast_node, type_resolver)
+          return if ast_node.directives.empty?
+
+          if ast_node.directives.all? { |dir_node| dir_node.name == "deprecated" || type_resolver.directive_class(dir_node.name)&.all_argument_definitions&.empty? }
+            apply_directives(definition, ast_node, type_resolver)
+          else
+            type_resolver.queued_directives << [definition, ast_node, type_resolver]
+          end
+        end
+
+        def apply_queued_directives(queued_directives)
+          until queued_directives.empty?
+            apply_directives(*queued_directives.shift)
+          end
+        end
+
+        def apply_directives(definition, ast_node, type_resolver)
           dirs = prepare_directives(ast_node, type_resolver)
           dirs.each do |(dir_class, options)|
             if definition.respond_to?(:schema_directive)
@@ -365,6 +392,7 @@ module GraphQL
           Class.new(base_type) do
             #: self as singleton(GraphQL::Schema::Enum)
             graphql_name(enum_type_definition.name)
+            type_resolver.register(self)
             builder.build_directives(self, enum_type_definition, type_resolver)
             description(enum_type_definition.description)
             ast_node(enum_type_definition)
@@ -374,13 +402,13 @@ module GraphQL
 
         def build_values(type_class, enum_value_definitions, type_resolver)
           enum_value_definitions.each do |enum_value_definition|
-            type_class.value(enum_value_definition.name,
+            enum_value = type_class.value(enum_value_definition.name,
               value: enum_value_definition.name,
               deprecation_reason: build_deprecation_reason(enum_value_definition.directives),
               description: enum_value_definition.description,
-              directives: prepare_directives(enum_value_definition, type_resolver),
               ast_node: enum_value_definition,
             )
+            build_directives(enum_value, enum_value_definition, type_resolver)
           end
         end
 
@@ -399,6 +427,7 @@ module GraphQL
           Class.new(base_type) do
             #: self as singleton(GraphQL::Schema::Scalar)
             graphql_name(scalar_type_definition.name)
+            type_resolver.register(self)
             description(scalar_type_definition.description)
             ast_node(scalar_type_definition)
             builder.build_directives(self, scalar_type_definition, type_resolver)
@@ -423,6 +452,7 @@ module GraphQL
           Class.new(base_type) do
             #: self as singleton(GraphQL::Schema::Union)
             graphql_name(union_type_definition.name)
+            type_resolver.register(self)
             description(union_type_definition.description)
             possible_types(*union_type_definition.types.map { |type_name| type_resolver.call(type_name) })
             ast_node(union_type_definition)
@@ -436,6 +466,7 @@ module GraphQL
           Class.new(base_type) do
             #: self as singleton(GraphQL::Schema::Object)
             graphql_name(object_type_definition.name)
+            type_resolver.register(self)
             description(object_type_definition.description)
             ast_node(object_type_definition)
             builder.build_directives(self, object_type_definition, type_resolver)
@@ -455,6 +486,7 @@ module GraphQL
           Class.new(base_type) do
             #: self as singleton(GraphQL::Schema::InputObject)
             graphql_name(input_object_type_definition.name)
+            type_resolver.register(self)
             description(input_object_type_definition.description)
             ast_node(input_object_type_definition)
             builder.build_directives(self, input_object_type_definition, type_resolver)
@@ -487,7 +519,7 @@ module GraphQL
               EMPTY_HASH
             end
 
-            type_class.argument(
+            argument = type_class.argument(
               argument_defn.name,
               type: type_resolver.call(argument_defn.type),
               required: false,
@@ -495,9 +527,9 @@ module GraphQL
               deprecation_reason: builder.build_deprecation_reason(argument_defn.directives),
               ast_node: argument_defn,
               camelize: false,
-              directives: prepare_directives(argument_defn, type_resolver),
               **default_value_kwargs
             )
+            builder.build_directives(argument, argument_defn, type_resolver)
           end
         end
 
@@ -519,6 +551,7 @@ module GraphQL
             #: self as Module & GraphQL::Schema::Interface::DefinitionMethods
             include base_type
             graphql_name(interface_type_definition.name)
+            type_resolver.register(self)
             description(interface_type_definition.description)
             builder.build_interfaces(self, interface_type_definition.interfaces, type_resolver)
             ast_node(interface_type_definition)
@@ -543,11 +576,11 @@ module GraphQL
               ast_node: field_definition,
               method_conflict_warning: false,
               camelize: false,
-              directives: prepare_directives(field_definition, type_resolver),
               resolver_method: resolve_method_name,
               resolve_batch: resolve_method_name,
             )
 
+            builder.build_directives(schema_field_defn, field_definition, type_resolver)
             builder.build_arguments(schema_field_defn, field_definition.arguments, type_resolver)
 
             # Don't do this for interfaces
@@ -571,28 +604,46 @@ module GraphQL
           }
         end
 
-        def build_resolve_type(lookup_hash, directives, missing_type_handler)
-          resolve_type_proc = nil
-          resolve_type_proc = ->(ast_node) {
+        class TypeResolver
+          def initialize(lookup_hash, directives, queued_directives, &missing_type_handler)
+            @lookup_hash = lookup_hash
+            @directives = directives
+            @queued_directives = queued_directives
+            @missing_type_handler = missing_type_handler
+          end
+
+          # Directive applications waiting for {Builder#apply_queued_directives}
+          attr_reader :queued_directives
+
+          # Add `type` to the lookup hash. Types call this before building their members, so that references back to them (including cycles) find this type.
+          def register(type)
+            @lookup_hash[type.graphql_name] = type
+          end
+
+          # The already-defined directive class named `name`, or `nil` if there isn't one yet
+          def directive_class(name)
+            @directives[name]
+          end
+
+          def call(ast_node)
             case ast_node
             when GraphQL::Language::Nodes::TypeName
               type_name = ast_node.name
-              if lookup_hash.key?(type_name)
-                lookup_hash[type_name]
+              if @lookup_hash.key?(type_name)
+                @lookup_hash[type_name]
               else
-                missing_type_handler.call(type_name)
+                @missing_type_handler.call(type_name)
               end
             when GraphQL::Language::Nodes::NonNullType
-              resolve_type_proc.call(ast_node.of_type).to_non_null_type
+              call(ast_node.of_type).to_non_null_type
             when GraphQL::Language::Nodes::ListType
-              resolve_type_proc.call(ast_node.of_type).to_list_type
+              call(ast_node.of_type).to_list_type
             when String
-              directives[ast_node] ||= missing_type_handler.call(ast_node)
+              @directives[ast_node] ||= @missing_type_handler.call(ast_node)
             else
               raise "Unexpected ast_node: #{ast_node.inspect}"
             end
-          }
-          resolve_type_proc
+          end
         end
       end
 
