@@ -285,3 +285,22 @@ module GraphQL
     end
   end
 end
+
+module GraphQL
+  class Schema
+    module UniqueWithinType
+      # Uses `module_function`, so `self` is `UniqueWithinType` when these methods run
+      def default_id_separator; end
+    end
+
+    class Member
+      # Extended onto Scalar, Enum and InputObject, and included into List and NonNull,
+      # which each implement these.
+      module ValidatesInput
+        def validate_non_null_input(val, ctx, max_errors: nil); end
+        def coerce_input(val, ctx); end
+        def coerce_result(val, ctx); end
+      end
+    end
+  end
+end

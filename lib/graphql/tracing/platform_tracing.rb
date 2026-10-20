@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Tracing
@@ -77,7 +77,8 @@ module GraphQL
           tracer = self.new(**options)
           schema_defn.tracer(tracer)
         else
-          tracing_name = self.name.split("::").last
+          class_name = self.name #: as !nil
+          tracing_name = class_name.split("::").last #: as String
           trace_name = tracing_name.sub("Tracing", "Trace")
           if GraphQL::Tracing.const_defined?(trace_name, false)
             trace_module = GraphQL::Tracing.const_get(trace_name)

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
@@ -35,6 +35,8 @@ module GraphQL
           child_class.extend(ClassMethods)
         end
 
+        #--
+        # @requires_ancestor: GraphQL::Schema::Member::HasDeprecationReason
         module ClassMethods
           def deprecation_reason(new_reason = NOT_CONFIGURED)
             if NOT_CONFIGURED.equal?(new_reason)

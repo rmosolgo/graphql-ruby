@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Analysis
     # Calculate the complexity of a query, using [Field#complexity](rdoc-ref:GraphQL::Schema::Field#complexity) values.
@@ -248,7 +248,7 @@ module GraphQL
           end
 
           # Identify the maximum cost and scope among possibilities
-          maximum_cost = 0
+          maximum_cost = 0 #: Integer
           maximum_scope = child_scopes.reduce(child_scopes.last) do |max_scope, possible_scope|
             scope_cost = possible_scope.own_complexity(maximum_children_cost)
             if scope_cost > maximum_cost
@@ -280,8 +280,8 @@ module GraphQL
 
         # Add up the total cost for each unique field name's coalesced selections
         unique_field_keys.each_key.reduce(0) do |total, field_key|
-          composite_scopes = nil
-          field_cost = 0
+          composite_scopes = nil #: Array[untyped]?
+          field_cost = 0 #: Integer
 
           # Collect composite selection scopes for further aggregation,
           # leaf selections report their costs directly.
