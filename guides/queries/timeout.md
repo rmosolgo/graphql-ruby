@@ -1,12 +1,4 @@
----
-title: Timeout
-layout: guide
-doc_stub: false
-search: true
-section: Queries
-desc: Cutting off GraphQL execution
-index: 5
----
+# Timeout
 
 You can apply a timeout to query execution with the `GraphQL::Schema::Timeout` plugin. For example:
 
@@ -38,7 +30,7 @@ end
 
 ## Customizing the Timeout Window
 
-To dynamically pick a timeout duration (or bypass it), override {{ "GraphQL::Schema::Timeout#max_seconds" | api_doc }} in your subclass. To bypass the timeout altogether, `max_seconds` can return `false`.
+To dynamically pick a timeout duration (or bypass it), override [GraphQL::Schema::Timeout#max_seconds](rdoc-ref:GraphQL::Schema::Timeout#max_seconds) in your subclass. To bypass the timeout altogether, `max_seconds` can return `false`.
 
 For example:
 

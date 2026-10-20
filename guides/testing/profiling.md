@@ -1,16 +1,8 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Testing
-title: Profiling
-desc: Profiling the performance of GraphQL-Ruby
-index: 4
----
+# Profiling
 
 If you want to know more about how time is spent during GraphQL queries, including GraphQL-Ruby internals, you can use Ruby profiling tools to take a closer look.
 
-If you want to investigate GraphQL-Ruby performance together, prepare a runtime profile and memory profile as described below and {% open_an_issue "Performance investigation" %} on GitHub, including those files.
+If you want to investigate GraphQL-Ruby performance together, prepare a runtime profile and memory profile as described below and [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?title=Performance+investigation&body=) on GitHub, including those files.
 
 ## StackProf
 

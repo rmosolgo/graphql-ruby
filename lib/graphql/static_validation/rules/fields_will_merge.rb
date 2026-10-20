@@ -1,8 +1,12 @@
  # frozen_string_literal: true
+# typed: false
 
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor::ContextMethods
     module FieldsWillMerge
       # Validates that a selection set is valid if all fields (including spreading any
       # fragments) either correspond to distinct response names or can be merged

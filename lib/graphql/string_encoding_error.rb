@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class StringEncodingError < GraphQL::RuntimeTypeError
     attr_reader :string, :field, :path

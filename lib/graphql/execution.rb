@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/execution/directive_checks"
 require "graphql/execution/next"
 require "graphql/execution/interpreter"
@@ -9,8 +10,7 @@ require "graphql/execution/errors"
 
 module GraphQL
   module Execution
-    # @api private
-    class Skip < GraphQL::RuntimeError
+    class Skip < GraphQL::RuntimeError # :nodoc:
       attr_accessor :path
       def ast_nodes=(_ignored); end
 

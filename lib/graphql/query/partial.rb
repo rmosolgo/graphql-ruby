@@ -1,24 +1,30 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Query
-    # This class is _like_ a {GraphQL::Query}, except it can run on an arbitrary path within a query string.
+    # This class is _like_ a [GraphQL::Query](rdoc-ref:GraphQL::Query), except it can run on an arbitrary path within a query string.
     #
-    # It depends on a "parent" {Query}.
+    # It depends on a "parent" [Query](rdoc-ref:Query).
     #
     # During execution, it calls query-related tracing hooks but passes itself as `query:`.
     #
-    # The {Partial} will use your {Schema.resolve_type} hook to find the right GraphQL type to use for
+    # The [Partial](rdoc-ref:Partial) will use your [Schema.resolve_type](rdoc-ref:Schema.resolve_type) hook to find the right GraphQL type to use for
     # `object` in some cases.
     #
-    # @see Query#run_partials Run via {Query#run_partials}
+    # Run via [Query#run_partials](rdoc-ref:Query#run_partials).
     class Partial
       include Query::Runnable
 
-      # @param path [Array<String, Integer>] A path in `query.query_string` to start executing from
-      # @param object [Object] A starting object for execution
-      # @param query [GraphQL::Query] A full query instance that this partial is based on. Caches are shared.
-      # @param context [Hash] Extra context values to merge into `query.context`, if provided
-      # @param fragment_node [GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition]
+      # **Parameters**
+      #
+      # - `path` (`Array<String, Integer>`) — A path in `query.query_string` to start executing from
+      # - `object` (`Object`) — A starting object for execution
+      # - `query` (`GraphQL::Query`) — A full query instance that this partial is based on. Caches are shared.
+      # - `context` (`Hash`) — Extra context values to merge into `query.context`, if provided
+      # - `fragment_node` (`GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition`)
+      #
+      # :call-seq:
+      #   initialize(Array[String | Integer] path:, Object object:, GraphQL::Query query:, Hash context:, GraphQL::Language::Nodes::InlineFragment | GraphQL::Language::Nodes::FragmentDefinition fragment_node:, type:)
       def initialize(path: nil, object:, query:, context: nil, fragment_node: nil, type: nil)
         @path = path
         @object = object
@@ -65,7 +71,12 @@ module GraphQL
           @query.path
         end
 
-        # @return [GraphQL::Query::Partial]
+        # **Returns**
+        #
+        # - `GraphQL::Query::Partial`
+        #
+        # :call-seq:
+        #   partial() -> GraphQL::Query::Partial
         def partial
           @query
         end
@@ -138,9 +149,9 @@ module GraphQL
       private
 
       def set_type_info_from_path
-        selections = [@query.selected_operation]
+        selections = [@query.selected_operation] #: Array[GraphQL::Language::Nodes::OperationDefinition | GraphQL::Language::Nodes::Field]
         type = @query.root_type
-        field_defn = nil
+        field_defn = nil #: GraphQL::Schema::Field?
 
         @path.each do |name_in_doc|
           if name_in_doc.is_a?(Integer)
@@ -152,9 +163,9 @@ module GraphQL
             end
           end
 
-          next_selections = []
+          next_selections = [] #: Array[GraphQL::Language::Nodes::Field]
           selections.each do |selection|
-            selections_to_check = []
+            selections_to_check = [] #: Array[GraphQL::Language::Nodes::Field | GraphQL::Language::Nodes::InlineFragment | GraphQL::Language::Nodes::FragmentSpread]
             selections_to_check.concat(selection.selections)
             while (sel = selections_to_check.shift)
               case sel
@@ -169,6 +180,7 @@ module GraphQL
                 end
               else
                 raise "Unexpected selection in partial path: #{sel.class}, #{sel.inspect}"
+                sel #: absurd
               end
             end
           end
@@ -176,7 +188,8 @@ module GraphQL
           if next_selections.empty?
             raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
           end
-          field_name = next_selections.first.name
+          first_selection = next_selections.first #: as !nil
+          field_name = first_selection.name
           field_defn = @schema.get_field(type, field_name, @query.context) || raise("Invariant: no field called #{field_name} on #{type.graphql_name}")
           type = field_defn.type
           if type.non_null?

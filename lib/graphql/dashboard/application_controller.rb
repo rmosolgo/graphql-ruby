@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: ignore
 require "action_controller"
 
 module Graphql

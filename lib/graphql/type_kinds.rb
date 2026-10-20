@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   # Type kinds are the basic categories which a type may belong to (`Object`, `Scalar`, `Union`...)
   module TypeKinds
@@ -18,7 +19,7 @@ module GraphQL
       end
 
       # Does this TypeKind have multiple possible implementers?
-      # @deprecated Use `abstract?` instead of `resolves?`.
+      # **Deprecated:** Use `abstract?` instead of `resolves?`.
       def resolves?;  @abstract;  end
       # Is this TypeKind abstract?
       def abstract?; @abstract; end

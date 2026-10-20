@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.30.4 (1 Oct 2026)
+
+- Remove needless `require "ostruct"`
+
 # 1.30.3 (1 Oct 2026)
 
 - Remove dependency on `ostruct`

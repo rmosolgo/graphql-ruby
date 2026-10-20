@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 if testing_rails?
   # Remove the old sqlite database
-  sqlite_path = File.expand_path(File.join(__FILE__, "../../../_test_.db"))
+  sqlite_path = File.expand_path(File.join(__FILE__, "../../../_test_#{TEST_ENV_SUFFIX}.db"))
   puts "Removing #{sqlite_path}"
   `rm -f #{sqlite_path}`
 
@@ -10,29 +10,30 @@ if testing_rails?
   end
 
   if ENV['DATABASE'] == 'POSTGRESQL'
+    pg_database_name = "graphql_ruby_test#{TEST_ENV_SUFFIX}"
     ar_connection_options = {
       host: "localhost",
       adapter: "postgresql",
       username: "postgres",
       password: ENV["PGPASSWORD"], # empty in development, populated for GH Actions
-      database: "graphql_ruby_test",
+      database: pg_database_name,
     }
     ActiveRecord::Base.establish_connection(ar_connection_options.merge(
       database: "postgres"
     ))
     databases = ActiveRecord::Base.connection.execute("select datname from pg_database;")
-    test_db = databases.find { |d| d["datname"] == "graphql_ruby_test" }
+    test_db = databases.find { |d| d["datname"] == pg_database_name }
     if test_db
-      ActiveRecord::Base.connection.execute("drop database graphql_ruby_test;")
+      ActiveRecord::Base.connection.execute("drop database #{pg_database_name};")
     end
-    ActiveRecord::Base.connection.execute("create database graphql_ruby_test;")
+    ActiveRecord::Base.connection.execute("create database #{pg_database_name};")
 
     ActiveRecord::Base.configurations = {
       starwars: ar_connection_options,
       starwars_replica: ar_connection_options,
     }
 
-    SequelDB = Sequel.connect("postgres://postgres:#{ENV["PGPASSWORD"]}@localhost:5432/graphql_ruby_test")
+    SequelDB = Sequel.connect("postgres://postgres:#{ENV["PGPASSWORD"]}@localhost:5432/#{pg_database_name}")
   else
     ActiveRecord::Base.configurations = {
       starwars: { adapter: "sqlite3", database: sqlite_path },

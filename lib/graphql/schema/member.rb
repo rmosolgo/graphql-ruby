@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require 'graphql/schema/member/base_dsl_methods'
 require 'graphql/schema/member/graphql_type_names'
 require 'graphql/schema/member/has_ast_node'
@@ -20,8 +21,7 @@ module GraphQL
     # The base class for things that make up the schema,
     # eg objects, enums, scalars.
     #
-    # @api private
-    class Member
+    class Member # :nodoc:
       include GraphQLTypeNames
       extend BaseDSLMethods
       extend BaseDSLMethods::ConfigurationExtension

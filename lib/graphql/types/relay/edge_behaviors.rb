@@ -1,8 +1,11 @@
 # frozen_string_literal: true
+# typed: false
 
 module GraphQL
   module Types
     module Relay
+      #--
+      # @requires_ancestor: GraphQL::Schema::Object
       module EdgeBehaviors
         def self.included(child_class)
           child_class.description("An edge in a connection.")
@@ -21,6 +24,8 @@ module GraphQL
           @object.node
         end
 
+        #--
+        # @requires_ancestor: singleton(GraphQL::Schema::Object)
         module ClassMethods
           def inherited(child_class)
             super
@@ -43,9 +48,14 @@ module GraphQL
 
           # Get or set the Object type that this edge wraps.
           #
-          # @param node_type [Class] A `Schema::Object` subclass
-          # @param null [Boolean]
-          # @param field_options [Hash] Any extra arguments to pass to the `field :node` configuration
+          # **Parameters**
+          #
+          # - `node_type` (`Class`) — A `Schema::Object` subclass
+          # - `null` (`Boolean`)
+          # - `field_options` (`Hash`) — Any extra arguments to pass to the `field :node` configuration
+          #
+          # :call-seq:
+          #   node_type(Class node_type, bool null:, Hash field_options:)
           def node_type(node_type = nil, null: self.node_nullable, field_options: nil)
             if node_type
               @node_type = node_type

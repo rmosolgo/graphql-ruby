@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   module Execution
@@ -36,7 +37,7 @@ module GraphQL
           @storage[argument_owner][nil][ast_node]
         end
 
-        # @yield [Interpreter::Arguments, Lazy<Interpreter::Arguments>] The finally-loaded arguments
+        # **Yields:** [Interpreter::Arguments, Lazy<Interpreter::Arguments>] The finally-loaded arguments
         def dataload_for(ast_node, argument_owner, parent_object, &block)
           # First, normalize all AST or Ruby values to a plain Ruby hash
           arg_storage = @storage[argument_owner][parent_object]

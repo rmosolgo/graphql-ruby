@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   module Tracing
@@ -13,6 +14,10 @@ module GraphQL
           end
         end
       end
+
+      #--
+
+      # @requires_ancestor: Kernel
 
       module RunHooks
         module_function

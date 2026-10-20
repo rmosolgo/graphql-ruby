@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Execution
     class SelectionsStep
@@ -35,10 +36,10 @@ module GraphQL
         l = @all_selections.length
         while i < l
           grouped_selections = @all_selections[i]
-          selections_prototype_result = @all_selections[i + 1]
+          selections_prototype_result = @all_selections[i + 1] #: as !nil
           if (directives_owner = grouped_selections.delete(:__node))
             directives = directives_owner.directives
-            continue_execution = true
+            continue_execution = true #: bool
             directives.each do |dir_node|
               dir_defn = @runner.runtime_directives[dir_node.name]
               if dir_defn # not present for `skip` or `include`

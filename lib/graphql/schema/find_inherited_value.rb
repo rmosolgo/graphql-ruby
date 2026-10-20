@@ -1,6 +1,9 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Schema
+    #--
+    # @requires_ancestor: Module
     module FindInheritedValue
       def self.extended(child_cls)
         child_cls.singleton_class.include(GraphQL::EmptyObjects)
@@ -16,9 +19,8 @@ module GraphQL
         if self.is_a?(Class)
           superclass.respond_to?(method_name, true) ? superclass.send(method_name) : default_value
         else
-          ancestors_except_self = ancestors
-          ancestors_except_self.delete(self)
-          ancestors_except_self.each do |ancestor|
+          ancestors.each do |ancestor|
+            next if ancestor.equal?(self)
             if ancestor.respond_to?(method_name, true)
               return ancestor.send(method_name)
             end

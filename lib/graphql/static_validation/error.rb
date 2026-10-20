@@ -1,9 +1,12 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
     # Generates GraphQL-compliant validation message.
     class Error
       # Convenience for validators
+      #--
+      # @requires_ancestor: Kernel
       module ErrorHelper
         # Error `error_message` is located at `node`
         def error(error_message, nodes, context: nil, path: nil, extensions: {})

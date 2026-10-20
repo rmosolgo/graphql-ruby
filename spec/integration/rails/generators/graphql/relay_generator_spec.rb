@@ -5,7 +5,7 @@ require "generators/graphql/install_generator"
 
 class GraphQLGeneratorsRelayGeneratorTest < Rails::Generators::TestCase
   tests Graphql::Generators::RelayGenerator
-  destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
+  destination File.join(GENERATOR_TMP_DIR, "dummy")
 
   setup do
     prepare_destination

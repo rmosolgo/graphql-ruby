@@ -1,7 +1,10 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class UnauthorizedEnumValueError < GraphQL::UnauthorizedError
-    # @return [GraphQL::Schema::EnumValue] The value whose `#authorized?` check returned false
+    # **Returns**
+    #
+    # - `GraphQL::Schema::EnumValue` — The value whose `#authorized?` check returned false
     attr_accessor :enum_value
 
     def initialize(type:, context:, enum_value:)

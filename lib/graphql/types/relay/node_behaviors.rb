@@ -1,8 +1,11 @@
 # frozen_string_literal: true
+# typed: false
 
 module GraphQL
   module Types
     module Relay
+      #--
+      # @requires_ancestor: GraphQL::Schema::Object
       module NodeBehaviors
         def self.included(child_module)
           child_module.extend(ClassMethods)

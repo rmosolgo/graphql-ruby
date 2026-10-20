@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
     "rubygems_mfa_required" => "true",
   }
 
-  s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
+  s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".rdoc_options"]
 
   s.add_runtime_dependency "base64"
   s.add_runtime_dependency "fiber-storage"
@@ -39,13 +39,18 @@ Gem::Specification.new do |s|
   s.add_development_dependency "minitest-focus"
   s.add_development_dependency "minitest-reporters"
   s.add_development_dependency "ostruct"
+  s.add_development_dependency "parallel_tests"
   s.add_development_dependency "rake"
   s.add_development_dependency 'rake-compiler'
+  s.add_development_dependency 'rdoc'
   s.add_development_dependency "rubocop"
+  s.add_development_dependency "rubocop-sorbet"
   s.add_development_dependency "simplecov"
   s.add_development_dependency "simplecov-lcov"
+  s.add_development_dependency "sorbet"
+  s.add_development_dependency "sorbet-runtime"
+  s.add_development_dependency "tapioca"
   s.add_development_dependency "undercover"
-  s.add_development_dependency "yard"
   s.add_development_dependency "m", "~> 1.5.0"
   s.add_development_dependency "mutex_m"
   s.add_development_dependency "webrick"

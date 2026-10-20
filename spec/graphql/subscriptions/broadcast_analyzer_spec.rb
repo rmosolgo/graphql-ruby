@@ -95,7 +95,7 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
   it "doesn't run for non-subscriptions" do
     assert_nil broadcastable?("{ __typename }")
     assert_nil broadcastable?("mutation { __typename }")
-    assert_equal true, broadcastable?("subscription { __typename }")
+    assert_equal true, broadcastable?("subscription { newMaxThrowRecord { distance } }")
   end
 
   describe "when the default is false" do
@@ -108,7 +108,7 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
     end
 
     it "treats introspection fields as broadcastable" do
-      assert_equal true, broadcastable?("subscription { __typename }", schema: BroadcastTestDefaultFalseSchema)
+      assert_equal true, broadcastable?("subscription { newMaxThrowRecord { __typename } }", schema: BroadcastTestDefaultFalseSchema)
     end
   end
 

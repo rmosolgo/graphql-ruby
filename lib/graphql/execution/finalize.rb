@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Execution
     class Finalize
@@ -39,11 +40,16 @@ module GraphQL
                 tf[key] = err
                 @finalizers_count += 1
               elsif value_at_key.is_a?(Array)
-                value_at_key.each_with_index do |el, idx|
-                  if el.equal?(err)
-                    tf = @finalizers[value_at_key] ||= {}.compare_by_identity
-                    tf[idx] = err
-                    @finalizers_count += 1
+                pending_arrays = [value_at_key]
+                while (array = pending_arrays.pop)
+                  array.each_with_index do |el, idx|
+                    if el.equal?(err)
+                      array_tf = @finalizers[array] ||= {}.compare_by_identity
+                      array_tf[idx] = err
+                      @finalizers_count += 1
+                    elsif el.is_a?(Array)
+                      pending_arrays << el
+                    end
                   end
                 end
               end
@@ -175,7 +181,7 @@ module GraphQL
           inner_type = inner_type.of_type
         end
 
-        new_invalid_null = false
+        new_invalid_null = false #: bool
 
         if (f = finalizers(result_arr, nil))
           run_finalizers(@current_result_path.dup, f, result_arr, nil)

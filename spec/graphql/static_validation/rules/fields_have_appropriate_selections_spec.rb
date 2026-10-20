@@ -49,6 +49,15 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
     assert_includes(errors, incorrect_fragment_error, "finds scalar fields with selections")
   end
 
+  describe "inline fragments without type conditions on scalars" do
+    let(:query_string) { "{ cheese(id: 1) { flavor { ... { __typename } ... @include(if: true) { __typename } } } }" }
+
+    it "adds an error" do
+      assert_equal(1, errors.length)
+      assert_equal "Selections can't be made on scalars (field 'flavor' returns String but has selections [\"... { ... }\", \"... { ... }\"])", errors.first["message"]
+    end
+  end
+
   describe "anonymous operations" do
     let(:query_string) { "{ }" }
     it "requires selections" do

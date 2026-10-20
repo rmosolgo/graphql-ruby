@@ -1,9 +1,20 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Testing
+    #--
+    # @requires_ancestor: Kernel
     module Helpers
-      # @param schema_class [Class<GraphQL::Schema>]
-      # @return [Module] A helpers module which always uses the given schema
+      # **Parameters**
+      #
+      # - `schema_class` (`Class<GraphQL::Schema>`)
+      #
+      # **Returns**
+      #
+      # - `Module` — A helpers module which always uses the given schema
+      #
+      # :call-seq:
+      #   for(Class[GraphQL::Schema] schema_class) -> Module
       def self.for(schema_class)
         SchemaHelpers.for(schema_class)
       end
@@ -40,6 +51,8 @@ module GraphQL
       end
 
       def run_graphql_field(schema, field_path, object, arguments: {}, context: {}, ast_node: nil, lookahead: nil, visibility_profile: nil)
+        ast_node = ast_node #: GraphQL::Language::Nodes::Field?
+        lookahead = lookahead #: GraphQL::Execution::Lookahead?
         type_name, *field_names = field_path.split(".")
         dummy_query = GraphQL::Query.new(schema, "{ __typename }", context: context, visibility_profile: visibility_profile)
         query_context = dummy_query.context
@@ -144,9 +157,9 @@ module GraphQL
           super(@@schema_class_for_helpers, field_path, object, arguments: arguments, context: context, visibility_profile: visibility_profile)
         end
 
-        def with_resolution_context(*args, **kwargs, &block)
+        def with_resolution_context(**kwargs, &block)
           # schema will be added later
-          super(nil, *args, **kwargs, &block)
+          super(nil, **kwargs, &block)
         end
 
         def self.for(schema_class)

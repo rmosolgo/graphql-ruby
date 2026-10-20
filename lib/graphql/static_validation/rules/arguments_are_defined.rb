@@ -1,6 +1,9 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module ArgumentsAreDefined
       def on_argument(node, parent)
         parent_defn = parent_definition(parent)

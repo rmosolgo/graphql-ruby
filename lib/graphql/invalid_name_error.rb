@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class InvalidNameError < GraphQL::Error
     attr_reader :name, :valid_regex

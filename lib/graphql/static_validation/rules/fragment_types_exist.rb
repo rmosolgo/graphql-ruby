@@ -1,6 +1,9 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module FragmentTypesExist
       def on_fragment_definition(node, _parent)
         if validate_type_exists(node)

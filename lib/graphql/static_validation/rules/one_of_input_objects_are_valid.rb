@@ -1,6 +1,10 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
+    # @requires_ancestor: GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent
     module OneOfInputObjectsAreValid
       def on_input_object(node, parent)
         return super unless parent.is_a?(GraphQL::Language::Nodes::Argument)

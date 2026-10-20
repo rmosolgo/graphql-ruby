@@ -1,6 +1,9 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariableNamesAreUnique
       def on_operation_definition(node, parent)
         var_defns = node.variables
