@@ -173,7 +173,10 @@ module GraphQL
       #
       # - `value_node` (`GraphQL::Language::Nodes::AbstractNode, Object`)
       # - `type` (`Class<GraphQL::Schema::Member>`)
-      # - `validate` (`Boolean`) — When true, raise [InvalidLiteralError](rdoc-ref:InvalidLiteralError) for invalid values and treat variable references as valid.
+      # - `validate` (`Boolean`) — When true, raise `InvalidLiteralError` for invalid values and treat variable references as valid.
+      #
+      # :call-seq:
+      #   value_from_ast(GraphQL::Language::Nodes::AbstractNode | Object value_node, Class[GraphQL::Schema::Member] type, bool validate:)
       def value_from_ast(value_node, type, validate: false)
         if type.non_null?
           type = type.of_type

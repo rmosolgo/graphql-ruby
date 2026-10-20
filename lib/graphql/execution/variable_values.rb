@@ -6,7 +6,7 @@ module GraphQL
     #
     # Reading methods (`#[]`, `#fetch`, `#to_h`, ...) return the values _as provided_ by the client
     # (or the default value from the query string), so that existing callers keep working.
-    # Coerced values are available from [coerced_value](rdoc-ref:#coerced_value) for the runtime.
+    # Coerced values are available from `#coerced_value` for the runtime.
     class VariableValues
       extend Forwardable
 
