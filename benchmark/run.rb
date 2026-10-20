@@ -3,6 +3,10 @@ require "graphql"
 ADD_WARDEN = false
 TESTING_EXEC_NEXT = !!ENV["GRAPHQL_FUTURE"]
 TESTING_METHOD = !!ENV["TEST_METHOD"]
+# Jazz uses this test helper from spec/spec_helper.rb
+def if_exec_next(exec_next_value, legacy_value)
+  TESTING_EXEC_NEXT ? exec_next_value : legacy_value
+end
 require "jazz"
 require "benchmark/ips"
 require "stackprof"

@@ -117,6 +117,20 @@ namespace :bench do
     GraphQLBenchmark.run("query")
   end
 
+  desc "Run the benchmarks tracked over time, measuring iterations per second"
+  task :track_runtime do
+    prepare_benchmark
+    require_relative("./benchmark/track.rb")
+    GraphQLBenchmark::Track.runtime
+  end
+
+  desc "Run the benchmarks tracked over time, measuring memory allocations"
+  task :track_memory do
+    prepare_benchmark
+    require_relative("./benchmark/track.rb")
+    GraphQLBenchmark::Track.memory
+  end
+
   desc "Benchmark validation of several queries"
   task :validate do
     prepare_benchmark

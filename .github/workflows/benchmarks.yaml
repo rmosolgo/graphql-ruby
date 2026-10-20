@@ -1,0 +1,64 @@
+name: Benchmarks
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions: {}
+# Every run pushes to rmosolgo/graphql-ruby-benchmarks, so don't let runs race each other
+concurrency:
+  group: benchmarks
+  cancel-in-progress: false
+defaults:
+  run:
+    # Includes `-o pipefail`, so a failed benchmark isn't hidden by `tee`
+    shell: bash
+
+jobs:
+  benchmarks:
+    name: Run benchmarks and store results
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          # Allocations change between Ruby versions, so keep this pinned
+          ruby-version: '3.4'
+          bundler-cache: true
+      - run: mkdir -p tmp
+      - name: Run runtime benchmarks
+        run: bundle exec rake bench:track_runtime | tee tmp/benchmark_runtime.txt
+      - name: Run memory benchmarks
+        run: bundle exec rake bench:track_memory | tee tmp/benchmark_memory.txt
+      # Results are charted at https://rmosolgo.github.io/graphql-ruby-benchmarks/dev/bench/
+      - name: Store runtime results
+        uses: rmosolgo/github-action-benchmark@2f17b61ba59e765ca322ad380b4f85f8722c9c38 # ruby-v1
+        with:
+          name: Runtime
+          tool: rubyruntime
+          output-file-path: tmp/benchmark_runtime.txt
+          gh-repository: github.com/rmosolgo/graphql-ruby-benchmarks
+          github-token: ${{ secrets.BENCHMARK_RESULTS_TOKEN }}
+          auto-push: true
+          # Shared runners are noisy, so only flag big slowdowns
+          alert-threshold: '150%'
+          fail-on-alert: false
+          summary-always: true
+      - name: Store memory results
+        uses: rmosolgo/github-action-benchmark@2f17b61ba59e765ca322ad380b4f85f8722c9c38 # ruby-v1
+        with:
+          name: Memory
+          tool: rubymemory
+          output-file-path: tmp/benchmark_memory.txt
+          gh-repository: github.com/rmosolgo/graphql-ruby-benchmarks
+          github-token: ${{ secrets.BENCHMARK_RESULTS_TOKEN }}
+          auto-push: true
+          # Allocations are nearly deterministic, so flag small increases
+          alert-threshold: '110%'
+          fail-on-alert: false
+          summary-always: true
