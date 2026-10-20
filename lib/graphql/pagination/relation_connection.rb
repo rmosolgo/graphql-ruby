@@ -48,12 +48,25 @@ module GraphQL
 
       def cursor_for(item)
         load_nodes
-        # index in nodes + existing offset + 1 (because it's offset, not index)
-        offset = nodes.index(item) + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
-        encode(offset.to_s)
+        position = cursor_index_for(item, nodes)
+        offset_cursor_for_position(position)
+      end
+
+      def cursor_for_position(item, position) # :nodoc:
+        if self.class.custom_cursor_for?(RelationConnection)
+          super
+        else
+          offset_cursor_for_position(position)
+        end
       end
 
       private
+
+      def offset_cursor_for_position(position)
+        # position in nodes + existing offset + 1 (because it's offset, not index)
+        offset = position + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
+        encode(offset.to_s)
+      end
 
       # **Parameters**
       #
