@@ -133,6 +133,31 @@ describe "Next Execution" do
   end
 
 
+  class BuiltInLazySchema < GraphQL::Schema
+    class Source < GraphQL::Dataloader::Source
+      def fetch(keys)
+        keys.map { |key| "loaded-#{key}" }
+      end
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :lazy_value, String, resolve_each: true
+      field :request_value, String, resolve_each: true
+
+      def self.lazy_value(_object, _context)
+        GraphQL::Execution::Lazy.new { "resolved" }
+      end
+
+      def self.request_value(_object, context)
+        context.dataloader.with(Source).request(1)
+      end
+    end
+
+    query(Query)
+    use GraphQL::Dataloader
+    use GraphQL::Execution::Next
+  end
+
   def run_next(...)
     NextExecutionSchema.execute_next(...)
   end
@@ -140,6 +165,31 @@ describe "Next Execution" do
   before do
     NextExecutionSchema::DATA.clear
     NextExecutionSchema::DATA.concat(Marshal.load(Marshal.dump(NextExecutionSchema::CLEAN_DATA)))
+  end
+
+  it "resolves built-in Lazy values without custom lazy registrations" do
+    result = BuiltInLazySchema.execute_next("{ lazyValue }")
+
+    assert_equal({ "data" => { "lazyValue" => "resolved" } }, result.to_h)
+  end
+
+  it "resolves built-in Dataloader requests without custom lazy registrations" do
+    result = nil
+    _stdout, stderr = capture_io do
+      result = BuiltInLazySchema.execute_next("{ requestValue }")
+    end
+
+    assert_equal({ "data" => { "requestValue" => "loaded-1" } }, result.to_h)
+    assert_includes stderr, "Returning `.request(...)` from GraphQL::Dataloader is deprecated"
+  end
+
+  it "resolves built-in Lazy values when explicitly registered again" do
+    schema = Class.new(BuiltInLazySchema) do
+      lazy_resolve(GraphQL::Execution::Lazy, :value)
+    end
+    result = schema.execute_next("{ lazyValue }")
+
+    assert_equal({ "data" => { "lazyValue" => "resolved" } }, result.to_h)
   end
 
   it "runs a query" do

@@ -111,8 +111,8 @@ describe GraphQL::Schema::FieldExtension do
       end
 
       class NestedExtension < GraphQL::Schema::FieldExtension
-        def resolve(**_args)
-          1
+        def resolve(objects: nil, **_args)
+          objects ? Array.new(objects.size, 1) : 1
         end
       end
     end
