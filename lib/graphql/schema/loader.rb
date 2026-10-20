@@ -8,11 +8,7 @@ module GraphQL
     # so you can use it to validate queries.
     #
     # See [GraphQL::Schema.from_introspection](rdoc-ref:GraphQL::Schema.from_introspection) for a public API
-    #--
-    # @requires_ancestor: Kernel
     module Loader
-      extend self
-
       # Create schema with the result of an introspection query.
       #
       # **Parameters**
@@ -25,12 +21,11 @@ module GraphQL
       #
       # :call-seq:
       #   load(Hash introspection_result) -> Class
-      def load(introspection_result)
-        #: self as singleton(GraphQL::Schema::Loader)
+      def self.load(introspection_result)
         schema = introspection_result.fetch("data").fetch("__schema")
 
         types = {}
-        type_resolver = ->(type) { resolve_type(types, type) }
+        type_resolver = ->(type) { resolve_type_reference(types, type) }
 
         schema.fetch("types").each do |type|
           next if type.fetch("name").start_with?("__")
@@ -69,7 +64,7 @@ module GraphQL
       class << self
         private
 
-        def resolve_type(types, type)
+        def resolve_type_reference(types, type)
           case kind = type.fetch("kind")
           when "ENUM", "INTERFACE", "INPUT_OBJECT", "OBJECT", "SCALAR", "UNION"
             type_name = type.fetch("name")
@@ -80,9 +75,9 @@ module GraphQL
               type
             end
           when "LIST"
-            Schema::List.new(resolve_type(types, type.fetch("ofType")))
+            Schema::List.new(resolve_type_reference(types, type.fetch("ofType")))
           when "NON_NULL"
-            Schema::NonNull.new(resolve_type(types, type.fetch("ofType")))
+            Schema::NonNull.new(resolve_type_reference(types, type.fetch("ofType")))
           else
             fail GraphQL::RequiredImplementationMissingError, "#{kind} not implemented"
           end
@@ -126,7 +121,7 @@ module GraphQL
             end
           when "INTERFACE"
             Module.new do
-              #: self as GraphQL::Schema::Interface::DefinitionMethods & Module
+              #: self as GraphQL::Schema::Member::interface_definition
               include GraphQL::Schema::Interface
               graphql_name(type["name"])
               description(type["description"])

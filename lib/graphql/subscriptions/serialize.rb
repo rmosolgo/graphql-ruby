@@ -16,8 +16,6 @@ module GraphQL
       HASH_KEY = "__graphql_hash__"
       RESERVED_KEYS = [GLOBALID_KEY, SYMBOL_KEY, SYMBOL_KEYS_KEY, TIMESTAMP_KEY, OPEN_STRUCT_KEY, HASH_KEY].freeze
 
-      module_function
-
       # **Parameters**
       #
       # - `str` (`String`) — A serialized object from [.dump](rdoc-ref:.dump)
@@ -28,8 +26,7 @@ module GraphQL
       #
       # :call-seq:
       #   load(String str) -> Object
-      def load(str)
-        #: self as singleton(GraphQL::Subscriptions::Serialize)
+      def self.load(str)
         parsed_obj = JSON.parse(str)
         load_value(parsed_obj)
       end
@@ -44,8 +41,7 @@ module GraphQL
       #
       # :call-seq:
       #   dump(Object obj) -> String
-      def dump(obj)
-        #: self as singleton(GraphQL::Subscriptions::Serialize)
+      def self.dump(obj)
         JSON.generate(dump_value(obj))
       end
 
@@ -62,7 +58,7 @@ module GraphQL
       #
       # :call-seq:
       #   dump_recursive(Object obj) -> String
-      def dump_recursive(obj)
+      def self.dump_recursive(obj)
         case
         when obj.is_a?(Array)
           obj.map { |i| dump_recursive(i) }.join(':')
