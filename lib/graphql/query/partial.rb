@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Query
     # This class is _like_ a [GraphQL::Query](rdoc-ref:GraphQL::Query), except it can run on an arbitrary path within a query string.
@@ -149,9 +149,9 @@ module GraphQL
       private
 
       def set_type_info_from_path
-        selections = [@query.selected_operation]
+        selections = [@query.selected_operation] #: Array[untyped]
         type = @query.root_type
-        field_defn = nil
+        field_defn = nil #: untyped
 
         @path.each do |name_in_doc|
           if name_in_doc.is_a?(Integer)
@@ -163,7 +163,7 @@ module GraphQL
             end
           end
 
-          next_selections = []
+          next_selections = [] #: Array[untyped]
           selections.each do |selection|
             selections_to_check = []
             selections_to_check.concat(selection.selections)

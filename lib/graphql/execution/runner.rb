@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Execution
     class Runner
@@ -16,7 +16,7 @@ module GraphQL
           h[query] = InputValues.new(query, self)
         end.compare_by_identity
 
-        @runtime_directives = nil
+        @runtime_directives = nil #: Hash[String, untyped]?
         @schema.directives.each do |name, dir_class|
           if dir_class.runtime? && name != "include" && name != "skip"
             @runtime_directives ||= {}
@@ -282,7 +282,7 @@ module GraphQL
           query.current_trace.objects(root_type, objects, query.context)
 
           if query.is_a?(GraphQL::Query) && uses_runtime_directives && (query_dirs = selected_operation.directives).any? # rubocop:disable Development/NoneWithoutBlockCop
-            continue_execution = true
+            continue_execution = true #: bool
             query_dirs.each do |dir_node|
               dir_defn = runtime_directives[dir_node.name] || raise(GraphQL::Error, "No directive definition found for: #{dir_node.name.inspect}")
               dir_args, errors = input_values[query].argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
