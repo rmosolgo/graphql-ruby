@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require_relative "./base_cop"
 
 module GraphQL
@@ -137,7 +137,7 @@ module GraphQL
             field_indent << " "
             indent_test_idx -= 1
             if indent_test_idx == 0
-              raise "Invariant: somehow backtracted to beginning of class when looking for field indent (source: #{node_source.inspect})"
+              raise "Invariant: somehow backtracted to beginning of class when looking for field indent (source: #{type_defn_source.inspect})"
             end
           end
           field_indent

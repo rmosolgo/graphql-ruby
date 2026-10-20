@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     class Visibility
@@ -43,7 +43,8 @@ module GraphQL
                 case type.kind.name
                 when "OBJECT", "INTERFACE"
                   type.interface_type_memberships.each do |itm|
-                    append_unvisited_type(type, itm.abstract_type)
+                    # Late-bound interfaces are stored as a String or LateBoundType instead of a TypeMembership
+                    append_unvisited_type(type, itm.respond_to?(:abstract_type) ? itm.abstract_type : itm)
                   end
                   if type.kind.interface?
                     type.orphan_types.each do |orphan_type|
@@ -155,13 +156,10 @@ module GraphQL
               end
               implementing_type.implements(*new_interfaces)
               new_interfaces.each do |int|
-                pt = @possible_types[int] ||= []
-                if !pt.include?(owner) && owner.is_a?(Class)
-                  pt << owner
-                end
                 int.interfaces.each do |indirect_int|
-                  if indirect_int.is_a?(LateBoundType) && (indirect_int_type = get_type(indirect_int.graphql_name)) # rubocop:disable Development/ContextIsPassedCop
-                    update_type_owner(owner, indirect_int_type)
+                  if indirect_int.is_a?(LateBoundType) || indirect_int.is_a?(String)
+                    # Resolve it like any other late-bound type, then add it to `owner`, too
+                    append_unvisited_type(owner, indirect_int)
                   end
                 end
               end
