@@ -4,6 +4,8 @@
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: Kernel
       module TypeSystemHelpers
         def initialize(...)
           super

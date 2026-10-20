@@ -5,13 +5,13 @@ if testing_mongoid?
   Mongoid.load_configuration({
     clients: {
       default: {
-        database: 'graphql_ruby_test',
+        database: "graphql_ruby_test#{TEST_ENV_SUFFIX}",
         hosts: ['localhost:27017']
       }
     },
     sessions: {
       default: {
-        database: 'graphql_ruby_test',
+        database: "graphql_ruby_test#{TEST_ENV_SUFFIX}",
         hosts: ['localhost:27017']
       }
     }

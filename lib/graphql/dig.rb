@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Dig
     # implemented using the old activesupport #dig instead of the ruby built-in

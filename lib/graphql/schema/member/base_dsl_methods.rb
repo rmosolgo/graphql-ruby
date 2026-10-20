@@ -8,6 +8,9 @@ module GraphQL
     class Member
       # DSL methods shared by lots of things in the GraphQL Schema.
       # See classes that extend this, eg [GraphQL::Schema::Object](rdoc-ref:GraphQL::Schema::Object)
+      #--
+      # @requires_ancestor: Kernel
+      # @requires_ancestor: Module
       module BaseDSLMethods # :nodoc:
         include GraphQL::Schema::FindInheritedValue
 
@@ -83,6 +86,9 @@ module GraphQL
 
         # This pushes some configurations _down_ the inheritance tree,
         # in order to prevent repetitive lookups at runtime.
+        #--
+        # @requires_ancestor: Module
+        # @requires_ancestor: GraphQL::Schema::Member::BaseDSLMethods
         module ConfigurationExtension
           def inherited(child_class)
             child_class.introspection(introspection)

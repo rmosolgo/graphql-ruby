@@ -6,9 +6,9 @@ require "rake/testtask"
 require_relative "lib/graphql/rake_task/validate"
 require 'rake/extensiontask'
 
-Rake::TestTask.new do |t|
-  t.libs << "spec" << "lib" << "graphql-c_parser/lib"
+TEST_LIBS = ["spec", "lib", "graphql-c_parser/lib"]
 
+def graphql_test_files
   exclude_integrations = []
   ['mongoid', 'rails'].each do |integration|
     begin
@@ -26,14 +26,43 @@ Rake::TestTask.new do |t|
     true
   end
 
-  t.test_files = FileList.new("spec/**/*_spec.rb") do |fl|
+  FileList.new("spec/**/*_spec.rb") do |fl|
     fl.exclude(*exclude_integrations.map { |int| "spec/integration/#{int}/**/*" })
     fl.exclude("spec/docs/**/*") if exclude_docs
   end
+end
 
-  # After 2.7, there were not warnings for uninitialized ivars anymore
-  if RUBY_VERSION < "3"
-    t.warning = false
+# After 2.7, there were not warnings for uninitialized ivars anymore
+TEST_WARNINGS = RUBY_VERSION >= "3"
+
+Rake::TestTask.new("test:serial") do |t|
+  t.description = "Run the test suite in a single process"
+  t.libs.concat(TEST_LIBS)
+  t.test_files = graphql_test_files
+  t.warning = TEST_WARNINGS
+end
+
+desc "Run the test suite (in parallel, unless TEST=..., SERIAL=1, or CI is set)"
+task :test do
+  if ENV["TEST"] || ENV["SERIAL"] || ENV["CI"]
+    Rake::Task["test:serial"].invoke
+  else
+    Rake::Task["test:parallel"].invoke
+  end
+end
+
+namespace :test do
+  desc "Run the test suite with parallel_tests (PARALLEL_TEST_PROCESSORS=n to pick the number of workers)"
+  task :parallel do
+    require "parallel_tests"
+
+    # Don't merge coverage from a previous run into this one
+    FileUtils.rm_f("coverage/.resultset.json")
+    ENV["PARALLEL_TESTS_EXECUTABLE"] = ["ruby", ("-w" if TEST_WARNINGS), *TEST_LIBS.map { |l| "-I#{l}" }].compact.join(" ")
+
+    # spec_helper.rb records runtimes in tmp/parallel_runtime_test.log. When it covers enough files,
+    # parallel_tests uses it to group files by runtime; otherwise it groups them by file size.
+    ParallelTests::CLI.new.run(["--type", "test", "--serialize-stdout", "--combine-stderr", *graphql_test_files])
   end
 end
 

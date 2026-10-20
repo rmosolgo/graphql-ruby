@@ -8,6 +8,8 @@ module GraphQL
     # so you can use it to validate queries.
     #
     # See [GraphQL::Schema.from_introspection](rdoc-ref:GraphQL::Schema.from_introspection) for a public API
+    #--
+    # @requires_ancestor: Kernel
     module Loader
       extend self
 

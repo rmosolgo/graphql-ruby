@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/pagination/connection"
 require "monitor"
 
@@ -134,7 +134,7 @@ module GraphQL
       # :call-seq:
       #   offset_from_cursor(cursor) -> Integer
       def offset_from_cursor(cursor)
-        offset = Integer(decode(cursor), 10, exception: false)
+        offset = Integer(decode(cursor), 10, exception: false) #: Integer?
         if offset.nil? || offset <= 0
           raise GraphQL::ExecutionError, "Invalid cursor: #{cursor.inspect}"
         end
@@ -302,7 +302,8 @@ module GraphQL
           # `AsyncDataloader` may resolve sibling fields (eg, `edges` and `pageInfo`)
           # in separate Fibers, so several callers can get here before `@nodes` is set.
           (@load_monitor ||= Monitor.new).synchronize do
-            @nodes ||= limited_nodes.to_a
+            # Not `||=`: Sorbet assumes `@nodes` is still falsy in this block
+            @nodes = limited_nodes.to_a unless @nodes
           end
         else
           @nodes = limited_nodes.to_a

@@ -4,6 +4,8 @@
 module GraphQL
   module Types
     module Relay
+      #--
+      # @requires_ancestor: GraphQL::Schema::Object
       module EdgeBehaviors
         def self.included(child_class)
           child_class.description("An edge in a connection.")
@@ -22,6 +24,8 @@ module GraphQL
           @object.node
         end
 
+        #--
+        # @requires_ancestor: singleton(GraphQL::Schema::Object)
         module ClassMethods
           def inherited(child_class)
             super

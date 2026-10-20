@@ -18,7 +18,7 @@ describe GraphQL::Schema::Timeout do
     end
   end
 
-  let(:max_seconds) { 1 }
+  let(:max_seconds) { 0.2 }
   let(:timeout_class) { CustomTimeout }
   let(:timeout_schema) {
     nested_sleep_type = Class.new(GraphQL::Schema::Object) do
@@ -79,18 +79,18 @@ describe GraphQL::Schema::Timeout do
   describe "timeout part-way through" do
     let(:query_string) {%|
       {
-        a: sleepFor(seconds: 0.4)
-        b: sleepFor(seconds: 0.4)
-        c: sleepFor(seconds: 0.4)
-        d: sleepFor(seconds: 0.4)
-        e: sleepFor(seconds: 0.4)
+        a: sleepFor(seconds: 0.08)
+        b: sleepFor(seconds: 0.08)
+        c: sleepFor(seconds: 0.08)
+        d: sleepFor(seconds: 0.08)
+        e: sleepFor(seconds: 0.08)
       }
     |}
     it "returns a partial response and error messages" do
       expected_data = {
-        "a"=>0.4,
-        "b"=>0.4,
-        "c"=>0.4,
+        "a"=>0.08,
+        "b"=>0.08,
+        "c"=>0.08,
         "d"=>nil,
         "e"=>nil,
       }
@@ -120,15 +120,15 @@ describe GraphQL::Schema::Timeout do
   describe "timeout in nested fields" do
     let(:query_string) {%|
     {
-      a: nestedSleep(seconds: 0.3) {
+      a: nestedSleep(seconds: 0.05) {
         seconds
-        b: nestedSleep(seconds: 0.3) {
+        b: nestedSleep(seconds: 0.05) {
           seconds
-          c: nestedSleep(seconds: 0.3) {
+          c: nestedSleep(seconds: 0.05) {
             seconds
-            d: nestedSleep(seconds: 0.4) {
+            d: nestedSleep(seconds: 0.08) {
               seconds
-              e: nestedSleep(seconds: 0.4) {
+              e: nestedSleep(seconds: 0.08) {
                 seconds
               }
             }
@@ -141,11 +141,11 @@ describe GraphQL::Schema::Timeout do
     it "returns a partial response and error messages" do
       expected_data = {
         "a" => {
-          "seconds" => 0.3,
+          "seconds" => 0.05,
           "b" => {
-            "seconds" => 0.3,
+            "seconds" => 0.05,
             "c" => {
-              "seconds"=>0.3,
+              "seconds"=>0.05,
               "d" => {
                 "seconds"=>nil,
                 "e"=>nil
@@ -175,17 +175,17 @@ describe GraphQL::Schema::Timeout do
   describe "long-running fields" do
     let(:query_string) {%|
       {
-        a: sleepFor(seconds: 0.2)
-        b: sleepFor(seconds: 0.2)
-        c: sleepFor(seconds: 0.8)
-        d: sleepFor(seconds: 0.1)
+        a: sleepFor(seconds: 0.04)
+        b: sleepFor(seconds: 0.04)
+        c: sleepFor(seconds: 0.16)
+        d: sleepFor(seconds: 0.02)
       }
     |}
     it "doesn't terminate long-running field execution" do
       expected_data = {
-        "a"=>0.2,
-        "b"=>0.2,
-        "c"=>0.8,
+        "a"=>0.04,
+        "b"=>0.04,
+        "c"=>0.16,
         "d"=>nil,
       }
 
@@ -213,11 +213,11 @@ describe GraphQL::Schema::Timeout do
 
     let(:query_string) {%|
       {
-        a: sleepFor(seconds: 0.4)
-        b: sleepFor(seconds: 0.4)
-        c: sleepFor(seconds: 0.4)
-        d: sleepFor(seconds: 0.4)
-        e: sleepFor(seconds: 0.4)
+        a: sleepFor(seconds: 0.08)
+        b: sleepFor(seconds: 0.08)
+        c: sleepFor(seconds: 0.08)
+        d: sleepFor(seconds: 0.08)
+        e: sleepFor(seconds: 0.08)
       }
     |}
 
@@ -242,31 +242,31 @@ describe GraphQL::Schema::Timeout do
     }
 
     let(:query_context) {
-      { max_seconds: 1.9 }
+      { max_seconds: 0.38 }
     }
 
     let(:query_string) {%|
       {
-        a: sleepFor(seconds: 0.5)
-        b: sleepFor(seconds: 0.5)
-        c: sleepFor(seconds: 0.5)
-        d: sleepFor(seconds: 0.5)
-        e: sleepFor(seconds: 0.5)
+        a: sleepFor(seconds: 0.1)
+        b: sleepFor(seconds: 0.1)
+        c: sleepFor(seconds: 0.1)
+        d: sleepFor(seconds: 0.1)
+        e: sleepFor(seconds: 0.1)
       }
     |}
 
     it "uses the configured #max_seconds(query) method" do
-      expected_data = {"a"=>0.5, "b"=>0.5, "c"=>0.5, "d"=>0.5, "e"=>nil}
+      expected_data = {"a"=>0.1, "b"=>0.1, "c"=>0.1, "d"=>0.1, "e"=>nil}
       assert_equal(expected_data, result["data"])
       errors = result["errors"]
-      expected_message = "Query timed out after 1.9s: Timeout on Query.sleepFor"
+      expected_message = "Query timed out after 0.38s: Timeout on Query.sleepFor"
       assert_equal [expected_message], errors.map { |e| e["message"] }
     end
 
     describe "when max_seconds returns false" do
       let(:query_context) { {max_seconds: false} }
       it "doesn't apply any timeout" do
-        expected_data = {"a"=>0.5, "b"=>0.5, "c"=>0.5, "d"=>0.5, "e"=>0.5}
+        expected_data = {"a"=>0.1, "b"=>0.1, "c"=>0.1, "d"=>0.1, "e"=>0.1}
         assert_equal(expected_data, result["data"])
       end
     end
@@ -276,19 +276,19 @@ describe GraphQL::Schema::Timeout do
   describe "disabling the timeout" do
     let(:query_string) {%|
     query GetTimeouts($disable: Boolean) {
-      a: sleepFor(seconds: 0.4)
-      b: sleepFor(seconds: 0.4)
-      c: sleepFor(seconds: 0.4, disableTimeout: $disable)
-      d: sleepFor(seconds: 0.4)
-      e: sleepFor(seconds: 0.4)
+      a: sleepFor(seconds: 0.08)
+      b: sleepFor(seconds: 0.08)
+      c: sleepFor(seconds: 0.08, disableTimeout: $disable)
+      d: sleepFor(seconds: 0.08)
+      e: sleepFor(seconds: 0.08)
     }
   |}
 
     it "can be disabled" do
       expected_data = {
-        "a"=>0.4,
-        "b"=>0.4,
-        "c"=>0.4,
+        "a"=>0.08,
+        "b"=>0.08,
+        "c"=>0.08,
         "d"=>nil,
         "e"=>nil,
       }
@@ -297,11 +297,11 @@ describe GraphQL::Schema::Timeout do
 
       disabled_timeout_result = timeout_schema.execute(query_string, context: query_context, variables: { disable: true })
       expected_disabled_data = {
-        "a"=>0.4,
-        "b"=>0.4,
-        "c"=>0.4,
-        "d"=>0.4,
-        "e"=>0.4,
+        "a"=>0.08,
+        "b"=>0.08,
+        "c"=>0.08,
+        "d"=>0.08,
+        "e"=>0.08,
       }
       assert_graphql_equal expected_disabled_data, disabled_timeout_result["data"]
     end

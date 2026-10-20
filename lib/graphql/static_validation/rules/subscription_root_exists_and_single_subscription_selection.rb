@@ -2,6 +2,8 @@
 # typed: false
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module SubscriptionRootExistsAndSingleSubscriptionSelection
       def on_operation_definition(node, parent)
         if node.operation_type == "subscription"

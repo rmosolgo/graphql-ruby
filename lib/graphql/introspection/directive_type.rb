@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Introspection
     class DirectiveType < Introspection::BaseObject
@@ -14,6 +14,7 @@ module GraphQL
       field :description, String
       field :locations, [GraphQL::Schema::LateBoundType.new("__DirectiveLocation")], null: false, scope: false
       field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false, scope: false, resolve_each: :resolve_args do
+        #: self as GraphQL::Schema::Field
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
       field :on_operation, Boolean, null: false, deprecation_reason: "Use `locations`.", method: :on_operation?

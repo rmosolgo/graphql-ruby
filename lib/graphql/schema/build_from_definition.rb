@@ -26,6 +26,8 @@ module GraphQL
         end
       end
 
+      #--
+      # @requires_ancestor: Kernel
       module Builder # :nodoc:
         include GraphQL::EmptyObjects
         extend self
@@ -190,6 +192,7 @@ module GraphQL
           found_types = types.values
           object_types = found_types.select { |t| t.respond_to?(:kind) && t.kind.object? }
           schema_class = Class.new(schema_superclass) do
+            #: self as singleton(GraphQL::Schema)
             begin
               # Add these first so that there's some chance of resolving late-bound types
               add_type_and_traverse(found_types, root: false)
@@ -360,6 +363,7 @@ module GraphQL
         def build_enum_type(enum_type_definition, type_resolver, base_type)
           builder = self
           Class.new(base_type) do
+            #: self as singleton(GraphQL::Schema::Enum)
             graphql_name(enum_type_definition.name)
             builder.build_directives(self, enum_type_definition, type_resolver)
             description(enum_type_definition.description)
@@ -393,6 +397,7 @@ module GraphQL
         def build_scalar_type(scalar_type_definition, type_resolver, base_type, default_resolve:)
           builder = self
           Class.new(base_type) do
+            #: self as singleton(GraphQL::Schema::Scalar)
             graphql_name(scalar_type_definition.name)
             description(scalar_type_definition.description)
             ast_node(scalar_type_definition)
@@ -416,6 +421,7 @@ module GraphQL
         def build_union_type(union_type_definition, type_resolver, base_type)
           builder = self
           Class.new(base_type) do
+            #: self as singleton(GraphQL::Schema::Union)
             graphql_name(union_type_definition.name)
             description(union_type_definition.description)
             possible_types(*union_type_definition.types.map { |type_name| type_resolver.call(type_name) })
@@ -428,6 +434,7 @@ module GraphQL
           builder = self
 
           Class.new(base_type) do
+            #: self as singleton(GraphQL::Schema::Object)
             graphql_name(object_type_definition.name)
             description(object_type_definition.description)
             ast_node(object_type_definition)
@@ -446,6 +453,7 @@ module GraphQL
         def build_input_object_type(input_object_type_definition, type_resolver, base_type)
           builder = self
           Class.new(base_type) do
+            #: self as singleton(GraphQL::Schema::InputObject)
             graphql_name(input_object_type_definition.name)
             description(input_object_type_definition.description)
             ast_node(input_object_type_definition)
@@ -508,6 +516,7 @@ module GraphQL
         def build_interface_type(interface_type_definition, type_resolver, base_type)
           builder = self
           Module.new do
+            #: self as Module & GraphQL::Schema::Interface::DefinitionMethods
             include base_type
             graphql_name(interface_type_definition.name)
             description(interface_type_definition.description)
@@ -550,6 +559,7 @@ module GraphQL
 
         def define_field_resolve_method(owner, method_name, field_name)
           owner.define_method(method_name) { |**args|
+            #: self as GraphQL::Schema::Object
             field_instance = context.types.field(owner, field_name)
             context.schema.definition_default_resolve.call(self.class, field_instance, object, args, context)
           }

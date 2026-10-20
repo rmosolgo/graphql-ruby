@@ -1,10 +1,12 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module StaticValidation
     # Track fragment dependencies for operations
     # and expose the fragment definitions which
     # are used by a given operation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module DefinitionDependencies
       attr_reader :dependencies
 

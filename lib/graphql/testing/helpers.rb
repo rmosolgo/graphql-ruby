@@ -2,6 +2,8 @@
 # typed: false
 module GraphQL
   module Testing
+    #--
+    # @requires_ancestor: Kernel
     module Helpers
       # **Parameters**
       #

@@ -3,6 +3,8 @@
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: Kernel
       module BuildType # :nodoc:
         LIST_TYPE_ERROR = "Use an array of [T] or [T, null: true] for list types; other arrays are not supported"
 
