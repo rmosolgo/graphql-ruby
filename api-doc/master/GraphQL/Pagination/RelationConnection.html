@@ -528,9 +528,8 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 49</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cursor_for</span>(<span class="ruby-identifier">item</span>)
   <span class="ruby-identifier">load_nodes</span>
-  <span class="ruby-comment"># index in nodes + existing offset + 1 (because it&#39;s offset, not index)</span>
-  <span class="ruby-identifier">offset</span> = <span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">index</span>(<span class="ruby-identifier">item</span>) <span class="ruby-operator">+</span> <span class="ruby-value">1</span> <span class="ruby-operator">+</span> (<span class="ruby-ivar">@paged_nodes_offset</span> <span class="ruby-operator">||</span> <span class="ruby-value">0</span>) <span class="ruby-operator">-</span> (<span class="ruby-identifier">relation_offset</span>(<span class="ruby-identifier">items</span>) <span class="ruby-operator">||</span> <span class="ruby-value">0</span>)
-  <span class="ruby-identifier">encode</span>(<span class="ruby-identifier">offset</span>.<span class="ruby-identifier">to_s</span>)
+  <span class="ruby-identifier">position</span> = <span class="ruby-identifier">cursor_index_for</span>(<span class="ruby-identifier">item</span>, <span class="ruby-identifier">nodes</span>)
+  <span class="ruby-identifier">offset_cursor_for_position</span>(<span class="ruby-identifier">position</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
 

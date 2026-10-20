@@ -531,8 +531,8 @@
           <div class="method-source-code" id="cursor_for-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/array_connection.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cursor_for</span>(<span class="ruby-identifier">item</span>)
-  <span class="ruby-identifier">idx</span> = <span class="ruby-identifier">items</span>.<span class="ruby-identifier">find_index</span>(<span class="ruby-identifier">item</span>) <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
-  <span class="ruby-identifier">encode</span>(<span class="ruby-identifier">idx</span>.<span class="ruby-identifier">to_s</span>)
+  <span class="ruby-identifier">index</span> = <span class="ruby-identifier">cursor_index_for</span>(<span class="ruby-identifier">item</span>, <span class="ruby-identifier">items</span>)
+  <span class="ruby-identifier">encode</span>((<span class="ruby-identifier">index</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>).<span class="ruby-identifier">to_s</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
 
