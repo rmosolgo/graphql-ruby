@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/schema/visibility/profile"
 require "graphql/schema/visibility/migration"
 require "graphql/schema/visibility/visit"
@@ -233,6 +233,7 @@ module GraphQL
           @unions_for_references = Set.new
           @visit = Visibility::Visit.new(@schema) do |member|
             if member.is_a?(Module)
+              member = member #: as GraphQL::Schema::Member::type_definition
               type_name = member.graphql_name
               if (prev_t = @types[type_name])
                 if prev_t.is_a?(Array)
@@ -247,7 +248,8 @@ module GraphQL
               if member < GraphQL::Schema::Directive
                 @directives << member
               elsif member.respond_to?(:interface_type_memberships)
-                member.interface_type_memberships.each do |itm|
+                implementing_type = member #: as GraphQL::Schema::Member::HasInterfaces
+                implementing_type.interface_type_memberships.each do |itm|
                   @all_references[itm.abstract_type] << member
                   # `itm.object_type` may not actually be `member` if this implementation
                   # is inherited from a superclass

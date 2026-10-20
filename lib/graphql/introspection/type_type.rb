@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Introspection
     class TypeType < Introspection::BaseObject
@@ -16,14 +16,17 @@ module GraphQL
       field :name, String, method: :graphql_name
       field :description, String
       field :fields, [GraphQL::Schema::LateBoundType.new("__Field")], scope: false, resolve_each: :resolve_fields do
+        #: self as GraphQL::Schema::Field
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
       field :interfaces, [GraphQL::Schema::LateBoundType.new("__Type")], scope: false, resolve_each: :resolve_interfaces
       field :possible_types, [GraphQL::Schema::LateBoundType.new("__Type")], scope: false, resolve_each: :resolve_possible_types
       field :enum_values, [GraphQL::Schema::LateBoundType.new("__EnumValue")], scope: false, resolve_each: :resolve_enum_values do
+        #: self as GraphQL::Schema::Field
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
       field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], scope: false, resolve_each: :resolve_input_fields  do
+        #: self as GraphQL::Schema::Field
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), resolve_each: :resolve_of_type

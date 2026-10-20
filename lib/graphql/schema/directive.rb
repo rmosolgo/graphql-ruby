@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
@@ -32,7 +32,7 @@ module GraphQL
 
         def locations(*new_locations)
           if !new_locations.empty?
-            is_runtime = false
+            is_runtime = false #: bool
             new_locations.each do |new_loc|
               loc_sym = new_loc.to_sym
               if !LOCATIONS.include?(loc_sym)

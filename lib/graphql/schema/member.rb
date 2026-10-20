@@ -22,6 +22,10 @@ module GraphQL
     # eg objects, enums, scalars.
     #
     class Member # :nodoc:
+      # A class or module that defines a GraphQL type:
+      # an object, union, enum, scalar or input object class, or an interface module.
+      #: type type_definition = singleton(GraphQL::Schema::Member) | (GraphQL::Schema::Interface::DefinitionMethods & Module)
+
       include GraphQLTypeNames
       extend BaseDSLMethods
       extend BaseDSLMethods::ConfigurationExtension

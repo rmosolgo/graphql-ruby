@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "date"
 require "set"
 module GraphQL
@@ -29,6 +29,7 @@ module GraphQL
       # :call-seq:
       #   load(String str) -> Object
       def load(str)
+        #: self as singleton(GraphQL::Subscriptions::Serialize)
         parsed_obj = JSON.parse(str)
         load_value(parsed_obj)
       end
@@ -44,6 +45,7 @@ module GraphQL
       # :call-seq:
       #   dump(Object obj) -> String
       def dump(obj)
+        #: self as singleton(GraphQL::Subscriptions::Serialize)
         JSON.generate(dump_value(obj))
       end
 
@@ -179,8 +181,8 @@ module GraphQL
                 HASH_KEY => obj.map { |k, v| [dump_value(k.is_a?(Symbol) ? k : k.to_s), dump_value(v)] },
               }
             end
-            symbol_keys = nil
-            symbol_key_values = nil
+            symbol_keys = nil #: Set[String]?
+            symbol_key_values = nil #: Hash[String, untyped]?
             dumped_h = {}
             obj.each do |k, v|
               dumped_v = dump_value(v)

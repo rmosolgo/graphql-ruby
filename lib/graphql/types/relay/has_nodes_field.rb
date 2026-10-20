@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Types
@@ -20,7 +20,8 @@ module GraphQL
         end
 
         def get_relay_nodes(ids:)
-          self.class.get_relay_nodes(context, ids: ids)
+          query_class = self.class #: as GraphQL::Types::Relay::HasNodesField::ExecutionMethods
+          query_class.get_relay_nodes(context, ids: ids)
         end
 
         class << self
@@ -38,6 +39,7 @@ module GraphQL
 
           def field_block
             Proc.new {
+              #: self as GraphQL::Schema::Field
               argument :ids, "[ID!]!",
                 description: "IDs of the objects."
             }
