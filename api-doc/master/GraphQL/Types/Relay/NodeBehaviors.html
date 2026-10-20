@@ -596,7 +596,8 @@
           <div class="method-source-code" id="default_global_id-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/node_behaviors.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_global_id</span>
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">default_global_id</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
+  <span class="ruby-identifier">node_class</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span> <span class="ruby-comment">#: as GraphQL::Types::Relay::NodeBehaviors::ExecutionMethods</span>
+  <span class="ruby-identifier">node_class</span>.<span class="ruby-identifier">default_global_id</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
 

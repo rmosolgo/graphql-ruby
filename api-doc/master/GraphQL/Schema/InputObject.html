@@ -684,6 +684,7 @@
           <div class="method-source-code" id="argument-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 157</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">args</span> = <span class="ruby-identifier">args</span> <span class="ruby-comment">#: untyped</span>
   <span class="ruby-identifier">argument_defn</span> = <span class="ruby-keyword">super</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">one_of?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">argument_defn</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">non_null?</span>
@@ -860,7 +861,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 174</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/input_object.rb, line 175</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">INPUT_OBJECT</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1470,8 +1471,8 @@
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Array</span>
     <span class="ruby-identifier">value</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">item</span><span class="ruby-operator">|</span> <span class="ruby-identifier">unwrap_value</span>(<span class="ruby-identifier">item</span>) }
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Hash</span>
-    <span class="ruby-identifier">value</span>.<span class="ruby-identifier">reduce</span>({}) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, (<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)<span class="ruby-operator">|</span>
-      <span class="ruby-identifier">h</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">key</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">unwrap_value</span>(<span class="ruby-identifier">value</span>))
+    <span class="ruby-identifier">value</span>.<span class="ruby-identifier">reduce</span>({}) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, (<span class="ruby-identifier">key</span>, <span class="ruby-identifier">nested_value</span>)<span class="ruby-operator">|</span>
+      <span class="ruby-identifier">h</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">key</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">unwrap_value</span>(<span class="ruby-identifier">nested_value</span>))
     <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">InputObject</span>
     <span class="ruby-identifier">value</span>.<span class="ruby-identifier">to_h</span>

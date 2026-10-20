@@ -912,7 +912,7 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">locations</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">new_locations</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">new_locations</span>.<span class="ruby-identifier">empty?</span>
-    <span class="ruby-identifier">is_runtime</span> = <span class="ruby-keyword">false</span>
+    <span class="ruby-identifier">is_runtime</span> = <span class="ruby-keyword">false</span> <span class="ruby-comment">#: bool</span>
     <span class="ruby-identifier">new_locations</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">new_loc</span><span class="ruby-operator">|</span>
       <span class="ruby-identifier">loc_sym</span> = <span class="ruby-identifier">new_loc</span>.<span class="ruby-identifier">to_sym</span>
       <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-constant">LOCATIONS</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">loc_sym</span>)

@@ -389,30 +389,13 @@
 
         <li ><a href="#method-c-build_fields">build_fields</a></li>
 
-      </ul>
-    </details>
-  </div>
-
-
-
-  <div class="nav-section">
-    <details class="nav-section-collapsible" open>
-      <summary class="nav-section-header">
-        <span class="nav-section-icon">
-          <svg><use href="#icon-instance-methods"></use></svg>
-        </span>
-        <span class="nav-section-title">Instance Methods</span>
-        <span class="nav-section-chevron">
-          <svg><use href="#icon-chevron"></use></svg>
-        </span>
-      </summary>
-      <ul class="nav-list" role="directory">
-
-        <li ><a href="#method-i-load">load</a></li>
+        <li ><a href="#method-c-load">load</a></li>
 
       </ul>
     </details>
   </div>
+
+
 
 
   <div id="classindex-section" class="nav-section">
@@ -538,7 +521,7 @@
 
 
           <div class="method-source-code" id="build_arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 209</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 206</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_arguments</span>(<span class="ruby-identifier">arg_owner</span>, <span class="ruby-identifier">args</span>, <span class="ruby-identifier">type_resolver</span>)
   <span class="ruby-identifier">args</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">arg</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">kwargs</span> = {
@@ -558,7 +541,9 @@
       <span class="ruby-identifier">dummy_query_ast</span> = <span class="ruby-constant">GraphQL</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">dummy_query_str</span>)
 
       <span class="ruby-comment"># Reach into the AST for the default value:</span>
-      <span class="ruby-identifier">input_value_ast</span> = <span class="ruby-identifier">dummy_query_ast</span>.<span class="ruby-identifier">definitions</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">variables</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">default_value</span>
+      <span class="ruby-identifier">operation</span> = <span class="ruby-identifier">dummy_query_ast</span>.<span class="ruby-identifier">definitions</span>.<span class="ruby-identifier">first</span> <span class="ruby-comment">#: as GraphQL::Language::Nodes::OperationDefinition</span>
+      <span class="ruby-identifier">variable</span> = <span class="ruby-identifier">operation</span>.<span class="ruby-identifier">variables</span>.<span class="ruby-identifier">first</span> <span class="ruby-comment">#: as !nil</span>
+      <span class="ruby-identifier">input_value_ast</span> = <span class="ruby-identifier">variable</span>.<span class="ruby-identifier">default_value</span>
 
       <span class="ruby-identifier">kwargs</span>[<span class="ruby-value">:</span><span class="ruby-value">default_value</span>] = <span class="ruby-identifier">extract_default_value</span>(<span class="ruby-identifier">default_value_str</span>, <span class="ruby-identifier">input_value_ast</span>)
     <span class="ruby-keyword">end</span>
@@ -612,7 +597,7 @@
 
 
           <div class="method-source-code" id="build_fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 185</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 182</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">build_fields</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">fields</span>, <span class="ruby-identifier">type_resolver</span>)
   <span class="ruby-identifier">loader</span> = <span class="ruby-keyword">self</span>
   <span class="ruby-identifier">fields</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field_hash</span><span class="ruby-operator">|</span>
@@ -655,28 +640,14 @@
       </div>
 
 
-    </section>
-
-
-
-
-
-
-
-     <section id="public-instance-untitled-method-details" class="method-section anchor-link">
-       <header>
-         <h3 id="public-instance-untitled-methods"><a href="#public-instance-untitled-methods">Public Instance Methods</a></h3>
-       </header>
-
-
-      <span id="load-instance_method" class="legacy-anchor"></span>
-<div id="method-i-load" class="method-detail anchor-link ">
+      <span id="load-class_method" class="legacy-anchor"></span>
+<div id="method-c-load" class="method-detail anchor-link ">
         <div class="method-header">
           <div class="method-heading-group">
 
 
                 <div class="method-heading">
-                  <a href="#method-i-load" title="Link to this method">
+                  <a href="#method-c-load" title="Link to this method">
                     <span class="method-callseq">
                       load(Hash introspection_result) &rarr; Class
                     </span>
@@ -699,12 +670,12 @@
 
 
           <div class="method-source-code" id="load-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 28</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">load</span>(<span class="ruby-identifier">introspection_result</span>)
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/loader.rb, line 24</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">load</span>(<span class="ruby-identifier">introspection_result</span>)
   <span class="ruby-identifier">schema</span> = <span class="ruby-identifier">introspection_result</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">data</span><span class="ruby-string">&quot;</span>).<span class="ruby-identifier">fetch</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">__schema</span><span class="ruby-string">&quot;</span>)
 
   <span class="ruby-identifier">types</span> = {}
-  <span class="ruby-identifier">type_resolver</span> = <span class="ruby-operator">-&gt;</span>(<span class="ruby-identifier">type</span>) { <span class="ruby-identifier">resolve_type</span>(<span class="ruby-identifier">types</span>, <span class="ruby-identifier">type</span>) }
+  <span class="ruby-identifier">type_resolver</span> = <span class="ruby-operator">-&gt;</span>(<span class="ruby-identifier">type</span>) { <span class="ruby-identifier">resolve_type_reference</span>(<span class="ruby-identifier">types</span>, <span class="ruby-identifier">type</span>) }
 
   <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">types</span><span class="ruby-string">&quot;</span>).<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">type</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">type</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">name</span><span class="ruby-string">&quot;</span>).<span class="ruby-identifier">start_with?</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">__</span><span class="ruby-string">&quot;</span>)
@@ -767,6 +738,12 @@
 
 
     </section>
+
+
+
+
+
+
 
 
 

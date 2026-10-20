@@ -527,9 +527,10 @@
 
 
           <div class="method-source-code" id="field_block-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_nodes_field.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_nodes_field.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_block</span>
   <span class="ruby-constant">Proc</span>.<span class="ruby-identifier">new</span> {
+    <span class="ruby-comment">#: self as GraphQL::Schema::Field</span>
     <span class="ruby-identifier">argument</span> <span class="ruby-value">:</span><span class="ruby-value">ids</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">[ID!]!</span><span class="ruby-string">&quot;</span>,
       <span class="ruby-value">description</span><span class="ruby-value">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">IDs of the objects.</span><span class="ruby-string">&quot;</span>
   }
@@ -580,7 +581,7 @@
 
 
           <div class="method-source-code" id="field_options-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_nodes_field.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_nodes_field.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_options</span>
   {
     <span class="ruby-value">name</span><span class="ruby-value">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">nodes</span><span class="ruby-string">&quot;</span>,
@@ -705,7 +706,8 @@
           <div class="method-source-code" id="get_relay_nodes-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_nodes_field.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_relay_nodes</span>(<span class="ruby-value">ids:</span>)
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">get_relay_nodes</span>(<span class="ruby-identifier">context</span>, <span class="ruby-value">ids</span><span class="ruby-value">:</span> <span class="ruby-identifier">ids</span>)
+  <span class="ruby-identifier">query_class</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span> <span class="ruby-comment">#: as GraphQL::Types::Relay::HasNodesField::ExecutionMethods</span>
+  <span class="ruby-identifier">query_class</span>.<span class="ruby-identifier">get_relay_nodes</span>(<span class="ruby-identifier">context</span>, <span class="ruby-value">ids</span><span class="ruby-value">:</span> <span class="ruby-identifier">ids</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
 
