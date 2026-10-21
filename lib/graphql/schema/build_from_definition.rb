@@ -228,7 +228,11 @@ module GraphQL
             begin
               # Add these first so that there's some chance of resolving late-bound types
               add_type_and_traverse(found_types, root: false)
-              orphan_types(object_types)
+              # Without visibility, this would only re-traverse types that were just added
+              # (and `own_orphan_types` is cleared below), so it can be skipped.
+              if use_visibility_profile? || visibility
+                orphan_types(object_types)
+              end
               query query_root_type
               mutation mutation_root_type
               subscription subscription_root_type
