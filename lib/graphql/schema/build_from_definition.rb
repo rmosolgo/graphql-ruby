@@ -59,13 +59,31 @@ module GraphQL
           # because applying a directive coerces its arguments, which requires fully-built input types.
           queued_directives = []
           definitions_by_name = {}
+          # Classes for types in this document, made before any type is built so that references to them don't need late-bound types.
+          # Interfaces aren't made early because implementing an interface copies some of its configuration.
+          type_classes = {}
           document.definitions.each do |d|
             if d.respond_to?(:name)
               definitions_by_name[d.name] ||= d
+              if !type_classes.key?(d.name)
+                base_type = case d
+                when GraphQL::Language::Nodes::ObjectTypeDefinition then base_types[:object]
+                when GraphQL::Language::Nodes::EnumTypeDefinition then base_types[:enum]
+                when GraphQL::Language::Nodes::InputObjectTypeDefinition then base_types[:input_object]
+                when GraphQL::Language::Nodes::UnionTypeDefinition then base_types[:union]
+                when GraphQL::Language::Nodes::ScalarTypeDefinition then base_types[:scalar]
+                when GraphQL::Language::Nodes::InterfaceTypeDefinition then false
+                end
+                if !base_type.nil?
+                  type_classes[d.name] = base_type && Class.new(base_type) { graphql_name(d.name) }
+                end
+              end
             end
           end
-          type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name|
-            types[type_name] ||= if !definitions_by_name.key?(type_name) && (built_in_type = GraphQL::Schema::BUILT_IN_TYPES[type_name])
+          type_resolver = TypeResolver.new(types, directives, queued_directives, type_classes) { |type_name|
+            types[type_name] ||= if (type_class = type_classes[type_name])
+              type_class
+            elsif !definitions_by_name.key?(type_name) && (built_in_type = GraphQL::Schema::BUILT_IN_TYPES[type_name])
               built_in_type
             else
               Schema::LateBoundType.new(type_name)
@@ -75,7 +93,7 @@ module GraphQL
           # when queued directives are applied. It builds types eagerly. (Each type registers itself in `types`
           # before building its members, so cycles between input objects terminate.)
           directive_type_resolver = nil
-          directive_type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name|
+          directive_type_resolver = TypeResolver.new(types, directives, queued_directives, type_classes) { |type_name|
             types[type_name] ||= begin
               defn = definitions_by_name[type_name]
               if defn
@@ -115,7 +133,7 @@ module GraphQL
             else
               # It's possible that this was already loaded by the directives
               prev_type = types[definition.name]
-              if prev_type.nil? || prev_type.is_a?(Schema::LateBoundType)
+              if prev_type.nil? || prev_type.is_a?(Schema::LateBoundType) || type_classes[definition.name]
                 if definition.is_a?(GraphQL::Language::Nodes::ObjectTypeDefinition) || definition.is_a?(Language::Nodes::InterfaceTypeDefinition)
                   interface_names = definition.interfaces.map(&:name)
                   if !interface_names.empty?
@@ -403,7 +421,8 @@ module GraphQL
 
         def build_enum_type(enum_type_definition, type_resolver, base_type)
           builder = self
-          Class.new(base_type) do
+          type_class = type_resolver.type_class(enum_type_definition.name, base_type)
+          type_class.class_exec do
             #: self as singleton(GraphQL::Schema::Enum)
             graphql_name(enum_type_definition.name)
             type_resolver.register(self)
@@ -412,6 +431,7 @@ module GraphQL
             ast_node(enum_type_definition)
             builder.build_values(self, enum_type_definition.values, type_resolver)
           end
+          type_class
         end
 
         def build_values(type_class, enum_value_definitions, type_resolver)
@@ -443,7 +463,8 @@ module GraphQL
 
         def build_scalar_type(scalar_type_definition, type_resolver, base_type, default_resolve:)
           builder = self
-          Class.new(base_type) do
+          type_class = type_resolver.type_class(scalar_type_definition.name, base_type)
+          type_class.class_exec do
             #: self as singleton(GraphQL::Schema::Scalar)
             graphql_name(scalar_type_definition.name)
             type_resolver.register(self)
@@ -458,6 +479,7 @@ module GraphQL
               builder.build_scalar_type_coerce_method(self, :coerce_result, default_resolve)
             end
           end
+          type_class
         end
 
         def build_scalar_type_coerce_method(scalar_class, method_name, default_definition_resolve)
@@ -468,7 +490,8 @@ module GraphQL
 
         def build_union_type(union_type_definition, type_resolver, base_type)
           builder = self
-          Class.new(base_type) do
+          type_class = type_resolver.type_class(union_type_definition.name, base_type)
+          type_class.class_exec do
             #: self as singleton(GraphQL::Schema::Union)
             graphql_name(union_type_definition.name)
             type_resolver.register(self)
@@ -477,12 +500,14 @@ module GraphQL
             ast_node(union_type_definition)
             builder.build_directives(self, union_type_definition, type_resolver)
           end
+          type_class
         end
 
         def build_object_type(object_type_definition, type_resolver, base_type)
           builder = self
 
-          Class.new(base_type) do
+          type_class = type_resolver.type_class(object_type_definition.name, base_type)
+          type_class.class_exec do
             #: self as singleton(GraphQL::Schema::Object)
             graphql_name(object_type_definition.name)
             type_resolver.register(self)
@@ -492,6 +517,7 @@ module GraphQL
             builder.build_interfaces(self, object_type_definition.interfaces, type_resolver)
             builder.build_fields(self, object_type_definition.fields, type_resolver, default_resolve: true)
           end
+          type_class
         end
 
         def build_interfaces(type_class, interface_names, type_resolver)
@@ -502,7 +528,8 @@ module GraphQL
 
         def build_input_object_type(input_object_type_definition, type_resolver, base_type)
           builder = self
-          Class.new(base_type) do
+          type_class = type_resolver.type_class(input_object_type_definition.name, base_type)
+          type_class.class_exec do
             #: self as singleton(GraphQL::Schema::InputObject)
             graphql_name(input_object_type_definition.name)
             type_resolver.register(self)
@@ -511,6 +538,7 @@ module GraphQL
             builder.build_directives(self, input_object_type_definition, type_resolver)
             builder.build_arguments(self, input_object_type_definition.fields, type_resolver)
           end
+          type_class
         end
 
         def build_default_value(default_value)
@@ -625,11 +653,18 @@ module GraphQL
         end
 
         class TypeResolver
-          def initialize(lookup_hash, directives, queued_directives, &missing_type_handler)
+          def initialize(lookup_hash, directives, queued_directives, type_classes, &missing_type_handler)
             @lookup_hash = lookup_hash
             @directives = directives
             @queued_directives = queued_directives
+            @type_classes = type_classes
             @missing_type_handler = missing_type_handler
+          end
+
+          # The class that was made ahead of time for `type_name`, or a new subclass of `base_type`.
+          # Each class made ahead of time is returned once, to be built.
+          def type_class(type_name, base_type)
+            @type_classes.delete(type_name) || Class.new(base_type)
           end
 
           # Directive applications waiting for {Builder#apply_queued_directives}
