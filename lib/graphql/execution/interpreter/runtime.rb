@@ -583,7 +583,7 @@ module GraphQL
                 # When this comes from a list item, use the parent object:
                 is_from_array = selection_result.is_a?(GraphQLResultArray)
                 parent_result = selection_result
-                while parent_result.is_a?(GraphQLResultArray)
+                until parent_result.is_a?(GraphQLResultHash)
                   parent_result = parent_result.graphql_parent
                 end
                 parent_type = parent_result.graphql_result_type
