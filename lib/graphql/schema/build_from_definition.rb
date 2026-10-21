@@ -589,22 +589,41 @@ module GraphQL
 
         def build_fields(owner, field_definitions, type_resolver, default_resolve:)
           builder = self
-
+          # If `owner.field` isn't customized, make fields directly. It's the same, but faster.
+          field_class = owner.method(:field).owner.equal?(GraphQL::Schema::Member::HasFields) ? owner.field_class : nil
           field_definitions.each do |field_definition|
             resolve_method_name = -"resolve_field_#{field_definition.name}"
-            schema_field_defn = owner.field(
-              field_definition.name,
-              description: field_definition.description,
-              type: type_resolver.call(field_definition.type),
-              null: true,
-              connection_extension: nil,
-              deprecation_reason: build_deprecation_reason(field_definition.directives),
-              ast_node: field_definition,
-              method_conflict_warning: false,
-              camelize: false,
-              resolver_method: resolve_method_name,
-              resolve_batch: resolve_method_name,
-            )
+            if field_class
+              schema_field_defn = field_class.new(
+                name: field_definition.name,
+                owner: owner,
+                description: field_definition.description,
+                type: type_resolver.call(field_definition.type),
+                null: true,
+                connection_extension: nil,
+                deprecation_reason: build_deprecation_reason(field_definition.directives),
+                ast_node: field_definition,
+                method_conflict_warning: false,
+                camelize: false,
+                resolver_method: resolve_method_name,
+                resolve_batch: resolve_method_name,
+              )
+              owner.add_field(schema_field_defn)
+            else
+              schema_field_defn = owner.field(
+                field_definition.name,
+                description: field_definition.description,
+                type: type_resolver.call(field_definition.type),
+                null: true,
+                connection_extension: nil,
+                deprecation_reason: build_deprecation_reason(field_definition.directives),
+                ast_node: field_definition,
+                method_conflict_warning: false,
+                camelize: false,
+                resolver_method: resolve_method_name,
+                resolve_batch: resolve_method_name,
+              )
+            end
 
             builder.build_directives(schema_field_defn, field_definition, type_resolver)
             builder.build_arguments(schema_field_defn, field_definition.arguments, type_resolver)
