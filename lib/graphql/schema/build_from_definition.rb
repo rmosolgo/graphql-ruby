@@ -413,13 +413,18 @@ module GraphQL
         end
 
         def build_deprecation_reason(directives)
-          deprecated_directive = directives.find{ |d| d.name == 'deprecated' }
-          return unless deprecated_directive
-
-          reason = deprecated_directive.arguments.find{ |a| a.name == 'reason' }
-          return GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON unless reason
-
-          reason.value
+          return if directives.empty?
+          directives.each do |d|
+            if d.name == "deprecated"
+              d.arguments.each do |a|
+                if a.name == "reason"
+                  return a.value
+                end
+              end
+              return GraphQL::Schema::Directive::DEFAULT_DEPRECATION_REASON
+            end
+          end
+          nil
         end
 
         def build_scalar_type(scalar_type_definition, type_resolver, base_type, default_resolve:)
