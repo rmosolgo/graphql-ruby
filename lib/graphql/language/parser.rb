@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 require "strscan"
 require "graphql/language/nodes"
@@ -87,7 +87,7 @@ module GraphQL
         @lines_at ||= begin
           graphql_str = @graphql_str.b
           la = []
-          idx = 0
+          idx = 0 #: Integer?
           while idx
             idx = graphql_str.index("\n", idx)
             if idx
@@ -165,7 +165,7 @@ module GraphQL
             expect_token(:LPAREN)
             defs = []
             while !at?(:RPAREN)
-              loc = pos
+              loc = pos #: untyped
               expect_token(:VAR_SIGN)
               var_name = parse_name
               expect_token(:COLON)
@@ -175,7 +175,7 @@ module GraphQL
                 value
               end
 
-              directives = parse_directives
+              directives = parse_directives #: untyped
 
               defs << Nodes::VariableDefinition.new(
                 pos: loc,
@@ -257,15 +257,15 @@ module GraphQL
                 if at?(:QUERY)
                   advance_token
                   expect_token(:COLON)
-                  query = parse_name
+                  query = parse_name #: untyped
                 elsif at?(:MUTATION)
                   advance_token
                   expect_token(:COLON)
-                  mutation = parse_name
+                  mutation = parse_name #: untyped
                 elsif at?(:SUBSCRIPTION)
                   advance_token
                   expect_token(:COLON)
-                  subscription = parse_name
+                  subscription = parse_name #: untyped
                 else
                   expect_one_of([:QUERY, :MUTATION, :SUBSCRIPTION])
                 end
@@ -298,15 +298,15 @@ module GraphQL
               if at?(:QUERY)
                 advance_token
                 expect_token(:COLON)
-                query = parse_name
+                query = parse_name #: untyped
               elsif at?(:MUTATION)
                 advance_token
                 expect_token(:COLON)
-                mutation = parse_name
+                mutation = parse_name #: untyped
               elsif at?(:SUBSCRIPTION)
                 advance_token
                 expect_token(:COLON)
-                subscription = parse_name
+                subscription = parse_name #: untyped
               else
                 expect_one_of([:QUERY, :MUTATION, :SUBSCRIPTION])
               end
@@ -743,7 +743,7 @@ module GraphQL
           advance_token
           args = []
           while !at?(:RCURLY)
-            loc = pos
+            loc = pos #: untyped
             n = parse_name
             expect_token(:COLON)
             args << Argument.new(pos: loc, name: n, value: value, filename: @filename, source: self)

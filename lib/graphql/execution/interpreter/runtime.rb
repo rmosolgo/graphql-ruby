@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/execution/interpreter/runtime/graphql_result"
 
 module GraphQL
@@ -149,7 +149,7 @@ module GraphQL
             else
               @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false, ast_node, nil, nil)
               @response.base_path = base_path
-              idx = nil
+              idx = nil #: Integer?
               object.each do |inner_value|
                 idx ||= 0
                 this_idx = idx
@@ -220,6 +220,7 @@ module GraphQL
           end
         end
 
+        #: (untyped, untyped, untyped, untyped, Array[untyped]?, untyped, untyped) -> untyped
         def gather_selections(graphql_response, owner_object, owner_type, selections, selections_to_run, selections_by_name, ordered_result_keys)
           selections.each do |node|
             if node.is_a?(GraphQL::Language::Nodes::Field)
@@ -253,7 +254,7 @@ module GraphQL
                 if selections_to_run
                   selections_to_run << next_selections
                 else
-                  selections_to_run = []
+                  selections_to_run = [] #: Array[untyped]
                   selections_to_run << selections_by_name
                   selections_to_run << next_selections
                 end
@@ -264,7 +265,10 @@ module GraphQL
               case node
               when GraphQL::Language::Nodes::InlineFragment
                 if node.type
-                  type_defn = query.types.type(node.type.name)
+                  type_defn = query.types.type(
+                    node.type #: as !nil
+                    .name
+                  )
 
                   if query.types.possible_types(type_defn).include?(owner_type)
                     result = gather_selections(graphql_response, owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
@@ -395,6 +399,7 @@ module GraphQL
           end
         end
 
+        #: (untyped, untyped, untyped, Array[untyped]?, untyped, untyped, untyped, untyped) -> untyped
         def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, object, result_name, selection_result, runtime_state)  # rubocop:disable Metrics/ParameterLists
           after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_arguments, runtime_state|
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
@@ -426,7 +431,7 @@ module GraphQL
                   extra_args[:path] = current_path
                 when :lookahead
                   if !field_ast_nodes
-                    field_ast_nodes = [ast_node]
+                    field_ast_nodes = [ast_node] #: Array[untyped]
                   end
 
                   extra_args[:lookahead] = Execution::Lookahead.new(
@@ -577,9 +582,13 @@ module GraphQL
               set_result(selection_result, result_name, nil, false, is_non_null) do
                 # When this comes from a list item, use the parent object:
                 is_from_array = selection_result.is_a?(GraphQLResultArray)
-                parent_type = is_from_array ? selection_result.graphql_parent.graphql_result_type : selection_result.graphql_result_type
+                parent_result = selection_result
+                while parent_result.is_a?(GraphQLResultArray)
+                  parent_result = parent_result.graphql_parent
+                end
+                parent_type = parent_result.graphql_result_type
                 # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
-                err = parent_type::InvalidNullError.new(parent_type, field, ast_node, is_from_array: is_from_array)
+                err = parent_type.const_get(:InvalidNullError).new(parent_type, field, ast_node, is_from_array: is_from_array)
                 schema.type_error(err, context)
               end
             else
@@ -728,7 +737,7 @@ module GraphQL
               possible_types = query.types.possible_types(current_type)
               if !possible_types.include?(resolved_type)
                 parent_type = field.owner_type
-                err_class = current_type::UnresolvedTypeError
+                err_class = current_type.const_get(:UnresolvedTypeError)
                 type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
                 set_result(selection_result, result_name, nil, false, is_non_null)
@@ -775,7 +784,7 @@ module GraphQL
             inner_type_non_null = inner_type.non_null?
             response_list = GraphQLResultArray.new(result_name, current_type, owner_object, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
             set_result(selection_result, result_name, response_list, true, is_non_null)
-            idx = nil
+            idx = nil #: Integer?
             list_value = begin
               begin
                 value.each do |inner_value|

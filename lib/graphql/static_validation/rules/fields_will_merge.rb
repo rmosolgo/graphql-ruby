@@ -1,5 +1,5 @@
  # frozen_string_literal: true
-# typed: false
+# typed: true
 
 # frozen_string_literal: true
 module GraphQL
@@ -63,7 +63,7 @@ module GraphQL
       end
 
       def on_operation_definition(node, _parent)
-        @conflicts = nil
+        @conflicts = nil #: Hash[untyped, untyped]?
         conflicts_within_selection_set(node, type_definition)
         @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
         super
@@ -71,7 +71,7 @@ module GraphQL
 
       def on_field(node, _parent)
         if !node.selections.empty? && selections_may_conflict?(node.selections)
-          @conflicts = nil
+          @conflicts = nil #: Hash[untyped, untyped]?
           conflicts_within_selection_set(node, type_definition)
           @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
         end
@@ -148,7 +148,7 @@ module GraphQL
       end
 
       def collect_fields_inner(selections, owner_type:, parents:, response_keys:, visited_fragments:)
-        deferred_spreads = nil
+        deferred_spreads = nil #: Array[untyped]?
         sel_idx = 0
         sel_len = selections.size
 
@@ -170,7 +170,7 @@ module GraphQL
               existing << field
             end
           when GraphQL::Language::Nodes::InlineFragment
-            frag_type = sel.type ? @types.type(sel.type.name) : owner_type
+            frag_type = (sel_type = sel.type) ? @types.type(sel_type.name) : owner_type
 
             if frag_type
               new_parents = parents.dup
@@ -217,7 +217,7 @@ module GraphQL
           # so we only need to compare one pair within each group.
           if fields.size > 4
             f0 = fields[0]
-            all_same = true
+            all_same = true #: bool
             i = 1
             while i < fields.size
               unless fields_same_signature?(f0, fields[i])
@@ -231,7 +231,7 @@ module GraphQL
               find_conflicts_between_selection_groups(key, fields)
             else
               groups = fields.group_by { |f| field_signature(f) }
-              unique_groups = groups.values
+              unique_groups = groups.values #: untyped
 
               # Compare representatives across different groups
               gi = 0

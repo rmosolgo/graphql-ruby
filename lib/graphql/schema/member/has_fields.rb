@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
@@ -232,7 +232,8 @@ module GraphQL
 
         def all_field_definitions
           all_fields = {}
-          ancestors.reverse_each do |ancestor|
+          all_ancestors = ancestors #: Array[untyped]
+          all_ancestors.reverse_each do |ancestor|
             if ancestor.respond_to?(:own_fields)
               all_fields.merge!(ancestor.own_fields)
             end
@@ -248,7 +249,8 @@ module GraphQL
           def get_field(field_name, context = GraphQL::Query::NullContext.instance)
             warden = Warden.from_context(context)
             skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Profile)
-            for ancestor in ancestors
+            all_ancestors = ancestors #: Array[untyped]
+            for ancestor in all_ancestors
               if ancestor.respond_to?(:own_fields) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
                   (skip_visible || (f_entry = Warden.visible_entry?(:visible_field?, f_entry, context, warden)))
@@ -268,7 +270,8 @@ module GraphQL
             warden = Warden.from_context(context)
             # Local overrides take precedence over inherited fields
             visible_fields = {}
-            for ancestor in ancestors
+            all_ancestors = ancestors #: Array[untyped]
+            for ancestor in all_ancestors
               if ancestor.respond_to?(:own_fields)
                 ancestor.own_fields.each do |field_name, fields_entry|
                   # Choose the most local definition that passes `.visible?` --
@@ -291,7 +294,7 @@ module GraphQL
           def get_field(field_name, context = GraphQL::Query::NullContext.instance)
             # Objects need to check that the interface implementation is visible, too
             warden = Warden.from_context(context)
-            ancs = ancestors
+            ancs = ancestors #: Array[untyped]
             skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Profile)
             i = 0
             while (ancestor = ancs[i])
@@ -317,8 +320,9 @@ module GraphQL
             warden = Warden.from_context(context)
             # Local overrides take precedence over inherited fields
             visible_fields = {}
-            had_any_fields_at_all = false
-            for ancestor in ancestors
+            had_any_fields_at_all = false #: bool
+            all_ancestors = ancestors #: Array[untyped]
+            for ancestor in all_ancestors
               if ancestor.respond_to?(:own_fields) && visible_interface_implementation?(ancestor, context, warden)
                 ancestor.own_fields.each do |field_name, fields_entry|
                   had_any_fields_at_all = true
@@ -362,8 +366,8 @@ module GraphQL
         # If `type` is an interface, and `self` has a type membership for `type`, then make sure it's visible.
         def visible_interface_implementation?(type, context, warden)
           if type.respond_to?(:kind) && type.kind.interface?
-            implements_this_interface = false
-            implementation_is_visible = false
+            implements_this_interface = false #: bool
+            implementation_is_visible = false #: bool
             warden.interface_type_memberships(self, context).each do |tm|
               if tm.abstract_type == type
                 implements_this_interface ||= true

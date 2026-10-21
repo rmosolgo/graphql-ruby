@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/schema/field/connection_extension"
 require "graphql/schema/field/scope_extension"
 
@@ -951,14 +951,22 @@ module GraphQL
           else
             metadata_complexity = 0
             lookahead = GraphQL::Execution::Lookahead.new(query: query, field: self, ast_nodes: nodes, owner_type: owner)
+            # `QueryComplexity` doesn't add skipped introspection fields to `child_complexity`,
+            # so they must not be subtracted from it here, either.
+            count_introspection_fields = query.schema.max_complexity_count_introspection_fields
 
             lookahead.selections.each do |next_lookahead|
+              next if !count_introspection_fields && next_lookahead.field.introspection?
               # this includes `pageInfo`, `nodes` and `edges` and any custom fields
               # TODO this doesn't support procs yet -- unlikely to need it.
               metadata_complexity += next_lookahead.field.complexity
               if next_lookahead.name != :nodes && next_lookahead.name != :edges
                 # subfields, eg, for pageInfo -- assumes no subselections
-                metadata_complexity += next_lookahead.selections.size
+                if count_introspection_fields
+                  metadata_complexity += next_lookahead.selections.size
+                else
+                  metadata_complexity += next_lookahead.selections.count { |s| !s.field.introspection? }
+                end
               end
             end
 
@@ -1172,9 +1180,9 @@ module GraphQL
       def resolve(object, args, query_ctx)
         # Unwrap the GraphQL object to get the application object.
         application_object = object.object
-        method_receiver = nil
-        method_to_call = nil
-        method_args = nil
+        method_receiver = nil #: untyped
+        method_to_call = nil #: untyped
+        method_args = nil #: untyped
 
         @own_validators && Schema::Validator.validate!(validators, application_object, query_ctx, args)
 
@@ -1296,7 +1304,7 @@ module GraphQL
         method_defn = receiver.method(method_name)
         unsatisfied_ruby_kwargs = ruby_kwargs.dup
         unsatisfied_method_params = []
-        encountered_keyrest = false
+        encountered_keyrest = false #: bool
         method_defn.parameters.each do |(param_type, param_name)|
           case param_type
           when :key
