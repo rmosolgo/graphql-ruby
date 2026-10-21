@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Tracing
@@ -23,7 +23,7 @@ module GraphQL
         end
 
         def start_event(keyword, object)
-          ev = self.class::Event.new(self, keyword, object)
+          ev = self.class.const_get(:Event).new(self, keyword, object)
           ev.start
           ev
         end
@@ -56,11 +56,11 @@ module GraphQL
             @platform_resolve_type_key_cache[object]
           when :dataloader_source
             @platform_source_class_key_cache[object.class]
-          when :parse then self.class::PARSE_NAME
-          when :lex then self.class::LEX_NAME
-          when :execute then self.class::EXECUTE_NAME
-          when :analyze then self.class::ANALYZE_NAME
-          when :validate then self.class::VALIDATE_NAME
+          when :parse then self.class.const_get(:PARSE_NAME)
+          when :lex then self.class.const_get(:LEX_NAME)
+          when :execute then self.class.const_get(:EXECUTE_NAME)
+          when :analyze then self.class.const_get(:ANALYZE_NAME)
+          when :validate then self.class.const_get(:VALIDATE_NAME)
           else
             raise "No name for #{keyword.inspect}"
           end

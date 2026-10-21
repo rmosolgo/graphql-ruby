@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/language/block_string"
 require "graphql/language/comment"
 require "graphql/language/printer"
@@ -52,9 +52,9 @@ module GraphQL
     #   escape_single_quoted_newlines(query_str) -> String
     def self.escape_single_quoted_newlines(query_str)
       scanner = StringScanner.new(query_str)
-      inside_single_quoted_string = false
-      inside_triple_quoted_string = false
-      new_query_str = nil
+      inside_single_quoted_string = false #: bool
+      inside_triple_quoted_string = false #: bool
+      new_query_str = nil #: String?
       while !scanner.eos?
         if scanner.skip('"""')
           inside_triple_quoted_string = !inside_triple_quoted_string
@@ -89,7 +89,7 @@ module GraphQL
       new_query_str || query_str
     end
 
-    LEADING_REGEX = Regexp.union(" ", *Lexer::Punctuation.constants.map { |const| Lexer::Punctuation.const_get(const) })
+    LEADING_REGEX = Regexp.union([" ", *Lexer::Punctuation.constants.map { |const| Lexer::Punctuation.const_get(const) }])
 
     # Optimized pattern using:
     # - Possessive quantifiers (*+, ++) to prevent backtracking in number patterns

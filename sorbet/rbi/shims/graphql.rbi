@@ -363,3 +363,26 @@ module GraphQL
     end
   end
 end
+
+module GraphQL
+  class Schema
+    class Field
+      # Optional hook for subclasses; `calculate_complexity` checks `respond_to?(:complexity_for)` first.
+      def complexity_for(child_complexity:, query:, lookahead:); end
+    end
+  end
+end
+
+module GraphQL
+  module Tracing
+    module MonitorTrace
+      # Subclasses include `GraphQLSuffixNames` or `GraphQLPrefixNames`, which implement these.
+      class Monitor
+        def platform_field_key(field); end
+        def platform_authorized_key(type); end
+        def platform_resolve_type_key(type); end
+        def platform_source_class_key(source_class); end
+      end
+    end
+  end
+end

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     class Visibility
@@ -50,7 +50,7 @@ module GraphQL
               all_results = warden_result | profile_result
               all_results.sort_by!(&:graphql_name)
 
-              entries_text = all_results.map { |entry| "#{entry.graphql_name} (#{entry})"}
+              entries_text = all_results.map { |entry| "#{entry.graphql_name} (#{entry})"} #: untyped
               width = entries_text.map(&:size).max
               yes = "    ✔   "
               no =  "        "
@@ -70,6 +70,7 @@ module GraphQL
               "#{val.size}: #{val.map { |v| humanize(v) }.sort.inspect}"
             when Module
               if val.respond_to?(:graphql_name)
+                val = val #: as GraphQL::Schema::Member::type_definition
                 "#{val.graphql_name} (#{val.inspect})"
               else
                 val.inspect
@@ -91,7 +92,7 @@ module GraphQL
             if schema.const_defined?(:WardenCompatSchema, false) # don't use a defn from a superclass
               warden_schema = schema.const_get(:WardenCompatSchema, false)
             else
-              warden_schema = Class.new(schema)
+              warden_schema = Class.new(schema) #: as singleton(GraphQL::Schema)
               warden_schema.use_visibility_profile = false
               # TODO public API
               warden_schema.send(:add_type_and_traverse, [warden_schema.query, warden_schema.mutation, warden_schema.subscription].compact, root: true)
@@ -133,6 +134,7 @@ module GraphQL
 
         PUBLIC_PROFILE_METHODS.each do |profile_method|
           define_method(profile_method) do |*args|
+            #: self as GraphQL::Schema::Visibility::Migration
             call_method_and_compare(profile_method, args)
           end
         end
@@ -177,6 +179,7 @@ module GraphQL
               member1 == member2
             end
           when Module
+            member1 = member1 #: as GraphQL::Schema::Member::type_definition
             if member1.introspection? && member2.introspection?
               member1.graphql_name == member2.graphql_name
             else

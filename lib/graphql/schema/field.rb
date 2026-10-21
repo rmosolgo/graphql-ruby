@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/schema/field/connection_extension"
 require "graphql/schema/field/scope_extension"
 
@@ -1172,9 +1172,9 @@ module GraphQL
       def resolve(object, args, query_ctx)
         # Unwrap the GraphQL object to get the application object.
         application_object = object.object
-        method_receiver = nil
-        method_to_call = nil
-        method_args = nil
+        method_receiver = nil #: untyped
+        method_to_call = nil #: untyped
+        method_args = nil #: untyped
 
         @own_validators && Schema::Validator.validate!(validators, application_object, query_ctx, args)
 
@@ -1296,7 +1296,7 @@ module GraphQL
         method_defn = receiver.method(method_name)
         unsatisfied_ruby_kwargs = ruby_kwargs.dup
         unsatisfied_method_params = []
-        encountered_keyrest = false
+        encountered_keyrest = false #: bool
         method_defn.parameters.each do |(param_type, param_name)|
           case param_type
           when :key
