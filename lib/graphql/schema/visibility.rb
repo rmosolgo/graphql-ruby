@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/schema/visibility/profile"
 require "graphql/schema/visibility/migration"
 require "graphql/schema/visibility/visit"
@@ -14,10 +15,15 @@ module GraphQL
           super(message)
         end
       end
-      # @param schema [Class<GraphQL::Schema>]
-      # @param profiles [Hash<Symbol => Hash>] A hash of `name => context` pairs for preloading visibility profiles
-      # @param preload [Boolean] if `true`, load the default schema profile and all named profiles immediately (defaults to `true` for `Rails.env.production?` and `Rails.env.staging?`)
-      # @param migration_errors [Boolean] if `true`, raise an error when `Visibility` and `Warden` return different results
+      # **Parameters**
+      #
+      # - `schema` (`Class<GraphQL::Schema>`)
+      # - `profiles` (`Hash<Symbol => Hash>`) — A hash of `name => context` pairs for preloading visibility profiles
+      # - `preload` (`Boolean`) — if `true`, load the default schema profile and all named profiles immediately (defaults to `true` for `Rails.env.production?` and `Rails.env.staging?`)
+      # - `migration_errors` (`Boolean`) — if `true`, raise an error when `Visibility` and `Warden` return different results
+      #
+      # :call-seq:
+      #   use(Class[GraphQL::Schema] schema, dynamic:, Hash[Symbol, Hash] profiles:, bool preload:)
       def self.use(schema, dynamic: false, profiles: EmptyObjects::EMPTY_HASH, preload: (defined?(Rails.env) ? (Rails.env.production? || Rails.env.staging? || nil) : false), migration_errors: false)
         profiles&.each { |name, ctx|
           ctx[:visibility_profile] = name
@@ -108,35 +114,32 @@ module GraphQL
         end
       end
 
-      # @api private
-      def query_configured(query_type)
+      def query_configured(query_type) # :nodoc:
         require_if_preloaded("a query type was", "query(...)")
       end
 
-      # @api private
-      def mutation_configured(mutation_type)
+      def mutation_configured(mutation_type) # :nodoc:
         require_if_preloaded("a mutation type was", "mutation(...)")
       end
 
-      # @api private
-      def subscription_configured(subscription_type)
+      def subscription_configured(subscription_type) # :nodoc:
         require_if_preloaded("a mutation type was", "subscription(...)")
       end
 
-      # @api private
-      def orphan_types_configured(orphan_types)
+      def orphan_types_configured(orphan_types) # :nodoc:
         require_if_preloaded("orphan types were", "orphan_types(...)")
       end
 
-      # @api private
-      def introspection_system_configured(introspection_system)
+      def introspection_system_configured(introspection_system) # :nodoc:
         require_if_preloaded("custom introspection was", "introspection(...)")
       end
 
       # Make another Visibility for `schema` based on this one
-      # @return [Visibility]
-      # @api private
-      def dup_for(other_schema)
+      #
+      # **Returns**
+      #
+      # - `Visibility`
+      def dup_for(other_schema) # :nodoc:
         self.class.new(
           other_schema,
           dynamic: @dynamic,
@@ -179,8 +182,7 @@ module GraphQL
 
       attr_reader :top_level
 
-      # @api private
-      attr_reader :unfiltered_interface_type_memberships
+      attr_reader :unfiltered_interface_type_memberships # :nodoc:
 
       def top_level_profile(refresh: false)
         if refresh
@@ -231,6 +233,7 @@ module GraphQL
           @unions_for_references = Set.new
           @visit = Visibility::Visit.new(@schema) do |member|
             if member.is_a?(Module)
+              member = member #: as GraphQL::Schema::Member::type_definition
               type_name = member.graphql_name
               if (prev_t = @types[type_name])
                 if prev_t.is_a?(Array)
@@ -245,7 +248,8 @@ module GraphQL
               if member < GraphQL::Schema::Directive
                 @directives << member
               elsif member.respond_to?(:interface_type_memberships)
-                member.interface_type_memberships.each do |itm|
+                implementing_type = member #: as GraphQL::Schema::Member::HasInterfaces
+                implementing_type.interface_type_memberships.each do |itm|
                   @all_references[itm.abstract_type] << member
                   # `itm.object_type` may not actually be `member` if this implementation
                   # is inherited from a superclass

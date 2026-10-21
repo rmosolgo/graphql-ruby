@@ -1,6 +1,9 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module SubscriptionRootExistsAndSingleSubscriptionSelection
       def on_operation_definition(node, parent)
         if node.operation_type == "subscription"
@@ -47,7 +50,7 @@ module GraphQL
             fragment = context.fragments[selection.name]
             selections << fragment if fragment
           when GraphQL::Language::Nodes::InlineFragment, GraphQL::Language::Nodes::FragmentDefinition
-            fragment_type = selection.type ? @types.type(selection.type.name) : root_type
+            fragment_type = (selection_type = selection.type) ? @types.type(selection_type.name) : root_type
             if fragment_type && fragment_type.kind.composite? && @types.possible_types(fragment_type).include?(root_type)
               selections.concat(selection.selections)
             end

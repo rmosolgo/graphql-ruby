@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
     # The problem is
@@ -11,6 +12,8 @@ module GraphQL
     #   - re-visiting the AST for each validator
     #   - allowing validators to say `followSpreads: true`
     #
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariablesAreUsedAndDefined
       class VariableUsage
         attr_accessor :ast_node, :used_by, :declared_by, :path
@@ -89,13 +92,13 @@ module GraphQL
       private
 
       # Follow spreads in `node`, looking them up from `spreads_for_context` and finding their match in `fragment_definitions`.
-      # Use those fragments to update {VariableUsage}s in `parent_variables`.
+      # Use those fragments to update [VariableUsage](rdoc-ref:VariableUsage)s in `parent_variables`.
       # Avoid infinite loops by skipping anything in `visited_fragments`.
       def follow_spreads(node, parent_variables, spreads_for_context, fragment_definitions, visited_fragments)
         spreads = spreads_for_context[node] - visited_fragments
         spreads.each do |spread_name|
-          def_node = nil
-          variables = nil
+          def_node = nil #: untyped
+          variables = nil #: untyped
           # Implement `.find` by hand to avoid Ruby's internal allocations
           fragment_definitions.each do |frag_def_node, vars|
             if frag_def_node.name == spread_name

@@ -1,8 +1,12 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: Module
+      # @requires_ancestor: GraphQL::Schema::Member::BaseDSLMethods
       module RelayShortcuts
         def edge_type_class(new_edge_type_class = nil)
           if new_edge_type_class
@@ -12,7 +16,8 @@ module GraphQL
             # Don't call `ancestor.edge_type_class`
             # because we don't want a fallback from any ancestors --
             # only apply the fallback if _no_ ancestor has a configured value!
-            for ancestor in self.ancestors
+            all_ancestors = self.ancestors #: Array[untyped]
+            for ancestor in all_ancestors
               if ancestor.respond_to?(:configured_edge_type_class, true) && (etc = ancestor.configured_edge_type_class)
                 return etc
               end
@@ -29,7 +34,8 @@ module GraphQL
             # Don't call `ancestor.connection_type_class`
             # because we don't want a fallback from any ancestors --
             # only apply the fallback if _no_ ancestor has a configured value!
-            for ancestor in self.ancestors
+            all_ancestors = self.ancestors #: Array[untyped]
+            for ancestor in all_ancestors
               if ancestor.respond_to?(:configured_connection_type_class, true) && (ctc = ancestor.configured_connection_type_class)
                 return ctc
               end
@@ -44,6 +50,7 @@ module GraphQL
             edge_name = self.graphql_name + "Edge"
             node_type_class = self
             Class.new(edge_type_class) do
+              #: self as untyped
               graphql_name(edge_name)
               node_type(node_type_class)
             end
@@ -56,6 +63,7 @@ module GraphQL
             conn_name = self.graphql_name + "Connection"
             edge_type_class = self.edge_type
             Class.new(connection_type_class) do
+              #: self as untyped
               graphql_name(conn_name)
               edge_type(edge_type_class)
             end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 # This query is used by graphql-client so don't add the includeDeprecated
 # argument for inputFields since the server may not support it. Two stage

@@ -1,8 +1,11 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   module Types
     module Relay
+      #--
+      # @requires_ancestor: GraphQL::Schema::Object
       module NodeBehaviors
         def self.included(child_module)
           child_module.extend(ClassMethods)
@@ -12,7 +15,8 @@ module GraphQL
         end
 
         def default_global_id
-          self.class.default_global_id(object, context)
+          node_class = self.class #: as GraphQL::Types::Relay::NodeBehaviors::ExecutionMethods
+          node_class.default_global_id(object, context)
         end
 
         module ClassMethods

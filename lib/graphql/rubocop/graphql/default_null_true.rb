@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require_relative "base_cop"
 
 module GraphQL
@@ -11,15 +12,17 @@ module GraphQL
       # to non-null fields (`null: false`) without a breaking change. (The opposite change, from `null: false`
       # to `null: true`, change.)
       #
-      # @example
-      #   # Both of these define `name: String` in GraphQL:
+      # **Examples**
       #
-      #   # bad
-      #   field :name, String, null: true
+      # **Example: # Both of these define `name: String` in GraphQL:**
       #
-      #   # good
-      #   field :name, String
+      # ```ruby
+      # # bad
+      # field :name, String, null: true
       #
+      # # good
+      # field :name, String
+      # ```
       class DefaultNullTrue < BaseCop
         MSG = "`null: true` is the default and can be removed."
 

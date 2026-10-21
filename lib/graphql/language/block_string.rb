@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Language
     module BlockString
@@ -13,7 +14,7 @@ module GraphQL
         end
 
         lines = has_newline ? str.split("\n") : [str]
-        common_indent = nil
+        common_indent = nil #: Integer?
 
         # find the common whitespace
         lines.each_with_index do |line, idx|

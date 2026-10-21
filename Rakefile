@@ -3,13 +3,12 @@ require "bundler/gem_helper"
 Bundler::GemHelper.install_tasks
 
 require "rake/testtask"
-require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
 require 'rake/extensiontask'
 
-Rake::TestTask.new do |t|
-  t.libs << "spec" << "lib" << "graphql-c_parser/lib"
+TEST_LIBS = ["spec", "lib", "graphql-c_parser/lib"]
 
+def graphql_test_files
   exclude_integrations = []
   ['mongoid', 'rails'].each do |integration|
     begin
@@ -19,13 +18,51 @@ Rake::TestTask.new do |t|
     end
   end
 
-  t.test_files = FileList.new("spec/**/*_spec.rb") do |fl|
-    fl.exclude(*exclude_integrations.map { |int| "spec/integration/#{int}/**/*" })
+  exclude_docs = begin
+    require "rdoc"
+    require "rdoc/generator/aliki"
+    false
+  rescue LoadError
+    true
   end
 
-  # After 2.7, there were not warnings for uninitialized ivars anymore
-  if RUBY_VERSION < "3"
-    t.warning = false
+  FileList.new("spec/**/*_spec.rb") do |fl|
+    fl.exclude(*exclude_integrations.map { |int| "spec/integration/#{int}/**/*" })
+    fl.exclude("spec/docs/**/*") if exclude_docs
+  end
+end
+
+# After 2.7, there were not warnings for uninitialized ivars anymore
+TEST_WARNINGS = RUBY_VERSION >= "3"
+
+Rake::TestTask.new("test:serial") do |t|
+  t.description = "Run the test suite in a single process"
+  t.libs.concat(TEST_LIBS)
+  t.test_files = graphql_test_files
+  t.warning = TEST_WARNINGS
+end
+
+desc "Run the test suite (in parallel, unless TEST=..., SERIAL=1, or CI is set)"
+task :test do
+  if ENV["TEST"] || ENV["SERIAL"] || ENV["CI"]
+    Rake::Task["test:serial"].invoke
+  else
+    Rake::Task["test:parallel"].invoke
+  end
+end
+
+namespace :test do
+  desc "Run the test suite with parallel_tests (PARALLEL_TEST_PROCESSORS=n to pick the number of workers)"
+  task :parallel do
+    require "parallel_tests"
+
+    # Don't merge coverage from a previous run into this one
+    FileUtils.rm_f("coverage/.resultset.json")
+    ENV["PARALLEL_TESTS_EXECUTABLE"] = ["ruby", ("-w" if TEST_WARNINGS), *TEST_LIBS.map { |l| "-I#{l}" }].compact.join(" ")
+
+    # spec_helper.rb records runtimes in tmp/parallel_runtime_test.log. When it covers enough files,
+    # parallel_tests uses it to group files by runtime; otherwise it groups them by file size.
+    ParallelTests::CLI.new.run(["--type", "test", "--serialize-stdout", "--combine-stderr", *graphql_test_files])
   end
 end
 
@@ -78,6 +115,20 @@ namespace :bench do
   task :query do
     prepare_benchmark
     GraphQLBenchmark.run("query")
+  end
+
+  desc "Run the benchmarks tracked over time, measuring iterations per second"
+  task :track_runtime do
+    prepare_benchmark
+    require_relative("./benchmark/track.rb")
+    GraphQLBenchmark::Track.runtime
+  end
+
+  desc "Run the benchmarks tracked over time, measuring memory allocations"
+  task :track_memory do
+    prepare_benchmark
+    require_relative("./benchmark/track.rb")
+    GraphQLBenchmark::Track.memory
   end
 
   desc "Benchmark validation of several queries"
@@ -234,6 +285,69 @@ end
 task :move_binary do
   # For some reason my local env doesn't respect the `lib_dir` configured above
   `mv graphql-c_parser/lib/*.bundle graphql-c_parser/lib/graphql`
+end
+
+namespace :docs do
+  desc "Build the RDoc/Aliki documentation site"
+  task build: "docs:rdoc:build"
+
+  desc "Build and run documentation quality checks"
+  task check: "docs:rdoc:build" do
+    ruby "tool/docs/check.rb"
+    ruby "tool/docs/type_signatures.rb", "--check"
+    ruby "tool/docs/compatibility.rb", "--root", "tmp/rdoc-site", "--rdoc", "tmp/rdoc-site/js/search_data.js", "--strict", "--json", "tmp/rdoc-api-compatibility.json"
+    ruby "tool/docs/link_checker.rb", "--root", "tmp/rdoc-site", "--strict", "--json", "tmp/rdoc-link-report.json"
+    ruby "tool/docs/rdoc_ref_checker.rb", "--root", "tmp/rdoc-site", "--json", "tmp/rdoc-ref-report.json"
+    sh "node tool/docs/assets/graphql_highlighter_test.js"
+  end
+
+  desc "Build the documentation twice and compare generated files"
+  # Reuses the `docs:rdoc:build` output as the first build, so running
+  # `rake docs:check docs:build_twice` builds the site only twice in total.
+  task build_twice: "docs:rdoc:build" do
+    require_relative "tool/docs/build"
+    require "digest"
+    require "fileutils"
+    require "pathname"
+    first = "tmp/rdoc-site"
+    second = GraphQLDocs::Build.new.build_site(output: "tmp/rdoc-site-second")
+    digest = lambda do |root|
+      Dir[File.join(root, "**", "*")].select { |path| File.file?(path) }.sort.to_h do |path|
+        [Pathname.new(path).relative_path_from(Pathname.new(root)).to_s, Digest::SHA256.file(path).hexdigest]
+      end
+    end
+    raise "RDoc output is not reproducible" unless digest.call(first) == digest.call(second)
+    puts "RDoc output is reproducible"
+  ensure
+    FileUtils.rm_rf("tmp/rdoc-site-second")
+  end
+
+  namespace :rdoc do
+    desc "Build the shadow RDoc/Aliki documentation site"
+    task :build do
+      require_relative "tool/docs/build"
+      GraphQLDocs::Build.new.build_site
+    end
+
+    desc "Build versioned RDoc/Aliki API documentation"
+    task :build_version, [:version] do |_task, args|
+      require_relative "tool/docs/build"
+      version = args[:version] || ENV["GRAPHQL_VERSION"] || raise(ArgumentError, "A version is required")
+      GraphQLDocs::Build.new.build_version(version)
+    end
+
+    desc "Build the shadow RDoc site and serve it locally"
+    task :serve => :build do
+      require "webrick"
+      server = WEBrick::HTTPServer.new(
+        Port: Integer(ENV.fetch("PORT", "8808")),
+        DocumentRoot: File.expand_path("tmp/rdoc-site"),
+      )
+      trap("INT") { server.shutdown }
+      puts "Serving RDoc documentation at http://127.0.0.1:#{server.config[:Port]}"
+      server.start
+    end
+  end
 end
 
 desc "Build the C Extension"

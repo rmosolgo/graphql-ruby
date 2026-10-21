@@ -3,6 +3,10 @@ require "graphql"
 ADD_WARDEN = false
 TESTING_EXEC_NEXT = !!ENV["GRAPHQL_FUTURE"]
 TESTING_METHOD = !!ENV["TEST_METHOD"]
+# Jazz uses this test helper from spec/spec_helper.rb
+def if_exec_next(exec_next_value, legacy_value)
+  TESTING_EXEC_NEXT ? exec_next_value : legacy_value
+end
 require "jazz"
 require "benchmark/ips"
 require "stackprof"
@@ -100,10 +104,9 @@ module GraphQLBenchmark
     # Warm up any caches:
     SCHEMA.execute(document: DOCUMENT)
     # CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS)
-    res = nil
     result = StackProf.run(mode: :wall) do
       # CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS)
-      res = SCHEMA.execute(document: DOCUMENT)
+      SCHEMA.execute(document: DOCUMENT)
     end
     StackProf::Report.new(result).print_text
   end
@@ -173,9 +176,9 @@ module GraphQLBenchmark
     end
     StackProf::Report.new(result).print_text
 
-    retained_schema = nil
+    _retained_schema = nil
     report = MemoryProfiler.report do
-      retained_schema = build_large_schema
+      _retained_schema = build_large_schema
     end
 
     report.pretty_print
@@ -689,7 +692,7 @@ module GraphQLBenchmark
   end
 
   def self.profile_schema_memory_footprint
-    schema = nil
+    _schema = nil
     report = MemoryProfiler.report do
       query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
@@ -720,7 +723,7 @@ module GraphQLBenchmark
         end
       end
 
-      schema = Class.new(GraphQL::Schema) do
+      _schema = Class.new(GraphQL::Schema) do
         query(query_type)
         mutation(mutation_type)
       end

@@ -1,9 +1,10 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
     # The validation context gets passed to each validator.
     #
-    # It exposes a {GraphQL::Language::Visitor} where validators may add hooks. ({Language::Visitor#visit} is called in {Validator#validate})
+    # It exposes a [GraphQL::Language::Visitor](rdoc-ref:GraphQL::Language::Visitor) where validators may add hooks. ([Language::Visitor#visit](rdoc-ref:Language::Visitor#visit) is called in [Validator#validate](rdoc-ref:Validator#validate))
     #
     # It provides access to the schema & fragments which validators may read from.
     #
@@ -52,7 +53,7 @@ module GraphQL
 
       def did_you_mean_suggestion(name, options)
         if did_you_mean = schema.did_you_mean
-          suggestions = did_you_mean::SpellChecker.new(dictionary: options).correct(name)
+          suggestions = did_you_mean.const_get(:SpellChecker).new(dictionary: options).correct(name)
           case suggestions.size
           when 0
             ""

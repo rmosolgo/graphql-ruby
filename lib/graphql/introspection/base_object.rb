@@ -1,12 +1,14 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Introspection
     class BaseObject < GraphQL::Schema::Object
       introspection(true)
 
+      #: (*untyped args, **untyped kwargs) ?{ (GraphQL::Schema::Field) [self: GraphQL::Schema::Field] -> void } -> untyped
       def self.field(*args, **kwargs, &block)
         kwargs[:introspection] = true
-        super(*args, **kwargs, &block)
+        super
       end
     end
   end

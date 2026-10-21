@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module Language
 
@@ -35,6 +36,10 @@ module GraphQL
           @scanner.skip(IGNORE_REGEXP)
           if @scanner.skip(COMMENT_REGEXP)
             @tokens_count += 1
+            if @tokens_count > @max_tokens
+              @pos = @scanner.pos
+              raise_parse_error("This query is too large to execute.")
+            end
             next
           end
           break

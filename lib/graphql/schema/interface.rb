@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Schema
     module Interface
@@ -28,32 +29,36 @@ module GraphQL
             defn_methods_module = Module.new
             @_definition_methods = defn_methods_module
             const_set(:DefinitionMethods, defn_methods_module)
-            extend(self::DefinitionMethods)
+            extend(defn_methods_module)
           end
-          self::DefinitionMethods.module_exec(&block)
+          const_get(:DefinitionMethods).module_exec(&block)
         end
 
         # Instance methods defined in this block will become class methods on objects that implement this interface.
         # Use it to implement `resolve_each:`, `resolve_batch:`, and `resolve_static:` fields.
-        # @example
-        #   field :thing, String, resolve_static: true
         #
-        #   resolver_methods do
-        #     def thing
-        #       Somehow.get.thing
-        #     end
+        # **Examples**
+        #
+        # **Example: field :thing, String, resolve_static: true**
+        #
+        # ```ruby
+        # resolver_methods do
+        #   def thing
+        #     Somehow.get.thing
         #   end
+        # end
+        # ```
         def resolver_methods(&block)
           if !defined?(@_resolver_methods)
             resolver_methods_module = Module.new
             @_resolver_methods = resolver_methods_module
             const_set(:ResolverMethods, resolver_methods_module)
-            extend(self::ResolverMethods)
+            extend(resolver_methods_module)
           end
-          self::ResolverMethods.module_exec(&block)
+          const_get(:ResolverMethods).module_exec(&block)
         end
 
-        # @see {Schema::Warden} hides interfaces without visible implementations
+        # See [Schema::Warden](rdoc-ref:Schema::Warden) hides interfaces without visible implementations
         def visible?(context)
           true
         end
@@ -78,7 +83,7 @@ module GraphQL
             child_class.type_membership_class(self.type_membership_class)
             child_class.ancestors.reverse_each do |ancestor|
               if ancestor.const_defined?(:DefinitionMethods) && ancestor != child_class
-                child_class.extend(ancestor::DefinitionMethods)
+                child_class.extend(ancestor.const_get(:DefinitionMethods))
               end
             end
 
@@ -91,9 +96,11 @@ module GraphQL
             end
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`
-            backtrace_line = caller_locations(0, 10).find do |location|
+            locations = caller_locations(0, 10) #: as !nil
+            backtrace_line = locations.find do |location|
+              location_path = location.path #: as !nil
               location.base_label == "implements" &&
-                location.path.end_with?("schema/member/has_interfaces.rb")
+                location_path.end_with?("schema/member/has_interfaces.rb")
             end
 
             if !backtrace_line
@@ -102,7 +109,7 @@ module GraphQL
 
             child_class.ancestors.reverse_each do |ancestor|
               if ancestor != child_class && ancestor <= GraphQL::Schema::Interface && ancestor.const_defined?(:ResolverMethods, false)
-                child_class.extend(ancestor::ResolverMethods)
+                child_class.extend(ancestor.const_get(:ResolverMethods))
               end
             end
           end
@@ -114,8 +121,17 @@ module GraphQL
         #
         # When those Interfaces or Objects aren't used as the return values of fields,
         # they may have to be registered using this method so that GraphQL-Ruby can find them.
-        # @param types [Class, Module]
-        # @return [Array<Module, Class>] Implementers of this interface, if they're registered
+        #
+        # **Parameters**
+        #
+        # - `types` (`Class, Module`)
+        #
+        # **Returns**
+        #
+        # - `Array<Module, Class>` — Implementers of this interface, if they're registered
+        #
+        # :call-seq:
+        #   orphan_types(Class | Module *types) -> Array[Module | Class]
         def orphan_types(*types)
           if !types.empty?
             @orphan_types ||= []

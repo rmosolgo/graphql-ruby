@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: ignore
 
 require "graphql/tracing/monitor_trace"
 
@@ -6,11 +7,17 @@ module GraphQL
   module Tracing
     # A tracer for reporting GraphQL-Ruby times to Sentry.
     #
-    # @example Installing the tracer
-    #   class MySchema < GraphQL::Schema
-    #     trace_with GraphQL::Tracing::SentryTrace
-    #   end
-    # @see MonitorTrace Configuration Options in the parent module
+    # See [MonitorTrace](rdoc-ref:MonitorTrace) Configuration Options in the parent module
+    #
+    # **Examples**
+    #
+    # **Example: Installing the tracer**
+    #
+    # ```ruby
+    # class MySchema < GraphQL::Schema
+    #   trace_with GraphQL::Tracing::SentryTrace
+    # end
+    # ```
     SentryTrace = MonitorTrace.create_module("sentry")
     module SentryTrace
       class SentryMonitor < MonitorTrace::Monitor

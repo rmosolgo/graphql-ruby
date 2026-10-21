@@ -1,12 +1,18 @@
 # frozen_string_literal: true
+# typed: ignore
 require_relative 'orm_mutations_base'
 
 module Graphql
   module Generators
     # TODO: What other options should be supported?
     #
-    # @example Generate a `GraphQL::Schema::RelayClassicMutation` by name
-    #     rails g graphql:mutation CreatePostMutation
+    # **Examples**
+    #
+    # **Example: Generate a `GraphQL::Schema::RelayClassicMutation` by name**
+    #
+    # ```ruby
+    # rails g graphql:mutation CreatePostMutation
+    # ```
     class MutationCreateGenerator < OrmMutationsBase
 
       desc "Scaffold a Relay Classic ORM create mutation for the given model class"

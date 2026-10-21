@@ -1,12 +1,4 @@
----
-layout: guide
-search: true
-section: Authorization
-title: Scoping
-desc: Filter lists to match the current viewer and context
-index: 4
----
-
+# Scoping
 
 _Scoping_ is a complementary consideration to authorization. Rather than checking "can this user see this thing?", scoping takes a list of items filters it to the subset which is appropriate for the current viewer and context.
 

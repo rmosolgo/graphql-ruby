@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   class Schema
@@ -91,14 +92,17 @@ module GraphQL
       def update_type_owner(owner, type)
         case owner
         when Module
+          owner = owner #: as GraphQL::Schema::Member::type_definition
           if owner.kind.union?
+            union_type = owner #: as singleton(GraphQL::Schema::Union)
             # It's a union with possible_types
             # Replace the item by class name
-            owner.assign_type_membership_object_type(type)
-            @possible_types[owner] = owner.possible_types
+            union_type.assign_type_membership_object_type(type)
+            @possible_types[owner] = union_type.possible_types
           elsif type.kind.interface? && (owner.kind.object? || owner.kind.interface?)
+            implementing_type = owner #: as GraphQL::Schema::Member::HasInterfaces
             new_interfaces = []
-            owner.interfaces.each do |int_t|
+            implementing_type.interfaces.each do |int_t|
               if int_t.is_a?(String) && int_t == type.graphql_name
                 new_interfaces << type
               elsif int_t.is_a?(LateBoundType) && int_t.graphql_name == type.graphql_name
@@ -108,7 +112,7 @@ module GraphQL
                 # they were probably already added, maybe with options.
               end
             end
-            owner.implements(*new_interfaces)
+            implementing_type.implements(*new_interfaces)
             new_interfaces.each do |int|
               pt = @possible_types[int] ||= []
               if !pt.include?(owner) && owner.is_a?(Class)

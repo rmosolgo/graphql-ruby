@@ -1,6 +1,9 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariableUsagesAreAllowed
       def initialize(*)
         super
@@ -113,11 +116,16 @@ module GraphQL
         new_var_type
       end
 
-      # @return [Integer] Returns the max depth of `array`, or `0` if it isn't an array at all
+      # **Returns**
+      #
+      # - `Integer` — Returns the max depth of `array`, or `0` if it isn't an array at all
+      #
+      # :call-seq:
+      #   depth_of_array(array) -> Integer
       def depth_of_array(array)
         case array
         when Array
-          max_child_depth = 0
+          max_child_depth = 0 #: untyped
           array.each do |item|
             item_depth = depth_of_array(item)
             if item_depth > max_child_depth

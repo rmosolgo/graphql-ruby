@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require_relative "./base_cop"
 
 module GraphQL
@@ -11,15 +12,17 @@ module GraphQL
       # to optional arguments (`required: false`) without a breaking change. (The opposite change, from `required: false`
       # to `required: true`, change.)
       #
-      # @example
-      #   # Both of these define `id: ID!` in GraphQL:
+      # **Examples**
       #
-      #   # bad
-      #   argument :id, ID, required: true
+      # **Example: # Both of these define `id: ID!` in GraphQL:**
       #
-      #   # good
-      #   argument :id, ID
+      # ```ruby
+      # # bad
+      # argument :id, ID, required: true
       #
+      # # good
+      # argument :id, ID
+      # ```
       class DefaultRequiredTrue < BaseCop
         MSG = "`required: true` is the default and can be removed."
 

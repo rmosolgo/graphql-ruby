@@ -1,7 +1,12 @@
 # frozen_string_literal: true
+# typed: false
 module GraphQL
   module Execution
     class FieldResolveStep
+      # Only these built-in fields on Relay connection and edge types return already-scoped items.
+      # Custom fields on those types must still be authorized normally.
+      SCOPED_RELAY_FIELD_NAMES = [:node, :nodes, :edges].freeze
+
       def initialize(parent_type:, runner:, key:, selections_step:)
         @selections_step = selections_step
         @key = key
@@ -283,7 +288,7 @@ module GraphQL
           authorized_objects = objects
         end
 
-        if @parent_type.default_relay? && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
+        if @parent_type.default_relay? && SCOPED_RELAY_FIELD_NAMES.include?(@field_definition.original_name) && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
           @was_scoped = true
         end
 
@@ -514,7 +519,7 @@ module GraphQL
       def build_leaf_result(result_h, result_key, field_result, return_type, ctx, is_from_array)
         if field_result.nil?
           if return_type.non_null?
-            add_non_null_error(is_from_array)
+            add_non_null_error(is_from_array, return_type: return_type)
           else
             nil
           end
@@ -609,8 +614,14 @@ module GraphQL
         end
       end
 
-      def add_non_null_error(is_from_array)
-        err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path)
+      def add_non_null_error(is_from_array, return_type: nil)
+        if is_from_array && return_type
+          list_type = @field_definition.type
+          list_type = list_type.of_type if list_type.non_null?
+          # Preserve existing messages for single-level lists.
+          element_type = return_type.of_type if list_type.of_type.list?
+        end
+        err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path, element_type: element_type)
         nn_result = @runner.schema.type_error(err, @selections_step.query.context)
         if nn_result.nil?
           propagate_nulls
@@ -797,8 +808,13 @@ module GraphQL
           end
           results
         when :resolve_legacy_instance_method
-          @selections_step.graphql_objects.map do |obj_inst|
-            obj_inst.public_send(@field_definition.execution_mode_key, **args_hash)
+          graphql_objects = if objects.equal?(@selections_step.objects)
+            @selections_step.graphql_objects
+          else
+            objects.map { |object| @parent_type.scoped_new(object, context) }
+          end
+          graphql_objects.map do |graphql_object|
+            graphql_object.public_send(@field_definition.execution_mode_key, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
             exec_err
           end

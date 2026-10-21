@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/execution/interpreter/runtime/graphql_result"
 
 module GraphQL
@@ -7,8 +8,7 @@ module GraphQL
       # I think it would be even better if we could somehow make
       # `continue_field` not recursive. "Trampolining" it somehow.
       #
-      # @api private
-      class Runtime
+      class Runtime # :nodoc:
         class CurrentState
           def initialize
             @current_field = nil
@@ -26,13 +26,19 @@ module GraphQL
             :current_arguments, :current_field, :was_authorized_by_scope_items
         end
 
-        # @return [GraphQL::Query]
+        # **Returns**
+        #
+        # - `GraphQL::Query`
         attr_reader :query
 
-        # @return [Class<GraphQL::Schema>]
+        # **Returns**
+        #
+        # - `Class<GraphQL::Schema>`
         attr_reader :schema
 
-        # @return [GraphQL::Query::Context]
+        # **Returns**
+        #
+        # - `GraphQL::Query::Context`
         attr_reader :context
 
         def initialize(query:)
@@ -63,7 +69,12 @@ module GraphQL
           "#<#{self.class.name} response=#{@response.inspect}>"
         end
 
-        # @return [void]
+        # **Returns**
+        #
+        # - `void`
+        #
+        # :call-seq:
+        #   run_eager() -> void
         def run_eager
           root_type = query.root_type
           case query
@@ -138,7 +149,7 @@ module GraphQL
             else
               @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false, ast_node, nil, nil)
               @response.base_path = base_path
-              idx = nil
+              idx = nil #: Integer?
               object.each do |inner_value|
                 idx ||= 0
                 this_idx = idx
@@ -209,6 +220,7 @@ module GraphQL
           end
         end
 
+        #: (untyped, untyped, untyped, untyped, Array[untyped]?, untyped, untyped) -> untyped
         def gather_selections(graphql_response, owner_object, owner_type, selections, selections_to_run, selections_by_name, ordered_result_keys)
           selections.each do |node|
             if node.is_a?(GraphQL::Language::Nodes::Field)
@@ -242,7 +254,7 @@ module GraphQL
                 if selections_to_run
                   selections_to_run << next_selections
                 else
-                  selections_to_run = []
+                  selections_to_run = [] #: Array[untyped]
                   selections_to_run << selections_by_name
                   selections_to_run << next_selections
                 end
@@ -253,7 +265,10 @@ module GraphQL
               case node
               when GraphQL::Language::Nodes::InlineFragment
                 if node.type
-                  type_defn = query.types.type(node.type.name)
+                  type_defn = query.types.type(
+                    node.type #: as !nil
+                    .name
+                  )
 
                   if query.types.possible_types(type_defn).include?(owner_type)
                     result = gather_selections(graphql_response, owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
@@ -287,7 +302,12 @@ module GraphQL
 
         NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
-        # @return [void]
+        # **Returns**
+        #
+        # - `void`
+        #
+        # :call-seq:
+        #   evaluate_selections(gathered_selections, selections_result, target_result, runtime_state) -> void
         def evaluate_selections(gathered_selections, selections_result, target_result, runtime_state) # rubocop:disable Metrics/ParameterLists
           runtime_state ||= get_current_runtime_state
           runtime_state.current_result_name = nil
@@ -325,7 +345,12 @@ module GraphQL
           end
         end
 
-        # @return [void]
+        # **Returns**
+        #
+        # - `void`
+        #
+        # :call-seq:
+        #   evaluate_selection(result_name, field_ast_nodes_or_ast_node, selections_result) -> void
         def evaluate_selection(result_name, field_ast_nodes_or_ast_node, selections_result) # rubocop:disable Metrics/ParameterLists
           return if selections_result.graphql_dead
           # As a performance optimization, the hash key will be a `Node` if
@@ -374,6 +399,7 @@ module GraphQL
           end
         end
 
+        #: (untyped, untyped, untyped, Array[untyped]?, untyped, untyped, untyped, untyped) -> untyped
         def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, object, result_name, selection_result, runtime_state)  # rubocop:disable Metrics/ParameterLists
           after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_arguments, runtime_state|
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
@@ -405,7 +431,7 @@ module GraphQL
                   extra_args[:path] = current_path
                 when :lookahead
                   if !field_ast_nodes
-                    field_ast_nodes = [ast_node]
+                    field_ast_nodes = [ast_node] #: Array[untyped]
                   end
 
                   extra_args[:lookahead] = Execution::Lookahead.new(
@@ -558,7 +584,7 @@ module GraphQL
                 is_from_array = selection_result.is_a?(GraphQLResultArray)
                 parent_type = is_from_array ? selection_result.graphql_parent.graphql_result_type : selection_result.graphql_result_type
                 # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
-                err = parent_type::InvalidNullError.new(parent_type, field, ast_node, is_from_array: is_from_array)
+                err = parent_type.const_get(:InvalidNullError).new(parent_type, field, ast_node, is_from_array: is_from_array)
                 schema.type_error(err, context)
               end
             else
@@ -657,7 +683,12 @@ module GraphQL
         #
         # Location information from `path` and `ast_node`.
         #
-        # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
+        # **Returns**
+        #
+        # - `Lazy, Array, Hash, Object` — Lazy, Array, and Hash are all traversed to resolve lazy values later
+        #
+        # :call-seq:
+        #   continue_field(value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped, runtime_state) -> Lazy | Array | Hash | Object
         def continue_field(value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped, runtime_state) # rubocop:disable Metrics/ParameterLists
           if current_type.non_null?
             current_type = current_type.of_type
@@ -702,7 +733,7 @@ module GraphQL
               possible_types = query.types.possible_types(current_type)
               if !possible_types.include?(resolved_type)
                 parent_type = field.owner_type
-                err_class = current_type::UnresolvedTypeError
+                err_class = current_type.const_get(:UnresolvedTypeError)
                 type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
                 set_result(selection_result, result_name, nil, false, is_non_null)
@@ -749,7 +780,7 @@ module GraphQL
             inner_type_non_null = inner_type.non_null?
             response_list = GraphQLResultArray.new(result_name, current_type, owner_object, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
             set_result(selection_result, result_name, response_list, true, is_non_null)
-            idx = nil
+            idx = nil #: Integer?
             list_value = begin
               begin
                 value.each do |inner_value|
@@ -853,7 +884,7 @@ module GraphQL
           end
         end
 
-        # Check {Schema::Directive.include?} for each directive that's present
+        # Check [Schema::Directive.include?](rdoc-ref:Schema::Directive.include?) for each directive that's present
         def directives_include?(node, graphql_object, parent_type, selection_result, extra_path_part)
           node.directives.each do |dir_node|
             dir_defn = @schema_directives.fetch(dir_node.name)
@@ -902,11 +933,19 @@ module GraphQL
           end
         end
 
-        # @param obj [Object] Some user-returned value that may want to be batched
-        # @param field [GraphQL::Schema::Field]
-        # @param eager [Boolean] Set to `true` for mutation root fields only
-        # @param trace [Boolean] If `false`, don't wrap this with field tracing
-        # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
+        # **Parameters**
+        #
+        # - `obj` (`Object`) — Some user-returned value that may want to be batched
+        # - `field` (`GraphQL::Schema::Field`)
+        # - `eager` (`Boolean`) — Set to `true` for mutation root fields only
+        # - `trace` (`Boolean`) — If `false`, don't wrap this with field tracing
+        #
+        # **Returns**
+        #
+        # - `GraphQL::Execution::Lazy, Object` — If loading `object` will be deferred, it's a wrapper over it.
+        #
+        # :call-seq:
+        #   after_lazy(lazy_obj, GraphQL::Schema::Field field:, owner_object:, arguments:, ast_node:, result:, result_name:, bool eager:, runtime_state:, bool trace:, &block) -> GraphQL::Execution::Lazy | Object
         def after_lazy(lazy_obj, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, runtime_state:, trace: true, &block)
           if lazy?(lazy_obj)
             was_authorized_by_scope_items = runtime_state.was_authorized_by_scope_items

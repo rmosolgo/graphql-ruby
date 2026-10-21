@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 require 'rubygems'
 require 'bundler'
+
+# `rake test` runs specs with parallel_tests, which sets TEST_ENV_NUMBER for each worker:
+# "" for the first one, then "2", "3", ... Use this to give each worker its own databases and tmp files.
+# It's "" when running serially, too.
+TEST_ENV_SUFFIX = ENV["TEST_ENV_NUMBER"].to_s
+
 require 'simplecov'
 require 'simplecov-lcov'
 SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
@@ -10,6 +16,8 @@ SimpleCov.formatters = [
 ]
 SimpleCov.start do
   enable_coverage :branch
+  # Parallel workers' results are merged into one report. Serial runs shouldn't pick up leftovers from those.
+  use_merging(!ENV["TEST_ENV_NUMBER"].nil?)
   add_filter "spec/"
   add_group "Generators", "lib/generators"
   add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /tracing/, /introspection/, /backtrace/]
@@ -61,6 +69,24 @@ def if_exec_next(exec_next_value, legacy_value)
   TESTING_EXEC_NEXT ? exec_next_value : legacy_value
 end
 
+def rdoc_parameter_names(comment, include_options: false)
+  section = nil
+  comment.lines.filter_map do |line|
+    if line.include?("**Parameters**")
+      section = :parameters
+      nil
+    elsif line.include?("**Options**")
+      section = :options
+      nil
+    elsif line.match?(/\*\*(?:Yields|Returns)\*\*/)
+      section = nil
+      nil
+    elsif section == :parameters || (include_options && section == :options)
+      line[/^\s*# - `([^`]+)`/, 1]&.sub(/\Akwargs\.:/, "")
+    end
+  end
+end
+
 module Minitest
   class Test
     # These tests are skipped but should be fixed at some point
@@ -95,6 +121,12 @@ unless running_in_rubymine
 end
 
 Minitest::Spec.make_my_diffs_pretty!
+
+# In parallel workers, record how long each file took (in tmp/parallel_runtime_test.log)
+# so that the next `rake test:parallel` can balance its workers.
+if ENV["TEST_ENV_NUMBER"]
+  require "parallel_tests/test/runtime_logger"
+end
 
 module CheckWardenShape
   DEFAULT_SHAPE = GraphQL::Schema::Warden.new(context: {}, schema: GraphQL::Schema).instance_variables

@@ -1,11 +1,12 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   class Dataloader
     # GraphQL-Ruby uses this when Dataloader isn't enabled.
     #
     # It runs execution code inline and gathers lazy objects (eg. Promises)
-    # and resolves them during {#run}.
+    # and resolves them during [run](rdoc-ref:#run).
     class NullDataloader < Dataloader
       def initialize(*)
         @lazies_at_depth = Hash.new { |h,k| h[k] = [] }
@@ -20,7 +21,7 @@ module GraphQL
       def run(trace_query_lazy: nil)
         with_trace_query_lazy(trace_query_lazy) do
           while !@lazies_at_depth.empty?
-            smallest_depth = nil
+            smallest_depth = nil #: Integer?
             @lazies_at_depth.each_key do |depth_key|
               smallest_depth ||= depth_key
               if depth_key < smallest_depth
@@ -40,7 +41,7 @@ module GraphQL
         # Reuse this instance because execution code may already have a reference to _this_ `dataloader` inside the given block.
         prev_lazies_at_depth = @lazies_at_depth
         @lazies_at_depth = @lazies_at_depth.dup.clear
-        res = nil
+        res = nil #: untyped
         append_job {
           res = yield
         }

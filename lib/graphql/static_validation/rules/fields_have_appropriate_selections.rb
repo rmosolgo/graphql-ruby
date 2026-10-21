@@ -1,8 +1,12 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
     # Scalars _can't_ have selections
     # Objects _must_ have selections
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor::ContextMethods
     module FieldsHaveAppropriateSelections
       include GraphQL::StaticValidation::Error::ErrorHelper
 
@@ -40,7 +44,11 @@ module GraphQL
             selection_strs = ast_node.selections.map do |n|
               case n
               when GraphQL::Language::Nodes::InlineFragment
-                "\"... on #{n.type.name} { ... }\""
+                if (n_type = n.type)
+                  "\"... on #{n_type.name} { ... }\""
+                else
+                  "\"... { ... }\""
+                end
               when GraphQL::Language::Nodes::Field
                 "\"#{n.name}\""
               when GraphQL::Language::Nodes::FragmentSpread

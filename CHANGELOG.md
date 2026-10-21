@@ -10,6 +10,27 @@
 
 ### Bug fixes
 
+- `FieldsHaveAppropriateSelections`: don't crash on inline fragments without type conditions inside leaf selections #5791
+
+# 2.6.12 (14 Oct 2026)
+
+**Security**: This version contains a patch for [GHSA-965v-9v76-5hg2](https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-965v-9v76-5hg2)
+
+### Bug fixes
+
+- `Visibility::Profile#preload`: preload more type information #5748 #5758
+- Variables: use defaults for omitted non-null variables #5754
+- `Visibility::Profile`: freeze hashes when fully loaded #5750
+- `Dataloader`: give nested dataloader calls their own state #5760
+- `RelationConnection`: reject invalid cursors #5752
+- Legacy execution: Set `current_field` and `current_arguments` for list item dataloader fibers #5759
+- Propagate list errors through non-null items #5756
+- Fix error paths and performance on input objects in lists #5751
+- `Execution::Next`: Don't call `.size` on non-Array list results #5765
+- Subscriptions: reject multiple root selections and introspection root selections #5770
+- `Parser`: fix source locations after multibyte input #5771
+- `RelationConnection`: fix detection of AsyncDataloader to avoid duplicate queries #5773
+
 # 2.6.11 (21 Sep 2026)
 
 ### Bug fixes

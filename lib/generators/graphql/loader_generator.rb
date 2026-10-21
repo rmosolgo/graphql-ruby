@@ -1,12 +1,18 @@
 # frozen_string_literal: true
+# typed: ignore
 require 'rails/generators'
 require "rails/generators/named_base"
 require_relative "core"
 
 module Graphql
   module Generators
-    # @example Generate a `GraphQL::Batch` loader by name.
-    #     rails g graphql:loader RecordLoader
+    # **Examples**
+    #
+    # **Example: Generate a `GraphQL::Batch` loader by name.**
+    #
+    # ```ruby
+    # rails g graphql:loader RecordLoader
+    # ```
     class LoaderGenerator < Rails::Generators::NamedBase
       include Core
 

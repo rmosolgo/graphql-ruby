@@ -1,11 +1,14 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Query
     # Read-only access to query variables, applying default values if needed.
     class Variables
       extend Forwardable
 
-      # @return [Array<GraphQL::Query::VariableValidationError>]  Any errors encountered when parsing the provided variables and literal values
+      # **Returns**
+      #
+      # - `Array<GraphQL::Query::VariableValidationError>` — Any errors encountered when parsing the provided variables and literal values
       attr_reader :errors
 
       attr_reader :context

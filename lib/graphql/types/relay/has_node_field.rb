@@ -1,9 +1,12 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   module Types
     module Relay
       # Include this module to your root Query type to get a Relay-compliant `node(id: ID!): Node` field that uses the schema's `object_from_id` hook.
+      #--
+      # @requires_ancestor: GraphQL::Schema::Object
       module HasNodeField
         def self.included(child_class)
           child_class.field(**field_options, &field_block)
@@ -17,7 +20,8 @@ module GraphQL
         end
 
         def get_relay_node(id:)
-          self.class.get_relay_node(context, id: id)
+          query_class = self.class #: as GraphQL::Types::Relay::HasNodeField::ExecutionMethods
+          query_class.get_relay_node(context, id: id)
         end
 
         class << self
@@ -35,6 +39,7 @@ module GraphQL
 
           def field_block
             Proc.new {
+              #: self as GraphQL::Schema::Field
               argument :id, "ID!",
                 description: "ID of the object."
             }

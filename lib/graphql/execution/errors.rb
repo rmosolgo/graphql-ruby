@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   module Execution
@@ -6,10 +7,18 @@ module GraphQL
       # Register this handler, updating the
       # internal handler index to maintain least-to-most specific.
       #
-      # @param error_class [Class<Exception>]
-      # @param error_handlers [Hash]
-      # @param error_handler [Proc]
-      # @return [void]
+      # **Parameters**
+      #
+      # - `error_class` (`Class<Exception>`)
+      # - `error_handlers` (`Hash`)
+      # - `error_handler` (`Proc`)
+      #
+      # **Returns**
+      #
+      # - `void`
+      #
+      # :call-seq:
+      #   register_rescue_from(Class[Exception] error_class, Hash error_handlers, Proc error_handler) -> void
       def self.register_rescue_from(error_class, error_handlers, error_handler)
         subclasses_handlers = {}
         this_level_subclasses = []
@@ -52,10 +61,15 @@ module GraphQL
         nil
       end
 
-      # @return [Proc, nil] The handler for `error_class`, if one was registered on this schema or inherited
+      # **Returns**
+      #
+      # - `Proc, nil` — The handler for `error_class`, if one was registered on this schema or inherited
+      #
+      # :call-seq:
+      #   find_handler_for(schema, error_class) -> Proc | nil
       def self.find_handler_for(schema, error_class)
         handlers = schema.error_handlers[:subclass_handlers]
-        handler = nil
+        handler = nil #: untyped
         while (handlers) do
           _err_class, next_handler = handlers.find { |err_class, handler| error_class <= err_class }
           if next_handler

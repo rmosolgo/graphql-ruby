@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require 'graphql/schema/member/base_dsl_methods'
 require 'graphql/schema/member/graphql_type_names'
 require 'graphql/schema/member/has_ast_node'
@@ -20,8 +21,14 @@ module GraphQL
     # The base class for things that make up the schema,
     # eg objects, enums, scalars.
     #
-    # @api private
-    class Member
+    class Member # :nodoc:
+      # A module that defines a GraphQL interface type (it includes `GraphQL::Schema::Interface`).
+      #: type interface_definition = GraphQL::Schema::Interface::DefinitionMethods & Module
+
+      # A class or module that defines a GraphQL type:
+      # an object, union, enum, scalar or input object class, or an interface module.
+      #: type type_definition = singleton(GraphQL::Schema::Member) | interface_definition
+
       include GraphQLTypeNames
       extend BaseDSLMethods
       extend BaseDSLMethods::ConfigurationExtension

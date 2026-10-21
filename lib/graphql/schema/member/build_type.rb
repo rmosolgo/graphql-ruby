@@ -1,14 +1,24 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Schema
     class Member
-      # @api private
-      module BuildType
+      #--
+      # @requires_ancestor: Kernel
+      module BuildType # :nodoc:
         LIST_TYPE_ERROR = "Use an array of [T] or [T, null: true] for list types; other arrays are not supported"
 
         module_function
-        # @param type_expr [String, Class, GraphQL::BaseType]
-        # @return [GraphQL::BaseType]
+        # **Parameters**
+        #
+        # - `type_expr` (`String, Class, GraphQL::BaseType`)
+        #
+        # **Returns**
+        #
+        # - `GraphQL::BaseType`
+        #
+        # :call-seq:
+        #   parse_type(String | Class | GraphQL::BaseType type_expr, null:) -> GraphQL::BaseType
         def parse_type(type_expr, null:)
           list_type = false
 
@@ -104,7 +114,8 @@ module GraphQL
             to_type_name(something.first)
           when Module
             if something.respond_to?(:graphql_name)
-              something.graphql_name
+              type_defn = something #: as GraphQL::Schema::Member::type_definition
+              type_defn.graphql_name
             else
               to_type_name(something.name)
             end

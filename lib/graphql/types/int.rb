@@ -1,8 +1,9 @@
 # frozen_string_literal: true
+# typed: true
 
 module GraphQL
   module Types
-    # @see {Types::BigInt} for handling integers outside 32-bit range.
+    # See [Types::BigInt](rdoc-ref:Types::BigInt) for handling integers outside 32-bit range.
     class Int < GraphQL::Schema::Scalar
       description "Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1."
 

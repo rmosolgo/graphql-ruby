@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require_relative "./base_cop"
 
 module GraphQL
@@ -7,15 +8,18 @@ module GraphQL
       # Identify (and auto-correct) any field whose type configuration isn't given
       # in the configuration block.
       #
-      # @example
-      #   # bad, immediately causes Rails to load `app/graphql/types/thing.rb`
-      #   field :thing, Types::Thing
+      # **Examples**
       #
-      #   # good, defers loading until the file is needed
-      #   field :thing do
-      #     type(Types::Thing)
-      #   end
+      # **Example: # bad, immediately causes Rails to load `app/graphql/types/thing.rb`**
       #
+      # ```ruby
+      # field :thing, Types::Thing
+      #
+      # # good, defers loading until the file is needed
+      # field :thing do
+      #   type(Types::Thing)
+      # end
+      # ```
       class FieldTypeInBlock < BaseCop
         MSG = "type configuration can be moved to a block to defer loading the type's file"
 
@@ -133,7 +137,7 @@ module GraphQL
             field_indent << " "
             indent_test_idx -= 1
             if indent_test_idx == 0
-              raise "Invariant: somehow backtracted to beginning of class when looking for field indent (source: #{node_source.inspect})"
+              raise "Invariant: somehow backtracted to beginning of class when looking for field indent (source: #{type_defn_source.inspect})"
             end
           end
           field_indent

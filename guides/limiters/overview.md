@@ -1,14 +1,4 @@
----
-layout: guide
-doc_stub: false
-search: true
-enterprise: true
-section: GraphQL Enterprise - Rate Limiters
-title: Rate Limiters for GraphQL
-desc: Manage access to your GraphQL API
-index: 0
----
-
+# Rate Limiters for GraphQL
 
 `GraphQL::Enterprise` includes rate limiters built especially for GraphQL.
 
@@ -21,6 +11,6 @@ There's some overlap in these limiters; both of them constrain the amount of _ti
 
 To get started, read on:
 
-- {% internal_link "Configure Redis", "limiters/redis" %} for the limiters' backend
-- {% internal_link "Active Operation Limiter", "limiters/active_operations" %}
-- {% internal_link "Runtime Limiter", "limiters/runtime" %}
+- [Configure Redis](/limiters/redis) for the limiters' backend
+- [Active Operation Limiter](/limiters/active_operations)
+- [Runtime Limiter](/limiters/runtime)

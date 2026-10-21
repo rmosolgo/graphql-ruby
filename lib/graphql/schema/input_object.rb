@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
@@ -18,9 +19,13 @@ module GraphQL
         end
       end
 
-      # @return [GraphQL::Query::Context] The context for this query
+      # **Returns**
+      #
+      # - `GraphQL::Query::Context` — The context for this query
       attr_reader :context
-      # @return [GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
+      # **Returns**
+      #
+      # - `GraphQL::Execution::Interpereter::Arguments` — The underlying arguments instance
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
@@ -72,8 +77,8 @@ module GraphQL
         when Array
           value.map { |item| unwrap_value(item) }
         when Hash
-          value.reduce({}) do |h, (key, value)|
-            h.merge!(key => unwrap_value(value))
+          value.reduce({}) do |h, (key, nested_value)|
+            h.merge!(key => unwrap_value(nested_value))
           end
         when InputObject
           value.to_h
@@ -84,7 +89,13 @@ module GraphQL
 
       # Lookup a key on this object, it accepts new-style underscored symbols
       # Or old-style camelized identifiers.
-      # @param key [Symbol, String]
+      #
+      # **Parameters**
+      #
+      # - `key` (`Symbol, String`)
+      #
+      # :call-seq:
+      #   [](Symbol | String key)
       def [](key)
         if @ruby_style_hash.key?(key)
           @ruby_style_hash[key]
@@ -104,8 +115,7 @@ module GraphQL
         @ruby_style_hash.dup
       end
 
-      # @api private
-      def validate_for(context)
+      def validate_for(context) # :nodoc:
         object = context[:current_object]
         # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
         Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
@@ -145,6 +155,7 @@ module GraphQL
         end
 
         def argument(*args, **kwargs, &block)
+          args = args #: untyped
           argument_defn = super(*args, **kwargs, &block)
           if one_of?
             if argument_defn.type.non_null?
@@ -165,7 +176,7 @@ module GraphQL
           GraphQL::TypeKinds::INPUT_OBJECT
         end
 
-        # @api private
+        # :nodoc:
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object."
 
         def validate_non_null_input(input, ctx, max_errors: nil)
@@ -181,7 +192,7 @@ module GraphQL
           end
 
 
-          result = nil
+          result = nil #: GraphQL::Query::InputValidationResult?
 
 
           input.each do |argument_name, value|
@@ -270,14 +281,27 @@ module GraphQL
           result
         end
 
-        # @param new_has_no_arguments [Boolean] Call with `true` to make this InputObject type ignore the requirement to have any defined arguments.
-        # @return [void]
+        # **Parameters**
+        #
+        # - `new_has_no_arguments` (`Boolean`) — Call with `true` to make this InputObject type ignore the requirement to have any defined arguments.
+        #
+        # **Returns**
+        #
+        # - `void`
+        #
+        # :call-seq:
+        #   has_no_arguments(bool new_has_no_arguments) -> void
         def has_no_arguments(new_has_no_arguments)
           @has_no_arguments = new_has_no_arguments
           nil
         end
 
-        # @return [Boolean] `true` if `has_no_arguments(true)` was configued
+        # **Returns**
+        #
+        # - `Boolean` — `true` if `has_no_arguments(true)` was configued
+        #
+        # :call-seq:
+        #   has_no_arguments?() -> bool
         def has_no_arguments?
           @has_no_arguments
         end
@@ -301,7 +325,10 @@ module GraphQL
         end
 
         def define_accessor_method(method_name)
-          define_method(method_name) { self[method_name] }
+          define_method(method_name) {
+            #: self as GraphQL::Schema::InputObject
+            self[method_name]
+          }
           alias_method(method_name, method_name)
         end
       end

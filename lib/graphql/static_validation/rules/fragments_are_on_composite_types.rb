@@ -1,6 +1,9 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module FragmentsAreOnCompositeTypes
       def on_fragment_definition(node, parent)
         validate_type_is_composite(node) && super

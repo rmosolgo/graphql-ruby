@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# typed: true
 require "graphql/schema/build_from_definition/resolve_map/default_resolve"
 
 module GraphQL
@@ -12,8 +13,7 @@ module GraphQL
       #
       # Interface/union resolution can be provided as a `resolve_type:` key.
       #
-      # @api private
-      class ResolveMap
+      class ResolveMap # :nodoc:
         module NullScalarCoerce
           def self.call(val, _ctx)
             val

@@ -1,23 +1,31 @@
 # frozen_string_literal: true
+# typed: true
 module GraphQL
   class Schema
-    # You can use the result of {GraphQL::Introspection::INTROSPECTION_QUERY}
+    # You can use the result of [GraphQL::Introspection::INTROSPECTION_QUERY](rdoc-ref:GraphQL::Introspection::INTROSPECTION_QUERY)
     # to make a schema. This schema is missing some important details like
     # `resolve` functions, but it does include the full type system,
     # so you can use it to validate queries.
     #
-    # @see GraphQL::Schema.from_introspection for a public API
+    # See [GraphQL::Schema.from_introspection](rdoc-ref:GraphQL::Schema.from_introspection) for a public API
     module Loader
-      extend self
-
       # Create schema with the result of an introspection query.
-      # @param introspection_result [Hash] A response from {GraphQL::Introspection::INTROSPECTION_QUERY}
-      # @return [Class] the schema described by `input`
-      def load(introspection_result)
+      #
+      # **Parameters**
+      #
+      # - `introspection_result` (`Hash`) — A response from [GraphQL::Introspection::INTROSPECTION_QUERY](rdoc-ref:GraphQL::Introspection::INTROSPECTION_QUERY)
+      #
+      # **Returns**
+      #
+      # - `Class` — the schema described by `input`
+      #
+      # :call-seq:
+      #   load(Hash introspection_result) -> Class
+      def self.load(introspection_result)
         schema = introspection_result.fetch("data").fetch("__schema")
 
         types = {}
-        type_resolver = ->(type) { resolve_type(types, type) }
+        type_resolver = ->(type) { resolve_type_reference(types, type) }
 
         schema.fetch("types").each do |type|
           next if type.fetch("name").start_with?("__")
@@ -56,7 +64,7 @@ module GraphQL
       class << self
         private
 
-        def resolve_type(types, type)
+        def resolve_type_reference(types, type)
           case kind = type.fetch("kind")
           when "ENUM", "INTERFACE", "INPUT_OBJECT", "OBJECT", "SCALAR", "UNION"
             type_name = type.fetch("name")
@@ -67,9 +75,9 @@ module GraphQL
               type
             end
           when "LIST"
-            Schema::List.new(resolve_type(types, type.fetch("ofType")))
+            Schema::List.new(resolve_type_reference(types, type.fetch("ofType")))
           when "NON_NULL"
-            Schema::NonNull.new(resolve_type(types, type.fetch("ofType")))
+            Schema::NonNull.new(resolve_type_reference(types, type.fetch("ofType")))
           else
             fail GraphQL::RequiredImplementationMissingError, "#{kind} not implemented"
           end
@@ -113,6 +121,7 @@ module GraphQL
             end
           when "INTERFACE"
             Module.new do
+              #: self as GraphQL::Schema::Member::interface_definition
               include GraphQL::Schema::Interface
               graphql_name(type["name"])
               description(type["description"])
@@ -213,7 +222,9 @@ module GraphQL
               dummy_query_ast = GraphQL.parse(dummy_query_str)
 
               # Reach into the AST for the default value:
-              input_value_ast = dummy_query_ast.definitions.first.variables.first.default_value
+              operation = dummy_query_ast.definitions.first #: as GraphQL::Language::Nodes::OperationDefinition
+              variable = operation.variables.first #: as !nil
+              input_value_ast = variable.default_value
 
               kwargs[:default_value] = extract_default_value(default_value_str, input_value_ast)
             end

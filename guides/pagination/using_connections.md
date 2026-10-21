@@ -1,14 +1,6 @@
----
-layout: guide
-doc_stub: false
-search: true
-section: Pagination
-title: Using Connections
-desc: Pagination with GraphQL-Ruby's built-in connections
-index: 2
----
+# Using Connections
 
-GraphQL-Ruby ships with a few implementations of the {% internal_link "connection pattern", "pagination/connection_concepts" %} that you can use out of the box. They support Ruby Arrays, Mongoid, Sequel, and ActiveRecord.
+GraphQL-Ruby ships with a few implementations of the [connection pattern](/pagination/connection_concepts) that you can use out of the box. They support Ruby Arrays, Mongoid, Sequel, and ActiveRecord.
 
 Additionally, connections allow you to limit the number of items returned with [`max_page_size`](#max-page-size) and set the default number of items returned with [`default_page_size`](#default-page-size).
 
@@ -54,7 +46,7 @@ The collection object (Array, Mongoid relation, Sequel dataset, ActiveRecord rel
 
 ## Make Custom Connections
 
-If you want to paginate something that _isn't_ supported out-of-the-box, you can implement your own pagination wrapper and hook it up to GraphQL-Ruby. Read more in {% internal_link "Custom Connections", "/pagination/custom_connections" %}.
+If you want to paginate something that _isn't_ supported out-of-the-box, you can implement your own pagination wrapper and hook it up to GraphQL-Ruby. Read more in [Custom Connections](/pagination/custom_connections).
 
 ## Special Cases
 
