@@ -633,23 +633,40 @@ module GraphQL
 
             # Don't do this for interfaces
             if default_resolve
-              define_field_resolve_method(owner, resolve_method_name, field_definition.name)
+              define_field_resolve_method(owner, resolve_method_name, field_definition.name, type_resolver)
             end
           end
         end
 
-        def define_field_resolve_method(owner, method_name, field_name)
-          owner.define_method(method_name) { |**args|
-            #: self as GraphQL::Schema::Object
-            field_instance = context.types.field(owner, field_name)
-            context.schema.definition_default_resolve.call(self.class, field_instance, object, args, context)
-          }
-          owner.define_singleton_method(method_name) { |objects, context, **args|
-            field_instance = context.types.field(owner, field_name)
-            objects.map do |object|
-              context.schema.definition_default_resolve.call(self, field_instance, object, args, context)
-            end
-          }
+        def define_field_resolve_method(owner, method_name, field_name, type_resolver)
+          resolve_methods = type_resolver.field_resolve_methods
+          resolve_methods.field_names[method_name.to_sym] = field_name
+          owner.define_method(method_name, &resolve_methods.instance_method_proc)
+          owner.define_singleton_method(method_name, &resolve_methods.singleton_method_proc)
+        end
+
+        # Every field's resolve methods share these procs. They use the method's name to find the field.
+        class FieldResolveMethods
+          def initialize
+            field_names = @field_names = {}
+            @instance_method_proc = proc { |**args|
+              #: self as GraphQL::Schema::Object
+              owner = self.class
+              field_instance = context.types.field(owner, field_names[__method__])
+              context.schema.definition_default_resolve.call(owner, field_instance, object, args, context)
+            }
+            @singleton_method_proc = proc { |objects, context, **args|
+              field_instance = context.types.field(self, field_names[__method__])
+              objects.map do |object|
+                context.schema.definition_default_resolve.call(self, field_instance, object, args, context)
+              end
+            }
+          end
+
+          # Field names by resolve method name
+          attr_reader :field_names
+
+          attr_reader :instance_method_proc, :singleton_method_proc
         end
 
         class TypeResolver
@@ -669,6 +686,10 @@ module GraphQL
 
           # Directive applications waiting for {Builder#apply_queued_directives}
           attr_reader :queued_directives
+
+          def field_resolve_methods
+            @field_resolve_methods ||= FieldResolveMethods.new
+          end
 
           # Add `type` to the lookup hash. Types call this before building their members, so that references back to them (including cycles) find this type.
           def register(type)
