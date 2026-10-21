@@ -58,14 +58,26 @@ module GraphQL
           # Directive applications are queued while types are built, then applied once every type is complete,
           # because applying a directive coerces its arguments, which requires fully-built input types.
           queued_directives = []
-          type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name| types[type_name] ||= Schema::LateBoundType.new(type_name) }
+          definitions_by_name = {}
+          document.definitions.each do |d|
+            if d.respond_to?(:name)
+              definitions_by_name[d.name] ||= d
+            end
+          end
+          type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name|
+            types[type_name] ||= if !definitions_by_name.key?(type_name) && (built_in_type = GraphQL::Schema::BUILT_IN_TYPES[type_name])
+              built_in_type
+            else
+              Schema::LateBoundType.new(type_name)
+            end
+          }
           # Make a different type resolver because directive argument types must be real classes (not late-bound)
           # when queued directives are applied. It builds types eagerly. (Each type registers itself in `types`
           # before building its members, so cycles between input objects terminate.)
           directive_type_resolver = nil
           directive_type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name|
             types[type_name] ||= begin
-              defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
+              defn = definitions_by_name[type_name]
               if defn
                 build_definition_from_node(defn, directive_type_resolver, default_resolve, base_types)
               elsif (built_in_defn = GraphQL::Schema::BUILT_IN_TYPES[type_name])
@@ -87,7 +99,6 @@ module GraphQL
           replace_late_bound_types_with_built_in(types)
 
           schema_extensions = nil
-          definitions_by_name = nil
           document.definitions.each do |definition|
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition, GraphQL::Language::Nodes::DirectiveDefinition
@@ -108,9 +119,6 @@ module GraphQL
                 if definition.is_a?(GraphQL::Language::Nodes::ObjectTypeDefinition) || definition.is_a?(Language::Nodes::InterfaceTypeDefinition)
                   interface_names = definition.interfaces.map(&:name)
                   if !interface_names.empty?
-                    definitions_by_name ||= document.definitions.each_with_object({}) do |d, by_name|
-                      by_name[d.name] ||= d if d.respond_to?(:name)
-                    end
                     transitive_names = interface_names.map { |n| definitions_by_name[n]&.interfaces&.map(&:name) }
                     transitive_names.flatten!
                     transitive_names.compact!
