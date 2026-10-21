@@ -274,6 +274,12 @@ module GraphQL
           end
           apply_queued_directives(queued_directives)
 
+          directives.each_value do |dir_class|
+            if dir_class.respond_to?(:coerced_arguments_cache=) && dir_class.coerced_arguments_cache
+              dir_class.coerced_arguments_cache = nil
+            end
+          end
+
           schema_class
         end
 
@@ -547,6 +553,7 @@ module GraphQL
             locations(*directive_definition.locations.map { |location| location.name.to_sym })
             ast_node(directive_definition)
             builder.build_arguments(self, directive_definition.arguments, type_resolver)
+            self.coerced_arguments_cache = {}
           end
         end
 
