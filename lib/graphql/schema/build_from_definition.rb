@@ -424,7 +424,6 @@ module GraphQL
           type_class = type_resolver.type_class(enum_type_definition.name, base_type)
           type_class.class_exec do
             #: self as singleton(GraphQL::Schema::Enum)
-            graphql_name(enum_type_definition.name)
             type_resolver.register(self)
             builder.build_directives(self, enum_type_definition, type_resolver)
             description(enum_type_definition.description)
@@ -466,7 +465,6 @@ module GraphQL
           type_class = type_resolver.type_class(scalar_type_definition.name, base_type)
           type_class.class_exec do
             #: self as singleton(GraphQL::Schema::Scalar)
-            graphql_name(scalar_type_definition.name)
             type_resolver.register(self)
             description(scalar_type_definition.description)
             ast_node(scalar_type_definition)
@@ -493,7 +491,6 @@ module GraphQL
           type_class = type_resolver.type_class(union_type_definition.name, base_type)
           type_class.class_exec do
             #: self as singleton(GraphQL::Schema::Union)
-            graphql_name(union_type_definition.name)
             type_resolver.register(self)
             description(union_type_definition.description)
             possible_types(*union_type_definition.types.map { |type_name| type_resolver.call(type_name) })
@@ -509,7 +506,6 @@ module GraphQL
           type_class = type_resolver.type_class(object_type_definition.name, base_type)
           type_class.class_exec do
             #: self as singleton(GraphQL::Schema::Object)
-            graphql_name(object_type_definition.name)
             type_resolver.register(self)
             description(object_type_definition.description)
             ast_node(object_type_definition)
@@ -531,7 +527,6 @@ module GraphQL
           type_class = type_resolver.type_class(input_object_type_definition.name, base_type)
           type_class.class_exec do
             #: self as singleton(GraphQL::Schema::InputObject)
-            graphql_name(input_object_type_definition.name)
             type_resolver.register(self)
             description(input_object_type_definition.description)
             ast_node(input_object_type_definition)
@@ -678,10 +673,9 @@ module GraphQL
             @missing_type_handler = missing_type_handler
           end
 
-          # The class that was made ahead of time for `type_name`, or a new subclass of `base_type`.
-          # Each class made ahead of time is returned once, to be built.
+          # The class made ahead of time for `type_name` (returned once, to be built), or a new subclass of `base_type`
           def type_class(type_name, base_type)
-            @type_classes.delete(type_name) || Class.new(base_type)
+            @type_classes.delete(type_name) || Class.new(base_type) { graphql_name(type_name) }
           end
 
           # Directive applications waiting for {Builder#apply_queued_directives}
