@@ -50,7 +50,6 @@ Sorbet/TrueSigil:
     - "lib/graphql/schema/validator/required_validator.rb"
     - "lib/graphql/schema/visibility/migration.rb"
     - "lib/graphql/schema/visibility/profile.rb"
-    - "lib/graphql/schema/warden.rb"
     - "lib/graphql/static_validation/rules/fields_will_merge.rb"
     - "lib/graphql/tracing/active_support_notifications_trace.rb"
     - "lib/graphql/tracing/appoptics_trace.rb"

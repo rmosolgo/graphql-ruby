@@ -1052,6 +1052,77 @@ describe GraphQL::Schema::Warden do
         assert_equal warden_params, GraphQL::Schema::Warden::NullWarden.instance_method(method_name).parameters,"#{method_name} has the same parameters"
       end
     end
+
+    it "returns all possible types from loadable_possible_types" do
+      node = Module.new do
+        include GraphQL::Schema::Interface
+        graphql_name "Node"
+        field :id, GraphQL::Types::ID
+      end
+      thing_a = Class.new(GraphQL::Schema::Object) do
+        graphql_name "ThingA"
+        implements node
+      end
+      thing_b = Class.new(GraphQL::Schema::Object) do
+        graphql_name "ThingB"
+        implements node
+      end
+      thing = Class.new(GraphQL::Schema::Union) do
+        graphql_name "Thing"
+        possible_types thing_a, thing_b
+      end
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :thing, thing
+        field :node, node
+      end
+      schema = Class.new(GraphQL::Schema) do
+        query(query_type)
+      end
+
+      warden = GraphQL::Schema::Warden::NullWarden.new(context: nil, schema: schema)
+      assert_equal [thing_a, thing_b], warden.loadable_possible_types(thing, nil).sort_by(&:graphql_name)
+      assert_equal [thing_a, thing_b], warden.visibility_profile.loadable_possible_types(thing, nil).sort_by(&:graphql_name)
+      assert_equal warden.possible_types(node), warden.loadable_possible_types(node, nil)
+    end
+  end
+
+  describe "#loadable_possible_types" do
+    it "caches each abstract type's possible types separately" do
+      iface_a = Module.new do
+        include GraphQL::Schema::Interface
+        graphql_name "IfaceA"
+        field :id, GraphQL::Types::ID
+      end
+      iface_b = Module.new do
+        include GraphQL::Schema::Interface
+        graphql_name "IfaceB"
+        field :id, GraphQL::Types::ID
+      end
+      obj_a = Class.new(GraphQL::Schema::Object) do
+        graphql_name "ObjA"
+        implements iface_a
+      end
+      obj_b = Class.new(GraphQL::Schema::Object) do
+        graphql_name "ObjB"
+        implements iface_b
+      end
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :a, iface_a
+        field :b, iface_b
+      end
+      schema = Class.new(GraphQL::Schema) do
+        self.use_visibility_profile = false
+        query(query_type)
+        orphan_types(obj_a, obj_b)
+      end
+
+      context = GraphQL::Query.new(schema, "{ __typename }").context
+      warden = GraphQL::Schema::Warden.new(context: context, schema: schema)
+      assert_equal [obj_a], warden.loadable_possible_types(iface_a, context)
+      assert_equal [obj_b], warden.loadable_possible_types(iface_b, context)
+    end
   end
 
   describe "PassThruWarden is used when no warden is used" do
