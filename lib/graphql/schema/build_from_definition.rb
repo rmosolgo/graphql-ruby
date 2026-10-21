@@ -420,16 +420,12 @@ module GraphQL
         end
 
         def build_enum_type(enum_type_definition, type_resolver, base_type)
-          builder = self
-          type_class = type_resolver.type_class(enum_type_definition.name, base_type)
-          type_class.class_exec do
-            #: self as singleton(GraphQL::Schema::Enum)
-            type_resolver.register(self)
-            builder.build_directives(self, enum_type_definition, type_resolver)
-            description(enum_type_definition.description)
-            ast_node(enum_type_definition)
-            builder.build_values(self, enum_type_definition.values, type_resolver)
-          end
+          type_class = type_resolver.type_class(enum_type_definition.name, base_type) #: singleton(GraphQL::Schema::Enum)
+          type_resolver.register(type_class)
+          build_directives(type_class, enum_type_definition, type_resolver)
+          type_class.description(enum_type_definition.description)
+          type_class.ast_node(enum_type_definition)
+          build_values(type_class, enum_type_definition.values, type_resolver)
           type_class
         end
 
@@ -461,21 +457,17 @@ module GraphQL
         end
 
         def build_scalar_type(scalar_type_definition, type_resolver, base_type, default_resolve:)
-          builder = self
-          type_class = type_resolver.type_class(scalar_type_definition.name, base_type)
-          type_class.class_exec do
-            #: self as singleton(GraphQL::Schema::Scalar)
-            type_resolver.register(self)
-            description(scalar_type_definition.description)
-            ast_node(scalar_type_definition)
-            builder.build_directives(self, scalar_type_definition, type_resolver)
+          type_class = type_resolver.type_class(scalar_type_definition.name, base_type) #: singleton(GraphQL::Schema::Scalar)
+          type_resolver.register(type_class)
+          type_class.description(scalar_type_definition.description)
+          type_class.ast_node(scalar_type_definition)
+          build_directives(type_class, scalar_type_definition, type_resolver)
 
-            if default_resolve.respond_to?(:coerce_input)
-              # Put these method definitions in another method to avoid retaining `type_resolve`
-              # from this method's bindiing
-              builder.build_scalar_type_coerce_method(self, :coerce_input, default_resolve)
-              builder.build_scalar_type_coerce_method(self, :coerce_result, default_resolve)
-            end
+          if default_resolve.respond_to?(:coerce_input)
+            # Put these method definitions in another method to avoid retaining `type_resolve`
+            # from this method's bindiing
+            build_scalar_type_coerce_method(type_class, :coerce_input, default_resolve)
+            build_scalar_type_coerce_method(type_class, :coerce_result, default_resolve)
           end
           type_class
         end
@@ -487,32 +479,23 @@ module GraphQL
         end
 
         def build_union_type(union_type_definition, type_resolver, base_type)
-          builder = self
-          type_class = type_resolver.type_class(union_type_definition.name, base_type)
-          type_class.class_exec do
-            #: self as singleton(GraphQL::Schema::Union)
-            type_resolver.register(self)
-            description(union_type_definition.description)
-            possible_types(*union_type_definition.types.map { |type_name| type_resolver.call(type_name) })
-            ast_node(union_type_definition)
-            builder.build_directives(self, union_type_definition, type_resolver)
-          end
+          type_class = type_resolver.type_class(union_type_definition.name, base_type) #: singleton(GraphQL::Schema::Union)
+          type_resolver.register(type_class)
+          type_class.description(union_type_definition.description)
+          type_class.possible_types(*union_type_definition.types.map { |type_name| type_resolver.call(type_name) })
+          type_class.ast_node(union_type_definition)
+          build_directives(type_class, union_type_definition, type_resolver)
           type_class
         end
 
         def build_object_type(object_type_definition, type_resolver, base_type)
-          builder = self
-
-          type_class = type_resolver.type_class(object_type_definition.name, base_type)
-          type_class.class_exec do
-            #: self as singleton(GraphQL::Schema::Object)
-            type_resolver.register(self)
-            description(object_type_definition.description)
-            ast_node(object_type_definition)
-            builder.build_directives(self, object_type_definition, type_resolver)
-            builder.build_interfaces(self, object_type_definition.interfaces, type_resolver)
-            builder.build_fields(self, object_type_definition.fields, type_resolver, default_resolve: true)
-          end
+          type_class = type_resolver.type_class(object_type_definition.name, base_type) #: singleton(GraphQL::Schema::Object)
+          type_resolver.register(type_class)
+          type_class.description(object_type_definition.description)
+          type_class.ast_node(object_type_definition)
+          build_directives(type_class, object_type_definition, type_resolver)
+          build_interfaces(type_class, object_type_definition.interfaces, type_resolver)
+          build_fields(type_class, object_type_definition.fields, type_resolver, default_resolve: true)
           type_class
         end
 
@@ -523,16 +506,12 @@ module GraphQL
         end
 
         def build_input_object_type(input_object_type_definition, type_resolver, base_type)
-          builder = self
-          type_class = type_resolver.type_class(input_object_type_definition.name, base_type)
-          type_class.class_exec do
-            #: self as singleton(GraphQL::Schema::InputObject)
-            type_resolver.register(self)
-            description(input_object_type_definition.description)
-            ast_node(input_object_type_definition)
-            builder.build_directives(self, input_object_type_definition, type_resolver)
-            builder.build_arguments(self, input_object_type_definition.fields, type_resolver)
-          end
+          type_class = type_resolver.type_class(input_object_type_definition.name, base_type) #: singleton(GraphQL::Schema::InputObject)
+          type_resolver.register(type_class)
+          type_class.description(input_object_type_definition.description)
+          type_class.ast_node(input_object_type_definition)
+          build_directives(type_class, input_object_type_definition, type_resolver)
+          build_arguments(type_class, input_object_type_definition.fields, type_resolver)
           type_class
         end
 
