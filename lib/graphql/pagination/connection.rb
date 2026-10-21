@@ -240,6 +240,11 @@ module GraphQL
       #
       # - `GraphQL::Schema::Field` — The field this connection was returned by
       attr_accessor :field
+  
+      # **Returns**
+      # 
+      # - `GraphQL::Execution::Lookahead` Selections on this connection, set by connection fields
+      attr_accessor :lookahead
 
       # **Returns**
       #
