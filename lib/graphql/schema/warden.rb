@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 require 'set'
 
@@ -46,7 +46,7 @@ module GraphQL
       #   visible_entry?(Symbol visibility_method, Object | Array[Object] entry, GraphQL::Query::Context context, Warden warden) -> Object | nil
       def self.visible_entry?(visibility_method, entry, context, warden = Warden.from_context(context))
         if entry.is_a?(Array)
-          visible_item = nil
+          visible_item = nil #: untyped
           entry.each do |item|
             if warden.public_send(visibility_method, item, context)
               if visible_item.nil?
@@ -115,7 +115,7 @@ module GraphQL
         def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
         def reachable_type?(type_name); true; end
         def loadable?(type, _ctx); true; end
-        def loadable_possible_types(abstract_type, _ctx); union_type.possible_types; end
+        def loadable_possible_types(abstract_type, _ctx); possible_types(abstract_type); end
         def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
         def possible_types(type_defn); @schema.possible_types(type_defn, Query::NullContext.instance, false); end
         def interfaces(obj_type); obj_type.interfaces; end
@@ -265,9 +265,10 @@ module GraphQL
       def loadable_possible_types(abstract_type, _ctx)
         @loadable_possible_types ||= read_through do |t|
           if t.is_a?(Class) # union
+            t = t #: as singleton(GraphQL::Schema::Union)
             t.possible_types
           else
-            @schema.possible_types(abstract_type)
+            @schema.possible_types(t)
           end
         end
         @loadable_possible_types[abstract_type]
@@ -537,8 +538,8 @@ module GraphQL
       # (If it _wasn't_ inherited, then don't hide it for this reason.)
       def field_on_visible_interface?(field_defn, type_defn)
         if type_defn.kind.object?
-          any_interface_has_field = false
-          any_interface_has_visible_field = false
+          any_interface_has_field = false #: bool
+          any_interface_has_visible_field = false #: bool
           ints = unfiltered_interfaces(type_defn)
           ints.each do |interface_type|
             if (iface_field_defn = interface_type.get_field(field_defn.graphql_name, @context))
@@ -594,6 +595,7 @@ module GraphQL
           member_type = case member
           when Module
             if member.respond_to?(:kind)
+              member = member #: as GraphQL::Schema::Member::type_definition
               member.kind.name.downcase
             else
               ""
