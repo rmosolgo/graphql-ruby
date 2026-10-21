@@ -66,8 +66,11 @@ namespace :test do
   end
 end
 
-require 'rubocop/rake_task'
-RuboCop::RakeTask.new
+# gemfiles/docs.gemfile only installs what the documentation build needs
+unless Bundler.default_gemfile.basename.to_s == "docs.gemfile"
+  require 'rubocop/rake_task'
+  RuboCop::RakeTask.new
+end
 
 default_tasks = [:test, :rubocop]
 if ENV["SYSTEM_TESTS"]
