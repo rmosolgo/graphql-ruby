@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+      # TODO: remove before merging; lets this branch exercise the full workflow
+      - claude/benchmark-system-failure-19260e
   workflow_dispatch:
 
 permissions: {}
@@ -49,6 +51,10 @@ jobs:
           alert-threshold: '150%'
           fail-on-alert: false
           summary-always: true
+      # The action clones into ./benchmark-data-repository and only removes it when a push needs retrying,
+      # so the next store step would fail with "destination path already exists"
+      - name: Remove previous benchmark data clone
+        run: rm -rf benchmark-data-repository
       - name: Store memory results
         uses: rmosolgo/github-action-benchmark@2f17b61ba59e765ca322ad380b4f85f8722c9c38 # ruby-v1
         with:
