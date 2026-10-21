@@ -66,8 +66,12 @@ namespace :test do
   end
 end
 
-require 'rubocop/rake_task'
-RuboCop::RakeTask.new
+begin
+  require 'rubocop/rake_task'
+  RuboCop::RakeTask.new
+rescue LoadError
+  # Not installed by gemfiles/docs.gemfile
+end
 
 default_tasks = [:test, :rubocop]
 if ENV["SYSTEM_TESTS"]
