@@ -119,8 +119,16 @@ module GraphQL
                 pt << owner
               end
               int.interfaces.each do |indirect_int|
-                if indirect_int.is_a?(LateBoundType) && (indirect_int_type = get_type(indirect_int.graphql_name))
-                  update_type_owner(owner, indirect_int_type)
+                if indirect_int.is_a?(LateBoundType)
+                  if (indirect_int_type = get_type(indirect_int.graphql_name))
+                    update_type_owner(owner, indirect_int_type)
+                  end
+                elsif owner.is_a?(Class)
+                  # `implements` added this one, too, because `int` implements it
+                  indirect_pt = @possible_types[indirect_int] ||= []
+                  if !indirect_pt.include?(owner)
+                    indirect_pt << owner
+                  end
                 end
               end
             end
