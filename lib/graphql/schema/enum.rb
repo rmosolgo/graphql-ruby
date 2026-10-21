@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
@@ -117,7 +117,7 @@ module GraphQL
           visible_values = []
           types = Warden.types_from_context(context)
           own_values.each do |key, values_entry|
-            visible_value = nil
+            visible_value = nil #: GraphQL::Schema::EnumValue?
             if values_entry.is_a?(Array)
               values_entry.each do |v|
                 if types.visible_enum_value?(v, context)
@@ -252,7 +252,7 @@ module GraphQL
           if enum_value && (was_authed = enum_value.authorized?(ctx))
             enum_value.graphql_name
           else
-            raise self::UnresolvedValueError.new(enum: self, value: value, context: ctx, authorized: was_authed)
+            raise const_get(:UnresolvedValueError).new(enum: self, value: value, context: ctx, authorized: was_authed)
           end
         end
 

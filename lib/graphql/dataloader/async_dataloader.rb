@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Dataloader
@@ -206,7 +206,7 @@ module GraphQL
 
       def run_isolated
         previous_run = current_task_run
-        prev_pending_keys = {}
+        prev_pending_keys = {} #: Hash[GraphQL::Dataloader::Source, Hash[untyped, untyped]]
         # Clear pending loads but keep already-cached records
         # in case they are useful to the given block.
         @source_cache.each do |source_class, batched_sources|
@@ -218,7 +218,7 @@ module GraphQL
           end
         end
 
-        res = nil
+        res = nil #: untyped
         create_pending_run
         @pending_run.jobs << -> { res = yield }
         run
@@ -229,6 +229,7 @@ module GraphQL
           # clear the one created in #run:
           @pending_run = nil
         end
+        prev_pending_keys = prev_pending_keys #: as !nil
         prev_pending_keys.each do |source_instance, pending|
           pending.each do |key, value|
             next if source_instance.results.key?(key)
@@ -244,10 +245,10 @@ module GraphQL
         run = @pending_run || current_task_run || raise(GraphQL::Error, "No available Run, GraphQL-Ruby internal bug")
         @pending_run = nil
         run.trace = trace
-        first_pass = true
+        first_pass = true #: bool
         trace&.begin_dataloader(self)
         fiber_vars = get_fiber_variables
-        raised_error = nil
+        raised_error = nil #: StandardError?
         jobs = run.jobs
         Sync do |_maybe_new_task|
           # Make sure there's a new task instance to hold `.graphql_...` state:
@@ -291,7 +292,7 @@ module GraphQL
       private
 
       def run_queue(run, condition, mode)
-        opened_queues = false
+        opened_queues = false #: bool
 
         if condition.waiting?
           opened_queues = true
