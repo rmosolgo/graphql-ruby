@@ -66,11 +66,10 @@ namespace :test do
   end
 end
 
-begin
+# gemfiles/docs.gemfile only installs what the documentation build needs
+unless Bundler.default_gemfile.basename.to_s == "docs.gemfile"
   require 'rubocop/rake_task'
   RuboCop::RakeTask.new
-rescue LoadError
-  # Not installed by gemfiles/docs.gemfile
 end
 
 default_tasks = [:test, :rubocop]
