@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - master
-      # TODO: remove before merging; lets this branch exercise the full workflow
-      - claude/benchmark-system-failure-19260e
   workflow_dispatch:
 
 permissions: {}
