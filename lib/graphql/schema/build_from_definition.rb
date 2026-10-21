@@ -222,7 +222,7 @@ module GraphQL
           builder = self
 
           found_types = types.values
-          object_types = found_types.select { |t| t.respond_to?(:kind) && t.kind.object? }
+          object_types = found_types.select { |t| t.is_a?(Class) && t < GraphQL::Schema::Object }
           schema_class = Class.new(schema_superclass) do
             #: self as singleton(GraphQL::Schema)
             begin
@@ -376,33 +376,21 @@ module GraphQL
         end
 
         def apply_directives(definition, ast_node, type_resolver)
-          dirs = prepare_directives(ast_node, type_resolver)
-          dirs.each do |(dir_class, options)|
-            if definition.respond_to?(:schema_directive)
-              # it's a schema
+          is_schema = definition.respond_to?(:schema_directive)
+          ast_node.directives.each do |dir_node|
+            # This is handled using `deprecation_reason`
+            next if dir_node.name == "deprecated"
+            dir_class = type_resolver.call(dir_node.name)
+            if dir_class.nil?
+              raise ArgumentError, "No definition for @#{dir_node.name} #{ast_node.respond_to?(:name) ? "on #{ast_node.name} " : ""}at #{ast_node.line}:#{ast_node.col}"
+            end
+            options = args_to_kwargs(dir_class, dir_node)
+            if is_schema
               definition.schema_directive(dir_class, **options)
             else
               definition.directive(dir_class, **options)
             end
           end
-        end
-
-        def prepare_directives(ast_node, type_resolver)
-          dirs = []
-          ast_node.directives.each do |dir_node|
-            if dir_node.name == "deprecated"
-              # This is handled using `deprecation_reason`
-              next
-            else
-              dir_class = type_resolver.call(dir_node.name)
-              if dir_class.nil?
-                raise ArgumentError, "No definition for @#{dir_node.name} #{ast_node.respond_to?(:name) ? "on #{ast_node.name} " : ""}at #{ast_node.line}:#{ast_node.col}"
-              end
-              options = args_to_kwargs(dir_class, dir_node)
-              dirs << [dir_class, options]
-            end
-          end
-          dirs
         end
 
         def args_to_kwargs(arg_owner, node)
@@ -591,8 +579,9 @@ module GraphQL
           builder = self
           # If `owner.field` isn't customized, make fields directly. It's the same, but faster.
           field_class = owner.method(:field).owner.equal?(GraphQL::Schema::Member::HasFields) ? owner.field_class : nil
+          resolve_method_names = type_resolver.field_resolve_methods.method_names
           field_definitions.each do |field_definition|
-            resolve_method_name = -"resolve_field_#{field_definition.name}"
+            resolve_method_name = resolve_method_names[field_definition.name]
             if field_class
               schema_field_defn = field_class.new(
                 name: field_definition.name,
@@ -645,6 +634,7 @@ module GraphQL
         # Every field's resolve methods share these procs. They use the method's name to find the field.
         class FieldResolveMethods
           def initialize
+            @method_names = Hash.new { |h, field_name| h[field_name] = -"resolve_field_#{field_name}" }
             field_names = @field_names = {}
             @instance_method_proc = proc { |**args|
               #: self as GraphQL::Schema::Object
@@ -662,6 +652,9 @@ module GraphQL
 
           # Field names by resolve method name
           attr_reader :field_names
+
+          # Resolve method names by field name
+          attr_reader :method_names
 
           attr_reader :instance_method_proc, :singleton_method_proc
         end
