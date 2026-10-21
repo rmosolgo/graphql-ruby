@@ -635,6 +635,15 @@ interface WorldInterface {
       end
     end
 
+    it "raises a helpful error when a type implements something that isn't an interface" do
+      ["type Bar { a: Int }", "scalar Bar", "enum Bar { A }", "union Bar = Query", "input Bar { a: Int }"].each do |bar_defn|
+        err = assert_raises(RuntimeError, bar_defn) do
+          GraphQL::Schema.from_definition("type Query implements Bar { a: Int }\n#{bar_defn}")
+        end
+        assert_includes err.message, "cannot be implemented since it's not a GraphQL Interface", bar_defn
+      end
+    end
+
     it "supports interfaces that implement interfaces" do
       schema = <<-SCHEMA
 interface Named implements Node {
