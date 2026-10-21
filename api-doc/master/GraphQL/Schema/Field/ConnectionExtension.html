@@ -533,11 +533,14 @@
 
 
           <div class="method-source-code" id="after_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 29</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">after_resolve</span>(<span class="ruby-value">value:</span>, <span class="ruby-value">object:</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">context:</span>, <span class="ruby-value">memo:</span>)
   <span class="ruby-identifier">original_arguments</span> = <span class="ruby-identifier">memo</span>
+  <span class="ruby-identifier">lookahead</span> = <span class="ruby-identifier">arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">lookahead</span>]
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">after_lazy</span>(<span class="ruby-identifier">value</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">resolved_value</span><span class="ruby-operator">|</span>
-    <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">connections</span>.<span class="ruby-identifier">populate_connection</span>(<span class="ruby-identifier">field</span>, <span class="ruby-identifier">object</span>.<span class="ruby-identifier">object</span>, <span class="ruby-identifier">resolved_value</span>, <span class="ruby-identifier">original_arguments</span>, <span class="ruby-identifier">context</span>)
+    <span class="ruby-identifier">connection</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">connections</span>.<span class="ruby-identifier">populate_connection</span>(<span class="ruby-identifier">field</span>, <span class="ruby-identifier">object</span>.<span class="ruby-identifier">object</span>, <span class="ruby-identifier">resolved_value</span>, <span class="ruby-identifier">original_arguments</span>, <span class="ruby-identifier">context</span>)
+    <span class="ruby-identifier">connection</span>.<span class="ruby-identifier">lookahead</span> ||= <span class="ruby-identifier">lookahead</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">connection</span>
+    <span class="ruby-identifier">connection</span>
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -586,7 +589,7 @@
 
 
           <div class="method-source-code" id="apply-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">apply</span>
   <span class="ruby-identifier">field</span>.<span class="ruby-identifier">argument</span> <span class="ruby-value">:</span><span class="ruby-value">after</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">String</span><span class="ruby-string">&quot;</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Returns the elements in the list that come after the specified cursor.</span><span class="ruby-string">&quot;</span>, <span class="ruby-value">required</span><span class="ruby-value">:</span> <span class="ruby-keyword">false</span>
   <span class="ruby-identifier">field</span>.<span class="ruby-identifier">argument</span> <span class="ruby-value">:</span><span class="ruby-value">before</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">String</span><span class="ruby-string">&quot;</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Returns the elements in the list that come before the specified cursor.</span><span class="ruby-string">&quot;</span>, <span class="ruby-value">required</span><span class="ruby-value">:</span> <span class="ruby-keyword">false</span>
@@ -620,7 +623,7 @@
               <div class="method-heading">
                 <a href="#method-i-resolve" title="Link to this method">
                   <span class="method-name">resolve</span>
-                  <span class="method-args">(object: nil, objects: nil, arguments:, context:) { |object || objects, next_args, arguments| ... }</span>
+                  <span class="method-args">(object: nil, objects: nil, arguments:, context:) { |object || objects, next_args, original_arguments| ... }</span>
                 </a>
               </div>
 
@@ -639,14 +642,16 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 16</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field/connection_extension.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve</span>(<span class="ruby-value">object:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">objects:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">arguments:</span>, <span class="ruby-value">context:</span>)
   <span class="ruby-identifier">next_args</span> = <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">dup</span>
   <span class="ruby-identifier">next_args</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:</span><span class="ruby-value">first</span>)
   <span class="ruby-identifier">next_args</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:</span><span class="ruby-value">last</span>)
   <span class="ruby-identifier">next_args</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:</span><span class="ruby-value">before</span>)
   <span class="ruby-identifier">next_args</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:</span><span class="ruby-value">after</span>)
-  <span class="ruby-keyword">yield</span>(<span class="ruby-identifier">object</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">objects</span>, <span class="ruby-identifier">next_args</span>, <span class="ruby-identifier">arguments</span>)
+  <span class="ruby-comment"># Keep the extension&#39;s extras (`:lookahead`) out of `connection.arguments`</span>
+  <span class="ruby-identifier">original_arguments</span> = <span class="ruby-identifier">added_extras</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">reject</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">k</span>, <span class="ruby-identifier">_v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">added_extras</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">k</span>) } <span class="ruby-operator">:</span> <span class="ruby-identifier">arguments</span>
+  <span class="ruby-keyword">yield</span>(<span class="ruby-identifier">object</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">objects</span>, <span class="ruby-identifier">next_args</span>, <span class="ruby-identifier">original_arguments</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
 

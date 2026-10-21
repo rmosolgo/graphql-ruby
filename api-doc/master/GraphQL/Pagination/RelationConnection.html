@@ -525,7 +525,7 @@
 
 
           <div class="method-source-code" id="cursor_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 55</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cursor_for</span>(<span class="ruby-identifier">item</span>)
   <span class="ruby-identifier">load_nodes</span>
   <span class="ruby-identifier">position</span> = <span class="ruby-identifier">cursor_index_for</span>(<span class="ruby-identifier">item</span>, <span class="ruby-identifier">nodes</span>)
@@ -579,6 +579,12 @@
           <div class="method-source-code" id="has_next_page-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_next_page</span>
+  <span class="ruby-comment"># If the query loads the page anyway, load it now so its extra row answers this</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@has_next_page</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">peek_next_page?</span> <span class="ruby-operator">&amp;&amp;</span>
+      (<span class="ruby-identifier">lookahead</span>.<span class="ruby-identifier">selects?</span>(<span class="ruby-value">:</span><span class="ruby-value">nodes</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">lookahead</span>.<span class="ruby-identifier">selects?</span>(<span class="ruby-value">:</span><span class="ruby-value">edges</span>) <span class="ruby-operator">||</span>
+        <span class="ruby-identifier">page_info_selection</span>.<span class="ruby-identifier">selects?</span>(<span class="ruby-value">:</span><span class="ruby-value">start_cursor</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">page_info_selection</span>.<span class="ruby-identifier">selects?</span>(<span class="ruby-value">:</span><span class="ruby-value">end_cursor</span>))
+    <span class="ruby-identifier">load_nodes</span>
+  <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@has_next_page</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-ivar">@has_next_page</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">before_offset</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">before_offset</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>
       <span class="ruby-keyword">true</span>

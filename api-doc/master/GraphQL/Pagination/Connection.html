@@ -750,6 +750,26 @@
         </div>
       </div>
 
+      <div id="attribute-i-lookahead" class="method-detail anchor-link">
+        <div class="method-heading attribute-method-heading">
+          <a href="#attribute-i-lookahead" title="Link to this attribute">
+            <span class="method-name">lookahead</span>
+            <span class="attribute-access-type">[RW]</span>
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+
+        <p><strong>Returns</strong></p>
+<ul><li>
+<p><a href="../Execution/Lookahead.html"><code>GraphQL::Execution::Lookahead</code></a> Selections on this connection, set by connection fields</p>
+</li></ul>
+
+        </div>
+      </div>
+
       <div id="attribute-i-parent" class="method-detail anchor-link">
         <div class="method-heading attribute-method-heading">
           <a href="#attribute-i-parent" title="Link to this attribute">
@@ -1116,7 +1136,7 @@
 
 
           <div class="method-source-code" id="cursor_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 317</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 322</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cursor_for</span>(<span class="ruby-identifier">item</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">PaginationImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#cursor_for(item) to return the cursor for </span><span class="ruby-string">#{</span><span class="ruby-identifier">item</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1281,7 +1301,7 @@
 
 
           <div class="method-source-code" id="edge_nodes-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 256</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 261</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">edge_nodes</span>
   <span class="ruby-identifier">nodes</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1394,7 +1414,7 @@
 
 
           <div class="method-source-code" id="end_cursor-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 301</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 306</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">end_cursor</span>
   <span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">last</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">cursor_for_position</span>(<span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">last</span>, <span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">-</span> <span class="ruby-value">1</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1612,7 +1632,7 @@
 
 
           <div class="method-source-code" id="has_next_page-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 271</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 276</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_next_page</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">PaginationImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#has_next_page to return the next-page check</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1668,7 +1688,7 @@
 
 
           <div class="method-source-code" id="has_previous_page-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 281</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 286</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_previous_page</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">PaginationImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#has_previous_page to return the previous-page check</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1885,7 +1905,7 @@
 
 
           <div class="method-source-code" id="nodes-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 250</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 255</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">nodes</span>
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">PaginationImplementationMissingError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string">#nodes to paginate `@items`</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1938,7 +1958,7 @@
 
 
           <div class="method-source-code" id="page_info-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 261</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 266</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">page_info</span>
   <span class="ruby-keyword">self</span>
 <span class="ruby-keyword">end</span></pre>
@@ -2054,7 +2074,7 @@
 
 
           <div class="method-source-code" id="start_cursor-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 291</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/connection.rb, line 296</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">start_cursor</span>
   <span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">first</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">cursor_for_position</span>(<span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">first</span>, <span class="ruby-value">0</span>)
 <span class="ruby-keyword">end</span></pre>
