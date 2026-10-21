@@ -4,6 +4,8 @@
 
 ### Breaking changes
 
+- Interfaces: directives are now inherited from interface modules they include (including other interfaces passed to `implements` and "base interface" modules), as was always intended. Previously, a lookup bug meant interfaces only returned their own directives. If an interface includes another module with `directive ...` configuration, its `.directives` (and printed SDL) will now include those directives too. A same-named directive on the interface itself still overrides the inherited one. Object types still don't inherit directives from interfaces they implement. #PR_NUMBER
+
 ### Deprecations
 
 ### New features
@@ -11,6 +13,7 @@
 ### Bug fixes
 
 - `FieldsHaveAppropriateSelections`: don't crash on inline fragments without type conditions inside leaf selections #5791
+- Directives: don't drop repeated instances of repeatable directives on interfaces or on subclasses with inherited directives #PR_NUMBER
 
 # 2.6.12 (14 Oct 2026)
 
