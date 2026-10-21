@@ -3223,9 +3223,9 @@
       <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">args</span>, <span class="ruby-identifier">query_ctx</span>)
         <span class="ruby-comment"># Unwrap the GraphQL object to get the application object.</span>
         <span class="ruby-identifier">application_object</span> = <span class="ruby-identifier">object</span>.<span class="ruby-identifier">object</span>
-        <span class="ruby-identifier">method_receiver</span> = <span class="ruby-keyword">nil</span>
-        <span class="ruby-identifier">method_to_call</span> = <span class="ruby-keyword">nil</span>
-        <span class="ruby-identifier">method_args</span> = <span class="ruby-keyword">nil</span>
+        <span class="ruby-identifier">method_receiver</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
+        <span class="ruby-identifier">method_to_call</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
+        <span class="ruby-identifier">method_args</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
 
         <span class="ruby-ivar">@own_validators</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Validator</span>.<span class="ruby-identifier">validate!</span>(<span class="ruby-identifier">validators</span>, <span class="ruby-identifier">application_object</span>, <span class="ruby-identifier">query_ctx</span>, <span class="ruby-identifier">args</span>)
 

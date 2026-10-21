@@ -525,14 +525,15 @@
 
 
           <div class="method-source-code" id="fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 315</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 318</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fields</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-comment"># Objects need to check that the interface implementation is visible, too</span>
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-comment"># Local overrides take precedence over inherited fields</span>
   <span class="ruby-identifier">visible_fields</span> = {}
-  <span class="ruby-identifier">had_any_fields_at_all</span> = <span class="ruby-keyword">false</span>
-  <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">ancestors</span>
+  <span class="ruby-identifier">had_any_fields_at_all</span> = <span class="ruby-keyword">false</span> <span class="ruby-comment">#: bool</span>
+  <span class="ruby-identifier">all_ancestors</span> = <span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
+  <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">all_ancestors</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">own_fields</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">visible_interface_implementation?</span>(<span class="ruby-identifier">ancestor</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">warden</span>)
       <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">own_fields</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field_name</span>, <span class="ruby-identifier">fields_entry</span><span class="ruby-operator">|</span>
         <span class="ruby-identifier">had_any_fields_at_all</span> = <span class="ruby-keyword">true</span>
@@ -598,11 +599,11 @@
 
 
           <div class="method-source-code" id="get_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 291</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 294</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_field</span>(<span class="ruby-identifier">field_name</span>, <span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-comment"># Objects need to check that the interface implementation is visible, too</span>
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
-  <span class="ruby-identifier">ancs</span> = <span class="ruby-identifier">ancestors</span>
+  <span class="ruby-identifier">ancs</span> = <span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
   <span class="ruby-identifier">skip_visible</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">types</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Visibility</span><span class="ruby-operator">::</span><span class="ruby-constant">Profile</span>)
   <span class="ruby-identifier">i</span> = <span class="ruby-value">0</span>
   <span class="ruby-keyword">while</span> (<span class="ruby-identifier">ancestor</span> = <span class="ruby-identifier">ancs</span>[<span class="ruby-identifier">i</span>])

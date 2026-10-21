@@ -525,12 +525,13 @@
 
 
           <div class="method-source-code" id="fields-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 267</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 269</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fields</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-comment"># Local overrides take precedence over inherited fields</span>
   <span class="ruby-identifier">visible_fields</span> = {}
-  <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">ancestors</span>
+  <span class="ruby-identifier">all_ancestors</span> = <span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
+  <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">all_ancestors</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">own_fields</span>)
       <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">own_fields</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field_name</span>, <span class="ruby-identifier">fields_entry</span><span class="ruby-operator">|</span>
         <span class="ruby-comment"># Choose the most local definition that passes `.visible?` --</span>
@@ -592,11 +593,12 @@
 
 
           <div class="method-source-code" id="get_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 248</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_fields.rb, line 249</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_field</span>(<span class="ruby-identifier">field_name</span>, <span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">skip_visible</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">types</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Visibility</span><span class="ruby-operator">::</span><span class="ruby-constant">Profile</span>)
-  <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">ancestors</span>
+  <span class="ruby-identifier">all_ancestors</span> = <span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
+  <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">all_ancestors</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">own_fields</span>) <span class="ruby-operator">&amp;&amp;</span>
         (<span class="ruby-identifier">f_entry</span> = <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">own_fields</span>[<span class="ruby-identifier">field_name</span>]) <span class="ruby-operator">&amp;&amp;</span>
         (<span class="ruby-identifier">skip_visible</span> <span class="ruby-operator">||</span> (<span class="ruby-identifier">f_entry</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">visible_entry?</span>(<span class="ruby-value">:</span><span class="ruby-value">visible_field?</span>, <span class="ruby-identifier">f_entry</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">warden</span>)))

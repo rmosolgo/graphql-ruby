@@ -801,7 +801,7 @@
           <span class="ruby-identifier">partially_matched_conditions</span> = <span class="ruby-value">0</span>
 
           <span class="ruby-identifier">visible_keywords</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-ivar">@validated</span>).<span class="ruby-identifier">map</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">keyword</span>)
-          <span class="ruby-identifier">no_visible_conditions</span> = <span class="ruby-keyword">true</span>
+          <span class="ruby-identifier">no_visible_conditions</span> = <span class="ruby-keyword">true</span> <span class="ruby-comment">#: bool</span>
 
           <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span>
             <span class="ruby-identifier">validation_parameter</span>(<span class="ruby-ivar">@one_of</span>).<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">one_of_condition</span><span class="ruby-operator">|</span>
@@ -816,8 +816,8 @@
                   <span class="ruby-identifier">fully_matched_conditions</span> += <span class="ruby-value">1</span>
                 <span class="ruby-keyword">end</span>
               <span class="ruby-keyword">when</span> <span class="ruby-constant">Array</span>
-                <span class="ruby-identifier">any_match</span> = <span class="ruby-keyword">false</span>
-                <span class="ruby-identifier">full_match</span> = <span class="ruby-keyword">true</span>
+                <span class="ruby-identifier">any_match</span> = <span class="ruby-keyword">false</span> <span class="ruby-comment">#: bool</span>
+                <span class="ruby-identifier">full_match</span> = <span class="ruby-keyword">true</span> <span class="ruby-comment">#: bool</span>
 
                 <span class="ruby-identifier">one_of_condition</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">k</span><span class="ruby-operator">|</span>
                   <span class="ruby-keyword">if</span> <span class="ruby-identifier">no_visible_conditions</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">visible_keywords</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">k</span>)

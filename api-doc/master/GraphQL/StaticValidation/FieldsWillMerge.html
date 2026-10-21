@@ -645,7 +645,7 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 72</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">selections</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">selections_may_conflict?</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">selections</span>)
-    <span class="ruby-ivar">@conflicts</span> = <span class="ruby-keyword">nil</span>
+    <span class="ruby-ivar">@conflicts</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[untyped, untyped]?</span>
     <span class="ruby-identifier">conflicts_within_selection_set</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">type_definition</span>)
     <span class="ruby-ivar">@conflicts</span>&amp;.<span class="ruby-identifier">each_value</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">error_type</span><span class="ruby-operator">|</span> <span class="ruby-identifier">error_type</span>.<span class="ruby-identifier">each_value</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">error</span><span class="ruby-operator">|</span> <span class="ruby-identifier">add_error</span>(<span class="ruby-identifier">error</span>) } }
   <span class="ruby-keyword">end</span>
@@ -704,7 +704,7 @@
           <div class="method-source-code" id="on_operation_definition-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
-  <span class="ruby-ivar">@conflicts</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-ivar">@conflicts</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[untyped, untyped]?</span>
   <span class="ruby-identifier">conflicts_within_selection_set</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">type_definition</span>)
   <span class="ruby-ivar">@conflicts</span>&amp;.<span class="ruby-identifier">each_value</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">error_type</span><span class="ruby-operator">|</span> <span class="ruby-identifier">error_type</span>.<span class="ruby-identifier">each_value</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">error</span><span class="ruby-operator">|</span> <span class="ruby-identifier">add_error</span>(<span class="ruby-identifier">error</span>) } }
   <span class="ruby-keyword">super</span>
