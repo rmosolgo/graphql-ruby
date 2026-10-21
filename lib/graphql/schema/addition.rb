@@ -14,8 +14,7 @@ module GraphQL
         @possible_types_sets = {}
         @types = {}
         @union_memberships = {}
-        # Values are Hashes used as sets (`{ referencer => true }`)
-        @references = {}
+        @references = {}.compare_by_identity
         @arguments_with_default_values = []
         add_type_and_traverse(new_types)
       end
@@ -23,7 +22,7 @@ module GraphQL
       private
 
       def references_to(thing, from:)
-        refs = @references[thing] ||= {}
+        refs = @references[thing] ||= {}.compare_by_identity
         refs[from] = true
       end
 
@@ -215,18 +214,26 @@ module GraphQL
             type.all_field_definitions.each do |field|
               field.ensure_loaded
               field_type = field.type.unwrap
-              if !field_type.is_a?(GraphQL::Schema::LateBoundType)
+              if field_type.is_a?(GraphQL::Schema::LateBoundType)
+                add_type(field_type, owner: field, late_types: late_types)
+              else
                 references_to(field_type, from: field)
+                if !@types[field_type.graphql_name].equal?(field_type)
+                  add_type(field_type, owner: field, late_types: late_types)
+                end
               end
-              add_type(field_type, owner: field, late_types: late_types)
               add_directives_from(field)
               field.all_argument_definitions.each do |arg|
                 add_directives_from(arg)
                 arg_type = arg.type.unwrap
-                if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
+                if arg_type.is_a?(GraphQL::Schema::LateBoundType)
+                  add_type(arg_type, owner: arg, late_types: late_types)
+                else
                   references_to(arg_type, from: arg)
+                  if !@types[arg_type.graphql_name].equal?(arg_type)
+                    add_type(arg_type, owner: arg, late_types: late_types)
+                  end
                 end
-                add_type(arg_type, owner: arg, late_types: late_types)
                 if arg.default_value?
                   @arguments_with_default_values << arg
                 end
@@ -237,10 +244,14 @@ module GraphQL
             type.all_argument_definitions.each do |arg|
               add_directives_from(arg)
               arg_type = arg.type.unwrap
-              if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
+              if arg_type.is_a?(GraphQL::Schema::LateBoundType)
+                add_type(arg_type, owner: arg, late_types: late_types)
+              else
                 references_to(arg_type, from: arg)
+                if !@types[arg_type.graphql_name].equal?(arg_type)
+                  add_type(arg_type, owner: arg, late_types: late_types)
+                end
               end
-              add_type(arg_type, owner: arg, late_types: late_types)
               if arg.default_value?
                 @arguments_with_default_values << arg
               end
