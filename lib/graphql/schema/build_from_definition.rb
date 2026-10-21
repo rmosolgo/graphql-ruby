@@ -59,9 +59,9 @@ module GraphQL
           # because applying a directive coerces its arguments, which requires fully-built input types.
           queued_directives = []
           definitions_by_name = {}
-          # Classes for types in this document, made before any type is built so that references to them don't need late-bound types.
-          # Interfaces aren't made early because implementing an interface copies some of its configuration.
+          # Classes (or modules, for interfaces) made before any type is built, so that references to them don't need late-bound types
           type_classes = {}
+          interface_definitions = {}
           document.definitions.each do |d|
             if d.respond_to?(:name)
               definitions_by_name[d.name] ||= d
@@ -72,10 +72,13 @@ module GraphQL
                 when GraphQL::Language::Nodes::InputObjectTypeDefinition then base_types[:input_object]
                 when GraphQL::Language::Nodes::UnionTypeDefinition then base_types[:union]
                 when GraphQL::Language::Nodes::ScalarTypeDefinition then base_types[:scalar]
-                when GraphQL::Language::Nodes::InterfaceTypeDefinition then false
+                when GraphQL::Language::Nodes::InterfaceTypeDefinition
+                  interface_definitions[d.name] = d
+                  type_classes[d.name] = new_interface_module(d.name, base_types[:interface])
+                  nil
                 end
-                if !base_type.nil?
-                  type_classes[d.name] = base_type && Class.new(base_type) { graphql_name(d.name) }
+                if base_type
+                  type_classes[d.name] = Class.new(base_type) { graphql_name(d.name) }
                 end
               end
             end
@@ -106,6 +109,18 @@ module GraphQL
             end
           }
 
+          build_interface = ->(interface_name, resolver) {
+            if (interface_definition = interface_definitions.delete(interface_name)) && type_classes[interface_name]
+              check_transitive_interfaces(interface_definition, definitions_by_name)
+              build_interface_type(interface_definition, resolver, base_types[:interface])
+            end
+          }
+          type_resolver.build_interface = build_interface
+          directive_type_resolver.build_interface = build_interface
+          type_links = TypeLinks.new
+          type_resolver.links = type_links
+          directive_type_resolver.links = type_links
+
           directives.merge!(GraphQL::Schema.default_directives)
           document.definitions.each do |definition|
             if definition.is_a?(GraphQL::Language::Nodes::DirectiveDefinition)
@@ -135,19 +150,8 @@ module GraphQL
               prev_type = types[definition.name]
               if prev_type.nil? || prev_type.is_a?(Schema::LateBoundType) || type_classes[definition.name]
                 if definition.is_a?(GraphQL::Language::Nodes::ObjectTypeDefinition) || definition.is_a?(Language::Nodes::InterfaceTypeDefinition)
-                  interface_names = definition.interfaces.map(&:name)
-                  if !interface_names.empty?
-                    transitive_names = interface_names.map { |n| definitions_by_name[n]&.interfaces&.map(&:name) }
-                    transitive_names.flatten!
-                    transitive_names.compact!
-                  else
-                    transitive_names = interface_names
-                  end
-                  if !(missing_transitive_interfaces = transitive_names - interface_names).empty?
-                    raise GraphQL::Schema::InvalidDocumentError, "type #{definition.name} is missing one or more transitive interface names: #{missing_transitive_interfaces.join(", ")}. Add them to the type's `implements` list and try again."
-                  end
+                  check_transitive_interfaces(definition, definitions_by_name)
                 end
-
                 build_definition_from_node(definition, type_resolver, default_resolve, base_types)
               end
             end
@@ -227,7 +231,9 @@ module GraphQL
             #: self as singleton(GraphQL::Schema)
             begin
               # Add these first so that there's some chance of resolving late-bound types
-              add_type_and_traverse(found_types, root: false)
+              if !builder.add_linked_types(self, found_types, type_links, directives, base_types)
+                add_type_and_traverse(found_types, root: false)
+              end
               # Without visibility, this would only re-traverse types that were just added
               # (and `own_orphan_types` is cleared below), so it can be skipped.
               if use_visibility_profile? || visibility
@@ -311,6 +317,117 @@ module GraphQL
           end
 
           schema_class
+        end
+
+        # References between types in this document, recorded while they're built.
+        class TypeLinks
+          def initialize
+            @references = {}.compare_by_identity
+            @arguments = []
+            @complete = true
+          end
+
+          # Hash of type => Array of the fields and arguments that use it (no duplicates, since each one is added once)
+          attr_reader :references
+
+          attr_reader :arguments
+
+          # True if everything was recorded, so the generic traversal isn't needed
+          def complete?
+            @complete
+          end
+
+          def incomplete!
+            @complete = false
+          end
+
+          def add_argument(argument, argument_type)
+            @arguments << argument
+            add_reference(argument, argument_type)
+          end
+
+          def add_reference(member, member_type)
+            member_type = member_type.unwrap
+            if member_type.is_a?(Schema::LateBoundType)
+              # The generic traversal will raise an error for this
+              incomplete!
+            else
+              (@references[member_type] ||= []) << member
+            end
+          end
+        end
+
+        # Like `schema_class.add_type_and_traverse(found_types, root: false)`, but it uses the links recorded while types were built
+        # instead of a traversal. (Directive classes are added later, with `directives(...)`.)
+        # Returns false if the traversal is required, for example, when base types have their own fields or interfaces.
+        def add_linked_types(schema_class, found_types, type_links, directives, base_types)
+          if !type_links.complete? ||
+              schema_class.use_visibility_profile? ||
+              # A redefined `@deprecated` isn't the one used by `deprecation_reason:`, so the traversal would find another directive.
+              !directives["deprecated"].equal?(GraphQL::Schema::Directive::Deprecated) ||
+              !base_types_without_members?(base_types)
+            return false
+          end
+
+          own_types = schema_class.send(:own_types)
+          found_types.each do |type|
+            if !(Module === type) ||
+                (Class === type && GraphQL::Schema::Directive > type) ||
+                ((prev_type = own_types[type.graphql_name]) && !prev_type.equal?(type))
+              return false
+            end
+          end
+
+          # Like the traversal, check each argument's type now (it raises an error if the type is invalid)
+          type_links.arguments.each(&:type)
+
+          possible_types = {}.compare_by_identity
+          possible_types_sets = {}.compare_by_identity
+          union_memberships = {}
+          found_types.each do |type|
+            own_types[type.graphql_name] = type
+            if Class === type
+              if GraphQL::Schema::Object > type
+                (possible_types[type] ||= []) << type
+                type.interface_type_memberships.each do |type_membership|
+                  interface_type = type_membership.abstract_type
+                  if (possible_types_sets[interface_type] ||= Set.new).add?(type)
+                    (possible_types[interface_type] ||= []) << type
+                  end
+                end
+              elsif GraphQL::Schema::Union > type
+                member_types = possible_types[type] = type.all_possible_types
+                member_types.each do |member_type|
+                  (union_memberships[member_type.graphql_name] ||= []) << type
+                end
+              end
+            end
+          end
+
+          schema_class.send(:own_possible_types).merge!(possible_types) { |key, old_val, new_val| old_val + new_val }
+          schema_class.send(:own_union_memberships).merge!(union_memberships)
+          own_references_to = schema_class.send(:own_references_to)
+          type_links.references.each do |thing, new_refs|
+            prev_refs = own_references_to[thing]
+            own_references_to[thing] = prev_refs ? (prev_refs + (new_refs - prev_refs)) : new_refs
+          end
+          type_links.arguments.each do |argument|
+            if argument.default_value?
+              argument.validate_default_value
+            end
+          end
+          true
+        end
+
+        def base_types_without_members?(base_types)
+          object = base_types[:object]
+          interface = base_types[:interface]
+          object.all_field_definitions.empty? && object.interface_type_memberships.empty? && object.directives.empty? &&
+            interface.all_field_definitions.empty? && interface.interface_type_memberships.empty? && interface.directives.empty? && interface.orphan_types.empty? &&
+            base_types[:input_object].all_argument_definitions.empty? && base_types[:input_object].directives.empty? &&
+            base_types[:union].all_possible_types.empty? && base_types[:union].directives.empty? &&
+            base_types[:enum].all_enum_value_definitions.empty? && base_types[:enum].directives.empty? &&
+            base_types[:scalar].directives.empty?
         end
 
         NullResolveType = ->(type, obj, ctx) {
@@ -493,8 +610,31 @@ module GraphQL
 
         def build_interfaces(type_class, interface_names, type_resolver)
           interface_names.each do |interface_name|
+            # Implementing an interface copies some of its configuration, so it must be built first
+            type_resolver.build_interface_now(interface_name.name)
             type_class.implements(type_resolver.call(interface_name))
           end
+        end
+
+        def check_transitive_interfaces(definition, definitions_by_name)
+          interface_names = definition.interfaces.map(&:name)
+          if !interface_names.empty?
+            transitive_names = interface_names.map { |n| definitions_by_name[n]&.interfaces&.map(&:name) }
+            transitive_names.flatten!
+            transitive_names.compact!
+          else
+            transitive_names = interface_names
+          end
+          if !(missing_transitive_interfaces = transitive_names - interface_names).empty?
+            raise GraphQL::Schema::InvalidDocumentError, "type #{definition.name} is missing one or more transitive interface names: #{missing_transitive_interfaces.join(", ")}. Add them to the type's `implements` list and try again."
+          end
+        end
+
+        def new_interface_module(name, base_type)
+          Module.new {
+            include base_type
+            graphql_name(name)
+          }
         end
 
         def build_input_object_type(input_object_type_definition, type_resolver, base_type)
@@ -524,7 +664,8 @@ module GraphQL
 
         def build_arguments(type_class, arguments, type_resolver)
           builder = self
-
+          # Directive arguments are linked when directives are added to the schema
+          links = (Class === type_class && GraphQL::Schema::Directive > type_class) ? nil : type_resolver.links
           arguments.each do |argument_defn|
             default_value_kwargs = if !argument_defn.default_value.nil?
               { default_value: builder.build_default_value(argument_defn.default_value) }
@@ -532,9 +673,10 @@ module GraphQL
               EMPTY_HASH
             end
 
+            argument_type = type_resolver.call(argument_defn.type)
             argument = type_class.argument(
               argument_defn.name,
-              type: type_resolver.call(argument_defn.type),
+              type: argument_type,
               required: false,
               description: argument_defn.description,
               deprecation_reason: builder.build_deprecation_reason(argument_defn.directives),
@@ -542,6 +684,7 @@ module GraphQL
               camelize: false,
               **default_value_kwargs
             )
+            links&.add_argument(argument, argument_type)
             builder.build_directives(argument, argument_defn, type_resolver)
           end
         end
@@ -560,19 +703,14 @@ module GraphQL
         end
 
         def build_interface_type(interface_type_definition, type_resolver, base_type)
-          builder = self
-          Module.new do
-            #: self as GraphQL::Schema::Member::interface_definition
-            include base_type
-            graphql_name(interface_type_definition.name)
-            type_resolver.register(self)
-            description(interface_type_definition.description)
-            builder.build_interfaces(self, interface_type_definition.interfaces, type_resolver)
-            ast_node(interface_type_definition)
-            builder.build_directives(self, interface_type_definition, type_resolver)
-
-            builder.build_fields(self, interface_type_definition.fields, type_resolver, default_resolve: nil)
-          end
+          type_module = type_resolver.interface_module(interface_type_definition.name, base_type) #: GraphQL::Schema::Member::interface_definition
+          type_resolver.register(type_module)
+          type_module.description(interface_type_definition.description)
+          build_interfaces(type_module, interface_type_definition.interfaces, type_resolver)
+          type_module.ast_node(interface_type_definition)
+          build_directives(type_module, interface_type_definition, type_resolver)
+          build_fields(type_module, interface_type_definition.fields, type_resolver, default_resolve: nil)
+          type_module
         end
 
         def build_fields(owner, field_definitions, type_resolver, default_resolve:)
@@ -580,6 +718,11 @@ module GraphQL
           # If `owner.field` isn't customized, make fields directly. It's the same, but faster.
           field_class = owner.method(:field).owner.equal?(GraphQL::Schema::Member::HasFields) ? owner.field_class : nil
           resolve_method_names = type_resolver.field_resolve_methods.method_names
+          links = type_resolver.links
+          # Custom field classes might add arguments (for example, with extensions), which the links wouldn't include
+          if !field_class.equal?(GraphQL::Schema::Field)
+            links.incomplete!
+          end
           field_definitions.each do |field_definition|
             resolve_method_name = resolve_method_names[field_definition.name]
             if field_class
@@ -587,7 +730,7 @@ module GraphQL
                 name: field_definition.name,
                 owner: owner,
                 description: field_definition.description,
-                type: type_resolver.call(field_definition.type),
+                type: (field_type = type_resolver.call(field_definition.type)),
                 null: true,
                 connection_extension: nil,
                 deprecation_reason: build_deprecation_reason(field_definition.directives),
@@ -602,7 +745,7 @@ module GraphQL
               schema_field_defn = owner.field(
                 field_definition.name,
                 description: field_definition.description,
-                type: type_resolver.call(field_definition.type),
+                type: (field_type = type_resolver.call(field_definition.type)),
                 null: true,
                 connection_extension: nil,
                 deprecation_reason: build_deprecation_reason(field_definition.directives),
@@ -614,6 +757,7 @@ module GraphQL
               )
             end
 
+            links.add_reference(schema_field_defn, field_type)
             builder.build_directives(schema_field_defn, field_definition, type_resolver)
             builder.build_arguments(schema_field_defn, field_definition.arguments, type_resolver)
 
@@ -671,6 +815,18 @@ module GraphQL
           # The class made ahead of time for `type_name` (returned once, to be built), or a new subclass of `base_type`
           def type_class(type_name, base_type)
             @type_classes.delete(type_name) || Class.new(base_type) { graphql_name(type_name) }
+          end
+
+          def interface_module(type_name, base_type)
+            @type_classes.delete(type_name) || Builder.new_interface_module(type_name, base_type)
+          end
+
+          attr_writer :build_interface
+
+          attr_accessor :links
+
+          def build_interface_now(interface_name)
+            @build_interface&.call(interface_name, self)
           end
 
           # Directive applications waiting for {Builder#apply_queued_directives}
