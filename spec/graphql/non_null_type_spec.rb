@@ -2,6 +2,58 @@
 require "spec_helper"
 
 describe "GraphQL::NonNullType" do
+  describe "when the interpreter receives a nested list containing an invalid null" do
+    class NestedListSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :nested, [[Int]], hash_key: :nested
+        field :required_nested, [[Int]], null: false, hash_key: :nested
+        field :nullable_lists, [[Int], null: true], hash_key: :nested
+        field :deeply_nested, [[[Int]]], hash_key: :nested
+      end
+
+      query(Query)
+      default_execution_next(false)
+
+      def self.type_error(error, context)
+        context[:type_error] = error
+        super
+      end
+    end
+
+    it "nulls the field and reports the item path" do
+      result = NestedListSchema.execute("{ nested }", root_value: { nested: [[1], [nil], [3]] })
+
+      assert_equal({ "nested" => nil }, result["data"])
+      assert_equal [["nested", 1, 0]], result["errors"].map { |error| error["path"] }
+      error = result.context[:type_error]
+      assert_instance_of NestedListSchema::Query::InvalidNullError, error
+      assert_equal NestedListSchema::Query, error.parent_type
+      assert_equal NestedListSchema::Query.fields["nested"], error.field
+      assert error.is_from_array
+    end
+
+    it "propagates null through a non-null field" do
+      result = NestedListSchema.execute("{ requiredNested }", root_value: { nested: [[1], [nil], [3]] })
+
+      assert_nil result["data"]
+      assert_equal [["requiredNested", 1, 0]], result["errors"].map { |error| error["path"] }
+    end
+
+    it "stops propagation at a nullable inner list" do
+      result = NestedListSchema.execute("{ nullableLists }", root_value: { nested: [[1], [nil], [3]] })
+
+      assert_equal({ "nullableLists" => [[1], nil, [3]] }, result["data"])
+      assert_equal [["nullableLists", 1, 0]], result["errors"].map { |error| error["path"] }
+    end
+
+    it "reports nulls in more deeply nested lists" do
+      result = NestedListSchema.execute("{ deeplyNested }", root_value: { nested: [[[1]], [[nil]], [[3]]] })
+
+      assert_equal({ "deeplyNested" => nil }, result["data"])
+      assert_equal [["deeplyNested", 1, 0, 0]], result["errors"].map { |error| error["path"] }
+    end
+  end
+
   describe "when a non-null field returns null" do
     it "nulls out the parent selection" do
       query_string = %|{ cow { name cantBeNullButIs } }|

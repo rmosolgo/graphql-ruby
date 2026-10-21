@@ -582,7 +582,11 @@ module GraphQL
               set_result(selection_result, result_name, nil, false, is_non_null) do
                 # When this comes from a list item, use the parent object:
                 is_from_array = selection_result.is_a?(GraphQLResultArray)
-                parent_type = is_from_array ? selection_result.graphql_parent.graphql_result_type : selection_result.graphql_result_type
+                parent_result = selection_result
+                while parent_result.is_a?(GraphQLResultArray)
+                  parent_result = parent_result.graphql_parent
+                end
+                parent_type = parent_result.graphql_result_type
                 # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
                 err = parent_type.const_get(:InvalidNullError).new(parent_type, field, ast_node, is_from_array: is_from_array)
                 schema.type_error(err, context)
