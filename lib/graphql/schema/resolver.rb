@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/schema/resolver/has_payload_type"
 
 module GraphQL
@@ -553,6 +553,7 @@ module GraphQL
         def argument(*args, **kwargs, &block)
           # Use `from_resolver: true` to short-circuit the InputObject's own `loads:` implementation
           # so that we can support `#load_{x}` methods below.
+          args = args #: untyped
           super(*args, from_resolver: true, **kwargs)
         end
 
