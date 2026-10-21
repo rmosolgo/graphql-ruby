@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 require "graphql/dataloader/null_dataloader"
 require "graphql/dataloader/request"
@@ -55,7 +55,7 @@ module GraphQL
     # then run all enqueued jobs and return the result of the block.
     def self.with_dataloading(&block)
       dataloader = self.new
-      result = nil
+      result = nil #: untyped
       dataloader.append_job {
         result = block.call(dataloader)
       }
@@ -136,7 +136,8 @@ module GraphQL
     #
     # - `GraphQL::Dataloader::Source` — An instance of [source_class](rdoc-ref:source_class), initialized with `self, *batch_parameters`, and cached for the lifetime of this [Multiplex](rdoc-ref:Multiplex).
     if (RUBY_ENGINE == "ruby" && RUBY_VERSION < "3") || RUBY_ENGINE == "truffleruby" # truffle-ruby wasn't doing well with the implementation below
-      def with(source_class, *batch_args)
+      # `define_method` so that Sorbet doesn't see this as a conflicting definition of `#with`
+      define_method(:with) do |source_class, *batch_args|
         batch_key = source_class.batch_key_for(*batch_args)
         @source_cache[source_class][batch_key] ||= begin
           source = source_class.new(*batch_args)
@@ -219,7 +220,7 @@ module GraphQL
       end
 
       @pending_jobs = []
-      res = nil
+      res = nil #: untyped
       # Make sure the block is inside a Fiber, so it can `Fiber.yield`
       append_job {
         res = yield
@@ -229,7 +230,8 @@ module GraphQL
     ensure
       @pending_jobs = prev_queue
       @lazies_at_depth = prev_lazies_at_depth
-      prev_pending_keys.each do |source_instance, pending|
+      prev_pending_keys #: as !nil
+        .each do |source_instance, pending|
         pending.each do |key, value|
           next if source_instance.results.key?(key)
 
@@ -252,7 +254,7 @@ module GraphQL
       next_job_fibers = []
       source_fibers = []
       next_source_fibers = []
-      first_pass = true
+      first_pass = true #: bool
       manager = spawn_fiber do
         trace&.begin_dataloader(self)
         while first_pass || !job_fibers.empty?
@@ -364,11 +366,11 @@ module GraphQL
       join_queues(job_fibers, next_job_fibers)
 
       while (!source_fibers.empty? || !@pending_sources.empty?)
-        while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber(trace)))
-          if f.alive?
-            finished = run_fiber(f)
-            if !finished
-              next_source_fibers << f
+        while (source_f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber(trace)))
+          if source_f.alive?
+            source_finished = run_fiber(source_f)
+            if !source_finished
+              next_source_fibers << source_f
             end
           end
         end
