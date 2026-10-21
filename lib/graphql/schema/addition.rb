@@ -14,7 +14,8 @@ module GraphQL
         @possible_types_sets = {}
         @types = {}
         @union_memberships = {}
-        @references = Hash.new { |h, k| h[k] = Set.new }
+        # Values are Hashes used as sets (`{ referencer => true }`)
+        @references = {}
         @arguments_with_default_values = []
         add_type_and_traverse(new_types)
       end
@@ -22,7 +23,8 @@ module GraphQL
       private
 
       def references_to(thing, from:)
-        @references[thing].add(from)
+        refs = @references[thing] ||= {}
+        refs[from] = true
       end
 
       def get_type(name)
