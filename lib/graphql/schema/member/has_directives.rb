@@ -69,7 +69,13 @@ module GraphQL
             case schema_member
             when Class
               inherited_directives = if schema_member.superclass.respond_to?(directives_method)
-                get_directives(schema_member.superclass, schema_member.superclass.public_send(directives_method), directives_method)
+                superclass_directives = schema_member.superclass.public_send(directives_method)
+                if superclass_directives.empty?
+                  # `superclass_directives` includes inherited ones, so there's nothing to merge
+                  GraphQL::EmptyObjects::EMPTY_ARRAY
+                else
+                  get_directives(schema_member.superclass, superclass_directives, directives_method)
+                end
               else
                 GraphQL::EmptyObjects::EMPTY_ARRAY
               end
