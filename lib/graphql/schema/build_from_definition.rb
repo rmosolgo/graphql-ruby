@@ -326,7 +326,7 @@ module GraphQL
         def build_directives(definition, ast_node, type_resolver)
           return if ast_node.directives.empty?
 
-          if ast_node.directives.all? { |dir_node| dir_node.name == "deprecated" || type_resolver.directive_class(dir_node.name)&.all_argument_definitions&.empty? }
+          if ast_node.directives.all? { |dir_node| dir_node.name == "deprecated" || type_resolver.directive_without_arguments?(dir_node.name) }
             apply_directives(definition, ast_node, type_resolver)
           else
             type_resolver.queued_directives << [definition, ast_node, type_resolver]
@@ -628,6 +628,17 @@ module GraphQL
           # The already-defined directive class named `name`, or `nil` if there isn't one yet
           def directive_class(name)
             @directives[name]
+          end
+
+          def directive_without_arguments?(name)
+            @directives_without_arguments ||= {}
+            if @directives_without_arguments.key?(name)
+              @directives_without_arguments[name]
+            else
+              dir_class = @directives[name]
+              # Don't cache unknown directives, they might be defined later
+              dir_class ? (@directives_without_arguments[name] = dir_class.all_argument_definitions.empty?) : false
+            end
           end
 
           def call(ast_node)
