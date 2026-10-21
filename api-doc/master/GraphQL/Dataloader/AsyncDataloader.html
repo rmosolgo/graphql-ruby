@@ -989,16 +989,16 @@
 
 
           <div class="method-source-code" id="run-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/async_dataloader.rb, line 242</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/async_dataloader.rb, line 243</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run</span>(<span class="ruby-value">trace_query_lazy:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">trace</span> = <span class="ruby-constant">Fiber</span>[<span class="ruby-value">:</span><span class="ruby-value">__graphql_current_multiplex</span>]&amp;.<span class="ruby-identifier">current_trace</span>
   <span class="ruby-identifier">run</span> = <span class="ruby-ivar">@pending_run</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">current_task_run</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">raise</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">No available Run, GraphQL-Ruby internal bug</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-ivar">@pending_run</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-identifier">run</span>.<span class="ruby-identifier">trace</span> = <span class="ruby-identifier">trace</span>
-  <span class="ruby-identifier">first_pass</span> = <span class="ruby-keyword">true</span>
+  <span class="ruby-identifier">first_pass</span> = <span class="ruby-keyword">true</span> <span class="ruby-comment">#: bool</span>
   <span class="ruby-identifier">trace</span>&amp;.<span class="ruby-identifier">begin_dataloader</span>(<span class="ruby-keyword">self</span>)
   <span class="ruby-identifier">fiber_vars</span> = <span class="ruby-identifier">get_fiber_variables</span>
-  <span class="ruby-identifier">raised_error</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">raised_error</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: StandardError?</span>
   <span class="ruby-identifier">jobs</span> = <span class="ruby-identifier">run</span>.<span class="ruby-identifier">jobs</span>
   <span class="ruby-constant">Sync</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">_maybe_new_task</span><span class="ruby-operator">|</span>
     <span class="ruby-comment"># Make sure there&#39;s a new task instance to hold `.graphql_...` state:</span>
@@ -1087,7 +1087,7 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/dataloader/async_dataloader.rb, line 207</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_isolated</span>
   <span class="ruby-identifier">previous_run</span> = <span class="ruby-identifier">current_task_run</span>
-  <span class="ruby-identifier">prev_pending_keys</span> = {}
+  <span class="ruby-identifier">prev_pending_keys</span> = {} <span class="ruby-comment">#: Hash[GraphQL::Dataloader::Source, Hash[untyped, untyped]]</span>
   <span class="ruby-comment"># Clear pending loads but keep already-cached records</span>
   <span class="ruby-comment"># in case they are useful to the given block.</span>
   <span class="ruby-ivar">@source_cache</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">source_class</span>, <span class="ruby-identifier">batched_sources</span><span class="ruby-operator">|</span>
@@ -1099,7 +1099,7 @@
     <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">end</span>
 
-  <span class="ruby-identifier">res</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">res</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
   <span class="ruby-identifier">create_pending_run</span>
   <span class="ruby-ivar">@pending_run</span>.<span class="ruby-identifier">jobs</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-operator">-&gt;</span> { <span class="ruby-identifier">res</span> = <span class="ruby-keyword">yield</span> }
   <span class="ruby-identifier">run</span>
@@ -1110,6 +1110,7 @@
     <span class="ruby-comment"># clear the one created in #run:</span>
     <span class="ruby-ivar">@pending_run</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">prev_pending_keys</span> = <span class="ruby-identifier">prev_pending_keys</span> <span class="ruby-comment">#: as !nil</span>
   <span class="ruby-identifier">prev_pending_keys</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">source_instance</span>, <span class="ruby-identifier">pending</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">pending</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span><span class="ruby-operator">|</span>
       <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">source_instance</span>.<span class="ruby-identifier">results</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>)

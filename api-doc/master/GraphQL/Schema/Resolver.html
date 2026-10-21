@@ -950,6 +950,7 @@
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-comment"># Use `from_resolver: true` to short-circuit the InputObject&#39;s own `loads:` implementation</span>
   <span class="ruby-comment"># so that we can support `#load_{x}` methods below.</span>
+  <span class="ruby-identifier">args</span> = <span class="ruby-identifier">args</span> <span class="ruby-comment">#: untyped</span>
   <span class="ruby-keyword">super</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-value">from_resolver</span><span class="ruby-value">:</span> <span class="ruby-keyword">true</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -1298,7 +1299,7 @@
 
 
           <div class="method-source-code" id="extension-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver.rb, line 568</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver.rb, line 569</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">extension</span>(<span class="ruby-identifier">extension</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">options</span>)
   <span class="ruby-ivar">@own_extensions</span> ||= []
   <span class="ruby-ivar">@own_extensions</span> <span class="ruby-operator">&lt;&lt;</span> {<span class="ruby-identifier">extension</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">options</span>}
@@ -1622,7 +1623,7 @@
 
 
           <div class="method-source-code" id="inherited-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver.rb, line 592</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver.rb, line 593</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">description</span>(<span class="ruby-identifier">description</span>)
   <span class="ruby-keyword">super</span>

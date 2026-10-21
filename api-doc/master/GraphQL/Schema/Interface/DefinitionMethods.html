@@ -619,9 +619,9 @@
     <span class="ruby-identifier">defn_methods_module</span> = <span class="ruby-constant">Module</span>.<span class="ruby-identifier">new</span>
     <span class="ruby-ivar">@_definition_methods</span> = <span class="ruby-identifier">defn_methods_module</span>
     <span class="ruby-identifier">const_set</span>(<span class="ruby-value">:</span><span class="ruby-value">DefinitionMethods</span>, <span class="ruby-identifier">defn_methods_module</span>)
-    <span class="ruby-identifier">extend</span>(<span class="ruby-keyword">self</span><span class="ruby-operator">::</span><span class="ruby-constant">DefinitionMethods</span>)
+    <span class="ruby-identifier">extend</span>(<span class="ruby-identifier">defn_methods_module</span>)
   <span class="ruby-keyword">end</span>
-  <span class="ruby-keyword">self</span><span class="ruby-operator">::</span><span class="ruby-constant">DefinitionMethods</span>.<span class="ruby-identifier">module_exec</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">DefinitionMethods</span>).<span class="ruby-identifier">module_exec</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -681,7 +681,7 @@
     <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">type_membership_class</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">type_membership_class</span>)
     <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">ancestors</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">ancestor</span><span class="ruby-operator">|</span>
       <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">const_defined?</span>(<span class="ruby-value">:</span><span class="ruby-value">DefinitionMethods</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">child_class</span>
-        <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-identifier">ancestor</span><span class="ruby-operator">::</span><span class="ruby-constant">DefinitionMethods</span>)
+        <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">DefinitionMethods</span>))
       <span class="ruby-keyword">end</span>
     <span class="ruby-keyword">end</span>
 
@@ -694,9 +694,11 @@
     <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">child_class</span> <span class="ruby-operator">&lt;</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Object</span>
     <span class="ruby-comment"># This is being included into an object type, make sure it&#39;s using `implements(...)`</span>
-    <span class="ruby-identifier">backtrace_line</span> = <span class="ruby-identifier">caller_locations</span>(<span class="ruby-value">0</span>, <span class="ruby-value">10</span>).<span class="ruby-identifier">find</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">location</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">locations</span> = <span class="ruby-identifier">caller_locations</span>(<span class="ruby-value">0</span>, <span class="ruby-value">10</span>) <span class="ruby-comment">#: as !nil</span>
+    <span class="ruby-identifier">backtrace_line</span> = <span class="ruby-identifier">locations</span>.<span class="ruby-identifier">find</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">location</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">location_path</span> = <span class="ruby-identifier">location</span>.<span class="ruby-identifier">path</span> <span class="ruby-comment">#: as !nil</span>
       <span class="ruby-identifier">location</span>.<span class="ruby-identifier">base_label</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;</span><span class="ruby-string">implements</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">&amp;&amp;</span>
-        <span class="ruby-identifier">location</span>.<span class="ruby-identifier">path</span>.<span class="ruby-identifier">end_with?</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">schema/member/has_interfaces.rb</span><span class="ruby-string">&quot;</span>)
+        <span class="ruby-identifier">location_path</span>.<span class="ruby-identifier">end_with?</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">schema/member/has_interfaces.rb</span><span class="ruby-string">&quot;</span>)
     <span class="ruby-keyword">end</span>
 
     <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">backtrace_line</span>
@@ -705,7 +707,7 @@
 
     <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">ancestors</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">ancestor</span><span class="ruby-operator">|</span>
       <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">child_class</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Interface</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">const_defined?</span>(<span class="ruby-value">:</span><span class="ruby-value">ResolverMethods</span>, <span class="ruby-keyword">false</span>)
-        <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-identifier">ancestor</span><span class="ruby-operator">::</span><span class="ruby-constant">ResolverMethods</span>)
+        <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">ResolverMethods</span>))
       <span class="ruby-keyword">end</span>
     <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">end</span>
@@ -763,7 +765,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 153</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 155</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">INTERFACE</span>
 <span class="ruby-keyword">end</span></pre>
@@ -816,7 +818,7 @@
 
 
           <div class="method-source-code" id="orphan_types-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 133</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/interface.rb, line 135</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">orphan_types</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">types</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">types</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-ivar">@orphan_types</span> ||= []
@@ -905,9 +907,9 @@
     <span class="ruby-identifier">resolver_methods_module</span> = <span class="ruby-constant">Module</span>.<span class="ruby-identifier">new</span>
     <span class="ruby-ivar">@_resolver_methods</span> = <span class="ruby-identifier">resolver_methods_module</span>
     <span class="ruby-identifier">const_set</span>(<span class="ruby-value">:</span><span class="ruby-value">ResolverMethods</span>, <span class="ruby-identifier">resolver_methods_module</span>)
-    <span class="ruby-identifier">extend</span>(<span class="ruby-keyword">self</span><span class="ruby-operator">::</span><span class="ruby-constant">ResolverMethods</span>)
+    <span class="ruby-identifier">extend</span>(<span class="ruby-identifier">resolver_methods_module</span>)
   <span class="ruby-keyword">end</span>
-  <span class="ruby-keyword">self</span><span class="ruby-operator">::</span><span class="ruby-constant">ResolverMethods</span>.<span class="ruby-identifier">module_exec</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">ResolverMethods</span>).<span class="ruby-identifier">module_exec</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
 

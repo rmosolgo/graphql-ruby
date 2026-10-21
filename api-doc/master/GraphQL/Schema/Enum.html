@@ -737,7 +737,7 @@
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">enum_value</span> <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">was_authed</span> = <span class="ruby-identifier">enum_value</span>.<span class="ruby-identifier">authorized?</span>(<span class="ruby-identifier">ctx</span>))
     <span class="ruby-identifier">enum_value</span>.<span class="ruby-identifier">graphql_name</span>
   <span class="ruby-keyword">else</span>
-    <span class="ruby-identifier">raise</span> <span class="ruby-keyword">self</span><span class="ruby-operator">::</span><span class="ruby-constant">UnresolvedValueError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">enum</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-value">value</span><span class="ruby-value">:</span> <span class="ruby-identifier">value</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">ctx</span>, <span class="ruby-value">authorized</span><span class="ruby-value">:</span> <span class="ruby-identifier">was_authed</span>)
+    <span class="ruby-identifier">raise</span> <span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">UnresolvedValueError</span>).<span class="ruby-identifier">new</span>(<span class="ruby-value">enum</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-value">value</span><span class="ruby-value">:</span> <span class="ruby-identifier">value</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">ctx</span>, <span class="ruby-value">authorized</span><span class="ruby-value">:</span> <span class="ruby-identifier">was_authed</span>)
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -874,7 +874,7 @@
   <span class="ruby-identifier">visible_values</span> = []
   <span class="ruby-identifier">types</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">types_from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">own_values</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span>, <span class="ruby-identifier">values_entry</span><span class="ruby-operator">|</span>
-    <span class="ruby-identifier">visible_value</span> = <span class="ruby-keyword">nil</span>
+    <span class="ruby-identifier">visible_value</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: GraphQL::Schema::EnumValue?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">values_entry</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>)
       <span class="ruby-identifier">values_entry</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span>
         <span class="ruby-keyword">if</span> <span class="ruby-identifier">types</span>.<span class="ruby-identifier">visible_enum_value?</span>(<span class="ruby-identifier">v</span>, <span class="ruby-identifier">context</span>)

@@ -535,7 +535,8 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 176</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_argument_definitions</span>
   <span class="ruby-identifier">all_defns</span> = {}
-  <span class="ruby-identifier">ancestors</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">ancestor</span><span class="ruby-operator">|</span>
+  <span class="ruby-identifier">all_ancestors</span> = <span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
+  <span class="ruby-identifier">all_ancestors</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">ancestor</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">own_arguments</span>)
       <span class="ruby-identifier">all_defns</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">own_arguments</span>)
     <span class="ruby-keyword">end</span>
@@ -712,11 +713,12 @@
 
 
           <div class="method-source-code" id="get_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 189</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 190</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_argument</span>(<span class="ruby-identifier">argument_name</span>, <span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">skip_visible</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">types</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Visibility</span><span class="ruby-operator">::</span><span class="ruby-constant">Profile</span>)
-  <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">ancestors</span>
+  <span class="ruby-identifier">all_ancestors</span> = <span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
+  <span class="ruby-keyword">for</span> <span class="ruby-identifier">ancestor</span> <span class="ruby-keyword">in</span> <span class="ruby-identifier">all_ancestors</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">own_arguments</span>) <span class="ruby-operator">&amp;&amp;</span>
       (<span class="ruby-identifier">a</span> = <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">own_arguments</span>[<span class="ruby-identifier">argument_name</span>]) <span class="ruby-operator">&amp;&amp;</span>
       (<span class="ruby-identifier">skip_visible</span> <span class="ruby-operator">||</span> (<span class="ruby-identifier">a</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">visible_entry?</span>(<span class="ruby-value">:</span><span class="ruby-value">visible_argument?</span>, <span class="ruby-identifier">a</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">warden</span>)))
