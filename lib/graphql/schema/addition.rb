@@ -11,6 +11,7 @@ module GraphQL
         @own_types = own_types
         @directives = Set.new
         @possible_types = {}
+        @possible_types_sets = {}
         @types = {}
         @union_memberships = {}
         @references = Hash.new { |h, k| h[k] = Set.new }
@@ -98,6 +99,15 @@ module GraphQL
         nil
       end
 
+      # The Set makes this fast for interfaces with many possible types. The Array keeps their order.
+      def add_possible_type(interface_type, object_type)
+        types_set = @possible_types_sets[interface_type] ||= Set.new
+        if types_set.add?(object_type)
+          pt = @possible_types[interface_type] ||= []
+          pt << object_type
+        end
+      end
+
       def update_type_owner(owner, type)
         case owner
         when Module
@@ -123,9 +133,8 @@ module GraphQL
             end
             implementing_type.implements(*new_interfaces)
             new_interfaces.each do |int|
-              pt = @possible_types[int] ||= []
-              if !pt.include?(owner) && owner.is_a?(Class)
-                pt << owner
+              if owner.is_a?(Class)
+                add_possible_type(int, owner)
               end
               int.interfaces.each do |indirect_int|
                 if indirect_int.is_a?(LateBoundType)
@@ -134,10 +143,7 @@ module GraphQL
                   end
                 elsif owner.is_a?(Class)
                   # `implements` added this one, too, because `int` implements it
-                  indirect_pt = @possible_types[indirect_int] ||= []
-                  if !indirect_pt.include?(owner)
-                    indirect_pt << owner
-                  end
+                  add_possible_type(indirect_int, owner)
                 end
               end
             end
@@ -278,10 +284,7 @@ module GraphQL
                 interface_type = interface_type_membership.abstract_type
                 # We can get these now; we'll have to get late-bound types later
                 if interface_type.is_a?(Module) && type.is_a?(Class)
-                  implementers = @possible_types[interface_type] ||= []
-                  if !implementers.include?(type)
-                    implementers << type
-                  end
+                  add_possible_type(interface_type, type)
                 end
               when String, Schema::LateBoundType
                 interface_type = interface_type_membership
