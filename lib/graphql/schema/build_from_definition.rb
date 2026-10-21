@@ -376,7 +376,7 @@ module GraphQL
         end
 
         def apply_directives(definition, ast_node, type_resolver)
-          is_schema = definition.respond_to?(:schema_directive)
+          is_schema = Class === definition && GraphQL::Schema >= definition
           ast_node.directives.each do |dir_node|
             # This is handled using `deprecation_reason`
             next if dir_node.name == "deprecated"
@@ -384,7 +384,7 @@ module GraphQL
             if dir_class.nil?
               raise ArgumentError, "No definition for @#{dir_node.name} #{ast_node.respond_to?(:name) ? "on #{ast_node.name} " : ""}at #{ast_node.line}:#{ast_node.col}"
             end
-            options = args_to_kwargs(dir_class, dir_node)
+            options = args_to_kwargs(dir_class, dir_node, type_resolver)
             if is_schema
               definition.schema_directive(dir_class, **options)
             else
@@ -393,16 +393,16 @@ module GraphQL
           end
         end
 
-        def args_to_kwargs(arg_owner, node)
+        def args_to_kwargs(arg_owner, node, type_resolver)
           if node.respond_to?(:arguments)
             kwargs = {}
             node.arguments.each do |arg_node|
-              arg_defn = arg_owner.get_argument(arg_node.name)
-              kwargs[arg_defn.keyword] = args_to_kwargs(arg_defn.type.unwrap, arg_node.value)
+              arg_defn = type_resolver.get_argument(arg_owner, arg_node.name)
+              kwargs[arg_defn.keyword] = args_to_kwargs(arg_defn.type.unwrap, arg_node.value, type_resolver)
             end
             kwargs
           elsif node.is_a?(Array)
-            node.map { |n| args_to_kwargs(arg_owner, n) }
+            node.map { |n| args_to_kwargs(arg_owner, n, type_resolver) }
           elsif node.is_a?(Language::Nodes::Enum)
             node.name
           else
@@ -675,6 +675,18 @@ module GraphQL
 
           # Directive applications waiting for {Builder#apply_queued_directives}
           attr_reader :queued_directives
+
+          # Like `owner.get_argument(argument_name)`, but cached. Directives are applied after types are built,
+          # so their arguments don't change while this cache is used.
+          def get_argument(owner, argument_name)
+            @arguments_by_owner ||= {}.compare_by_identity
+            owner_arguments = @arguments_by_owner[owner] ||= {}
+            if owner_arguments.key?(argument_name)
+              owner_arguments[argument_name]
+            else
+              owner_arguments[argument_name] = owner.get_argument(argument_name)
+            end
+          end
 
           def field_resolve_methods
             @field_resolve_methods ||= FieldResolveMethods.new
