@@ -39,11 +39,11 @@ jobs:
         env:
           BUILD_TWICE: ${{ github.event_name != 'pull_request' || steps.tooling.outputs.changed == 'true' }}
         run: |
-          tasks="docs:check"
+          tasks=(docs:check)
           if [ "$BUILD_TWICE" = "true" ]; then
-            tasks="$tasks docs:build_twice"
+            tasks+=(docs:build_twice)
           fi
-          bundle exec rake $tasks
+          bundle exec rake "${tasks[@]}"
       - name: Check gem installation documentation
         run: bundle exec ruby tool/docs/gem_install_check.rb
       - name: Upload RDoc artifact
