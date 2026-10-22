@@ -44,6 +44,16 @@ if defined?(GraphQL::CParser::Lexer)
       assert_equal GraphQL.scan_with_ruby("1e400"), tokens
     end
 
+    it "ends block strings like the Ruby lexer when one quote precedes the closing quotes" do
+      str = '{ f(x: """a"""") }'
+      assert_raises(GraphQL::ParseError) { GraphQL::Language::Parser.parse(str) }
+      assert_raises(GraphQL::ParseError) { GraphQL::CParser.parse(str) }
+
+      str = '{ f(x: """a""""") }'
+      assert_equal 'a""', GraphQL::Language::Parser.parse(str).definitions.first.selections.first.arguments.first.value
+      assert_equal 'a""', GraphQL::CParser.parse(str).definitions.first.selections.first.arguments.first.value
+    end
+
     it "makes frozen strings when using SchemaParser" do
       str = "type Query { f1: Int }"
       schema_ast = GraphQL::CParser::SchemaParser.new(str, nil, GraphQL::Tracing::NullTrace, nil).result
