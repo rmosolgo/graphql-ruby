@@ -1819,6 +1819,8 @@ type ReachableType implements Node {
 
     it "Sends normal ruby values to schema coercion" do
       app = JsonTypeApplication.new
+      # Legacy execution coerces once during validation and again at runtime
+      expected_nils = TESTING_EXEC_NEXT ? [nil] : [nil, nil]
 
       res_1 = app.execute_query(<<~EOS, arg: [3, "abc", nil, 7])
         query WithArg($arg: JsonValue) {
@@ -1827,7 +1829,7 @@ type ReachableType implements Node {
       EOS
 
       assert_equal([3, "abc", nil, 7], res_1["data"]["echoJsonValue"])
-      assert_equal [nil, nil], res_1.context[:nils]
+      assert_equal expected_nils, res_1.context[:nils]
 
       res_2 = app.execute_query(<<~EOS)
         query {
@@ -1835,7 +1837,7 @@ type ReachableType implements Node {
         }
       EOS
       assert_equal([3, "abc", nil, 7], res_2["data"]["echoJsonValue"])
-      assert_equal [nil, nil], res_2.context[:nils]
+      assert_equal expected_nils, res_2.context[:nils]
 
       res_3 = app.execute_query(<<~EOS, arg: { "abc" => nil, "def" => 7 })
       query WithArg($arg: JsonValue) {
@@ -1844,7 +1846,7 @@ type ReachableType implements Node {
       EOS
 
       assert_equal({ "abc" => nil, "def" => 7 }, res_3["data"]["echoJsonValue"])
-      assert_equal [nil, nil], res_3.context[:nils]
+      assert_equal expected_nils, res_3.context[:nils]
 
       res_4 = app.execute_query(<<~EOS)
       query {
@@ -1853,7 +1855,7 @@ type ReachableType implements Node {
       EOS
 
       assert_equal({ "abc" => nil, "def" => 7, "ghi"=>{"jkl"=>nil} }, res_4["data"]["echoJsonValue"])
-      assert_equal [nil, nil], res_4.context[:nils]
+      assert_equal expected_nils, res_4.context[:nils]
     end
   end
 

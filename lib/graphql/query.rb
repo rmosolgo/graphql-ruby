@@ -47,7 +47,6 @@ module GraphQL
     autoload :NullContext, "graphql/query/null_context"
     autoload :Partial, "graphql/query/partial"
     autoload :Result, "graphql/query/result"
-    autoload :Variables, "graphql/query/variables"
     autoload :InputValidationResult, "graphql/query/input_validation_result"
     autoload :VariableValidationError, "graphql/query/variable_validation_error"
     autoload :ValidationPipeline, "graphql/query/validation_pipeline"
@@ -236,6 +235,7 @@ module GraphQL
       @root_value = root_value
       @fragments = nil
       @operations = nil
+      @input_values = nil
       @finalizers = @top_level_finalizers = nil
       @validate = validate
       self.static_validator = static_validator if static_validator
@@ -332,6 +332,10 @@ module GraphQL
       end
     end
 
+    def input_values # :nodoc:
+      @input_values ||= Execution::InputValues.new(self)
+    end
+
     def result_values=(result_hash) # :nodoc:
       if @executed
         raise "Invariant: Can't reassign result"
@@ -424,20 +428,12 @@ module GraphQL
     #
     # **Returns**
     #
-    # - `GraphQL::Query::Variables` — Variables to apply to this query
+    # - `GraphQL::Execution::VariableValues` — Variables to apply to this query
     #
     # :call-seq:
-    #   variables() -> GraphQL::Query::Variables
+    #   variables() -> GraphQL::Execution::VariableValues
     def variables
-      @variables ||= begin
-        with_prepared_ast {
-          GraphQL::Query::Variables.new(
-            @context,
-            @ast_variables,
-            @provided_variables,
-          )
-        }
-      end
+      @variables ||= with_prepared_ast { input_values.variable_values }
     end
 
     # A version of the given query string, with:

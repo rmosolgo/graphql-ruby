@@ -210,7 +210,6 @@ describe GraphQL::Schema::List do
 
     it "raises only 1 error with max_validation + 1 problems" do
       res = MaxValidationSchema.execute("query($ids: [Int!]!) { items(ids: $ids) }", variables: { ids: ["1", "2", "3", "4"] })
-
       assert_equal 1, res["errors"].count
       assert_equal 3, res["errors"][0]["extensions"]["problems"].count
     end
