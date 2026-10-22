@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/schema/build_from_definition/resolve_map"
 
 module GraphQL
@@ -7,18 +7,18 @@ module GraphQL
     module BuildFromDefinition
       class << self
         # See [Schema.from_definition](rdoc-ref:Schema.from_definition)
-        def from_definition(schema_superclass, definition_string, parser: GraphQL.default_parser, **kwargs)
+        def from_definition(schema_superclass, definition_string, default_resolve:, parser: GraphQL.default_parser, using: {}, base_types: {}, relay: false)
           if defined?(parser::SchemaParser)
-            parser = parser::SchemaParser
+            parser = parser.const_get(:SchemaParser)
           end
-          from_document(schema_superclass, parser.parse(definition_string), **kwargs)
+          from_document(schema_superclass, parser.parse(definition_string), default_resolve: default_resolve, using: using, base_types: base_types, relay: relay)
         end
 
-        def from_definition_path(schema_superclass, definition_path, parser: GraphQL.default_parser, **kwargs)
+        def from_definition_path(schema_superclass, definition_path, default_resolve:, parser: GraphQL.default_parser, using: {}, base_types: {}, relay: false)
           if defined?(parser::SchemaParser)
-            parser = parser::SchemaParser
+            parser = parser.const_get(:SchemaParser)
           end
-          from_document(schema_superclass, parser.parse_file(definition_path), **kwargs)
+          from_document(schema_superclass, parser.parse_file(definition_path), default_resolve: default_resolve, using: using, base_types: base_types, relay: relay)
         end
 
         def from_document(schema_superclass, document, default_resolve:, using: {}, base_types: {}, relay: false)
@@ -48,11 +48,12 @@ module GraphQL
             default_resolve = ResolveMap.new(default_resolve)
           end
 
-          schema_defns = document.definitions.select { |d| d.is_a?(GraphQL::Language::Nodes::SchemaDefinition) }
+          definitions = document.definitions #: Array[untyped]
+          schema_defns = definitions.select { |d| d.is_a?(GraphQL::Language::Nodes::SchemaDefinition) }
           if schema_defns.size > 1
             raise InvalidDocumentError.new('Must provide only one schema definition.')
           end
-          schema_definition = schema_defns.first
+          schema_definition = schema_defns.first #: GraphQL::Language::Nodes::SchemaDefinition?
           types = {}
           directives = schema_superclass.directives.dup
           # Directive applications are queued while types are built, then applied once every type is complete,
@@ -65,7 +66,7 @@ module GraphQL
           directive_type_resolver = nil
           directive_type_resolver = TypeResolver.new(types, directives, queued_directives) { |type_name|
             types[type_name] ||= begin
-              defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
+              defn = definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
               if defn
                 build_definition_from_node(defn, directive_type_resolver, default_resolve, base_types)
               elsif (built_in_defn = GraphQL::Schema::BUILT_IN_TYPES[type_name])
@@ -77,7 +78,7 @@ module GraphQL
           }
 
           directives.merge!(GraphQL::Schema.default_directives)
-          document.definitions.each do |definition|
+          definitions.each do |definition|
             if definition.is_a?(GraphQL::Language::Nodes::DirectiveDefinition)
               directives[definition.name] = build_directive(definition, directive_type_resolver)
             end
@@ -86,9 +87,9 @@ module GraphQL
           # In case any directives referenced built-in types for their arguments:
           replace_late_bound_types_with_built_in(types)
 
-          schema_extensions = nil
-          definitions_by_name = nil
-          document.definitions.each do |definition|
+          schema_extensions = nil #: Array[untyped]?
+          definitions_by_name = nil #: Hash[String, untyped]?
+          definitions.each do |definition|
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition, GraphQL::Language::Nodes::DirectiveDefinition
               nil # already handled
@@ -108,10 +109,14 @@ module GraphQL
                 if definition.is_a?(GraphQL::Language::Nodes::ObjectTypeDefinition) || definition.is_a?(Language::Nodes::InterfaceTypeDefinition)
                   interface_names = definition.interfaces.map(&:name)
                   if !interface_names.empty?
-                    definitions_by_name ||= document.definitions.each_with_object({}) do |d, by_name|
+                    definitions_by_name ||= definitions.each_with_object({}) do |d, by_name|
                       by_name[d.name] ||= d if d.respond_to?(:name)
                     end
-                    transitive_names = interface_names.map { |n| definitions_by_name[n]&.interfaces&.map(&:name) }
+                    transitive_names = interface_names.map { |n|
+                      defn = definitions_by_name[n]
+                      # Other kinds of types don't have `interfaces`; `implements` raises a better error for them later.
+                      defn.is_a?(Language::Nodes::InterfaceTypeDefinition) ? defn.interfaces.map(&:name) : nil
+                    }
                     transitive_names.flatten!
                     transitive_names.compact!
                   else
@@ -255,7 +260,7 @@ module GraphQL
               attr_accessor :definition_default_resolve
             end
 
-            self.definition_default_resolve = default_resolve
+            @definition_default_resolve = default_resolve
 
             def definition_default_resolve
               self.class.definition_default_resolve
