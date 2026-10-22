@@ -2363,6 +2363,66 @@ module GraphQL
         legacy_invalid_empty_selections_on_union(query)
       end
 
+      # This setting controls how GraphQL-Ruby handles variable usages which the GraphQL spec doesn't allow,
+      # but which previous versions of GraphQL-Ruby didn't reject:
+      #
+      # - A variable in a fragment, when the fragment comes before the operation, or when another operation uses the fragment
+      # - A nullable variable with a `= null` default value, in a non-null position
+      # - A variable in a nested list value, for example `[[$var]]`
+      #
+      # When set to `false`, GraphQL-Ruby will reject those queries with a validation error (as per the GraphQL spec).
+      #
+      # When set to `true`, GraphQL-Ruby will call [.legacy_invalid_variable_usages](rdoc-ref:.legacy_invalid_variable_usages) when the scenario is encountered.
+      #
+      # When not configured, GraphQL-Ruby allows those queries and logs a warning.
+      #
+      # **Parameters**
+      #
+      # - `new_value` (`Boolean`) — `true` permits the legacy behavior, `false` rejects it.
+      #
+      # **Returns**
+      #
+      # - `true, false, nil`
+      #
+      # :call-seq:
+      #   allow_legacy_invalid_variable_usages(bool new_value) -> true | false | nil
+      def allow_legacy_invalid_variable_usages(new_value = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_value)
+          if defined?(@allow_legacy_invalid_variable_usages)
+            @allow_legacy_invalid_variable_usages
+          else
+            find_inherited_value(:allow_legacy_invalid_variable_usages)
+          end
+        else
+          @allow_legacy_invalid_variable_usages = new_value
+        end
+      end
+
+      # This method is called when the query uses a variable in a way which the GraphQL spec doesn't allow,
+      # but which previous versions of GraphQL-Ruby allowed. See [.allow_legacy_invalid_variable_usages](rdoc-ref:.allow_legacy_invalid_variable_usages).
+      #
+      # You should implement this method to log the violation so that you can contact clients
+      # and notify them about changing their queries. Then return a suitable value to
+      # tell GraphQL-Ruby how to continue.
+      #
+      # **Parameters**
+      #
+      # - `query` (`GraphQL::Query`)
+      # - `variable_definition` (`GraphQL::Language::Nodes::VariableDefinition`) — The definition of the variable
+      # - `argument` (`GraphQL::Language::Nodes::Argument`) — The argument which uses the variable. You might call `.line` and `.col` for custom error reporting.
+      #
+      # **Returns**
+      #
+      # - `:return_validation_error` — Let GraphQL-Ruby return the (new) normal validation error for this query
+      # - `String` — A validation error to return for this query
+      # - `nil` — Don't send the client an error, continue the legacy behavior (allow this query to execute)
+      #
+      # :call-seq:
+      #   legacy_invalid_variable_usages(GraphQL::Query query, GraphQL::Language::Nodes::VariableDefinition variable_definition, GraphQL::Language::Nodes::Argument argument) -> :return_validation_error | String | nil
+      def legacy_invalid_variable_usages(query, variable_definition, argument)
+        raise "Implement #{self}.legacy_invalid_variable_usages to handle this invalid variable usage"
+      end
+
       # This setting controls how GraphQL-Ruby handles overlapping selections on scalar types when the types
       # don't match.
       #
@@ -2418,6 +2478,66 @@ module GraphQL
       #   legacy_invalid_return_type_conflicts(GraphQL::Query query, Module type1, Module type2, GraphQL::Language::Nodes::Field node1, GraphQL::Language::Nodes::Field node2) -> :return_validation_error | String | nil
       def legacy_invalid_return_type_conflicts(query, type1, type2, node1, node2)
         raise "Implement #{self}.legacy_invalid_return_type_conflicts to handle this invalid selection"
+      end
+
+      # This setting controls how GraphQL-Ruby handles fields with the same response name but different names or arguments,
+      # when previous versions of GraphQL-Ruby treated them as mutually exclusive, but the GraphQL spec doesn't.
+      # The spec treats fields as mutually exclusive only when their parent types are different object types. For example:
+      #
+      # - `... on Product { ...ProductFields options(first: 2) { id } }`, when `ProductFields` also selects `options` on `Product`
+      # - `... on Feline { volume: meowVolume }` and `... on Canine { volume: barkVolume }`, when `Feline` and `Canine` are interfaces
+      #
+      # When set to `false`, GraphQL-Ruby will reject those queries with a validation error (as per the GraphQL spec).
+      #
+      # When set to `true`, GraphQL-Ruby will call [.legacy_invalid_field_conflicts](rdoc-ref:.legacy_invalid_field_conflicts) when the scenario is encountered.
+      #
+      # When not configured, GraphQL-Ruby allows those queries and logs a warning.
+      #
+      # **Parameters**
+      #
+      # - `new_value` (`Boolean`) — `true` permits the legacy behavior, `false` rejects it.
+      #
+      # **Returns**
+      #
+      # - `true, false, nil`
+      #
+      # :call-seq:
+      #   allow_legacy_invalid_field_conflicts(bool new_value) -> true | false | nil
+      def allow_legacy_invalid_field_conflicts(new_value = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_value)
+          if defined?(@allow_legacy_invalid_field_conflicts)
+            @allow_legacy_invalid_field_conflicts
+          else
+            find_inherited_value(:allow_legacy_invalid_field_conflicts)
+          end
+        else
+          @allow_legacy_invalid_field_conflicts = new_value
+        end
+      end
+
+      # This method is called when the query has two fields with the same response name but different names or arguments,
+      # which previous versions of GraphQL-Ruby allowed. See [.allow_legacy_invalid_field_conflicts](rdoc-ref:.allow_legacy_invalid_field_conflicts).
+      #
+      # You should implement this method to log the violation so that you can contact clients
+      # and notify them about changing their queries. Then return a suitable value to
+      # tell GraphQL-Ruby how to continue.
+      #
+      # **Parameters**
+      #
+      # - `query` (`GraphQL::Query`)
+      # - `node1` (`GraphQL::Language::Nodes::Field`) — This node is recognized as conflicting. You might call `.line` and `.col` for custom error reporting.
+      # - `node2` (`GraphQL::Language::Nodes::Field`) — The other node recognized as conflicting.
+      #
+      # **Returns**
+      #
+      # - `:return_validation_error` — Let GraphQL-Ruby return the (new) normal validation error for this query
+      # - `String` — A validation error to return for this query
+      # - `nil` — Don't send the client an error, continue the legacy behavior (allow this query to execute)
+      #
+      # :call-seq:
+      #   legacy_invalid_field_conflicts(GraphQL::Query query, GraphQL::Language::Nodes::Field node1, GraphQL::Language::Nodes::Field node2) -> :return_validation_error | String | nil
+      def legacy_invalid_field_conflicts(query, node1, node2)
+        raise "Implement #{self}.legacy_invalid_field_conflicts to handle this invalid selection"
       end
 
       # The legacy complexity implementation included several bugs:

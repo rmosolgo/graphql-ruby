@@ -59,7 +59,8 @@ module GraphQLDocs
 
       declaration = +""
       while index < lines.length && declaration.length < 2_000
-        declaration << lines[index]
+        # Skip comment lines inside a multi-line parameter list
+        declaration << lines[index] unless lines[index].match?(/^\s*#/)
         index += 1
         break if balanced_parentheses?(declaration)
       end

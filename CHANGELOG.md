@@ -12,8 +12,33 @@
 
 ### Bug fixes
 
-- `FieldsHaveAppropriateSelections`: don't crash on inline fragments without type conditions inside leaf selections #5791
 - Directives: don't drop repeated instances of repeatable directives on interfaces or on subclasses with inherited directives #5823
+
+# 2.6.13 (22 Oct 2026)
+
+### New features
+
+- Move documentation to RDoc #5689  #5782
+- Begin type-checking the project with Sorbet #5746 #5801 #5800
+- Improve CI #5781 #5783 #5785
+- `Language::Nodes`: flatten class definitions and add RBS types #5790
+- `rake graphql:pro:validate`: harden against misuse #5795
+
+### Bug fixes
+
+- `FieldsHaveAppropriateSelections`: don't crash on inline fragments without type conditions inside leaf selections #5791
+- Execution::Next: propagate nulls in nested lists #5779
+- Lexer: handle more comments than `max_tokens` #5795
+- `Schema.from_definition`: support directive with cyclic argument types #5802
+- `Execution::Next`: fix field alignment for legacy fields with authorization #5738
+- Connections: paginate duplicate items #5755
+- RelationConnection: peek an extra row to avoid `hasNextPage` query #5775
+- Complexity: fix `__typename` with `count_introspection_fields: false`
+- Legacy interpreter: fix TypeError in nested lists #5777
+- `Schema.from_definition`: correctly handle interface possible types when defined later in the document #5827
+- Validation: improve detection of unused variables with legacy compatibility support #5796
+- Validation: improve detection of conflicting fields with legacy compatibility support #5797
+
 
 # 2.6.12 (14 Oct 2026)
 

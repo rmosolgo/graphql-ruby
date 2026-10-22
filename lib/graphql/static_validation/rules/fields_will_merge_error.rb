@@ -12,6 +12,9 @@ module GraphQL
         @field_name = field_name
         @kind = kind
         @conflicts = []
+        # Indexes of `@nodes`, so that `add_conflict` doesn't compare `node` with each one
+        @node_ids = {}.compare_by_identity #: Hash[GraphQL::Language::Nodes::AbstractNode, bool]
+        @nodes_by_location = nil #: Hash[Integer?, Hash[Integer?, Array[GraphQL::Language::Nodes::AbstractNode]]]?
       end
 
       def message
@@ -32,11 +35,19 @@ module GraphQL
         # Check if we already have an error for this exact node.
         # Use object identity first (fast path), then fall back to
         # value + location comparison for duplicate AST nodes.
-        if nodes.any? { |n| n.equal?(node) || (n.line == node.line && n.col == node.col && n == node) }
+        return if @node_ids.key?(node)
+
+        nodes_at_line = (@nodes_by_location ||= {})[node.line] ||= {}
+        nodes_at_location = nodes_at_line[node.col]
+        if nodes_at_location
           # already have an error for this node
-          return
+          return if nodes_at_location.any? { |n| n == node }
+          nodes_at_location << node
+        else
+          nodes_at_line[node.col] = [node]
         end
 
+        @node_ids[node] = true
         @nodes << node
         @conflicts << conflict_str
       end

@@ -49,6 +49,25 @@ describe GraphQLDocs::TypeSignatureMigrator do
     _(result).must_include("#   call(Hash[String, Array[Integer]] options, Proc &block) -> bool")
   end
 
+  it "ignores comment lines inside multi-line parameter lists" do
+    source = <<~RUBY
+      class Example
+        # **Parameters**
+        #
+        # - `name` (`String`)
+        # - `count` (`Integer`)
+        def call(
+          name: nil,
+          # Keywords below this line have literal defaults
+          count: 1
+        )
+        end
+      end
+    RUBY
+    result = GraphQLDocs::TypeSignatureMigrator.new(paths: []).migrate(source)
+    _(result).must_include("#   call(String name:, Integer count:)\n")
+  end
+
   it "keeps attribute types in the Returns section without adding call sequences" do
     ["attr_reader", "attr_writer", "attr_accessor"].each do |declaration|
       source = <<~RUBY

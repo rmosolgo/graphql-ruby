@@ -66,8 +66,11 @@ namespace :test do
   end
 end
 
-require 'rubocop/rake_task'
-RuboCop::RakeTask.new
+# gemfiles/docs.gemfile only installs what the documentation build needs
+unless Bundler.default_gemfile.basename.to_s == "docs.gemfile"
+  require 'rubocop/rake_task'
+  RuboCop::RakeTask.new
+end
 
 default_tasks = [:test, :rubocop]
 if ENV["SYSTEM_TESTS"]
@@ -129,6 +132,13 @@ namespace :bench do
     prepare_benchmark
     require_relative("./benchmark/track.rb")
     GraphQLBenchmark::Track.memory
+  end
+
+  desc "Run the benchmark tracked over time, measuring memory retained by a large schema"
+  task :track_schema_memory do
+    prepare_benchmark
+    require_relative("./benchmark/track.rb")
+    GraphQLBenchmark::Track.schema_memory
   end
 
   desc "Benchmark validation of several queries"
