@@ -40,5 +40,19 @@ module GraphQLBenchmark
         end
       end
     end
+
+    def schema_memory
+      # Build and discard one schema first, so that one-time allocations
+      # (for example, Ruby's method caches) aren't counted against the measured one
+      GraphQLBenchmark.build_large_schema_with_mutations
+      GC.start
+      retained_schema = nil
+      Benchmark.memory do |x|
+        x.report("build large schema") {
+          retained_schema = GraphQLBenchmark.build_large_schema_with_mutations
+        }
+      end
+      retained_schema
+    end
   end
 end

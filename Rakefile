@@ -134,6 +134,13 @@ namespace :bench do
     GraphQLBenchmark::Track.memory
   end
 
+  desc "Run the benchmark tracked over time, measuring memory retained by a large schema"
+  task :track_schema_memory do
+    prepare_benchmark
+    require_relative("./benchmark/track.rb")
+    GraphQLBenchmark::Track.schema_memory
+  end
+
   desc "Benchmark validation of several queries"
   task :validate do
     prepare_benchmark
