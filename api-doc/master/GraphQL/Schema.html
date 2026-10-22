@@ -446,6 +446,8 @@
 
         <li ><a href="#method-c-allow_legacy_invalid_return_type_conflicts">allow_legacy_invalid_return_type_conflicts</a></li>
 
+        <li ><a href="#method-c-allow_legacy_invalid_variable_usages">allow_legacy_invalid_variable_usages</a></li>
+
         <li ><a href="#method-c-analysis_engine">analysis_engine</a></li>
 
         <li ><a href="#method-c-as_json">as_json</a></li>
@@ -553,6 +555,8 @@
         <li ><a href="#method-c-legacy_invalid_empty_selections_on_union_with_type">legacy_invalid_empty_selections_on_union_with_type</a></li>
 
         <li ><a href="#method-c-legacy_invalid_return_type_conflicts">legacy_invalid_return_type_conflicts</a></li>
+
+        <li ><a href="#method-c-legacy_invalid_variable_usages">legacy_invalid_variable_usages</a></li>
 
         <li ><a href="#method-c-load_type">load_type</a></li>
 
@@ -1125,7 +1129,7 @@
 
 
           <div class="method-source-code" id="allow_legacy_invalid_return_type_conflicts-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2383</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2443</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">allow_legacy_invalid_return_type_conflicts</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_value</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@allow_legacy_invalid_return_type_conflicts</span>)
@@ -1149,6 +1153,90 @@
 <p>When set to <code>false</code>, GraphQL-Ruby will reject those queries with a validation error (as per the <a href="../GraphQL.html"><code>GraphQL</code></a> spec).</p>
 
 <p>When set to <code>true</code>, GraphQL-Ruby will call <a href="Schema.html#method-c-legacy_invalid_return_type_conflicts"><code>.legacy_invalid_return_type_conflicts</code></a> when the scenario is encountered.</p>
+
+<p><strong>Parameters</strong></p>
+<ul><li>
+<p><code>new_value</code> (<code>Boolean</code>) — <code>true</code> permits the legacy behavior, <code>false</code> rejects it.</p>
+</li></ul>
+
+<p><strong>Returns</strong></p>
+<ul><li>
+<p><code>true, false, nil</code></p>
+</li></ul>
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="allow_legacy_invalid_variable_usages-class_method" class="legacy-anchor"></span>
+<div id="method-c-allow_legacy_invalid_variable_usages" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+
+                <div class="method-heading">
+                  <a href="#method-c-allow_legacy_invalid_variable_usages" title="Link to this method">
+                    <span class="method-callseq">
+                      allow_legacy_invalid_variable_usages(bool new_value) &rarr; true | false | nil
+                    </span>
+                  </a>
+                </div>
+
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="allow_legacy_invalid_variable_usages-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2389</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">allow_legacy_invalid_variable_usages</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_value</span>)
+    <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@allow_legacy_invalid_variable_usages</span>)
+      <span class="ruby-ivar">@allow_legacy_invalid_variable_usages</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">allow_legacy_invalid_variable_usages</span>)
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-ivar">@allow_legacy_invalid_variable_usages</span> = <span class="ruby-identifier">new_value</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          <p>This setting controls how GraphQL-Ruby handles variable usages which the <a href="../GraphQL.html"><code>GraphQL</code></a> spec doesn’t allow, but which previous versions of GraphQL-Ruby didn’t reject:</p>
+<ul><li>
+<p>A variable in a fragment, when the fragment comes before the operation, or when another operation uses the fragment</p>
+</li><li>
+<p>A nullable variable with a <code>= null</code> default value, in a non-null position</p>
+</li><li>
+<p>A variable in a nested list value, for example <code>[[$var]]</code></p>
+</li></ul>
+
+<p>When set to <code>false</code>, GraphQL-Ruby will reject those queries with a validation error (as per the <a href="../GraphQL.html"><code>GraphQL</code></a> spec).</p>
+
+<p>When set to <code>true</code>, GraphQL-Ruby will call <a href="Schema.html#method-c-legacy_invalid_variable_usages"><code>.legacy_invalid_variable_usages</code></a> when the scenario is encountered.</p>
+
+<p>When not configured, GraphQL-Ruby allows those queries and logs a warning.</p>
 
 <p><strong>Parameters</strong></p>
 <ul><li>
@@ -1402,7 +1490,7 @@
 
 
           <div class="method-source-code" id="complexity_cost_calculation_mode-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2454</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2514</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">complexity_cost_calculation_mode</span>(<span class="ruby-identifier">new_mode</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_mode</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@complexity_cost_calculation_mode</span>)
@@ -1491,7 +1579,7 @@
 
 
           <div class="method-source-code" id="complexity_cost_calculation_mode_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2512</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2572</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">complexity_cost_calculation_mode_for</span>(<span class="ruby-identifier">multiplex_context</span>)
   <span class="ruby-identifier">complexity_cost_calculation_mode</span>
 <span class="ruby-keyword">end</span></pre>
@@ -4344,7 +4432,7 @@
 
 
           <div class="method-source-code" id="legacy_complexity_cost_calculation_mismatch-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2546</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2606</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">legacy_complexity_cost_calculation_mismatch</span>(<span class="ruby-identifier">multiplex</span>, <span class="ruby-identifier">future_complexity_cost</span>, <span class="ruby-identifier">legacy_complexity_cost</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string">.legacy_complexity_cost(multiplex, future_complexity_cost, legacy_complexity_cost) to handle this mismatch (</span><span class="ruby-string">#{</span><span class="ruby-identifier">future_complexity_cost</span><span class="ruby-string">}</span><span class="ruby-string"> vs. </span><span class="ruby-string">#{</span><span class="ruby-identifier">legacy_complexity_cost</span><span class="ruby-string">}</span><span class="ruby-string">) and return a value to use</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -4567,7 +4655,7 @@
 
 
           <div class="method-source-code" id="legacy_invalid_return_type_conflicts-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2419</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2479</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">legacy_invalid_return_type_conflicts</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">type1</span>, <span class="ruby-identifier">type2</span>, <span class="ruby-identifier">node1</span>, <span class="ruby-identifier">node2</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string">.legacy_invalid_return_type_conflicts to handle this invalid selection</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -4593,6 +4681,79 @@
 <p><code>node1</code> (<a href="Language/Nodes/Field.html"><code>GraphQL::Language::Nodes::Field</code></a>) — This node is recognized as conflicting. You might call <code>.line</code> and <code>.col</code> for custom error reporting.</p>
 </li><li>
 <p><code>node2</code> (<a href="Language/Nodes/Field.html"><code>GraphQL::Language::Nodes::Field</code></a>) — The other node recognized as conflicting.</p>
+</li></ul>
+
+<p><strong>Returns</strong></p>
+<ul><li>
+<p><code>:return_validation_error</code> — Let GraphQL-Ruby return the (new) normal validation error for this query</p>
+</li><li>
+<p><code>String</code> — A validation error to return for this query</p>
+</li><li>
+<p><code>nil</code> — Don’t send the client an error, continue the legacy behavior (allow this query to execute)</p>
+</li></ul>
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="legacy_invalid_variable_usages-class_method" class="legacy-anchor"></span>
+<div id="method-c-legacy_invalid_variable_usages" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+
+                <div class="method-heading">
+                  <a href="#method-c-legacy_invalid_variable_usages" title="Link to this method">
+                    <span class="method-callseq">
+                      legacy_invalid_variable_usages(GraphQL::Query query, GraphQL::Language::Nodes::VariableDefinition variable_definition, GraphQL::Language::Nodes::Argument argument) &rarr; :return_validation_error | String | nil
+                    </span>
+                  </a>
+                </div>
+
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="legacy_invalid_variable_usages-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema.rb, line 2422</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">legacy_invalid_variable_usages</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">variable_definition</span>, <span class="ruby-identifier">argument</span>)
+  <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Implement </span><span class="ruby-string">#{</span><span class="ruby-keyword">self</span><span class="ruby-string">}</span><span class="ruby-string">.legacy_invalid_variable_usages to handle this invalid variable usage</span><span class="ruby-string">&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          <p>This method is called when the query uses a variable in a way which the <a href="../GraphQL.html"><code>GraphQL</code></a> spec doesn’t allow, but which previous versions of GraphQL-Ruby allowed. See <a href="Schema.html#method-c-allow_legacy_invalid_variable_usages"><code>.allow_legacy_invalid_variable_usages</code></a>.</p>
+
+<p>You should implement this method to log the violation so that you can contact clients and notify them about changing their queries. Then return a suitable value to tell GraphQL-Ruby how to continue.</p>
+
+<p><strong>Parameters</strong></p>
+<ul><li>
+<p><code>query</code> (<a href="Query.html"><code>GraphQL::Query</code></a>)</p>
+</li><li>
+<p><code>variable_definition</code> (<a href="Language/Nodes/VariableDefinition.html"><code>GraphQL::Language::Nodes::VariableDefinition</code></a>) — The definition of the variable</p>
+</li><li>
+<p><code>argument</code> (<a href="Language/Nodes/Argument.html"><code>GraphQL::Language::Nodes::Argument</code></a>) — The argument which uses the variable. You might call <code>.line</code> and <code>.col</code> for custom error reporting.</p>
 </li></ul>
 
 <p><strong>Returns</strong></p>

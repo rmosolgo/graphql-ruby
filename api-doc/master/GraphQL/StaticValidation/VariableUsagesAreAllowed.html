@@ -414,6 +414,10 @@
 
         <li class="calls-super" ><a href="#method-i-on_argument">on_argument</a></li>
 
+        <li class="calls-super" ><a href="#method-i-on_document">on_document</a></li>
+
+        <li class="calls-super" ><a href="#method-i-on_fragment_definition">on_fragment_definition</a></li>
+
         <li class="calls-super" ><a href="#method-i-on_operation_definition">on_operation_definition</a></li>
 
       </ul>
@@ -483,6 +487,23 @@
 
 
 
+    <section class="constants-list">
+      <header>
+        <h3 id="untitled-constants"><a href="#untitled-constants">Constants</a></h3>
+      </header>
+      <dl>
+
+        <dt id="FragmentVariableUsage">FragmentVariableUsage</dt>
+
+        <dd>
+
+          <p>A variable in a fragment. It’s checked after the visit, against each operation which uses the fragment. <code>list_depth</code> is the number of list literals around the variable.</p>
+        </dd>
+
+
+      </dl>
+    </section>
+
 
 
 
@@ -523,11 +544,18 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 12</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-comment"># holds { name =&gt; ast_node } pairs</span>
   <span class="ruby-ivar">@declared_variables</span> = {}
+  <span class="ruby-ivar">@operation_declared_variables</span> = {}.<span class="ruby-identifier">compare_by_identity</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::OperationDefinition, Hash[String, GraphQL::Language::Nodes::VariableDefinition]]</span>
+  <span class="ruby-ivar">@variable_usages_fragment_definition</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-ivar">@fragment_variable_usages</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::FragmentDefinition, Array[FragmentVariableUsage]]?</span>
+  <span class="ruby-ivar">@reported_fragment_variable_errors</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::Argument, Hash[String, bool]]?</span>
+  <span class="ruby-ivar">@allow_legacy_invalid_variable_usages</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">allow_legacy_invalid_variable_usages</span>
+  <span class="ruby-comment"># The arguments and variables which have an error from the legacy check</span>
+  <span class="ruby-ivar">@legacy_errors</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::Argument, Hash[String, bool]]?</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -594,16 +622,11 @@
 
 
           <div class="method-source-code" id="on_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 73</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_argument</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-identifier">node_values</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Array</span>)
-    <span class="ruby-identifier">node</span>.<span class="ruby-identifier">value</span>
-  <span class="ruby-keyword">else</span>
-    [<span class="ruby-identifier">node</span>.<span class="ruby-identifier">value</span>]
-  <span class="ruby-keyword">end</span>
-  <span class="ruby-identifier">node_values</span> = <span class="ruby-identifier">node_values</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">value</span><span class="ruby-operator">|</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">VariableIdentifier</span> }
+  <span class="ruby-identifier">variables</span> = <span class="ruby-identifier">variables_in_value</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">value</span>, <span class="ruby-value">0</span>, <span class="ruby-keyword">nil</span>)
 
-  <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">node_values</span>.<span class="ruby-identifier">empty?</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">variables</span>
     <span class="ruby-identifier">argument_owner</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">parent</span>
     <span class="ruby-keyword">when</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">Field</span>
       <span class="ruby-identifier">context</span>.<span class="ruby-identifier">field_definition</span>
@@ -621,14 +644,185 @@
       <span class="ruby-identifier">raise</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">Unexpected argument parent: </span><span class="ruby-string">#{</span><span class="ruby-identifier">parent</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>)
     <span class="ruby-keyword">end</span>
 
-    <span class="ruby-identifier">node_values</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">node_value</span><span class="ruby-operator">|</span>
-      <span class="ruby-identifier">var_defn_ast</span> = <span class="ruby-ivar">@declared_variables</span>[<span class="ruby-identifier">node_value</span>.<span class="ruby-identifier">name</span>]
-      <span class="ruby-comment"># Might be undefined :(</span>
-      <span class="ruby-comment"># VariablesAreUsedAndDefined can&#39;t finalize its search until the end of the document.</span>
-      <span class="ruby-identifier">var_defn_ast</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">argument_owner</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">validate_usage</span>(<span class="ruby-identifier">argument_owner</span>, <span class="ruby-identifier">node</span>, <span class="ruby-identifier">var_defn_ast</span>)
+    <span class="ruby-keyword">if</span> (<span class="ruby-identifier">fragment_definition</span> = <span class="ruby-ivar">@variable_usages_fragment_definition</span>)
+      <span class="ruby-keyword">if</span> <span class="ruby-identifier">argument_owner</span>
+        <span class="ruby-identifier">usages</span> = ((<span class="ruby-ivar">@fragment_variable_usages</span> ||= {}.<span class="ruby-identifier">compare_by_identity</span>)[<span class="ruby-identifier">fragment_definition</span>] ||= [])
+        <span class="ruby-identifier">path</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">path</span>
+        <span class="ruby-identifier">variables</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span>(<span class="ruby-identifier">variable</span>, <span class="ruby-identifier">list_depth</span>)<span class="ruby-operator">|</span>
+          <span class="ruby-identifier">usages</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-constant">FragmentVariableUsage</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">argument_owner</span>, <span class="ruby-identifier">node</span>, <span class="ruby-identifier">variable</span>.<span class="ruby-identifier">name</span>, <span class="ruby-identifier">list_depth</span>, <span class="ruby-identifier">path</span>)
+          <span class="ruby-comment"># Previous versions checked a fragment against the last operation before it</span>
+          <span class="ruby-keyword">if</span> <span class="ruby-ivar">@allow_legacy_invalid_variable_usages</span> <span class="ruby-operator">!=</span> <span class="ruby-keyword">false</span> <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">var_defn_ast</span> = <span class="ruby-ivar">@declared_variables</span>[<span class="ruby-identifier">variable</span>.<span class="ruby-identifier">name</span>])
+            <span class="ruby-identifier">add_legacy_error</span>(<span class="ruby-identifier">argument_owner</span>, <span class="ruby-identifier">node</span>, <span class="ruby-identifier">var_defn_ast</span>, <span class="ruby-identifier">list_depth</span>)
+          <span class="ruby-keyword">end</span>
+        <span class="ruby-keyword">end</span>
+      <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">argument_owner</span>
+      <span class="ruby-identifier">variables</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span>(<span class="ruby-identifier">variable</span>, <span class="ruby-identifier">list_depth</span>)<span class="ruby-operator">|</span>
+        <span class="ruby-identifier">var_defn_ast</span> = <span class="ruby-ivar">@declared_variables</span>[<span class="ruby-identifier">variable</span>.<span class="ruby-identifier">name</span>]
+        <span class="ruby-comment"># Might be undefined :(</span>
+        <span class="ruby-comment"># VariablesAreUsedAndDefined can&#39;t finalize its search until the end of the document.</span>
+        <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">var_defn_ast</span>.<span class="ruby-identifier">nil?</span>
+
+        <span class="ruby-identifier">legacy_reported</span> = <span class="ruby-keyword">false</span>
+        <span class="ruby-keyword">if</span> <span class="ruby-ivar">@allow_legacy_invalid_variable_usages</span> <span class="ruby-operator">!=</span> <span class="ruby-keyword">false</span>
+          <span class="ruby-comment"># The legacy check is the same, except for a `= null` default or a variable in a nested or mixed list</span>
+          <span class="ruby-keyword">if</span> <span class="ruby-identifier">var_defn_ast</span>.<span class="ruby-identifier">default_value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">NullValue</span>) <span class="ruby-operator">||</span>
+              <span class="ruby-identifier">list_depth</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">1</span> <span class="ruby-operator">||</span>
+              (<span class="ruby-identifier">list_depth</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">depth_of_array</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">value</span>) <span class="ruby-operator">!=</span> <span class="ruby-value">1</span>)
+            <span class="ruby-identifier">add_legacy_error</span>(<span class="ruby-identifier">argument_owner</span>, <span class="ruby-identifier">node</span>, <span class="ruby-identifier">var_defn_ast</span>, <span class="ruby-identifier">list_depth</span>)
+          <span class="ruby-keyword">else</span>
+            <span class="ruby-identifier">legacy_reported</span> = <span class="ruby-keyword">true</span>
+          <span class="ruby-keyword">end</span>
+        <span class="ruby-keyword">end</span>
+        <span class="ruby-identifier">validate_usage</span>(<span class="ruby-identifier">argument_owner</span>, <span class="ruby-identifier">node</span>, <span class="ruby-identifier">var_defn_ast</span>, <span class="ruby-identifier">list_depth</span>, <span class="ruby-value">legacy_reported</span><span class="ruby-value">:</span> <span class="ruby-identifier">legacy_reported</span>)
+      <span class="ruby-keyword">end</span>
     <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">super</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+            <div class="method-calls-super">
+              Calls superclass method
+              
+            </div>
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="on_document-instance_method" class="legacy-anchor"></span>
+<div id="method-i-on_document" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-i-on_document" title="Link to this method">
+                  <span class="method-name">on_document</span>
+                  <span class="method-args">(node, parent)</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="on_document-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 37</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">on_document</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
+  <span class="ruby-keyword">super</span>
+  <span class="ruby-comment"># A fragment can come before the operations which use it, and many operations can use it.</span>
+  <span class="ruby-comment"># So, check its variable usages after the visit, against each operation which uses it.</span>
+  <span class="ruby-identifier">fragment_usages</span> = <span class="ruby-ivar">@fragment_variable_usages</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">fragment_usages</span>.<span class="ruby-identifier">nil?</span>
+
+  <span class="ruby-identifier">dependencies</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">dependencies</span>
+  <span class="ruby-ivar">@operation_declared_variables</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">definition</span>, <span class="ruby-identifier">declared_variables</span><span class="ruby-operator">|</span>
+    <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">declared_variables</span>.<span class="ruby-identifier">empty?</span>
+
+    <span class="ruby-identifier">variable_types</span> = {} <span class="ruby-comment">#: Hash[String, untyped]</span>
+    <span class="ruby-identifier">checked_fragments</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
+    <span class="ruby-identifier">dependencies</span>[<span class="ruby-identifier">definition</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">fragment_definition</span><span class="ruby-operator">|</span>
+      <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">checked_fragments</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">fragment_definition</span>)
+      <span class="ruby-identifier">checked_fragments</span>[<span class="ruby-identifier">fragment_definition</span>] = <span class="ruby-keyword">true</span>
+      <span class="ruby-identifier">usages</span> = <span class="ruby-identifier">fragment_usages</span>[<span class="ruby-identifier">fragment_definition</span>]
+      <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">usages</span>.<span class="ruby-identifier">nil?</span>
+
+      <span class="ruby-identifier">usages</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">usage</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">var_defn_ast</span> = <span class="ruby-identifier">declared_variables</span>[<span class="ruby-identifier">usage</span>.<span class="ruby-identifier">variable_name</span>]
+        <span class="ruby-comment"># If it&#39;s undefined, VariablesAreUsedAndDefined adds an error</span>
+        <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">var_defn_ast</span>.<span class="ruby-identifier">nil?</span>
+        <span class="ruby-identifier">var_type</span> = <span class="ruby-identifier">variable_types</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">usage</span>.<span class="ruby-identifier">variable_name</span>) { <span class="ruby-identifier">variable_types</span>[<span class="ruby-identifier">usage</span>.<span class="ruby-identifier">variable_name</span>] = <span class="ruby-identifier">usage_variable_type</span>(<span class="ruby-identifier">var_defn_ast</span>) }
+        <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">var_type</span>.<span class="ruby-identifier">nil?</span>
+        <span class="ruby-comment"># The result depends only on the usage and the variable type, so check each pair once.</span>
+        <span class="ruby-comment"># (`type_from_ast` returns the same object for the same type.)</span>
+        <span class="ruby-identifier">checked</span> = (<span class="ruby-identifier">usage</span>.<span class="ruby-identifier">checked_variable_types</span> ||= {}.<span class="ruby-identifier">compare_by_identity</span>)
+        <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">checked</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">var_type</span>)
+        <span class="ruby-identifier">checked</span>[<span class="ruby-identifier">var_type</span>] = <span class="ruby-keyword">true</span>
+        <span class="ruby-identifier">validate_usage</span>(<span class="ruby-identifier">usage</span>.<span class="ruby-identifier">argument_owner</span>, <span class="ruby-identifier">usage</span>.<span class="ruby-identifier">arg_node</span>, <span class="ruby-identifier">var_defn_ast</span>, <span class="ruby-identifier">usage</span>.<span class="ruby-identifier">list_depth</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">usage</span>.<span class="ruby-identifier">path</span>, <span class="ruby-value">var_type</span><span class="ruby-value">:</span> <span class="ruby-identifier">var_type</span>)
+      <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+            <div class="method-calls-super">
+              Calls superclass method
+              
+            </div>
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="on_fragment_definition-instance_method" class="legacy-anchor"></span>
+<div id="method-i-on_fragment_definition" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-i-on_fragment_definition" title="Link to this method">
+                  <span class="method-name">on_fragment_definition</span>
+                  <span class="method-args">(node, parent)</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="on_fragment_definition-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 31</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
+  <span class="ruby-ivar">@variable_usages_fragment_definition</span> = <span class="ruby-identifier">node</span>
+  <span class="ruby-keyword">super</span>
+  <span class="ruby-ivar">@variable_usages_fragment_definition</span> = <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -681,9 +875,10 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 14</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 25</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@declared_variables</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">variables</span>.<span class="ruby-identifier">each_with_object</span>({}) { <span class="ruby-operator">|</span><span class="ruby-identifier">var</span>, <span class="ruby-identifier">memo</span><span class="ruby-operator">|</span> <span class="ruby-identifier">memo</span>[<span class="ruby-identifier">var</span>.<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">var</span> }
+  <span class="ruby-ivar">@operation_declared_variables</span>[<span class="ruby-identifier">node</span>] = <span class="ruby-ivar">@declared_variables</span>
   <span class="ruby-keyword">super</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
