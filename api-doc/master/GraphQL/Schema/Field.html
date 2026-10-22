@@ -1400,7 +1400,6 @@
   <span class="ruby-ivar">@original_name</span> = <span class="ruby-identifier">name</span>
   <span class="ruby-identifier">name_s</span> = <span class="ruby-operator">-</span><span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>
 
-  <span class="ruby-ivar">@underscored_name</span> = <span class="ruby-operator">-</span><span class="ruby-constant">Member</span><span class="ruby-operator">::</span><span class="ruby-constant">BuildType</span>.<span class="ruby-identifier">underscore</span>(<span class="ruby-identifier">name_s</span>)
   <span class="ruby-ivar">@name</span> = <span class="ruby-operator">-</span>(<span class="ruby-identifier">camelize</span> <span class="ruby-operator">?</span> <span class="ruby-constant">Member</span><span class="ruby-operator">::</span><span class="ruby-constant">BuildType</span>.<span class="ruby-identifier">camelize</span>(<span class="ruby-identifier">name_s</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">name_s</span>)
   <span class="ruby-constant">NameValidator</span>.<span class="ruby-identifier">validate!</span>(<span class="ruby-ivar">@name</span>)
   <span class="ruby-ivar">@description</span> = <span class="ruby-identifier">description</span>
@@ -1676,7 +1675,7 @@
 
 
           <div class="method-source-code" id="authorized-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1169</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1168</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized?</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">args</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@resolver_class</span>
     <span class="ruby-comment"># The resolver _instance_ will check itself during `resolve()`</span>
@@ -1766,7 +1765,7 @@
 
 
           <div class="method-source-code" id="authorizes-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1163</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1162</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorizes?</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">method</span>(<span class="ruby-value">:</span><span class="ruby-value">authorized?</span>).<span class="ruby-identifier">owner</span> <span class="ruby-operator">!=</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Field</span> <span class="ruby-operator">||</span>
     ((<span class="ruby-identifier">args</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-keyword">self</span>)) <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">args</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">a</span><span class="ruby-operator">|</span> <span class="ruby-identifier">a</span>.<span class="ruby-identifier">authorizes?</span>(<span class="ruby-identifier">context</span>) })) <span class="ruby-operator">||</span>
@@ -1821,7 +1820,7 @@
 
 
           <div class="method-source-code" id="broadcastable-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 798</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 797</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">broadcastable?</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-ivar">@broadcastable</span>)
     <span class="ruby-ivar">@broadcastable</span>
@@ -1882,7 +1881,7 @@
 
 
           <div class="method-source-code" id="calculate_complexity-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 970</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 969</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">calculate_complexity</span>(<span class="ruby-value">query:</span>, <span class="ruby-value">nodes:</span>, <span class="ruby-value">child_complexity:</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">complexity_for</span>)
     <span class="ruby-identifier">lookahead</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Lookahead</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">query</span>, <span class="ruby-value">field</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-value">ast_nodes</span><span class="ruby-value">:</span> <span class="ruby-identifier">nodes</span>, <span class="ruby-value">owner_type</span><span class="ruby-value">:</span> <span class="ruby-identifier">owner</span>)
@@ -1989,7 +1988,7 @@
 
 
           <div class="method-source-code" id="comment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 840</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 839</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">comment</span>(<span class="ruby-identifier">text</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">text</span>
     <span class="ruby-ivar">@comment</span> = <span class="ruby-identifier">text</span>
@@ -2055,7 +2054,7 @@
 
 
           <div class="method-source-code" id="complexity-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1028</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1027</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">complexity</span>(<span class="ruby-identifier">new_complexity</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">new_complexity</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Proc</span>
@@ -2204,7 +2203,7 @@
 
 
           <div class="method-source-code" id="default_page_size-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1094</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1093</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_page_size</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-ivar">@default_page_size</span>)
     <span class="ruby-ivar">@default_page_size</span>
@@ -2327,7 +2326,7 @@
 
 
           <div class="method-source-code" id="description-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 818</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 817</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">description</span>(<span class="ruby-identifier">text</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">text</span>
     <span class="ruby-ivar">@description</span> = <span class="ruby-identifier">text</span>
@@ -2468,7 +2467,7 @@
 
 
           <div class="method-source-code" id="extension-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 927</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 926</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">extension</span>(<span class="ruby-identifier">extension_class</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">options</span>)
   <span class="ruby-identifier">extension_inst</span> = <span class="ruby-identifier">extension_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">field</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-value">options</span><span class="ruby-value">:</span> <span class="ruby-identifier">options</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@extensions</span>.<span class="ruby-identifier">frozen?</span>
@@ -2553,7 +2552,7 @@
 
 
           <div class="method-source-code" id="extensions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 886</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 885</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">extensions</span>(<span class="ruby-identifier">new_extensions</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_extensions</span>
     <span class="ruby-identifier">new_extensions</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">extension_config</span><span class="ruby-operator">|</span>
@@ -2643,7 +2642,7 @@
 
 
           <div class="method-source-code" id="extras-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 952</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 951</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">extras</span>(<span class="ruby-identifier">new_extras</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_extras</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-comment"># Read the value</span>
@@ -2720,7 +2719,7 @@
 
 
           <div class="method-source-code" id="fetch_extra-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1335</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1334</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fetch_extra</span>(<span class="ruby-identifier">extra_name</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">extra_name</span> <span class="ruby-operator">!=</span> <span class="ruby-value">:</span><span class="ruby-value">path</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">extra_name</span> <span class="ruby-operator">!=</span> <span class="ruby-value">:</span><span class="ruby-value">ast_node</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">extra_name</span>)
     <span class="ruby-keyword">self</span>.<span class="ruby-identifier">public_send</span>(<span class="ruby-identifier">extra_name</span>)
@@ -2779,7 +2778,7 @@
 
 
           <div class="method-source-code" id="freeze-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1104</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1103</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">freeze</span>
   <span class="ruby-identifier">type</span>
   <span class="ruby-identifier">owner_type</span>
@@ -2841,7 +2840,7 @@
 
 
           <div class="method-source-code" id="has_default_page_size-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1084</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1083</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_default_page_size?</span>
   <span class="ruby-operator">!</span><span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-ivar">@default_page_size</span>) <span class="ruby-operator">||</span> (<span class="ruby-ivar">@resolver_class</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@resolver_class</span>.<span class="ruby-identifier">has_default_page_size?</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -2897,7 +2896,7 @@
 
 
           <div class="method-source-code" id="has_max_page_size-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1058</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1057</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_max_page_size?</span>
   <span class="ruby-operator">!</span><span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-ivar">@max_page_size</span>) <span class="ruby-operator">||</span> (<span class="ruby-ivar">@resolver_class</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@resolver_class</span>.<span class="ruby-identifier">has_max_page_size?</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -3059,7 +3058,7 @@
 
 
           <div class="method-source-code" id="max_page_size-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1068</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1067</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">max_page_size</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-ivar">@max_page_size</span>)
     <span class="ruby-ivar">@max_page_size</span>
@@ -3271,7 +3270,7 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1224</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1223</span>
       <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">args</span>, <span class="ruby-identifier">query_ctx</span>)
         <span class="ruby-comment"># Unwrap the GraphQL object to get the application object.</span>
         <span class="ruby-identifier">application_object</span> = <span class="ruby-identifier">object</span>.<span class="ruby-identifier">object</span>
@@ -3551,7 +3550,7 @@
 
 
           <div class="method-source-code" id="run_next_extensions_before_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1442</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1441</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_next_extensions_before_resolve</span>(<span class="ruby-identifier">objs</span>, <span class="ruby-identifier">args</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-identifier">extended</span>, <span class="ruby-value">idx:</span> <span class="ruby-value">0</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">extension</span> = <span class="ruby-ivar">@extensions</span>[<span class="ruby-identifier">idx</span>]
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">extension</span>
@@ -3750,7 +3749,7 @@
 
 
           <div class="method-source-code" id="type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1129</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1128</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type</span>(<span class="ruby-identifier">new_type</span> = <span class="ruby-constant">NOT_CONFIGURED</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-constant">NOT_CONFIGURED</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">new_type</span>)
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@resolver_class</span>
@@ -3834,7 +3833,7 @@
 
 
           <div class="method-source-code" id="visible-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1155</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/field.rb, line 1154</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible?</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@resolver_class</span>
     <span class="ruby-ivar">@resolver_class</span>.<span class="ruby-identifier">visible?</span>(<span class="ruby-identifier">context</span>)
