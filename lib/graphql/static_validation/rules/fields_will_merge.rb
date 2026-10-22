@@ -98,8 +98,6 @@ module GraphQL
 
       #: (untyped node, untyped parent_type) -> void
       def check_selection_set(node, parent_type)
-        @conflicts = nil
-        @spec_check_needed = false
         conflicts_within_selection_set(node, parent_type)
 
         if @spec_check_needed
@@ -117,9 +115,11 @@ module GraphQL
             add_legacy_conflict_nodes(node1, node2)
           end
           @spec_conflicts = nil
+          @spec_check_needed = false
         end
 
         @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
+        @conflicts = nil
       end
 
       # Use the spec rule for mutually exclusive fields, with its own caches, and record conflicts in `@spec_conflicts`
@@ -384,7 +384,7 @@ module GraphQL
       # unless the fields in a group have different parent types or sub-selections. Then the spec check can find more conflicts.
       #: (untyped response_key, Array[Field] fields) -> void
       def legacy_find_conflicts_within(response_key, fields)
-        f0 = fields[0]
+        f0 = fields[0] #: as !nil
         n0 = f0.node
         if fields.all? { |f| f.definition.equal?(f0.definition) && f.node.name == n0.name && same_arguments?(f.node, n0) }
           find_conflicts_between_selection_groups(response_key, fields)
@@ -395,16 +395,17 @@ module GraphQL
           groups = fields.group_by { |f| field_signature(f) }.values
           gi = 0
           while gi < groups.size
+            group = groups[gi] #: as !nil
             gj = gi + 1
             while gj < groups.size
-              find_conflict(response_key, groups[gi][0], groups[gj][0])
+              other_group = groups[gj] #: as !nil
+              find_conflict(response_key, group[0], other_group[0])
               gj += 1
             end
-            group = groups[gi]
             if group.size >= 2
               find_conflicts_between_selection_groups(response_key, group)
               if !@spec_check_needed
-                g0 = group[0]
+                g0 = group[0] #: as !nil
                 g0_selections = field_selection_signature(g0)
                 @spec_check_needed = !group.all? { |f| f.owner_type.equal?(g0.owner_type) && field_selection_signature(f) == g0_selections }
               end
