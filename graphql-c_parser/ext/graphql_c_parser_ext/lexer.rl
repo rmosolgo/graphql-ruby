@@ -49,7 +49,7 @@
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
 
-  BLOCK_STRING = ('"""' ('\\"""' | ^'"' | '"'{1,2} ^'"')* '"'{0,2} '"""');
+  BLOCK_STRING = ('"""' ('\\"""' | ^'"' | '"'{1,2} ^'"')* ('""')? '"""');
 
   main := |*
     INT           => { emit(INT, ts, te, meta); };
