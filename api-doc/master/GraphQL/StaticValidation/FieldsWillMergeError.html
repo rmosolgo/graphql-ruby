@@ -612,6 +612,9 @@
   <span class="ruby-ivar">@field_name</span> = <span class="ruby-identifier">field_name</span>
   <span class="ruby-ivar">@kind</span> = <span class="ruby-identifier">kind</span>
   <span class="ruby-ivar">@conflicts</span> = []
+  <span class="ruby-comment"># Indexes of `@nodes`, so that `add_conflict` doesn&#39;t compare `node` with each one</span>
+  <span class="ruby-ivar">@node_ids</span> = {}.<span class="ruby-identifier">compare_by_identity</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::AbstractNode, bool]</span>
+  <span class="ruby-ivar">@nodes_by_location</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[Integer?, Hash[Integer?, Array[GraphQL::Language::Nodes::AbstractNode]]]?</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -678,16 +681,24 @@
 
 
           <div class="method-source-code" id="add_conflict-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_conflict</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">conflict_str</span>)
   <span class="ruby-comment"># Check if we already have an error for this exact node.</span>
   <span class="ruby-comment"># Use object identity first (fast path), then fall back to</span>
   <span class="ruby-comment"># value + location comparison for duplicate AST nodes.</span>
-  <span class="ruby-keyword">if</span> <span class="ruby-identifier">nodes</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">n</span><span class="ruby-operator">|</span> <span class="ruby-identifier">n</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">node</span>) <span class="ruby-operator">||</span> (<span class="ruby-identifier">n</span>.<span class="ruby-identifier">line</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">line</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">n</span>.<span class="ruby-identifier">col</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">col</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">n</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">node</span>) }
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@node_ids</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">node</span>)
+
+  <span class="ruby-identifier">nodes_at_line</span> = (<span class="ruby-ivar">@nodes_by_location</span> ||= {})[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">line</span>] ||= {}
+  <span class="ruby-identifier">nodes_at_location</span> = <span class="ruby-identifier">nodes_at_line</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">col</span>]
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">nodes_at_location</span>
     <span class="ruby-comment"># already have an error for this node</span>
-    <span class="ruby-keyword">return</span>
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">nodes_at_location</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">n</span><span class="ruby-operator">|</span> <span class="ruby-identifier">n</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">node</span> }
+    <span class="ruby-identifier">nodes_at_location</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">node</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">nodes_at_line</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">col</span>] = [<span class="ruby-identifier">node</span>]
   <span class="ruby-keyword">end</span>
 
+  <span class="ruby-ivar">@node_ids</span>[<span class="ruby-identifier">node</span>] = <span class="ruby-keyword">true</span>
   <span class="ruby-ivar">@nodes</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">node</span>
   <span class="ruby-ivar">@conflicts</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">conflict_str</span>
 <span class="ruby-keyword">end</span></pre>
@@ -737,7 +748,7 @@
 
 
           <div class="method-source-code" id="code-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 57</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 68</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">code</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">fieldConflict</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -787,7 +798,7 @@
 
 
           <div class="method-source-code" id="conflicts-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 30</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">conflicts</span>
   <span class="ruby-ivar">@conflicts</span>.<span class="ruby-identifier">join</span>(<span class="ruby-string">&#39;</span><span class="ruby-string"> or </span><span class="ruby-string">&#39;</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -837,7 +848,7 @@
 
 
           <div class="method-source-code" id="message-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">message</span>
   <span class="ruby-ivar">@message</span> <span class="ruby-operator">||</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Field &#39;</span><span class="ruby-string">#{</span><span class="ruby-identifier">field_name</span><span class="ruby-string">}</span><span class="ruby-string">&#39; has </span><span class="ruby-string">#{</span><span class="ruby-identifier">kind</span> <span class="ruby-operator">==</span> <span class="ruby-value">:</span><span class="ruby-value">argument</span> <span class="ruby-operator">?</span> <span class="ruby-string">&#39;</span><span class="ruby-string">an</span><span class="ruby-string">&#39;</span> <span class="ruby-operator">:</span> <span class="ruby-string">&#39;</span><span class="ruby-string">a</span><span class="ruby-string">&#39;</span><span class="ruby-string">}</span><span class="ruby-string"> </span><span class="ruby-string">#{</span><span class="ruby-identifier">kind</span><span class="ruby-string">}</span><span class="ruby-string"> conflict: </span><span class="ruby-string">#{</span><span class="ruby-identifier">conflicts</span><span class="ruby-string">}</span><span class="ruby-string">?</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -887,7 +898,7 @@
 
 
           <div class="method-source-code" id="path-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">path</span>
   []
 <span class="ruby-keyword">end</span></pre>
@@ -937,7 +948,7 @@
 
 
           <div class="method-source-code" id="to_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge_error.rb, line 56</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_h</span>
   <span class="ruby-identifier">extensions</span> = {
     <span class="ruby-string">&quot;</span><span class="ruby-string">code</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">code</span>,

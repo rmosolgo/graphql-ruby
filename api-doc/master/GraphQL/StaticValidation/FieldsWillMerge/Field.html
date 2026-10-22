@@ -431,6 +431,8 @@
 
         <li ><a href="#method-i-return_type">return_type</a></li>
 
+        <li ><a href="#method-i-scope">scope</a></li>
+
         <li ><a href="#method-i-unwrapped_return_type">unwrapped_return_type</a></li>
 
       </ul>
@@ -622,7 +624,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 28</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 29</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">definition</span>, <span class="ruby-identifier">owner_type</span>, <span class="ruby-identifier">parents</span>)
   <span class="ruby-ivar">@node</span> = <span class="ruby-identifier">node</span>
   <span class="ruby-ivar">@definition</span> = <span class="ruby-identifier">definition</span>
@@ -636,7 +638,7 @@
         <div class="method-description">
 
 
-          
+          <p><code>parents</code> is only for the legacy check, see <code>legacy_mutually_exclusive?</code></p>
 
 
         </div>
@@ -689,9 +691,9 @@
 
 
           <div class="method-source-code" id="comparison_key-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 49</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">comparison_key</span>
-  <span class="ruby-ivar">@comparison_key</span> ||= [<span class="ruby-ivar">@node</span>, <span class="ruby-ivar">@parents</span>]
+  <span class="ruby-ivar">@comparison_key</span> ||= [<span class="ruby-ivar">@node</span>, <span class="ruby-identifier">scope</span>]
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -739,7 +741,7 @@
 
 
           <div class="method-source-code" id="return_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 35</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 41</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">return_type</span>
   <span class="ruby-ivar">@return_type</span> ||= <span class="ruby-ivar">@definition</span>&amp;.<span class="ruby-identifier">type</span>
 <span class="ruby-keyword">end</span></pre>
@@ -751,6 +753,56 @@
 
 
           
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="scope-instance_method" class="legacy-anchor"></span>
+<div id="method-i-scope" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-i-scope" title="Link to this method">
+                  <span class="method-name">scope</span>
+                  <span class="method-args">()</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="scope-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 37</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">scope</span>
+  <span class="ruby-ivar">@parents</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@owner_type</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          <p>The types which decide if this field is mutually exclusive with other fields</p>
 
 
         </div>
@@ -789,7 +841,7 @@
 
 
           <div class="method-source-code" id="unwrapped_return_type-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 39</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">unwrapped_return_type</span>
   <span class="ruby-ivar">@unwrapped_return_type</span> ||= <span class="ruby-identifier">return_type</span>&amp;.<span class="ruby-identifier">unwrap</span>
 <span class="ruby-keyword">end</span></pre>

@@ -560,7 +560,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 48</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@conflict_count</span> = <span class="ruby-value">0</span>
@@ -572,10 +572,24 @@
   <span class="ruby-ivar">@compared_field_groups</span> = {}
   <span class="ruby-ivar">@field_group_signatures</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
   <span class="ruby-ivar">@field_selection_signatures</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
-  <span class="ruby-comment"># Cache mutually_exclusive? results for type pairs</span>
-  <span class="ruby-ivar">@mutually_exclusive_cache</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
   <span class="ruby-comment"># Cache collect_fields results for sub-selection comparison</span>
   <span class="ruby-ivar">@sub_fields_cache</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
+
+  <span class="ruby-ivar">@allow_legacy_invalid_field_conflicts</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">allow_legacy_invalid_field_conflicts</span>
+  <span class="ruby-comment"># Unless legacy conflicts are rejected, use the legacy check, which is the same as previous versions.</span>
+  <span class="ruby-comment"># It uses `legacy_mutually_exclusive?` and the caches above. The spec check uses `@spec_caches`.</span>
+  <span class="ruby-ivar">@legacy_exclusivity</span> = <span class="ruby-ivar">@allow_legacy_invalid_field_conflicts</span> <span class="ruby-operator">!=</span> <span class="ruby-keyword">false</span>
+  <span class="ruby-ivar">@spec_caches</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-ivar">@mutually_exclusive_cache</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-comment"># True when the spec check can find conflicts which the legacy check doesn&#39;t find</span>
+  <span class="ruby-ivar">@spec_check_needed</span> = <span class="ruby-keyword">false</span>
+  <span class="ruby-comment"># During the legacy check, true when the spec rule treats the parent fields as mutually exclusive</span>
+  <span class="ruby-ivar">@spec_inherited_exclusive</span> = <span class="ruby-keyword">false</span>
+  <span class="ruby-comment"># The pairs of nodes which have a conflict in the legacy check</span>
+  <span class="ruby-ivar">@legacy_conflict_nodes</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-comment"># When this is true, record conflicts in `@spec_conflicts` instead of adding errors</span>
+  <span class="ruby-ivar">@find_spec_conflicts</span> = <span class="ruby-keyword">false</span>
+  <span class="ruby-ivar">@spec_conflicts</span> = <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -642,12 +656,10 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 72</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">selections</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">selections_may_conflict?</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">selections</span>)
-    <span class="ruby-ivar">@conflicts</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[untyped, untyped]?</span>
-    <span class="ruby-identifier">conflicts_within_selection_set</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">type_definition</span>)
-    <span class="ruby-ivar">@conflicts</span>&amp;.<span class="ruby-identifier">each_value</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">error_type</span><span class="ruby-operator">|</span> <span class="ruby-identifier">error_type</span>.<span class="ruby-identifier">each_value</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">error</span><span class="ruby-operator">|</span> <span class="ruby-identifier">add_error</span>(<span class="ruby-identifier">error</span>) } }
+    <span class="ruby-identifier">check_selection_set</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">type_definition</span>)
   <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">super</span>
 <span class="ruby-keyword">end</span></pre>
@@ -702,11 +714,9 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 65</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 85</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
-  <span class="ruby-ivar">@conflicts</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[untyped, untyped]?</span>
-  <span class="ruby-identifier">conflicts_within_selection_set</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">type_definition</span>)
-  <span class="ruby-ivar">@conflicts</span>&amp;.<span class="ruby-identifier">each_value</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">error_type</span><span class="ruby-operator">|</span> <span class="ruby-identifier">error_type</span>.<span class="ruby-identifier">each_value</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">error</span><span class="ruby-operator">|</span> <span class="ruby-identifier">add_error</span>(<span class="ruby-identifier">error</span>) } }
+  <span class="ruby-identifier">check_selection_set</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">type_definition</span>)
   <span class="ruby-keyword">super</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
