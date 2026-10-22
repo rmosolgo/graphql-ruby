@@ -2735,8 +2735,10 @@ module GraphQL
         own_union_memberships.merge!(addition.union_memberships)
 
         addition.references.each { |thing, pointers|
-          prev_refs = own_references_to[thing] || []
-          own_references_to[thing] = prev_refs | pointers.to_a
+          new_refs = pointers.keys
+          prev_refs = own_references_to[thing]
+          # Same as `prev_refs | new_refs`, but faster when `prev_refs` is small and `new_refs` is big
+          own_references_to[thing] = prev_refs ? (prev_refs + (new_refs - prev_refs)) : new_refs
         }
 
         addition.directives.each { |dir_class| own_directives[dir_class.graphql_name] = dir_class }
