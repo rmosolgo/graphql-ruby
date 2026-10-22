@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -39,6 +39,10 @@ module GraphQL
         argument :by, [String], "Flags to check for this schema member"
 
         repeatable(true)
+
+        #--
+
+        # @requires_ancestor: GraphQL::Schema::Member::HasDirectives
 
         module VisibleByFlag
           def self.included(schema_class)

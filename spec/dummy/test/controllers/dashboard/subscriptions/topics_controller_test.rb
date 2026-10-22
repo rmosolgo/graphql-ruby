@@ -22,6 +22,7 @@ if defined?(GraphQL::Pro)
     end
 
     def test_it_lists_topics_and_shows_detail
+      freeze_time
       DummySchema.subscriptions.clear
       _res1 = DummySchema.execute("subscription { message(channel: \"cats\") }")
       res2 = DummySchema.execute("subscription { message(channel: \"dogs\") }")

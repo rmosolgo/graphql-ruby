@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Subscriptions
     # A subscriptions implementation that sends data
@@ -184,7 +184,7 @@ module GraphQL
         event_stream = stream_event_name(initial_event)
         channel.stream_from(event_stream, coder: @action_cable_coder) do |message|
           events_by_fingerprint = @events[topic]
-          object = nil
+          object = nil #: untyped
           events_by_fingerprint.each do |_fingerprint, events|
             if !events.empty? && events.first == initial_event
               # The fingerprint has told us that this response should be shared by all subscribers,

@@ -3,6 +3,10 @@ require "graphql"
 ADD_WARDEN = false
 TESTING_EXEC_NEXT = !!ENV["GRAPHQL_FUTURE"]
 TESTING_METHOD = !!ENV["TEST_METHOD"]
+# Jazz uses this test helper from spec/spec_helper.rb
+def if_exec_next(exec_next_value, legacy_value)
+  TESTING_EXEC_NEXT ? exec_next_value : legacy_value
+end
 require "jazz"
 require "benchmark/ips"
 require "stackprof"
@@ -726,6 +730,77 @@ module GraphQLBenchmark
     end
 
     report.pretty_print
+  end
+
+  # Combines the types from `build_large_schema` and `profile_schema_memory_footprint`,
+  # but deterministically, so that its memory footprint can be tracked over time
+  def self.build_large_schema_with_mutations
+    int_ts = 5.times.map do |i|
+      Module.new do
+        include GraphQL::Schema::Interface
+        graphql_name "Interface#{i}"
+        5.times do |n2|
+          field :"field#{n2}", String do
+            argument :arg, String
+          end
+        end
+      end
+    end
+
+    obj_ts = 100.times.map do |n|
+      input_obj_t = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name("Input#{n}")
+        argument :arg, String
+      end
+      Class.new(GraphQL::Schema::Object) do
+        graphql_name("Object#{n}")
+        implements(*int_ts)
+        20.times do |n2|
+          field :"field#{n2}", String do
+            argument :input, input_obj_t
+          end
+        end
+        field :self_field, self
+        field :int_0_field, int_ts[0]
+      end
+    end
+
+    union_ts = obj_ts.each_slice(10).each_with_index.map do |union_obj_ts, n|
+      Class.new(GraphQL::Schema::Union) do
+        graphql_name "Union#{n}"
+        possible_types(*union_obj_ts)
+      end
+    end
+
+    query_t = Class.new(GraphQL::Schema::Object) do
+      graphql_name("Query")
+      int_ts.each_with_index { |int_t, i| field :"int_field_#{i}", int_t }
+      obj_ts.each_with_index { |obj_t, n| field :"rootfield#{n}", obj_t }
+      union_ts.each_with_index { |union_t, n| field :"unionfield#{n}", union_t }
+    end
+
+    thing_t = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Thing"
+      field :name, String
+    end
+
+    mutation_t = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Mutation"
+      100.times do |i|
+        mutation_class = Class.new(GraphQL::Schema::RelayClassicMutation) do
+          graphql_name "Do#{i}"
+          argument :id, "ID"
+          field :thing, thing_t
+          field :things, thing_t.connection_type
+        end
+        field :"do#{i}", mutation: mutation_class
+      end
+    end
+
+    Class.new(GraphQL::Schema) do
+      query(query_t)
+      mutation(mutation_t)
+    end
   end
 
   class StackDepthSchema < GraphQL::Schema

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     class IntrospectionSystem
@@ -126,6 +126,7 @@ module GraphQL
       def dup_type_class(type_class)
         type_name = type_class.graphql_name
         Class.new(type_class) do
+          #: self as untyped
           # This won't be inherited like other things will
           graphql_name(type_name)
 

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
@@ -78,7 +78,7 @@ module GraphQL
           partially_matched_conditions = 0
 
           visible_keywords = context.types.arguments(@validated).map(&:keyword)
-          no_visible_conditions = true
+          no_visible_conditions = true #: bool
 
           if !value.nil?
             validation_parameter(@one_of).each do |one_of_condition|
@@ -93,8 +93,8 @@ module GraphQL
                   fully_matched_conditions += 1
                 end
               when Array
-                any_match = false
-                full_match = true
+                any_match = false #: bool
+                full_match = true #: bool
 
                 one_of_condition.each do |k|
                   if no_visible_conditions && visible_keywords.include?(k)

@@ -1,3 +1,5 @@
+inherit_from: .rubocop_sorbet_todo.yml
+
 plugins:
   - rubocop-sorbet
 

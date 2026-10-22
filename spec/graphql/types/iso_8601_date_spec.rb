@@ -36,7 +36,7 @@ describe GraphQL::Types::ISO8601Date do
           :date,
           GraphQL::Types::ISO8601Date,
           required: false,
-          default_value: Date.today
+          default_value: Date.new(2018, 4, 5)
           )
       end
 
@@ -45,7 +45,7 @@ describe GraphQL::Types::ISO8601Date do
           :date,
           GraphQL::Types::ISO8601Date,
           required: false,
-          default_value: DateTime.now
+          default_value: DateTime.new(2019, 6, 7, 10, 11, 12)
           )
       end
 
@@ -54,7 +54,7 @@ describe GraphQL::Types::ISO8601Date do
           :date,
           GraphQL::Types::ISO8601Date,
           required: false,
-          default_value: Time.now
+          default_value: Time.new(2020, 8, 9, 10, 11, 12)
           )
       end
 
@@ -248,7 +248,7 @@ describe GraphQL::Types::ISO8601Date do
       GRAPHQL
       full_res = DateTest::Schema.execute(query_str)
 
-      date_str = Date.today.iso8601
+      date_str = "2018-04-05"
       assert_equal date_str, full_res["data"]["serializeDateDefaultArgument"]["iso8601"]
     end
 
@@ -262,7 +262,7 @@ describe GraphQL::Types::ISO8601Date do
       GRAPHQL
       full_res = DateTest::Schema.execute(query_str)
 
-      date_str = DateTime.now.to_date.iso8601
+      date_str = "2019-06-07"
       assert_equal date_str, full_res["data"]["serializeDateTimeDefaultArgument"]["iso8601"]
     end
 
@@ -276,7 +276,7 @@ describe GraphQL::Types::ISO8601Date do
       GRAPHQL
       full_res = DateTest::Schema.execute(query_str)
 
-      date_str = Time.new.to_date.iso8601
+      date_str = "2020-08-09"
       assert_equal date_str, full_res["data"]["serializeTimeDefaultArgument"]["iso8601"]
     end
 

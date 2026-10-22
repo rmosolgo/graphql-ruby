@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Execution
     class InputValues
@@ -39,7 +39,7 @@ module GraphQL
       def argument_values(owner_defn, argument_nodes, field_resolve_step)
         arg_defns = @query.types.arguments(owner_defn)
         argument_values = {}
-        errors = nil
+        errors = nil #: untyped
 
         arg_defns.each do |argument_definition|
           arg_ruby_key = argument_definition.keyword

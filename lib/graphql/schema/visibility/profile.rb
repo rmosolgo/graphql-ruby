@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
@@ -26,12 +26,6 @@ module GraphQL
           else
             schema.visibility.profile_for(ctx)
           end
-        end
-
-        def self.null_profile(context:, schema:)
-          profile = self.new(name: "NullProfile", context: context, schema: schema)
-          profile.instance_variable_set(:@cached_visible, Hash.new { |k, v| k[v] = true }.compare_by_identity)
-          profile
         end
 
         # **Returns**
@@ -166,8 +160,8 @@ module GraphQL
           ints = owner.interface_type_memberships.map(&:abstract_type)
           field_name = field.graphql_name
           filtered_ints = interfaces(owner)
-          any_interface_has_field = false
-          any_interface_has_visible_field = false
+          any_interface_has_field = false #: bool
+          any_interface_has_visible_field = false #: bool
           ints.each do |int_t|
             if (_int_f_defn = @cached_parent_fields[int_t][field_name])
               any_interface_has_field = true
@@ -205,7 +199,7 @@ module GraphQL
         def argument(owner, arg_name)
           arg = @cached_parent_arguments[owner][arg_name]
           if arg.is_a?(Array)
-            visible_arg = nil
+            visible_arg = nil #: untyped
             arg.each do |arg_defn|
               if @cached_visible_arguments[owner][arg_defn]
                 if visible_arg.nil?
@@ -371,7 +365,7 @@ module GraphQL
           t = @visibility.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
           if t
             if t.is_a?(Array)
-              vis_t = nil
+              vis_t = nil #: untyped
               t.each do |t_defn|
                 if @cached_visible[t_defn] && referenced?(t_defn)
                   if vis_t.nil?
@@ -383,7 +377,7 @@ module GraphQL
               end
               vis_t
             else
-              if t && @cached_visible[t] && referenced?(t)
+              if @cached_visible[t] && referenced?(t)
                 t
               else
                 nil
@@ -403,7 +397,7 @@ module GraphQL
             nil
           end
           if f.is_a?(Array)
-            visible_f = nil
+            visible_f = nil #: untyped
             f.each do |f_defn|
               if @cached_visible_fields[owner][f_defn]
                 if visible_f.nil?
@@ -446,7 +440,8 @@ module GraphQL
           visit = Visibility::Visit.new(@schema) do |member|
             if member.is_a?(Module) && member.respond_to?(:kind)
               if @cached_visible[member] && referenced?(member)
-                type_name = member.graphql_name
+                type_name = member #: as untyped
+                  .graphql_name
                 if (prev_t = @all_types[type_name]) && !prev_t.equal?(member)
                   raise_duplicate_definition(member, prev_t)
                 end

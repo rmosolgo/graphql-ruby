@@ -1,17 +1,22 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
     class Member
+      #--
+      # @requires_ancestor: Kernel
+      # @requires_ancestor: Module
       module HasInterfaces
         def implements(*new_interfaces, **options)
           new_memberships = []
           new_interfaces.each do |int|
             if int.is_a?(Module)
               unless int.include?(GraphQL::Schema::Interface) && !int.is_a?(Class)
-                raise "#{int.respond_to?(:graphql_name) ? "#{int.graphql_name} (#{int})" : int.inspect} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
+                non_interface = int #: untyped
+                raise "#{non_interface.respond_to?(:graphql_name) ? "#{non_interface.graphql_name} (#{non_interface})" : non_interface.inspect} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
               end
+              int = int #: as GraphQL::Schema::Member::interface_definition
 
               new_memberships << int.type_membership_class.new(int, self, **options)
 
@@ -70,6 +75,8 @@ module GraphQL
             child_class.extend(InheritedInterfaces)
           end
 
+          #--
+          # @requires_ancestor: singleton(Object)
           module InheritedInterfaces
             def interfaces(context = GraphQL::Query::NullContext.instance)
               visible_interfaces = super
@@ -102,7 +109,7 @@ module GraphQL
         # param context [Query::Context] If omitted, skip filtering.
         def interfaces(context = GraphQL::Query::NullContext.instance)
           warden = Warden.from_context(context)
-          visible_interfaces = nil
+          visible_interfaces = nil #: Array[untyped]?
           own_interface_type_memberships.each do |type_membership|
             case type_membership
             when Schema::TypeMembership

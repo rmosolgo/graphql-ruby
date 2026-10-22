@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/pagination/connection"
 require "monitor"
 
@@ -30,6 +30,12 @@ module GraphQL
       end
 
       def has_next_page
+        # If the query loads the page anyway, load it now so its extra row answers this
+        if @has_next_page.nil? && peek_next_page? &&
+            (lookahead.selects?(:nodes) || lookahead.selects?(:edges) ||
+              page_info_selection.selects?(:start_cursor) || page_info_selection.selects?(:end_cursor))
+          load_nodes
+        end
         if @has_next_page.nil?
           @has_next_page = if before_offset && before_offset > 0
             true
@@ -48,12 +54,25 @@ module GraphQL
 
       def cursor_for(item)
         load_nodes
-        # index in nodes + existing offset + 1 (because it's offset, not index)
-        offset = nodes.index(item) + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
-        encode(offset.to_s)
+        position = cursor_index_for(item, nodes)
+        offset_cursor_for_position(position)
+      end
+
+      def cursor_for_position(item, position) # :nodoc:
+        if self.class.custom_cursor_for?(RelationConnection)
+          super
+        else
+          offset_cursor_for_position(position)
+        end
       end
 
       private
+
+      def offset_cursor_for_position(position)
+        # position in nodes + existing offset + 1 (because it's offset, not index)
+        offset = position + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
+        encode(offset.to_s)
+      end
 
       # **Parameters**
       #
@@ -134,7 +153,7 @@ module GraphQL
       # :call-seq:
       #   offset_from_cursor(cursor) -> Integer
       def offset_from_cursor(cursor)
-        offset = Integer(decode(cursor), 10, exception: false)
+        offset = Integer(decode(cursor), 10, exception: false) #: Integer?
         if offset.nil? || offset <= 0
           raise GraphQL::ExecutionError, "Invalid cursor: #{cursor.inspect}"
         end
@@ -302,11 +321,33 @@ module GraphQL
           # `AsyncDataloader` may resolve sibling fields (eg, `edges` and `pageInfo`)
           # in separate Fibers, so several callers can get here before `@nodes` is set.
           (@load_monitor ||= Monitor.new).synchronize do
-            @nodes ||= limited_nodes.to_a
+            # Not `||=`: Sorbet assumes `@nodes` is still falsy in this block
+            @nodes = load_page unless @nodes
           end
         else
-          @nodes = limited_nodes.to_a
+          @nodes = load_page
         end
+      end
+
+      # Fetch one row past `first` so `has_next_page` needs no extra query.
+      # Skips arrays (no query to save) and relations limited below `first` (no next page).
+      def load_page
+        page = limited_nodes
+        return page.to_a if page.is_a?(Array) || !peek_next_page? || relation_limit(page) != first
+
+        rows = set_limit(page, first + 1).to_a
+        @has_next_page = rows.size > first
+        rows.first(first)
+      end
+
+      # Peek on forward pages that select `hasNextPage`; `last` and `before` keep the separate check
+      def peek_next_page?
+        return @peek_next_page if defined?(@peek_next_page)
+        @peek_next_page = first&.positive? && last.nil? && before.nil? && page_info_selection.selects?(:has_next_page)
+      end
+
+      def page_info_selection
+        @page_info_selection ||= (lookahead || GraphQL::Execution::Lookahead::NULL_LOOKAHEAD).selection(:page_info)
       end
     end
   end

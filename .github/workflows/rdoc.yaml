@@ -7,7 +7,7 @@ on:
 permissions: {}
 
 env:
-  BUNDLE_WITH: docs
+  BUNDLE_GEMFILE: gemfiles/docs.gemfile
 
 jobs:
   build:
@@ -16,17 +16,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          # The PR merge commit and its base parent, to see what the PR changed
+          fetch-depth: 2
+      - uses: ruby/setup-ruby@651ff0d62c5c79bed6d53ec518387aae20e72c1a # v1.329.0
         with:
           ruby-version: '3.3'
           bundler-cache: true
+      # Only changes to the docs tooling can make the output non-reproducible,
+      # so other PRs skip the second build.
+      - name: Check for documentation tooling changes
+        id: tooling
+        if: github.event_name == 'pull_request'
+        run: |
+          if git diff --quiet HEAD^1 HEAD -- tool/docs Rakefile .rdoc_options; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
       # One invocation so build_twice reuses the site docs:check already built
-      - name: Run strict documentation checks and check reproducible output
-        run: bundle exec rake docs:check docs:build_twice
+      - name: Run strict documentation checks
+        env:
+          BUILD_TWICE: ${{ github.event_name != 'pull_request' || steps.tooling.outputs.changed == 'true' }}
+        run: |
+          tasks=(docs:check)
+          if [ "$BUILD_TWICE" = "true" ]; then
+            tasks+=(docs:build_twice)
+          fi
+          bundle exec rake "${tasks[@]}"
       - name: Check gem installation documentation
         run: bundle exec ruby tool/docs/gem_install_check.rb
       - name: Upload RDoc artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: rdoc-site
           path: |

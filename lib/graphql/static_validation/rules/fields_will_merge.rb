@@ -1,9 +1,12 @@
  # frozen_string_literal: true
-# typed: false
+# typed: true
 
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
+    #--
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
+    # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor::ContextMethods
     module FieldsWillMerge
       # Validates that a selection set is valid if all fields (including spreading any
       # fragments) either correspond to distinct response names or can be merged
@@ -263,7 +266,7 @@ module GraphQL
       end
 
       def collect_fields_inner(selections, owner_type:, parents:, response_keys:, visited_fragments:)
-        deferred_spreads = nil
+        deferred_spreads = nil #: Array[untyped]?
         sel_idx = 0
         sel_len = selections.size
 
@@ -285,7 +288,7 @@ module GraphQL
               existing << field
             end
           when GraphQL::Language::Nodes::InlineFragment
-            frag_type = sel.type ? @types.type(sel.type.name) : owner_type
+            frag_type = (sel_type = sel.type) ? @types.type(sel_type.name) : owner_type
 
             if frag_type
               new_parents = parents && (parents.dup << frag_type)
@@ -331,7 +334,7 @@ module GraphQL
             legacy_find_conflicts_within(key, fields)
           elsif fields.size > 4
             f0 = fields[0]
-            all_same = true
+            all_same = true #: bool
             i = 1
             while i < fields.size
               unless fields_same_signature?(f0, fields[i])

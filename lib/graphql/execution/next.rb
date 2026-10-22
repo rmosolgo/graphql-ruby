@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/execution/prepare_object_step"
 require "graphql/execution/input_values"
 require "graphql/execution/field_resolve_step"
@@ -10,6 +10,8 @@ require "graphql/execution/runner"
 require "graphql/execution/selections_step"
 module GraphQL
   module Execution
+    #--
+    # @requires_ancestor: Kernel
     module Finalizer
       attr_accessor :path
 
@@ -31,6 +33,8 @@ module GraphQL
     module HaltExecution
     end
 
+    #--
+    # @requires_ancestor: Kernel
     module PostProcessor
       def after_resolve(field_results)
         raise RequiredImplementationMissingError, "#{self.class}#after_resolve should handle `field_results` and return a new value to use"
@@ -38,6 +42,8 @@ module GraphQL
     end
 
     module Next
+      #--
+      # @requires_ancestor: singleton(GraphQL::Schema)
       module SchemaExtension
         def execute_next(query_str = nil, query: nil, subscription_topic: nil, context: nil, document: nil, operation_name: nil, variables: nil, warden: nil, root_value: nil, validate: true, visibility_profile: nil)
           multiplex_context = if context

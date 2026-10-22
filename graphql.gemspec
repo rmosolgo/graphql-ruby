@@ -30,6 +30,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "logger"
 
   s.add_development_dependency "benchmark-ips"
+  s.add_development_dependency "benchmark-memory"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
   s.add_development_dependency "google-protobuf"
   s.add_development_dependency "graphql-batch"
@@ -39,6 +40,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "minitest-focus"
   s.add_development_dependency "minitest-reporters"
   s.add_development_dependency "ostruct"
+  s.add_development_dependency "parallel_tests"
   s.add_development_dependency "rake"
   s.add_development_dependency 'rake-compiler'
   s.add_development_dependency 'rdoc'

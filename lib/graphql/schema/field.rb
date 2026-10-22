@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/schema/field/connection_extension"
 require "graphql/schema/field/scope_extension"
 
@@ -568,8 +568,52 @@ module GraphQL
       # - `definition_block` (`Proc`) — an additional block for configuring the field. Receive the field as a block param, or, if no block params are defined, then the block is `instance_eval`'d on the new [Field](rdoc-ref:Field).
       #
       # :call-seq:
-      #   initialize(Class | GraphQL::BaseType | Array type:, Symbol name:, Class owner:, bool null:, String description:, String comment:, String deprecation_reason:, Symbol method:, Symbol | true | nil resolve_legacy_instance_method:, Symbol | true | nil resolve_static:, Symbol | true | nil resolve_each:, Symbol | true | nil resolve_batch:, String | Symbol hash_key:, Array[String | Symbol] dig:, Symbol resolver_method:, bool connection:, Integer | nil max_page_size:, Integer | nil default_page_size:, bool scope:, bool introspection:, bool camelize:, bool trace:, Numeric complexity:, Class | Hash dataload:, Language::Nodes::FieldDefinition | nil ast_node:, Array[:ast_node | :parent | :lookahead | :owner | :execution_errors | :graphql_name | :argument_details | Symbol] extras:, Array[Class | Hash[Class, Object]] extensions:, Class connection_extension:, Class resolver_class:, Symbol | String subscription_scope:, bool relay_node_field:, bool relay_nodes_field:, bool method_conflict_warning:, bool broadcastable:, {String=>GraphQL::Schema::Argument | Hash} arguments:, Hash[Class, Hash] directives:, Array[Hash] validates:, Object fallback_value:, bool dynamic_introspection:, Proc &definition_block)
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, resolve_legacy_instance_method: nil, resolve_static: nil, resolve_each: nil, resolve_batch: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, dataload: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
+      #   initialize(Class | GraphQL::BaseType | Array type:, Symbol name:, Class owner:, bool null:, String description:, String comment:, String deprecation_reason:, Symbol method:, Symbol | true | nil resolve_legacy_instance_method:, Symbol | true | nil resolve_static:, Symbol | true | nil resolve_each:, Symbol | true | nil resolve_batch:, String | Symbol hash_key:, Array[String | Symbol] dig:, Symbol resolver_method:, bool connection:, Integer | nil max_page_size:, Integer | nil default_page_size:, Array[:ast_node | :parent | :lookahead | :owner | :execution_errors | :graphql_name | :argument_details | Symbol] extras:, Array[Class | Hash[Class, Object]] extensions:, Class connection_extension:, Class resolver_class:, Symbol | String subscription_scope:, bool relay_node_field:, bool relay_nodes_field:, bool method_conflict_warning:, bool broadcastable:, {String=>GraphQL::Schema::Argument | Hash} arguments:, Hash[Class, Hash] directives:, Array[Hash] validates:, Object fallback_value:, bool dynamic_introspection:, bool scope:, bool introspection:, bool camelize:, bool trace:, Numeric complexity:, Class | Hash dataload:, Language::Nodes::FieldDefinition | nil ast_node:, Proc &definition_block)
+      def initialize(
+        type: nil,
+        name: nil,
+        owner: nil,
+        null: nil,
+        description: NOT_CONFIGURED,
+        comment: NOT_CONFIGURED,
+        deprecation_reason: nil,
+        method: nil,
+        resolve_legacy_instance_method: nil,
+        resolve_static: nil,
+        resolve_each: nil,
+        resolve_batch: nil,
+        hash_key: nil,
+        dig: nil,
+        resolver_method: nil,
+        connection: nil,
+        max_page_size: NOT_CONFIGURED,
+        default_page_size: NOT_CONFIGURED,
+        extras: EMPTY_ARRAY,
+        extensions: EMPTY_ARRAY,
+        connection_extension: self.class.connection_extension,
+        resolver_class: nil,
+        subscription_scope: nil,
+        relay_node_field: false,
+        relay_nodes_field: false,
+        method_conflict_warning: true,
+        broadcastable: NOT_CONFIGURED,
+        arguments: EMPTY_HASH,
+        directives: EMPTY_HASH,
+        validates: EMPTY_ARRAY,
+        fallback_value: NOT_CONFIGURED,
+        # Keywords below this line must have literal defaults (`nil`, `true`, `false`, a number or a symbol).
+        # Ruby uses a 31-bit bitmap to track which keywords with non-literal defaults were given.
+        # If one comes after the 31st keyword, Ruby allocates a Hash on every call.
+        dynamic_introspection: false,
+        scope: nil,
+        introspection: false,
+        camelize: true,
+        trace: nil,
+        complexity: nil,
+        dataload: nil,
+        ast_node: nil,
+        &definition_block
+      )
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -581,7 +625,6 @@ module GraphQL
         @original_name = name
         name_s = -name.to_s
 
-        @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
         NameValidator.validate!(@name)
         @description = description
@@ -951,14 +994,22 @@ module GraphQL
           else
             metadata_complexity = 0
             lookahead = GraphQL::Execution::Lookahead.new(query: query, field: self, ast_nodes: nodes, owner_type: owner)
+            # `QueryComplexity` doesn't add skipped introspection fields to `child_complexity`,
+            # so they must not be subtracted from it here, either.
+            count_introspection_fields = query.schema.max_complexity_count_introspection_fields
 
             lookahead.selections.each do |next_lookahead|
+              next if !count_introspection_fields && next_lookahead.field.introspection?
               # this includes `pageInfo`, `nodes` and `edges` and any custom fields
               # TODO this doesn't support procs yet -- unlikely to need it.
               metadata_complexity += next_lookahead.field.complexity
               if next_lookahead.name != :nodes && next_lookahead.name != :edges
                 # subfields, eg, for pageInfo -- assumes no subselections
-                metadata_complexity += next_lookahead.selections.size
+                if count_introspection_fields
+                  metadata_complexity += next_lookahead.selections.size
+                else
+                  metadata_complexity += next_lookahead.selections.count { |s| !s.field.introspection? }
+                end
               end
             end
 
@@ -1172,9 +1223,9 @@ module GraphQL
       def resolve(object, args, query_ctx)
         # Unwrap the GraphQL object to get the application object.
         application_object = object.object
-        method_receiver = nil
-        method_to_call = nil
-        method_args = nil
+        method_receiver = nil #: untyped
+        method_to_call = nil #: untyped
+        method_args = nil #: untyped
 
         @own_validators && Schema::Validator.validate!(validators, application_object, query_ctx, args)
 
@@ -1296,7 +1347,7 @@ module GraphQL
         method_defn = receiver.method(method_name)
         unsatisfied_ruby_kwargs = ruby_kwargs.dup
         unsatisfied_method_params = []
-        encountered_keyrest = false
+        encountered_keyrest = false #: bool
         method_defn.parameters.each do |(param_type, param_name)|
           case param_type
           when :key

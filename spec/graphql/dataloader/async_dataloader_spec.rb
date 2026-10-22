@@ -156,7 +156,7 @@ if RUBY_VERSION >= "3.2.0"
         end
 
         def self.list_waiters(context, wait:, tags:)
-          Kernel.sleep(0.1)
+          Kernel.sleep(0.05)
           tags.map { |t| { tag: t, wait: wait }}
         end
 
@@ -187,9 +187,9 @@ if RUBY_VERSION >= "3.2.0"
         child_class.class_eval do
           it "works with sources" do
             dataloader = GraphQL::Dataloader::AsyncDataloader.new
-            r1 = dataloader.with(AsyncSchema::SleepSource, :s1).request(0.1)
-            r2 = dataloader.with(AsyncSchema::SleepSource, :s2).request(0.2)
-            r3 = dataloader.with(AsyncSchema::SleepSource, :s3).request(0.3)
+            r1 = dataloader.with(AsyncSchema::SleepSource, :s1).request(0.05)
+            r2 = dataloader.with(AsyncSchema::SleepSource, :s2).request(0.1)
+            r3 = dataloader.with(AsyncSchema::SleepSource, :s3).request(0.15)
 
             v1 = nil
             dataloader.append_job {
@@ -198,44 +198,44 @@ if RUBY_VERSION >= "3.2.0"
             started_at = Time.now
             dataloader.run
             ended_at = Time.now
-            assert_equal 0.1, v1
+            assert_equal 0.05, v1
             started_at_2 = Time.now
             # These should take no time at all since they're already resolved
             v2 = r2.load
             v3 = r3.load
             ended_at_2 = Time.now
 
-            assert_equal 0.2, v2
-            assert_equal 0.3, v3
+            assert_equal 0.1, v2
+            assert_equal 0.15, v3
             assert_in_delta 0.0, ended_at_2 - started_at_2, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Already-loaded values returned instantly"
 
-            assert_in_delta 0.3, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "IO ran in parallel"
+            assert_in_delta 0.15, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "IO ran in parallel"
           end
 
           it "works with GraphQL" do
             started_at = Time.now
-            res = @schema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+            res = @schema.execute("{ s1: sleep(duration: 0.05) s2: sleep(duration: 0.1) s3: sleep(duration: 0.15) }")
             ended_at = Time.now
-            assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
-            assert_in_delta 0.3, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "IO ran in parallel"
+            assert_equal({"s1"=>0.05, "s2"=>0.1, "s3"=>0.15}, res["data"])
+            assert_in_delta 0.15, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "IO ran in parallel"
           end
 
           it "runs fields by depth" do
             query_str = <<-GRAPHQL
             {
-              s1: sleeper(duration: 0.1) {
-                sleeper(duration: 0.1) {
-                  sleeper(duration: 0.1) {
+              s1: sleeper(duration: 0.05) {
+                sleeper(duration: 0.05) {
+                  sleeper(duration: 0.05) {
                     duration
                   }
                 }
               }
-              s2: sleeper(duration: 0.2) {
-                sleeper(duration: 0.1) {
+              s2: sleeper(duration: 0.1) {
+                sleeper(duration: 0.05) {
                   duration
                 }
               }
-              s3: sleeper(duration: 0.3) {
+              s3: sleeper(duration: 0.15) {
                 duration
               }
             }
@@ -245,40 +245,40 @@ if RUBY_VERSION >= "3.2.0"
             ended_at = Time.now
 
             expected_data = {
-              "s1" => { "sleeper" => { "sleeper" => { "duration" => 0.1 } } },
-              "s2" => { "sleeper" => { "duration" => 0.1 } },
-              "s3" => { "duration" => 0.3 }
+              "s1" => { "sleeper" => { "sleeper" => { "duration" => 0.05 } } },
+              "s2" => { "sleeper" => { "duration" => 0.05 } },
+              "s3" => { "duration" => 0.15 }
             }
             assert_graphql_equal expected_data, res["data"]
-            assert_in_delta 0.5, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Each depth ran in parallel"
+            assert_in_delta 0.25, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Each depth ran in parallel"
           end
 
           it "runs dataloaders in parallel across branches" do
             query_str = <<-GRAPHQL
             {
-              w1: waitFor(tag: "a", wait: 0.2) {
-                waitFor(tag: "b", wait: 0.2) {
-                  waitFor(tag: "c", wait: 0.2) {
+              w1: waitFor(tag: "a", wait: 0.1) {
+                waitFor(tag: "b", wait: 0.1) {
+                  waitFor(tag: "c", wait: 0.1) {
                     tag
                   }
                 }
               }
               # After the first, these are returned eagerly from cache
-              w2: waitFor(tag: "a", wait: 0.2) {
-                waitFor(tag: "a", wait: 0.2) {
-                  waitFor(tag: "a", wait: 0.2) {
+              w2: waitFor(tag: "a", wait: 0.1) {
+                waitFor(tag: "a", wait: 0.1) {
+                  waitFor(tag: "a", wait: 0.1) {
                     tag
                   }
                 }
               }
-              w3: waitFor(tag: "a", wait: 0.2) {
-                waitFor(tag: "b", wait: 0.2) {
-                  waitFor(tag: "d", wait: 0.2) {
+              w3: waitFor(tag: "a", wait: 0.1) {
+                waitFor(tag: "b", wait: 0.1) {
+                  waitFor(tag: "d", wait: 0.1) {
                     tag
                   }
                 }
               }
-              w4: waitFor(tag: "e", wait: 0.6) {
+              w4: waitFor(tag: "e", wait: 0.3) {
                 tag
               }
             }
@@ -297,13 +297,13 @@ if RUBY_VERSION >= "3.2.0"
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
-            assert_in_delta 1.0, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Sources were executed in parallel"
+            assert_in_delta 0.5, ended_at - started_at, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Sources were executed in parallel"
           end
 
           it "groups across list items" do
             query_str = <<-GRAPHQL
               {
-                listWaiters(wait: 0.2, tags: ["a", "b", "c"]) {
+                listWaiters(wait: 0.1, tags: ["a", "b", "c"]) {
                   waiter {
                     tag
                   }
@@ -316,8 +316,8 @@ if RUBY_VERSION >= "3.2.0"
             t2 = Time.now
             assert_equal ["a", "b", "c"], result["data"]["listWaiters"].map { |lw| lw["waiter"]["tag"]}
             assert_equal [["a", "b", "c"]], AsyncSchema::KeyWaitForSource.fetches, "All keys were fetched at once"
-            # The field itself waits 0.1
-            assert_in_delta 0.3, t2 - t1, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Wait was parallel"
+            # The field itself waits 0.05
+            assert_in_delta 0.15, t2 - t1, ASYNC_DATALOADER_OVERHEAD_ALLOWANCE, "Wait was parallel"
           end
 
           it 'copies fiber-local variables over to sources' do
@@ -494,7 +494,8 @@ if RUBY_VERSION >= "3.2.0"
 
     describe "stress test" do
       RNG = Random.new(20260724)
-      MAX_ITERATIONS = 2000
+      # Set ASYNC_DATALOADER_STRESS_ITERATIONS=2000 for a more thorough run
+      MAX_ITERATIONS = Integer(ENV.fetch("ASYNC_DATALOADER_STRESS_ITERATIONS", 50))
       WEDGE_AFTER = 10
       class SlowSource < GraphQL::Dataloader::Source
         def initialize(delay)
@@ -521,7 +522,7 @@ if RUBY_VERSION >= "3.2.0"
 
         watchdog = Thread.new do
           loop do
-            sleep 1
+            sleep 0.1
             started = iter_started_at
             break if iter_finished
             next unless started

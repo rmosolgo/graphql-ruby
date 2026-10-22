@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     module Interface
@@ -29,9 +29,9 @@ module GraphQL
             defn_methods_module = Module.new
             @_definition_methods = defn_methods_module
             const_set(:DefinitionMethods, defn_methods_module)
-            extend(self::DefinitionMethods)
+            extend(defn_methods_module)
           end
-          self::DefinitionMethods.module_exec(&block)
+          const_get(:DefinitionMethods).module_exec(&block)
         end
 
         # Instance methods defined in this block will become class methods on objects that implement this interface.
@@ -53,9 +53,9 @@ module GraphQL
             resolver_methods_module = Module.new
             @_resolver_methods = resolver_methods_module
             const_set(:ResolverMethods, resolver_methods_module)
-            extend(self::ResolverMethods)
+            extend(resolver_methods_module)
           end
-          self::ResolverMethods.module_exec(&block)
+          const_get(:ResolverMethods).module_exec(&block)
         end
 
         # See [Schema::Warden](rdoc-ref:Schema::Warden) hides interfaces without visible implementations
@@ -83,7 +83,7 @@ module GraphQL
             child_class.type_membership_class(self.type_membership_class)
             child_class.ancestors.reverse_each do |ancestor|
               if ancestor.const_defined?(:DefinitionMethods) && ancestor != child_class
-                child_class.extend(ancestor::DefinitionMethods)
+                child_class.extend(ancestor.const_get(:DefinitionMethods))
               end
             end
 
@@ -96,9 +96,11 @@ module GraphQL
             end
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`
-            backtrace_line = caller_locations(0, 10).find do |location|
+            locations = caller_locations(0, 10) #: as !nil
+            backtrace_line = locations.find do |location|
+              location_path = location.path #: as !nil
               location.base_label == "implements" &&
-                location.path.end_with?("schema/member/has_interfaces.rb")
+                location_path.end_with?("schema/member/has_interfaces.rb")
             end
 
             if !backtrace_line
@@ -107,7 +109,7 @@ module GraphQL
 
             child_class.ancestors.reverse_each do |ancestor|
               if ancestor != child_class && ancestor <= GraphQL::Schema::Interface && ancestor.const_defined?(:ResolverMethods, false)
-                child_class.extend(ancestor::ResolverMethods)
+                child_class.extend(ancestor.const_get(:ResolverMethods))
               end
             end
           end

@@ -1,15 +1,20 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Types
     module Relay
+      #--
+      # @requires_ancestor: GraphQL::Schema::Object
       module EdgeBehaviors
         def self.included(child_class)
           child_class.description("An edge in a connection.")
           child_class.field(:cursor, String, null: false, description: "A cursor for use in pagination.")
           child_class.extend(ClassMethods)
-          child_class.class_exec { self.node_type = nil }
+          child_class.class_exec {
+            #: self as GraphQL::Types::Relay::EdgeBehaviors::ClassMethods
+            self.node_type = nil
+          }
           child_class.node_nullable(true)
           child_class.default_broadcastable(nil)
         end
@@ -22,6 +27,8 @@ module GraphQL
           @object.node
         end
 
+        #--
+        # @requires_ancestor: singleton(GraphQL::Schema::Object)
         module ClassMethods
           def inherited(child_class)
             super

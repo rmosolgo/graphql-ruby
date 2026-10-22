@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   class Schema
@@ -62,7 +62,9 @@ module GraphQL
         "#<#{self.class} #{@object_type.inspect} => #{@abstract_type.inspect}>"
       end
 
-      alias :type_class :itself
+      def type_class
+        self
+      end
     end
   end
 end

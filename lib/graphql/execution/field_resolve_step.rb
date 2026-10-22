@@ -419,11 +419,15 @@ module GraphQL
           case ext
           when Schema::Field::ConnectionExtension
             conns = ctx.schema.connections
+            lookahead = @arguments[:lookahead]
+            # The memo omits the extension's extras (`:lookahead`)
+            conn_arguments = memos[@finish_extension_idx] || @arguments
             @field_results.map!.each_with_index do |value, idx|
               object = @extended.object[idx]
-              conn = conns.populate_connection(@field_definition, object, value, @arguments, ctx)
+              conn = conns.populate_connection(@field_definition, object, value, conn_arguments, ctx)
               if conn
                 conn.was_authorized_by_scope_items = @was_scoped
+                conn.lookahead ||= lookahead
               end
               conn
             rescue GraphQL::RuntimeError => err
@@ -804,8 +808,13 @@ module GraphQL
           end
           results
         when :resolve_legacy_instance_method
-          @selections_step.graphql_objects.map do |obj_inst|
-            obj_inst.public_send(@field_definition.execution_mode_key, **args_hash)
+          graphql_objects = if objects.equal?(@selections_step.objects)
+            @selections_step.graphql_objects
+          else
+            objects.map { |object| @parent_type.scoped_new(object, context) }
+          end
+          graphql_objects.map do |graphql_object|
+            graphql_object.public_send(@field_definition.execution_mode_key, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
             exec_err
           end
