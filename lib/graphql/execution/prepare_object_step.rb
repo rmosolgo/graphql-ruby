@@ -49,10 +49,10 @@ module GraphQL
           static_type = @field_resolve_step.static_type
           if static_type.kind.abstract?
             query = @field_resolve_step.selections_step.query
-            @resolved_type, new_value = ResolveTypeStep.resolve_type(static_type, @object, query)
-            if new_value
-              ResolveTypeStep.assert_valid_resolved_type(static_type, @resolved_type, new_value, @field_resolve_step)
-              @object = new_value
+            @resolved_type = ResolveTypeStep.resolve_type(static_type, @object, query)
+            if @resolved_type.is_a?(Array)
+              @resolved_type, @object = @resolved_type
+              ResolveTypeStep.assert_valid_resolved_type(static_type, @resolved_type, @object, @field_resolve_step)
             end
           else
             @resolved_type = static_type
@@ -69,6 +69,17 @@ module GraphQL
           create_result
         else
           raise ArgumentError, "This is a bug, unknown step: #{@next_step.inspect}"
+        end
+      rescue GraphQL::RuntimeError => err
+        @graphql_result[@key] = add_field_error(err)
+        @field_resolve_step.authorized_finished(self)
+      rescue StandardError => err
+        query ||= @field_resolve_step.selections_step.query
+        begin
+          query.handle_or_reraise(err, field: @field_resolve_step.field_definition, arguments: @field_resolve_step.arguments, object: @object) # rubocop:disable Development/ContextIsPassedCop
+        rescue GraphQL::RuntimeError => err
+          @graphql_result[@key] = add_field_error(err)
+          @field_resolve_step.authorized_finished(self)
         end
       ensure
         @field_resolve_step.set_current_field(nil)
@@ -99,15 +110,6 @@ module GraphQL
           @next_step = :create_result
         else
           create_result
-        end
-      rescue GraphQL::RuntimeError => err
-        @graphql_result[@key] = add_field_error(err)
-      rescue StandardError => err
-        query ||= @field_resolve_step.selections_step.query
-        begin
-          query.handle_or_reraise(err, field: @field_resolve_step.field_definition, arguments: @field_resolve_step.arguments, object: @object) # rubocop:disable Development/ContextIsPassedCop
-        rescue GraphQL::RuntimeError => err
-          @graphql_result[@key] = add_field_error(err)
         end
       end
 
