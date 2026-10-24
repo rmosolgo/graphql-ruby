@@ -87,7 +87,11 @@ module GraphQL
       # :call-seq:
       #   relation_larger_than(Object relation, Integer _initial_offset, Integer size) -> bool
       def relation_larger_than(relation, _initial_offset, size)
-        relation_count(set_limit(relation, size + 1)) == size + 1
+        if (limit = relation_limit(relation)) && limit <= size
+          false
+        else
+          relation_count(set_limit(relation, size + 1)) == size + 1
+        end
       end
 
       # **Parameters**
@@ -191,20 +195,21 @@ module GraphQL
 
           if after_offset
             next_offset += after_offset
+            relation_limit = [relation_limit - after_offset, 0].max if relation_limit
           end
 
           if before_offset && after_offset
             if after_offset < before_offset
               # Get the number of items between the two cursors
               space_between = before_offset - after_offset - 1
-              relation_limit = space_between
+              relation_limit = [relation_limit, space_between].compact.min
             else
               # The cursors overextend one another to an empty set
               @sliced_nodes_null_relation = true
             end
           elsif before_offset
             # Use limit to cut off the tail of the relation
-            relation_limit = before_offset - 1
+            relation_limit = [relation_limit, before_offset - 1].compact.min
           end
 
           @sliced_nodes_limit = relation_limit
@@ -222,12 +227,12 @@ module GraphQL
           if @sliced_nodes_null_relation
             paginated_nodes = null_relation(paginated_nodes)
           else
-            if @sliced_nodes_limit
-              paginated_nodes = set_limit(paginated_nodes, @sliced_nodes_limit)
-            end
-
             if @sliced_nodes_offset
               paginated_nodes = set_offset(paginated_nodes, @sliced_nodes_offset)
+            end
+
+            if @sliced_nodes_limit
+              paginated_nodes = set_limit(paginated_nodes, @sliced_nodes_limit)
             end
           end
 
@@ -330,10 +335,11 @@ module GraphQL
       end
 
       # Fetch one row past `first` so `has_next_page` needs no extra query.
-      # Skips arrays (no query to save) and relations limited below `first` (no next page).
+      # Skips arrays (no query to save) and slices limited to `first` or fewer rows (no next page).
       def load_page
         page = limited_nodes
-        return page.to_a if page.is_a?(Array) || !peek_next_page? || relation_limit(page) != first
+        return page.to_a if page.is_a?(Array) || !peek_next_page? || relation_limit(page) != first ||
+          (@sliced_nodes_limit && @sliced_nodes_limit <= first)
 
         rows = set_limit(page, first + 1).to_a
         @has_next_page = rows.size > first

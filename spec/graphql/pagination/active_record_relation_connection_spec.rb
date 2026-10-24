@@ -243,10 +243,10 @@ if testing_rails?
             peeked, peeked_queries = run_logged("{ items(#{args}) { pageInfo { hasNextPage } nodes { name } } }", limited_schema)
             counted, _queries = run_logged("{ items(#{args}) { pageInfo { hasNextPage } } }", limited_schema)
 
-            # A page cut short by the relation's limit is the last page (the old check ignores that limit)
-            expected = relation_limit < first ? false : counted["pageInfo"]["hasNextPage"]
+            expected = relation_limit - (after ? 1 : 0) > first
             assert_equal expected, peeked["pageInfo"]["hasNextPage"], "limit(#{relation_limit}), #{args}"
-            assert_equal 1, peeked_queries.size, "limit(#{relation_limit}), #{args}: #{peeked_queries.inspect}"
+            assert_equal expected, counted["pageInfo"]["hasNextPage"], "limit(#{relation_limit}), #{args}"
+            assert_operator peeked_queries.size, :<=, 1, "limit(#{relation_limit}), #{args}: #{peeked_queries.inspect}"
           end
         end
       end
