@@ -982,7 +982,7 @@ module GraphQL
               max_possible_page_size = arguments[:last]
             end
           elsif arguments.is_a?(GraphQL::ExecutionError) || arguments.is_a?(GraphQL::UnauthorizedError)
-            raise arguments
+            return child_complexity
           end
 
           if max_possible_page_size.nil?
