@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+# Only what the RDoc build and its checks need, so CI doesn't install the
+# full development bundle just to build documentation.
+source "https://rubygems.org"
+
+gem "rake"
+gem "rake-compiler" # required by the Rakefile
+gem "rdoc"

@@ -2,6 +2,23 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Field do
+  if RUBY_VERSION >= "3.3"
+    it "doesn't allocate a Hash in initialize" do
+      # Ruby allocates a Hash on every call to a method when a keyword after the 31st has a non-literal default.
+      owner = Class.new(GraphQL::Schema::Object) { graphql_name("Thing") }
+      new_field = -> { GraphQL::Schema::Field.allocate.send(:initialize, name: "f", type: GraphQL::Types::String, owner: owner) }
+      new_field.call
+      counts = {} # reused, so that counting doesn't allocate a Hash
+      GC.start
+      GC.disable
+      hashes_before = ObjectSpace.count_objects(counts)[:T_HASH]
+      10.times { new_field.call }
+      hashes_after = ObjectSpace.count_objects(counts)[:T_HASH]
+      GC.enable
+      assert_equal 0, hashes_after - hashes_before
+    end
+  end
+
   describe "graphql definition" do
     let(:object_class) { Jazz::Query }
     let(:field) { object_class.fields["inspectInput"] }

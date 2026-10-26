@@ -25,11 +25,17 @@ module GraphQL
       class Field
         attr_reader :node, :definition, :owner_type, :parents
 
+        # `parents` is only for the legacy check, see `legacy_mutually_exclusive?`
         def initialize(node, definition, owner_type, parents)
           @node = node
           @definition = definition
           @owner_type = owner_type
           @parents = parents
+        end
+
+        # The types which decide if this field is mutually exclusive with other fields
+        def scope
+          @parents || @owner_type
         end
 
         def return_type
@@ -41,7 +47,7 @@ module GraphQL
         end
 
         def comparison_key
-          @comparison_key ||= [@node, @parents]
+          @comparison_key ||= [@node, scope]
         end
       end
 
@@ -56,29 +62,141 @@ module GraphQL
         @compared_field_groups = {}
         @field_group_signatures = {}.compare_by_identity
         @field_selection_signatures = {}.compare_by_identity
-        # Cache mutually_exclusive? results for type pairs
-        @mutually_exclusive_cache = {}.compare_by_identity
         # Cache collect_fields results for sub-selection comparison
         @sub_fields_cache = {}.compare_by_identity
+
+        @allow_legacy_invalid_field_conflicts = @schema.allow_legacy_invalid_field_conflicts
+        # Unless legacy conflicts are rejected, use the legacy check, which is the same as previous versions.
+        # It uses `legacy_mutually_exclusive?` and the caches above. The spec check uses `@spec_caches`.
+        @legacy_exclusivity = @allow_legacy_invalid_field_conflicts != false
+        @spec_caches = nil
+        @mutually_exclusive_cache = nil
+        # True when the spec check can find conflicts which the legacy check doesn't find
+        @spec_check_needed = false
+        # During the legacy check, true when the spec rule treats the parent fields as mutually exclusive
+        @spec_inherited_exclusive = false
+        # The pairs of nodes which have a conflict in the legacy check
+        @legacy_conflict_nodes = nil
+        # When this is true, record conflicts in `@spec_conflicts` instead of adding errors
+        @find_spec_conflicts = false
+        @spec_conflicts = nil
       end
 
       def on_operation_definition(node, _parent)
-        @conflicts = nil #: Hash[untyped, untyped]?
-        conflicts_within_selection_set(node, type_definition)
-        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
+        check_selection_set(node, type_definition)
         super
       end
 
       def on_field(node, _parent)
         if !node.selections.empty? && selections_may_conflict?(node.selections)
-          @conflicts = nil #: Hash[untyped, untyped]?
-          conflicts_within_selection_set(node, type_definition)
-          @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
+          check_selection_set(node, type_definition)
         end
         super
       end
 
       private
+
+      #: (untyped node, untyped parent_type) -> void
+      def check_selection_set(node, parent_type)
+        conflicts_within_selection_set(node, parent_type)
+
+        if @spec_check_needed
+          # Find the conflicts with the spec check, without errors or warnings. The new ones are legacy conflicts.
+          legacy_conflicts = @conflicts
+          conflict_count = @conflict_count
+          @conflicts = nil
+          with_spec_check { conflicts_within_selection_set(node, parent_type) }
+          @conflicts = legacy_conflicts
+          @conflict_count = conflict_count
+          legacy_conflict_nodes = (@legacy_conflict_nodes ||= {}.compare_by_identity)
+          @spec_conflicts&.each do |(response_key, node1, node2, different_names, different_arguments, type1, type2)|
+            next if legacy_conflict_nodes[node1]&.key?(node2)
+            add_legacy_invalid_conflict(response_key, node1, node2, different_names, different_arguments, type1, type2)
+            add_legacy_conflict_nodes(node1, node2)
+          end
+          @spec_conflicts = nil
+          @spec_check_needed = false
+        end
+
+        @conflicts&.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
+        @conflicts = nil
+      end
+
+      # Use the spec rule for mutually exclusive fields, with its own caches, and record conflicts in `@spec_conflicts`
+      #: () { () -> void } -> void
+      def with_spec_check(&block)
+        legacy_caches = [@compared_sub_selections, @compared_field_groups, @field_group_signatures, @sub_fields_cache]
+        @compared_sub_selections, @compared_field_groups, @field_group_signatures, @sub_fields_cache =
+          (@spec_caches ||= [{}.compare_by_identity, {}, {}.compare_by_identity, {}.compare_by_identity])
+        @legacy_exclusivity = false
+        @find_spec_conflicts = true
+        yield
+      ensure
+        @legacy_exclusivity = true
+        @find_spec_conflicts = false
+        @compared_sub_selections, @compared_field_groups, @field_group_signatures, @sub_fields_cache = legacy_caches
+      end
+
+      #: (untyped response_key, GraphQL::Language::Nodes::Field node1, GraphQL::Language::Nodes::Field node2, bool different_names, bool different_arguments, untyped type1, untyped type2) -> void
+      def add_legacy_invalid_conflict(response_key, node1, node2, different_names, different_arguments, type1, type2)
+        message_override = nil
+        if @allow_legacy_invalid_field_conflicts == true
+          legacy_handling = @schema.legacy_invalid_field_conflicts(@context.query, node1, node2)
+          case legacy_handling
+          when nil
+            return
+          when :return_validation_error
+            # Add the error below
+          when String
+            message_override = legacy_handling
+          else
+            raise GraphQL::Error, "#{@schema}.legacy_invalid_field_conflicts returned unexpected value: #{legacy_handling.inspect}. Expected `nil`, String, or `:return_validation_error`."
+          end
+        else
+          @context.query.logger.warn <<~WARN
+            GraphQL-Ruby encountered fields which can't be merged in this query: `#{node1.name}` (at #{node1.line}:#{node1.col}) vs. `#{node2.name}` (at #{node2.line}:#{node2.col}).
+            This will return an error in future GraphQL-Ruby versions, as per the GraphQL specification
+            Learn about migrating here: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_field_conflicts-class_method
+          WARN
+          return
+        end
+
+        if type1
+          conflict = conflicts[:return_type][response_key]
+          conflict.message = message_override if message_override
+          conflict.add_conflict(node1, "`#{type1.to_type_signature}`")
+          conflict.add_conflict(node2, "`#{type2.to_type_signature}`")
+          @conflict_count += 1
+        else
+          add_field_conflict(response_key, node1, node2, different_names, different_arguments, message_override)
+        end
+      end
+
+      #: (GraphQL::Language::Nodes::Field node1, GraphQL::Language::Nodes::Field node2) -> void
+      def add_legacy_conflict_nodes(node1, node2)
+        legacy_conflict_nodes = (@legacy_conflict_nodes ||= {}.compare_by_identity)
+        (legacy_conflict_nodes[node1] ||= {}.compare_by_identity)[node2] = true
+        (legacy_conflict_nodes[node2] ||= {}.compare_by_identity)[node1] = true
+      end
+
+      #: (untyped response_key, GraphQL::Language::Nodes::Field node1, GraphQL::Language::Nodes::Field node2, bool different_names, bool different_arguments, String? message_override) -> void
+      def add_field_conflict(response_key, node1, node2, different_names, different_arguments, message_override)
+        if different_names
+          conflict = conflicts[:field][response_key]
+          conflict.message = message_override if message_override
+          conflict.add_conflict(node1, node1.name)
+          conflict.add_conflict(node2, node2.name)
+          @conflict_count += 1
+        end
+
+        if different_arguments
+          conflict = conflicts[:argument][response_key]
+          conflict.message = message_override if message_override
+          conflict.add_conflict(node1, GraphQL::Language.serialize(serialize_field_args(node1)))
+          conflict.add_conflict(node2, GraphQL::Language.serialize(serialize_field_args(node2)))
+          @conflict_count += 1
+        end
+      end
 
       # Quick check: can the direct children of this selection set possibly conflict?
       # If all direct selections are Fields with unique names and no aliases,
@@ -133,7 +251,7 @@ module GraphQL
         return if node.selections.empty?
 
         # Collect all fields from this selection set, expanding fragments transitively
-        response_keys = collect_fields(node.selections, owner_type: parent_type, parents: [])
+        response_keys = collect_fields(node.selections, owner_type: parent_type, parents: @legacy_exclusivity ? [] : nil)
 
         # Find conflicts within each response key group
         find_conflicts_within(response_keys)
@@ -173,8 +291,7 @@ module GraphQL
             frag_type = (sel_type = sel.type) ? @types.type(sel_type.name) : owner_type
 
             if frag_type
-              new_parents = parents.dup
-              new_parents << frag_type
+              new_parents = parents && (parents.dup << frag_type)
               collect_fields_inner(sel.selections, owner_type: frag_type, parents: new_parents, response_keys: response_keys, visited_fragments: visited_fragments)
             end
           when GraphQL::Language::Nodes::FragmentSpread
@@ -201,8 +318,7 @@ module GraphQL
             frag_type = @types.type(frag.type.name)
             next unless frag_type
 
-            new_parents = parents.dup
-            new_parents << frag_type
+            new_parents = parents && (parents.dup << frag_type)
             collect_fields_inner(frag.selections, owner_type: frag_type, parents: new_parents, response_keys: response_keys, visited_fragments: visited_fragments)
           end
         end
@@ -212,10 +328,11 @@ module GraphQL
         response_keys.each do |key, fields|
           next unless fields.is_a?(Array)
 
-          # Optimization: group fields by signature (name + definition + arguments).
-          # Fields with the same signature can only conflict on sub-selections,
-          # so we only need to compare one pair within each group.
-          if fields.size > 4
+          # Optimization: compare only one of the fields which have the same signature
+          # (name + definition + arguments), parent type and sub-selections.
+          if fields.size > 4 && @legacy_exclusivity
+            legacy_find_conflicts_within(key, fields)
+          elsif fields.size > 4
             f0 = fields[0]
             all_same = true #: bool
             i = 1
@@ -228,27 +345,23 @@ module GraphQL
             end
 
             if all_same
+              # These fields can only conflict on sub-selections.
               find_conflicts_between_selection_groups(key, fields)
             else
-              groups = fields.group_by { |f| field_signature(f) }
-              unique_groups = groups.values #: untyped
+              representatives = {}
+              fields.each do |field|
+                representatives[[field_signature(field), field.scope, field_selection_signature(field)]] ||= field
+              end
+              representatives = representatives.values
 
-              # Compare representatives across different groups
-              gi = 0
-              while gi < unique_groups.size
-                gj = gi + 1
-                while gj < unique_groups.size
-                  find_conflict(key, unique_groups[gi][0], unique_groups[gj][0])
-                  gj += 1
+              i = 0
+              while i < representatives.size
+                j = i + 1
+                while j < representatives.size
+                  find_conflict(key, representatives[i], representatives[j])
+                  j += 1
                 end
-
-                # Within the same group, fields can only conflict on sub-selections.
-                group = unique_groups[gi]
-                if group.size >= 2
-                  find_conflicts_between_selection_groups(key, group)
-                end
-
-                gi += 1
+                i += 1
               end
             end
           else
@@ -262,6 +375,42 @@ module GraphQL
               end
               i += 1
             end
+          end
+        end
+      end
+
+      # Previous versions compared only the first field of each group of fields with the same signature,
+      # and one field for each sub-selection in a group. For the spec check, that's the same as comparing each field,
+      # unless the fields in a group have different parent types or sub-selections. Then the spec check can find more conflicts.
+      #: (untyped response_key, Array[Field] fields) -> void
+      def legacy_find_conflicts_within(response_key, fields)
+        f0 = fields[0] #: as !nil
+        n0 = f0.node
+        if fields.all? { |f| f.definition.equal?(f0.definition) && f.node.name == n0.name && same_arguments?(f.node, n0) }
+          find_conflicts_between_selection_groups(response_key, fields)
+          if !@spec_check_needed && !fields.all? { |f| f.node.selections.empty? || f.owner_type.equal?(f0.owner_type) }
+            @spec_check_needed = true
+          end
+        else
+          groups = fields.group_by { |f| field_signature(f) }.values
+          gi = 0
+          while gi < groups.size
+            group = groups[gi] #: as !nil
+            gj = gi + 1
+            while gj < groups.size
+              other_group = groups[gj] #: as !nil
+              find_conflict(response_key, group[0], other_group[0])
+              gj += 1
+            end
+            if group.size >= 2
+              find_conflicts_between_selection_groups(response_key, group)
+              if !@spec_check_needed
+                g0 = group[0] #: as !nil
+                g0_selections = field_selection_signature(g0)
+                @spec_check_needed = !group.all? { |f| f.owner_type.equal?(g0.owner_type) && field_selection_signature(f) == g0_selections }
+              end
+            end
+            gi += 1
           end
         end
       end
@@ -294,6 +443,7 @@ module GraphQL
         n2 = f2.node
 
         f1.definition.equal?(f2.definition) &&
+          f1.scope == f2.scope &&
           n1.name == n2.name &&
           same_arguments?(n1, n2)
       end
@@ -317,25 +467,28 @@ module GraphQL
         node1 = field1.node
         node2 = field2.node
 
-        are_mutually_exclusive = mutually_exclusive || mutually_exclusive?(field1.parents, field2.parents)
+        are_mutually_exclusive = mutually_exclusive || mutually_exclusive?(field1, field2)
 
         if !are_mutually_exclusive
-          if node1.name != node2.name
-            conflict = conflicts[:field][response_key]
+          different_names = node1.name != node2.name
+          different_arguments = !same_arguments?(node1, node2)
+          if different_names || different_arguments
+            if @find_spec_conflicts
+              (@spec_conflicts ||= []) << [response_key, node1, node2, different_names, different_arguments, nil, nil]
+              @conflict_count += 1
+            else
+              add_field_conflict(response_key, node1, node2, different_names, different_arguments, nil)
+              add_legacy_conflict_nodes(node1, node2) if @legacy_exclusivity
+            end
 
-            conflict.add_conflict(node1, node1.name)
-            conflict.add_conflict(node2, node2.name)
-
-            @conflict_count += 1
+            # Like graphql-js, stop here: the document is already invalid, and comparing sub-selections can be slow.
+            return
           end
-
-          if !same_arguments?(node1, node2)
-            conflict = conflicts[:argument][response_key]
-
-            conflict.add_conflict(node1, GraphQL::Language.serialize(serialize_field_args(node1)))
-            conflict.add_conflict(node2, GraphQL::Language.serialize(serialize_field_args(node2)))
-
-            @conflict_count += 1
+        elsif @legacy_exclusivity
+          # If the spec rule doesn't treat these fields as mutually exclusive, it can find a conflict
+          spec_exclusive = @spec_inherited_exclusive || spec_mutually_exclusive?(field1, field2)
+          if !spec_exclusive && !@spec_check_needed && (node1.name != node2.name || !same_arguments?(node1, node2))
+            @spec_check_needed = true
           end
         end
 
@@ -344,74 +497,77 @@ module GraphQL
             (t1 = field1.return_type) &&
             (t2 = field2.return_type) &&
             return_types_conflict?(t1, t2)
-
-          return_error = nil
-          message_override = nil
-
-          case @schema.allow_legacy_invalid_return_type_conflicts
-          when false
-            return_error = true
-          when true
-            legacy_handling = @schema.legacy_invalid_return_type_conflicts(@context.query, t1, t2, node1, node2)
-
-            case legacy_handling
-            when nil
-              return_error = false
-            when :return_validation_error
-              return_error = true
-            when String
-              return_error = true
-              message_override = legacy_handling
-            else
-              raise GraphQL::Error, "#{@schema}.legacy_invalid_scalar_conflicts returned unexpected value: #{legacy_handling.inspect}. Expected `nil`, String, or `:return_validation_error`."
-            end
+          if @find_spec_conflicts
+            (@spec_conflicts ||= []) << [response_key, node1, node2, false, false, t1, t2]
           else
-            return_error = false
-            @context.query.logger.warn <<~WARN
-              GraphQL-Ruby encountered mismatched types in this query: `#{t1.to_type_signature}` (at #{node1.line}:#{node1.col}) vs. `#{t2.to_type_signature}` (at #{node2.line}:#{node2.col}).
-              This will return an error in future GraphQL-Ruby versions, as per the GraphQL specification
-              Learn about migrating here: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_return_type_conflicts-class_method
-            WARN
-          end
-
-          if return_error
-            conflict = conflicts[:return_type][response_key]
-
-            if message_override
-              conflict.message = message_override
-            end
-
-            conflict.add_conflict(node1, "`#{t1.to_type_signature}`")
-            conflict.add_conflict(node2, "`#{t2.to_type_signature}`")
-            @conflict_count += 1
+            add_return_type_conflict(response_key, t1, t2, node1, node2)
+            add_legacy_conflict_nodes(node1, node2) if @legacy_exclusivity
           end
         end
 
-        find_conflicts_between_sub_selection_sets(
-          field1,
-          field2,
-          mutually_exclusive: are_mutually_exclusive,
-        )
+        if spec_exclusive && !@spec_inherited_exclusive
+          @spec_inherited_exclusive = true
+          find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive: are_mutually_exclusive)
+          @spec_inherited_exclusive = false
+        else
+          find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive: are_mutually_exclusive)
+        end
       end
 
+      #: (untyped response_key, untyped t1, untyped t2, GraphQL::Language::Nodes::Field node1, GraphQL::Language::Nodes::Field node2) -> void
+      def add_return_type_conflict(response_key, t1, t2, node1, node2)
+        return_error = nil
+        message_override = nil
+
+        case @schema.allow_legacy_invalid_return_type_conflicts
+        when false
+          return_error = true
+        when true
+          legacy_handling = @schema.legacy_invalid_return_type_conflicts(@context.query, t1, t2, node1, node2)
+
+          case legacy_handling
+          when nil
+            return_error = false
+          when :return_validation_error
+            return_error = true
+          when String
+            return_error = true
+            message_override = legacy_handling
+          else
+            raise GraphQL::Error, "#{@schema}.legacy_invalid_scalar_conflicts returned unexpected value: #{legacy_handling.inspect}. Expected `nil`, String, or `:return_validation_error`."
+          end
+        else
+          return_error = false
+          @context.query.logger.warn <<~WARN
+            GraphQL-Ruby encountered mismatched types in this query: `#{t1.to_type_signature}` (at #{node1.line}:#{node1.col}) vs. `#{t2.to_type_signature}` (at #{node2.line}:#{node2.col}).
+            This will return an error in future GraphQL-Ruby versions, as per the GraphQL specification
+            Learn about migrating here: https://graphql-ruby.org/api-doc/#{GraphQL::VERSION}/GraphQL/Schema.html#allow_legacy_invalid_return_type_conflicts-class_method
+          WARN
+        end
+
+        if return_error
+          conflict = conflicts[:return_type][response_key]
+
+          if message_override
+            conflict.message = message_override
+          end
+
+          conflict.add_conflict(node1, "`#{t1.to_type_signature}`")
+          conflict.add_conflict(node2, "`#{t2.to_type_signature}`")
+          @conflict_count += 1
+        end
+      end
+
+      # SameResponseShape in the spec. Compare one wrapper at a time: `list?` is also true for a non-null list.
+      #: (untyped type1, untyped type2) -> bool
       def return_types_conflict?(type1, type2)
-        if type1.list?
-          if type2.list?
-            return_types_conflict?(type1.of_type, type2.of_type)
-          else
-            true
-          end
-        elsif type2.list?
-          true
-        elsif type1.non_null?
-          if type2.non_null?
-            return_types_conflict?(type1.of_type, type2.of_type)
-          else
-            true
-          end
-        elsif type2.non_null?
-          true
-        elsif type1.kind.leaf? && type2.kind.leaf?
+        kind1 = type1.kind
+        kind2 = type2.kind
+        if kind1.non_null? || kind2.non_null?
+          !(kind1.non_null? && kind2.non_null?) || return_types_conflict?(type1.of_type, type2.of_type)
+        elsif kind1.list? || kind2.list?
+          !(kind1.list? && kind2.list?) || return_types_conflict?(type1.of_type, type2.of_type)
+        elsif kind1.leaf? || kind2.leaf?
           type1 != type2
         else
           false
@@ -456,7 +612,7 @@ module GraphQL
         if inner && inner.key?(return_type)
           inner[return_type]
         else
-          result = collect_fields(node.selections, owner_type: return_type, parents: [return_type])
+          result = collect_fields(node.selections, owner_type: return_type, parents: @legacy_exclusivity ? [return_type] : nil)
           inner ||= {}.compare_by_identity
           inner[return_type] = result
           @sub_fields_cache[node] = inner
@@ -549,46 +705,47 @@ module GraphQL
         serialized_args
       end
 
-      # Given two list of parents, find out if they are mutually exclusive
-      def mutually_exclusive?(parents1, parents2)
+      #: (Field field1, Field field2) -> bool
+      def mutually_exclusive?(field1, field2)
+        @legacy_exclusivity ? legacy_mutually_exclusive?(field1.parents, field2.parents) : spec_mutually_exclusive?(field1, field2)
+      end
+
+      # As in the spec (FieldsInSetCanMerge), only fields on different object types are mutually exclusive,
+      # even if no runtime object can be selected by both of them.
+      #: (Field field1, Field field2) -> bool
+      def spec_mutually_exclusive?(field1, field2)
+        owner_type1 = field1.owner_type
+        owner_type2 = field2.owner_type
+        !owner_type1.equal?(owner_type2) && owner_type1.kind.object? && owner_type2.kind.object?
+      end
+
+      # Previous versions compared the lists of type conditions above each field, position by position,
+      # and treated lists with different lengths as mutually exclusive.
+      #: (Array[untyped] parents1, Array[untyped] parents2) -> bool
+      def legacy_mutually_exclusive?(parents1, parents2)
         if parents1.empty? || parents2.empty?
           false
         elsif parents1.length == parents2.length
+          cache = (@mutually_exclusive_cache ||= {}.compare_by_identity)
           i = 0
           len = parents1.length
-
           while i < len
             type1 = parents1[i - 1]
             type2 = parents2[i - 1]
             unless type1.equal?(type2)
-              inner = @mutually_exclusive_cache[type1]
-              if inner
-                cached = inner[type2]
-                if cached.nil?
-                  cached = types_mutually_exclusive?(type1, type2)
-                  inner[type2] = cached
-                end
-              else
-                cached = types_mutually_exclusive?(type1, type2)
-                inner = {}.compare_by_identity
-                inner[type2] = cached
-                @mutually_exclusive_cache[type1] = inner
+              inner = (cache[type1] ||= {}.compare_by_identity)
+              exclusive = inner[type2]
+              if exclusive.nil?
+                exclusive = inner[type2] = (@types.possible_types(type1) & @types.possible_types(type2)).empty?
               end
-              return true if cached
+              return true if exclusive
             end
             i += 1
           end
-
           false
         else
           true
         end
-      end
-
-      def types_mutually_exclusive?(type1, type2)
-        possible_right_types = @types.possible_types(type1)
-        possible_left_types = @types.possible_types(type2)
-        (possible_right_types & possible_left_types).empty?
       end
     end
   end
