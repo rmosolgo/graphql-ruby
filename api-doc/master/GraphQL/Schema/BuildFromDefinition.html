@@ -487,7 +487,7 @@
               <div class="method-heading">
                 <a href="#method-c-from_definition" title="Link to this method">
                   <span class="method-name">from_definition</span>
-                  <span class="method-args">(schema_superclass, definition_string, parser: GraphQL.default_parser, **kwargs)</span>
+                  <span class="method-args">(schema_superclass, definition_string, default_resolve:, parser: GraphQL.default_parser, using: {}, base_types: {}, relay: false)</span>
                 </a>
               </div>
 
@@ -507,11 +507,11 @@
 
           <div class="method-source-code" id="from_definition-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/build_from_definition.rb, line 10</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">from_definition</span>(<span class="ruby-identifier">schema_superclass</span>, <span class="ruby-identifier">definition_string</span>, <span class="ruby-value">parser:</span> <span class="ruby-constant">GraphQL</span>.<span class="ruby-identifier">default_parser</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">from_definition</span>(<span class="ruby-identifier">schema_superclass</span>, <span class="ruby-identifier">definition_string</span>, <span class="ruby-value">default_resolve:</span>, <span class="ruby-value">parser:</span> <span class="ruby-constant">GraphQL</span>.<span class="ruby-identifier">default_parser</span>, <span class="ruby-value">using:</span> {}, <span class="ruby-value">base_types:</span> {}, <span class="ruby-value">relay:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-identifier">parser</span><span class="ruby-operator">::</span><span class="ruby-constant">SchemaParser</span>)
-    <span class="ruby-identifier">parser</span> = <span class="ruby-identifier">parser</span><span class="ruby-operator">::</span><span class="ruby-constant">SchemaParser</span>
+    <span class="ruby-identifier">parser</span> = <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">SchemaParser</span>)
   <span class="ruby-keyword">end</span>
-  <span class="ruby-identifier">from_document</span>(<span class="ruby-identifier">schema_superclass</span>, <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">definition_string</span>), <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
+  <span class="ruby-identifier">from_document</span>(<span class="ruby-identifier">schema_superclass</span>, <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-identifier">definition_string</span>), <span class="ruby-value">default_resolve</span><span class="ruby-value">:</span> <span class="ruby-identifier">default_resolve</span>, <span class="ruby-value">using</span><span class="ruby-value">:</span> <span class="ruby-identifier">using</span>, <span class="ruby-value">base_types</span><span class="ruby-value">:</span> <span class="ruby-identifier">base_types</span>, <span class="ruby-value">relay</span><span class="ruby-value">:</span> <span class="ruby-identifier">relay</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -540,7 +540,7 @@
               <div class="method-heading">
                 <a href="#method-c-from_definition_path" title="Link to this method">
                   <span class="method-name">from_definition_path</span>
-                  <span class="method-args">(schema_superclass, definition_path, parser: GraphQL.default_parser, **kwargs)</span>
+                  <span class="method-args">(schema_superclass, definition_path, default_resolve:, parser: GraphQL.default_parser, using: {}, base_types: {}, relay: false)</span>
                 </a>
               </div>
 
@@ -560,11 +560,11 @@
 
           <div class="method-source-code" id="from_definition_path-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/build_from_definition.rb, line 17</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">from_definition_path</span>(<span class="ruby-identifier">schema_superclass</span>, <span class="ruby-identifier">definition_path</span>, <span class="ruby-value">parser:</span> <span class="ruby-constant">GraphQL</span>.<span class="ruby-identifier">default_parser</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">from_definition_path</span>(<span class="ruby-identifier">schema_superclass</span>, <span class="ruby-identifier">definition_path</span>, <span class="ruby-value">default_resolve:</span>, <span class="ruby-value">parser:</span> <span class="ruby-constant">GraphQL</span>.<span class="ruby-identifier">default_parser</span>, <span class="ruby-value">using:</span> {}, <span class="ruby-value">base_types:</span> {}, <span class="ruby-value">relay:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-identifier">parser</span><span class="ruby-operator">::</span><span class="ruby-constant">SchemaParser</span>)
-    <span class="ruby-identifier">parser</span> = <span class="ruby-identifier">parser</span><span class="ruby-operator">::</span><span class="ruby-constant">SchemaParser</span>
+    <span class="ruby-identifier">parser</span> = <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">SchemaParser</span>)
   <span class="ruby-keyword">end</span>
-  <span class="ruby-identifier">from_document</span>(<span class="ruby-identifier">schema_superclass</span>, <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">parse_file</span>(<span class="ruby-identifier">definition_path</span>), <span class="ruby-operator">**</span><span class="ruby-identifier">kwargs</span>)
+  <span class="ruby-identifier">from_document</span>(<span class="ruby-identifier">schema_superclass</span>, <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">parse_file</span>(<span class="ruby-identifier">definition_path</span>), <span class="ruby-value">default_resolve</span><span class="ruby-value">:</span> <span class="ruby-identifier">default_resolve</span>, <span class="ruby-value">using</span><span class="ruby-value">:</span> <span class="ruby-identifier">using</span>, <span class="ruby-value">base_types</span><span class="ruby-value">:</span> <span class="ruby-identifier">base_types</span>, <span class="ruby-value">relay</span><span class="ruby-value">:</span> <span class="ruby-identifier">relay</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
 
