@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 require "graphql/schema/build_from_definition/resolve_map"
 
 module GraphQL
@@ -7,18 +7,18 @@ module GraphQL
     module BuildFromDefinition
       class << self
         # See [Schema.from_definition](rdoc-ref:Schema.from_definition)
-        def from_definition(schema_superclass, definition_string, parser: GraphQL.default_parser, **kwargs)
+        def from_definition(schema_superclass, definition_string, default_resolve:, parser: GraphQL.default_parser, using: {}, base_types: {}, relay: false)
           if defined?(parser::SchemaParser)
-            parser = parser::SchemaParser
+            parser = parser.const_get(:SchemaParser)
           end
-          from_document(schema_superclass, parser.parse(definition_string), **kwargs)
+          from_document(schema_superclass, parser.parse(definition_string), default_resolve: default_resolve, using: using, base_types: base_types, relay: relay)
         end
 
-        def from_definition_path(schema_superclass, definition_path, parser: GraphQL.default_parser, **kwargs)
+        def from_definition_path(schema_superclass, definition_path, default_resolve:, parser: GraphQL.default_parser, using: {}, base_types: {}, relay: false)
           if defined?(parser::SchemaParser)
-            parser = parser::SchemaParser
+            parser = parser.const_get(:SchemaParser)
           end
-          from_document(schema_superclass, parser.parse_file(definition_path), **kwargs)
+          from_document(schema_superclass, parser.parse_file(definition_path), default_resolve: default_resolve, using: using, base_types: base_types, relay: relay)
         end
 
         def from_document(schema_superclass, document, default_resolve:, using: {}, base_types: {}, relay: false)
@@ -48,11 +48,12 @@ module GraphQL
             default_resolve = ResolveMap.new(default_resolve)
           end
 
-          schema_defns = document.definitions.select { |d| d.is_a?(GraphQL::Language::Nodes::SchemaDefinition) }
+          definitions = document.definitions #: Array[untyped]
+          schema_defns = definitions.select { |d| d.is_a?(GraphQL::Language::Nodes::SchemaDefinition) }
           if schema_defns.size > 1
             raise InvalidDocumentError.new('Must provide only one schema definition.')
           end
-          schema_definition = schema_defns.first
+          schema_definition = schema_defns.first #: GraphQL::Language::Nodes::SchemaDefinition?
           types = {}
           directives = schema_superclass.directives.dup
           # Directive applications are queued while types are built, then applied once every type is complete,
@@ -62,7 +63,7 @@ module GraphQL
           # Classes (or modules, for interfaces) made before any type is built, so that references to them don't need late-bound types
           type_classes = {}
           interface_definitions = {}
-          document.definitions.each do |d|
+          definitions.each do |d|
             if d.respond_to?(:name)
               definitions_by_name[d.name] ||= d
               if !type_classes.key?(d.name)
@@ -78,7 +79,10 @@ module GraphQL
                   nil
                 end
                 if base_type
-                  type_classes[d.name] = Class.new(base_type) { graphql_name(d.name) }
+                  type_classes[d.name] = Class.new(base_type) {
+                    #: self as singleton(GraphQL::Schema::Member)
+                    graphql_name(d.name)
+                  }
                 end
               end
             end
@@ -122,7 +126,7 @@ module GraphQL
           directive_type_resolver.links = type_links
 
           directives.merge!(GraphQL::Schema.default_directives)
-          document.definitions.each do |definition|
+          definitions.each do |definition|
             if definition.is_a?(GraphQL::Language::Nodes::DirectiveDefinition)
               directives[definition.name] = build_directive(definition, directive_type_resolver)
             end
@@ -131,8 +135,8 @@ module GraphQL
           # In case any directives referenced built-in types for their arguments:
           replace_late_bound_types_with_built_in(types)
 
-          schema_extensions = nil
-          document.definitions.each do |definition|
+          schema_extensions = nil #: Array[untyped]?
+          definitions.each do |definition|
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition, GraphQL::Language::Nodes::DirectiveDefinition
               nil # already handled
@@ -291,7 +295,7 @@ module GraphQL
               attr_accessor :definition_default_resolve
             end
 
-            self.definition_default_resolve = default_resolve
+            @definition_default_resolve = default_resolve
 
             def definition_default_resolve
               self.class.definition_default_resolve
@@ -371,8 +375,11 @@ module GraphQL
 
           own_types = schema_class.send(:own_types)
           found_types.each do |type|
-            if !(Module === type) ||
-                (Class === type && GraphQL::Schema::Directive > type) ||
+            if !(Module === type)
+              return false
+            end
+            type = type #: as GraphQL::Schema::Member::type_definition
+            if (Class === type && GraphQL::Schema::Directive > type) ||
                 ((prev_type = own_types[type.graphql_name]) && !prev_type.equal?(type))
               return false
             end
@@ -389,14 +396,16 @@ module GraphQL
             if Class === type
               if GraphQL::Schema::Object > type
                 (possible_types[type] ||= []) << type
-                type.interface_type_memberships.each do |type_membership|
+                object_type = type #: as singleton(GraphQL::Schema::Object)
+                object_type.interface_type_memberships.each do |type_membership|
                   interface_type = type_membership.abstract_type
                   if (possible_types_sets[interface_type] ||= Set.new).add?(type)
                     (possible_types[interface_type] ||= []) << type
                   end
                 end
               elsif GraphQL::Schema::Union > type
-                member_types = possible_types[type] = type.all_possible_types
+                union_type = type #: as singleton(GraphQL::Schema::Union)
+                member_types = possible_types[type] = union_type.all_possible_types
                 member_types.each do |member_type|
                   (union_memberships[member_type.graphql_name] ||= []) << type
                 end
@@ -503,7 +512,8 @@ module GraphQL
             end
             options = args_to_kwargs(dir_class, dir_node, type_resolver)
             if is_schema
-              definition.schema_directive(dir_class, **options)
+              schema_class = definition #: as singleton(GraphQL::Schema)
+              schema_class.schema_directive(dir_class, **options)
             else
               definition.directive(dir_class, **options)
             end
@@ -619,7 +629,11 @@ module GraphQL
         def check_transitive_interfaces(definition, definitions_by_name)
           interface_names = definition.interfaces.map(&:name)
           if !interface_names.empty?
-            transitive_names = interface_names.map { |n| definitions_by_name[n]&.interfaces&.map(&:name) }
+            transitive_names = interface_names.map { |n|
+              defn = definitions_by_name[n]
+              # Other kinds of types don't have `interfaces`; `implements` raises a better error for them later.
+              defn.is_a?(Language::Nodes::InterfaceTypeDefinition) ? defn.interfaces.map(&:name) : nil
+            }
             transitive_names.flatten!
             transitive_names.compact!
           else
@@ -632,6 +646,7 @@ module GraphQL
 
         def new_interface_module(name, base_type)
           Module.new {
+            #: self as GraphQL::Schema::Member::interface_definition
             include base_type
             graphql_name(name)
           }
@@ -814,7 +829,10 @@ module GraphQL
 
           # The class made ahead of time for `type_name` (returned once, to be built), or a new subclass of `base_type`
           def type_class(type_name, base_type)
-            @type_classes.delete(type_name) || Class.new(base_type) { graphql_name(type_name) }
+            @type_classes.delete(type_name) || Class.new(base_type) {
+              #: self as singleton(GraphQL::Schema::Member)
+              graphql_name(type_name)
+            }
           end
 
           def interface_module(type_name, base_type)
