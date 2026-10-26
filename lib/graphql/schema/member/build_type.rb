@@ -185,12 +185,15 @@ module GraphQL
           end
           string2 = string.dup
 
-          string2.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
-          string2.gsub!(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+          # URLDecoder -> URL_Decoder, someThing -> some_Thing
+          string2.gsub!(UNDERSCORE_BOUNDARY, "_")
           string2.downcase!
 
           string2
         end
+
+        UNDERSCORE_BOUNDARY = /(?<=[A-Z])(?=[A-Z][a-z])|(?<=[a-z\d])(?=[A-Z])/
+        private_constant :UNDERSCORE_BOUNDARY
       end
     end
   end

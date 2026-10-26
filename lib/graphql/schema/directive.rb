@@ -114,6 +114,10 @@ module GraphQL
           @repeatable = new_value
         end
 
+        # When this is a Hash, instances with equal, statically coercible arguments reuse the first instance's coerced arguments.
+        # BuildFromDefinition uses this while it builds a schema, then removes it.
+        attr_accessor :coerced_arguments_cache # :nodoc:
+
         private
 
         def inherited(subclass)
@@ -124,6 +128,7 @@ module GraphQL
             @locations = parent_class.locations
             @is_runtime = parent_class.runtime?
             @repeatable = false
+            @coerced_arguments_cache = nil
           end
         end
       end
@@ -144,6 +149,14 @@ module GraphQL
       def initialize(owner, **arguments)
         @owner = owner
         assert_valid_owner
+        if (arguments_cache = self.class.coerced_arguments_cache)
+          if !self.class.arguments_statically_coercible?
+            arguments_cache = nil
+          elsif (cached_arguments = arguments_cache[arguments])
+            @arguments = cached_arguments
+            return
+          end
+        end
         # It's be nice if we had the real context here, but we don't. What we _would_ get is:
         # - error handling
         # - lazy resolution
@@ -194,6 +207,9 @@ module GraphQL
         @arguments = self.class.coerce_arguments(nil, arguments, context)
         if @arguments.is_a?(GraphQL::ExecutionError)
           raise @arguments
+        end
+        if arguments_cache
+          arguments_cache[arguments] = @arguments
         end
       end
 

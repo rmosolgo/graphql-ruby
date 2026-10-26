@@ -1913,6 +1913,28 @@ type ReachableType implements Node {
       assert schema.get_type("E") <= MyEnum
       assert schema.get_type("F") <= MyInputObject
     end
+
+    class MyField < GraphQL::Schema::Field; end
+
+    class MyObjectWithFieldClass < GraphQL::Schema::Object
+      field_class(MyField)
+    end
+
+    class MyObjectWithFieldMethod < GraphQL::Schema::Object
+      def self.field(*args, **kwargs, &block)
+        kwargs[:description] ||= "Added by .field"
+        super
+      end
+    end
+
+    it "uses custom field classes and field methods" do
+      sdl = "type Query { a: Int }"
+      schema = GraphQL::Schema.from_definition(sdl, base_types: { object: MyObjectWithFieldClass })
+      assert_instance_of MyField, schema.get_type("Query").get_field("a")
+
+      schema = GraphQL::Schema.from_definition(sdl, base_types: { object: MyObjectWithFieldMethod })
+      assert_equal "Added by .field", schema.get_type("Query").get_field("a").description
+    end
   end
 
   describe "Type extensions" do
