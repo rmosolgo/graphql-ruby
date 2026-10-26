@@ -402,7 +402,7 @@
       </summary>
       <ul class="nav-list" role="directory">
 
-        <li ><a href="#method-i-result">result</a></li>
+        <li class="calls-super" ><a href="#method-i-result">result</a></li>
 
       </ul>
     </details>
@@ -523,7 +523,7 @@
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">result</span>
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">subject</span>.<span class="ruby-identifier">max_complexity</span>.<span class="ruby-identifier">nil?</span>
 
-  <span class="ruby-identifier">total_complexity</span> = <span class="ruby-identifier">max_possible_complexity</span>
+  <span class="ruby-identifier">total_complexity</span> = <span class="ruby-keyword">super</span>
 
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">total_complexity</span> <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">subject</span>.<span class="ruby-identifier">max_complexity</span>
     <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">AnalysisError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">Query has complexity of </span><span class="ruby-string">#{</span><span class="ruby-identifier">total_complexity</span><span class="ruby-string">}</span><span class="ruby-string">, which exceeds max complexity of </span><span class="ruby-string">#{</span><span class="ruby-identifier">subject</span>.<span class="ruby-identifier">max_complexity</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>)
@@ -540,6 +540,11 @@
 
           
 
+
+            <div class="method-calls-super">
+              Calls superclass method
+              
+            </div>
 
         </div>
 

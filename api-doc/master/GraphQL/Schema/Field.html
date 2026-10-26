@@ -1898,7 +1898,7 @@
         <span class="ruby-identifier">max_possible_page_size</span> = <span class="ruby-identifier">arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">last</span>]
       <span class="ruby-keyword">end</span>
     <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ExecutionError</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span>)
-      <span class="ruby-identifier">raise</span> <span class="ruby-identifier">arguments</span>
+      <span class="ruby-keyword">return</span> <span class="ruby-identifier">child_complexity</span>
     <span class="ruby-keyword">end</span>
 
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">max_possible_page_size</span>.<span class="ruby-identifier">nil?</span>
