@@ -677,7 +677,7 @@ describe GraphQL::Analysis::QueryComplexity do
       it "handles the error" do
         res = GraphQL::Query.new(complexity_schema, query_string).result
         assert_equal ["count must be less than 50"], res["errors"].map { |e| e["message"] }
-        assert_equal [], reduce_result, "It doesn't finish calculation"
+        assert_equal [2], reduce_result, "It still counts the child complexity"
       end
     end
 
@@ -945,6 +945,51 @@ describe GraphQL::Analysis::QueryComplexity do
           }
         |)
         assert_equal 1003, b
+      end
+    end
+
+    describe "when enforcing max_complexity" do
+      { future: 12, legacy: 7, compare: 1003, nil => 7 }.each do |mode, expected_cost|
+        describe "with mode #{mode.inspect}" do
+          let(:schema) do
+            Class.new(MaxOfPossibleScopes) do
+              complexity_cost_calculation_mode(mode)
+
+              def self.legacy_complexity_cost_calculation_mismatch(subject, future_cost, legacy_cost)
+                subject.context[:complexity_mismatch] = [future_cost, legacy_cost]
+                1003
+              end
+            end
+          end
+          let(:query_string) { "{ entity { ...on Farm { cheese { kind } } ...on Producer { cheese { kind } } } }" }
+
+          it "uses the reported cost for the query limit" do
+            query = GraphQL::Query.new(schema, query_string, max_complexity: 10)
+            results = GraphQL::Analysis.analyze_query(query, [GraphQL::Analysis::QueryComplexity, GraphQL::Analysis::MaxQueryComplexity])
+
+            assert_equal expected_cost, results.first
+            expected_errors = expected_cost > 10 ? ["Query has complexity of #{expected_cost}, which exceeds max complexity of 10"] : []
+            assert_equal expected_errors, results.drop(1).compact.map(&:message)
+            if mode == :compare
+              assert_equal [12, 7], query.context[:complexity_mismatch]
+            end
+          end
+
+          it "uses the configured mode for the multiplex limit" do
+            queries = Array.new(2) { GraphQL::Query.new(schema, query_string) }
+            multiplex = GraphQL::Execution::Multiplex.new(schema: schema, queries: queries, context: {}, max_complexity: 20)
+            GraphQL::Analysis.analyze_multiplex(multiplex, [GraphQL::Analysis::MaxQueryComplexity])
+
+            total_cost = mode == :compare ? expected_cost : expected_cost * 2
+            expected_errors = total_cost > 20 ? ["Query has complexity of #{total_cost}, which exceeds max complexity of 20"] : []
+            queries.each do |query|
+              assert_equal expected_errors, query.analysis_errors.map(&:message)
+            end
+            if mode == :compare
+              assert_equal [24, 14], multiplex.context[:complexity_mismatch]
+            end
+          end
+        end
       end
     end
 

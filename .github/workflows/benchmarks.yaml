@@ -35,6 +35,8 @@ jobs:
         run: bundle exec rake bench:track_runtime | tee tmp/benchmark_runtime.txt
       - name: Run memory benchmarks
         run: bundle exec rake bench:track_memory | tee tmp/benchmark_memory.txt
+      - name: Run schema memory benchmarks
+        run: bundle exec rake bench:track_schema_memory | tee tmp/benchmark_schema_memory.txt
       # Results are charted at https://rmosolgo.github.io/graphql-ruby-benchmarks/dev/bench/
       - name: Store runtime results
         uses: rmosolgo/github-action-benchmark@2f17b61ba59e765ca322ad380b4f85f8722c9c38 # ruby-v1
@@ -49,6 +51,10 @@ jobs:
           alert-threshold: '150%'
           fail-on-alert: false
           summary-always: true
+      # The action clones gh-repository into ./benchmark-data-repository and leaves it there,
+      # so the next store step's `git clone` fails unless it's removed first
+      - name: Clean up benchmark data repository
+        run: rm -rf benchmark-data-repository
       - name: Store memory results
         uses: rmosolgo/github-action-benchmark@2f17b61ba59e765ca322ad380b4f85f8722c9c38 # ruby-v1
         with:
@@ -59,6 +65,21 @@ jobs:
           github-token: ${{ secrets.BENCHMARK_RESULTS_TOKEN }}
           auto-push: true
           # Allocations are nearly deterministic, so flag small increases
+          alert-threshold: '110%'
+          fail-on-alert: false
+          summary-always: true
+      - name: Clean up benchmark data repository
+        run: rm -rf benchmark-data-repository
+      - name: Store schema memory results
+        uses: rmosolgo/github-action-benchmark@2f17b61ba59e765ca322ad380b4f85f8722c9c38 # ruby-v1
+        with:
+          name: Schema memory
+          tool: rubymemory
+          output-file-path: tmp/benchmark_schema_memory.txt
+          gh-repository: github.com/rmosolgo/graphql-ruby-benchmarks
+          github-token: ${{ secrets.BENCHMARK_RESULTS_TOKEN }}
+          auto-push: true
+          # Retained memory is nearly deterministic, so flag small increases
           alert-threshold: '110%'
           fail-on-alert: false
           summary-always: true
