@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     class Visibility
@@ -43,7 +43,8 @@ module GraphQL
                 case type.kind.name
                 when "OBJECT", "INTERFACE"
                   type.interface_type_memberships.each do |itm|
-                    append_unvisited_type(type, itm.abstract_type)
+                    # Late-bound interfaces are stored as a String or LateBoundType instead of a TypeMembership
+                    append_unvisited_type(type, itm.respond_to?(:abstract_type) ? itm.abstract_type : itm)
                   end
                   if type.kind.interface?
                     type.orphan_types.each do |orphan_type|
@@ -136,11 +137,14 @@ module GraphQL
         def update_type_owner(owner, type)
           case owner
           when Module
+            owner = owner #: as GraphQL::Schema::Member::type_definition
             if owner.kind.union?
-              owner.assign_type_membership_object_type(type)
+              union_type = owner #: as singleton(GraphQL::Schema::Union)
+              union_type.assign_type_membership_object_type(type)
             elsif type.kind.interface?
+              implementing_type = owner #: as GraphQL::Schema::Member::HasInterfaces
               new_interfaces = []
-              owner.interfaces.each do |int_t|
+              implementing_type.interfaces.each do |int_t|
                 if int_t.is_a?(String) && int_t == type.graphql_name
                   new_interfaces << type
                 elsif int_t.is_a?(LateBoundType) && int_t.graphql_name == type.graphql_name
@@ -150,15 +154,12 @@ module GraphQL
                   # they were probably already added, maybe with options.
                 end
               end
-              owner.implements(*new_interfaces)
+              implementing_type.implements(*new_interfaces)
               new_interfaces.each do |int|
-                pt = @possible_types[int] ||= []
-                if !pt.include?(owner) && owner.is_a?(Class)
-                  pt << owner
-                end
                 int.interfaces.each do |indirect_int|
-                  if indirect_int.is_a?(LateBoundType) && (indirect_int_type = get_type(indirect_int.graphql_name)) # rubocop:disable Development/ContextIsPassedCop
-                    update_type_owner(owner, indirect_int_type)
+                  if indirect_int.is_a?(LateBoundType) || indirect_int.is_a?(String)
+                    # Resolve it like any other late-bound type, then add it to `owner`, too
+                    append_unvisited_type(owner, indirect_int)
                   end
                 end
               end

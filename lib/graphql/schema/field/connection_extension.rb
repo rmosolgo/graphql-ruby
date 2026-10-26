@@ -5,6 +5,8 @@ module GraphQL
   class Schema
     class Field
       class ConnectionExtension < GraphQL::Schema::FieldExtension
+        extras [:lookahead]
+
         def apply
           field.argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
           field.argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
@@ -19,13 +21,18 @@ module GraphQL
           next_args.delete(:last)
           next_args.delete(:before)
           next_args.delete(:after)
-          yield(object || objects, next_args, arguments)
+          # Keep the extension's extras (`:lookahead`) out of `connection.arguments`
+          original_arguments = added_extras ? arguments.reject { |k, _v| added_extras.include?(k) } : arguments
+          yield(object || objects, next_args, original_arguments)
         end
 
         def after_resolve(value:, object:, arguments:, context:, memo:)
           original_arguments = memo
+          lookahead = arguments[:lookahead]
           context.query.after_lazy(value) do |resolved_value|
-            context.schema.connections.populate_connection(field, object.object, resolved_value, original_arguments, context)
+            connection = context.schema.connections.populate_connection(field, object.object, resolved_value, original_arguments, context)
+            connection.lookahead ||= lookahead if connection
+            connection
           end
         end
       end

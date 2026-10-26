@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Execution
@@ -15,16 +15,18 @@ module GraphQL
         # :call-seq:
         #   resolve_all(results, dataloader) -> void
         def self.resolve_all(results, dataloader)
-          warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{caller(1, 5).map { |l| "\n    #{l}"}.join}"
+          backtrace = caller(1, 5) #: as !nil
+          warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{backtrace.map { |l| "\n    #{l}"}.join}"
           dataloader.append_job { resolve(results, dataloader) }
           nil
         end
 
         # **Deprecated:** Call `dataloader.run` instead
         def self.resolve_each_depth(lazies_at_depth, dataloader)
-          warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{caller(1, 5).map { |l| "\n    #{l}"}.join}"
+          backtrace = caller(1, 5) #: as !nil
+          warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{backtrace.map { |l| "\n    #{l}"}.join}"
 
-          smallest_depth = nil
+          smallest_depth = nil #: Integer?
           lazies_at_depth.each_key do |depth_key|
             smallest_depth ||= depth_key
             if depth_key < smallest_depth
@@ -48,7 +50,8 @@ module GraphQL
 
         # **Deprecated:** Call `dataloader.run` instead
         def self.resolve(results, dataloader)
-          warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{caller(1, 5).map { |l| "\n    #{l}"}.join}"
+          backtrace = caller(1, 5) #: as !nil
+          warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{backtrace.map { |l| "\n    #{l}"}.join}"
           # There might be pending jobs here that _will_ write lazies
           # into the result hash. We should run them out, so we
           # can be sure that all lazies will be present in the result hashes.

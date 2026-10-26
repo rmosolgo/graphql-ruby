@@ -409,8 +409,8 @@ describe GraphQL::Execution::Lookahead do
       end
 
       it "uses empty arguments" do
-        query_str = "query getEcho($input: String = null) { data { echo(input: $input) } }"
-        res = NestedArgumentErrorSchema.execute(query_str, variables: {})
+        query_str = "query getEcho($input: String = \"Hello\") { data { echo(input: $input) } }"
+        res = NestedArgumentErrorSchema.execute(query_str, variables: { "input" => nil })
         assert_equal ["`null` is not a valid input for `String!`, please provide a value for this argument."], res["errors"].map { |err| err["message"] }
         assert_equal Hash, res.context[:args_class]
 

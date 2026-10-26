@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 
 module GraphQL
   module Types
@@ -15,7 +15,8 @@ module GraphQL
         end
 
         def default_global_id
-          self.class.default_global_id(object, context)
+          node_class = self.class #: as GraphQL::Types::Relay::NodeBehaviors::ExecutionMethods
+          node_class.default_global_id(object, context)
         end
 
         module ClassMethods

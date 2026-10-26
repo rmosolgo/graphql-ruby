@@ -50,7 +50,7 @@ module GraphQL
         @dataloader.append_job(step)
       end
 
-      attr_reader :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
+      attr_reader :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers
 
       # **Returns**
       #

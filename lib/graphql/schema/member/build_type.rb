@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   class Schema
     class Member
@@ -114,7 +114,8 @@ module GraphQL
             to_type_name(something.first)
           when Module
             if something.respond_to?(:graphql_name)
-              something.graphql_name
+              type_defn = something #: as GraphQL::Schema::Member::type_definition
+              type_defn.graphql_name
             else
               to_type_name(something.name)
             end

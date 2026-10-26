@@ -30,6 +30,12 @@ module GraphQL
       end
 
       def has_next_page
+        # If the query loads the page anyway, load it now so its extra row answers this
+        if @has_next_page.nil? && peek_next_page? &&
+            (lookahead.selects?(:nodes) || lookahead.selects?(:edges) ||
+              page_info_selection.selects?(:start_cursor) || page_info_selection.selects?(:end_cursor))
+          load_nodes
+        end
         if @has_next_page.nil?
           @has_next_page = if before_offset && before_offset > 0
             true
@@ -48,12 +54,25 @@ module GraphQL
 
       def cursor_for(item)
         load_nodes
-        # index in nodes + existing offset + 1 (because it's offset, not index)
-        offset = nodes.index(item) + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
-        encode(offset.to_s)
+        position = cursor_index_for(item, nodes)
+        offset_cursor_for_position(position)
+      end
+
+      def cursor_for_position(item, position) # :nodoc:
+        if self.class.custom_cursor_for?(RelationConnection)
+          super
+        else
+          offset_cursor_for_position(position)
+        end
       end
 
       private
+
+      def offset_cursor_for_position(position)
+        # position in nodes + existing offset + 1 (because it's offset, not index)
+        offset = position + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
+        encode(offset.to_s)
+      end
 
       # **Parameters**
       #
@@ -68,7 +87,11 @@ module GraphQL
       # :call-seq:
       #   relation_larger_than(Object relation, Integer _initial_offset, Integer size) -> bool
       def relation_larger_than(relation, _initial_offset, size)
-        relation_count(set_limit(relation, size + 1)) == size + 1
+        if (limit = relation_limit(relation)) && limit <= size
+          false
+        else
+          relation_count(set_limit(relation, size + 1)) == size + 1
+        end
       end
 
       # **Parameters**
@@ -172,20 +195,21 @@ module GraphQL
 
           if after_offset
             next_offset += after_offset
+            relation_limit = [relation_limit - after_offset, 0].max if relation_limit
           end
 
           if before_offset && after_offset
             if after_offset < before_offset
               # Get the number of items between the two cursors
               space_between = before_offset - after_offset - 1
-              relation_limit = space_between
+              relation_limit = [relation_limit, space_between].compact.min
             else
               # The cursors overextend one another to an empty set
               @sliced_nodes_null_relation = true
             end
           elsif before_offset
             # Use limit to cut off the tail of the relation
-            relation_limit = before_offset - 1
+            relation_limit = [relation_limit, before_offset - 1].compact.min
           end
 
           @sliced_nodes_limit = relation_limit
@@ -203,12 +227,12 @@ module GraphQL
           if @sliced_nodes_null_relation
             paginated_nodes = null_relation(paginated_nodes)
           else
-            if @sliced_nodes_limit
-              paginated_nodes = set_limit(paginated_nodes, @sliced_nodes_limit)
-            end
-
             if @sliced_nodes_offset
               paginated_nodes = set_offset(paginated_nodes, @sliced_nodes_offset)
+            end
+
+            if @sliced_nodes_limit
+              paginated_nodes = set_limit(paginated_nodes, @sliced_nodes_limit)
             end
           end
 
@@ -303,11 +327,33 @@ module GraphQL
           # in separate Fibers, so several callers can get here before `@nodes` is set.
           (@load_monitor ||= Monitor.new).synchronize do
             # Not `||=`: Sorbet assumes `@nodes` is still falsy in this block
-            @nodes = limited_nodes.to_a unless @nodes
+            @nodes = load_page unless @nodes
           end
         else
-          @nodes = limited_nodes.to_a
+          @nodes = load_page
         end
+      end
+
+      # Fetch one row past `first` so `has_next_page` needs no extra query.
+      # Skips arrays (no query to save) and slices limited to `first` or fewer rows (no next page).
+      def load_page
+        page = limited_nodes
+        return page.to_a if page.is_a?(Array) || !peek_next_page? || relation_limit(page) != first ||
+          (@sliced_nodes_limit && @sliced_nodes_limit <= first)
+
+        rows = set_limit(page, first + 1).to_a
+        @has_next_page = rows.size > first
+        rows.first(first)
+      end
+
+      # Peek on forward pages that select `hasNextPage`; `last` and `before` keep the separate check
+      def peek_next_page?
+        return @peek_next_page if defined?(@peek_next_page)
+        @peek_next_page = first&.positive? && last.nil? && before.nil? && page_info_selection.selects?(:has_next_page)
+      end
+
+      def page_info_selection
+        @page_info_selection ||= (lookahead || GraphQL::Execution::Lookahead::NULL_LOOKAHEAD).selection(:page_info)
       end
     end
   end

@@ -240,6 +240,11 @@ module GraphQL
       class RootTypesInBlock
         def root_type_config_without_block(node); end
       end
+
+      class FieldTypeInBlock
+        def field_config_with_inline_type(node); end
+        def field_config_with_inline_type_and_block(node); end
+      end
     end
   end
 end
@@ -255,8 +260,19 @@ end
 
 module GraphQL
   class Schema
-    class Scalar
-      # Sorbet types `superclass` as a nilable `Class`
+    class Member
+      # Sorbet types `superclass` as a nilable `Class`,
+      # but subclasses check `superclass.respond_to?(...)` and call their own class methods on it.
+      def self.superclass; end
+    end
+
+    class FieldExtension
+      # See `Member.superclass`
+      def self.superclass; end
+    end
+
+    class Resolver
+      # See `Member.superclass`
       def self.superclass; end
     end
 
@@ -300,6 +316,72 @@ module GraphQL
         def validate_non_null_input(val, ctx, max_errors: nil); end
         def coerce_input(val, ctx); end
         def coerce_result(val, ctx); end
+      end
+    end
+  end
+end
+
+module GraphQL
+  module Tracing
+    # Included into platform traces (eg `AppsignalTrace`, `DataDogTrace`), which implement these.
+    module PlatformTrace
+      def platform_execute_field(platform_key, &block); end
+      def platform_authorized(platform_key, &block); end
+      def platform_resolve_type(platform_key, &block); end
+
+      # Included into a `KeyCache` class along with the platform trace module, which implements these.
+      module BaseKeyCache
+        def platform_field_key(field); end
+        def platform_authorized_key(type); end
+        def platform_resolve_type_key(type); end
+      end
+    end
+  end
+end
+
+module ActiveSupport
+  class EnvironmentInquirer
+    # Handled by `ActiveSupport::StringInquirer#method_missing`
+    def staging?; end
+  end
+end
+
+module GraphQL
+  class Schema
+    class Member
+      module BaseDSLMethods
+        # Extended onto classes, which get this from `Kernel`. (It's the target of `alias :unwrap :itself`.)
+        def itself; end
+      end
+    end
+  end
+
+  class Query
+    # Included into `Query` and `Query::Partial`, which each provide `#context`.
+    module Runnable
+      def context; end
+    end
+  end
+end
+
+module GraphQL
+  class Schema
+    class Field
+      # Optional hook for subclasses; `calculate_complexity` checks `respond_to?(:complexity_for)` first.
+      def complexity_for(child_complexity:, query:, lookahead:); end
+    end
+  end
+end
+
+module GraphQL
+  module Tracing
+    module MonitorTrace
+      # Subclasses include `GraphQLSuffixNames` or `GraphQLPrefixNames`, which implement these.
+      class Monitor
+        def platform_field_key(field); end
+        def platform_authorized_key(type); end
+        def platform_resolve_type_key(type); end
+        def platform_source_class_key(source_class); end
       end
     end
   end

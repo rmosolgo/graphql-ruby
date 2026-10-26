@@ -127,6 +127,59 @@ describe GraphQL::Analysis::MaxQueryComplexity do
     end
   end
 
+  describe "count_introspection_fields: false on connections" do
+    class IntrospectionConnectionSchema < GraphQL::Schema
+      class Item < GraphQL::Schema::Object
+        field :id, Integer, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :items, Item.connection_type, null: false, max_page_size: 100
+      end
+
+      query(Query)
+      complexity_cost_calculation_mode(:future)
+    end
+
+    def complexity_of(query_str, count_introspection_fields:)
+      schema = Class.new(IntrospectionConnectionSchema) do
+        max_complexity 10_000, count_introspection_fields: count_introspection_fields
+      end
+      GraphQL::Analysis.analyze_query(
+        GraphQL::Query.new(schema, query_str),
+        [GraphQL::Analysis::QueryComplexity]
+      ).first
+    end
+
+    [
+      "nodes { id }",
+      "edges { node { id } }",
+      "nodes { id } pageInfo { hasNextPage }",
+    ].each do |selections|
+      it "doesn't lower the complexity of `#{selections}` when __typename is added" do
+        base = "{ items(first: 25) { #{selections} } }"
+        baseline = complexity_of(base, count_introspection_fields: false)
+
+        with_typename = [
+          "{ items(first: 25) { __typename #{selections} } }",
+          "{ items(first: 25) { #{selections} __typename } }",
+          "{ items(first: 25) { #{selections.sub("nodes {", "nodes { __typename").sub("node {", "node { __typename")} } }",
+        ]
+        with_typename << "{ items(first: 25) { #{selections.sub("pageInfo {", "pageInfo { __typename")} } }" if selections.include?("pageInfo")
+
+        with_typename.each do |q|
+          assert_equal baseline, complexity_of(q, count_introspection_fields: false), "#{q} should cost the same as #{base}"
+        end
+      end
+    end
+
+    it "still counts __typename on connections when count_introspection_fields is true" do
+      without = complexity_of("{ items(first: 25) { nodes { id } } }", count_introspection_fields: true)
+      with = complexity_of("{ items(first: 25) { __typename nodes { id } } }", count_introspection_fields: true)
+      assert_equal without + 1, with
+    end
+  end
+
   describe "across a multiplex" do
     before do
       schema.analysis_engine = GraphQL::Analysis::AST
@@ -165,7 +218,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
     end
   end
 
-  describe "when an argument is unauthorized by type" do
+  describe "when a connection argument raises an error" do
     class AuthorizedTypeSchema < GraphQL::Schema
       class Thing < GraphQL::Schema::Object
         def self.authorized?(obj, ctx)
@@ -177,6 +230,8 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       class Query < GraphQL::Schema::Object
         field :things, Thing.connection_type, resolve_static: true do
           argument :thing_id, ID, loads: Thing
+          argument :filter, String, required: false, validates: { length: { maximum: 3 } }
+          argument :prepared, String, required: false, prepare: ->(*) { raise GraphQL::ExecutionError, "Invalid prepared argument" }
         end
 
         def self.things(context, thing:)
@@ -185,6 +240,13 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
         def things(thing:)
           self.class.things(context, thing: thing)
+        end
+
+        field :expensive, Integer, complexity: 1000
+
+        def expensive
+          context[:expensive_called] = true
+          1
         end
       end
 
@@ -222,6 +284,54 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       query_str = "{ things(thingId: \"13\", first: 1) { nodes { name } } }"
       res = AuthorizedTypeSchema.execute(query_str, context: { authorized: true })
       assert_equal ["No Thing #13"], res["errors"].map { |e| e["message"] }
+    end
+
+    {
+      'thingId: "123", filter: "toolong"' => "filter is too long (maximum is 3)",
+      'thingId: "123", prepared: "invalid"' => "Invalid prepared argument",
+      'thingId: "13"' => "No Thing #13",
+      'thingId: "123"' => 'Unauthorized Object: "Loaded thing 123"',
+    }.each do |arguments, error_message|
+      describe "with #{arguments}" do
+        let(:context) { { authorized: arguments != 'thingId: "123"' } }
+        let(:connection_selection) { "things(#{arguments}, first: 1) { nodes { name } }" }
+
+        it "still enforces depth and complexity limits" do
+          limited_schema = Class.new(AuthorizedTypeSchema) do
+            max_depth 2
+            max_complexity 100
+          end
+          ["#{connection_selection} expensive", "expensive #{connection_selection}"].each do |selections|
+            result = limited_schema.execute("{ #{selections} }", context: context)
+
+            refute result.key?("data")
+            assert_equal [
+              "Query has depth of 3, which exceeds max depth of 2",
+              "Query has complexity of 1002, which exceeds max complexity of 100",
+            ], result["errors"].map { |error| error["message"] }
+            refute context[:expensive_called]
+          end
+        end
+
+        it "returns the argument error when within the limits" do
+          result = AuthorizedTypeSchema.execute("{ #{connection_selection} }", context: context)
+
+          assert_equal [error_message], result["errors"].map { |error| error["message"] }
+        end
+
+        it "still enforces the multiplex complexity limit" do
+          results = AuthorizedTypeSchema.multiplex([
+            { query: "{ #{connection_selection} }", context: context },
+            { query: "{ expensive }", max_complexity: nil, context: context },
+          ], max_complexity: 100)
+
+          results.each do |result|
+            refute result.key?("data")
+            assert_equal ["Query has complexity of 1002, which exceeds max complexity of 100"], result["errors"].map { |error| error["message"] }
+          end
+          refute context[:expensive_called]
+        end
+      end
     end
   end
 end
