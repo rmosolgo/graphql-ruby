@@ -17,6 +17,33 @@ describe GraphQL::Language::Parser do
   end
 
   describe "source locations" do
+    it "reports parse errors with CR, LF, and CRLF line terminators" do
+      ["\r", "\n", "\r\n"].each do |newline|
+        query_string = ["{", "  a", "  b( : )", "}"].join(newline)
+        error = assert_raises(GraphQL::ParseError) { GraphQL::Language::Parser.parse(query_string) }
+
+        assert_equal [3, 6], [error.line, error.col]
+      end
+    end
+
+    it "reports validation errors with CR, LF, and CRLF line terminators" do
+      ["\r", "\n", "\r\n"].each do |newline|
+        query_string = ["{", "  __typename", "  missing", "}"].join(newline)
+        document = GraphQL::Language::Parser.parse(query_string)
+        assert_equal [[2, 3], [3, 3]], document.definitions.first.selections.map(&:position)
+
+        query = GraphQL::Query.new(Dummy::Schema, document: document)
+        assert_equal [[{ "line" => 3, "column" => 3 }]], query.validation_errors.map { |error| error.to_h["locations"] }
+      end
+    end
+
+    it "reports positions with mixed line terminators and multibyte input" do
+      query_string = "{\r\n  __type(name: \"日本語😀\") { name }\r  __typename\n  missing\r}"
+      document = GraphQL::Language::Parser.parse(query_string)
+
+      assert_equal [[2, 3], [3, 3], [4, 3]], document.definitions.first.selections.map(&:position)
+    end
+
     it "reports validation errors after multibyte comments at their original position" do
       ["\n", "\r\n"].each do |newline|
         query_string = ["{", "  # 日本語を含むコメント", "  __typename", "  missing", "}"].join(newline)
@@ -48,9 +75,11 @@ describe GraphQL::Language::Parser do
     end
 
     it "reports positions after multibyte block strings" do
-      query_string = "{ __type(name: \"\"\"日本語\n続き\n\"\"\") { name } missing }"
-      document = GraphQL::Language::Parser.parse(query_string)
-      assert_equal [3, 15], document.definitions.first.selections.last.position
+      ["\r", "\n", "\r\n"].each do |newline|
+        query_string = "{ __type(name: \"\"\"日本語#{newline}続き#{newline}\"\"\") { name } missing }"
+        document = GraphQL::Language::Parser.parse(query_string)
+        assert_equal [3, 15], document.definitions.first.selections.last.position
+      end
     end
 
     it "reports definition positions after multibyte descriptions" do

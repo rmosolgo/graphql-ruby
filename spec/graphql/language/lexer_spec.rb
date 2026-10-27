@@ -32,6 +32,24 @@ describe GraphQL::Language::Lexer do
     assert_equal [:FRAGMENT, 3, 1, "fragment"], fragment_token
   end
 
+  it "reports error positions with CR, LF, and CRLF line terminators" do
+    ["\r", "\n", "\r\n"].each do |newline|
+      query_string = ["{", '  field(arg: "日本語")', "  field(arg: -foo)", "}"].join(newline)
+      err = assert_raises(GraphQL::ParseError) { subject.tokenize(query_string) }
+
+      assert_equal [3, 14], [err.line, err.col]
+    end
+  end
+
+  it "reports column one after consecutive line terminators" do
+    ["\r", "\n", "\r\n"].each do |newline|
+      tokens = subject.tokenize(['{ field(arg: "日本語") }', "", "fragment F on Type { field }"].join(newline))
+      fragment_token = tokens.find { |token| token.first == :FRAGMENT }
+
+      assert_equal [:FRAGMENT, 3, 1, "fragment"], fragment_token
+    end
+  end
+
   it "reraises unexpected argument errors" do
     lexer = subject.new("{")
     scanner = lexer.instance_variable_get(:@scanner)
