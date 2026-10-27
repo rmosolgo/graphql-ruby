@@ -38,8 +38,7 @@ jobs:
         ruby-version: 3.4
         bundler-cache: true
         working-directory: spec/integration/sorbet_consumer
-    - run: bundle exec tapioca gems
-    - run: bundle exec srb tc
+    - run: bin/check
   system_tests:
     runs-on: ubuntu-latest
     steps:
