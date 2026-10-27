@@ -758,7 +758,7 @@
 
 
           <div class="method-source-code" id="all_argument_definitions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 258</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 256</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_argument_definitions</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">own_arguments</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">all_defns</span> = <span class="ruby-identifier">own_arguments</span>.<span class="ruby-identifier">values</span>
@@ -995,7 +995,7 @@
 
 
           <div class="method-source-code" id="argument_class-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 291</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 289</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument_class</span>(<span class="ruby-identifier">new_arg_class</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">argument_class</span>(<span class="ruby-identifier">new_arg_class</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1113,7 +1113,7 @@
 
 
           <div class="method-source-code" id="arguments_statically_coercible-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 377</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 375</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments_statically_coercible?</span>
   <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@arguments_statically_coercible</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@arguments_statically_coercible</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-ivar">@arguments_statically_coercible</span>
@@ -1170,7 +1170,7 @@
 
 
           <div class="method-source-code" id="get_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 274</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 272</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_argument</span>(<span class="ruby-identifier">argument_name</span>, <span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> (<span class="ruby-identifier">arg_config</span> = <span class="ruby-identifier">own_arguments</span>[<span class="ruby-identifier">argument_name</span>]) <span class="ruby-operator">&amp;&amp;</span> ((<span class="ruby-identifier">context</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">types</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Visibility</span><span class="ruby-operator">::</span><span class="ruby-constant">Profile</span>)) <span class="ruby-operator">||</span> (<span class="ruby-identifier">visible_arg</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">visible_entry?</span>(<span class="ruby-value">:</span><span class="ruby-value">visible_argument?</span>, <span class="ruby-identifier">arg_config</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">warden</span>)))
@@ -1230,7 +1230,7 @@
 
 
           <div class="method-source-code" id="own_arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 518</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 514</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">own_arguments</span>
   <span class="ruby-ivar">@own_arguments</span> <span class="ruby-operator">||</span> <span class="ruby-constant">NO_ARGUMENTS</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1341,7 +1341,7 @@
 
 
           <div class="method-source-code" id="validate_directive_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 362</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 360</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_directive_argument</span>(<span class="ruby-identifier">arg_defn</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-comment"># this is only implemented on directives.</span>
   <span class="ruby-keyword">nil</span>

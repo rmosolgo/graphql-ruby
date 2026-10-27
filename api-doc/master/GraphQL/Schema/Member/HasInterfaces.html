@@ -533,7 +533,7 @@
 
 
           <div class="method-source-code" id="extended-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 138</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 136</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">extended</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ClassConfigured</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -741,7 +741,7 @@
 
 
           <div class="method-source-code" id="interfaces-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 110</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_interfaces.rb, line 108</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">interfaces</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">visible_interfaces</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Array[untyped]?</span>

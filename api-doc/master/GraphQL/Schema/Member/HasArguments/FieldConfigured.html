@@ -524,7 +524,7 @@
 
 
           <div class="method-source-code" id="all_argument_definitions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 232</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 230</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_argument_definitions</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@resolver_class</span>
     <span class="ruby-identifier">all_defns</span> = {}
@@ -600,7 +600,7 @@
 
 
           <div class="method-source-code" id="any_arguments-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 228</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 226</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">any_arguments?</span>
   <span class="ruby-keyword">super</span> <span class="ruby-operator">||</span> (<span class="ruby-ivar">@resolver_class</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@resolver_class</span>.<span class="ruby-identifier">any_field_arguments?</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -655,7 +655,7 @@
 
 
           <div class="method-source-code" id="arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 210</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 208</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>, <span class="ruby-identifier">_require_defined_arguments</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">own_arguments</span> = <span class="ruby-keyword">super</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@resolver_class</span>

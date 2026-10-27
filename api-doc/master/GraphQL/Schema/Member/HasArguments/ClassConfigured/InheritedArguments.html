@@ -532,7 +532,7 @@
 
 
           <div class="method-source-code" id="all_argument_definitions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 176</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 174</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">all_argument_definitions</span>
   <span class="ruby-identifier">all_defns</span> = {}
   <span class="ruby-identifier">all_ancestors</span> = <span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
@@ -591,7 +591,7 @@
 
 
           <div class="method-source-code" id="any_arguments-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 172</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 170</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">any_arguments?</span>
   <span class="ruby-keyword">super</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">any_arguments?</span>
 <span class="ruby-keyword">end</span></pre>
@@ -646,7 +646,7 @@
 
 
           <div class="method-source-code" id="arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 156</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 154</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>, <span class="ruby-identifier">require_defined_arguments</span> = <span class="ruby-keyword">true</span>)
   <span class="ruby-identifier">own_arguments</span> = <span class="ruby-keyword">super</span>(<span class="ruby-identifier">context</span>, <span class="ruby-identifier">require_defined_arguments</span>)
   <span class="ruby-identifier">inherited_arguments</span> = <span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">context</span>, <span class="ruby-keyword">false</span>)
@@ -713,7 +713,7 @@
 
 
           <div class="method-source-code" id="get_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 190</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 188</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_argument</span>(<span class="ruby-identifier">argument_name</span>, <span class="ruby-identifier">context</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">NullContext</span>.<span class="ruby-identifier">instance</span>)
   <span class="ruby-identifier">warden</span> = <span class="ruby-constant">Warden</span>.<span class="ruby-identifier">from_context</span>(<span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">skip_visible</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">types</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Visibility</span><span class="ruby-operator">::</span><span class="ruby-constant">Profile</span>)

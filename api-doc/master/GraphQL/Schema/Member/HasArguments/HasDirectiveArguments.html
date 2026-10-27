@@ -520,7 +520,7 @@
 
 
           <div class="method-source-code" id="validate_directive_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 370</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_arguments.rb, line 368</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_directive_argument</span>(<span class="ruby-identifier">arg_defn</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">arg_defn</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">non_null?</span>
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">arg_defn</span>.<span class="ruby-identifier">path</span><span class="ruby-string">}</span><span class="ruby-string"> is required, but no value was given</span><span class="ruby-string">&quot;</span>
