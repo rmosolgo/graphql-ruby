@@ -198,7 +198,7 @@ module GraphQL
       end
 
       IGNORE_REGEXP = /[, \r\n\t\uFEFF]+/
-      COMMENT_REGEXP = /\#[^\n]*/
+      COMMENT_REGEXP = /\#[^\n\r]*/
       IDENTIFIER_REGEXP = /[_A-Za-z][_0-9A-Za-z]*/
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
       FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
