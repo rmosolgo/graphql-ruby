@@ -44,6 +44,15 @@ module LexerExamples
         |}
         let(:tokens) { subject.tokenize(query_string) }
 
+        it "ends comments at CR, LF, and CRLF line terminators" do
+          ["\r", "\n", "\r\n"].each do |newline|
+            tokens = subject.tokenize("# leading#{newline}{ a # inline#{newline} b } # trailing")
+
+            assert_equal [:LCURLY, :IDENTIFIER, :IDENTIFIER, :RCURLY], tokens.map(&:name)
+            assert_equal ["{", "a", "b", "}"], tokens.map(&:value)
+          end
+        end
+
         it "force encodes to utf-8" do
           # string that will be invalid utf-8 once force encoded
           string = "vandflyver \xC5rhus".dup.force_encoding("ASCII-8BIT")

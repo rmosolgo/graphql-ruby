@@ -4,6 +4,12 @@ require "spec_helper"
 describe GraphQL::Language::Parser do
   subject { GraphQL }
 
+  it "parses a document after a CR-terminated comment" do
+    document = subject.parse("# c\r{ a }")
+
+    assert_equal ["a"], document.definitions.first.selections.map(&:name)
+  end
+
   it "returns an error on bad UTF-8" do
     err = assert_raises GraphQL::ParseError do
       subject.parse("{ foo(query: \"\xBF\") }")
