@@ -24,6 +24,21 @@ jobs:
     # Spoom drops BUNDLE_GEMFILE when it shells out, so pass the full command (https://github.com/Shopify/spoom/issues/349)
     - run: bundle exec spoom srb bump --from false --to true --dry --sorbet "BUNDLE_GEMFILE=gemfiles/sorbet.gemfile bundle exec srb tc" lib
     - run: npx @herb-tools/linter@0.8.10
+  # Type-checks the RBI that Tapioca generates for this gem, the way apps that use Sorbet do.
+  # `srb tc` above checks the gem's source, but not the ancestors that Tapioca finds at runtime.
+  sorbet_consumer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: spec/integration/sorbet_consumer
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: ruby/setup-ruby@651ff0d62c5c79bed6d53ec518387aae20e72c1a # v1.329.0
+      with:
+        ruby-version: 3.4
+        bundler-cache: true
+        working-directory: spec/integration/sorbet_consumer
+    - run: bin/check
   system_tests:
     runs-on: ubuntu-latest
     steps:

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Generates graphql-ruby's RBI with Tapioca and type-checks it, like apps that use Sorbet do.
+#
+# `tapioca gems` skips gems whose RBI already exists for the same version,
+# so this removes the generated RBIs first. Otherwise, local changes to graphql-ruby wouldn't be checked.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+rm -rf sorbet/rbi sorbet/tapioca
+bundle exec tapioca gems
+bundle exec srb tc

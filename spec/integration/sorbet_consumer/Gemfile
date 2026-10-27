@@ -1,0 +1,10 @@
+# frozen_string_literal: true
+# An app that type-checks graphql-ruby's Tapioca-generated RBI, like apps that use Sorbet do.
+# Run `bin/check` to check it. (CI runs it in the `sorbet_consumer` job in .github/workflows/ci.yaml.)
+# Sorbet and Tapioca aren't pinned, so this checks the RBI that the latest versions generate.
+source "https://rubygems.org"
+
+gem "graphql", path: "../../.."
+gem "sorbet"
+gem "sorbet-runtime"
+gem "tapioca", require: false
