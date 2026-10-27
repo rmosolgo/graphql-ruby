@@ -32,7 +32,6 @@ Sorbet/TrueSigil:
     - "lib/graphql/dashboard/operation_store.rb"
     - "lib/graphql/dashboard/statics_controller.rb"
     - "lib/graphql/dashboard/subscriptions.rb"
-    - "lib/graphql/execution/field_resolve_step.rb"
     - "lib/graphql/schema.rb"
     - "lib/graphql/tracing/active_support_notifications_trace.rb"
     - "lib/graphql/tracing/appoptics_trace.rb"

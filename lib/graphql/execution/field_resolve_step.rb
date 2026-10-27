@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Execution
     class FieldResolveStep
@@ -126,7 +126,7 @@ module GraphQL
         @runner.add_finalizer(@selections_step.query, result, key, err)
         if !err.is_a?(GraphQL::Execution::Skip)
           field_type = return_type
-          should_propagate_null = field_type.non_null?
+          should_propagate_null = field_type.non_null? #: bool
           while (should_propagate_null == false && field_type.kind.wraps?)
             field_type = field_type.of_type
             should_propagate_null = field_type.non_null?
@@ -139,10 +139,10 @@ module GraphQL
       end
 
       def propagate_nulls
-        propagating_null = true
+        propagating_null = true #: bool
         highest_nulled_depth = path.size
-        highest_list_depth = nil
-        current_field_step = self
+        highest_list_depth = nil #: Integer?
+        current_field_step = self #: FieldResolveStep?
         while current_field_step && current_field_step.field_definition
           return_type = current_field_step.field_definition.type
           if propagating_null && return_type.non_null?
@@ -159,7 +159,7 @@ module GraphQL
         end
 
         if highest_list_depth.nil? || highest_nulled_depth <= highest_list_depth
-          kill_field_step = self
+          kill_field_step = self #: FieldResolveStep?
           while kill_field_step && kill_field_step.field_definition && highest_nulled_depth <= kill_field_step.path.size
             kill_field_step.selections_step.killed = true
             kill_field_step = kill_field_step.selections_step.field_resolve_step
@@ -274,7 +274,7 @@ module GraphQL
       end
 
       def any_lazy_results?
-        lazies = false
+        lazies = false #: bool
         if @runner.resolves_lazies # TODO extract this
           @field_results.each do |field_result|
             if @runner.lazy?(field_result)
@@ -506,7 +506,7 @@ module GraphQL
           # Preserve existing messages for single-level lists.
           element_type = return_type.of_type if list_type.of_type.list?
         end
-        err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path, element_type: element_type)
+        err = @parent_type.const_get(:InvalidNullError).new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path, element_type: element_type)
         nn_result = @runner.schema.type_error(err, @selections_step.query.context)
         if nn_result.nil?
           propagate_nulls
@@ -538,7 +538,7 @@ module GraphQL
               nil
             end
           else
-            directives = nil
+            directives = nil #: Array[untyped]?
             @ast_nodes.each do |n|
               if (d = n.directives).any? # rubocop:disable Development/NoneWithoutBlockCop
                 directives ||= []
@@ -798,25 +798,25 @@ module GraphQL
         when :resolve_batch
           begin
             method_receiver.public_send(@field_definition.execution_mode_key, objects, context, **args_hash)
-          rescue GraphQL::ExecutionError => exec_err
-            error_instance_array(objects.size, exec_err)
-          rescue StandardError => stderr
+          rescue GraphQL::ExecutionError => batch_err
+            error_instance_array(objects.size, batch_err)
+          rescue StandardError => batch_stderr
             begin
-              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
-            rescue GraphQL::ExecutionError => exec_err
-              error_instance_array(objects.size, exec_err)
+              context.query.handle_or_reraise(batch_stderr, field: @field_definition, arguments: @arguments, object: nil)
+            rescue GraphQL::ExecutionError => batch_err
+              error_instance_array(objects.size, batch_err)
             end
           end
         when :resolve_static
           result = begin
             method_receiver.public_send(@field_definition.execution_mode_key, context, **args_hash)
-          rescue GraphQL::ExecutionError => err
-            err
-          rescue StandardError => stderr
+          rescue GraphQL::ExecutionError => static_err
+            static_err
+          rescue StandardError => static_stderr
             begin
-              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
-            rescue GraphQL::ExecutionError => err
-              err
+              context.query.handle_or_reraise(static_stderr, field: @field_definition, arguments: @arguments, object: nil)
+            rescue GraphQL::ExecutionError => static_err
+              static_err
             end
           end
           Array.new(objects.size, result)
