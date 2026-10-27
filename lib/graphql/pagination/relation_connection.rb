@@ -7,6 +7,10 @@ module GraphQL
   module Pagination
     # A generic class for working with database query objects.
     class RelationConnection < Pagination::Connection
+      # Database limits and offsets must fit in a signed 64-bit integer.
+      MAX_OFFSET = (2**63) - 1
+      private_constant :MAX_OFFSET
+
       def nodes
         load_nodes
         @nodes
@@ -158,7 +162,8 @@ module GraphQL
       #   offset_from_cursor(cursor) -> Integer
       def offset_from_cursor(cursor)
         offset = Integer(decode(cursor), 10, exception: false) #: Integer?
-        if offset.nil? || offset <= 0
+        if offset.nil? || offset <= 0 || offset > MAX_OFFSET ||
+            offset + (relation_offset(items) || 0) > MAX_OFFSET
           raise GraphQL::ExecutionError, "Invalid cursor: #{cursor.inspect}"
         end
         offset
