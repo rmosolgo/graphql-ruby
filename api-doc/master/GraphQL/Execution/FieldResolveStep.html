@@ -898,7 +898,7 @@
   <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">add_finalizer</span>(<span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">query</span>, <span class="ruby-identifier">result</span>, <span class="ruby-identifier">key</span>, <span class="ruby-identifier">err</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">err</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Skip</span>)
     <span class="ruby-identifier">field_type</span> = <span class="ruby-identifier">return_type</span>
-    <span class="ruby-identifier">should_propagate_null</span> = <span class="ruby-identifier">field_type</span>.<span class="ruby-identifier">non_null?</span>
+    <span class="ruby-identifier">should_propagate_null</span> = <span class="ruby-identifier">field_type</span>.<span class="ruby-identifier">non_null?</span> <span class="ruby-comment">#: bool</span>
     <span class="ruby-keyword">while</span> (<span class="ruby-identifier">should_propagate_null</span> <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">field_type</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">wraps?</span>)
       <span class="ruby-identifier">field_type</span> = <span class="ruby-identifier">field_type</span>.<span class="ruby-identifier">of_type</span>
       <span class="ruby-identifier">should_propagate_null</span> = <span class="ruby-identifier">field_type</span>.<span class="ruby-identifier">non_null?</span>
@@ -963,7 +963,7 @@
     <span class="ruby-comment"># Preserve existing messages for single-level lists.</span>
     <span class="ruby-identifier">element_type</span> = <span class="ruby-identifier">return_type</span>.<span class="ruby-identifier">of_type</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">list_type</span>.<span class="ruby-identifier">of_type</span>.<span class="ruby-identifier">list?</span>
   <span class="ruby-keyword">end</span>
-  <span class="ruby-identifier">err</span> = <span class="ruby-ivar">@parent_type</span><span class="ruby-operator">::</span><span class="ruby-constant">InvalidNullError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@parent_type</span>, <span class="ruby-ivar">@field_definition</span>, <span class="ruby-identifier">ast_nodes</span>, <span class="ruby-value">is_from_array</span><span class="ruby-value">:</span> <span class="ruby-identifier">is_from_array</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">path</span>, <span class="ruby-value">element_type</span><span class="ruby-value">:</span> <span class="ruby-identifier">element_type</span>)
+  <span class="ruby-identifier">err</span> = <span class="ruby-ivar">@parent_type</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">InvalidNullError</span>).<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@parent_type</span>, <span class="ruby-ivar">@field_definition</span>, <span class="ruby-identifier">ast_nodes</span>, <span class="ruby-value">is_from_array</span><span class="ruby-value">:</span> <span class="ruby-identifier">is_from_array</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">path</span>, <span class="ruby-value">element_type</span><span class="ruby-value">:</span> <span class="ruby-identifier">element_type</span>)
   <span class="ruby-identifier">nn_result</span> = <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">type_error</span>(<span class="ruby-identifier">err</span>, <span class="ruby-ivar">@selections_step</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">nn_result</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">propagate_nulls</span>
@@ -1018,7 +1018,7 @@
           <div class="method-source-code" id="any_lazy_results-3F-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 276</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">any_lazy_results?</span>
-  <span class="ruby-identifier">lazies</span> = <span class="ruby-keyword">false</span>
+  <span class="ruby-identifier">lazies</span> = <span class="ruby-keyword">false</span> <span class="ruby-comment">#: bool</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">resolves_lazies</span> <span class="ruby-comment"># TODO extract this</span>
     <span class="ruby-ivar">@field_results</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">field_result</span><span class="ruby-operator">|</span>
       <span class="ruby-keyword">if</span> <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">lazy?</span>(<span class="ruby-identifier">field_result</span>)
@@ -2090,10 +2090,10 @@
           <div class="method-source-code" id="propagate_nulls-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/field_resolve_step.rb, line 141</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">propagate_nulls</span>
-  <span class="ruby-identifier">propagating_null</span> = <span class="ruby-keyword">true</span>
+  <span class="ruby-identifier">propagating_null</span> = <span class="ruby-keyword">true</span> <span class="ruby-comment">#: bool</span>
   <span class="ruby-identifier">highest_nulled_depth</span> = <span class="ruby-identifier">path</span>.<span class="ruby-identifier">size</span>
-  <span class="ruby-identifier">highest_list_depth</span> = <span class="ruby-keyword">nil</span>
-  <span class="ruby-identifier">current_field_step</span> = <span class="ruby-keyword">self</span>
+  <span class="ruby-identifier">highest_list_depth</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Integer?</span>
+  <span class="ruby-identifier">current_field_step</span> = <span class="ruby-keyword">self</span> <span class="ruby-comment">#: FieldResolveStep?</span>
   <span class="ruby-keyword">while</span> <span class="ruby-identifier">current_field_step</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">current_field_step</span>.<span class="ruby-identifier">field_definition</span>
     <span class="ruby-identifier">return_type</span> = <span class="ruby-identifier">current_field_step</span>.<span class="ruby-identifier">field_definition</span>.<span class="ruby-identifier">type</span>
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">propagating_null</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">return_type</span>.<span class="ruby-identifier">non_null?</span>
@@ -2110,7 +2110,7 @@
   <span class="ruby-keyword">end</span>
 
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">highest_list_depth</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">highest_nulled_depth</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-identifier">highest_list_depth</span>
-    <span class="ruby-identifier">kill_field_step</span> = <span class="ruby-keyword">self</span>
+    <span class="ruby-identifier">kill_field_step</span> = <span class="ruby-keyword">self</span> <span class="ruby-comment">#: FieldResolveStep?</span>
     <span class="ruby-keyword">while</span> <span class="ruby-identifier">kill_field_step</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">kill_field_step</span>.<span class="ruby-identifier">field_definition</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">highest_nulled_depth</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-identifier">kill_field_step</span>.<span class="ruby-identifier">path</span>.<span class="ruby-identifier">size</span>
       <span class="ruby-identifier">kill_field_step</span>.<span class="ruby-identifier">selections_step</span>.<span class="ruby-identifier">killed</span> = <span class="ruby-keyword">true</span>
       <span class="ruby-identifier">kill_field_step</span> = <span class="ruby-identifier">kill_field_step</span>.<span class="ruby-identifier">selections_step</span>.<span class="ruby-identifier">field_resolve_step</span>
