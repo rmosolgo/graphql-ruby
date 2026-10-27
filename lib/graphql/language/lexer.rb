@@ -197,7 +197,7 @@ module GraphQL
         raise GraphQL::ParseError.new(message, line, col, @string, filename: @filename)
       end
 
-      IGNORE_REGEXP = /[, \c\r\n\t]+/
+      IGNORE_REGEXP = /[, \r\n\t\uFEFF]+/
       COMMENT_REGEXP = /\#[^\n]*/
       IDENTIFIER_REGEXP = /[_A-Za-z][_0-9A-Za-z]*/
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/

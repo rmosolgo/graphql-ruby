@@ -370,7 +370,11 @@ module GraphQL
             input_fields_definition = parse_input_object_field_definitions
             InputObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, fields: input_fields_definition, filename: @filename, source: self)
           else
-            expect_one_of([:SCHEMA, :SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
+            expected_tokens = [:SCHEMA, :SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE, :DIRECTIVE]
+            if desc.nil?
+              expected_tokens.unshift(:QUERY, :MUTATION, :SUBSCRIPTION, :FRAGMENT, :LCURLY, :EXTEND, :STRING)
+            end
+            expect_one_of(expected_tokens)
           end
         end
       end
