@@ -221,9 +221,14 @@ This is not supported because the new runtime doesn't actually produce `current_
 
 It is theoretically possible to support this but it will be a ton of work. If you use this for core runtime functions, please share your use case in a GitHub issue and we can investigate future options.
 
-### Scoped context ❌
+### Scoped context 🟡
 
-This is currently implemented with `current_path`. Another implementation is probably possible but not implemented yet. Please open an issue to discuss.
+`context.scoped_set!`, `context.scoped_merge!` and `context.scoped` are supported. Because `Execution::Next` doesn't produce `current_path`, scopes are attached to each object's place in the result instead, so a value set while resolving a field for one object is visible to that field's subtree for that object only, as with the classic runtime.
+
+The difference is in batched resolvers. Inside a `resolve_batch:` (or `resolve_static:`, `dataload:`, ...) method there's no single current object, so:
+
+- A scoped write applies to every object in the batch.
+- A scoped read returns the value when every object in the batch has the same one, and raises a `GraphQL::Error` when they differ. To read a value that differs per object, resolve that field per object, for example with `resolve_each:`.
 
 ### `@defer` 🟡
 

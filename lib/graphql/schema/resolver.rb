@@ -72,6 +72,8 @@ module GraphQL
       attr_writer :prepared_arguments
 
       def call
+        previous_scoped_step = Fiber[Query::Context::ScopedContext::NEXT_STEP_KEY]
+        Fiber[Query::Context::ScopedContext::NEXT_STEP_KEY] = Query::Context::ScopedContext::ResolverFrame.new(@field_resolve_step, exec_index)
         q = context.query
         trace_objs = [object]
         q.current_trace.begin_execute_field(field, @prepared_arguments, trace_objs, q)
@@ -130,6 +132,7 @@ module GraphQL
           ex_err
         end
       ensure
+        Fiber[Query::Context::ScopedContext::NEXT_STEP_KEY] = previous_scoped_step
         field_pending_steps = field_resolve_step.pending_steps
         field_pending_steps.delete(self)
         if field_pending_steps.size == 0 && field_resolve_step.field_results
