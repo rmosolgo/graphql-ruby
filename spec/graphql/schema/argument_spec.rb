@@ -823,6 +823,46 @@ describe GraphQL::Schema::Argument do
     end
   end
 
+  describe "argument validation with a rescue_from handler that returns an error" do
+    let(:schema) do
+      test_resolver = Class.new(GraphQL::Schema::Resolver) do
+        type Integer, null: true
+        argument :a, Integer, validates: { numericality: { greater_than_or_equal_to: 1 } }
+
+        def resolve(a:)
+          a + 1
+        end
+      end
+
+      Class.new(GraphQL::Schema) do
+        rescue_from(StandardError) do |exception, _obj, _args, _context, _field|
+          GraphQL::ExecutionError.new(exception.message)
+        end
+
+        query_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name 'TestQueryType'
+          field :test, resolver: test_resolver
+        end
+
+        query(query_type)
+      end
+    end
+
+    it 'returns the error instead of passing it to the resolver as the argument value' do
+      expected_errors = [
+        {
+          "message" => "a must be greater than or equal to 1",
+          "locations" => [{ "line" => 1, "column" => 3 }],
+          "path" => ["test"]
+        }
+      ]
+      result = schema.execute("{ test(a: -4) }")
+
+      assert_equal expected_errors, result.to_h['errors']
+      assert_nil result['data']['test']
+    end
+  end
+
   describe "default values for non-null input object arguments when not present in variables" do
     class InputObjectArgumentWithDefaultValueSchema < GraphQL::Schema
       class Add < GraphQL::Schema::Resolver

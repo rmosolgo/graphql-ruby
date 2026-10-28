@@ -183,7 +183,9 @@ module GraphQL
           arg_value = begin
             argument_definition.prepare_value(nil, arg_value, context: @query.context)
           rescue StandardError => err
-            @runner.schema.handle_or_reraise(@query.context, err, object: nil, arguments: argument_values, field: field_resolve_step&.field_definition)
+            handled_err = @runner.schema.handle_or_reraise(@query.context, err, object: nil, arguments: argument_values, field: field_resolve_step&.field_definition)
+            raise handled_err if handled_err.is_a?(GraphQL::RuntimeError)
+            handled_err
           end
         end
 
