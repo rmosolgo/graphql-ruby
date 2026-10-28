@@ -183,8 +183,7 @@ module GraphQL
                   next_selections << sel
                 end
               else
-                raise "Unexpected selection in partial path: #{sel.class}, #{sel.inspect}"
-                sel #: absurd
+                raise "Unexpected selection in partial path: #{sel.class}, #{sel.inspect}" #: absurd(sel)
               end
             end
           end
