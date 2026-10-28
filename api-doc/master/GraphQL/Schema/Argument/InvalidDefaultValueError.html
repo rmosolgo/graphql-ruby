@@ -523,7 +523,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/argument.rb, line 633</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/argument.rb, line 644</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">argument</span>)
   <span class="ruby-identifier">message</span> = <span class="ruby-string">&quot;</span><span class="ruby-string">`</span><span class="ruby-string">#{</span><span class="ruby-identifier">argument</span>.<span class="ruby-identifier">path</span><span class="ruby-string">}</span><span class="ruby-string">` has an invalid default value: `</span><span class="ruby-string">#{</span><span class="ruby-identifier">argument</span>.<span class="ruby-identifier">default_value</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">` isn&#39;t accepted by `</span><span class="ruby-string">#{</span><span class="ruby-identifier">argument</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">to_type_signature</span><span class="ruby-string">}</span><span class="ruby-string">`; update the default value or the argument type.</span><span class="ruby-string">&quot;</span>
   <span class="ruby-keyword">super</span>(<span class="ruby-identifier">message</span>)
