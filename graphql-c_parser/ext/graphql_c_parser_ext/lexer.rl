@@ -3,7 +3,7 @@
 
   IDENTIFIER =    [_A-Za-z][_0-9A-Za-z]*;
   NEWLINE =       [\c\r\n];
-  BLANK   =       [, \t]+;
+  BLANK   =       ([, \t] | 0xEF 0xBB 0xBF)+;
   COMMENT =       '#' [^\n\r]*;
   INT =           '-'? ('0'|[1-9][0-9]*);
   EXPONENT =      ('e' | 'E') ('+' | '-')? [0-9]+;

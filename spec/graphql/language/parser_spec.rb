@@ -4,6 +4,31 @@ require "spec_helper"
 describe GraphQL::Language::Parser do
   subject { GraphQL }
 
+  it "parses byte order marks between tokens without counting them towards max_tokens" do
+    query = "\uFEFF{\uFEFFfield\uFEFF}\uFEFF"
+    document = subject.parse(query, max_tokens: 3)
+    assert_equal "field", document.definitions.first.selections.first.name
+  end
+
+  it "reports executable and type system definitions as expected at the top level" do
+    error = assert_raises(GraphQL::ParseError) { GraphQL::Language::Parser.parse("? { a }") }
+    expected_tokens = "QUERY, MUTATION, SUBSCRIPTION, FRAGMENT, LCURLY, EXTEND, STRING, SCHEMA, SCALAR, TYPE, ENUM, INPUT, UNION, INTERFACE, DIRECTIVE"
+
+    assert_includes error.message, "Expected one of #{expected_tokens}, actual:"
+  end
+
+  it "keeps expected definitions specific to descriptions and extensions" do
+    {
+      '"description" ?' => "SCHEMA, SCALAR, TYPE, ENUM, INPUT, UNION, INTERFACE, DIRECTIVE",
+      '"" ?' => "SCHEMA, SCALAR, TYPE, ENUM, INPUT, UNION, INTERFACE, DIRECTIVE",
+      "extend ?" => "SCHEMA, SCALAR, TYPE, ENUM, INPUT, UNION, INTERFACE",
+    }.each do |query_string, expected_tokens|
+      error = assert_raises(GraphQL::ParseError) { GraphQL::Language::Parser.parse(query_string) }
+
+      assert_includes error.message, "Expected one of #{expected_tokens}, actual:"
+    end
+  end
+
   it "returns an error on bad UTF-8" do
     err = assert_raises GraphQL::ParseError do
       subject.parse("{ foo(query: \"\xBF\") }")
