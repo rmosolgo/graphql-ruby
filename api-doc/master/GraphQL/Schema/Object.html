@@ -664,12 +664,15 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized_new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">begin_authorized</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
+  <span class="ruby-identifier">raised_auth_err</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">maybe_lazy_auth_val</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">authorized</span>(<span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>) <span class="ruby-keyword">do</span>
       <span class="ruby-keyword">begin</span>
         <span class="ruby-identifier">authorized?</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
       <span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
-        <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">unauthorized_object</span>(<span class="ruby-identifier">err</span>)
+        <span class="ruby-comment"># Raising is equivalent to returning `false`; `unauthorized_object` is called below</span>
+        <span class="ruby-identifier">raised_auth_err</span> = <span class="ruby-identifier">err</span>
+        <span class="ruby-keyword">false</span>
       <span class="ruby-keyword">rescue</span> <span class="ruby-constant">StandardError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
         <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">handle_or_reraise</span>(<span class="ruby-identifier">err</span>)
       <span class="ruby-keyword">end</span>
@@ -682,7 +685,12 @@
     <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Lazy</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword">do</span>
       <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">begin_authorized</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
       <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">authorized_lazy</span>(<span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>) <span class="ruby-keyword">do</span>
-        <span class="ruby-identifier">res</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">sync_lazy</span>(<span class="ruby-identifier">maybe_lazy_auth_val</span>)
+        <span class="ruby-identifier">res</span> = <span class="ruby-keyword">begin</span>
+          <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">sync_lazy</span>(<span class="ruby-identifier">maybe_lazy_auth_val</span>)
+        <span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
+          <span class="ruby-identifier">raised_auth_err</span> = <span class="ruby-identifier">err</span>
+          <span class="ruby-keyword">false</span>
+        <span class="ruby-keyword">end</span>
         <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">end_authorized</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">res</span>)
         <span class="ruby-identifier">res</span>
       <span class="ruby-keyword">end</span>
@@ -696,7 +704,7 @@
       <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
     <span class="ruby-keyword">else</span>
       <span class="ruby-comment"># It failed the authorization check, so go to the schema&#39;s authorized object hook</span>
-      <span class="ruby-identifier">err</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>)
+      <span class="ruby-identifier">err</span> = <span class="ruby-identifier">raised_auth_err</span> <span class="ruby-operator">||</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>)
       <span class="ruby-comment"># If a new value was returned, wrap that instead of the original value</span>
       <span class="ruby-keyword">begin</span>
         <span class="ruby-identifier">new_obj</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">unauthorized_object</span>(<span class="ruby-identifier">err</span>)
@@ -778,7 +786,7 @@
 
 
           <div class="method-source-code" id="const_missing-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 151</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 159</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">const_missing</span>(<span class="ruby-identifier">name</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">name</span> <span class="ruby-operator">==</span> <span class="ruby-value">:</span><span class="ruby-value">InvalidNullError</span>
     <span class="ruby-identifier">custom_err_class</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">InvalidNullError</span>.<span class="ruby-identifier">subclass_for</span>(<span class="ruby-keyword">self</span>)
@@ -839,7 +847,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 161</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 169</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">OBJECT</span>
 <span class="ruby-keyword">end</span></pre>
@@ -889,7 +897,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 143</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 151</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-ivar">@object</span> = <span class="ruby-identifier">object</span>
   <span class="ruby-ivar">@context</span> = <span class="ruby-identifier">context</span>
@@ -940,7 +948,7 @@
 
 
           <div class="method-source-code" id="scoped_new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 138</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 146</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scoped_new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>

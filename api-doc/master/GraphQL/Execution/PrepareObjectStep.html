@@ -556,6 +556,7 @@
   <span class="ruby-ivar">@resolved_type</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-ivar">@authorized_value</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-ivar">@authorization_error</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-ivar">@execution_error</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-ivar">@key</span> = <span class="ruby-identifier">key</span>
   <span class="ruby-ivar">@next_step</span> = <span class="ruby-value">:</span><span class="ruby-value">resolve_type</span>
   <span class="ruby-ivar">@is_from_array</span> = <span class="ruby-identifier">is_from_array</span>
@@ -620,7 +621,7 @@
 
 
           <div class="method-source-code" id="add_field_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 77</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 83</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_field_error</span>(<span class="ruby-identifier">err</span>)
   <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">add_graphql_error</span>(<span class="ruby-ivar">@graphql_result</span>, <span class="ruby-ivar">@key</span>, <span class="ruby-identifier">err</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -670,7 +671,7 @@
 
 
           <div class="method-source-code" id="authorize-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 81</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 87</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorize</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">was_scoped</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@resolved_type</span>.<span class="ruby-identifier">reauthorize_scoped_objects</span>
     <span class="ruby-ivar">@authorized_value</span> = <span class="ruby-ivar">@object</span>
@@ -683,8 +684,9 @@
     <span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">begin_authorized</span>(<span class="ruby-ivar">@resolved_type</span>, <span class="ruby-ivar">@object</span>, <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>)
     <span class="ruby-ivar">@authorized_value</span> = <span class="ruby-ivar">@resolved_type</span>.<span class="ruby-identifier">authorized?</span>(<span class="ruby-ivar">@object</span>, <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>)
     <span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">end_authorized</span>(<span class="ruby-ivar">@resolved_type</span>, <span class="ruby-ivar">@object</span>, <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>, <span class="ruby-ivar">@authorized_value</span>)
-  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">auth_err</span>
-    <span class="ruby-ivar">@authorization_error</span> = <span class="ruby-identifier">auth_err</span>
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">StandardError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
+    <span class="ruby-ivar">@authorized_value</span> = <span class="ruby-keyword">nil</span>
+    <span class="ruby-identifier">handle_authorization_error</span>(<span class="ruby-identifier">err</span>, <span class="ruby-identifier">query</span>)
   <span class="ruby-keyword">end</span>
 
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">resolves_lazies</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">lazy?</span>(<span class="ruby-ivar">@authorized_value</span>)
@@ -692,15 +694,6 @@
     <span class="ruby-ivar">@next_step</span> = <span class="ruby-value">:</span><span class="ruby-value">create_result</span>
   <span class="ruby-keyword">else</span>
     <span class="ruby-identifier">create_result</span>
-  <span class="ruby-keyword">end</span>
-<span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RuntimeError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
-  <span class="ruby-ivar">@graphql_result</span>[<span class="ruby-ivar">@key</span>] = <span class="ruby-identifier">add_field_error</span>(<span class="ruby-identifier">err</span>)
-<span class="ruby-keyword">rescue</span> <span class="ruby-constant">StandardError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
-  <span class="ruby-identifier">query</span> ||= <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">selections_step</span>.<span class="ruby-identifier">query</span>
-  <span class="ruby-keyword">begin</span>
-    <span class="ruby-identifier">query</span>.<span class="ruby-identifier">handle_or_reraise</span>(<span class="ruby-identifier">err</span>, <span class="ruby-value">field</span><span class="ruby-value">:</span> <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">field_definition</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">arguments</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-ivar">@object</span>) <span class="ruby-comment"># rubocop:disable Development/ContextIsPassedCop</span>
-  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RuntimeError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
-    <span class="ruby-ivar">@graphql_result</span>[<span class="ruby-ivar">@key</span>] = <span class="ruby-identifier">add_field_error</span>(<span class="ruby-identifier">err</span>)
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -749,7 +742,7 @@
 
 
           <div class="method-source-code" id="call-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 51</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call</span>
   <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">set_current_field</span>
   <span class="ruby-keyword">case</span> <span class="ruby-ivar">@next_step</span>
@@ -827,9 +820,13 @@
 
 
           <div class="method-source-code" id="create_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 114</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 112</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">create_result</span>
-  <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@authorized_value</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@execution_error</span>
+    <span class="ruby-comment"># `.authorized?` raised (or its lazy value raised) an error other than UnauthorizedError:</span>
+    <span class="ruby-comment"># it isn&#39;t an authorization decision, so don&#39;t call `unauthorized_object`.</span>
+    <span class="ruby-ivar">@graphql_result</span>[<span class="ruby-ivar">@key</span>] = <span class="ruby-identifier">add_field_error</span>(<span class="ruby-ivar">@execution_error</span>)
+  <span class="ruby-keyword">elsif</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@authorized_value</span>
     <span class="ruby-ivar">@authorization_error</span> ||= <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-ivar">@object</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-ivar">@resolved_type</span>, <span class="ruby-value">context</span><span class="ruby-value">:</span> <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">selections_step</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">end</span>
 
@@ -910,13 +907,18 @@
 
 
           <div class="method-source-code" id="value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/prepare_object_step.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">value</span>
   <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">set_current_field</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@authorized_value</span>
     <span class="ruby-identifier">query</span> = <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">selections_step</span>.<span class="ruby-identifier">query</span>
     <span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">begin_authorized</span>(<span class="ruby-ivar">@resolved_type</span>, <span class="ruby-ivar">@object</span>, <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>)
-    <span class="ruby-ivar">@authorized_value</span> = <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">sync</span>(<span class="ruby-ivar">@authorized_value</span>)
+    <span class="ruby-keyword">begin</span>
+      <span class="ruby-ivar">@authorized_value</span> = <span class="ruby-ivar">@runner</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">sync_lazy</span>(<span class="ruby-ivar">@authorized_value</span>)
+    <span class="ruby-keyword">rescue</span> <span class="ruby-constant">StandardError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
+      <span class="ruby-ivar">@authorized_value</span> = <span class="ruby-keyword">nil</span>
+      <span class="ruby-identifier">handle_authorization_error</span>(<span class="ruby-identifier">err</span>, <span class="ruby-identifier">query</span>)
+    <span class="ruby-keyword">end</span>
     <span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">end_authorized</span>(<span class="ruby-ivar">@resolved_type</span>, <span class="ruby-ivar">@object</span>, <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>, <span class="ruby-ivar">@authorized_value</span>)
   <span class="ruby-keyword">elsif</span> <span class="ruby-ivar">@resolved_type</span>
     <span class="ruby-identifier">ctx</span> = <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">selections_step</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>
