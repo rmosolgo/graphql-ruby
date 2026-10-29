@@ -525,7 +525,7 @@
 
 
           <div class="method-source-code" id="cursor_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 59</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">cursor_for</span>(<span class="ruby-identifier">item</span>)
   <span class="ruby-identifier">load_nodes</span>
   <span class="ruby-identifier">position</span> = <span class="ruby-identifier">cursor_index_for</span>(<span class="ruby-identifier">item</span>, <span class="ruby-identifier">nodes</span>)
@@ -577,7 +577,7 @@
 
 
           <div class="method-source-code" id="has_next_page-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_next_page</span>
   <span class="ruby-comment"># If the query loads the page anyway, load it now so its extra row answers this</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@has_next_page</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">peek_next_page?</span> <span class="ruby-operator">&amp;&amp;</span>
@@ -646,7 +646,7 @@
 
 
           <div class="method-source-code" id="has_previous_page-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 19</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">has_previous_page</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@has_previous_page</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-ivar">@has_previous_page</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">after_offset</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">after_offset</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>
@@ -709,7 +709,7 @@
 
 
           <div class="method-source-code" id="nodes-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 10</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/pagination/relation_connection.rb, line 14</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">nodes</span>
   <span class="ruby-identifier">load_nodes</span>
   <span class="ruby-ivar">@nodes</span>
