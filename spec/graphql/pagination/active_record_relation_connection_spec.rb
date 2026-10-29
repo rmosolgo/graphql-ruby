@@ -38,6 +38,52 @@ if testing_rails?
       end
     end
 
+    ["items", "preloadedItems", "offsetItems"].each do |field|
+      [:after, :before].each do |argument|
+        it "rejects oversized #{argument} cursors on #{field}" do
+          [2**63, 10**100].each do |offset|
+            cursor = schema.cursor_encoder.encode(offset.to_s, nonce: true)
+            result = schema.execute(<<~GRAPHQL, variables: { cursor: cursor })
+              query($cursor: String!) {
+                #{field}(#{argument}: $cursor, #{argument == :after ? 'first' : 'last'}: 1) {
+                  nodes { name }
+                }
+              }
+            GRAPHQL
+
+            assert_nil result.dig("data", field, "nodes")
+            assert_equal "Invalid cursor: #{cursor.inspect}", result["errors"].first["message"]
+          end
+        end
+      end
+    end
+
+    it "accounts for the application-provided offset when validating cursors" do
+      cursor = schema.cursor_encoder.encode(((2**63) - 2).to_s, nonce: true)
+      result = schema.execute(<<~GRAPHQL, variables: { cursor: cursor })
+        query($cursor: String!) {
+          offsetItems(first: 1, after: $cursor) { nodes { name } }
+        }
+      GRAPHQL
+
+      assert_nil result.dig("data", "offsetItems", "nodes")
+      assert_equal "Invalid cursor: #{cursor.inspect}", result["errors"].first["message"]
+    end
+
+    it "accepts cursor offsets at the signed 64-bit boundary" do
+      [["items", (2**63) - 1], ["offsetItems", (2**63) - 3]].each do |field, offset|
+        cursor = schema.cursor_encoder.encode(offset.to_s, nonce: true)
+        result = schema.execute(<<~GRAPHQL, variables: { cursor: cursor })
+          query($cursor: String!) {
+            #{field}(first: 1, after: $cursor) { nodes { name } }
+          }
+        GRAPHQL
+
+        assert_nil result["errors"]
+        assert_equal [], result["data"][field]["nodes"]
+      end
+    end
+
     it "maintains an application-provided offset" do
       results = schema.execute("{
         offsetItems(first: 3) {

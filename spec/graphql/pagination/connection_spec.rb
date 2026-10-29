@@ -59,14 +59,14 @@ describe GraphQL::Pagination::Connection do
 end
 
 describe GraphQL::Pagination::RelationConnection do
-  it "rejects malformed cursor offsets" do
+  it "rejects malformed and oversized cursor offsets" do
     schema = Class.new(GraphQL::Schema) do
       cursor_encoder(ConnectionAssertions::NonceEnabledEncoder)
     end
     context = GraphQL::Query.new(schema, "{ __typename }").context
     connection = GraphQL::Pagination::RelationConnection.new([], context: context)
 
-    ["-1", "0", "abc", "1e10"].each do |cursor|
+    ["-1", "0", "abc", "1e10", (2**63).to_s, (10**100).to_s].each do |cursor|
       encoded_cursor = ConnectionAssertions::NonceEnabledEncoder.encode(cursor)
       error = assert_raises(GraphQL::ExecutionError) do
         connection.send(:offset_from_cursor, encoded_cursor)
