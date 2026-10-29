@@ -102,6 +102,13 @@ namespace :bench do
     require_relative("./benchmark/run.rb")
   end
 
+  # Tracked benchmarks measure GraphQL::Execution::Next, so load test schemas in that mode
+  def prepare_tracked_benchmark
+    ENV["GRAPHQL_FUTURE"] ||= "1"
+    prepare_benchmark
+    require_relative("./benchmark/track.rb")
+  end
+
   desc "Benchmark parsing"
   task :parse do
     prepare_benchmark
@@ -122,22 +129,19 @@ namespace :bench do
 
   desc "Run the benchmarks tracked over time, measuring iterations per second"
   task :track_runtime do
-    prepare_benchmark
-    require_relative("./benchmark/track.rb")
+    prepare_tracked_benchmark
     GraphQLBenchmark::Track.runtime
   end
 
   desc "Run the benchmarks tracked over time, measuring memory allocations"
   task :track_memory do
-    prepare_benchmark
-    require_relative("./benchmark/track.rb")
+    prepare_tracked_benchmark
     GraphQLBenchmark::Track.memory
   end
 
   desc "Run the benchmark tracked over time, measuring memory retained by a large schema"
   task :track_schema_memory do
-    prepare_benchmark
-    require_relative("./benchmark/track.rb")
+    prepare_tracked_benchmark
     GraphQLBenchmark::Track.schema_memory
   end
 

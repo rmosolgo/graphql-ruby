@@ -635,6 +635,15 @@ interface WorldInterface {
       end
     end
 
+    it "raises a helpful error when a type implements something that isn't an interface" do
+      ["type Bar { a: Int }", "scalar Bar", "enum Bar { A }", "union Bar = Query", "input Bar { a: Int }"].each do |bar_defn|
+        err = assert_raises(RuntimeError, bar_defn) do
+          GraphQL::Schema.from_definition("type Query implements Bar { a: Int }\n#{bar_defn}")
+        end
+        assert_includes err.message, "cannot be implemented since it's not a GraphQL Interface", bar_defn
+      end
+    end
+
     it "supports interfaces that implement interfaces" do
       schema = <<-SCHEMA
 interface Named implements Node {
@@ -1912,6 +1921,28 @@ type ReachableType implements Node {
       assert schema.get_type("D") <= MyScalar
       assert schema.get_type("E") <= MyEnum
       assert schema.get_type("F") <= MyInputObject
+    end
+
+    class MyField < GraphQL::Schema::Field; end
+
+    class MyObjectWithFieldClass < GraphQL::Schema::Object
+      field_class(MyField)
+    end
+
+    class MyObjectWithFieldMethod < GraphQL::Schema::Object
+      def self.field(*args, **kwargs, &block)
+        kwargs[:description] ||= "Added by .field"
+        super
+      end
+    end
+
+    it "uses custom field classes and field methods" do
+      sdl = "type Query { a: Int }"
+      schema = GraphQL::Schema.from_definition(sdl, base_types: { object: MyObjectWithFieldClass })
+      assert_instance_of MyField, schema.get_type("Query").get_field("a")
+
+      schema = GraphQL::Schema.from_definition(sdl, base_types: { object: MyObjectWithFieldMethod })
+      assert_equal "Added by .field", schema.get_type("Query").get_field("a").description
     end
   end
 

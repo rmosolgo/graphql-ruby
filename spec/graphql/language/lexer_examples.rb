@@ -44,6 +44,30 @@ module LexerExamples
         |}
         let(:tokens) { subject.tokenize(query_string) }
 
+        ["\uFEFF{ field }", "{\uFEFFfield\uFEFF}", "{ field }\uFEFF", "\uFEFF\uFEFF, \r\n\t{\uFEFF field }\uFEFF"].each do |query|
+          it "ignores byte order marks in #{query.inspect}" do
+            tokens = subject.tokenize(query)
+            assert_equal [:LCURLY, :IDENTIFIER, :RCURLY], tokens.map(&:name)
+            assert_equal ["{", "field", "}"], tokens.map(&:value)
+          end
+        end
+
+        it "keeps byte order marks inside quoted and block strings" do
+          tokens = subject.tokenize("\"a\uFEFFb\" \"\"\"c\uFEFFd\"\"\"")
+          assert_equal [:STRING, :STRING], tokens.map(&:name)
+          assert_equal ["a\uFEFFb", "c\uFEFFd"], tokens.map(&:value)
+        end
+
+        it "uses byte order marks to separate numbers from names" do
+          tokens = subject.tokenize("1\uFEFFfield")
+          assert_equal [:INT, :IDENTIFIER], tokens.map(&:name)
+          assert_equal ["1", "field"], tokens.map(&:value)
+        end
+
+        it "returns no tokens for byte order marks alone" do
+          assert_empty subject.tokenize("\uFEFF\uFEFF")
+        end
+
         it "force encodes to utf-8" do
           # string that will be invalid utf-8 once force encoded
           string = "vandflyver \xC5rhus".dup.force_encoding("ASCII-8BIT")

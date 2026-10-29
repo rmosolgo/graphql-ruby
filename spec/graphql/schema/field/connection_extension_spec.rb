@@ -35,6 +35,16 @@ describe GraphQL::Schema::Field::ConnectionExtension do
         argument :starting_with, String, required: false
       end
 
+      field :cached_names, CustomStringConnection, null: false, resolve_static: true
+
+      def self.cached_names(context)
+        context.raw_value({ "nodes" => ["cached"] })
+      end
+
+      def cached_names
+        self.class.cached_names(context)
+      end
+
       def self.names(context)
         raise "This should never be called"
       end
@@ -50,6 +60,11 @@ describe GraphQL::Schema::Field::ConnectionExtension do
   it "implements connection handling even when resolve is shortcutted" do
     res = ConnectionShortcutSchema.execute("{ names(first: 2) { nodes } }")
     assert_equal ["a", "b"], res["data"]["names"]["nodes"]
+  end
+
+  it "returns raw connection values without wrapping them in the legacy interpreter" do
+    res = ConnectionShortcutSchema.execute_legacy("{ cachedNames { nodes } }")
+    assert_equal({ "data" => { "cachedNames" => { "nodes" => ["cached"] } } }, res.to_h)
   end
 
   it "assigns arguments to the connection instance" do

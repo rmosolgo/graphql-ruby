@@ -285,6 +285,31 @@ module GraphQL
           end
         end
       end
+
+      # These are extended onto classes, which provide `superclass` and `ancestors`.
+      # They aren't annotated with `@requires_ancestor: singleton(::Object)` because that
+      # makes `superclass` nilable, and Tapioca's RBI for `ArgumentClassAccessor` also gets
+      # `mixes_in_class_methods`, so Sorbet checks it against singleton classes' singleton classes.
+      module HasArguments
+        module ArgumentClassAccessor
+          def superclass; end
+        end
+
+        module ClassConfigured
+          module InheritedArguments
+            def superclass; end
+            def ancestors; end
+          end
+        end
+      end
+
+      module HasInterfaces
+        module ClassConfigured
+          module InheritedInterfaces
+            def superclass; end
+          end
+        end
+      end
     end
   end
 

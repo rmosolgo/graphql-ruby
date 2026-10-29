@@ -515,7 +515,7 @@ module GraphQL
         coerced_value = begin
           type.coerce_input(value, context)
         rescue StandardError => err
-          context.schema.handle_or_reraise(context, err)
+          handle_or_reraise_arg_error(context, err)
         end
 
         # If this isn't lazy, then the block returns eagerly and assigns the result here
@@ -525,14 +525,14 @@ module GraphQL
           prepared_value = begin
             prepare_value(parent_object, resolved_coerced_value, context: context)
           rescue StandardError => err
-            context.schema.handle_or_reraise(context, err)
+            handle_or_reraise_arg_error(context, err)
           end
 
           if loads && !from_resolver?
             loaded_value = begin
               load_and_authorize_value(owner, prepared_value, context)
             rescue StandardError => err
-              context.schema.handle_or_reraise(context, err)
+              handle_or_reraise_arg_error(context, err)
             end
           end
 
@@ -547,6 +547,17 @@ module GraphQL
             )
           end
         end
+      end
+
+      # When a `rescue_from` handler *returns* an error object instead of raising,
+      # it must not be used as this argument's value — raise it so that
+      # `coerce_arguments` short-circuits resolution with it.
+      def handle_or_reraise_arg_error(context, err) # :nodoc:
+        handled_err = context.schema.handle_or_reraise(context, err)
+        if handled_err.is_a?(GraphQL::ExecutionError) || handled_err.is_a?(GraphQL::UnauthorizedError)
+          raise handled_err
+        end
+        handled_err
       end
 
       def load_and_authorize_value(load_method_owner, coerced_value, context)

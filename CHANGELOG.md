@@ -14,6 +14,28 @@
 
 - Directives: don't drop repeated instances of repeatable directives on interfaces or on subclasses with inherited directives #5823
 
+# 2.6.14 (29 Oct 2026)
+
+## Security
+
+Two patches relating to loopholes in authorization edge cases (legacy and next runtimes):
+
+- https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-q3cc-p5hm-55wj
+- https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-4rw8-495r-pf6j
+
+### New Features
+
+- `Schema.from_definition`: speed up #5832
+- `Execution::Next`: improve dataloader batching in `.authorized?`
+- Sorbet adoption #5825 #5852
+
+### Bug Fixes
+
+- Connections: #5838 #5840 #5845 #5846
+- Complexity: use legacy mode when enforcing limits #5839
+- `rescue_from`: prevent leaking into arguments #5837
+- Parser: Correctly ignore BOM in documents #5849
+
 # 2.6.13 (22 Oct 2026)
 
 ### New features

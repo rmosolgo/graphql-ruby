@@ -777,4 +777,27 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       assert_equal expected_msg, err.message
     end
   end
+
+  describe "coerced_arguments_cache" do
+    it "reuses coerced arguments only when they're statically coercible" do
+      object_location = GraphQL::Schema::Directive::OBJECT
+      simple = Class.new(GraphQL::Schema::Directive) {
+        graphql_name "simple"
+        locations(object_location)
+        argument :name, String
+      }
+      validated = Class.new(GraphQL::Schema::Directive) {
+        graphql_name "validated"
+        locations(object_location)
+        argument :name, String, validates: { length: { minimum: 1 } }
+      }
+      owner = Class.new(GraphQL::Schema::Object) { graphql_name("Thing") }
+      simple.coerced_arguments_cache = {}
+      validated.coerced_arguments_cache = {}
+
+      assert_same simple.new(owner, name: "a").arguments, simple.new(owner, name: "a").arguments
+      refute_same simple.new(owner, name: "a").arguments, simple.new(owner, name: "b").arguments
+      refute_same validated.new(owner, name: "a").arguments, validated.new(owner, name: "a").arguments
+    end
+  end
 end

@@ -150,8 +150,6 @@ module GraphQL
             child_class.extend(InheritedArguments)
           end
 
-          #--
-          # @requires_ancestor: singleton(Object)
           module InheritedArguments
             def arguments(context = GraphQL::Query::NullContext.instance, require_defined_arguments = true)
               own_arguments = super(context, require_defined_arguments)
@@ -382,8 +380,6 @@ module GraphQL
           end
         end
 
-        #--
-        # @requires_ancestor: singleton(Object)
         module ArgumentClassAccessor
           def argument_class(new_arg_class = nil)
             if new_arg_class

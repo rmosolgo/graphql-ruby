@@ -218,7 +218,7 @@ describe GraphQL::Analysis::MaxQueryComplexity do
     end
   end
 
-  describe "when an argument is unauthorized by type" do
+  describe "when a connection argument raises an error" do
     class AuthorizedTypeSchema < GraphQL::Schema
       class Thing < GraphQL::Schema::Object
         def self.authorized?(obj, ctx)
@@ -230,6 +230,8 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       class Query < GraphQL::Schema::Object
         field :things, Thing.connection_type, resolve_static: true do
           argument :thing_id, ID, loads: Thing
+          argument :filter, String, required: false, validates: { length: { maximum: 3 } }
+          argument :prepared, String, required: false, prepare: ->(*) { raise GraphQL::ExecutionError, "Invalid prepared argument" }
         end
 
         def self.things(context, thing:)
@@ -238,6 +240,13 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
         def things(thing:)
           self.class.things(context, thing: thing)
+        end
+
+        field :expensive, Integer, complexity: 1000
+
+        def expensive
+          context[:expensive_called] = true
+          1
         end
       end
 
@@ -275,6 +284,54 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       query_str = "{ things(thingId: \"13\", first: 1) { nodes { name } } }"
       res = AuthorizedTypeSchema.execute(query_str, context: { authorized: true })
       assert_equal ["No Thing #13"], res["errors"].map { |e| e["message"] }
+    end
+
+    {
+      'thingId: "123", filter: "toolong"' => "filter is too long (maximum is 3)",
+      'thingId: "123", prepared: "invalid"' => "Invalid prepared argument",
+      'thingId: "13"' => "No Thing #13",
+      'thingId: "123"' => 'Unauthorized Object: "Loaded thing 123"',
+    }.each do |arguments, error_message|
+      describe "with #{arguments}" do
+        let(:context) { { authorized: arguments != 'thingId: "123"' } }
+        let(:connection_selection) { "things(#{arguments}, first: 1) { nodes { name } }" }
+
+        it "still enforces depth and complexity limits" do
+          limited_schema = Class.new(AuthorizedTypeSchema) do
+            max_depth 2
+            max_complexity 100
+          end
+          ["#{connection_selection} expensive", "expensive #{connection_selection}"].each do |selections|
+            result = limited_schema.execute("{ #{selections} }", context: context)
+
+            refute result.key?("data")
+            assert_equal [
+              "Query has depth of 3, which exceeds max depth of 2",
+              "Query has complexity of 1002, which exceeds max complexity of 100",
+            ], result["errors"].map { |error| error["message"] }
+            refute context[:expensive_called]
+          end
+        end
+
+        it "returns the argument error when within the limits" do
+          result = AuthorizedTypeSchema.execute("{ #{connection_selection} }", context: context)
+
+          assert_equal [error_message], result["errors"].map { |error| error["message"] }
+        end
+
+        it "still enforces the multiplex complexity limit" do
+          results = AuthorizedTypeSchema.multiplex([
+            { query: "{ #{connection_selection} }", context: context },
+            { query: "{ expensive }", max_complexity: nil, context: context },
+          ], max_complexity: 100)
+
+          results.each do |result|
+            refute result.key?("data")
+            assert_equal ["Query has complexity of 1002, which exceeds max complexity of 100"], result["errors"].map { |error| error["message"] }
+          end
+          refute context[:expensive_called]
+        end
+      end
     end
   end
 end

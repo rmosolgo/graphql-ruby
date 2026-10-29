@@ -31,7 +31,7 @@ module GraphQL
           lookahead = arguments[:lookahead]
           context.query.after_lazy(value) do |resolved_value|
             connection = context.schema.connections.populate_connection(field, object.object, resolved_value, original_arguments, context)
-            connection.lookahead ||= lookahead if connection
+            connection.lookahead ||= lookahead if connection.is_a?(GraphQL::Pagination::Connection)
             connection
           end
         end

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: false
+# typed: true
 module GraphQL
   module Execution
     class FieldResolveStep
@@ -26,6 +26,8 @@ module GraphQL
         @finish_extension_idx = nil
         @was_scoped = nil
         @pending_steps = nil
+        @field_authorization_objects = @field_authorization_results = @field_authorization_errors = nil
+        @field_authorization_next_idx = @field_authorization_pending = nil
         @arguments_without_loads = @post_processors = @directive_finalizers = nil
       end
 
@@ -94,6 +96,12 @@ module GraphQL
           finish_extensions
         elsif @field_results
           build_results
+        elsif @field_authorization_results
+          if @field_authorization_next_idx < @field_authorization_objects.size
+            authorize_next_field_object
+          else
+            finish_field_authorizations
+          end
         elsif @arguments
           execute_field
         else
@@ -118,7 +126,7 @@ module GraphQL
         @runner.add_finalizer(@selections_step.query, result, key, err)
         if !err.is_a?(GraphQL::Execution::Skip)
           field_type = return_type
-          should_propagate_null = field_type.non_null?
+          should_propagate_null = field_type.non_null? #: bool
           while (should_propagate_null == false && field_type.kind.wraps?)
             field_type = field_type.of_type
             should_propagate_null = field_type.non_null?
@@ -131,10 +139,10 @@ module GraphQL
       end
 
       def propagate_nulls
-        propagating_null = true
+        propagating_null = true #: bool
         highest_nulled_depth = path.size
-        highest_list_depth = nil
-        current_field_step = self
+        highest_list_depth = nil #: Integer?
+        current_field_step = self #: FieldResolveStep?
         while current_field_step && current_field_step.field_definition
           return_type = current_field_step.field_definition.type
           if propagating_null && return_type.non_null?
@@ -151,7 +159,7 @@ module GraphQL
         end
 
         if highest_list_depth.nil? || highest_nulled_depth <= highest_list_depth
-          kill_field_step = self
+          kill_field_step = self #: FieldResolveStep?
           while kill_field_step && kill_field_step.field_definition && highest_nulled_depth <= kill_field_step.path.size
             kill_field_step.selections_step.killed = true
             kill_field_step = kill_field_step.selections_step.field_resolve_step
@@ -243,153 +251,30 @@ module GraphQL
         end
 
         if @runner.authorizes?(@field_definition, ctx)
-          authorized_objects = []
-          authorized_results = []
-          l = objects.size
-          i = 0
-          while i < l
-            o = objects[i]
-            err = nil
-            begin
-              field_authed = @field_definition.authorized?(o, @arguments, ctx)
-              if @runner.resolves_lazies && @runner.lazy?(field_authed)
-                # TODO batch this properly...
-                field_authed = sync(field_authed)
-              end
-            rescue GraphQL::UnauthorizedFieldError => field_auth_err
-              err = field_auth_err
-              err.field ||= @field_definition
-              field_authed = false
-            end
-
-            if field_authed
-              authorized_results << @results[i]
-              authorized_objects << o
-            else
-              begin
-                err ||= GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
-                new_obj = query.schema.unauthorized_field(err)
-                if !new_obj.nil?
-                  authorized_objects << new_obj
-                  authorized_results << @results[i]
-                end
-              rescue GraphQL::ExecutionError => exec_err
-                add_graphql_error(@results[i], key, exec_err)
-              end
-            end
-            i += 1
-          end
-
-          if authorized_objects.size == 0
+          @field_authorization_objects = objects
+          @field_authorization_results = Array.new(objects.size)
+          @field_authorization_next_idx = 0
+          if objects.size > 1 && !@runner.dataloader.is_a?(GraphQL::Dataloader::NullDataloader)
+            # Enqueue this step once per object, so Dataloader sources loaded by `authorized?` batch across objects.
+            # Each call authorizes the next object; see `authorize_next_field_object`.
+            @field_authorization_pending = objects.size
+            objects.size.times { @runner.dataloader.append_job(self) }
             return
           end
-          @results = authorized_results
+          objects.size.times { |idx| authorize_field_at(idx, ctx) }
+          authorized_objects = collect_field_authorizations
+          return if authorized_objects.nil?
         else
           authorized_objects = objects
         end
 
-        if @parent_type.default_relay? && SCOPED_RELAY_FIELD_NAMES.include?(@field_definition.original_name) && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
-          @was_scoped = true
-        end
-
-        query.current_trace.begin_execute_field(@field_definition, authorized_objects, @arguments, query)
-
-        if @runner.uses_runtime_directives
-          if @ast_nodes.nil? || @ast_nodes.size == 1
-            directives = if !@ast_node.directives.empty?
-              @ast_node.directives
-            else
-              nil
-            end
-          else
-            directives = nil
-            @ast_nodes.each do |n|
-              if (d = n.directives).any? # rubocop:disable Development/NoneWithoutBlockCop
-                directives ||= []
-                directives.concat(d)
-              end
-            end
-          end
-
-          if directives
-            directives.each do |dir_node|
-              if (dir_defn = @runner.runtime_directives[dir_node.name])
-                dir_args, errors = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, self)  # rubocop:disable Development/ContextIsPassedCop
-                if errors
-                  @results.each { |r| r.delete(@key) }
-                  errors.each { |e| e.ast_node = dir_node }
-                  build_errors_result(errors, nil)
-                  return
-                else
-                  begin
-                    dir_defn.validate!(dir_args, query.context)
-                    if !(result = dir_defn.resolve_field(ast_nodes, @parent_type, field_definition, authorized_objects, dir_args, ctx)).nil?
-                      if result.is_a?(Finalizer)
-                        result.path = path
-                        @directive_finalizers ||= []
-                        @directive_finalizers << result
-                      end
-
-                      if result.is_a?(PostProcessor)
-                        @post_processors ||= []
-                        @post_processors << result
-                      end
-
-                      if result.is_a?(HaltExecution)
-                        @directive_finalizers&.each { |f|
-                          @selections_step.results.each { |r|  @runner.add_finalizer(query, r, key, f) }
-                        }
-                        return
-                      end
-                    end
-                  rescue GraphQL::RuntimeError => err
-                    err.ast_node = dir_node
-                    raise
-                  end
-                end
-              end
-            end
-          end
-        end
-
-        has_extensions = @field_definition.extensions.size > 0
-        if has_extensions
-          @extended = GraphQL::Schema::Field::ExtendedState.new(@arguments, authorized_objects)
-          @field_results = @field_definition.run_next_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
-            if (added_extras = @extended.added_extras)
-              args = args.dup
-              added_extras.each { |e| args.delete(e) }
-            end
-            resolve_batch(objs, ctx, args)
-          end
-          @finish_extension_idx = 0
-        else
-          @field_results = resolve_batch(authorized_objects, ctx, @arguments)
-        end
-
-        query.current_trace.end_execute_field(@field_definition, authorized_objects, @arguments, query, @field_results)
-
-        if any_lazy_results?
-          @runner.dataloader.lazy_at_depth(path.size, self)
-        elsif @pending_steps.nil? || @pending_steps.empty?
-          if has_extensions
-            finish_extensions
-          else
-            build_results
-          end
-        end
-      rescue GraphQL::ExecutionError => err
-        build_errors_result(nil, err)
-      rescue StandardError => stderr
-        begin
-          @selections_step.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
-        rescue GraphQL::ExecutionError => err
-          add_graphql_error(@results[0], key, err)
-        end
+        execute_authorized_field(authorized_objects)
+      rescue StandardError => err
+        handle_execute_field_error(err)
       end
 
       def any_lazy_results?
-        lazies = false
+        lazies = false #: bool
         if @runner.resolves_lazies # TODO extract this
           @field_results.each do |field_result|
             if @runner.lazy?(field_result)
@@ -621,7 +506,7 @@ module GraphQL
           # Preserve existing messages for single-level lists.
           element_type = return_type.of_type if list_type.of_type.list?
         end
-        err = @parent_type::InvalidNullError.new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path, element_type: element_type)
+        err = @parent_type.const_get(:InvalidNullError).new(@parent_type, @field_definition, ast_nodes, is_from_array: is_from_array, path: path, element_type: element_type)
         nn_result = @runner.schema.type_error(err, @selections_step.query.context)
         if nn_result.nil?
           propagate_nulls
@@ -634,6 +519,207 @@ module GraphQL
       end
 
       private
+
+      def execute_authorized_field(authorized_objects)
+        query = @selections_step.query
+        ctx = query.context
+
+        if @parent_type.default_relay? && SCOPED_RELAY_FIELD_NAMES.include?(@field_definition.original_name) && authorized_objects.all? { |o| o.respond_to?(:was_authorized_by_scope_items?) && o.was_authorized_by_scope_items? }
+          @was_scoped = true
+        end
+
+        query.current_trace.begin_execute_field(@field_definition, authorized_objects, @arguments, query)
+
+        if @runner.uses_runtime_directives
+          if @ast_nodes.nil? || @ast_nodes.size == 1
+            directives = if !@ast_node.directives.empty?
+              @ast_node.directives
+            else
+              nil
+            end
+          else
+            directives = nil #: Array[untyped]?
+            @ast_nodes.each do |n|
+              if (d = n.directives).any? # rubocop:disable Development/NoneWithoutBlockCop
+                directives ||= []
+                directives.concat(d)
+              end
+            end
+          end
+
+          if directives
+            directives.each do |dir_node|
+              if (dir_defn = @runner.runtime_directives[dir_node.name])
+                dir_args, errors = @runner.input_values[query].argument_values(dir_defn, dir_node.arguments, self)  # rubocop:disable Development/ContextIsPassedCop
+                if errors
+                  @results.each { |r| r.delete(@key) }
+                  errors.each { |e| e.ast_node = dir_node }
+                  build_errors_result(errors, nil)
+                  return
+                else
+                  begin
+                    dir_defn.validate!(dir_args, query.context)
+                    if !(result = dir_defn.resolve_field(ast_nodes, @parent_type, field_definition, authorized_objects, dir_args, ctx)).nil?
+                      if result.is_a?(Finalizer)
+                        result.path = path
+                        @directive_finalizers ||= []
+                        @directive_finalizers << result
+                      end
+
+                      if result.is_a?(PostProcessor)
+                        @post_processors ||= []
+                        @post_processors << result
+                      end
+
+                      if result.is_a?(HaltExecution)
+                        @directive_finalizers&.each { |f|
+                          @selections_step.results.each { |r|  @runner.add_finalizer(query, r, key, f) }
+                        }
+                        return
+                      end
+                    end
+                  rescue GraphQL::RuntimeError => err
+                    err.ast_node = dir_node
+                    raise
+                  end
+                end
+              end
+            end
+          end
+        end
+
+        has_extensions = @field_definition.extensions.size > 0
+        if has_extensions
+          @extended = GraphQL::Schema::Field::ExtendedState.new(@arguments, authorized_objects)
+          @field_results = @field_definition.run_next_extensions_before_resolve(authorized_objects, @arguments, ctx, @extended) do |objs, args|
+            if (added_extras = @extended.added_extras)
+              args = args.dup
+              added_extras.each { |e| args.delete(e) }
+            end
+            resolve_batch(objs, ctx, args)
+          end
+          @finish_extension_idx = 0
+        else
+          @field_results = resolve_batch(authorized_objects, ctx, @arguments)
+        end
+
+        query.current_trace.end_execute_field(@field_definition, authorized_objects, @arguments, query, @field_results)
+
+        if any_lazy_results?
+          @runner.dataloader.lazy_at_depth(path.size, self)
+        elsif @pending_steps.nil? || @pending_steps.empty?
+          if has_extensions
+            finish_extensions
+          else
+            build_results
+          end
+        end
+      rescue StandardError => err
+        handle_execute_field_error(err)
+      end
+
+      def handle_execute_field_error(err)
+        if @field_authorization_objects
+          clear_field_authorizations
+        end
+        if err.is_a?(GraphQL::ExecutionError)
+          build_errors_result(nil, err)
+        else
+          begin
+            @selections_step.query.handle_or_reraise(err, field: @field_definition, arguments: @arguments, object: nil)
+          rescue GraphQL::ExecutionError => exec_err
+            add_graphql_error(@results[0], key, exec_err)
+          end
+        end
+      end
+
+      # Stores the (possibly synced) +authorized?+ result for the object at +idx+.
+      # A GraphQL::UnauthorizedFieldError raised by +authorized?+ is stored in +@field_authorization_errors+.
+      def authorize_field_at(idx, ctx)
+        field_authed = @field_definition.authorized?(@field_authorization_objects[idx], @arguments, ctx)
+        if @runner.resolves_lazies && @runner.lazy?(field_authed)
+          field_authed = sync(field_authed)
+        end
+        @field_authorization_results[idx] = field_authed
+      rescue GraphQL::UnauthorizedFieldError => field_auth_err
+        field_auth_err.field ||= @field_definition
+        (@field_authorization_errors ||= {})[idx] = field_auth_err
+      end
+
+      # Runs once for each time this step was enqueued for field authorization.
+      # The index is taken before +authorized?+ runs, so it's still correct if this Fiber pauses.
+      # When the last object is done, the step is enqueued again to call +finish_field_authorizations+.
+      def authorize_next_field_object
+        idx = @field_authorization_next_idx
+        @field_authorization_next_idx += 1
+        begin
+          authorize_field_at(idx, @selections_step.query.context)
+        rescue StandardError => err
+          (@field_authorization_errors ||= {})[idx] = err
+        end
+        @field_authorization_pending -= 1
+        if @field_authorization_pending == 0
+          @runner.add_step(self)
+        end
+      end
+
+      def finish_field_authorizations
+        if (errors = @field_authorization_errors)
+          @field_authorization_objects.size.times do |idx|
+            err = errors[idx]
+            if err && !err.is_a?(GraphQL::UnauthorizedFieldError)
+              raise err
+            end
+          end
+        end
+        authorized_objects = collect_field_authorizations
+        if authorized_objects
+          execute_authorized_field(authorized_objects)
+        end
+      rescue StandardError => err
+        handle_execute_field_error(err)
+      end
+
+      def clear_field_authorizations
+        @field_authorization_objects = @field_authorization_results = @field_authorization_errors = nil
+        @field_authorization_next_idx = @field_authorization_pending = nil
+      end
+
+      # Applies +unauthorized_field+ for denied objects, in object order.
+      # Returns the objects to resolve, or +nil+ if none are left.
+      def collect_field_authorizations
+        objects = @field_authorization_objects
+        auth_results = @field_authorization_results
+        errors = @field_authorization_errors
+        clear_field_authorizations
+        ctx = @selections_step.query.context
+        authorized_objects = []
+        authorized_results = []
+        objects.each_with_index do |o, i|
+          err = errors && errors[i]
+          if !err && auth_results[i]
+            authorized_results << @results[i]
+            authorized_objects << o
+          else
+            begin
+              err ||= GraphQL::UnauthorizedFieldError.new(object: o, type: @parent_type, context: ctx, field: @field_definition)
+              new_obj = ctx.schema.unauthorized_field(err)
+              if !new_obj.nil?
+                authorized_objects << new_obj
+                authorized_results << @results[i]
+              end
+            rescue GraphQL::ExecutionError => exec_err
+              add_graphql_error(@results[i], key, exec_err)
+            end
+          end
+        end
+
+        if authorized_objects.size == 0
+          return nil
+        end
+        @results = authorized_results
+        authorized_objects
+      end
 
       def build_graphql_result(graphql_result, key, field_result, return_type, is_nn, is_list, is_from_array) # rubocop:disable Metrics/ParameterLists
         if field_result.nil?
@@ -712,25 +798,25 @@ module GraphQL
         when :resolve_batch
           begin
             method_receiver.public_send(@field_definition.execution_mode_key, objects, context, **args_hash)
-          rescue GraphQL::ExecutionError => exec_err
-            error_instance_array(objects.size, exec_err)
-          rescue StandardError => stderr
+          rescue GraphQL::ExecutionError => batch_err
+            error_instance_array(objects.size, batch_err)
+          rescue StandardError => batch_stderr
             begin
-              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
-            rescue GraphQL::ExecutionError => exec_err
-              error_instance_array(objects.size, exec_err)
+              context.query.handle_or_reraise(batch_stderr, field: @field_definition, arguments: @arguments, object: nil)
+            rescue GraphQL::ExecutionError => batch_err
+              error_instance_array(objects.size, batch_err)
             end
           end
         when :resolve_static
           result = begin
             method_receiver.public_send(@field_definition.execution_mode_key, context, **args_hash)
-          rescue GraphQL::ExecutionError => err
-            err
-          rescue StandardError => stderr
+          rescue GraphQL::ExecutionError => static_err
+            static_err
+          rescue StandardError => static_stderr
             begin
-              context.query.handle_or_reraise(stderr, field: @field_definition, arguments: @arguments, object: nil)
-            rescue GraphQL::ExecutionError => err
-              err
+              context.query.handle_or_reraise(static_stderr, field: @field_definition, arguments: @arguments, object: nil)
+            rescue GraphQL::ExecutionError => static_err
+              static_err
             end
           end
           Array.new(objects.size, result)

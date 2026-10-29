@@ -75,8 +75,6 @@ module GraphQL
             child_class.extend(InheritedInterfaces)
           end
 
-          #--
-          # @requires_ancestor: singleton(Object)
           module InheritedInterfaces
             def interfaces(context = GraphQL::Query::NullContext.instance)
               visible_interfaces = super
