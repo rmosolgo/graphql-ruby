@@ -14,6 +14,7 @@ module GraphQL
         @resolved_type = nil
         @authorized_value = nil
         @authorization_error = nil
+        @execution_error = nil
         @key = key
         @next_step = :resolve_type
         @is_from_array = is_from_array
@@ -24,7 +25,12 @@ module GraphQL
         if @authorized_value
           query = @field_resolve_step.selections_step.query
           query.current_trace.begin_authorized(@resolved_type, @object, query.context)
-          @authorized_value = @field_resolve_step.sync(@authorized_value)
+          begin
+            @authorized_value = @runner.schema.sync_lazy(@authorized_value)
+          rescue StandardError => err
+            @authorized_value = nil
+            handle_authorization_error(err, query)
+          end
           query.current_trace.end_authorized(@resolved_type, @object, query.context, @authorized_value)
         elsif @resolved_type
           ctx = @field_resolve_step.selections_step.query.context
@@ -90,8 +96,9 @@ module GraphQL
           query.current_trace.begin_authorized(@resolved_type, @object, query.context)
           @authorized_value = @resolved_type.authorized?(@object, query.context)
           query.current_trace.end_authorized(@resolved_type, @object, query.context, @authorized_value)
-        rescue GraphQL::UnauthorizedError => auth_err
-          @authorization_error = auth_err
+        rescue StandardError => err
+          @authorized_value = nil
+          handle_authorization_error(err, query)
         end
 
         if @runner.resolves_lazies && @runner.lazy?(@authorized_value)
@@ -100,19 +107,14 @@ module GraphQL
         else
           create_result
         end
-      rescue GraphQL::RuntimeError => err
-        @graphql_result[@key] = add_field_error(err)
-      rescue StandardError => err
-        query ||= @field_resolve_step.selections_step.query
-        begin
-          query.handle_or_reraise(err, field: @field_resolve_step.field_definition, arguments: @field_resolve_step.arguments, object: @object) # rubocop:disable Development/ContextIsPassedCop
-        rescue GraphQL::RuntimeError => err
-          @graphql_result[@key] = add_field_error(err)
-        end
       end
 
       def create_result
-        if !@authorized_value
+        if @execution_error
+          # `.authorized?` raised (or its lazy value raised) an error other than UnauthorizedError:
+          # it isn't an authorization decision, so don't call `unauthorized_object`.
+          @graphql_result[@key] = add_field_error(@execution_error)
+        elsif !@authorized_value
           @authorization_error ||= GraphQL::UnauthorizedError.new(object: @object, type: @resolved_type, context: @field_resolve_step.selections_step.query.context)
         end
 
@@ -146,6 +148,28 @@ module GraphQL
         end
 
         @field_resolve_step.authorized_finished(self)
+      end
+
+      private
+
+      # Errors raised by `.authorized?` (or by syncing its lazy return value):
+      #
+      # - `UnauthorizedError` is equivalent to returning `false`, so it goes to `unauthorized_object`
+      # - Other `GraphQL::RuntimeError`s are added to the response for this field
+      # - Other errors go to `rescue_from` handlers, which might return a `GraphQL::RuntimeError`, or else re-raise
+      def handle_authorization_error(err, query)
+        case err
+        when GraphQL::UnauthorizedError
+          @authorization_error = err
+        when GraphQL::RuntimeError
+          @execution_error = err
+        else
+          begin
+            @authorized_value = query.handle_or_reraise(err, field: @field_resolve_step.field_definition, arguments: @field_resolve_step.arguments, object: @object) # rubocop:disable Development/ContextIsPassedCop
+          rescue GraphQL::RuntimeError => runtime_err
+            handle_authorization_error(runtime_err, query)
+          end
+        end
       end
     end
   end
