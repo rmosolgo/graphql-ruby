@@ -89,7 +89,7 @@ module GraphQL
         #   authorized_new(Object object, GraphQL::Query::Context context) -> GraphQL::Schema::Object | GraphQL::Execution::Lazy | GraphQL::UnauthorizedError
         def authorized_new(object, context)
           context.query.current_trace.begin_authorized(self, object, context)
-          raised_auth_err = nil
+          raised_auth_err = nil #: GraphQL::UnauthorizedError?
           begin
             maybe_lazy_auth_val = context.query.current_trace.authorized(query: context.query, type: self, object: object) do
               begin
