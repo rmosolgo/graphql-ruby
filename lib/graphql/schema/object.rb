@@ -89,12 +89,15 @@ module GraphQL
         #   authorized_new(Object object, GraphQL::Query::Context context) -> GraphQL::Schema::Object | GraphQL::Execution::Lazy | GraphQL::UnauthorizedError
         def authorized_new(object, context)
           context.query.current_trace.begin_authorized(self, object, context)
+          raised_auth_err = nil
           begin
             maybe_lazy_auth_val = context.query.current_trace.authorized(query: context.query, type: self, object: object) do
               begin
                 authorized?(object, context)
               rescue GraphQL::UnauthorizedError => err
-                context.schema.unauthorized_object(err)
+                # Raising is equivalent to returning `false`; `unauthorized_object` is called below
+                raised_auth_err = err
+                false
               rescue StandardError => err
                 context.query.handle_or_reraise(err)
               end
@@ -107,7 +110,12 @@ module GraphQL
             GraphQL::Execution::Lazy.new do
               context.query.current_trace.begin_authorized(self, object, context)
               context.query.current_trace.authorized_lazy(query: context.query, type: self, object: object) do
-                res = context.schema.sync_lazy(maybe_lazy_auth_val)
+                res = begin
+                  context.schema.sync_lazy(maybe_lazy_auth_val)
+                rescue GraphQL::UnauthorizedError => err
+                  raised_auth_err = err
+                  false
+                end
                 context.query.current_trace.end_authorized(self, object, context, res)
                 res
               end
@@ -121,7 +129,7 @@ module GraphQL
               self.new(object, context)
             else
               # It failed the authorization check, so go to the schema's authorized object hook
-              err = GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
+              err = raised_auth_err || GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
               # If a new value was returned, wrap that instead of the original value
               begin
                 new_obj = context.schema.unauthorized_object(err)
