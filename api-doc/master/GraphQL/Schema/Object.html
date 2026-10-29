@@ -664,7 +664,7 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 90</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized_new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">begin_authorized</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
-  <span class="ruby-identifier">raised_auth_err</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">raised_auth_err</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: GraphQL::UnauthorizedError?</span>
   <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">maybe_lazy_auth_val</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">authorized</span>(<span class="ruby-value">query</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-keyword">self</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>) <span class="ruby-keyword">do</span>
       <span class="ruby-keyword">begin</span>
