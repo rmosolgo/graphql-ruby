@@ -12,9 +12,6 @@ module GraphQL
         @selected_operation = nil
         @dataloader = multiplex.context[:dataloader] ||= @schema.dataloader_class.new
         @resolves_lazies = @schema.resolves_lazies?
-        @input_values = Hash.new do |h, query|
-          h[query] = InputValues.new(query, self)
-        end.compare_by_identity
 
         @runtime_directives = nil #: Hash[String, singleton(GraphQL::Schema::Directive)]?
         @schema.directives.each do |name, dir_class|
@@ -53,7 +50,7 @@ module GraphQL
         @dataloader.append_job(step)
       end
 
-      attr_reader :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers, :input_values
+      attr_reader :schema, :variables, :dataloader, :resolves_lazies, :authorizes, :static_type_at, :runtime_type_at, :finalizers
 
       # **Returns**
       #
@@ -285,7 +282,7 @@ module GraphQL
             continue_execution = true #: bool
             query_dirs.each do |dir_node|
               dir_defn = runtime_directives[dir_node.name] || raise(GraphQL::Error, "No directive definition found for: #{dir_node.name.inspect}")
-              dir_args, errors = input_values[query].argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+              dir_args, errors = query.input_values.argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
               if errors
                 errors.each { |e|
                   e.ast_node = dir_node
@@ -412,14 +409,14 @@ module GraphQL
         if ast_selection.directives.any? { |dir_node|
               case dir_node.name
               when "skip"
-                skip_args, _errors = @input_values[query].argument_values(GraphQL::Schema::Directive::Skip, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+                skip_args, _errors = query.input_values.argument_values(GraphQL::Schema::Directive::Skip, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
                 skip_args[:if] == true
               when "include"
-                include_args, _errors = @input_values[query].argument_values(GraphQL::Schema::Directive::Include, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+                include_args, _errors = query.input_values.argument_values(GraphQL::Schema::Directive::Include, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
                 include_args[:if] == false
               else
                 dir_defn = runtime_directives[dir_node.name]
-                dir_args, _errors = @input_values[query].argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
+                dir_args, _errors = query.input_values.argument_values(dir_defn, dir_node.arguments, nil) # rubocop:disable Development/ContextIsPassedCop
                 !dir_defn.include?(nil, dir_args, query.context)
               end
             }

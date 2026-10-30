@@ -5,7 +5,6 @@ require "graphql/static_validation/definition_dependencies"
 require "graphql/static_validation/validator"
 require "graphql/static_validation/validation_context"
 require "graphql/static_validation/validation_timeout_error"
-require "graphql/static_validation/literal_validator"
 require "graphql/static_validation/base_visitor"
 
 rules_glob = File.expand_path("../static_validation/rules/*.rb", __FILE__)
