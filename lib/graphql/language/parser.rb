@@ -89,8 +89,10 @@ module GraphQL
           la = []
           idx = 0 #: Integer?
           while idx
-            idx = graphql_str.index("\n", idx)
+            idx = graphql_str.index(/[\r\n]/, idx)
             if idx
+              # Record the final byte so CRLF counts as one line break.
+              idx += 1 if graphql_str.getbyte(idx) == 13 && graphql_str.getbyte(idx + 1) == 10
               la << idx
               idx += 1
             end
