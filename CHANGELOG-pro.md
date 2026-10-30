@@ -6,6 +6,12 @@
 
 ### New Features
 
+# 1.30.5 (30 Oct 2025)
+
+## Security
+
+- Ably webhook handler: address https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-wc23-rr9x-mc68
+
 # 1.30.4 (1 Oct 2026)
 
 - Remove needless `require "ostruct"`
