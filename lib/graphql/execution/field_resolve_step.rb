@@ -29,6 +29,10 @@ module GraphQL
         @field_authorization_objects = @field_authorization_results = @field_authorization_errors = nil
         @field_authorization_next_idx = @field_authorization_pending = nil
         @arguments_without_loads = @post_processors = @directive_finalizers = nil
+        @scoped_context_results = @scoped_context_index = nil
+        @scoped_context_per_object = false
+        @scoped_context = nil
+        @link_scoped_results = false
       end
 
       attr_reader :ast_node, :key, :parent_type, :selections_step, :runner,
@@ -38,6 +42,16 @@ module GraphQL
 
       def path
         @path ||= [*@selections_step.path, @key].freeze
+      end
+
+      def scoped_context # :nodoc:
+        @scoped_context ||= @selections_step.query.context.scoped_context
+      end
+
+      # The result hashes that scoped context writes and reads apply to: one object's during a per-object call, otherwise the whole batch's.
+      def scoped_context_owners(index = @scoped_context_index) # :nodoc:
+        results = @scoped_context_results || @results || EmptyObjects::EMPTY_ARRAY
+        index && @scoped_context_per_object ? [results[index]] : results
       end
 
       def ast_nodes
@@ -363,6 +377,8 @@ module GraphQL
 
           @all_next_objects = []
           @all_next_results = []
+          # This field's resolvers have already run, so any scope they wrote is visible here.
+          @link_scoped_results = scoped_context.tracking_next_results?
 
           is_list = return_type.list?
           is_non_null = return_type.non_null?
@@ -744,6 +760,7 @@ module GraphQL
           inner_type_nn = inner_type.non_null?
           inner_type_l = inner_type.list?
           list_result = graphql_result[key] = []
+          @scoped_context.link_next_result(graphql_result, list_result, @key) if @link_scoped_results
           @directive_finalizers&.each { |f| @runner.add_finalizer(@selections_step.query, list_result, nil, f) }
           i = 0
           if field_result.is_a?(Array)
@@ -783,6 +800,7 @@ module GraphQL
           @runner.add_step(obj_step)
         else
           next_result_h = {}.compare_by_identity
+          @scoped_context.link_next_result(graphql_result, next_result_h, @key) if @link_scoped_results
           @all_next_results << next_result_h
           @directive_finalizers&.each { |f| @runner.add_finalizer(@selections_step.query, next_result_h, nil, f) }
           @all_next_objects << field_result
@@ -792,6 +810,17 @@ module GraphQL
       end
 
       def resolve_batch(objects, context, args_hash)
+        previous_step = Fiber[Query::Context::ScopedContext::NEXT_STEP_KEY]
+        @scoped_context_results = @results
+        per_object_scope = @scoped_context_per_object = !@results.nil? && objects.size == @results.size
+        Fiber[Query::Context::ScopedContext::NEXT_STEP_KEY] = self
+        resolve_batch_in_scope(objects, context, args_hash, per_object_scope)
+      ensure
+        @scoped_context_index = nil
+        Fiber[Query::Context::ScopedContext::NEXT_STEP_KEY] = previous_step
+      end
+
+      def resolve_batch_in_scope(objects, context, args_hash, per_object_scope)
         dyn_ins = @field_definition.dynamic_introspection
         method_receiver = dyn_ins ? @field_definition.owner : @parent_type
         case @field_definition.execution_mode
@@ -821,7 +850,9 @@ module GraphQL
           end
           Array.new(objects.size, result)
         when :resolve_each
+          idx = -1
           objects.map do |o|
+            @scoped_context_index = (idx += 1) if per_object_scope
             passed_in_obj = dyn_ins ? o.object : o
             method_receiver.public_send(@field_definition.execution_mode_key, passed_in_obj, context, **args_hash)
           rescue GraphQL::ExecutionError => err
@@ -838,7 +869,9 @@ module GraphQL
           objects.map { |o| o[k] }
         when :direct_send
           m = @field_definition.execution_mode_key
+          idx = -1
           objects.map do |o|
+            @scoped_context_index = (idx += 1) if per_object_scope
             o.public_send(m, **args_hash)
           rescue GraphQL::ExecutionError => err
             err
@@ -899,7 +932,9 @@ module GraphQL
           else
             objects.map { |object| @parent_type.scoped_new(object, context) }
           end
+          idx = -1
           graphql_objects.map do |graphql_object|
+            @scoped_context_index = (idx += 1) if per_object_scope
             graphql_object.public_send(@field_definition.execution_mode_key, **args_hash)
           rescue GraphQL::ExecutionError => exec_err
             exec_err

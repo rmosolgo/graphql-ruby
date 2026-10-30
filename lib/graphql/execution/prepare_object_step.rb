@@ -140,6 +140,8 @@ module GraphQL
 
         if @authorized_value
           next_result_h = {}
+          scoped_context = @field_resolve_step.scoped_context
+          scoped_context.link_next_result(@graphql_result, next_result_h, @field_resolve_step.key) if scoped_context.tracking_next_results?
           @next_results << next_result_h
           @next_objects << @object
           @graphql_result[@key] = next_result_h
