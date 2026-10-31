@@ -1026,6 +1026,239 @@
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
         "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Sleeper"
+      },
+      "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "Authorize: Sleeper"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "Sleeper.sleeper",
+        "flowIds": [
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationNames": [
+          {
+            "iid": "10101010101010",
+            "name": "authorized?"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "dictEntries": [
+              {
+                "nameIid": "10101010101010",
+                "doubleValue": 101010101010
+              }
+            ],
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "object"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "doubleValue": 101010101010
+              }
+            ],
+            "name": "result"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "Query.sleeper",
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Sleeper"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
           "Field Execution"
         ],
         "categoryIids": [
@@ -1153,67 +1386,7 @@
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
         "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "Sleeper.sleeper",
-        "flowIds": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Yield"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Resume"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
+          "Authorized"
         ],
         "categoryIids": [
           "10101010101010"
@@ -1221,42 +1394,22 @@
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "dictEntries": [
-              {
-                "nameIid": "10101010101010",
-                "doubleValue": 101010101010
-              }
-            ],
-            "name": "arguments"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "object"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "doubleValue": 101010101010
-              }
-            ],
-            "name": "result"
+            "boolValue": true,
+            "name": "authorized?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
         "trackUuid": "10101010101010",
-        "name": "Query.sleeper",
-        "flowIds": [
+        "extraCounterValues": [
           "10101010101010"
-        ]
-      }
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Sleeper"
+      },
+      "sequenceFlags": 101010101010
     },
     {
       "timestamp": "10101010101010",
@@ -1265,11 +1418,9 @@
         "type": "TYPE_SLICE_END",
         "trackUuid": "10101010101010",
         "extraCounterValues": [
-          "10101010101010",
           "10101010101010"
         ],
         "extraCounterTrackUuids": [
-          "10101010101010",
           "10101010101010"
         ]
       },
@@ -1678,6 +1829,51 @@
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
         "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Sleeper"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
           "Field Execution"
         ],
         "categoryIids": [
@@ -1795,6 +1991,51 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Sleeper"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
           "10101010101010"
         ]
       },
@@ -2079,6 +2320,51 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Sleeper"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
           "10101010101010"
         ]
       },
