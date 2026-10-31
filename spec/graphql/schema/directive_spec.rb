@@ -133,6 +133,11 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         directive(OtherSecret, secret: "other secret")
         directive(OtherSecret, secret: "second other secret")
       end
+
+      class SubThing < Thing
+        directive(Secret, secret: "sub secret")
+        directive(Secret, secret: "second sub secret")
+      end
     end
 
     it "allows repeatable directives twice" do
@@ -149,6 +154,84 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
       assert_equal 1, other_directives.size
       assert_equal ["second other secret"], other_directives.map{ |d| d.arguments[:secret] }
+    end
+
+    it "keeps all repeated directives from a subclass, replacing the inherited ones" do
+      directives = RepeatDirectiveTest::SubThing.directives
+      assert_equal [
+        ["secret", "sub secret"],
+        ["secret", "second sub secret"],
+        ["otherSecret", "second other secret"],
+      ], directives.map { |d| [d.graphql_name, d.arguments[:secret]] }
+    end
+  end
+
+  describe "directives on interfaces" do
+    module InterfaceDirectiveTest
+      class Flag < GraphQL::Schema::Directive
+        locations(INTERFACE, OBJECT)
+      end
+
+      class Tag < GraphQL::Schema::Directive
+        locations(INTERFACE, OBJECT)
+        argument :name, String
+        repeatable(true)
+      end
+
+      module BaseInterface
+        include GraphQL::Schema::Interface
+        directive Flag
+      end
+
+      module Node
+        include BaseInterface
+        directive Tag, name: "node"
+        field :id, ID
+      end
+
+      module Named
+        include BaseInterface
+        implements Node
+        directive Tag, name: "a"
+        directive Tag, name: "b"
+        field :name, String
+      end
+
+      class Thing < GraphQL::Schema::Object
+        implements Named
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :thing, Thing
+      end
+
+      class Schema < GraphQL::Schema
+        query(Query)
+      end
+    end
+
+    def directive_summary(member)
+      member.directives.map { |d| [d.graphql_name, d.arguments.to_h] }
+    end
+
+    it "keeps all repeated directives" do
+      assert_equal [["tag", { name: "a" }], ["tag", { name: "b" }]], directive_summary(InterfaceDirectiveTest::Named)
+    end
+
+    it "doesn't inherit directives from included or implemented interfaces" do
+      assert_equal [["flag", {}]], directive_summary(InterfaceDirectiveTest::BaseInterface)
+      assert_equal [["tag", { name: "node" }]], directive_summary(InterfaceDirectiveTest::Node)
+    end
+
+    it "doesn't copy interface directives onto object types that implement them" do
+      assert_equal [], InterfaceDirectiveTest::Thing.directives
+    end
+
+    it "prints only each interface's own directives in SDL" do
+      sdl = InterfaceDirectiveTest::Schema.to_definition
+      assert_includes sdl, "interface Node @tag(name: \"node\") {"
+      assert_includes sdl, "interface Named implements Node @tag(name: \"a\") @tag(name: \"b\") {"
+      assert_includes sdl, "type Thing implements Named & Node {"
     end
   end
 
