@@ -166,15 +166,10 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     end
   end
 
-  describe "directives on interfaces that implement other interfaces" do
-    module InterfaceDirectiveInheritance
+  describe "directives on interfaces" do
+    module InterfaceDirectiveTest
       class Flag < GraphQL::Schema::Directive
         locations(INTERFACE, OBJECT)
-      end
-
-      class Label < GraphQL::Schema::Directive
-        locations(INTERFACE, OBJECT)
-        argument :text, String
       end
 
       class Tag < GraphQL::Schema::Directive
@@ -190,14 +185,13 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
       module Node
         include BaseInterface
-        directive Label, text: "node"
+        directive Tag, name: "node"
         field :id, ID
       end
 
       module Named
         include BaseInterface
         implements Node
-        directive Label, text: "named"
         directive Tag, name: "a"
         directive Tag, name: "b"
         field :name, String
@@ -220,25 +214,23 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       member.directives.map { |d| [d.graphql_name, d.arguments.to_h] }
     end
 
-    it "merges directives from ancestor interfaces, letting the descendant override them" do
-      assert_equal [["flag", {}]], directive_summary(InterfaceDirectiveInheritance::BaseInterface)
-      assert_equal [["flag", {}], ["label", { text: "node" }]], directive_summary(InterfaceDirectiveInheritance::Node)
-      assert_equal [
-        ["flag", {}],
-        ["label", { text: "named" }],
-        ["tag", { name: "a" }],
-        ["tag", { name: "b" }],
-      ], directive_summary(InterfaceDirectiveInheritance::Named)
+    it "keeps all repeated directives" do
+      assert_equal [["tag", { name: "a" }], ["tag", { name: "b" }]], directive_summary(InterfaceDirectiveTest::Named)
+    end
+
+    it "doesn't inherit directives from included or implemented interfaces" do
+      assert_equal [["flag", {}]], directive_summary(InterfaceDirectiveTest::BaseInterface)
+      assert_equal [["tag", { name: "node" }]], directive_summary(InterfaceDirectiveTest::Node)
     end
 
     it "doesn't copy interface directives onto object types that implement them" do
-      assert_equal [], InterfaceDirectiveInheritance::Thing.directives
+      assert_equal [], InterfaceDirectiveTest::Thing.directives
     end
 
-    it "prints inherited directives in SDL" do
-      sdl = InterfaceDirectiveInheritance::Schema.to_definition
-      assert_includes sdl, "interface Node @flag @label(text: \"node\") {"
-      assert_includes sdl, "interface Named implements Node @flag @label(text: \"named\") @tag(name: \"a\") @tag(name: \"b\") {"
+    it "prints only each interface's own directives in SDL" do
+      sdl = InterfaceDirectiveTest::Schema.to_definition
+      assert_includes sdl, "interface Node @tag(name: \"node\") {"
+      assert_includes sdl, "interface Named implements Node @tag(name: \"a\") @tag(name: \"b\") {"
       assert_includes sdl, "type Thing implements Named & Node {"
     end
   end

@@ -91,29 +91,10 @@ module GraphQL
               else
                 GraphQL::EmptyObjects::EMPTY_ARRAY
               end
-            when Module
-              dirs = nil #: Array[GraphQL::Schema::Directive]?
-              ancestors = schema_member.ancestors #: Array[untyped]
-              ancestors.reverse_each do |ancestor|
-                # `own_directives` is protected, so include private/protected methods in this check.
-                # Skip `schema_member` itself, since its own directives are merged below.
-                if ancestor != schema_member &&
-                    ancestor.respond_to?(:own_directives, true) &&
-                    (anc_dirs = ancestor.send(:own_directives)) &&
-                    !anc_dirs.empty?
-                  dirs ||= []
-                  merge_directives(dirs, anc_dirs)
-                end
-              end
-              if directives
-                dirs ||= []
-                merge_directives(dirs, directives)
-              end
-              dirs || GraphQL::EmptyObjects::EMPTY_ARRAY
             when HasDirectives
               directives || GraphQL::EmptyObjects::EMPTY_ARRAY
             else
-              raise "Invariant: how could #{schema_member} not be a Class, Module, or instance of HasDirectives?"
+              raise "Invariant: how could #{schema_member} not be a Class or instance of HasDirectives?"
             end
           end
 
