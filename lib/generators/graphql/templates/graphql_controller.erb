@@ -48,7 +48,13 @@ class GraphqlController < ApplicationController
     logger.error e.message
     logger.error e.backtrace.join("\n")
 
-    render json: { errors: [{ message: e.message, backtrace: e.backtrace }], data: {} }, status: 500
+    error_json = { errors: [{ message: e.message, backtrace: e.backtrace }], data: {} }
+    if response.committed?
+      # A streaming response (eg, with `@defer`) already started, so `render` would fail
+      response.stream.write(error_json.to_json)
+    else
+      render json: error_json, status: 500
+    end
   end
 end
 <% end -%>
