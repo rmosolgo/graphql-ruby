@@ -50,6 +50,13 @@ describe GraphQL::Language::Lexer do
     end
   end
 
+  it "reports positions with mixed line terminators and multibyte input" do
+    tokens = subject.tokenize("{ field(arg: \"日本語\") }\r\r\n\n\rfragment F on Type { field }\r\n")
+    fragment_token = tokens.find { |token| token.first == :FRAGMENT }
+
+    assert_equal [:FRAGMENT, 5, 1, "fragment"], fragment_token
+  end
+
   it "reraises unexpected argument errors" do
     lexer = subject.new("{")
     scanner = lexer.instance_variable_get(:@scanner)

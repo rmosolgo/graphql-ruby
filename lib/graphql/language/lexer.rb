@@ -183,7 +183,14 @@ module GraphQL
       end
 
       def line_number
-        @scanner.string.byteslice(0, @pos).b.gsub("\r\n", "\n").count("\r\n") + 1
+        line_prefix = @scanner.string.byteslice(0, @pos).b
+        line_number = line_prefix.count("\r") + line_prefix.count("\n") + 1
+        offset = 0 #: Integer?
+        while (offset = line_prefix.index("\r\n", offset))
+          line_number -= 1
+          offset += 2
+        end
+        line_number
       end
 
       def column_number
