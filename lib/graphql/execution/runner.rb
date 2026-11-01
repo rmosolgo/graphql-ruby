@@ -95,10 +95,14 @@ module GraphQL
 
           results = {}.compare_by_identity
           queries.each do |query|
-            if query.validate && !query.valid?
+            # `valid?` also covers variable, operation name and analysis errors, which apply even with `validate: false`.
+            if !query.valid? || !query.context.errors.empty?
               results[query] = {
                 "errors" => query.static_errors.map(&:to_h)
               }
+              next
+            elsif query.selected_operation.nil?
+              results[query] = {}
               next
             end
 
