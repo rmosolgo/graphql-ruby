@@ -176,7 +176,7 @@ module GraphQL
         Fiber[:__graphql_current_multiplex] = previous_multiplex
       end
 
-      def gather_selections(type_defn, ast_selections, selections_step, query, all_selections, prototype_result, into:)
+      def gather_selections(type_defn, ast_selections, selections_step, query, all_selections, prototype_result, into:, inlined_fragments: nil)
         ast_selections.each do |ast_selection|
           next if !directives_include?(query, ast_selection)
 
@@ -201,7 +201,7 @@ module GraphQL
                 all_selections << (into = { __node: ast_selection })
                 all_selections << (prototype_result = {})
               end
-              gather_selections(type_defn, ast_selection.selections, selections_step, query, all_selections, prototype_result, into: into)
+              gather_selections(type_defn, ast_selection.selections, selections_step, query, all_selections, prototype_result, into: into, inlined_fragments: inlined_fragments)
             end
           when GraphQL::Language::Nodes::FragmentSpread
             fragment_definition = query.fragments[ast_selection.name]
@@ -211,7 +211,13 @@ module GraphQL
                 all_selections << (into = { __node: ast_selection })
                 all_selections << (prototype_result = {})
               end
-              gather_selections(type_defn, fragment_definition.selections, selections_step, query, all_selections, prototype_result, into: into)
+              # Spreading the same fragment again into these selections adds nothing, so only gather it once.
+              inlined_fragments ||= {}.compare_by_identity
+              inlined_names = (inlined_fragments[into] ||= {})
+              if !inlined_names.key?(ast_selection.name)
+                inlined_names[ast_selection.name] = true
+                gather_selections(type_defn, fragment_definition.selections, selections_step, query, all_selections, prototype_result, into: into, inlined_fragments: inlined_fragments)
+              end
             end
           else
             raise ArgumentError, "Unsupported graphql selection node: #{ast_selection.class} (#{ast_selection.inspect})"

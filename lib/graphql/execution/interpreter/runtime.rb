@@ -221,7 +221,7 @@ module GraphQL
         end
 
         #: (untyped, untyped, untyped, untyped, Array[untyped]?, untyped, untyped) -> untyped
-        def gather_selections(graphql_response, owner_object, owner_type, selections, selections_to_run, selections_by_name, ordered_result_keys)
+        def gather_selections(graphql_response, owner_object, owner_type, selections, selections_to_run, selections_by_name, ordered_result_keys, inlined_fragments: nil)
           selections.each do |node|
             if node.is_a?(GraphQL::Language::Nodes::Field)
               response_key = node.alias || node.name
@@ -271,14 +271,14 @@ module GraphQL
                   )
 
                   if query.types.possible_types(type_defn).include?(owner_type)
-                    result = gather_selections(graphql_response, owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
+                    result = gather_selections(graphql_response, owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys, inlined_fragments: inlined_fragments)
                     if !result.equal?(next_selections)
                       selections_to_run = result
                     end
                   end
                 else
                   # it's an untyped fragment, definitely continue
-                  result = gather_selections(graphql_response, owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys)
+                  result = gather_selections(graphql_response, owner_object, owner_type, node.selections, selections_to_run, next_selections, ordered_result_keys, inlined_fragments: inlined_fragments)
                   if !result.equal?(next_selections)
                     selections_to_run = result
                   end
@@ -286,8 +286,12 @@ module GraphQL
               when GraphQL::Language::Nodes::FragmentSpread
                 fragment_def = query.fragments[node.name]
                 type_defn = query.types.type(fragment_def.type.name)
-                if query.types.possible_types(type_defn).include?(owner_type)
-                  result = gather_selections(graphql_response, owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections, ordered_result_keys)
+                # Spreading the same fragment again into these selections adds nothing, so only gather it once.
+                inlined_fragments ||= {}.compare_by_identity
+                inlined_names = (inlined_fragments[next_selections] ||= {})
+                if !inlined_names.key?(node.name) && query.types.possible_types(type_defn).include?(owner_type)
+                  inlined_names[node.name] = true
+                  result = gather_selections(graphql_response, owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections, ordered_result_keys, inlined_fragments: inlined_fragments)
                   if !result.equal?(next_selections)
                     selections_to_run = result
                   end
