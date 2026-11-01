@@ -265,7 +265,7 @@ module GraphQL
       end
 
       def self.authorizes?(context)
-        self.instance_method(:authorized?).owner != GraphQL::Schema::Resolver
+        self.instance_method(:authorized?).owner != GraphQL::Schema::Resolver || super
       end
 
       # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.
