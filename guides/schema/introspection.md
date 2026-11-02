@@ -80,6 +80,12 @@ For unions and interfaces, `__typename` returns the _object_ type for the curren
 # }
 ```
 
+## Limiting Introspection Depth
+
+By default, static validation rejects introspection queries when a selection path contains three or more nested occurrences of `fields`, `interfaces`, `possibleTypes`, or `inputFields`. These list fields can multiply the response size at each level. Different fields from this list count toward the same limit, including selections reached through fragments.
+
+This limit applies independently of `max_depth` and `count_introspection_fields`. It allows standard introspection queries and does not count `ofType` wrappers or ordinary application fields.
+
 ## Customizing Introspection
 
 You can use custom introspection types.

@@ -23,6 +23,7 @@ module GraphQL
       GraphQL::StaticValidation::FieldsAreDefinedOnType,
       GraphQL::StaticValidation::FieldsWillMerge,
       GraphQL::StaticValidation::FieldsHaveAppropriateSelections,
+      GraphQL::StaticValidation::MaxIntrospectionDepth,
       GraphQL::StaticValidation::ArgumentsAreDefined,
       GraphQL::StaticValidation::ArgumentLiteralsAreCompatible,
       GraphQL::StaticValidation::RequiredArgumentsArePresent,
