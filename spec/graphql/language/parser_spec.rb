@@ -652,6 +652,18 @@ GRAPHQL
   end
 
   describe "parse errors" do
+    it "preserves the query when parsing exceeds the stack limit" do
+      query_string = "{ field }"
+      parser = GraphQL::Language::Parser.new(query_string, filename: "query.graphql")
+
+      err = parser.stub(:document, -> { raise SystemStackError }) do
+        assert_raises(GraphQL::ParseError) { parser.parse }
+      end
+
+      assert_equal query_string, err.query
+      assert_equal "This query is too large to execute. (query.graphql)", err.message
+    end
+
     it "raises parse errors for nil" do
       assert_raises(GraphQL::ParseError) {
         GraphQL.parse(nil)
