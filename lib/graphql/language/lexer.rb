@@ -82,11 +82,12 @@ module GraphQL
           @scanner.skip(IDENTIFIER_REGEXP)
           :IDENTIFIER
         when ByteFor::NUMBER
-          if len = @scanner.skip(NUMERIC_REGEXP)
-
-            if GraphQL.reject_numbers_followed_by_names
-              new_pos = @scanner.pos
-              peek_byte = @string.getbyte(new_pos)
+          if @scanner.skip(NUMERIC_REGEXP)
+            peek_byte = @string.getbyte(@scanner.pos)
+            if peek_byte == 46 || (peek_byte && peek_byte >= 48 && peek_byte <= 57)
+              raise_parse_error("Invalid number: unexpected character #{peek_byte.chr.inspect}")
+            end
+            if peek_byte && GraphQL.reject_numbers_followed_by_names
               next_first_byte = FIRST_BYTES[peek_byte]
               if next_first_byte == ByteFor::NAME || next_first_byte == ByteFor::IDENTIFIER
                 number_part = token_value
@@ -203,7 +204,6 @@ module GraphQL
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
       FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
       FLOAT_EXP_REGEXP =     /[eE][+-]?[0-9]+/
-      # TODO: FLOAT_EXP_REGEXP should not be allowed to follow INT_REGEXP, integers are not allowed to have exponent parts.
       NUMERIC_REGEXP =  /#{INT_REGEXP}(#{FLOAT_DECIMAL_REGEXP}#{FLOAT_EXP_REGEXP}|#{FLOAT_DECIMAL_REGEXP}|#{FLOAT_EXP_REGEXP})?/
 
       KEYWORDS = [

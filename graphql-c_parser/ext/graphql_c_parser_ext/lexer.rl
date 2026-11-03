@@ -346,6 +346,19 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       break;
   }
 
+  if (this_token_is_number && te < meta->pe && (*te == '.' || (*te >= '0' && *te <= '9'))) {
+    VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
+    VALUE cParseError = rb_const_get_at(mGraphQL, rb_intern("ParseError"));
+    VALUE exception = rb_funcall(
+      cParseError, rb_intern("new"), 4,
+      rb_sprintf("Invalid number: unexpected character \"%c\"", *te),
+      LONG2NUM(meta->line),
+      LONG2NUM(meta->col),
+      rb_str_new_cstr(meta->query_cstr)
+    );
+    rb_exc_raise(exception);
+  }
+
   if (token_sym != Qnil) {
     if (tt == BLOCK_STRING || tt == QUOTED_STRING) {
       VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));

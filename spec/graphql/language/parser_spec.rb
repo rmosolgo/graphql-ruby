@@ -325,6 +325,12 @@ createRecord(data: {
     assert_equal expected_msg, err.message
   end
 
+  ["01", "00", "-01", "01.2", "1.0.1"].each do |number|
+    it "rejects #{number.inspect} instead of splitting it into list values" do
+      assert_raises(GraphQL::ParseError) { GraphQL.parse("{ a(b: [#{number}]) }") }
+    end
+  end
+
   it "can reject name start at the end of numbers" do
     prev_reject_numers_followed_by_names = GraphQL.reject_numbers_followed_by_names
     GraphQL.reject_numbers_followed_by_names = false
@@ -344,6 +350,11 @@ createRecord(data: {
       GraphQL.parse("query($input: SomeInput = { i1: 12i2: 15}) { t }")
     end
     assert_equal "Name after number is not allowed (in `12i2`)", err2.message
+
+    err3 = assert_raises GraphQL::ParseError do
+      GraphQL.parse("{ a(b: [1.0e]) }")
+    end
+    assert_equal "Name after number is not allowed (in `1.0e`)", err3.message
   ensure
     GraphQL.reject_numbers_followed_by_names = prev_reject_numers_followed_by_names
   end
