@@ -24,6 +24,12 @@ describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
       field :text, String, null: false, hash_key: :text
     end
 
+    class OnMessage < GraphQL::Schema::Subscription
+      argument :room_id, ID
+      argument :thread_id, ID, required: false
+      field :text, String, null: false, hash_key: :text
+    end
+
     class EvenCounter < GraphQL::Schema::Subscription
       field :count, Integer, null: false, hash_key: :count
 
@@ -39,6 +45,7 @@ describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
     class Subscription < GraphQL::Schema::Object
       field :news_flash, subscription: NewsFlash
       field :even_counter, subscription: EvenCounter
+      field :on_message, subscription: OnMessage
     end
 
     query(Query)
@@ -89,6 +96,26 @@ describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
                                          }
                                        })
     assert_equal [expected_msg], mock_channel.mock_broadcasted_messages
+  end
+
+  it "does not deliver updates to subscriptions with colliding argument strings" do
+    thread_channel = GraphQL::Testing::MockActionCable.get_mock_channel
+    room_channel = GraphQL::Testing::MockActionCable.get_mock_channel
+    query = "subscription($roomId: ID!, $threadId: ID) { onMessage(roomId: $roomId, threadId: $threadId) { text } }"
+    thread_result = ActionCableTestSchema.execute(query, variables: { roomId: "7", threadId: "3" }, context: { channel: thread_channel })
+    room_result = ActionCableTestSchema.execute(query, variables: { roomId: "7:threadId:3" }, context: { channel: room_channel })
+    refute thread_result.key?("errors")
+    refute room_result.key?("errors")
+
+    ActionCableTestSchema.subscriptions.trigger(:on_message, { room_id: "7", thread_id: "3" }, { text: "Thread message" })
+
+    assert_equal [subscription_update("onMessage" => { "text" => "Thread message" })], thread_channel.mock_broadcasted_messages
+    assert_empty room_channel.mock_broadcasted_messages
+
+    ActionCableTestSchema.subscriptions.trigger(:on_message, { room_id: "7:threadId:3" }, { text: "Room message" })
+
+    assert_equal 1, thread_channel.mock_broadcasted_messages.size
+    assert_equal [subscription_update("onMessage" => { "text" => "Room message" })], room_channel.mock_broadcasted_messages
   end
 
   it "handles custom argument correctly" do
@@ -145,10 +172,10 @@ describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
     expected_streams = [
       # No namespace
       "graphql-subscription:#{ctx_1[:subscription_id]}",
-      "graphql-event::newsFlash:",
+      'graphql-event:[null,"newsFlash",{}]',
       # Namespaced with `other:`
       "graphql-subscription:other:#{ctx_2[:subscription_id]}",
-      "graphql-event:other::newsFlash:",
+      'graphql-event:other:[null,"newsFlash",{}]',
     ]
     assert_equal expected_streams, GraphQL::Testing::MockActionCable.mock_stream_names
   end
