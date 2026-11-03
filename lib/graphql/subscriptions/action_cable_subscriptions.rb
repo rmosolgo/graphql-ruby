@@ -106,13 +106,7 @@ module GraphQL
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
         @subscriptions = Concurrent::Map.new
-        @events = Concurrent::Map.new do |h, k|
-          h.compute_if_absent(k) do
-            Concurrent::Map.new do |h2, k2|
-              h2.compute_if_absent(k2) { Concurrent::Array.new }
-            end
-          end
-        end
+        @events = Concurrent::Map.new
         @action_cable = action_cable
         @action_cable_coder = action_cable_coder
         @serializer = serializer
@@ -164,7 +158,11 @@ module GraphQL
           # Setup a new listener to run all events with this topic in this process
           setup_stream(channel, event)
           # Add this event to the list of events to be updated
-          @events[event.topic][event.fingerprint] << event
+          @events.compute(event.topic) do |events_by_fingerprint|
+            events_by_fingerprint ||= Concurrent::Map.new
+            events_by_fingerprint.compute_if_absent(event.fingerprint) { Concurrent::Array.new } << event
+            events_by_fingerprint
+          end
         end
       end
 
@@ -184,6 +182,8 @@ module GraphQL
         event_stream = stream_event_name(initial_event)
         channel.stream_from(event_stream, coder: @action_cable_coder) do |message|
           events_by_fingerprint = @events[topic]
+          next if events_by_fingerprint.nil?
+
           object = nil #: untyped
           events_by_fingerprint.each do |_fingerprint, events|
             if !events.empty? && events.first == initial_event
@@ -252,11 +252,12 @@ module GraphQL
         if query
           events = query.context.namespace(:subscriptions)[:events]
           events.each do |event|
-            ev_by_fingerprint = @events[event.topic]
-            ev_for_fingerprint = ev_by_fingerprint[event.fingerprint]
-            ev_for_fingerprint.delete(event)
-            if ev_for_fingerprint.empty?
-              ev_by_fingerprint.delete(event.fingerprint)
+            @events.compute_if_present(event.topic) do |events_by_fingerprint|
+              events_by_fingerprint.compute_if_present(event.fingerprint) do |events_for_fingerprint|
+                events_for_fingerprint.delete(event)
+                events_for_fingerprint.empty? ? nil : events_for_fingerprint
+              end
+              events_by_fingerprint.empty? ? nil : events_by_fingerprint
             end
           end
         end
