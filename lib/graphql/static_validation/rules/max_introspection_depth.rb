@@ -8,7 +8,9 @@ module GraphQL
       MAX_LIST_DEPTH = 3
 
       def on_field(node, parent)
-        if (node.name == "__schema" || node.name == "__type") && introspection_depth_exceeded?(node, 0, {})
+        if (node.name == "__schema" || node.name == "__type") &&
+            context.schema.limit_introspection_depth &&
+            introspection_depth_exceeded?(node, 0, {})
           add_error(GraphQL::StaticValidation::MaxIntrospectionDepthError.new(
             "Maximum introspection depth exceeded",
             nodes: node,

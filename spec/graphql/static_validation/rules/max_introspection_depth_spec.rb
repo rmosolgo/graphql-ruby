@@ -134,7 +134,48 @@ describe "Maximum introspection depth" do
     assert_equal 1, schema.validate(query).length
   end
 
+  it "inherits the opt-out setting and allows subclasses to re-enable the limit" do
+    schema = Class.new(IntrospectionDepthSchema) { limit_introspection_depth false }
+    child_schema = Class.new(schema)
+    limited_schema = Class.new(child_schema) { limit_introspection_depth true }
+    query = "{ __type(name: \"N\") { #{nested_fields(3)} } }"
+
+    assert_equal true, IntrospectionDepthSchema.limit_introspection_depth
+    assert_equal false, child_schema.limit_introspection_depth
+    assert_empty child_schema.validate(query)
+    assert_equal ["Maximum introspection depth exceeded"], limited_schema.validate(query).map(&:message)
+    assert_equal ["Maximum introspection depth exceeded"], IntrospectionDepthSchema.validate(query).map(&:message)
+    assert_equal false, schema.limit_introspection_depth
+  end
+
+  it "keeps other validation rules when opting out" do
+    schema = Class.new(IntrospectionDepthSchema) { limit_introspection_depth false }
+    errors = schema.validate('{ __type(name: "N") { unknownField } }')
+
+    assert_equal 1, errors.length
+    assert_includes errors.first.message, "unknownField"
+  end
+
   [:execute, :execute_next].each do |engine|
+    it "allows deeper introspection with #{engine} when opting out" do
+      schema = Class.new(IntrospectionDepthSchema) { limit_introspection_depth false }
+      result = schema.public_send(engine, "{ __type(name: \"N\") { #{nested_fields(3)} } }")
+
+      refute result.key?("errors")
+      assert_equal "N", result.dig("data", "__type", "fields", 0, "type", "fields", 0, "type", "fields", 0, "type", "name")
+    end
+
+    it "keeps max_depth with #{engine} when opting out" do
+      schema = Class.new(IntrospectionDepthSchema) do
+        limit_introspection_depth false
+        max_depth 1
+      end
+      result = schema.public_send(engine, "{ __type(name: \"N\") { #{nested_fields(3)} } }")
+
+      refute result.key?("data")
+      assert_equal ["Query has depth of 8, which exceeds max depth of 1"], result["errors"].map { |e| e["message"] }
+    end
+
     it "rejects excessive introspection before #{engine} with no query depth limit" do
       assert_nil IntrospectionDepthSchema.max_depth
       result = IntrospectionDepthSchema.public_send(engine, "{ __type(name: \"N\") { #{nested_fields(3)} } }")

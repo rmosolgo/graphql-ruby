@@ -1236,6 +1236,26 @@ module GraphQL
         end
       end
 
+      # Enable the limit on nested introspection lists. Defaults to true.
+      #
+      # **Parameters**
+      #
+      # - `new_value` (`Boolean`) — Set to false to allow deeper introspection queries.
+      #
+      # **Returns**
+      #
+      # - `Boolean` — Whether introspection list depth is limited.
+      #
+      # :call-seq:
+      #   limit_introspection_depth(bool new_value) -> bool
+      def limit_introspection_depth(new_value = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_value)
+          defined?(@limit_introspection_depth) ? @limit_introspection_depth : find_inherited_value(:limit_introspection_depth, true)
+        else
+          @limit_introspection_depth = new_value
+        end
+      end
+
       def disable_introspection_entry_points
         @disable_introspection_entry_points = true
         # TODO: this clears the cache made in `def types`. But this is not a great solution.
