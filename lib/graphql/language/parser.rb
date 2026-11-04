@@ -172,7 +172,7 @@ module GraphQL
               var_type = self.type || raise_parse_error("Missing type definition for variable: $#{var_name}")
               default_value = if at?(:EQUALS)
                 advance_token
-                value
+                value(const: true)
               end
 
               directives = parse_directives #: untyped
@@ -491,7 +491,7 @@ module GraphQL
         type = self.type
         default_value = if at?(:EQUALS)
           advance_token
-          value
+          value(const: true)
         else
           nil
         end
@@ -715,7 +715,7 @@ module GraphQL
         token_value
       end
 
-      def value
+      def value(const: false)
         case token_name
         when :INT
           expect_token_value(:INT).to_i
@@ -738,7 +738,7 @@ module GraphQL
           advance_token
           list = []
           while !at?(:RBRACKET)
-            list << value
+            list << value(const: const)
           end
           expect_token(:RBRACKET)
           list
@@ -750,11 +750,12 @@ module GraphQL
             loc = pos #: untyped
             n = parse_name
             expect_token(:COLON)
-            args << Argument.new(pos: loc, name: n, value: value, filename: @filename, source: self)
+            args << Argument.new(pos: loc, name: n, value: value(const: const), filename: @filename, source: self)
           end
           expect_token(:RCURLY)
           InputObject.new(pos: start, arguments: args, filename: @filename, source: self)
         when :VAR_SIGN
+          raise_parse_error("Unexpected variable in constant value") if const
           loc = pos
           advance_token
           VariableIdentifier.new(pos: loc, name: parse_name, filename: @filename, source: self)

@@ -197,6 +197,56 @@ createRecord(data: {
     assert_equal ["special"], ast.definitions.first.variables.first.directives.map(&:name)
   end
 
+  describe "default values" do
+    ["$other", "[$other]", "[1, [$other]]", "{nested: $other}", "[{nested: $other}]", "{nested: [1, {value: $other}]}"].each do |default_value|
+      it "rejects variables in #{default_value}" do
+        [
+          "query($a: Input = #{default_value}) { field(arg: $a) }",
+          "input Input { a: Input = #{default_value} }",
+          "type Query { field(arg: Input = #{default_value}): Int }",
+          "interface Interface { field(arg: Input = #{default_value}): Int }",
+          "directive @test(arg: Input = #{default_value}) on FIELD",
+          "extend input Input { a: Input = #{default_value} }",
+        ].each do |query_string|
+          error = assert_raises(GraphQL::ParseError, query_string) { subject.parse(query_string) }
+          assert_equal [1, query_string.index("$other") + 1], [error.line, error.col]
+          assert_equal query_string, error.query
+        end
+      end
+    end
+
+    it "parses nested constant lists and input objects" do
+      default_value = '{values: [null, 1, 1.5, "value", true, false, ENUM, [], {}]}'
+      query_ast = subject.parse("query($a: Input = #{default_value}) { field(arg: $a) }")
+      input_ast = subject.parse("input Input { a: Input = #{default_value} }")
+      expected_value = { "values" => [nil, 1, 1.5, "value", true, false, "ENUM", [], {}] }
+
+      assert_equal expected_value, query_ast.definitions.first.variables.first.default_value.to_h
+      assert_equal expected_value, input_ast.definitions.first.fields.first.default_value.to_h
+    end
+
+    it "still allows nested variables in field and executable directive arguments" do
+      ast = subject.parse("query($a: Int = 1) { field(arg: {values: [$a]}) @test(arg: [{value: $a}]) }")
+      field = ast.definitions.first.selections.first
+      field_variable = field.arguments.first.value.arguments.first.value.first
+      directive_variable = field.directives.first.arguments.first.value.first.arguments.first.value
+
+      [field_variable, directive_variable].each do |variable|
+        assert_instance_of GraphQL::Language::Nodes::VariableIdentifier, variable
+        assert_equal "a", variable.name
+      end
+    end
+
+    it "returns a parse error instead of executing a variable default as null" do
+      query = GraphQL::Query.new(Dummy::Schema, "query($a: Int = $b) { allDairy(executionErrorAtIndex: $a) { __typename } }")
+      result = query.result.to_h
+
+      assert_instance_of GraphQL::ParseError, query.static_errors.first
+      assert_equal [query.static_errors.first.to_h], result["errors"]
+      refute result.key?("data")
+    end
+  end
+
   it "allows fragments, fields and arguments named null" do
     assert GraphQL.parse("{ field(null: false) ... null } fragment null on Query { null }")
   end

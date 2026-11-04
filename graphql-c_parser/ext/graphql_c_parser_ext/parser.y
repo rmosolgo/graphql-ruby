@@ -258,7 +258,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
         );
       }
 
-  literal_value:
+  scalar_value:
       FLOAT       { $$ = rb_funcall(rb_ary_entry($1, 3), rb_intern("to_f"), 0); }
     | INT         { $$ = rb_funcall(rb_ary_entry($1, 3), rb_intern("to_i"), 0); }
     | STRING      { $$ = rb_ary_entry($1, 3); }
@@ -266,12 +266,16 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
     | FALSE_LITERAL       { $$ = Qfalse; }
     | null_value
     | enum_value
-    | list_value
+
+  literal_value:
+      scalar_value
+    | list_literal_value
     | object_literal_value
 
   input_value:
-    literal_value
+      scalar_value
     | variable
+    | list_value
     | object_value
 
   null_value: NULL_LITERAL {
@@ -297,6 +301,14 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
   list_value_list:
       input_value                 { $$ = rb_ary_new_from_args(1, $1); }
     | list_value_list input_value { rb_ary_push($$, $2); }
+
+  list_literal_value:
+      LBRACKET RBRACKET                         { $$ = GraphQL_Language_Nodes_NONE; }
+    | LBRACKET list_literal_value_list RBRACKET { $$ = $2; }
+
+  list_literal_value_list:
+      literal_value                         { $$ = rb_ary_new_from_args(1, $1); }
+    | list_literal_value_list literal_value { rb_ary_push($$, $2); }
 
   enum_name: /* any identifier, but not "true", "false" or "null" */
       IDENTIFIER
