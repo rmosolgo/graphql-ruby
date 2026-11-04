@@ -523,11 +523,11 @@
 
 
           <div class="method-source-code" id="analysis_errors-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis.rb, line 107</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis.rb, line 106</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">analysis_errors</span>(<span class="ruby-identifier">parent_errors</span>, <span class="ruby-identifier">results</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">results</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-identifier">results</span> = <span class="ruby-identifier">results</span>.<span class="ruby-identifier">flatten</span>
-    <span class="ruby-identifier">results</span>.<span class="ruby-identifier">select!</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">AnalysisError</span>) }
+    <span class="ruby-identifier">results</span>.<span class="ruby-identifier">select!</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ExecutionError</span>) }
   <span class="ruby-keyword">end</span>
 
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_errors</span>.<span class="ruby-identifier">empty?</span>
@@ -700,11 +700,10 @@
       <span class="ruby-constant">EmptyObjects</span><span class="ruby-operator">::</span><span class="ruby-constant">EMPTY_ARRAY</span>
     <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">end</span>
-<span class="ruby-keyword">rescue</span> <span class="ruby-constant">TimeoutError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
+<span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ExecutionError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
   [<span class="ruby-identifier">err</span>]
-<span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span>, <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ExecutionError</span>
-  <span class="ruby-comment"># This error was raised during analysis and will be returned the client before execution</span>
-  <span class="ruby-constant">EmptyObjects</span><span class="ruby-operator">::</span><span class="ruby-constant">EMPTY_ARRAY</span>
+<span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">UnauthorizedError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
+  [<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">AnalysisError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">err</span>.<span class="ruby-identifier">message</span>)]
 <span class="ruby-keyword">end</span></pre>
           </div>
 
