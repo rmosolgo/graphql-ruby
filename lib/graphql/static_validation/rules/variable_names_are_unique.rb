@@ -1,10 +1,11 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariableNamesAreUnique
+      #: (GraphQL::Language::Nodes::OperationDefinition node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_operation_definition(node, parent)
         var_defns = node.variables
         if !var_defns.empty?

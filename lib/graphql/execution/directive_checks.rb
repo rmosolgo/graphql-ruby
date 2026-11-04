@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module Execution
     # Boolean checks for how an AST node's directives should
@@ -16,6 +16,7 @@ module GraphQL
       #
       # :call-seq:
       #   include?(directive_ast_nodes, query) -> bool
+      #: (Array[GraphQL::Language::Nodes::Directive] directive_ast_nodes, GraphQL::Query query) -> bool
       def include?(directive_ast_nodes, query)
         directive_ast_nodes.each do |directive_ast_node|
           name = directive_ast_node.name

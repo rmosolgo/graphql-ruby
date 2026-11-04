@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   class Schema
     BUILT_IN_TYPES = {
@@ -8,6 +8,6 @@ module GraphQL
       "Float" => GraphQL::Types::Float,
       "Boolean" => GraphQL::Types::Boolean,
       "ID" => GraphQL::Types::ID,
-    }
+    } #: Hash[String, GraphQL::Schema::Member::type_definition]
   end
 end

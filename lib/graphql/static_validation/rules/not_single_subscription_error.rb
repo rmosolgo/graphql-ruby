@@ -1,13 +1,15 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     class NotSingleSubscriptionError < StaticValidation::Error
+      #: (String message, ?path: Array[String | Integer]?, ?nodes: GraphQL::Language::Nodes::AbstractNode | Array[GraphQL::Language::Nodes::AbstractNode]) -> void
       def initialize(message, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
       end
 
       # A hash representation of this Message
+      #: -> Hash[String, untyped]
       def to_h
         extensions = {
           "code" => code,
@@ -18,6 +20,7 @@ module GraphQL
         })
       end
 
+      #: -> String
       def code
         "notSingleSubscription"
       end
