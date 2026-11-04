@@ -159,10 +159,10 @@ module GraphQL
       # - `Integer`
       #
       # :call-seq:
-      #   offset_from_cursor(cursor) -> Integer
-      def offset_from_cursor(cursor)
+      #   offset_from_cursor(cursor, allow_zero:) -> Integer
+      def offset_from_cursor(cursor, allow_zero: false)
         offset = Integer(decode(cursor), 10, exception: false) #: Integer?
-        if offset.nil? || offset <= 0 || offset > MAX_OFFSET ||
+        if offset.nil? || offset < 0 || (offset == 0 && !allow_zero) || offset > MAX_OFFSET ||
             offset + (relation_offset(items) || 0) > MAX_OFFSET
           raise GraphQL::ExecutionError, "Invalid cursor: #{cursor.inspect}"
         end
@@ -262,7 +262,7 @@ module GraphQL
       # :call-seq:
       #   after_offset() -> Integer | nil
       def after_offset
-        @after_offset ||= after && offset_from_cursor(after)
+        @after_offset ||= after && offset_from_cursor(after, allow_zero: true)
       end
 
       # Apply `first` and `last` to `sliced_nodes`,
