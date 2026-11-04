@@ -13,7 +13,7 @@ module GraphQL
         @parent_argument_definition = nil
         @current_directive_definition = nil
         @context = context
-        @types = context.query.types
+        @types = context.types
         @schema = context.schema
         @inline_fragment_paths = {}
         @field_unwrapped_types = {}.compare_by_identity
