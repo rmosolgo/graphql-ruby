@@ -47,7 +47,7 @@ module GraphQL
             document
           end
         rescue SystemStackError
-          raise GraphQL::ParseError.new("This query is too large to execute.", nil, nil, @query_str, filename: @filename)
+          raise GraphQL::ParseError.new("This query is too large to execute.", nil, nil, @graphql_str, filename: @filename)
         end
       end
 
