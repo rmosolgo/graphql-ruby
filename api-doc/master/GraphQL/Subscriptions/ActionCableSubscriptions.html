@@ -665,13 +665,7 @@
   <span class="ruby-comment"># A per-process map of subscriptions to deliver.</span>
   <span class="ruby-comment"># This is provided by Rails, so let&#39;s use it</span>
   <span class="ruby-ivar">@subscriptions</span> = <span class="ruby-constant">Concurrent</span><span class="ruby-operator">::</span><span class="ruby-constant">Map</span>.<span class="ruby-identifier">new</span>
-  <span class="ruby-ivar">@events</span> = <span class="ruby-constant">Concurrent</span><span class="ruby-operator">::</span><span class="ruby-constant">Map</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, <span class="ruby-identifier">k</span><span class="ruby-operator">|</span>
-    <span class="ruby-identifier">h</span>.<span class="ruby-identifier">compute_if_absent</span>(<span class="ruby-identifier">k</span>) <span class="ruby-keyword">do</span>
-      <span class="ruby-constant">Concurrent</span><span class="ruby-operator">::</span><span class="ruby-constant">Map</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">h2</span>, <span class="ruby-identifier">k2</span><span class="ruby-operator">|</span>
-        <span class="ruby-identifier">h2</span>.<span class="ruby-identifier">compute_if_absent</span>(<span class="ruby-identifier">k2</span>) { <span class="ruby-constant">Concurrent</span><span class="ruby-operator">::</span><span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span> }
-      <span class="ruby-keyword">end</span>
-    <span class="ruby-keyword">end</span>
-  <span class="ruby-keyword">end</span>
+  <span class="ruby-ivar">@events</span> = <span class="ruby-constant">Concurrent</span><span class="ruby-operator">::</span><span class="ruby-constant">Map</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-ivar">@action_cable</span> = <span class="ruby-identifier">action_cable</span>
   <span class="ruby-ivar">@action_cable_coder</span> = <span class="ruby-identifier">action_cable_coder</span>
   <span class="ruby-ivar">@serializer</span> = <span class="ruby-identifier">serializer</span>
@@ -766,11 +760,12 @@
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">query</span>
     <span class="ruby-identifier">events</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">subscriptions</span>)[<span class="ruby-value">:</span><span class="ruby-value">events</span>]
     <span class="ruby-identifier">events</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">event</span><span class="ruby-operator">|</span>
-      <span class="ruby-identifier">ev_by_fingerprint</span> = <span class="ruby-ivar">@events</span>[<span class="ruby-identifier">event</span>.<span class="ruby-identifier">topic</span>]
-      <span class="ruby-identifier">ev_for_fingerprint</span> = <span class="ruby-identifier">ev_by_fingerprint</span>[<span class="ruby-identifier">event</span>.<span class="ruby-identifier">fingerprint</span>]
-      <span class="ruby-identifier">ev_for_fingerprint</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">event</span>)
-      <span class="ruby-keyword">if</span> <span class="ruby-identifier">ev_for_fingerprint</span>.<span class="ruby-identifier">empty?</span>
-        <span class="ruby-identifier">ev_by_fingerprint</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">event</span>.<span class="ruby-identifier">fingerprint</span>)
+      <span class="ruby-ivar">@events</span>.<span class="ruby-identifier">compute_if_present</span>(<span class="ruby-identifier">event</span>.<span class="ruby-identifier">topic</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">events_by_fingerprint</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">events_by_fingerprint</span>.<span class="ruby-identifier">compute_if_present</span>(<span class="ruby-identifier">event</span>.<span class="ruby-identifier">fingerprint</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">events_for_fingerprint</span><span class="ruby-operator">|</span>
+          <span class="ruby-identifier">events_for_fingerprint</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">event</span>)
+          <span class="ruby-identifier">events_for_fingerprint</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">?</span> <span class="ruby-keyword">nil</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">events_for_fingerprint</span>
+        <span class="ruby-keyword">end</span>
+        <span class="ruby-identifier">events_by_fingerprint</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">?</span> <span class="ruby-keyword">nil</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">events_by_fingerprint</span>
       <span class="ruby-keyword">end</span>
     <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">end</span>
@@ -821,7 +816,7 @@
 
 
           <div class="method-source-code" id="deliver-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 141</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 135</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">deliver</span>(<span class="ruby-identifier">subscription_id</span>, <span class="ruby-identifier">result</span>)
   <span class="ruby-identifier">has_more</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">result</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">subscriptions</span>)[<span class="ruby-value">:</span><span class="ruby-value">final_update</span>]
   <span class="ruby-identifier">payload</span> = { <span class="ruby-value">result</span><span class="ruby-value">:</span> <span class="ruby-identifier">result</span>.<span class="ruby-identifier">to_h</span>, <span class="ruby-value">more</span><span class="ruby-value">:</span> <span class="ruby-identifier">has_more</span> }
@@ -873,7 +868,7 @@
 
 
           <div class="method-source-code" id="execute_all-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 133</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 127</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">execute_all</span>(<span class="ruby-identifier">event</span>, <span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">stream</span> = <span class="ruby-identifier">stream_event_name</span>(<span class="ruby-identifier">event</span>)
   <span class="ruby-identifier">message</span> = <span class="ruby-ivar">@serializer</span>.<span class="ruby-identifier">dump</span>(<span class="ruby-identifier">object</span>)
@@ -1052,12 +1047,14 @@
 
 
           <div class="method-source-code" id="setup_stream-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 182</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 180</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">setup_stream</span>(<span class="ruby-identifier">channel</span>, <span class="ruby-identifier">initial_event</span>)
   <span class="ruby-identifier">topic</span> = <span class="ruby-identifier">initial_event</span>.<span class="ruby-identifier">topic</span>
   <span class="ruby-identifier">event_stream</span> = <span class="ruby-identifier">stream_event_name</span>(<span class="ruby-identifier">initial_event</span>)
   <span class="ruby-identifier">channel</span>.<span class="ruby-identifier">stream_from</span>(<span class="ruby-identifier">event_stream</span>, <span class="ruby-value">coder</span><span class="ruby-value">:</span> <span class="ruby-ivar">@action_cable_coder</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">message</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">events_by_fingerprint</span> = <span class="ruby-ivar">@events</span>[<span class="ruby-identifier">topic</span>]
+    <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">events_by_fingerprint</span>.<span class="ruby-identifier">nil?</span>
+
     <span class="ruby-identifier">object</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
     <span class="ruby-identifier">events_by_fingerprint</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">_fingerprint</span>, <span class="ruby-identifier">events</span><span class="ruby-operator">|</span>
       <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">events</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">events</span>.<span class="ruby-identifier">first</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">initial_event</span>
@@ -1129,7 +1126,7 @@
 
 
           <div class="method-source-code" id="write_subscription-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 151</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/subscriptions/action_cable_subscriptions.rb, line 145</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">write_subscription</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">events</span>)
   <span class="ruby-keyword">unless</span> (<span class="ruby-identifier">channel</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>[<span class="ruby-value">:</span><span class="ruby-value">channel</span>])
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">This GraphQL Subscription client does not support the transport protocol expected</span><span class="ruby-string">&quot;</span>\
@@ -1146,7 +1143,11 @@
     <span class="ruby-comment"># Setup a new listener to run all events with this topic in this process</span>
     <span class="ruby-identifier">setup_stream</span>(<span class="ruby-identifier">channel</span>, <span class="ruby-identifier">event</span>)
     <span class="ruby-comment"># Add this event to the list of events to be updated</span>
-    <span class="ruby-ivar">@events</span>[<span class="ruby-identifier">event</span>.<span class="ruby-identifier">topic</span>][<span class="ruby-identifier">event</span>.<span class="ruby-identifier">fingerprint</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">event</span>
+    <span class="ruby-ivar">@events</span>.<span class="ruby-identifier">compute</span>(<span class="ruby-identifier">event</span>.<span class="ruby-identifier">topic</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">events_by_fingerprint</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">events_by_fingerprint</span> ||= <span class="ruby-constant">Concurrent</span><span class="ruby-operator">::</span><span class="ruby-constant">Map</span>.<span class="ruby-identifier">new</span>
+      <span class="ruby-identifier">events_by_fingerprint</span>.<span class="ruby-identifier">compute_if_absent</span>(<span class="ruby-identifier">event</span>.<span class="ruby-identifier">fingerprint</span>) { <span class="ruby-constant">Concurrent</span><span class="ruby-operator">::</span><span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span> } <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">event</span>
+      <span class="ruby-identifier">events_by_fingerprint</span>
+    <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
