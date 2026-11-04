@@ -895,7 +895,7 @@
 
 
           <div class="method-source-code" id="replace_escaped_characters_in_place-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 350</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 357</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">replace_escaped_characters_in_place</span>(<span class="ruby-identifier">raw_string</span>)
   <span class="ruby-identifier">raw_string</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-constant">ESCAPED</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">matched_str</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">if</span> (<span class="ruby-identifier">point_str_1</span> = <span class="ruby-identifier">$1</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">$2</span>)
@@ -966,7 +966,7 @@
 
 
           <div class="method-source-code" id="tokenize-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 377</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 384</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">tokenize</span>(<span class="ruby-identifier">string</span>)
   <span class="ruby-identifier">lexer</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Lexer</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">string</span>)
   <span class="ruby-identifier">tokens</span> = []
@@ -1041,7 +1041,7 @@
 
 
           <div class="method-source-code" id="_hash-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 269</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 276</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">_hash</span> <span class="ruby-identifier">key</span>
   (<span class="ruby-identifier">key</span> <span class="ruby-operator">*</span> <span class="ruby-value">18592990</span>) <span class="ruby-operator">&gt;&gt;</span> <span class="ruby-value">27</span> <span class="ruby-operator">&amp;</span> <span class="ruby-value">0x1f</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1226,11 +1226,11 @@
 
 
           <div class="method-source-code" id="column_number-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 189</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 196</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">column_number</span>
   <span class="ruby-identifier">line_prefix</span> = <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">string</span>.<span class="ruby-identifier">byteslice</span>(<span class="ruby-value">0</span>, <span class="ruby-ivar">@pos</span>)
   <span class="ruby-identifier">line_prefix</span> = <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">b</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">valid_encoding?</span>
-  <span class="ruby-identifier">newline_index</span> = <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">rindex</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">\n</span><span class="ruby-string">&quot;</span>)
+  <span class="ruby-identifier">newline_index</span> = <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">rindex</span>(<span class="ruby-regexp">/[\r\n]/</span>)
   <span class="ruby-identifier">newline_index</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">newline_index</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -1447,7 +1447,14 @@
           <div class="method-source-code" id="line_number-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 185</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">line_number</span>
-  <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">string</span>.<span class="ruby-identifier">byteslice</span>(<span class="ruby-value">0</span>, <span class="ruby-ivar">@pos</span>).<span class="ruby-identifier">b</span>.<span class="ruby-identifier">count</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">\n</span><span class="ruby-string">&quot;</span>.<span class="ruby-identifier">b</span>) <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
+  <span class="ruby-identifier">line_prefix</span> = <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">string</span>.<span class="ruby-identifier">byteslice</span>(<span class="ruby-value">0</span>, <span class="ruby-ivar">@pos</span>).<span class="ruby-identifier">b</span>
+  <span class="ruby-identifier">line_number</span> = <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">count</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">\r</span><span class="ruby-string">&quot;</span>) <span class="ruby-operator">+</span> <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">count</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">\n</span><span class="ruby-string">&quot;</span>) <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
+  <span class="ruby-identifier">offset</span> = <span class="ruby-value">0</span> <span class="ruby-comment">#: Integer?</span>
+  <span class="ruby-keyword">while</span> (<span class="ruby-identifier">offset</span> = <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">index</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">\r\n</span><span class="ruby-string">&quot;</span>, <span class="ruby-identifier">offset</span>))
+    <span class="ruby-identifier">line_number</span> -= <span class="ruby-value">1</span>
+    <span class="ruby-identifier">offset</span> += <span class="ruby-value">2</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">line_number</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1495,7 +1502,7 @@
 
 
           <div class="method-source-code" id="raise_parse_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 196</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 203</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">raise_parse_error</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">line</span> = <span class="ruby-identifier">line_number</span>, <span class="ruby-identifier">col</span> = <span class="ruby-identifier">column_number</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ParseError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>, <span class="ruby-ivar">@string</span>, <span class="ruby-value">filename</span><span class="ruby-value">:</span> <span class="ruby-ivar">@filename</span>)
 <span class="ruby-keyword">end</span></pre>

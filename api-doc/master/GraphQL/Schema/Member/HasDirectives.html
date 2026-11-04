@@ -676,25 +676,10 @@
     <span class="ruby-keyword">else</span>
       <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">EmptyObjects</span><span class="ruby-operator">::</span><span class="ruby-constant">EMPTY_ARRAY</span>
     <span class="ruby-keyword">end</span>
-  <span class="ruby-keyword">when</span> <span class="ruby-constant">Module</span>
-    <span class="ruby-identifier">dirs</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Array[GraphQL::Schema::Directive]?</span>
-    <span class="ruby-identifier">ancestors</span> = <span class="ruby-identifier">schema_member</span>.<span class="ruby-identifier">ancestors</span> <span class="ruby-comment">#: Array[untyped]</span>
-    <span class="ruby-identifier">ancestors</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">ancestor</span><span class="ruby-operator">|</span>
-      <span class="ruby-keyword">if</span> <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">own_directives</span>) <span class="ruby-operator">&amp;&amp;</span>
-          <span class="ruby-operator">!</span>(<span class="ruby-identifier">anc_dirs</span> = <span class="ruby-identifier">ancestor</span>.<span class="ruby-identifier">own_directives</span>).<span class="ruby-identifier">empty?</span>
-        <span class="ruby-identifier">dirs</span> ||= []
-        <span class="ruby-identifier">merge_directives</span>(<span class="ruby-identifier">dirs</span>, <span class="ruby-identifier">anc_dirs</span>)
-      <span class="ruby-keyword">end</span>
-    <span class="ruby-keyword">end</span>
-    <span class="ruby-keyword">if</span> <span class="ruby-identifier">directives</span>
-      <span class="ruby-identifier">dirs</span> ||= []
-      <span class="ruby-identifier">merge_directives</span>(<span class="ruby-identifier">dirs</span>, <span class="ruby-identifier">directives</span>)
-    <span class="ruby-keyword">end</span>
-    <span class="ruby-identifier">dirs</span> <span class="ruby-operator">||</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">EmptyObjects</span><span class="ruby-operator">::</span><span class="ruby-constant">EMPTY_ARRAY</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">HasDirectives</span>
     <span class="ruby-identifier">directives</span> <span class="ruby-operator">||</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">EmptyObjects</span><span class="ruby-operator">::</span><span class="ruby-constant">EMPTY_ARRAY</span>
   <span class="ruby-keyword">else</span>
-    <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Invariant: how could </span><span class="ruby-string">#{</span><span class="ruby-identifier">schema_member</span><span class="ruby-string">}</span><span class="ruby-string"> not be a Class, Module, or instance of HasDirectives?</span><span class="ruby-string">&quot;</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;</span><span class="ruby-string">Invariant: how could </span><span class="ruby-string">#{</span><span class="ruby-identifier">schema_member</span><span class="ruby-string">}</span><span class="ruby-string"> not be a Class or instance of HasDirectives?</span><span class="ruby-string">&quot;</span>
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
