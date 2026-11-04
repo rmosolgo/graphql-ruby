@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
@@ -7,16 +7,19 @@ module GraphQL
     module ArgumentNamesAreUnique
       include GraphQL::StaticValidation::Error::ErrorHelper
 
+      #: (GraphQL::Language::Nodes::Field node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_field(node, parent)
         validate_arguments(node)
         super
       end
 
+      #: (GraphQL::Language::Nodes::Directive node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_directive(node, parent)
         validate_arguments(node)
         super
       end
 
+      #: (GraphQL::Language::Nodes::Field | GraphQL::Language::Nodes::Directive node) -> void
       def validate_arguments(node)
         argument_defns = node.arguments
         if argument_defns.size > 1
