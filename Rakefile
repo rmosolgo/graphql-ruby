@@ -366,3 +366,111 @@ end
 
 desc "Build the C Extension"
 task build_ext: [:build_c_lexer, :build_yacc_parser, "compile:graphql_c_parser_ext", :move_binary]
+
+namespace :sorbet do
+  namespace :coverage do
+    snapshots_dir = "tmp/sorbet_coverage/snapshots"
+    report_file = "tmp/sorbet_coverage/report.html"
+
+    # Run on every push to master (see .github/workflows/benchmarks.yaml) and charted alongside the benchmarks.
+    # Each name is the key for that metric's history, so renaming one starts a new chart.
+    desc "Print Sorbet coverage of the current checkout as JSON for github-action-benchmark's customBiggerIsBetter tool"
+    task :track do
+      require "spoom"
+      require "json"
+      snapshot = Spoom::Coverage.snapshot(Spoom::Context.new(Dir.pwd))
+      percent = ->(part, total) { total.zero? ? 0.0 : (100.0 * part / total).round(2) }
+      # Leave out RBIs (gems' and generated ones), so these measure graphql-ruby's own code
+      sigils = snapshot.sigils_excluding_rbis
+      total_files = sigils.values.sum
+      # If Sorbet didn't write metrics, the snapshot is empty; fail instead of recording zeros
+      abort("Sorbet didn't report any files; check `bundle exec srb tc`") if total_files.zero?
+      typed_files = sigils.values_at("true", "strict", "strong").compact.sum
+      strict_files = sigils.values_at("strict", "strong").compact.sum
+      methods_with_sig = snapshot.methods_with_sig_excluding_rbis
+      total_methods = methods_with_sig + snapshot.methods_without_sig_excluding_rbis
+      metrics = {
+        "sorbet - files at typed: true or stricter" => percent.call(typed_files, total_files),
+        "sorbet - files at typed: strict or stricter" => percent.call(strict_files, total_files),
+        "sorbet - methods with signatures" => percent.call(methods_with_sig, total_methods),
+        "sorbet - typed calls" => percent.call(snapshot.calls_typed, snapshot.calls_typed + snapshot.calls_untyped),
+      }
+      puts JSON.pretty_generate(metrics.map { |name, value| { name: name, unit: "%", value: value } })
+    end
+
+    desc "Collect Sorbet coverage snapshots for one commit per day since Sorbet was added (cached in #{snapshots_dir})"
+    task :timeline do
+      require "spoom"
+      require "tmpdir"
+      context = Spoom::Context.new(Dir.pwd)
+      intro_commit = context.sorbet_intro_commit || abort("Couldn't find the commit that added sorbet/config")
+      # Use today's Sorbet binary for every commit, so old commits don't need their own `bundle install`
+      sorbet_bin = File.join(Gem.loaded_specs.fetch("sorbet-static").full_gem_path, "libexec", "sorbet")
+      FileUtils.mkdir_p(snapshots_dir)
+
+      # The last first-parent commit of each day since Sorbet was introduced, plus HEAD
+      shas = `git log --first-parent --format='%H %cs' #{intro_commit.sha}^..HEAD`.lines
+        .map(&:split)
+        .uniq { |(_sha, date)| date } # log is newest-first, so this keeps each day's last commit
+        .map(&:first)
+        # Sorbet was added on a branch, so skip mainline commits from before it was merged
+        .select { |sha| system("git", "cat-file", "-e", "#{sha}:sorbet/config", err: File::NULL) }
+      todo = shas.reject { |sha| File.exist?(File.join(snapshots_dir, "#{sha}.json")) }
+      puts "#{shas.size} commits to chart, #{shas.size - todo.size} already cached"
+      next if todo.empty?
+
+      # Check out old commits in a scratch worktree so the current checkout isn't touched
+      Dir.mktmpdir("graphql-ruby-sorbet-coverage") do |dir|
+        worktree = File.join(dir, "graphql-ruby")
+        system("git", "worktree", "add", "--detach", "--quiet", worktree, todo.first) || abort("git worktree add failed")
+        begin
+          worktree_context = Spoom::Context.new(worktree)
+          todo.each_with_index do |sha, idx|
+            system("git", "-C", worktree, "checkout", "--quiet", "--detach", sha) || abort("git checkout #{sha} failed")
+            puts "[#{idx + 1}/#{todo.size}] #{`git -C #{worktree} log -1 --format='%cs %h %s' #{sha}`.strip}"
+            snapshot = Spoom::Coverage.snapshot(worktree_context, sorbet_bin: sorbet_bin)
+            File.write(File.join(snapshots_dir, "#{sha}.json"), snapshot.to_json)
+          end
+        ensure
+          system("git", "worktree", "remove", "--force", worktree)
+        end
+      end
+    end
+
+    desc "Build an HTML report of Sorbet adoption over time (#{report_file})"
+    task report: :timeline do
+      require "spoom"
+      context = Spoom::Context.new(Dir.pwd)
+      snapshots = Dir.glob(File.join(snapshots_dir, "*.json"))
+        .map { |f| Spoom::Coverage::Snapshot.from_json(File.read(f)) }
+        .select(&:commit_timestamp)
+        .sort_by(&:commit_timestamp)
+      file_tree = Spoom::Coverage.file_tree(context)
+      scores = Spoom::FileTree::CollectScores.new(context)
+      scores.visit_tree(file_tree)
+      intro_commit = context.sorbet_intro_commit
+      report = Spoom::Coverage::Report.new(
+        project_name: "graphql-ruby",
+        palette: Spoom::Coverage::D3::ColorPalette.new(
+          ignore_color: Spoom::Coverage::D3::COLOR_IGNORE,
+          false_color: Spoom::Coverage::D3::COLOR_FALSE,
+          true_color: Spoom::Coverage::D3::COLOR_TRUE,
+          strict_color: Spoom::Coverage::D3::COLOR_STRICT,
+          strong_color: Spoom::Coverage::D3::COLOR_STRONG,
+        ),
+        snapshots: snapshots,
+        file_tree: file_tree,
+        nodes_strictnesses: scores.strictnesses,
+        nodes_strictness_scores: scores.scores,
+        sorbet_intro_commit: intro_commit&.sha,
+        sorbet_intro_date: intro_commit&.time,
+      )
+      FileUtils.mkdir_p(File.dirname(report_file))
+      File.write(report_file, report.html)
+      puts "Wrote #{report_file} (#{snapshots.size} snapshots)"
+    end
+  end
+
+  desc "Generate the Sorbet adoption report (alias for sorbet:coverage:report)"
+  task coverage: "coverage:report"
+end
