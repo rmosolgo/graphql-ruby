@@ -183,13 +183,20 @@ module GraphQL
       end
 
       def line_number
-        @scanner.string.byteslice(0, @pos).b.count("\n".b) + 1
+        line_prefix = @scanner.string.byteslice(0, @pos).b
+        line_number = line_prefix.count("\r") + line_prefix.count("\n") + 1
+        offset = 0 #: Integer?
+        while (offset = line_prefix.index("\r\n", offset))
+          line_number -= 1
+          offset += 2
+        end
+        line_number
       end
 
       def column_number
         line_prefix = @scanner.string.byteslice(0, @pos)
         line_prefix = line_prefix.b unless line_prefix.valid_encoding?
-        newline_index = line_prefix.rindex("\n")
+        newline_index = line_prefix.rindex(/[\r\n]/)
         newline_index ? line_prefix.length - newline_index : line_prefix.length + 1
       end
 
