@@ -27,6 +27,7 @@ module GraphQL
       #
       # :call-seq:
       #   coerce_result(Date | Time | DateTime | String value, _ctx) -> String
+      #: (untyped value, GraphQL::Query::Context _ctx) -> ::String
       def self.coerce_result(value, _ctx)
         Date.parse(value.to_s).iso8601
       end

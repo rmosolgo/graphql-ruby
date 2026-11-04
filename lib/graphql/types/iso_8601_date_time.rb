@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 
 require 'time'
 
@@ -30,6 +30,7 @@ module GraphQL
       #
       # :call-seq:
       #   time_precision() -> Integer
+      #: -> Integer
       def self.time_precision
         @time_precision || DEFAULT_TIME_PRECISION
       end
@@ -40,8 +41,9 @@ module GraphQL
       #
       # :call-seq:
       #   time_precision=(Integer value)
+      #: (Integer value) -> void
       def self.time_precision=(value)
-        @time_precision = value
+        @time_precision = value #: Integer?
       end
 
       # **Parameters**
@@ -54,6 +56,7 @@ module GraphQL
       #
       # :call-seq:
       #   coerce_result(Time | Date | DateTime | String value, _ctx) -> String
+      #: (untyped value, GraphQL::Query::Context _ctx) -> ::String
       def self.coerce_result(value, _ctx)
         case value
         when Date
@@ -78,6 +81,7 @@ module GraphQL
       #
       # :call-seq:
       #   coerce_input(String str_value, _ctx) -> Time
+      #: (untyped str_value, GraphQL::Query::Context _ctx) -> ::Time?
       def self.coerce_input(str_value, _ctx)
         Time.iso8601(str_value)
       rescue ArgumentError, TypeError

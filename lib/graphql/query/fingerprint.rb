@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 
 require 'digest/sha2'
 
@@ -20,6 +20,7 @@ module GraphQL
       #
       # :call-seq:
       #   generate(input_str) -> String
+      #: (String input_str) -> String
       def self.generate(input_str)
         # Implemented to be:
         # - Short (and uniform) length

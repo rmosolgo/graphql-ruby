@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module Language
     # Exposes [.generate](rdoc-ref:.generate), which turns AST nodes back into query strings.
@@ -30,6 +30,7 @@ module GraphQL
       #
       # :call-seq:
       #   generate(GraphQL::Language::Nodes::AbstractNode node, String indent:, GraphQL::Language::Printer printer:) -> String
+      #: (GraphQL::Language::Nodes::AbstractNode node, ?indent: String, ?printer: GraphQL::Language::Printer) -> String
       def generate(node, indent: "", printer: GraphQL::Language::Printer.new)
         printer.print(node, indent: indent)
       end

@@ -1,8 +1,9 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module Language
     module Comment
+      #: (String str, ?indent: String) -> String
       def self.print(str, indent: '')
         lines = str.split("\n").map do |line|
           comment_str = "".dup

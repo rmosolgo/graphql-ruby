@@ -23,6 +23,7 @@ module GraphQL
       #
       # :call-seq:
       #   seconds_precision() -> Integer | nil
+      #: -> Integer?
       def self.seconds_precision
         # ActiveSupport::Duration precision defaults to whatever input was given
         @seconds_precision
@@ -34,6 +35,7 @@ module GraphQL
       #
       # :call-seq:
       #   seconds_precision=(Integer | nil value)
+      #: (Integer? value) -> Integer?
       def self.seconds_precision=(value)
         @seconds_precision = value
       end
@@ -52,6 +54,7 @@ module GraphQL
       #
       # :call-seq:
       #   coerce_result(ActiveSupport::Duration | String value, _ctx) -> String | GraphQL::Error
+      #: (untyped value, GraphQL::Query::Context _ctx) -> ::String
       def self.coerce_result(value, _ctx)
         unless defined?(ActiveSupport::Duration)
           raise GraphQL::Error, "ActiveSupport >= 5.0 must be loaded to use the built-in ISO8601Duration type."
