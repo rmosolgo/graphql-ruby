@@ -531,7 +531,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_duration.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_duration.rb, line 93</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-keyword">unless</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>)
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">ActiveSupport &gt;= 5.0 must be loaded to use the built-in ISO8601Duration type.</span><span class="ruby-string">&quot;</span>
@@ -601,6 +601,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _ctx) &rarr; ::<a href="String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -614,7 +616,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_duration.rb, line 55</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_duration.rb, line 58</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-keyword">unless</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>)
     <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">ActiveSupport &gt;= 5.0 must be loaded to use the built-in ISO8601Duration type.</span><span class="ruby-string">&quot;</span>
@@ -683,6 +685,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Integer?</code></pre>
+
           </div>
 
 
@@ -696,7 +700,7 @@
 
 
           <div class="method-source-code" id="seconds_precision-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_duration.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_duration.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">seconds_precision</span>
   <span class="ruby-comment"># ActiveSupport::Duration precision defaults to whatever input was given</span>
   <span class="ruby-ivar">@seconds_precision</span>
@@ -740,6 +744,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Integer? value) &rarr; Integer?</code></pre>
+
           </div>
 
 
@@ -753,7 +759,7 @@
 
 
           <div class="method-source-code" id="seconds_precision-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_duration.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_duration.rb, line 39</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">seconds_precision=</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-ivar">@seconds_precision</span> = <span class="ruby-identifier">value</span>
 <span class="ruby-keyword">end</span></pre>

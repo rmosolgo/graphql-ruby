@@ -506,6 +506,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _ctx) &rarr; bool?</code></pre>
+
           </div>
 
 
@@ -519,7 +521,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/boolean.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/boolean.rb, line 9</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   (<span class="ruby-identifier">value</span> <span class="ruby-operator">==</span> <span class="ruby-keyword">true</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>
@@ -556,6 +558,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _ctx) &rarr; bool</code></pre>
+
           </div>
 
 
@@ -569,7 +573,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/boolean.rb, line 12</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/boolean.rb, line 14</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-identifier">value</span>
 <span class="ruby-keyword">end</span></pre>

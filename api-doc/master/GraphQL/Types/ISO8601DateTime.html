@@ -535,6 +535,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped str_value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _ctx) &rarr; ::Time?</code></pre>
+
           </div>
 
 
@@ -548,7 +550,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 81</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 85</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">str_value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-constant">Time</span>.<span class="ruby-identifier">iso8601</span>(<span class="ruby-identifier">str_value</span>)
 <span class="ruby-keyword">rescue</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-constant">TypeError</span>
@@ -613,6 +615,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _ctx) &rarr; ::<a href="String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -626,7 +630,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 57</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">value</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Date</span>
@@ -684,6 +688,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Integer</code></pre>
+
           </div>
 
 
@@ -697,7 +703,7 @@
 
 
           <div class="method-source-code" id="time_precision-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 33</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">time_precision</span>
   <span class="ruby-ivar">@time_precision</span> <span class="ruby-operator">||</span> <span class="ruby-constant">DEFAULT_TIME_PRECISION</span>
 <span class="ruby-keyword">end</span></pre>
@@ -740,6 +746,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Integer value) &rarr; void</code></pre>
+
           </div>
 
 
@@ -753,9 +761,9 @@
 
 
           <div class="method-source-code" id="time_precision-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">time_precision=</span>(<span class="ruby-identifier">value</span>)
-  <span class="ruby-ivar">@time_precision</span> = <span class="ruby-identifier">value</span>
+  <span class="ruby-ivar">@time_precision</span> = <span class="ruby-identifier">value</span> <span class="ruby-comment">#: Integer?</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 

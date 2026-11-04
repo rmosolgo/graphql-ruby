@@ -506,6 +506,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _ctx) &rarr; ::<a href="String.html" class="rbs-type">String</a>?</code></pre>
+
           </div>
 
 
@@ -519,7 +521,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/string.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/string.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(::<span class="ruby-constant">String</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>
 <span class="ruby-keyword">end</span></pre>

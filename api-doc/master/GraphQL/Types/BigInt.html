@@ -508,6 +508,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _ctx) &rarr; (::Numeric | false | nil)</code></pre>
+
           </div>
 
 
@@ -521,7 +523,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-identifier">value</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">parse_int</span>(<span class="ruby-identifier">value</span>)
 <span class="ruby-keyword">rescue</span> <span class="ruby-constant">ArgumentError</span>
@@ -560,6 +562,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _ctx) &rarr; ::<a href="String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -573,7 +577,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-identifier">value</span>.<span class="ruby-identifier">to_i</span>.<span class="ruby-identifier">to_s</span>
 <span class="ruby-keyword">end</span></pre>
@@ -610,6 +614,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value) &rarr; ::Numeric</code></pre>
+
           </div>
 
 
@@ -623,7 +629,7 @@
 
 
           <div class="method-source-code" id="parse_int-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/big_int.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">parse_int</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Numeric</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">:</span> <span class="ruby-constant">Integer</span>(<span class="ruby-identifier">value</span>, <span class="ruby-value">10</span>)
 <span class="ruby-keyword">end</span></pre>
