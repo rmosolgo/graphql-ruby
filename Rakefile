@@ -390,10 +390,10 @@ namespace :sorbet do
       methods_with_sig = snapshot.methods_with_sig_excluding_rbis
       total_methods = methods_with_sig + snapshot.methods_without_sig_excluding_rbis
       metrics = {
-        "sorbet - files at typed: true or stricter" => percent.(typed_files, total_files),
-        "sorbet - files at typed: strict or stricter" => percent.(strict_files, total_files),
-        "sorbet - methods with signatures" => percent.(methods_with_sig, total_methods),
-        "sorbet - typed calls" => percent.(snapshot.calls_typed, snapshot.calls_typed + snapshot.calls_untyped),
+        "sorbet - files at typed: true or stricter" => percent.call(typed_files, total_files),
+        "sorbet - files at typed: strict or stricter" => percent.call(strict_files, total_files),
+        "sorbet - methods with signatures" => percent.call(methods_with_sig, total_methods),
+        "sorbet - typed calls" => percent.call(snapshot.calls_typed, snapshot.calls_typed + snapshot.calls_untyped),
       }
       puts JSON.pretty_generate(metrics.map { |name, value| { name: name, unit: "%", value: value } })
     end
