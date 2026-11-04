@@ -664,7 +664,7 @@
 
         <dd>
 
-          <p>TODO: <a href="Lexer.html#FLOAT_EXP_REGEXP"><code>FLOAT_EXP_REGEXP</code></a> should not be allowed to follow <a href="Lexer.html#INT_REGEXP"><code>INT_REGEXP</code></a>, integers are not allowed to have exponent parts.</p>
+          
         </dd>
 
 
@@ -1143,11 +1143,12 @@
     <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">skip</span>(<span class="ruby-constant">IDENTIFIER_REGEXP</span>)
     <span class="ruby-value">:</span><span class="ruby-value">IDENTIFIER</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">ByteFor</span><span class="ruby-operator">::</span><span class="ruby-constant">NUMBER</span>
-    <span class="ruby-keyword">if</span> <span class="ruby-identifier">len</span> = <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">skip</span>(<span class="ruby-constant">NUMERIC_REGEXP</span>)
-
-      <span class="ruby-keyword">if</span> <span class="ruby-constant">GraphQL</span>.<span class="ruby-identifier">reject_numbers_followed_by_names</span>
-        <span class="ruby-identifier">new_pos</span> = <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">pos</span>
-        <span class="ruby-identifier">peek_byte</span> = <span class="ruby-ivar">@string</span>.<span class="ruby-identifier">getbyte</span>(<span class="ruby-identifier">new_pos</span>)
+    <span class="ruby-keyword">if</span> <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">skip</span>(<span class="ruby-constant">NUMERIC_REGEXP</span>)
+      <span class="ruby-identifier">peek_byte</span> = <span class="ruby-ivar">@string</span>.<span class="ruby-identifier">getbyte</span>(<span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">pos</span>)
+      <span class="ruby-keyword">if</span> <span class="ruby-identifier">peek_byte</span> <span class="ruby-operator">==</span> <span class="ruby-value">46</span> <span class="ruby-operator">||</span> (<span class="ruby-identifier">peek_byte</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">peek_byte</span> &gt;= <span class="ruby-value">48</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">peek_byte</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-value">57</span>)
+        <span class="ruby-identifier">raise_parse_error</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">Invalid number: unexpected character </span><span class="ruby-string">#{</span><span class="ruby-identifier">peek_byte</span>.<span class="ruby-identifier">chr</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>)
+      <span class="ruby-keyword">end</span>
+      <span class="ruby-keyword">if</span> <span class="ruby-identifier">peek_byte</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-constant">GraphQL</span>.<span class="ruby-identifier">reject_numbers_followed_by_names</span>
         <span class="ruby-identifier">next_first_byte</span> = <span class="ruby-constant">FIRST_BYTES</span>[<span class="ruby-identifier">peek_byte</span>]
         <span class="ruby-keyword">if</span> <span class="ruby-identifier">next_first_byte</span> <span class="ruby-operator">==</span> <span class="ruby-constant">ByteFor</span><span class="ruby-operator">::</span><span class="ruby-constant">NAME</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">next_first_byte</span> <span class="ruby-operator">==</span> <span class="ruby-constant">ByteFor</span><span class="ruby-operator">::</span><span class="ruby-constant">IDENTIFIER</span>
           <span class="ruby-identifier">number_part</span> = <span class="ruby-identifier">token_value</span>
@@ -1226,7 +1227,7 @@
 
 
           <div class="method-source-code" id="column_number-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 196</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 197</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">column_number</span>
   <span class="ruby-identifier">line_prefix</span> = <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">string</span>.<span class="ruby-identifier">byteslice</span>(<span class="ruby-value">0</span>, <span class="ruby-ivar">@pos</span>)
   <span class="ruby-identifier">line_prefix</span> = <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">b</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">valid_encoding?</span>
@@ -1279,7 +1280,7 @@
 
 
           <div class="method-source-code" id="debug_token_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 129</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 130</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">debug_token_value</span>(<span class="ruby-identifier">token_name</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">token_name</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-constant">Lexer</span><span class="ruby-operator">::</span><span class="ruby-constant">Punctuation</span>.<span class="ruby-identifier">const_defined?</span>(<span class="ruby-identifier">token_name</span>)
     <span class="ruby-constant">Lexer</span><span class="ruby-operator">::</span><span class="ruby-constant">Punctuation</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-identifier">token_name</span>)
@@ -1445,7 +1446,7 @@
 
 
           <div class="method-source-code" id="line_number-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 185</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 186</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">line_number</span>
   <span class="ruby-identifier">line_prefix</span> = <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">string</span>.<span class="ruby-identifier">byteslice</span>(<span class="ruby-value">0</span>, <span class="ruby-ivar">@pos</span>).<span class="ruby-identifier">b</span>
   <span class="ruby-identifier">line_number</span> = <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">count</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">\r</span><span class="ruby-string">&quot;</span>) <span class="ruby-operator">+</span> <span class="ruby-identifier">line_prefix</span>.<span class="ruby-identifier">count</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">\n</span><span class="ruby-string">&quot;</span>) <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
@@ -1502,7 +1503,7 @@
 
 
           <div class="method-source-code" id="raise_parse_error-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 203</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 204</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">raise_parse_error</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">line</span> = <span class="ruby-identifier">line_number</span>, <span class="ruby-identifier">col</span> = <span class="ruby-identifier">column_number</span>)
   <span class="ruby-identifier">raise</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ParseError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>, <span class="ruby-ivar">@string</span>, <span class="ruby-value">filename</span><span class="ruby-value">:</span> <span class="ruby-ivar">@filename</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1552,7 +1553,7 @@
 
 
           <div class="method-source-code" id="string_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 158</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 159</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">string_value</span>
   <span class="ruby-identifier">str</span> = <span class="ruby-identifier">token_value</span>
   <span class="ruby-identifier">is_block</span> = <span class="ruby-identifier">str</span>.<span class="ruby-identifier">start_with?</span>(<span class="ruby-string">&#39;</span><span class="ruby-string">&quot;&quot;&quot;</span><span class="ruby-string">&#39;</span>)
@@ -1625,7 +1626,7 @@
 
 
           <div class="method-source-code" id="token_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 123</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 124</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">token_value</span>
   <span class="ruby-ivar">@string</span>.<span class="ruby-identifier">byteslice</span>(<span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">pos</span> <span class="ruby-operator">-</span> <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">matched_size</span>, <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">matched_size</span>)
 <span class="ruby-keyword">rescue</span> <span class="ruby-constant">StandardError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
