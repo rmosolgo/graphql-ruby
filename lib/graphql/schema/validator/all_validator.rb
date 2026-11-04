@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -29,16 +29,19 @@ module GraphQL
       #   validates: { all: { inclusion: { in: 1..12 } } }
       # ```
       class AllValidator < Validator
+        # `validators` is configuration for other validators, for example `{ format: { with: /.../ } }`.
+        #: (validated: GraphQL::Schema::Argument | GraphQL::Schema::Field | singleton(GraphQL::Schema::Resolver) | singleton(GraphQL::Schema::InputObject), ?allow_blank: bool, ?allow_null: bool, **untyped validators) -> void
         def initialize(validated:, allow_blank: false, allow_null: false, **validators)
           super(validated: validated, allow_blank: allow_blank, allow_null: allow_null)
 
-          @validators = Validator.from_config(validated, validators)
+          @validators = Validator.from_config(validated, validators) #: Array[GraphQL::Schema::Validator]
         end
 
+        #: (untyped object, GraphQL::Query::Context context, untyped value) -> Array[String]
         def validate(object, context, value)
           return EMPTY_ARRAY if permitted_empty_value?(value)
 
-          all_errors = EMPTY_ARRAY
+          all_errors = EMPTY_ARRAY #: Array[String]
 
           value.each do |subvalue|
             @validators.each do |validator|

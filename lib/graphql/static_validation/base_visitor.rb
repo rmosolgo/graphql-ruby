@@ -3,24 +3,26 @@
 module GraphQL
   module StaticValidation
     class BaseVisitor < GraphQL::Language::StaticVisitor
+      #: (GraphQL::Language::Nodes::Document document, GraphQL::StaticValidation::ValidationContext context) -> void
       def initialize(document, context)
-        @path = []
-        @path_depth = 0
-        @current_object_type = nil
-        @parent_object_type = nil
-        @current_field_definition = nil
-        @current_argument_definition = nil
-        @parent_argument_definition = nil
-        @current_directive_definition = nil
-        @context = context
-        @types = context.types
-        @schema = context.schema
-        @inline_fragment_paths = {}
-        @field_unwrapped_types = {}.compare_by_identity
-        @child_positions = {}.compare_by_identity
+        @path = [] #: Array[String | Integer]
+        @path_depth = 0 #: Integer
+        @current_object_type = nil #: GraphQL::Schema::Member::type_definition?
+        @parent_object_type = nil #: GraphQL::Schema::Member::type_definition?
+        @current_field_definition = nil #: GraphQL::Schema::Field?
+        @current_argument_definition = nil #: GraphQL::Schema::Argument?
+        @parent_argument_definition = nil #: GraphQL::Schema::Argument?
+        @current_directive_definition = nil #: singleton(GraphQL::Schema::Directive)?
+        @context = context #: GraphQL::StaticValidation::ValidationContext
+        @types = context.types #: GraphQL::Schema::Visibility::Profile | GraphQL::Schema::Warden::VisibilityProfile
+        @schema = context.schema #: singleton(GraphQL::Schema)
+        @inline_fragment_paths = {} #: Hash[String, String]
+        @field_unwrapped_types = {}.compare_by_identity #: Hash[GraphQL::Schema::Field, GraphQL::Schema::Member::type_definition]
+        @child_positions = {}.compare_by_identity #: Hash[GraphQL::Language::Nodes::AbstractNode, Hash[GraphQL::Language::Nodes::AbstractNode, Integer]]
         super(document)
       end
 
+      #: GraphQL::StaticValidation::ValidationContext
       attr_reader :context
 
       # **Returns**
@@ -29,8 +31,9 @@ module GraphQL
       #
       # :call-seq:
       #   path() -> Array[String]
+      #: () -> Array[String | Integer]
       def path
-        @path[0, @path_depth]
+        @path[0, @path_depth] #: as !nil
       end
 
       # Build a class to visit the AST and perform validation,
@@ -46,6 +49,7 @@ module GraphQL
       #
       # :call-seq:
       #   including_rules(Array[Module | Class] rules) -> Class
+      #: (Array[Module[untyped]]) -> singleton(GraphQL::StaticValidation::BaseVisitor)
       def self.including_rules(rules)
         if rules.empty?
           # It's not doing _anything?!?_
@@ -70,6 +74,9 @@ module GraphQL
       end
 
       module ContextMethods
+        #--
+        # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
+
         def on_operation_definition(node, parent)
           object_type = @schema.root_type_for_operation(node.operation_type)
           prev_parent_ot = @parent_object_type
@@ -100,7 +107,7 @@ module GraphQL
           @path_depth -= 1
         end
 
-        INLINE_FRAGMENT_NO_TYPE = "..."
+        INLINE_FRAGMENT_NO_TYPE = "..." #: String
 
         def on_inline_fragment(node, parent)
           if node.type
@@ -197,6 +204,7 @@ module GraphQL
           end
         end
 
+        #: (GraphQL::Language::Nodes::AbstractNode parent) -> Hash[GraphQL::Language::Nodes::AbstractNode, Integer]
         def child_positions(parent)
           @child_positions[parent] ||= begin
             positions = {}.compare_by_identity
@@ -211,6 +219,7 @@ module GraphQL
         #
         # :call-seq:
         #   type_definition() -> GraphQL::BaseType
+        #: () -> GraphQL::Schema::Member::type_definition?
         def type_definition
           @current_object_type
         end
@@ -221,6 +230,7 @@ module GraphQL
         #
         # :call-seq:
         #   parent_type_definition() -> GraphQL::BaseType
+        #: () -> GraphQL::Schema::Member::type_definition?
         def parent_type_definition
           @parent_object_type
         end
@@ -231,6 +241,7 @@ module GraphQL
         #
         # :call-seq:
         #   field_definition() -> GraphQL::Field | nil
+        #: () -> GraphQL::Schema::Field?
         def field_definition
           @current_field_definition
         end
@@ -241,6 +252,7 @@ module GraphQL
         #
         # :call-seq:
         #   directive_definition() -> GraphQL::Directive | nil
+        #: () -> singleton(GraphQL::Schema::Directive)?
         def directive_definition
           @current_directive_definition
         end
@@ -251,6 +263,7 @@ module GraphQL
         #
         # :call-seq:
         #   argument_definition() -> GraphQL::Argument | nil
+        #: () -> GraphQL::Schema::Argument?
         def argument_definition
           # Return the parent argument definition (not the current one).
           @parent_argument_definition
@@ -262,6 +275,7 @@ module GraphQL
 
       private
 
+      #: (GraphQL::StaticValidation::Error error, ?path: Array[String | Integer]?) -> void
       def add_error(error, path: nil)
         if @context.too_many_errors?
           throw :too_many_validation_errors
