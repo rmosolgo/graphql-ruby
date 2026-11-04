@@ -495,6 +495,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/FragmentDefinition.html" class="rbs-type">GraphQL::Language::Nodes::FragmentDefinition</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? _parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -508,7 +510,7 @@
 
 
           <div class="method-source-code" id="on_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragments_are_named.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragments_are_named.rb, line 9</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">add_error</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">StaticValidation</span><span class="ruby-operator">::</span><span class="ruby-constant">FragmentsAreNamedError</span>.<span class="ruby-identifier">new</span>(

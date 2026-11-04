@@ -508,6 +508,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(singleton(GraphQL::Schema) schema, **untyped opts) &rarr; void</code></pre>
+
           </div>
 
 
@@ -521,7 +523,7 @@
 
 
           <div class="method-source-code" id="use-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/always_visible.rb, line 6</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/always_visible.rb, line 7</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">use</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">opts</span>)
   <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">use</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Visibility</span>, <span class="ruby-value">profiles</span><span class="ruby-value">:</span> { <span class="ruby-keyword">nil</span> <span class="ruby-operator">=&gt;</span> {} })
   <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-keyword">self</span>)
@@ -573,6 +575,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped _member, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _context) &rarr; bool</code></pre>
+
           </div>
 
 
@@ -586,7 +590,7 @@
 
 
           <div class="method-source-code" id="visible-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/always_visible.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/always_visible.rb, line 13</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visible?</span>(<span class="ruby-identifier">_member</span>, <span class="ruby-identifier">_context</span>)
   <span class="ruby-keyword">true</span>
 <span class="ruby-keyword">end</span></pre>

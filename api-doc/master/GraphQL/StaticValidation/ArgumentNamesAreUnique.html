@@ -523,6 +523,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Directive.html" class="rbs-type">GraphQL::Language::Nodes::Directive</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -536,7 +538,7 @@
 
 
           <div class="method-source-code" id="on_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_directive</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">validate_arguments</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-keyword">super</span>
@@ -579,6 +581,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Field.html" class="rbs-type">GraphQL::Language::Nodes::Field</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -592,7 +596,7 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 10</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">validate_arguments</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-keyword">super</span>
@@ -635,6 +639,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Field.html" class="rbs-type">GraphQL::Language::Nodes::Field</a> | <a href="../Language/Nodes/Directive.html" class="rbs-type">GraphQL::Language::Nodes::Directive</a> node) &rarr; void</code></pre>
+
           </div>
 
 
@@ -648,7 +654,7 @@
 
 
           <div class="method-source-code" id="validate_arguments-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 20</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_names_are_unique.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_arguments</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-identifier">argument_defns</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">arguments</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">argument_defns</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">1</span>

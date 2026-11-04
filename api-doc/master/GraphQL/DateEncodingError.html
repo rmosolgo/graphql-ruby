@@ -484,6 +484,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code>untyped</code></span>
+
         </div>
 
         <div class="method-description">
@@ -521,6 +523,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value) &rarr; void</code></pre>
+
           </div>
 
 
@@ -534,7 +538,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/date_encoding_error.rb, line 12</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/date_encoding_error.rb, line 14</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-ivar">@date_value</span> = <span class="ruby-identifier">value</span>
   <span class="ruby-keyword">super</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">Date cannot be parsed: </span><span class="ruby-string">#{</span><span class="ruby-identifier">value</span><span class="ruby-string">}</span><span class="ruby-string">. \nDate must be able to be parsed as a Ruby Date object.</span><span class="ruby-string">&quot;</span>)
