@@ -1350,9 +1350,9 @@ describe GraphQL::Dataloader do
     dataloader = dataloader_class.new
     trace = trace_class.new
     dataloader.append_job { raise "Job failed" }
-    assert_raises(RuntimeError) { dataloader.send(:spawn_job_fiber, trace).resume }
+    assert_raises(RuntimeError) { dataloader.__send__(:spawn_job_fiber, trace).resume }
     dataloader.with(source_class).request(:key)
-    assert_raises(RuntimeError) { dataloader.send(:spawn_source_fiber, trace).resume }
+    assert_raises(RuntimeError) { dataloader.__send__(:spawn_source_fiber, trace).resume }
 
     assert_equal [:trace_exit, :cleanup, :trace_exit, :cleanup], events
   end
