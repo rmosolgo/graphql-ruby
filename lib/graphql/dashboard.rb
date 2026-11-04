@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 require 'rails/engine'
 require 'action_controller'
 module Graphql

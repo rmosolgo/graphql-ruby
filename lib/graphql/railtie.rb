@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 
 module GraphQL
   # Support [GraphQL::Language::Cache](rdoc-ref:GraphQL::Language::Cache) and [GraphQL.eager_load!](rdoc-ref:GraphQL.eager_load!)

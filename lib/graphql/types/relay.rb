@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 
 # behavior modules:
 require "graphql/types/relay/connection_behaviors"

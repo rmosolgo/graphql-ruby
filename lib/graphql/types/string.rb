@@ -20,6 +20,7 @@ module GraphQL
         ctx.schema.type_error(err, ctx)
       end
 
+      #: (untyped value, GraphQL::Query::Context _ctx) -> ::String?
       def self.coerce_input(value, _ctx)
         value.is_a?(::String) ? value : nil
       end

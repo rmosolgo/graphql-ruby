@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   class Schema
     module TypeExpression # :nodoc:
@@ -17,6 +17,7 @@ module GraphQL
       #
       # :call-seq:
       #   build_type(#type type_owner, GraphQL::Language::Nodes::AbstractNode ast_node) -> Class | GraphQL::Schema::NonNull | GraphQL::Schema:List
+      #: (GraphQL::Schema::Visibility::Profile | GraphQL::Schema::Warden::VisibilityProfile type_owner, GraphQL::Language::Nodes::AbstractNode ast_node) -> (GraphQL::Schema::Member::type_definition | GraphQL::Schema::NonNull | GraphQL::Schema::List | nil)
       def self.build_type(type_owner, ast_node)
         case ast_node
         when GraphQL::Language::Nodes::TypeName
@@ -37,6 +38,7 @@ module GraphQL
       class << self
         private
 
+        #: (GraphQL::Schema::Member::type_definition | GraphQL::Schema::NonNull | GraphQL::Schema::List | nil type, Symbol wrapper_method) -> (GraphQL::Schema::NonNull | GraphQL::Schema::List | nil)
         def wrap_type(type, wrapper_method)
           if type.nil?
             nil
