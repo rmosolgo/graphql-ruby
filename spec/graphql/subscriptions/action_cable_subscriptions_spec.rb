@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require "timeout"
 
 describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
   class ActionCableTestSchema < GraphQL::Schema
@@ -63,6 +64,122 @@ describe "GraphQL::Subscriptions::ActionCableSubscriptions" do
 
   def subscription_update(data)
     { result: { "data" => data }, more: true }
+  end
+
+  describe "deleting subscriptions" do
+    let(:schema) do
+      Class.new(ActionCableTestSchema) do
+        use GraphQL::Subscriptions::ActionCableSubscriptions,
+          action_cable: GraphQL::Testing::MockActionCable,
+          action_cable_coder: JSON,
+          broadcast: true,
+          default_broadcastable: true
+      end
+    end
+
+    let(:subscriptions) { schema.subscriptions }
+    let(:events_by_topic) { subscriptions.instance_variable_get(:@events) }
+
+    def subscribe(query_string = "subscription { newsFlash { text } }")
+      channel = GraphQL::Testing::MockActionCable.get_mock_channel
+      schema.execute(query_string, context: { channel: channel })
+    end
+
+    it "removes topics after all subscriptions are deleted" do
+      2.times do |round|
+        results = 1000.times.map do |i|
+          subscribe("subscription { newsFlash(maxPerHour: #{round * 1000 + i}) { text } }")
+        end
+        assert_equal 1000, events_by_topic.size
+
+        results.each { |result| subscriptions.delete_subscription(result.context[:subscription_id]) }
+
+        assert_empty events_by_topic
+        assert_empty subscriptions.instance_variable_get(:@subscriptions)
+      end
+    end
+
+    ["text", "headline: text"].each do |selection|
+      it "preserves other subscriptions to the same topic with #{selection.inspect}" do
+        first = subscribe
+        second = subscribe("subscription { newsFlash { #{selection} } }")
+        assert_equal 1, events_by_topic.size
+        assert_equal selection == "text" ? 1 : 2, events_by_topic.values.first.size
+
+        subscriptions.delete_subscription(first.context[:subscription_id])
+        subscriptions.trigger(:news_flash, {}, { text: "Still subscribed" })
+
+        response_key = selection == "text" ? "text" : "headline"
+        assert_equal [{ more: false }], first.context[:channel].mock_broadcasted_messages
+        assert_equal [subscription_update("newsFlash" => { response_key => "Still subscribed" })], second.context[:channel].mock_broadcasted_messages
+
+        subscriptions.delete_subscription(second.context[:subscription_id])
+        assert_empty events_by_topic
+      end
+    end
+
+    it "does not recreate a missing topic during deletion" do
+      result = subscribe
+      event = result.context.namespace(:subscriptions)[:events].first
+      events_by_topic.delete(event.topic)
+
+      subscriptions.delete_subscription(result.context[:subscription_id])
+
+      assert_empty events_by_topic
+    end
+
+    it "handles a missing fingerprint during deletion" do
+      result = subscribe
+      event = result.context.namespace(:subscriptions)[:events].first
+      events_by_topic[event.topic].delete(event.fingerprint)
+
+      subscriptions.delete_subscription(result.context[:subscription_id])
+
+      assert_empty events_by_topic
+    end
+
+    it "does not recreate a topic when an update arrives after deletion" do
+      result = subscribe
+      subscriptions.delete_subscription(result.context[:subscription_id])
+
+      subscriptions.trigger(:news_flash, {}, { text: "Already unsubscribed" })
+
+      assert_equal [{ more: false }], result.context[:channel].mock_broadcasted_messages
+      assert_empty events_by_topic
+    end
+
+    it "preserves a subscription registered while its topic is being removed" do
+      first = subscribe
+      second = subscribe
+      subscriptions.delete_subscription(second.context[:subscription_id])
+      second.context[:channel].mock_broadcasted_messages.clear
+      second_events = second.context.namespace(:subscriptions)[:events]
+      events_by_fingerprint = events_by_topic[second_events.first.topic]
+      original_empty = events_by_fingerprint.method(:empty?)
+      writer = nil
+      check_empty = -> {
+        empty = original_empty.call
+        writer = Thread.new { subscriptions.write_subscription(second.query, second_events) }
+        # Let registration finish or wait for the topic's atomic removal to complete.
+        Timeout.timeout(5) { Thread.pass until writer.stop? }
+        empty
+      }
+
+      events_by_fingerprint.stub(:empty?, check_empty) do
+        subscriptions.delete_subscription(first.context[:subscription_id])
+      end
+      refute_nil writer
+      Timeout.timeout(5) { writer.value }
+
+      subscriptions.trigger(:news_flash, {}, { text: "Still subscribed" })
+
+      assert_equal [subscription_update("newsFlash" => { "text" => "Still subscribed" })], second.context[:channel].mock_broadcasted_messages
+      subscriptions.delete_subscription(second.context[:subscription_id])
+      assert_empty events_by_topic
+    ensure
+      writer&.kill
+      writer&.join
+    end
   end
 
   it "sends updates over the given `action_cable:`" do
