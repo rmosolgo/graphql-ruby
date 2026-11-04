@@ -30,7 +30,7 @@ describe "Maximum introspection depth" do
           selection = "#{field_name} { #{selection} }"
         end
         query = "{ #{entry_point} { #{selection} } }"
-        query << " }" if entry_point.start_with?("__schema")
+        query += " }" if entry_point.start_with?("__schema")
         errors = validation_errors(query)
         assert_equal 1, errors.length
         assert_equal "Maximum introspection depth exceeded", errors[0]["message"]
