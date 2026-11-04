@@ -10,6 +10,8 @@
 
 ### Bug fixes
 
+- Directives: don't drop repeated instances of repeatable directives on interfaces or on subclasses with inherited directives #5823
+
 # 2.6.14 (29 Oct 2026)
 
 ## Security

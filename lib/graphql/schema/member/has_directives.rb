@@ -91,32 +91,18 @@ module GraphQL
               else
                 GraphQL::EmptyObjects::EMPTY_ARRAY
               end
-            when Module
-              dirs = nil #: Array[GraphQL::Schema::Directive]?
-              ancestors = schema_member.ancestors #: Array[untyped]
-              ancestors.reverse_each do |ancestor|
-                if ancestor.respond_to?(:own_directives) &&
-                    !(anc_dirs = ancestor.own_directives).empty?
-                  dirs ||= []
-                  merge_directives(dirs, anc_dirs)
-                end
-              end
-              if directives
-                dirs ||= []
-                merge_directives(dirs, directives)
-              end
-              dirs || GraphQL::EmptyObjects::EMPTY_ARRAY
             when HasDirectives
               directives || GraphQL::EmptyObjects::EMPTY_ARRAY
             else
-              raise "Invariant: how could #{schema_member} not be a Class, Module, or instance of HasDirectives?"
+              raise "Invariant: how could #{schema_member} not be a Class or instance of HasDirectives?"
             end
           end
 
           private
 
           # Modify `target` by adding items from `dirs` such that:
-          # - Any name conflict is overridden by the incoming member of `dirs`
+          # - Any name conflict is overridden by the incoming member(s) of `dirs`.
+          #   (Repeatable directives replace _all_ same-named directives in `target`, and all incoming ones are kept.)
           # - Any other member of `dirs` is appended
           #
           # **Parameters**
@@ -131,14 +117,26 @@ module GraphQL
           # :call-seq:
           #   merge_directives(Array[GraphQL::Schema::Directive] target, Array[GraphQL::Schema::Directive] dirs) -> void
           def merge_directives(target, dirs)
-            dirs.each do |dir|
-              if (idx = target.find_index { |d| d.graphql_name == dir.graphql_name })
-                target.slice!(idx)
-                target.insert(idx, dir)
+            incoming = dirs.group_by(&:graphql_name)
+            merged = [] #: Array[GraphQL::Schema::Directive]
+            target.each do |d|
+              name = d.graphql_name
+              if incoming.key?(name)
+                # Put the incoming directive(s) where the first overridden one was
+                if (replacements = incoming[name])
+                  merged.concat(replacements)
+                  incoming[name] = nil
+                end
               else
-                target << dir
+                merged << d
               end
             end
+            dirs.each do |dir|
+              if incoming[dir.graphql_name]
+                merged << dir
+              end
+            end
+            target.replace(merged)
             nil
           end
         end
