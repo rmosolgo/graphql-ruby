@@ -479,6 +479,72 @@ describe GraphQL::Analysis do
     end
   end
 
+  describe "errors raised by analyzers" do
+    class RaisingAnalyzerSchema < GraphQL::Schema
+      class Guard < GraphQL::Analysis::Analyzer
+        def on_enter_field(node, parent, visitor)
+          if node.name == "forbidden" && query.context[:raise_at] == :visit
+            raise query.context[:error]
+          end
+        end
+
+        def result
+          if query.context[:raise_at] == :result
+            raise query.context[:error]
+          end
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :forbidden, Integer
+        field :expensive, Integer, complexity: 100
+
+        def forbidden
+          context[:resolved] = true
+          1
+        end
+
+        def expensive
+          context[:resolved] = true
+          2
+        end
+      end
+
+      query(Query)
+      query_analyzer(Guard)
+      max_complexity 10
+      complexity_cost_calculation_mode :future
+    end
+
+    [GraphQL::ExecutionError, GraphQL::UnauthorizedError, GraphQL::AnalysisError].each do |error_class|
+      [:visit, :result].each do |raise_at|
+        it "halts execution when #{error_class} is raised during #{raise_at}" do
+          error = error_class.new("Forbidden field")
+          context = { error: error, raise_at: raise_at }
+          result = RaisingAnalyzerSchema.execute("{ forbidden expensive }", context: context)
+
+          assert_equal({ "errors" => [{ "message" => "Forbidden field" }] }, result.to_h)
+          refute context[:resolved]
+        end
+      end
+    end
+
+    [:visit, :result].each do |raise_at|
+      it "preserves execution error details raised during #{raise_at} and allows other queries in a multiplex" do
+        error = GraphQL::ExecutionError.new("Forbidden field", extensions: { code: "FORBIDDEN" })
+        context = { error: error, raise_at: raise_at }
+        results = RaisingAnalyzerSchema.multiplex([
+          { query: "{ forbidden }", context: context },
+          { query: "{ forbidden }" },
+        ])
+
+        assert_equal({ "errors" => [error.to_h] }, results[0].to_h)
+        refute context[:resolved]
+        assert_equal({ "data" => { "forbidden" => 1 } }, results[1].to_h)
+      end
+    end
+  end
+
   describe "Detecting all-introspection queries" do
     class AllIntrospectionSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
