@@ -700,7 +700,7 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 22</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">visitor_class</span>, <span class="ruby-identifier">max_errors</span>)
   <span class="ruby-ivar">@query</span> = <span class="ruby-identifier">query</span>
-  <span class="ruby-ivar">@types</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span> <span class="ruby-comment"># TODO update migrated callers to use this accessor</span>
+  <span class="ruby-ivar">@types</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span>
   <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">schema</span>
   <span class="ruby-ivar">@input_values</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">input_values</span>
   <span class="ruby-ivar">@errors</span> = []
