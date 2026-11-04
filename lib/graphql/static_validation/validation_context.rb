@@ -21,7 +21,7 @@ module GraphQL
 
       def initialize(query, visitor_class, max_errors)
         @query = query
-        @types = query.types # TODO update migrated callers to use this accessor
+        @types = query.types
         @schema = query.schema
         @input_values = query.input_values
         @errors = []
