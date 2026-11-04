@@ -59,7 +59,7 @@ module GraphQL
         if scanner.skip('"""')
           inside_triple_quoted_string = !inside_triple_quoted_string
           new_query_str && (new_query_str << scanner.matched)
-        elsif scanner.skip(/(?:\\"|[^"\n\r])+/m)
+        elsif scanner.skip(inside_single_quoted_string ? /(?>\\[\\"]|[^"\n\r])+/ : /(?:\\"|[^"\n\r])+/m)
           new_query_str && (new_query_str << scanner.matched)
         elsif scanner.skip('"')
           new_query_str && (new_query_str << '"')

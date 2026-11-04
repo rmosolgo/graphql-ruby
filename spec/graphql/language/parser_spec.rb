@@ -191,6 +191,42 @@ createRecord(data: {
     end
   end
 
+  it "preserves newlines after strings ending in escaped backslashes" do
+    [2, 4].each do |count|
+      ["\n", "\r", "\r\n"].each do |newline|
+        query_string = %({ field(arg: "x#{"\\" * count}")#{newline}})
+        escaped = GraphQL::Language.escape_single_quoted_newlines(query_string)
+
+        assert_same query_string, escaped
+        assert GraphQL.parse(escaped)
+      end
+    end
+  end
+
+  it "escapes newlines inside strings with escaped backslashes and quotes" do
+    [1, 2, 3, 4].each do |count|
+      { "\n" => '\\n', "\r" => '\\r', "\r\n" => '\\r\\n' }.each do |newline, escaped_newline|
+        content = "\\" * count + (count.odd? ? '"' : '')
+        ending = "\\" * 2
+        query_string = %({ field(arg: "x#{content}#{newline}y#{ending}")#{newline}})
+        expected = %({ field(arg: "x#{content}#{escaped_newline}y#{ending}")#{newline}})
+        escaped = GraphQL::Language.escape_single_quoted_newlines(query_string)
+
+        assert_equal expected, escaped
+        assert GraphQL.parse(escaped)
+      end
+    end
+  end
+
+  it "preserves escaped triple quotes after backslashes in block strings" do
+    query_string = %({ field(block: """a#{"\\" * 2}"""b"\nc""", arg: "a\nb")\n})
+    expected = %({ field(block: """a#{"\\" * 2}"""b"\nc""", arg: "a\\nb")\n})
+    escaped = GraphQL::Language.escape_single_quoted_newlines(query_string)
+
+    assert_equal expected, escaped
+    assert GraphQL.parse(escaped)
+  end
+
   it "can parse strings with null bytes" do
     assert GraphQL.parse("{ a(b: \"\\u0000\") }")
   end
