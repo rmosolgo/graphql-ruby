@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module Introspection
     class TypeKindEnum < GraphQL::Schema::Enum

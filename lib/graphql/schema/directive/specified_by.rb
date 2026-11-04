@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
