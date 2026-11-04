@@ -89,9 +89,30 @@ module LexerExamples
           assert_equal Encoding::UTF_8, tokens[2].value.encoding
         end
 
-        it "handles integers with a leading zero" do
-          tokens = subject.tokenize("{ a(id: 04) }")
-          assert_equal :INT, tokens[5].name
+        ["00", "01", "04", "-01", "01.2", "00e1", "1.", "1.e2", "1.0.1", "1e2.3", "1..."].each do |number|
+          it "rejects invalid numeric token boundaries in #{number.inspect}" do
+            assert_raises(GraphQL::ParseError) { subject.tokenize(number) }
+          end
+        end
+
+        it "preserves valid numeric token boundaries" do
+          tokens = subject.tokenize("0 -0 1-2 1.0-2.0 1e10 -1E-2 0.1e+2")
+          assert_equal [:INT, :INT, :INT, :INT, :FLOAT, :FLOAT, :FLOAT, :FLOAT, :FLOAT], tokens.map(&:name)
+          assert_equal ["0", "-0", "1", "-2", "1.0", "-2.0", "1e10", "-1E-2", "0.1e+2"], tokens.map(&:value)
+        end
+
+        it "allows ignored tokens to separate zero from another digit" do
+          [" ", ",", "\t", "\n", "\r\n", "\uFEFF", "# comment\n"].each do |separator|
+            tokens = subject.tokenize("0#{separator}1")
+            assert_equal [:INT, :INT], tokens.map(&:name)
+            assert_equal ["0", "1"], tokens.map(&:value)
+          end
+        end
+
+        it "reports the location of an invalid number" do
+          err = assert_raises(GraphQL::ParseError) { subject.tokenize("{\n  a(id: 01)\n}") }
+          assert_equal 2, err.line
+          assert_equal 9, err.col
         end
 
         it "allows escaped quotes in strings" do
