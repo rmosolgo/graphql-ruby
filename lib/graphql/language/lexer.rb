@@ -32,17 +32,15 @@ module GraphQL
       attr_reader :pos, :tokens_count
 
       def advance
-        loop do
-          @scanner.skip(IGNORE_REGEXP)
-          if @scanner.skip(COMMENT_REGEXP)
-            @tokens_count += 1
-            if @tokens_count > @max_tokens
-              @pos = @scanner.pos
-              raise_parse_error("This query is too large to execute.")
-            end
-            next
+        @scanner.skip(IGNORE_REGEXP)
+        while @scanner.skip("#")
+          @scanner.skip(COMMENT_BODY_REGEXP)
+          @tokens_count += 1
+          if @tokens_count > @max_tokens
+            @pos = @scanner.pos
+            raise_parse_error("This query is too large to execute.")
           end
-          break
+          @scanner.skip(IGNORE_REGEXP)
         end
 
         if @scanner.eos?
@@ -206,7 +204,7 @@ module GraphQL
       end
 
       IGNORE_REGEXP = /[, \r\n\t\uFEFF]+/
-      COMMENT_REGEXP = /\#[^\n\r]*/
+      COMMENT_BODY_REGEXP = /[^\n\r]*/
       IDENTIFIER_REGEXP = /[_A-Za-z][_0-9A-Za-z]*/
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
       FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
