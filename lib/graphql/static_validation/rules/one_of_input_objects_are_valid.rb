@@ -51,7 +51,10 @@ module GraphQL
 
         if value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           variable_name = value.name
-          variable_type = @declared_variables[variable_name].type
+          variable_definition = @declared_variables && @declared_variables[variable_name]
+          # Undeclared variables are reported by VariablesAreUsedAndDefined
+          return if variable_definition.nil?
+          variable_type = variable_definition.type
 
           unless variable_type.is_a?(GraphQL::Language::Nodes::NonNullType)
             add_error(
