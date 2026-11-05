@@ -46,7 +46,7 @@ module GraphQL
             OneOfInputObjectsAreValidError.new(
               "Argument '#{input_object_type}.#{field}' must be non-null.",
               path: [*context.path, field],
-              nodes: ast_node.arguments.first,
+              nodes: argument,
               input_object_type: input_object_type
             )
           )

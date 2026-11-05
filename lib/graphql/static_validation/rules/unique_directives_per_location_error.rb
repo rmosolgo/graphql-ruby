@@ -5,7 +5,7 @@ module GraphQL
     class UniqueDirectivesPerLocationError < StaticValidation::Error
       attr_reader :directive_name
 
-      def initialize(message, path: nil, nodes: [], directive:)
+      def initialize(message, directive:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
         @directive_name = directive
       end

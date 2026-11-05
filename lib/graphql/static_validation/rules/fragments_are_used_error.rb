@@ -5,7 +5,7 @@ module GraphQL
     class FragmentsAreUsedError < StaticValidation::Error
       attr_reader :fragment_name
 
-      def initialize(message, path: nil, nodes: [], fragment:)
+      def initialize(message, fragment:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
         @fragment_name = fragment
       end

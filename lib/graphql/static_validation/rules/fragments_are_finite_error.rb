@@ -5,7 +5,7 @@ module GraphQL
     class FragmentsAreFiniteError < StaticValidation::Error
       attr_reader :fragment_name
 
-      def initialize(message, path: nil, nodes: [], name:)
+      def initialize(message, name:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
         @fragment_name = name
       end

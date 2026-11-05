@@ -5,7 +5,7 @@ module GraphQL
     class VariableNamesAreUniqueError < StaticValidation::Error
       attr_reader :variable_name
 
-      def initialize(message, path: nil, nodes: [], name:)
+      def initialize(message, name:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
         @variable_name = name
       end

@@ -12,7 +12,7 @@ module GraphQL
         :INVALID_ON_NON_NULL  => "defaultValueInvalidOnNonNullVariable",
       }
 
-      def initialize(message, path: nil, nodes: [], name:, type: nil, error_type:)
+      def initialize(message, name:, error_type:, path: nil, nodes: [], type: nil)
         super(message, path: path, nodes: nodes)
         @variable_name = name
         @type_name = type

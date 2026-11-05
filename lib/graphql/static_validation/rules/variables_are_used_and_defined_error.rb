@@ -11,7 +11,7 @@ module GraphQL
         :VARIABLE_NOT_DEFINED  => "variableNotDefined",
       }
 
-      def initialize(message, path: nil, nodes: [], name:, error_type:)
+      def initialize(message, name:, error_type:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
         @variable_name = name
         raise("Unexpected error type: #{error_type}") if !VIOLATIONS.values.include?(error_type)

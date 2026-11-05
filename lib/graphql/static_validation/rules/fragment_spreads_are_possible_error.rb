@@ -7,7 +7,7 @@ module GraphQL
       attr_reader :fragment_name
       attr_reader :parent_name
 
-      def initialize(message, path: nil, nodes: [], type:, fragment_name:, parent:)
+      def initialize(message, type:, fragment_name:, parent:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
         @type_name = type
         @fragment_name = fragment_name

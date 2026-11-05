@@ -8,7 +8,7 @@ module GraphQL
       attr_reader :argument
       attr_reader :value
 
-      def initialize(message, path: nil, nodes: [], type:, argument_name: nil, extensions: nil, coerce_extensions: nil, argument: nil, value: nil)
+      def initialize(message, type:, path: nil, nodes: [], argument_name: nil, extensions: nil, coerce_extensions: nil, argument: nil, value: nil)
         super(message, path: path, nodes: nodes)
         @type_name = type
         @argument_name = argument_name

@@ -5,7 +5,7 @@ module GraphQL
     class InputObjectNamesAreUniqueError < StaticValidation::Error
       attr_reader :name
 
-      def initialize(message, path: nil, nodes: [], name:)
+      def initialize(message, name:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
         @name = name
       end

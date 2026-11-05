@@ -47,7 +47,7 @@ module GraphQL
             err = @directives_are_unique_errors_by_first_node[first_node] ||= begin
               error = GraphQL::StaticValidation::UniqueDirectivesPerLocationError.new(
                 "The directive \"#{directive_name}\" can only be used once at this location.",
-                nodes: [used_directives[directive_name]],
+                nodes: [first_node],
                 directive: directive_name,
               )
               add_error(error)

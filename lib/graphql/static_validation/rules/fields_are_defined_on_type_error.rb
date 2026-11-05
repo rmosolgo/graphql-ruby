@@ -6,7 +6,7 @@ module GraphQL
       attr_reader :type_name
       attr_reader :field_name
 
-      def initialize(message, path: nil, nodes: [], type:, field:)
+      def initialize(message, type:, field:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
         @type_name = type
         @field_name = field
