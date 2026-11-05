@@ -35,6 +35,7 @@ Development/ContextIsPassedCop:
     - 'lib/graphql/schema/validation.rb'
     - 'lib/graphql/static_validation/literal_validator.rb'
     - 'lib/graphql/static_validation/rules/**/*.rb'
+    - 'lib/graphql/static_validation/base_visitor.rb' # `types` here is the query's visibility profile
     # AST-related:
     - 'lib/graphql/schema/build_from_definition.rb'
     - 'lib/graphql/language/printer.rb'

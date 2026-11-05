@@ -1,11 +1,13 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     # @requires_ancestor: GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent
+    # @requires_ancestor: GraphQL::StaticValidation::VariableUsagesAreAllowed
     module OneOfInputObjectsAreValid
+      #: (GraphQL::Language::Nodes::InputObject node, GraphQL::Language::Nodes::AbstractNode parent) -> void
       def on_input_object(node, parent)
         return super unless parent.is_a?(GraphQL::Language::Nodes::Argument)
 
@@ -18,6 +20,7 @@ module GraphQL
 
       private
 
+      #: (GraphQL::Language::Nodes::InputObject ast_node, GraphQL::StaticValidation::ValidationContext context, singleton(GraphQL::Schema::InputObject) parent_type) -> void
       def validate_one_of_input_object(ast_node, context, parent_type)
         present_fields = ast_node.arguments.map(&:name)
         input_object_type = parent_type.to_type_signature
@@ -35,7 +38,9 @@ module GraphQL
         end
 
         field = present_fields.first
-        value = ast_node.arguments.first.value
+        # `present_fields.count == 1` was checked above:
+        argument = ast_node.arguments.first #: as !nil
+        value = argument.value
 
         if value.is_a?(GraphQL::Language::Nodes::NullValue)
           add_error(
@@ -51,7 +56,9 @@ module GraphQL
 
         if value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           variable_name = value.name
-          variable_type = @declared_variables[variable_name].type
+          # FIXME: this is `nil` when the variable isn't declared by the operation, so `.type` raises NoMethodError.
+          var_defn = declared_variables[variable_name] #: as !nil
+          variable_type = var_defn.type
 
           unless variable_type.is_a?(GraphQL::Language::Nodes::NonNullType)
             add_error(

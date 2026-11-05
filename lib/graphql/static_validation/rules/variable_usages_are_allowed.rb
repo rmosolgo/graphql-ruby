@@ -12,7 +12,7 @@ module GraphQL
       def initialize(*)
         super
         # holds { name => ast_node } pairs
-        @declared_variables = {}
+        @declared_variables = {} #: Hash[String, GraphQL::Language::Nodes::VariableDefinition]
         @operation_declared_variables = {}.compare_by_identity #: Hash[GraphQL::Language::Nodes::OperationDefinition, Hash[String, GraphQL::Language::Nodes::VariableDefinition]]
         @variable_usages_fragment_definition = nil
         @fragment_variable_usages = nil #: Hash[GraphQL::Language::Nodes::FragmentDefinition, Array[FragmentVariableUsage]]?
@@ -129,6 +129,12 @@ module GraphQL
       end
 
       private
+
+      # The variables declared by the operation being visited, by name. Other rules (like `OneOfInputObjectsAreValid`) read this.
+      #: () -> Hash[String, GraphQL::Language::Nodes::VariableDefinition]
+      def declared_variables
+        @declared_variables
+      end
 
       # Variables inside input objects are found when their own arguments are visited.
       #: (untyped value, Integer list_depth, Array[[GraphQL::Language::Nodes::VariableIdentifier, Integer]]? variables) -> Array[[GraphQL::Language::Nodes::VariableIdentifier, Integer]]?
