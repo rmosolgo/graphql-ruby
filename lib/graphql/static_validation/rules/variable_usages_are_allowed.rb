@@ -130,12 +130,6 @@ module GraphQL
 
       private
 
-      # The variables declared by the operation being visited, by name. Other rules (like `OneOfInputObjectsAreValid`) read this.
-      #: () -> Hash[String, GraphQL::Language::Nodes::VariableDefinition]
-      def declared_variables
-        @declared_variables
-      end
-
       # Variables inside input objects are found when their own arguments are visited.
       #: (untyped value, Integer list_depth, Array[[GraphQL::Language::Nodes::VariableIdentifier, Integer]]? variables) -> Array[[GraphQL::Language::Nodes::VariableIdentifier, Integer]]?
       def variables_in_value(value, list_depth, variables)

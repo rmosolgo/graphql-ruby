@@ -115,6 +115,29 @@ describe GraphQL::StaticValidation::OneOfInputObjectsAreValid do
     end
   end
 
+  describe "with an undeclared variable" do
+    let(:query_string) {%|
+      {
+        oneOfArgField(oneOfArg: { stringField: $undeclared })
+      }
+    |}
+
+    it "only reports the undeclared variable" do
+      assert_equal ["Variable $undeclared is used by anonymous query but not declared"], errors.map { |e| e["message"] }
+    end
+
+    it "doesn't raise when run without the variable rules" do
+      # This rule depends on helpers from other rules, so it can't run completely alone
+      rules = GraphQL::StaticValidation::ALL_RULES - [
+        GraphQL::StaticValidation::VariableUsagesAreAllowed,
+        GraphQL::StaticValidation::VariablesAreUsedAndDefined,
+      ]
+      validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: rules)
+      query = GraphQL::Query.new(schema, query_string)
+      assert_equal [], validator.validate(query)[:errors]
+    end
+  end
+
   describe "with more than one field" do
     let(:query_string) {%|
       {

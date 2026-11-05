@@ -59,7 +59,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
 %param {VALUE parser}
 %param {VALUE filename}
-
+%define api.token.prefix {GRAPHQL_}
 // YACC Declarations
 %token AMP 200
 %token BANG 201
@@ -906,7 +906,7 @@ int yylex (YYSTYPE *lvalp, VALUE parser, VALUE filename) {
   VALUE next_token = rb_ary_entry(tokens, next_token_idx);
 
   if (!RB_TEST(next_token)) {
-    return YYEOF;
+    return GRAPHQL_YYEOF;
   }
   rb_ivar_set(parser, rb_intern("@next_token_index"), INT2FIX(next_token_idx + 1));
   VALUE token_type_rb_int = rb_ary_entry(next_token, 4);

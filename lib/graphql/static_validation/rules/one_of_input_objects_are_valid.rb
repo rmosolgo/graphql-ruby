@@ -1,11 +1,10 @@
 # frozen_string_literal: true
-# typed: strict
+# typed: true
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     # @requires_ancestor: GraphQL::StaticValidation::RequiredInputObjectAttributesArePresent
-    # @requires_ancestor: GraphQL::StaticValidation::VariableUsagesAreAllowed
     module OneOfInputObjectsAreValid
       #: (GraphQL::Language::Nodes::InputObject node, GraphQL::Language::Nodes::AbstractNode parent) -> void
       def on_input_object(node, parent)
@@ -56,9 +55,10 @@ module GraphQL
 
         if value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           variable_name = value.name
-          # FIXME: this is `nil` when the variable isn't declared by the operation, so `.type` raises NoMethodError.
-          var_defn = declared_variables[variable_name] #: as !nil
-          variable_type = var_defn.type
+          variable_definition = @declared_variables && @declared_variables[variable_name]
+          # Undeclared variables are reported by VariablesAreUsedAndDefined
+          return if variable_definition.nil?
+          variable_type = variable_definition.type
 
           unless variable_type.is_a?(GraphQL::Language::Nodes::NonNullType)
             add_error(
