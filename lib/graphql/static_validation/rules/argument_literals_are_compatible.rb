@@ -16,10 +16,14 @@ module GraphQL
           return
         end
 
-        if @context.schema.error_bubbling || context.errors.none? { |err| err.path.take(@path_depth) == @path[0, @path_depth] }
+        if context.schema.error_bubbling || context.errors.none? { |err|
+            # `add_error` sets the path of every error
+            err_path = err.path
+            err_path.take(path_depth) == path
+          }
           parent_defn = parent_definition(parent)
 
-          if parent_defn && (arg_defn = @types.argument(parent_defn, node.name))
+          if parent_defn && (arg_defn = types.argument(parent_defn, node.name))
             validation_result = context.validate_literal(node.value, arg_defn.type)
             if !validation_result.valid?
               kind_of_node = node_type(parent)

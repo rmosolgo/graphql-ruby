@@ -57,6 +57,7 @@ module GraphQL
 
       def assert_includes_location(directive_defn, directive_ast, required_location)
         if !directive_defn.locations.include?(required_location)
+          # `required_location` is always an executable location, which has a message name:
           location_name = LOCATION_MESSAGE_NAMES[required_location]
           allowed_location_names = directive_defn.locations.map { |loc| LOCATION_MESSAGE_NAMES[loc] }
           add_error(GraphQL::StaticValidation::DirectivesAreInValidLocationsError.new(

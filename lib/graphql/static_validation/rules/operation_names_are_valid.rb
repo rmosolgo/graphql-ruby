@@ -5,13 +5,15 @@ module GraphQL
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module OperationNamesAreValid
-      def initialize(*)
+      def initialize(document, context)
         super
         @operation_names = Hash.new { |h, k| h[k] = [] }
       end
 
       def on_operation_definition(node, parent)
-        @operation_names[node.name] << node
+        # The default proc creates the Array:
+        operations = @operation_names[node.name]
+        operations << node
         super
       end
 

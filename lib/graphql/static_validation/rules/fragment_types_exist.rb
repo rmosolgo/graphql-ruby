@@ -23,10 +23,11 @@ module GraphQL
         if !fragment_node.type
           true
         else
-          type_name = fragment_node.type.name
-          type = @types.type(type_name)
+          fragment_type = fragment_node.type
+          type_name = fragment_type.name
+          type = types.type(type_name)
           if type.nil?
-            suggestion = if @schema.did_you_mean
+            suggestion = if schema.did_you_mean
               @all_possible_fragment_type_names ||= begin
                 names = []
                 context.types.all_types.each do |type|

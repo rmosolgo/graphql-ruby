@@ -5,16 +5,12 @@ module GraphQL
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module DirectivesAreDefined
-      def initialize(*)
-        super
-      end
-
       def on_directive(node, parent)
-        if !@types.directive_exists?(node.name)
+        if !types.directive_exists?(node.name)
           @directives_are_defined_errors_by_name ||= {}
           error = @directives_are_defined_errors_by_name[node.name] ||= begin
-            suggestion = if @schema.did_you_mean
-              @directive_names ||= @types.directives.map(&:graphql_name)
+            suggestion = if schema.did_you_mean
+              @directive_names ||= types.directives.map(&:graphql_name)
               context.did_you_mean_suggestion(node.name, @directive_names)
             end
             err = GraphQL::StaticValidation::DirectivesAreDefinedError.new(

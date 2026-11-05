@@ -5,14 +5,15 @@ module GraphQL
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module FragmentNamesAreUnique
-
-      def initialize(*)
+      def initialize(document, context)
         super
         @fragments_by_name = Hash.new { |h, k| h[k] = [] }
       end
 
       def on_fragment_definition(node, parent)
-        @fragments_by_name[node.name] << node
+        # The default proc creates the Array:
+        fragments = @fragments_by_name[node.name]
+        fragments << node
         super
       end
 

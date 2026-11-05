@@ -10,7 +10,7 @@ module GraphQL
         type = context.types.type(type_name)
 
         if type.nil?
-          suggestion = if @schema.did_you_mean
+          suggestion = if schema.did_you_mean
             @all_possible_input_type_names ||= begin
               names = []
               context.types.all_types.each { |(t)|
@@ -43,7 +43,7 @@ module GraphQL
       private
 
       def get_type_name(ast_type)
-        if ast_type.respond_to?(:of_type)
+        if ast_type.is_a?(GraphQL::Language::Nodes::WrapperType)
           get_type_name(ast_type.of_type)
         else
           ast_type.name

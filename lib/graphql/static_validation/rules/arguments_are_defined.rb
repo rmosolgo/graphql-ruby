@@ -8,12 +8,12 @@ module GraphQL
       def on_argument(node, parent)
         parent_defn = parent_definition(parent)
 
-        if parent_defn && @types.argument(parent_defn, node.name)
+        if parent_defn && types.argument(parent_defn, node.name)
           super
         elsif parent_defn
           kind_of_node = node_type(parent)
           error_arg_name = parent_name(parent, parent_defn)
-          suggestion = if @schema.did_you_mean
+          suggestion = if schema.did_you_mean
             arg_names = context.types.arguments(parent_defn).map(&:graphql_name)
             context.did_you_mean_suggestion(node.name, arg_names)
           end
@@ -48,7 +48,8 @@ module GraphQL
       end
 
       def node_type(parent)
-        parent.class.name.split("::").last
+        parent_class_name = parent.class.name
+        parent_class_name.split("::").last
       end
 
       def parent_definition(parent)
