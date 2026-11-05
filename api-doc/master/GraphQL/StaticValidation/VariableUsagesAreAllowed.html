@@ -548,7 +548,7 @@
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-comment"># holds { name =&gt; ast_node } pairs</span>
-  <span class="ruby-ivar">@declared_variables</span> = {}
+  <span class="ruby-ivar">@declared_variables</span> = {} <span class="ruby-comment">#: Hash[String, GraphQL::Language::Nodes::VariableDefinition]</span>
   <span class="ruby-ivar">@operation_declared_variables</span> = {}.<span class="ruby-identifier">compare_by_identity</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::OperationDefinition, Hash[String, GraphQL::Language::Nodes::VariableDefinition]]</span>
   <span class="ruby-ivar">@variable_usages_fragment_definition</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-ivar">@fragment_variable_usages</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::FragmentDefinition, Array[FragmentVariableUsage]]?</span>

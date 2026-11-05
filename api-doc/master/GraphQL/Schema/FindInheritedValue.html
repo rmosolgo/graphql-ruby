@@ -491,6 +491,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Module[untyped] child_cls) &rarr; void</code></pre>
+
           </div>
 
 
@@ -504,7 +506,7 @@
 
 
           <div class="method-source-code" id="extended-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/find_inherited_value.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/find_inherited_value.rb, line 9</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">extended</span>(<span class="ruby-identifier">child_cls</span>)
   <span class="ruby-identifier">child_cls</span>.<span class="ruby-identifier">singleton_class</span>.<span class="ruby-identifier">include</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">EmptyObjects</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -541,6 +543,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Module[untyped] child_cls) &rarr; void</code></pre>
+
           </div>
 
 
@@ -554,7 +558,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/find_inherited_value.rb, line 12</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/find_inherited_value.rb, line 14</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">child_cls</span>)
   <span class="ruby-identifier">child_cls</span>.<span class="ruby-identifier">include</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">EmptyObjects</span>)
 <span class="ruby-keyword">end</span></pre>

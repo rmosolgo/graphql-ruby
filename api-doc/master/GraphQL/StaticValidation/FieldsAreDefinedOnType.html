@@ -495,6 +495,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Field.html" class="rbs-type">GraphQL::Language::Nodes::Field</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -508,9 +510,10 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_are_defined_on_type.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_are_defined_on_type.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-identifier">parent_type</span> = <span class="ruby-ivar">@parent_object_type</span>
+  <span class="ruby-comment"># Fields are only visited inside a known type (other rules stop the visit otherwise)</span>
+  <span class="ruby-identifier">parent_type</span> = <span class="ruby-identifier">parent_type_definition</span> <span class="ruby-comment">#: as !nil</span>
   <span class="ruby-identifier">field</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">field</span>(<span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>)
 
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">field</span>.<span class="ruby-identifier">nil?</span>
@@ -521,7 +524,7 @@
         <span class="ruby-value">node_name</span><span class="ruby-value">:</span> <span class="ruby-identifier">parent_type</span>.<span class="ruby-identifier">graphql_name</span>
       ))
     <span class="ruby-keyword">else</span>
-      <span class="ruby-identifier">suggestion</span> = <span class="ruby-keyword">if</span> <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">did_you_mean</span>
+      <span class="ruby-identifier">suggestion</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">did_you_mean</span>
         <span class="ruby-identifier">context</span>.<span class="ruby-identifier">did_you_mean_suggestion</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>, <span class="ruby-identifier">possible_fields</span>(<span class="ruby-identifier">context</span>, <span class="ruby-identifier">parent_type</span>))
       <span class="ruby-keyword">end</span>
       <span class="ruby-identifier">message</span> = <span class="ruby-string">&quot;</span><span class="ruby-string">Field &#39;</span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&#39; doesn&#39;t exist on type &#39;</span><span class="ruby-string">#{</span><span class="ruby-identifier">parent_type</span>.<span class="ruby-identifier">graphql_name</span><span class="ruby-string">}</span><span class="ruby-string">&#39;</span><span class="ruby-string">#{</span><span class="ruby-identifier">suggestion</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>

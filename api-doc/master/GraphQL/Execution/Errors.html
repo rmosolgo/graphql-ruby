@@ -509,6 +509,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(singleton(GraphQL::Schema) schema, singleton(Exception) error_class) &rarr; handler_entry?</code></pre>
+
           </div>
 
 
@@ -522,10 +524,10 @@
 
 
           <div class="method-source-code" id="find_handler_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/errors.rb, line 70</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/errors.rb, line 78</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">find_handler_for</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-identifier">error_class</span>)
   <span class="ruby-identifier">handlers</span> = <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">error_handlers</span>[<span class="ruby-value">:</span><span class="ruby-value">subclass_handlers</span>]
-  <span class="ruby-identifier">handler</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: untyped</span>
+  <span class="ruby-identifier">handler</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: handler_entry?</span>
   <span class="ruby-keyword">while</span> (<span class="ruby-identifier">handlers</span>) <span class="ruby-keyword">do</span>
     <span class="ruby-identifier">_err_class</span>, <span class="ruby-identifier">next_handler</span> = <span class="ruby-identifier">handlers</span>.<span class="ruby-identifier">find</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">err_class</span>, <span class="ruby-identifier">handler</span><span class="ruby-operator">|</span> <span class="ruby-identifier">error_class</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-identifier">err_class</span> }
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">next_handler</span>
@@ -540,7 +542,10 @@
 
   <span class="ruby-comment"># check for a handler from a parent class:</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">superclass</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">error_handlers</span>)
-    <span class="ruby-identifier">parent_handler</span> = <span class="ruby-identifier">find_handler_for</span>(<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">superclass</span>, <span class="ruby-identifier">error_class</span>)
+    <span class="ruby-identifier">parent_handler</span> = <span class="ruby-identifier">find_handler_for</span>(
+      <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">superclass</span>, <span class="ruby-comment">#: as singleton(GraphQL::Schema)</span>
+      <span class="ruby-identifier">error_class</span>,
+    )
   <span class="ruby-keyword">end</span>
 
   <span class="ruby-comment"># If the inherited handler is more specific than the one defined here,</span>
@@ -597,6 +602,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(singleton(Exception) error_class, Hash[singleton(Exception), handler_entry] error_handlers, Proc error_handler) &rarr; void</code></pre>
+
           </div>
 
 
@@ -610,10 +617,10 @@
 
 
           <div class="method-source-code" id="register_rescue_from-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/errors.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/errors.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">register_rescue_from</span>(<span class="ruby-identifier">error_class</span>, <span class="ruby-identifier">error_handlers</span>, <span class="ruby-identifier">error_handler</span>)
-  <span class="ruby-identifier">subclasses_handlers</span> = {}
-  <span class="ruby-identifier">this_level_subclasses</span> = []
+  <span class="ruby-identifier">subclasses_handlers</span> = {} <span class="ruby-comment">#: Hash[singleton(Exception), handler_entry]</span>
+  <span class="ruby-identifier">this_level_subclasses</span> = [] <span class="ruby-comment">#: Array[singleton(Exception)]</span>
   <span class="ruby-comment"># During this traversal, do two things:</span>
   <span class="ruby-comment"># - Identify any already-registered subclasses of this error class</span>
   <span class="ruby-comment">#   and gather them up to be inserted _under_ this class</span>
@@ -638,7 +645,7 @@
     <span class="ruby-comment"># See if any keys in this hash are superclasses of this new class:</span>
     <span class="ruby-identifier">next_index_point</span> = <span class="ruby-identifier">error_handlers</span>.<span class="ruby-identifier">find</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">err_class</span>, <span class="ruby-identifier">handler</span><span class="ruby-operator">|</span> <span class="ruby-identifier">error_class</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">err_class</span> }
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">next_index_point</span>
-      <span class="ruby-identifier">error_handlers</span> = <span class="ruby-identifier">next_index_point</span>[<span class="ruby-value">1</span>][<span class="ruby-value">:</span><span class="ruby-value">subclass_handlers</span>]
+      <span class="ruby-identifier">error_handlers</span> = <span class="ruby-identifier">next_index_point</span>[<span class="ruby-value">1</span>][<span class="ruby-value">:</span><span class="ruby-value">subclass_handlers</span>] <span class="ruby-comment">#: as Hash[singleton(Exception), handler_entry]</span>
     <span class="ruby-keyword">else</span>
       <span class="ruby-comment"># this new handler doesn&#39;t belong to any sub-handlers,</span>
       <span class="ruby-comment"># so insert it in the current set of `handlers`</span>
@@ -647,7 +654,8 @@
   <span class="ruby-keyword">end</span>
   <span class="ruby-comment"># Having found the point at which to insert this handler,</span>
   <span class="ruby-comment"># register it and merge any subclass handlers back in at this point.</span>
-  <span class="ruby-identifier">this_class_handlers</span> = <span class="ruby-identifier">error_handlers</span>[<span class="ruby-identifier">error_class</span>]
+  <span class="ruby-comment"># `error_handlers` has a default proc, so this is never `nil`:</span>
+  <span class="ruby-identifier">this_class_handlers</span> = <span class="ruby-identifier">error_handlers</span>[<span class="ruby-identifier">error_class</span>] <span class="ruby-comment">#: as !nil</span>
   <span class="ruby-identifier">this_class_handlers</span>[<span class="ruby-value">:</span><span class="ruby-value">handler</span>] = <span class="ruby-identifier">error_handler</span>
   <span class="ruby-identifier">this_class_handlers</span>[<span class="ruby-value">:</span><span class="ruby-value">subclass_handlers</span>].<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">subclasses_handlers</span>)
   <span class="ruby-keyword">nil</span>

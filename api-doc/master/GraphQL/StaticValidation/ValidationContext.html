@@ -545,6 +545,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code>Array[<a href="Error.html" class="rbs-type">GraphQL::StaticValidation::Error</a>]</code></span>
+
         </div>
 
         <div class="method-description">
@@ -561,6 +563,8 @@
             <span class="method-name">max_errors</span>
             <span class="attribute-access-type">[R]</span>
           </a>
+
+          <span class="method-type-signature"><code>Integer | <a href="../Types/Float.html" class="rbs-type">Float</a></code></span>
 
         </div>
 
@@ -579,6 +583,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code>Array[^(<a href="../Language/Nodes/OperationDefinition.html" class="rbs-type">GraphQL::Language::Nodes::OperationDefinition</a> | <a href="../Language/Nodes/FragmentDefinition.html" class="rbs-type">GraphQL::Language::Nodes::FragmentDefinition</a>, Array[<a href="../Language/Nodes/FragmentSpread.html" class="rbs-type">GraphQL::Language::Nodes::FragmentSpread</a>], <a href="../Language/Nodes/FragmentDefinition.html" class="rbs-type">GraphQL::Language::Nodes::FragmentDefinition</a>) &rarr; void]</code></span>
+
         </div>
 
         <div class="method-description">
@@ -595,6 +601,8 @@
             <span class="method-name">query</span>
             <span class="attribute-access-type">[R]</span>
           </a>
+
+          <span class="method-type-signature"><code><a href="../Query.html" class="rbs-type">GraphQL::Query</a></code></span>
 
         </div>
 
@@ -613,6 +621,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code>singleton(GraphQL::Schema)</code></span>
+
         </div>
 
         <div class="method-description">
@@ -630,6 +640,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="../Schema/Visibility/Profile.html" class="rbs-type">GraphQL::Schema::Visibility::Profile</a> | <a href="../Schema/Warden/VisibilityProfile.html" class="rbs-type">GraphQL::Schema::Warden::VisibilityProfile</a></code></span>
+
         </div>
 
         <div class="method-description">
@@ -646,6 +658,8 @@
             <span class="method-name">visitor</span>
             <span class="attribute-access-type">[R]</span>
           </a>
+
+          <span class="method-type-signature"><code><a href="BaseVisitor.html" class="rbs-type">GraphQL::StaticValidation::BaseVisitor</a></code></span>
 
         </div>
 
@@ -684,6 +698,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Query.html" class="rbs-type">GraphQL::Query</a> query, singleton(GraphQL::StaticValidation::BaseVisitor) visitor_class, Integer? max_errors) &rarr; void</code></pre>
+
           </div>
 
 
@@ -697,16 +713,16 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">visitor_class</span>, <span class="ruby-identifier">max_errors</span>)
-  <span class="ruby-ivar">@query</span> = <span class="ruby-identifier">query</span>
-  <span class="ruby-ivar">@types</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span>
-  <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">schema</span>
-  <span class="ruby-ivar">@input_values</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">input_values</span>
-  <span class="ruby-ivar">@errors</span> = []
-  <span class="ruby-ivar">@max_errors</span> = <span class="ruby-identifier">max_errors</span> <span class="ruby-operator">||</span> <span class="ruby-constant">Float</span><span class="ruby-operator">::</span><span class="ruby-constant">INFINITY</span>
-  <span class="ruby-ivar">@on_dependency_resolve_handlers</span> = []
-  <span class="ruby-ivar">@visitor</span> = <span class="ruby-identifier">visitor_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">document</span>, <span class="ruby-keyword">self</span>)
+  <span class="ruby-ivar">@query</span> = <span class="ruby-identifier">query</span> <span class="ruby-comment">#: GraphQL::Query</span>
+  <span class="ruby-ivar">@types</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span> <span class="ruby-comment">#: GraphQL::Schema::Visibility::Profile | GraphQL::Schema::Warden::VisibilityProfile</span>
+  <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">schema</span> <span class="ruby-comment">#: singleton(GraphQL::Schema)</span>
+  <span class="ruby-ivar">@input_values</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">input_values</span> <span class="ruby-comment">#: GraphQL::Execution::InputValues</span>
+  <span class="ruby-ivar">@errors</span> = [] <span class="ruby-comment">#: Array[GraphQL::StaticValidation::Error]</span>
+  <span class="ruby-ivar">@max_errors</span> = <span class="ruby-identifier">max_errors</span> <span class="ruby-operator">||</span> <span class="ruby-constant">Float</span><span class="ruby-operator">::</span><span class="ruby-constant">INFINITY</span> <span class="ruby-comment">#: Integer | Float</span>
+  <span class="ruby-ivar">@on_dependency_resolve_handlers</span> = [] <span class="ruby-comment">#: Array[^(GraphQL::Language::Nodes::OperationDefinition | GraphQL::Language::Nodes::FragmentDefinition, Array[GraphQL::Language::Nodes::FragmentSpread], GraphQL::Language::Nodes::FragmentDefinition) -&gt; void]</span>
+  <span class="ruby-ivar">@visitor</span> = <span class="ruby-identifier">visitor_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">document</span>, <span class="ruby-keyword">self</span>) <span class="ruby-comment">#: GraphQL::StaticValidation::BaseVisitor</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -755,6 +771,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Types/String.html" class="rbs-type">String</a> name, Array[<a href="../Types/String.html" class="rbs-type">String</a>] options) &rarr; <a href="../Types/String.html" class="rbs-type">String</a>?</code></pre>
+
           </div>
 
 
@@ -768,7 +786,7 @@
 
 
           <div class="method-source-code" id="did_you_mean_suggestion-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 66</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 89</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">did_you_mean_suggestion</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">options</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">did_you_mean</span> = <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">did_you_mean</span>
     <span class="ruby-identifier">suggestions</span> = <span class="ruby-identifier">did_you_mean</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-value">:</span><span class="ruby-value">SpellChecker</span>).<span class="ruby-identifier">new</span>(<span class="ruby-value">dictionary</span><span class="ruby-value">:</span> <span class="ruby-identifier">options</span>).<span class="ruby-identifier">correct</span>(<span class="ruby-identifier">name</span>)
@@ -816,6 +834,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() { (<a href="../Language/Nodes/OperationDefinition.html" class="rbs-type">GraphQL::Language::Nodes::OperationDefinition</a> | <a href="../Language/Nodes/FragmentDefinition.html" class="rbs-type">GraphQL::Language::Nodes::FragmentDefinition</a>, Array[<a href="../Language/Nodes/FragmentSpread.html" class="rbs-type">GraphQL::Language::Nodes::FragmentSpread</a>], <a href="../Language/Nodes/FragmentDefinition.html" class="rbs-type">GraphQL::Language::Nodes::FragmentDefinition</a>) &rarr; void } &rarr; void</code></pre>
+
           </div>
 
 
@@ -829,7 +849,7 @@
 
 
           <div class="method-source-code" id="on_dependency_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 38</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 57</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_dependency_resolve</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">handler</span>)
   <span class="ruby-ivar">@on_dependency_resolve_handlers</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">handler</span>
 <span class="ruby-keyword">end</span></pre>
@@ -866,6 +886,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() &rarr; Hash[<a href="../Types/String.html" class="rbs-type">String</a>, singleton(GraphQL::Schema::Directive)]</code></pre>
+
           </div>
 
 
@@ -879,9 +901,9 @@
 
 
           <div class="method-source-code" id="schema_directives-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 62</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 84</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">schema_directives</span>
-  <span class="ruby-ivar">@schema_directives</span> ||= <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">directives</span>
+  <span class="ruby-ivar">@schema_directives</span> ||= <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">directives</span> <span class="ruby-comment">#: Hash[String, singleton(GraphQL::Schema::Directive)]?</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -916,6 +938,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() &rarr; bool</code></pre>
+
           </div>
 
 
@@ -929,7 +953,7 @@
 
 
           <div class="method-source-code" id="too_many_errors-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 58</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 79</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">too_many_errors?</span>
   <span class="ruby-ivar">@errors</span>.<span class="ruby-identifier">length</span> &gt;= <span class="ruby-ivar">@max_errors</span>
 <span class="ruby-keyword">end</span></pre>
@@ -966,6 +990,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped ast_value, GraphQL::Schema::Member::type_definition | <a href="../Schema/NonNull.html" class="rbs-type">GraphQL::Schema::NonNull</a> | <a href="../Schema/List.html" class="rbs-type">GraphQL::Schema::List</a> type) &rarr; <a href="../Query/InputValidationResult.html" class="rbs-type">GraphQL::Query::InputValidationResult</a></code></pre>
+
           </div>
 
 
@@ -979,7 +1005,7 @@
 
 
           <div class="method-source-code" id="validate_literal-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/validation_context.rb, line 65</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_literal</span>(<span class="ruby-identifier">ast_value</span>, <span class="ruby-identifier">type</span>)
   <span class="ruby-ivar">@input_values</span>.<span class="ruby-identifier">value_from_ast</span>(<span class="ruby-identifier">ast_value</span>, <span class="ruby-identifier">type</span>, <span class="ruby-value">validate</span><span class="ruby-value">:</span> <span class="ruby-keyword">true</span>)
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">InputValidationResult</span><span class="ruby-operator">::</span><span class="ruby-constant">VALID</span>

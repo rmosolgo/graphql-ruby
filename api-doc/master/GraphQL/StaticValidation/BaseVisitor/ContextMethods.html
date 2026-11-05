@@ -378,6 +378,25 @@
   
 
   
+  <div class="nav-section">
+    <details class="nav-section-collapsible" open>
+      <summary class="nav-section-header">
+        <span class="nav-section-icon">
+          <svg><use href="#icon-class-methods"></use></svg>
+        </span>
+        <span class="nav-section-title">Class Methods</span>
+        <span class="nav-section-chevron">
+          <svg><use href="#icon-chevron"></use></svg>
+        </span>
+      </summary>
+      <ul class="nav-list" role="directory">
+
+        <li class="calls-super" ><a href="#method-c-new">new</a></li>
+
+      </ul>
+    </details>
+  </div>
+
 
 
   <div class="nav-section">
@@ -518,6 +537,77 @@
 
 
 
+     <section id="public-class-untitled-method-details" class="method-section anchor-link">
+       <header>
+         <h3 id="public-class-untitled-methods"><a href="#public-class-untitled-methods">Public Class Methods</a></h3>
+       </header>
+
+
+      <span id="new-class_method" class="legacy-anchor"></span>
+<div id="method-c-new" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-c-new" title="Link to this method">
+                  <span class="method-name">new</span>
+                  <span class="method-args">(document, context)</span>
+                </a>
+              </div>
+
+
+
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a> document, <a href="../ValidationContext.html" class="rbs-type">GraphQL::StaticValidation::ValidationContext</a> context) &rarr; void</code></pre>
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="new-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 82</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">document</span>, <span class="ruby-identifier">context</span>)
+  <span class="ruby-keyword">super</span>
+  <span class="ruby-ivar">@path</span> = <span class="ruby-identifier">path_parts</span> <span class="ruby-comment">#: Array[String | Integer]</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span> <span class="ruby-comment">#: Integer</span>
+  <span class="ruby-ivar">@types</span> = <span class="ruby-identifier">types</span> <span class="ruby-comment">#: GraphQL::Schema::Visibility::Profile | GraphQL::Schema::Warden::VisibilityProfile</span>
+  <span class="ruby-ivar">@inline_fragment_paths</span> = <span class="ruby-identifier">inline_fragment_paths</span> <span class="ruby-comment">#: Hash[String, String]</span>
+  <span class="ruby-ivar">@field_unwrapped_types</span> = <span class="ruby-identifier">field_unwrapped_types</span> <span class="ruby-comment">#: Hash[GraphQL::Schema::Field, GraphQL::Schema::Member::type_definition]</span>
+  <span class="ruby-ivar">@child_positions</span> = <span class="ruby-identifier">child_positions_by_parent</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::AbstractNode, Hash[GraphQL::Language::Nodes::AbstractNode, Integer]]</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          <p>BaseVisitor#initialize sets these. They’re re-assigned here so Sorbet knows their types in this module, because the hooks below use them directly instead of calling the readers on every node.</p>
+
+
+            <div class="method-calls-super">
+              Calls superclass method
+              
+            </div>
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+    </section>
+
 
 
 
@@ -547,6 +637,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() &rarr; <a href="../../Schema/Argument.html" class="rbs-type">GraphQL::Schema::Argument</a>?</code></pre>
+
           </div>
 
 
@@ -560,7 +652,7 @@
 
 
           <div class="method-source-code" id="argument_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 254</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 296</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument_definition</span>
   <span class="ruby-comment"># Return the parent argument definition (not the current one).</span>
   <span class="ruby-ivar">@parent_argument_definition</span>
@@ -601,6 +693,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> parent) &rarr; Hash[<a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>, Integer]</code></pre>
+
           </div>
 
 
@@ -614,10 +708,10 @@
 
 
           <div class="method-source-code" id="child_positions-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 200</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 237</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">child_positions</span>(<span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@child_positions</span>[<span class="ruby-identifier">parent</span>] ||= <span class="ruby-keyword">begin</span>
-    <span class="ruby-identifier">positions</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
+    <span class="ruby-identifier">positions</span> = {}.<span class="ruby-identifier">compare_by_identity</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::AbstractNode, Integer]</span>
     <span class="ruby-identifier">parent</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">each_with_index</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">child</span>, <span class="ruby-identifier">index</span><span class="ruby-operator">|</span> <span class="ruby-identifier">positions</span>[<span class="ruby-identifier">child</span>] ||= <span class="ruby-identifier">index</span> }
     <span class="ruby-identifier">positions</span>
   <span class="ruby-keyword">end</span>
@@ -658,6 +752,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() &rarr; singleton(GraphQL::Schema::Directive)?</code></pre>
+
           </div>
 
 
@@ -671,7 +767,7 @@
 
 
           <div class="method-source-code" id="directive_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 244</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 285</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directive_definition</span>
   <span class="ruby-ivar">@current_directive_definition</span>
 <span class="ruby-keyword">end</span></pre>
@@ -714,6 +810,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() &rarr; <a href="../../Schema/Field.html" class="rbs-type">GraphQL::Schema::Field</a>?</code></pre>
+
           </div>
 
 
@@ -727,7 +825,7 @@
 
 
           <div class="method-source-code" id="field_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 234</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 274</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_definition</span>
   <span class="ruby-ivar">@current_field_definition</span>
 <span class="ruby-keyword">end</span></pre>
@@ -767,6 +865,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/Argument.html" class="rbs-type">GraphQL::Language::Nodes::Argument</a> node, <a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -780,7 +880,7 @@
 
 
           <div class="method-source-code" id="on_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 153</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 184</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_argument</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">argument_defn</span> = <span class="ruby-keyword">if</span> (<span class="ruby-identifier">arg</span> = <span class="ruby-ivar">@current_argument_definition</span>)
     <span class="ruby-identifier">arg_type</span> = <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">unwrap</span>
@@ -798,14 +898,15 @@
   <span class="ruby-keyword">end</span>
 
   <span class="ruby-identifier">prev_parent</span> = <span class="ruby-ivar">@parent_argument_definition</span>
-  <span class="ruby-ivar">@parent_argument_definition</span> = <span class="ruby-ivar">@current_argument_definition</span>
-  <span class="ruby-ivar">@current_argument_definition</span> = <span class="ruby-identifier">argument_defn</span>
-  <span class="ruby-ivar">@path</span>[<span class="ruby-ivar">@path_depth</span>] = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>
-  <span class="ruby-ivar">@path_depth</span> += <span class="ruby-value">1</span>
+  <span class="ruby-ivar">@parent_argument_definition</span> = <span class="ruby-ivar">@current_argument_definition</span> <span class="ruby-comment">#: GraphQL::Schema::Argument?</span>
+  <span class="ruby-ivar">@current_argument_definition</span> = <span class="ruby-identifier">argument_defn</span> <span class="ruby-comment">#: GraphQL::Schema::Argument?</span>
+  <span class="ruby-identifier">path_depth</span> = <span class="ruby-ivar">@path_depth</span>
+  <span class="ruby-ivar">@path</span>[<span class="ruby-identifier">path_depth</span>] = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@current_argument_definition</span> = <span class="ruby-ivar">@parent_argument_definition</span>
   <span class="ruby-ivar">@parent_argument_definition</span> = <span class="ruby-identifier">prev_parent</span>
-  <span class="ruby-ivar">@path_depth</span> -= <span class="ruby-value">1</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span>
   <span class="ruby-ivar">@child_positions</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">node</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -846,6 +947,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/Directive.html" class="rbs-type">GraphQL::Language::Nodes::Directive</a> node, <a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -859,11 +962,11 @@
 
 
           <div class="method-source-code" id="on_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 145</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 175</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_directive</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-identifier">directive_defn</span> = <span class="ruby-ivar">@context</span>.<span class="ruby-identifier">schema_directives</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>]
+  <span class="ruby-identifier">directive_defn</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema_directives</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>]
   <span class="ruby-identifier">prev_directive_definition</span> = <span class="ruby-ivar">@current_directive_definition</span>
-  <span class="ruby-ivar">@current_directive_definition</span> = <span class="ruby-identifier">directive_defn</span>
+  <span class="ruby-ivar">@current_directive_definition</span> = <span class="ruby-identifier">directive_defn</span> <span class="ruby-comment">#: singleton(GraphQL::Schema::Directive)?</span>
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@current_directive_definition</span> = <span class="ruby-identifier">prev_directive_definition</span>
 <span class="ruby-keyword">end</span></pre>
@@ -905,6 +1008,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/Field.html" class="rbs-type">GraphQL::Language::Nodes::Field</a> node, <a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -918,12 +1023,12 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 124</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 152</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">parent_type</span> = <span class="ruby-ivar">@current_object_type</span>
   <span class="ruby-identifier">field_definition</span> = <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">field</span>(<span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>)
   <span class="ruby-identifier">prev_field_definition</span> = <span class="ruby-ivar">@current_field_definition</span>
-  <span class="ruby-ivar">@current_field_definition</span> = <span class="ruby-identifier">field_definition</span>
+  <span class="ruby-ivar">@current_field_definition</span> = <span class="ruby-identifier">field_definition</span> <span class="ruby-comment">#: GraphQL::Schema::Field?</span>
   <span class="ruby-identifier">prev_parent_ot</span> = <span class="ruby-ivar">@parent_object_type</span>
   <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-ivar">@current_object_type</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">field_definition</span>
@@ -931,13 +1036,14 @@
   <span class="ruby-keyword">else</span>
     <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-keyword">nil</span>
   <span class="ruby-keyword">end</span>
-  <span class="ruby-ivar">@path</span>[<span class="ruby-ivar">@path_depth</span>] = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">alias</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>
-  <span class="ruby-ivar">@path_depth</span> += <span class="ruby-value">1</span>
+  <span class="ruby-identifier">path_depth</span> = <span class="ruby-ivar">@path_depth</span>
+  <span class="ruby-ivar">@path</span>[<span class="ruby-identifier">path_depth</span>] = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">alias</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@current_field_definition</span> = <span class="ruby-identifier">prev_field_definition</span>
   <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-ivar">@parent_object_type</span>
   <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-identifier">prev_parent_ot</span>
-  <span class="ruby-ivar">@path_depth</span> -= <span class="ruby-value">1</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -977,6 +1083,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/FragmentDefinition.html" class="rbs-type">GraphQL::Language::Nodes::FragmentDefinition</a> node, <a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -990,22 +1098,25 @@
 
 
           <div class="method-source-code" id="on_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 86</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 108</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-identifier">object_type</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>
-    <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">name</span>)
+  <span class="ruby-comment"># The type is always present when parsed, but may be missing on a hand-built node:</span>
+  <span class="ruby-identifier">fragment_type</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span> <span class="ruby-comment">#: GraphQL::Language::Nodes::TypeName?</span>
+  <span class="ruby-identifier">object_type</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">fragment_type</span>
+    <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">fragment_type</span>.<span class="ruby-identifier">name</span>)
   <span class="ruby-keyword">else</span>
     <span class="ruby-ivar">@current_object_type</span>
   <span class="ruby-keyword">end</span>
   <span class="ruby-identifier">prev_parent_ot</span> = <span class="ruby-ivar">@parent_object_type</span>
   <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-ivar">@current_object_type</span>
   <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-identifier">object_type</span>
-  <span class="ruby-ivar">@path</span>[<span class="ruby-ivar">@path_depth</span>] = <span class="ruby-string">&quot;</span><span class="ruby-string">fragment </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
-  <span class="ruby-ivar">@path_depth</span> += <span class="ruby-value">1</span>
+  <span class="ruby-identifier">path_depth</span> = <span class="ruby-ivar">@path_depth</span>
+  <span class="ruby-ivar">@path</span>[<span class="ruby-identifier">path_depth</span>] = <span class="ruby-string">&quot;</span><span class="ruby-string">fragment </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-ivar">@parent_object_type</span>
   <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-identifier">prev_parent_ot</span>
-  <span class="ruby-ivar">@path_depth</span> -= <span class="ruby-value">1</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1045,6 +1156,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/FragmentSpread.html" class="rbs-type">GraphQL::Language::Nodes::FragmentSpread</a> node, <a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -1058,12 +1171,13 @@
 
 
           <div class="method-source-code" id="on_fragment_spread-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 181</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 214</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_spread</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-ivar">@path</span>[<span class="ruby-ivar">@path_depth</span>] = <span class="ruby-string">&quot;</span><span class="ruby-string">... </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
-  <span class="ruby-ivar">@path_depth</span> += <span class="ruby-value">1</span>
+  <span class="ruby-identifier">path_depth</span> = <span class="ruby-ivar">@path_depth</span>
+  <span class="ruby-ivar">@path</span>[<span class="ruby-identifier">path_depth</span>] = <span class="ruby-string">&quot;</span><span class="ruby-string">... </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
   <span class="ruby-keyword">super</span>
-  <span class="ruby-ivar">@path_depth</span> -= <span class="ruby-value">1</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1103,6 +1217,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/InlineFragment.html" class="rbs-type">GraphQL::Language::Nodes::InlineFragment</a> node, <a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -1116,16 +1232,17 @@
 
 
           <div class="method-source-code" id="on_inline_fragment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 105</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 131</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_inline_fragment</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-keyword">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>
-    <span class="ruby-identifier">object_type</span> = <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">name</span>)
-    <span class="ruby-ivar">@path</span>[<span class="ruby-ivar">@path_depth</span>] = <span class="ruby-ivar">@inline_fragment_paths</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">name</span>] ||= <span class="ruby-operator">-</span><span class="ruby-string">&quot;</span><span class="ruby-string">... on </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">to_query_string</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
-    <span class="ruby-ivar">@path_depth</span> += <span class="ruby-value">1</span>
+  <span class="ruby-identifier">path_depth</span> = <span class="ruby-ivar">@path_depth</span>
+  <span class="ruby-keyword">if</span> (<span class="ruby-identifier">node_type</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>)
+    <span class="ruby-identifier">object_type</span> = <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">node_type</span>.<span class="ruby-identifier">name</span>)
+    <span class="ruby-ivar">@path</span>[<span class="ruby-identifier">path_depth</span>] = <span class="ruby-ivar">@inline_fragment_paths</span>[<span class="ruby-identifier">node_type</span>.<span class="ruby-identifier">name</span>] ||= <span class="ruby-operator">-</span><span class="ruby-string">&quot;</span><span class="ruby-string">... on </span><span class="ruby-string">#{</span><span class="ruby-identifier">node_type</span>.<span class="ruby-identifier">to_query_string</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
+    <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
   <span class="ruby-keyword">else</span>
     <span class="ruby-identifier">object_type</span> = <span class="ruby-ivar">@current_object_type</span>
-    <span class="ruby-ivar">@path</span>[<span class="ruby-ivar">@path_depth</span>] = <span class="ruby-constant">INLINE_FRAGMENT_NO_TYPE</span>
-    <span class="ruby-ivar">@path_depth</span> += <span class="ruby-value">1</span>
+    <span class="ruby-ivar">@path</span>[<span class="ruby-identifier">path_depth</span>] = <span class="ruby-constant">INLINE_FRAGMENT_NO_TYPE</span>
+    <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
   <span class="ruby-keyword">end</span>
   <span class="ruby-identifier">prev_parent_ot</span> = <span class="ruby-ivar">@parent_object_type</span>
   <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-ivar">@current_object_type</span>
@@ -1133,7 +1250,7 @@
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-ivar">@parent_object_type</span>
   <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-identifier">prev_parent_ot</span>
-  <span class="ruby-ivar">@path_depth</span> -= <span class="ruby-value">1</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1173,6 +1290,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/InputObject.html" class="rbs-type">GraphQL::Language::Nodes::InputObject</a> node, <a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -1186,14 +1305,15 @@
 
 
           <div class="method-source-code" id="on_input_object-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 188</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 223</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_input_object</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">arg_defn</span> = <span class="ruby-ivar">@current_argument_definition</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">arg_defn</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">arg_defn</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">list?</span>
-    <span class="ruby-ivar">@path</span>[<span class="ruby-ivar">@path_depth</span>] = <span class="ruby-identifier">child_positions</span>(<span class="ruby-identifier">parent</span>)[<span class="ruby-identifier">node</span>]
-    <span class="ruby-ivar">@path_depth</span> += <span class="ruby-value">1</span>
+    <span class="ruby-identifier">path_depth</span> = <span class="ruby-ivar">@path_depth</span>
+    <span class="ruby-ivar">@path</span>[<span class="ruby-identifier">path_depth</span>] = <span class="ruby-identifier">child_positions</span>(<span class="ruby-identifier">parent</span>)[<span class="ruby-identifier">node</span>] <span class="ruby-comment">#: as !nil</span>
+    <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
     <span class="ruby-keyword">super</span>
-    <span class="ruby-ivar">@path_depth</span> -= <span class="ruby-value">1</span>
+    <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span>
   <span class="ruby-keyword">else</span>
     <span class="ruby-keyword">super</span>
   <span class="ruby-keyword">end</span>
@@ -1236,6 +1356,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Language/Nodes/OperationDefinition.html" class="rbs-type">GraphQL::Language::Nodes::OperationDefinition</a> node, <a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -1249,18 +1371,19 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 73</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 93</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-identifier">object_type</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">root_type_for_operation</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span>)
+  <span class="ruby-identifier">object_type</span> = <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">root_type_for_operation</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span>)
   <span class="ruby-identifier">prev_parent_ot</span> = <span class="ruby-ivar">@parent_object_type</span>
-  <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-ivar">@current_object_type</span>
-  <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-identifier">object_type</span>
-  <span class="ruby-ivar">@path</span>[<span class="ruby-ivar">@path_depth</span>] = <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span><span class="ruby-string">}</span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">?</span> <span class="ruby-string">&quot;</span><span class="ruby-string"> </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
-  <span class="ruby-ivar">@path_depth</span> += <span class="ruby-value">1</span>
+  <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-ivar">@current_object_type</span> <span class="ruby-comment">#: GraphQL::Schema::Member::type_definition?</span>
+  <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-identifier">object_type</span> <span class="ruby-comment">#: GraphQL::Schema::Member::type_definition?</span>
+  <span class="ruby-identifier">path_depth</span> = <span class="ruby-ivar">@path_depth</span>
+  <span class="ruby-ivar">@path</span>[<span class="ruby-identifier">path_depth</span>] = <span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span><span class="ruby-string">}</span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">?</span> <span class="ruby-string">&quot;</span><span class="ruby-string"> </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-ivar">@parent_object_type</span>
   <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-identifier">prev_parent_ot</span>
-  <span class="ruby-ivar">@path_depth</span> -= <span class="ruby-value">1</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-identifier">path_depth</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1303,6 +1426,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() &rarr; GraphQL::Schema::Member::type_definition?</code></pre>
+
           </div>
 
 
@@ -1316,7 +1441,7 @@
 
 
           <div class="method-source-code" id="parent_type_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 224</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 263</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parent_type_definition</span>
   <span class="ruby-ivar">@parent_object_type</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1359,6 +1484,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() &rarr; GraphQL::Schema::Member::type_definition?</code></pre>
+
           </div>
 
 
@@ -1372,7 +1499,7 @@
 
 
           <div class="method-source-code" id="type_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 214</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 252</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_definition</span>
   <span class="ruby-ivar">@current_object_type</span>
 <span class="ruby-keyword">end</span></pre>

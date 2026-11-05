@@ -513,6 +513,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="ValidationContext.html" class="rbs-type">GraphQL::StaticValidation::ValidationContext</a></code></span>
+
         </div>
 
         <div class="method-description">
@@ -553,6 +555,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Array[Module[untyped]]) &rarr; singleton(GraphQL::StaticValidation::BaseVisitor)</code></pre>
+
           </div>
 
 
@@ -566,7 +570,7 @@
 
 
           <div class="method-source-code" id="including_rules-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 49</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">including_rules</span>(<span class="ruby-identifier">rules</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">rules</span>.<span class="ruby-identifier">empty?</span>
     <span class="ruby-comment"># It&#39;s not doing _anything?!?_</span>
@@ -632,6 +636,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a> document, <a href="ValidationContext.html" class="rbs-type">GraphQL::StaticValidation::ValidationContext</a> context) &rarr; void</code></pre>
+
           </div>
 
 
@@ -645,22 +651,22 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 6</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 7</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">document</span>, <span class="ruby-identifier">context</span>)
-  <span class="ruby-ivar">@path</span> = []
-  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-value">0</span>
-  <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-keyword">nil</span>
-  <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-keyword">nil</span>
-  <span class="ruby-ivar">@current_field_definition</span> = <span class="ruby-keyword">nil</span>
-  <span class="ruby-ivar">@current_argument_definition</span> = <span class="ruby-keyword">nil</span>
-  <span class="ruby-ivar">@parent_argument_definition</span> = <span class="ruby-keyword">nil</span>
-  <span class="ruby-ivar">@current_directive_definition</span> = <span class="ruby-keyword">nil</span>
-  <span class="ruby-ivar">@context</span> = <span class="ruby-identifier">context</span>
-  <span class="ruby-ivar">@types</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>
-  <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>
-  <span class="ruby-ivar">@inline_fragment_paths</span> = {}
-  <span class="ruby-ivar">@field_unwrapped_types</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
-  <span class="ruby-ivar">@child_positions</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
+  <span class="ruby-ivar">@path</span> = [] <span class="ruby-comment">#: Array[String | Integer]</span>
+  <span class="ruby-ivar">@path_depth</span> = <span class="ruby-value">0</span> <span class="ruby-comment">#: Integer</span>
+  <span class="ruby-ivar">@current_object_type</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: GraphQL::Schema::Member::type_definition?</span>
+  <span class="ruby-ivar">@parent_object_type</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: GraphQL::Schema::Member::type_definition?</span>
+  <span class="ruby-ivar">@current_field_definition</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: GraphQL::Schema::Field?</span>
+  <span class="ruby-ivar">@current_argument_definition</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: GraphQL::Schema::Argument?</span>
+  <span class="ruby-ivar">@parent_argument_definition</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: GraphQL::Schema::Argument?</span>
+  <span class="ruby-ivar">@current_directive_definition</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: singleton(GraphQL::Schema::Directive)?</span>
+  <span class="ruby-ivar">@context</span> = <span class="ruby-identifier">context</span> <span class="ruby-comment">#: GraphQL::StaticValidation::ValidationContext</span>
+  <span class="ruby-ivar">@types</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span> <span class="ruby-comment">#: GraphQL::Schema::Visibility::Profile | GraphQL::Schema::Warden::VisibilityProfile</span>
+  <span class="ruby-ivar">@schema</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span> <span class="ruby-comment">#: singleton(GraphQL::Schema)</span>
+  <span class="ruby-ivar">@inline_fragment_paths</span> = {} <span class="ruby-comment">#: Hash[String, String]</span>
+  <span class="ruby-ivar">@field_unwrapped_types</span> = {}.<span class="ruby-identifier">compare_by_identity</span> <span class="ruby-comment">#: Hash[GraphQL::Schema::Field, GraphQL::Schema::Member::type_definition]</span>
+  <span class="ruby-ivar">@child_positions</span> = {}.<span class="ruby-identifier">compare_by_identity</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::AbstractNode, Hash[GraphQL::Language::Nodes::AbstractNode, Integer]]</span>
   <span class="ruby-keyword">super</span>(<span class="ruby-identifier">document</span>)
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -718,6 +724,8 @@
 
 
 
+            <pre class="method-type-signature"><code>() &rarr; Array[<a href="../Types/String.html" class="rbs-type">String</a> | Integer]</code></pre>
+
           </div>
 
 
@@ -731,9 +739,9 @@
 
 
           <div class="method-source-code" id="path-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/base_visitor.rb, line 35</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">path</span>
-  <span class="ruby-ivar">@path</span>[<span class="ruby-value">0</span>, <span class="ruby-ivar">@path_depth</span>]
+  <span class="ruby-ivar">@path</span>[<span class="ruby-value">0</span>, <span class="ruby-ivar">@path_depth</span>] <span class="ruby-comment">#: as !nil</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
