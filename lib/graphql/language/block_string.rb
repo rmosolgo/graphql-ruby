@@ -43,10 +43,10 @@ module GraphQL
         end
 
         # Remove leading & trailing blank lines
-        while lines.size > 0 && contains_only_whitespace?(lines.first)
+        while (first_line = lines.first) && contains_only_whitespace?(first_line)
           lines.shift
         end
-        while lines.size > 0 && contains_only_whitespace?(lines.last)
+        while (last_line = lines.last) && contains_only_whitespace?(last_line)
           lines.pop
         end
 
@@ -87,13 +87,15 @@ module GraphQL
 
       private
 
-      def self.break_line(line, length)
+      def self.break_line(line, length, &block)
         return yield(line) if line.length < length + 5
 
         parts = line.split(Regexp.new("((?: |^).{15,#{length - 40}}(?= |$))"))
         return yield(line) if parts.length < 4
 
-        yield(parts.slice!(0, 3).join)
+        # `parts` has at least 4 items:
+        first_parts = parts.slice!(0, 3)
+        yield(first_parts.join)
 
         parts.each_with_index do |part, i|
           next if i % 2 == 1

@@ -8,7 +8,7 @@ module GraphQL
         locations(GraphQL::Schema::Directive::INPUT_OBJECT)
         default_directive true
 
-        def initialize(...)
+        def initialize(owner, **arguments)
           super
 
           owner.extend(IsOneOf)
