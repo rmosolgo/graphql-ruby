@@ -1,10 +1,11 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module Language
     module BlockString
       # Remove leading and trailing whitespace from a block string.
       # See "Block Strings" in https://github.com/facebook/graphql/blob/master/spec/Section%202%20--%20Language.md
+      #: (String str) -> String
       def self.trim_whitespace(str)
         # Early return for the most common cases:
         if str == ""
@@ -54,6 +55,7 @@ module GraphQL
         lines.size > 1 ? lines.join("\n") : (lines.first || "".dup)
       end
 
+      #: (String str, ?indent: String) -> String
       def self.print(str, indent: '')
         line_length = 120 - indent.length
         block_str = "".dup
@@ -87,6 +89,7 @@ module GraphQL
 
       private
 
+      #: (String line, Integer length) { (String) -> void } -> void
       def self.break_line(line, length, &block)
         return yield(line) if line.length < length + 5
 
@@ -94,7 +97,7 @@ module GraphQL
         return yield(line) if parts.length < 4
 
         # `parts` has at least 4 items:
-        first_parts = parts.slice!(0, 3)
+        first_parts = parts.slice!(0, 3) #: as !nil
         yield(first_parts.join)
 
         parts.each_with_index do |part, i|
@@ -105,6 +108,7 @@ module GraphQL
         nil
       end
 
+      #: (String line) -> bool
       def self.contains_only_whitespace?(line)
         line.match?(/^\s*$/)
       end
