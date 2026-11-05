@@ -1,22 +1,28 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     class VariableUsagesAreAllowedError < StaticValidation::Error
+      #: String
       attr_reader :type_name
+      #: String
       attr_reader :variable_name
+      #: String
       attr_reader :argument_name
+      #: String
       attr_reader :error_message
 
+      #: (String message, type: String, name: String, argument: String, error: String, ?path: Array[String | Integer]?, ?nodes: GraphQL::Language::Nodes::AbstractNode | Array[GraphQL::Language::Nodes::AbstractNode]) -> void
       def initialize(message, type:, name:, argument:, error:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
-        @type_name = type
-        @variable_name = name
-        @argument_name = argument
-        @error_message = error
+        @type_name = type #: String
+        @variable_name = name #: String
+        @argument_name = argument #: String
+        @error_message = error #: String
       end
 
       # A hash representation of this Message
+      #: -> Hash[String, untyped]
       def to_h
         extensions = {
           "code" => code,
@@ -31,6 +37,7 @@ module GraphQL
         })
       end
 
+      #: -> String
       def code
         "variableMismatch"
       end

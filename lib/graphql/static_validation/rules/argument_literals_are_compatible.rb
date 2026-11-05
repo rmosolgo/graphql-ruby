@@ -1,11 +1,12 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     # @requires_ancestor: GraphQL::StaticValidation::ArgumentsAreDefined
     module ArgumentLiteralsAreCompatible
+      #: (GraphQL::Language::Nodes::Argument node, GraphQL::Language::Nodes::AbstractNode parent) -> void
       def on_argument(node, parent)
         # Check the child arguments first;
         # don't add a new error if one of them reports an error
@@ -18,7 +19,7 @@ module GraphQL
 
         if context.schema.error_bubbling || context.errors.none? { |err|
             # `add_error` sets the path of every error
-            err_path = err.path
+            err_path = err.path #: as !nil
             err_path.take(path_depth) == path
           }
           parent_defn = parent_definition(parent)

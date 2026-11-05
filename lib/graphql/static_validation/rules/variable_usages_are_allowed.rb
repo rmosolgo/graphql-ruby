@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
@@ -9,31 +9,35 @@ module GraphQL
       # `list_depth` is the number of list literals around the variable.
       FragmentVariableUsage = Struct.new(:argument_owner, :arg_node, :variable_name, :list_depth, :path, :checked_variable_types)
 
+      #: (GraphQL::Language::Nodes::Document document, GraphQL::StaticValidation::ValidationContext context) -> void
       def initialize(document, context)
         super
         # holds { name => ast_node } pairs
         @declared_variables = {} #: Hash[String, GraphQL::Language::Nodes::VariableDefinition]
         @operation_declared_variables = {}.compare_by_identity #: Hash[GraphQL::Language::Nodes::OperationDefinition, Hash[String, GraphQL::Language::Nodes::VariableDefinition]]
-        @variable_usages_fragment_definition = nil
+        @variable_usages_fragment_definition = nil #: GraphQL::Language::Nodes::FragmentDefinition?
         @fragment_variable_usages = nil #: Hash[GraphQL::Language::Nodes::FragmentDefinition, Array[FragmentVariableUsage]]?
         @reported_fragment_variable_errors = nil #: Hash[GraphQL::Language::Nodes::Argument, Hash[String, bool]]?
-        @allow_legacy_invalid_variable_usages = schema.allow_legacy_invalid_variable_usages
+        @allow_legacy_invalid_variable_usages = schema.allow_legacy_invalid_variable_usages #: bool?
         # The arguments and variables which have an error from the legacy check
         @legacy_errors = nil #: Hash[GraphQL::Language::Nodes::Argument, Hash[String, bool]]?
       end
 
+      #: (GraphQL::Language::Nodes::OperationDefinition node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_operation_definition(node, parent)
         @declared_variables = node.variables.each_with_object({}) { |var, memo| memo[var.name] = var }
         @operation_declared_variables[node] = @declared_variables
         super
       end
 
+      #: (GraphQL::Language::Nodes::FragmentDefinition node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_fragment_definition(node, parent)
         @variable_usages_fragment_definition = node
         super
         @variable_usages_fragment_definition = nil
       end
 
+      #: (GraphQL::Language::Nodes::Document node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_document(node, parent)
         super
         # A fragment can come before the operations which use it, and many operations can use it.
@@ -70,6 +74,7 @@ module GraphQL
         end
       end
 
+      #: (GraphQL::Language::Nodes::Argument node, GraphQL::Language::Nodes::AbstractNode parent) -> void
       def on_argument(node, parent)
         variables = variables_in_value(node.value, 0, nil)
 
@@ -286,6 +291,7 @@ module GraphQL
         var_type
       end
 
+      #: (untyped type) -> Integer
       def list_dimension(type)
         if type.kind.list?
           1 + list_dimension(type.of_type)
@@ -296,6 +302,7 @@ module GraphQL
         end
       end
 
+      #: (untyped arg_type, untyped var_type) -> bool
       def non_null_levels_match(arg_type, var_type)
         if arg_type.kind.non_null? && !var_type.kind.non_null?
           false

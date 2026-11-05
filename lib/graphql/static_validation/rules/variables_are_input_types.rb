@@ -1,10 +1,11 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariablesAreInputTypes
+      #: (GraphQL::Language::Nodes::VariableDefinition node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_variable_definition(node, parent)
         type_name = get_type_name(node.type)
         type = context.types.type(type_name)
@@ -12,14 +13,14 @@ module GraphQL
         if type.nil?
           suggestion = if schema.did_you_mean
             @all_possible_input_type_names ||= begin
-              names = []
+              names = [] #: Array[String]
               context.types.all_types.each { |(t)|
                 if t.kind.input?
                   names << t.graphql_name
                 end
               }
               names
-            end
+            end #: Array[String]?
             context.did_you_mean_suggestion(type_name, @all_possible_input_type_names)
           end
           add_error(GraphQL::StaticValidation::VariablesAreInputTypesError.new(
@@ -42,6 +43,7 @@ module GraphQL
 
       private
 
+      #: (GraphQL::Language::Nodes::TypeName | GraphQL::Language::Nodes::ListType | GraphQL::Language::Nodes::NonNullType ast_type) -> String
       def get_type_name(ast_type)
         if ast_type.is_a?(GraphQL::Language::Nodes::WrapperType)
           get_type_name(ast_type.of_type)

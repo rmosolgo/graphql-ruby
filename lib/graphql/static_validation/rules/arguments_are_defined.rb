@@ -1,10 +1,11 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module ArgumentsAreDefined
+      #: (GraphQL::Language::Nodes::Argument node, GraphQL::Language::Nodes::Field | GraphQL::Language::Nodes::Directive | GraphQL::Language::Nodes::InputObject parent) -> void
       def on_argument(node, parent)
         parent_defn = parent_definition(parent)
 
@@ -34,6 +35,7 @@ module GraphQL
       private
 
       # TODO smell: these methods are added to all visitors, since they're included in a module.
+      #: (GraphQL::Language::Nodes::AbstractNode parent, GraphQL::Schema::Field | singleton(GraphQL::Schema::Directive) | GraphQL::Schema::Member::type_definition type_defn) -> String
       def parent_name(parent, type_defn)
         case parent
         when GraphQL::Language::Nodes::Field
@@ -47,11 +49,13 @@ module GraphQL
         end
       end
 
+      #: (GraphQL::Language::Nodes::AbstractNode parent) -> String
       def node_type(parent)
-        parent_class_name = parent.class.name
-        parent_class_name.split("::").last
+        parent_class_name = parent.class.name #: as !nil
+        parent_class_name.split("::").last #: as !nil
       end
 
+      #: (GraphQL::Language::Nodes::AbstractNode parent) -> (GraphQL::Schema::Field | singleton(GraphQL::Schema::Directive) | GraphQL::Schema::Member::type_definition)?
       def parent_definition(parent)
         case parent
         when GraphQL::Language::Nodes::InputObject
