@@ -55,4 +55,14 @@ describe GraphQL::StaticValidation::DirectivesAreInValidLocations do
       assert_equal(expected, errors)
     end
   end
+
+  describe "undefined directives when run alone" do
+    let(:query_string) { "{ cheese(id: 1) { id @nope } }" }
+
+    it "skips them without raising" do
+      validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [GraphQL::StaticValidation::DirectivesAreInValidLocations])
+      query = GraphQL::Query.new(schema, query_string)
+      assert_equal [], validator.validate(query)[:errors]
+    end
+  end
 end
