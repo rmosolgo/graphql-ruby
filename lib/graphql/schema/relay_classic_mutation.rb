@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -31,6 +31,7 @@ module GraphQL
 
     # Override [resolve_with_support](rdoc-ref:#resolve_with_support) to
       # delete `client_mutation_id` from the kwargs.
+      #: (**untyped inputs) -> untyped
       def resolve_with_support(**inputs)
         input = inputs[:input].to_kwargs
 
@@ -51,9 +52,10 @@ module GraphQL
         end
       end
 
+      #: -> void
       def call
         # The runtime prepares arguments before calling this
-        prepared_arguments = @prepared_arguments
+        prepared_arguments = @prepared_arguments #: as !nil
         input = prepared_arguments[:input]&.to_kwargs
 
         if input
