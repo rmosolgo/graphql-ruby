@@ -159,92 +159,92 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    AMP = 200,                     /* AMP  */
-    BANG = 201,                    /* BANG  */
-    COLON = 202,                   /* COLON  */
-    DIRECTIVE = 203,               /* DIRECTIVE  */
-    DIR_SIGN = 204,                /* DIR_SIGN  */
-    ENUM = 205,                    /* ENUM  */
-    ELLIPSIS = 206,                /* ELLIPSIS  */
-    EQUALS = 207,                  /* EQUALS  */
-    EXTEND = 208,                  /* EXTEND  */
-    FALSE_LITERAL = 209,           /* FALSE_LITERAL  */
-    FLOAT = 210,                   /* FLOAT  */
-    FRAGMENT = 211,                /* FRAGMENT  */
-    IDENTIFIER = 212,              /* IDENTIFIER  */
-    INPUT = 213,                   /* INPUT  */
-    IMPLEMENTS = 214,              /* IMPLEMENTS  */
-    INT = 215,                     /* INT  */
-    INTERFACE = 216,               /* INTERFACE  */
-    LBRACKET = 217,                /* LBRACKET  */
-    LCURLY = 218,                  /* LCURLY  */
-    LPAREN = 219,                  /* LPAREN  */
-    MUTATION = 220,                /* MUTATION  */
-    NULL_LITERAL = 221,            /* NULL_LITERAL  */
-    ON = 222,                      /* ON  */
-    PIPE = 223,                    /* PIPE  */
-    QUERY = 224,                   /* QUERY  */
-    RBRACKET = 225,                /* RBRACKET  */
-    RCURLY = 226,                  /* RCURLY  */
-    REPEATABLE = 227,              /* REPEATABLE  */
-    RPAREN = 228,                  /* RPAREN  */
-    SCALAR = 229,                  /* SCALAR  */
-    SCHEMA = 230,                  /* SCHEMA  */
-    STRING = 231,                  /* STRING  */
-    SUBSCRIPTION = 232,            /* SUBSCRIPTION  */
-    TRUE_LITERAL = 233,            /* TRUE_LITERAL  */
-    TYPE_LITERAL = 234,            /* TYPE_LITERAL  */
-    UNION = 235,                   /* UNION  */
-    VAR_SIGN = 236                 /* VAR_SIGN  */
+    GRAPHQL_YYEMPTY = -2,
+    GRAPHQL_YYEOF = 0,             /* "end of file"  */
+    GRAPHQL_YYerror = 256,         /* error  */
+    GRAPHQL_YYUNDEF = 257,         /* "invalid token"  */
+    GRAPHQL_AMP = 200,             /* AMP  */
+    GRAPHQL_BANG = 201,            /* BANG  */
+    GRAPHQL_COLON = 202,           /* COLON  */
+    GRAPHQL_DIRECTIVE = 203,       /* DIRECTIVE  */
+    GRAPHQL_DIR_SIGN = 204,        /* DIR_SIGN  */
+    GRAPHQL_ENUM = 205,            /* ENUM  */
+    GRAPHQL_ELLIPSIS = 206,        /* ELLIPSIS  */
+    GRAPHQL_EQUALS = 207,          /* EQUALS  */
+    GRAPHQL_EXTEND = 208,          /* EXTEND  */
+    GRAPHQL_FALSE_LITERAL = 209,   /* FALSE_LITERAL  */
+    GRAPHQL_FLOAT = 210,           /* FLOAT  */
+    GRAPHQL_FRAGMENT = 211,        /* FRAGMENT  */
+    GRAPHQL_IDENTIFIER = 212,      /* IDENTIFIER  */
+    GRAPHQL_INPUT = 213,           /* INPUT  */
+    GRAPHQL_IMPLEMENTS = 214,      /* IMPLEMENTS  */
+    GRAPHQL_INT = 215,             /* INT  */
+    GRAPHQL_INTERFACE = 216,       /* INTERFACE  */
+    GRAPHQL_LBRACKET = 217,        /* LBRACKET  */
+    GRAPHQL_LCURLY = 218,          /* LCURLY  */
+    GRAPHQL_LPAREN = 219,          /* LPAREN  */
+    GRAPHQL_MUTATION = 220,        /* MUTATION  */
+    GRAPHQL_NULL_LITERAL = 221,    /* NULL_LITERAL  */
+    GRAPHQL_ON = 222,              /* ON  */
+    GRAPHQL_PIPE = 223,            /* PIPE  */
+    GRAPHQL_QUERY = 224,           /* QUERY  */
+    GRAPHQL_RBRACKET = 225,        /* RBRACKET  */
+    GRAPHQL_RCURLY = 226,          /* RCURLY  */
+    GRAPHQL_REPEATABLE = 227,      /* REPEATABLE  */
+    GRAPHQL_RPAREN = 228,          /* RPAREN  */
+    GRAPHQL_SCALAR = 229,          /* SCALAR  */
+    GRAPHQL_SCHEMA = 230,          /* SCHEMA  */
+    GRAPHQL_STRING = 231,          /* STRING  */
+    GRAPHQL_SUBSCRIPTION = 232,    /* SUBSCRIPTION  */
+    GRAPHQL_TRUE_LITERAL = 233,    /* TRUE_LITERAL  */
+    GRAPHQL_TYPE_LITERAL = 234,    /* TYPE_LITERAL  */
+    GRAPHQL_UNION = 235,           /* UNION  */
+    GRAPHQL_VAR_SIGN = 236         /* VAR_SIGN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
 /* Token kinds.  */
-#define YYEMPTY -2
-#define YYEOF 0
-#define YYerror 256
-#define YYUNDEF 257
-#define AMP 200
-#define BANG 201
-#define COLON 202
-#define DIRECTIVE 203
-#define DIR_SIGN 204
-#define ENUM 205
-#define ELLIPSIS 206
-#define EQUALS 207
-#define EXTEND 208
-#define FALSE_LITERAL 209
-#define FLOAT 210
-#define FRAGMENT 211
-#define IDENTIFIER 212
-#define INPUT 213
-#define IMPLEMENTS 214
-#define INT 215
-#define INTERFACE 216
-#define LBRACKET 217
-#define LCURLY 218
-#define LPAREN 219
-#define MUTATION 220
-#define NULL_LITERAL 221
-#define ON 222
-#define PIPE 223
-#define QUERY 224
-#define RBRACKET 225
-#define RCURLY 226
-#define REPEATABLE 227
-#define RPAREN 228
-#define SCALAR 229
-#define SCHEMA 230
-#define STRING 231
-#define SUBSCRIPTION 232
-#define TRUE_LITERAL 233
-#define TYPE_LITERAL 234
-#define UNION 235
-#define VAR_SIGN 236
+#define GRAPHQL_YYEMPTY -2
+#define GRAPHQL_YYEOF 0
+#define GRAPHQL_YYerror 256
+#define GRAPHQL_YYUNDEF 257
+#define GRAPHQL_AMP 200
+#define GRAPHQL_BANG 201
+#define GRAPHQL_COLON 202
+#define GRAPHQL_DIRECTIVE 203
+#define GRAPHQL_DIR_SIGN 204
+#define GRAPHQL_ENUM 205
+#define GRAPHQL_ELLIPSIS 206
+#define GRAPHQL_EQUALS 207
+#define GRAPHQL_EXTEND 208
+#define GRAPHQL_FALSE_LITERAL 209
+#define GRAPHQL_FLOAT 210
+#define GRAPHQL_FRAGMENT 211
+#define GRAPHQL_IDENTIFIER 212
+#define GRAPHQL_INPUT 213
+#define GRAPHQL_IMPLEMENTS 214
+#define GRAPHQL_INT 215
+#define GRAPHQL_INTERFACE 216
+#define GRAPHQL_LBRACKET 217
+#define GRAPHQL_LCURLY 218
+#define GRAPHQL_LPAREN 219
+#define GRAPHQL_MUTATION 220
+#define GRAPHQL_NULL_LITERAL 221
+#define GRAPHQL_ON 222
+#define GRAPHQL_PIPE 223
+#define GRAPHQL_QUERY 224
+#define GRAPHQL_RBRACKET 225
+#define GRAPHQL_RCURLY 226
+#define GRAPHQL_REPEATABLE 227
+#define GRAPHQL_RPAREN 228
+#define GRAPHQL_SCALAR 229
+#define GRAPHQL_SCHEMA 230
+#define GRAPHQL_STRING 231
+#define GRAPHQL_SUBSCRIPTION 232
+#define GRAPHQL_TRUE_LITERAL 233
+#define GRAPHQL_TYPE_LITERAL 234
+#define GRAPHQL_UNION 235
+#define GRAPHQL_VAR_SIGN 236
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -1248,7 +1248,7 @@ static const yytype_int8 yyr2[] =
 enum { YYENOMEM = -2 };
 
 #define yyerrok         (yyerrstatus = 0)
-#define yyclearin       (yychar = YYEMPTY)
+#define yyclearin       (yychar = GRAPHQL_YYEMPTY)
 
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
@@ -1260,7 +1260,7 @@ enum { YYENOMEM = -2 };
 
 #define YYBACKUP(Token, Value)                                    \
   do                                                              \
-    if (yychar == YYEMPTY)                                        \
+    if (yychar == GRAPHQL_YYEMPTY)                                        \
       {                                                           \
         yychar = (Token);                                         \
         yylval = (Value);                                         \
@@ -1276,8 +1276,8 @@ enum { YYENOMEM = -2 };
   while (0)
 
 /* Backward compatibility with an undocumented macro.
-   Use YYerror or YYUNDEF. */
-#define YYERRCODE YYUNDEF
+   Use GRAPHQL_YYerror or GRAPHQL_YYUNDEF. */
+#define YYERRCODE GRAPHQL_YYUNDEF
 
 
 /* Enable debugging if requested.  */
@@ -1735,7 +1735,7 @@ YYSTYPE yylval YY_INITIAL_VALUE (= yyval_default);
 
   YYDPRINTF ((stderr, "Starting parse\n"));
 
-  yychar = YYEMPTY; /* Cause a token to be read.  */
+  yychar = GRAPHQL_YYEMPTY; /* Cause a token to be read.  */
 
   goto yysetstate;
 
@@ -1845,25 +1845,25 @@ yybackup:
   /* Not known => get a lookahead token if don't already have one.  */
 
   /* YYCHAR is either empty, or end-of-input, or a valid lookahead.  */
-  if (yychar == YYEMPTY)
+  if (yychar == GRAPHQL_YYEMPTY)
     {
       YYDPRINTF ((stderr, "Reading a token\n"));
       yychar = yylex (&yylval, parser, filename);
     }
 
-  if (yychar <= YYEOF)
+  if (yychar <= GRAPHQL_YYEOF)
     {
-      yychar = YYEOF;
+      yychar = GRAPHQL_YYEOF;
       yytoken = YYSYMBOL_YYEOF;
       YYDPRINTF ((stderr, "Now at end of input.\n"));
     }
-  else if (yychar == YYerror)
+  else if (yychar == GRAPHQL_YYerror)
     {
       /* The scanner already issued an error message, process directly
          to error recovery.  But do not keep the error token as
          lookahead, it is too special and may lead us to an endless
          loop in error recovery. */
-      yychar = YYUNDEF;
+      yychar = GRAPHQL_YYUNDEF;
       yytoken = YYSYMBOL_YYerror;
       goto yyerrlab1;
     }
@@ -1900,7 +1900,7 @@ yybackup:
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 
   /* Discard the shifted token.  */
-  yychar = YYEMPTY;
+  yychar = GRAPHQL_YYEMPTY;
   goto yynewstate;
 
 
@@ -3126,7 +3126,7 @@ yyreduce:
 yyerrlab:
   /* Make sure we have latest lookahead translation.  See comments at
      user semantic actions for why this is necessary.  */
-  yytoken = yychar == YYEMPTY ? YYSYMBOL_YYEMPTY : YYTRANSLATE (yychar);
+  yytoken = yychar == GRAPHQL_YYEMPTY ? YYSYMBOL_YYEMPTY : YYTRANSLATE (yychar);
   /* If not already recovering from an error, report this error.  */
   if (!yyerrstatus)
     {
@@ -3169,17 +3169,17 @@ yyerrlab:
       /* If just tried and failed to reuse lookahead token after an
          error, discard it.  */
 
-      if (yychar <= YYEOF)
+      if (yychar <= GRAPHQL_YYEOF)
         {
           /* Return failure if at end of input.  */
-          if (yychar == YYEOF)
+          if (yychar == GRAPHQL_YYEOF)
             YYABORT;
         }
       else
         {
           yydestruct ("Error: discarding",
                       yytoken, &yylval, parser, filename);
-          yychar = YYEMPTY;
+          yychar = GRAPHQL_YYEMPTY;
         }
     }
 
@@ -3281,7 +3281,7 @@ yyexhaustedlab:
 | yyreturnlab -- parsing is finished, clean up and return.  |
 `----------------------------------------------------------*/
 yyreturnlab:
-  if (yychar != YYEMPTY)
+  if (yychar != GRAPHQL_YYEMPTY)
     {
       /* Make sure we have latest lookahead translation.  See comments at
          user semantic actions for why this is necessary.  */
@@ -3319,7 +3319,7 @@ int yylex (YYSTYPE *lvalp, VALUE parser, VALUE filename) {
   VALUE next_token = rb_ary_entry(tokens, next_token_idx);
 
   if (!RB_TEST(next_token)) {
-    return YYEOF;
+    return GRAPHQL_YYEOF;
   }
   rb_ivar_set(parser, rb_intern("@next_token_index"), INT2FIX(next_token_idx + 1));
   VALUE token_type_rb_int = rb_ary_entry(next_token, 4);
