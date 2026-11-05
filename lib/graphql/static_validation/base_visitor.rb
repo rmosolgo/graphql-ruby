@@ -76,19 +76,32 @@ module GraphQL
       #--
       # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
       module ContextMethods
+        # BaseVisitor#initialize sets these. They're re-assigned here so Sorbet knows their types in this module,
+        # because the hooks below use them directly instead of calling the readers on every node.
+        #: (GraphQL::Language::Nodes::Document document, GraphQL::StaticValidation::ValidationContext context) -> void
+        def initialize(document, context)
+          super
+          @path = path_parts #: Array[String | Integer]
+          @path_depth = path_depth #: Integer
+          @types = types #: GraphQL::Schema::Visibility::Profile | GraphQL::Schema::Warden::VisibilityProfile
+          @inline_fragment_paths = inline_fragment_paths #: Hash[String, String]
+          @field_unwrapped_types = field_unwrapped_types #: Hash[GraphQL::Schema::Field, GraphQL::Schema::Member::type_definition]
+          @child_positions = child_positions_by_parent #: Hash[GraphQL::Language::Nodes::AbstractNode, Hash[GraphQL::Language::Nodes::AbstractNode, Integer]]
+        end
+
         #: (GraphQL::Language::Nodes::OperationDefinition node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
         def on_operation_definition(node, parent)
           object_type = schema.root_type_for_operation(node.operation_type)
           prev_parent_ot = @parent_object_type
           @parent_object_type = @current_object_type #: GraphQL::Schema::Member::type_definition?
           @current_object_type = object_type #: GraphQL::Schema::Member::type_definition?
-          path_depth = self.path_depth
-          path_parts[path_depth] = "#{node.operation_type}#{node.name ? " #{node.name}" : ""}"
-          self.path_depth = path_depth + 1
+          path_depth = @path_depth
+          @path[path_depth] = "#{node.operation_type}#{node.name ? " #{node.name}" : ""}"
+          @path_depth = path_depth + 1
           super
           @current_object_type = @parent_object_type
           @parent_object_type = prev_parent_ot
-          self.path_depth -= 1
+          @path_depth = path_depth
         end
 
         #: (GraphQL::Language::Nodes::FragmentDefinition node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
@@ -96,35 +109,35 @@ module GraphQL
           # The type is always present when parsed, but may be missing on a hand-built node:
           fragment_type = node.type #: GraphQL::Language::Nodes::TypeName?
           object_type = if fragment_type
-            types.type(fragment_type.name)
+            @types.type(fragment_type.name)
           else
             @current_object_type
           end
           prev_parent_ot = @parent_object_type
           @parent_object_type = @current_object_type
           @current_object_type = object_type
-          path_depth = self.path_depth
-          path_parts[path_depth] = "fragment #{node.name}"
-          self.path_depth = path_depth + 1
+          path_depth = @path_depth
+          @path[path_depth] = "fragment #{node.name}"
+          @path_depth = path_depth + 1
           super
           @current_object_type = @parent_object_type
           @parent_object_type = prev_parent_ot
-          self.path_depth -= 1
+          @path_depth = path_depth
         end
 
         INLINE_FRAGMENT_NO_TYPE = "..." #: String
 
         #: (GraphQL::Language::Nodes::InlineFragment node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
         def on_inline_fragment(node, parent)
-          path_depth = self.path_depth
+          path_depth = @path_depth
           if (node_type = node.type)
-            object_type = types.type(node_type.name)
-            path_parts[path_depth] = inline_fragment_paths[node_type.name] ||= -"... on #{node_type.to_query_string}"
-            self.path_depth = path_depth + 1
+            object_type = @types.type(node_type.name)
+            @path[path_depth] = @inline_fragment_paths[node_type.name] ||= -"... on #{node_type.to_query_string}"
+            @path_depth = path_depth + 1
           else
             object_type = @current_object_type
-            path_parts[path_depth] = INLINE_FRAGMENT_NO_TYPE
-            self.path_depth = path_depth + 1
+            @path[path_depth] = INLINE_FRAGMENT_NO_TYPE
+            @path_depth = path_depth + 1
           end
           prev_parent_ot = @parent_object_type
           @parent_object_type = @current_object_type
@@ -132,30 +145,30 @@ module GraphQL
           super
           @current_object_type = @parent_object_type
           @parent_object_type = prev_parent_ot
-          self.path_depth -= 1
+          @path_depth = path_depth
         end
 
         #: (GraphQL::Language::Nodes::Field node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
         def on_field(node, parent)
           parent_type = @current_object_type
-          field_definition = types.field(parent_type, node.name)
+          field_definition = @types.field(parent_type, node.name)
           prev_field_definition = @current_field_definition
           @current_field_definition = field_definition #: GraphQL::Schema::Field?
           prev_parent_ot = @parent_object_type
           @parent_object_type = @current_object_type
           if field_definition
-            @current_object_type = field_unwrapped_types[field_definition] ||= field_definition.type.unwrap
+            @current_object_type = @field_unwrapped_types[field_definition] ||= field_definition.type.unwrap
           else
             @current_object_type = nil
           end
-          path_depth = self.path_depth
-          path_parts[path_depth] = node.alias || node.name
-          self.path_depth = path_depth + 1
+          path_depth = @path_depth
+          @path[path_depth] = node.alias || node.name
+          @path_depth = path_depth + 1
           super
           @current_field_definition = prev_field_definition
           @current_object_type = @parent_object_type
           @parent_object_type = prev_parent_ot
-          self.path_depth -= 1
+          @path_depth = path_depth
         end
 
         #: (GraphQL::Language::Nodes::Directive node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
@@ -172,14 +185,14 @@ module GraphQL
           argument_defn = if (arg = @current_argument_definition)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
-              types.argument(arg_type, node.name)
+              @types.argument(arg_type, node.name)
             else
               nil
             end
           elsif (directive_defn = @current_directive_definition)
-            types.argument(directive_defn, node.name)
+            @types.argument(directive_defn, node.name)
           elsif (field_defn = @current_field_definition)
-            types.argument(field_defn, node.name)
+            @types.argument(field_defn, node.name)
           else
             nil
           end
@@ -187,34 +200,34 @@ module GraphQL
           prev_parent = @parent_argument_definition
           @parent_argument_definition = @current_argument_definition #: GraphQL::Schema::Argument?
           @current_argument_definition = argument_defn #: GraphQL::Schema::Argument?
-          path_depth = self.path_depth
-          path_parts[path_depth] = node.name
-          self.path_depth = path_depth + 1
+          path_depth = @path_depth
+          @path[path_depth] = node.name
+          @path_depth = path_depth + 1
           super
           @current_argument_definition = @parent_argument_definition
           @parent_argument_definition = prev_parent
-          self.path_depth -= 1
-          child_positions_by_parent.delete(node)
+          @path_depth = path_depth
+          @child_positions.delete(node)
         end
 
         #: (GraphQL::Language::Nodes::FragmentSpread node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
         def on_fragment_spread(node, parent)
-          path_depth = self.path_depth
-          path_parts[path_depth] = "... #{node.name}"
-          self.path_depth = path_depth + 1
+          path_depth = @path_depth
+          @path[path_depth] = "... #{node.name}"
+          @path_depth = path_depth + 1
           super
-          self.path_depth -= 1
+          @path_depth = path_depth
         end
 
         #: (GraphQL::Language::Nodes::InputObject node, GraphQL::Language::Nodes::AbstractNode parent) -> void
         def on_input_object(node, parent)
           arg_defn = @current_argument_definition
           if arg_defn && arg_defn.type.list?
-            path_depth = self.path_depth
-            path_parts[path_depth] = child_positions(parent)[node] #: as !nil
-            self.path_depth = path_depth + 1
+            path_depth = @path_depth
+            @path[path_depth] = child_positions(parent)[node] #: as !nil
+            @path_depth = path_depth + 1
             super
-            self.path_depth -= 1
+            @path_depth = path_depth
           else
             super
           end
@@ -222,7 +235,7 @@ module GraphQL
 
         #: (GraphQL::Language::Nodes::AbstractNode parent) -> Hash[GraphQL::Language::Nodes::AbstractNode, Integer]
         def child_positions(parent)
-          child_positions_by_parent[parent] ||= begin
+          @child_positions[parent] ||= begin
             positions = {}.compare_by_identity #: Hash[GraphQL::Language::Nodes::AbstractNode, Integer]
             parent.children.each_with_index { |child, index| positions[child] ||= index }
             positions
