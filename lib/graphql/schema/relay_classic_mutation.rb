@@ -52,11 +52,13 @@ module GraphQL
       end
 
       def call
-        input = @prepared_arguments[:input]&.to_kwargs
+        # The runtime prepares arguments before calling this
+        prepared_arguments = @prepared_arguments
+        input = prepared_arguments[:input]&.to_kwargs
 
         if input
           client_mutation_id = input.delete(:client_mutation_id)
-          @prepared_arguments[:input] = input
+          prepared_arguments[:input] = input
         end
 
         super
