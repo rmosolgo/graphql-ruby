@@ -12,7 +12,7 @@ module GraphQL
       def initialize(*)
         super
         # holds { name => ast_node } pairs
-        @declared_variables = {}
+        @declared_variables = {} #: Hash[String, GraphQL::Language::Nodes::VariableDefinition]
         @operation_declared_variables = {}.compare_by_identity #: Hash[GraphQL::Language::Nodes::OperationDefinition, Hash[String, GraphQL::Language::Nodes::VariableDefinition]]
         @variable_usages_fragment_definition = nil
         @fragment_variable_usages = nil #: Hash[GraphQL::Language::Nodes::FragmentDefinition, Array[FragmentVariableUsage]]?

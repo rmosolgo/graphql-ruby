@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -67,6 +67,8 @@ module GraphQL
       extend GraphQL::Schema::Member::HasFields
       extend GraphQL::Schema::Resolver::HasPayloadType
 
+      # Returns the application's resolved value.
+      #: (Hash[Symbol, untyped] _args_hash) -> untyped
       def call_resolve(_args_hash) # :nodoc:
         # Clear any cached values from `loads` or authorization:
         dataloader.clear_cache
@@ -74,17 +76,20 @@ module GraphQL
       end
 
       class << self
+        #: (GraphQL::Query::Context context) -> bool
         def visible?(context)
           true
         end
 
         private
 
+        #: (GraphQL::Schema::Field field_defn) -> String
         def conflict_field_name_warning(field_defn)
           "#{self.graphql_name}'s `field :#{field_defn.name}` conflicts with a built-in method, use `hash_key:` or `method:` to pick a different resolve behavior for this field (for example, `hash_key: :#{field_defn.resolver_method}_value`, and modify the return hash). Or use `method_conflict_warning: false` to suppress this warning."
         end
 
         # Override this to attach self as `mutation`
+        #: () -> singleton(GraphQL::Schema::Object)
         def generate_payload_type
           payload_class = super
           payload_class.mutation(self)
