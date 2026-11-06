@@ -51,7 +51,7 @@ describe GraphQL::Language::Parser do
     it "reports parse errors with CR, LF, and CRLF line terminators" do
       ["\r", "\n", "\r\n"].each do |newline|
         query_string = ["{", "  a", "  b( : )", "}"].join(newline)
-        error = assert_raises(GraphQL::ParseError) { GraphQL::Language::Parser.parse(query_string) }
+        error = assert_raises(GraphQL::ParseError) { subject.parse(query_string) }
 
         assert_equal [3, 6], [error.line, error.col]
       end

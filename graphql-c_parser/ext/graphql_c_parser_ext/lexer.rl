@@ -2,7 +2,7 @@
   machine graphql_c_lexer;
 
   IDENTIFIER =    [_A-Za-z][_0-9A-Za-z]*;
-  NEWLINE =       [\c\r\n];
+  NEWLINE =       '\r\n' | [\c\r\n];
   BLANK   =       [, \t]+;
   BOM     =       0xEF 0xBB 0xBF;
   COMMENT =       '#' [^\n\r]*;
