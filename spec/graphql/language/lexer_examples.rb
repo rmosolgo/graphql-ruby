@@ -44,11 +44,20 @@ module LexerExamples
         |}
         let(:tokens) { subject.tokenize(query_string) }
 
-        ["\uFEFF{ field }", "{\uFEFFfield\uFEFF}", "{ field }\uFEFF", "\uFEFF\uFEFF, \r\n\t{\uFEFF field }\uFEFF"].each do |query|
+        # Ruby counts a BOM as one character; C counts its three UTF-8 bytes.
+        [
+          ["\uFEFF{ field }", [2, 4, 10], [4, 6, 12]],
+          ["{\uFEFFfield\uFEFF}", [1, 3, 9], [1, 5, 13]],
+          ["{ field }\uFEFF", [1, 3, 9], [1, 3, 9]],
+          ["\uFEFF\uFEFF, \r\n\t{\uFEFF field }\uFEFF", [2, 5, 11], [2, 7, 13]],
+          [" \t,\uFEFF \uFEFF\t{ \uFEFF,\tfield \uFEFF }", [8, 13, 21], [12, 19, 29]],
+        ].each do |query, ruby_columns, c_columns|
           it "ignores byte order marks in #{query.inspect}" do
             tokens = subject.tokenize(query)
             assert_equal [:LCURLY, :IDENTIFIER, :RCURLY], tokens.map(&:name)
             assert_equal ["{", "field", "}"], tokens.map(&:value)
+            expected_columns = subject == GraphQL::Language::Lexer ? ruby_columns : c_columns
+            assert_equal expected_columns, tokens.map(&:col)
           end
         end
 
