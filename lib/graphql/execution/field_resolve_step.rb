@@ -433,8 +433,6 @@ module GraphQL
 
       def enqueue_next_steps
         if !@all_next_results.empty?
-          @all_next_objects.compact!
-
           query = @selections_step.query
           ctx = query.context
           if @static_type.kind.abstract?

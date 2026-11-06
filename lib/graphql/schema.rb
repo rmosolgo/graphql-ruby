@@ -1779,7 +1779,7 @@ module GraphQL
             lazy_method_count += 1
           end
         end
-        lazy_method_count > 2
+        lazy_method_count > 0
       end
 
       def instrument(instrument_step, instrumenter, options = {})
