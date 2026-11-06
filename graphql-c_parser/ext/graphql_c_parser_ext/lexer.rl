@@ -98,12 +98,7 @@
       meta->preceeded_by_number = 0;
     };
 
-    BLANK   => {
-      meta->col += te - ts;
-      meta->preceeded_by_number = 0;
-    };
-
-    BOM     => {
+    BLANK | BOM => {
       meta->col += te - ts;
       meta->preceeded_by_number = 0;
     };
