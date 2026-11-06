@@ -77,6 +77,12 @@ module LexerExamples
           end
         end
 
+        ["#", "#\r", "#a#b"].each do |comment|
+          it "returns no tokens for #{comment.inspect}" do
+            assert_empty subject.tokenize(comment)
+          end
+        end
+
         it "force encodes to utf-8" do
           # string that will be invalid utf-8 once force encoded
           string = "vandflyver \xC5rhus".dup.force_encoding("ASCII-8BIT")
