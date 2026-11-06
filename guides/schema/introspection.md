@@ -80,6 +80,22 @@ For unions and interfaces, `__typename` returns the _object_ type for the curren
 # }
 ```
 
+## Limiting Introspection Depth
+
+By default, static validation rejects introspection queries when a selection path contains three or more nested occurrences of `fields`, `interfaces`, `possibleTypes`, or `inputFields`. These list fields can multiply the response size at each level. Different fields from this list count toward the same limit, including selections reached through fragments.
+
+This limit applies independently of `max_depth` and `count_introspection_fields`. It allows standard introspection queries and does not count `ofType` wrappers or ordinary application fields.
+
+If your application needs deeper introspection queries, you can restore the previous behavior with [Schema.limit_introspection_depth](rdoc-ref:GraphQL::Schema.limit_introspection_depth):
+
+```ruby
+class MySchema < GraphQL::Schema
+  limit_introspection_depth false
+end
+```
+
+This setting is inherited by subclasses, which can re-enable the limit with `limit_introspection_depth true`. Disabling this limit leaves other validation rules and any configured `max_depth` or `max_complexity` limits in effect.
+
 ## Customizing Introspection
 
 You can use custom introspection types.
