@@ -248,6 +248,99 @@ describe GraphQL::Analysis::QueryComplexity do
     end
   end
 
+  describe "with recursively reused fragments" do
+    class FragmentBombSchema < GraphQL::Schema
+      class CountingField < GraphQL::Schema::Field
+        def calculate_complexity(query:, nodes:, child_complexity:)
+          nodes.size + child_complexity
+        end
+      end
+
+      class Node < GraphQL::Schema::Object
+        graphql_name "ComplexityBombNode"
+        field_class CountingField
+        field :name, String
+        field :a, self
+        field :b, self
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :node, Node
+      end
+
+      query(Query)
+      complexity_cost_calculation_mode(:future)
+      max_complexity(100)
+      validate_timeout(0.1)
+    end
+
+    class FragmentVisitCounter < GraphQL::Analysis::Analyzer
+      def initialize(query)
+        super
+        @field_count = 0
+      end
+
+      def on_enter_field(node, parent, visitor)
+        @field_count += 1 unless visitor.skipping?
+      end
+
+      def on_enter_fragment_spread(node, parent, visitor)
+        false
+      end
+
+      def result
+        @field_count
+      end
+    end
+
+    let(:schema) { FragmentBombSchema }
+    let(:query_string) do
+      fragments = ["fragment F0 on ComplexityBombNode { name }"]
+      1.upto(18) do |level|
+        fragments << "fragment F#{level} on ComplexityBombNode { a { ...F#{level - 1} } b { ...F#{level - 1} } }"
+      end
+      "{ node { ...F18 } }\n#{fragments.join("\n")}"
+    end
+
+    it "calculates complexity without repeatedly expanding fragments" do
+      assert_operator query_string.bytesize, :<, 1_500
+      assert query.valid?
+      assert_equal 786_431, reduce_result.first
+
+      result = schema.execute(query_string)
+      assert_equal "Query has complexity of 786431, which exceeds max complexity of 100", result["errors"].first["message"]
+
+      query_with_siblings = query_string.sub("{ node { ...F18 } }", "{ node { ...F18 @include(if: true) name } }")
+      sibling_query = GraphQL::Query.new(schema, query_with_siblings)
+      assert sibling_query.valid?
+      assert_equal 786_432, GraphQL::Analysis.analyze_query(sibling_query, [GraphQL::Analysis::QueryComplexity]).first
+    end
+
+    it "preserves traversal for other analyzers" do
+      smaller_query = query_string.sub("{ node { ...F18 } }", "{ node { ...F8 } }")
+      query = GraphQL::Query.new(schema, smaller_query)
+
+      complexity, field_count = GraphQL::Analysis.analyze_query(query, [GraphQL::Analysis::QueryComplexity, FragmentVisitCounter])
+
+      assert_equal 767, complexity
+      assert_equal 767, field_count
+    end
+
+    it "doesn't mutate cached fragments when their fields are merged" do
+      query_with_overlap = <<~GRAPHQL
+        {
+          first: node { ...Name name }
+          second: node { ...Name }
+        }
+
+        fragment Name on ComplexityBombNode { name }
+      GRAPHQL
+      query = GraphQL::Query.new(schema, query_with_overlap)
+
+      assert_equal 5, GraphQL::Analysis.analyze_query(query, [GraphQL::Analysis::QueryComplexity]).first
+    end
+  end
+
   describe "relay types" do
     let(:schema) { Class.new(StarWars::Schema) { complexity_cost_calculation_mode(:future) } }
     let(:query) { GraphQL::Query.new(schema, query_string) }
