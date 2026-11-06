@@ -48,10 +48,10 @@ module GraphQL
           return false
         end
         @tokens_count += 1
+        @pos = @scanner.pos
         if @tokens_count > @max_tokens
           raise_parse_error("This query is too large to execute.")
         end
-        @pos = @scanner.pos
         next_byte = @string.getbyte(@pos)
         next_byte_is_for = FIRST_BYTES[next_byte]
         case next_byte_is_for
