@@ -33,6 +33,7 @@ module GraphQL
 
       def advance
         @scanner.skip(IGNORE_REGEXP)
+        # A failed skip clears matched_size, which debug_token_value relies on for UNKNOWN_CHAR.
         while @scanner.skip("#")
           @scanner.skip(COMMENT_BODY_REGEXP)
           @tokens_count += 1
