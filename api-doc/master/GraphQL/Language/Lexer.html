@@ -1109,10 +1109,10 @@
     <span class="ruby-keyword">return</span> <span class="ruby-keyword">false</span>
   <span class="ruby-keyword">end</span>
   <span class="ruby-ivar">@tokens_count</span> += <span class="ruby-value">1</span>
+  <span class="ruby-ivar">@pos</span> = <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">pos</span>
   <span class="ruby-keyword">if</span> <span class="ruby-ivar">@tokens_count</span> <span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@max_tokens</span>
     <span class="ruby-identifier">raise_parse_error</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">This query is too large to execute.</span><span class="ruby-string">&quot;</span>)
   <span class="ruby-keyword">end</span>
-  <span class="ruby-ivar">@pos</span> = <span class="ruby-ivar">@scanner</span>.<span class="ruby-identifier">pos</span>
   <span class="ruby-identifier">next_byte</span> = <span class="ruby-ivar">@string</span>.<span class="ruby-identifier">getbyte</span>(<span class="ruby-ivar">@pos</span>)
   <span class="ruby-identifier">next_byte_is_for</span> = <span class="ruby-constant">FIRST_BYTES</span>[<span class="ruby-identifier">next_byte</span>]
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">next_byte_is_for</span>

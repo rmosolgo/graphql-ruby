@@ -2319,7 +2319,7 @@
   <span class="ruby-identifier">exec_result</span>[<span class="ruby-identifier">exec_index</span>] = <span class="ruby-identifier">err</span>
 <span class="ruby-keyword">rescue</span> <span class="ruby-constant">StandardError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">stderr</span>
   <span class="ruby-identifier">exec_result</span>[<span class="ruby-identifier">exec_index</span>] = <span class="ruby-keyword">begin</span>
-    <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">handle_or_reraise</span>(<span class="ruby-identifier">stderr</span>)
+    <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">handle_or_reraise</span>(<span class="ruby-identifier">stderr</span>, <span class="ruby-value">field</span><span class="ruby-value">:</span> <span class="ruby-ivar">@field</span>, <span class="ruby-value">arguments</span><span class="ruby-value">:</span> <span class="ruby-ivar">@prepared_arguments</span>, <span class="ruby-value">object</span><span class="ruby-value">:</span> <span class="ruby-identifier">object</span>)
   <span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">ExecutionError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">ex_err</span>
     <span class="ruby-identifier">ex_err</span>
   <span class="ruby-keyword">end</span>
