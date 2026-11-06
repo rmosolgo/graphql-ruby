@@ -567,7 +567,7 @@ describe GraphQL::Schema::Resolver do
       end
 
       rescue_from WriteAttemptError do |err, obj, args, ctx, field|
-        raise GraphQL::ExecutionError, "#{err.message} (field: #{field.path}, args: #{args.inspect}, object: #{obj.inspect})"
+        raise GraphQL::ExecutionError, "#{err.message} (field: #{field.path}, record_id: #{args[:record_id]}, object: #{obj.inspect})"
       end
     end
   end
@@ -598,7 +598,7 @@ describe GraphQL::Schema::Resolver do
   it "passes the field, arguments, and object to rescue_from handlers for errors raised in #resolve" do
     result = exec_query("{ resolver10(recordId: \"123\") }", root_value: :root)
     assert_nil result["data"]["resolver10"]
-    expected_message = "can't write 123 from a read-only connection (field: Query.resolver10, args: {record_id: \"123\"}, object: :root)"
+    expected_message = "can't write 123 from a read-only connection (field: Query.resolver10, record_id: 123, object: :root)"
     assert_equal [expected_message], result["errors"].map { |e| e["message"] }
   end
 
