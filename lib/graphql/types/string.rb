@@ -8,12 +8,12 @@ module GraphQL
 
       def self.coerce_result(value, ctx)
         str = value.to_s
-        if str.encoding == Encoding::UTF_8 || str.ascii_only?
+        if !str.valid_encoding?
+          raise Encoding::InvalidByteSequenceError
+        elsif str.encoding == Encoding::UTF_8 || str.ascii_only?
           str
-        elsif str.frozen?
-          str.encode(Encoding::UTF_8)
         else
-          str.encode!(Encoding::UTF_8)
+          str.encode(Encoding::UTF_8)
         end
       rescue EncodingError
         err = GraphQL::StringEncodingError.new(str, context: ctx)
