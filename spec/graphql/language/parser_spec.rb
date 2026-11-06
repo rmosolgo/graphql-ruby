@@ -108,7 +108,7 @@ describe GraphQL::Language::Parser do
     it "reports positions after multibyte block strings" do
       ["\r", "\n", "\r\n"].each do |newline|
         query_string = "{ __type(name: \"\"\"日本語#{newline}続き#{newline}\"\"\") { name } missing }"
-        document = GraphQL::Language::Parser.parse(query_string)
+        document = subject.parse(query_string)
         assert_equal [3, 15], document.definitions.first.selections.last.position
       end
     end
