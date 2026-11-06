@@ -125,7 +125,7 @@ module GraphQL
         exec_result[exec_index] = err
       rescue StandardError => stderr
         exec_result[exec_index] = begin
-          context.query.handle_or_reraise(stderr)
+          context.query.handle_or_reraise(stderr, field: @field, arguments: @prepared_arguments, object: object)
         rescue GraphQL::ExecutionError => ex_err
           ex_err
         end
