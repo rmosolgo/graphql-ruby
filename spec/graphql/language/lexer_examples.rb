@@ -134,6 +134,21 @@ module LexerExamples
             assert_equal "\"\"e\"\"", tokens[6].value
           end
 
+          [
+            ['  """a""" next', [[1, 3], [1, 11]]],
+            ["  \"\"\"first\nb\"\"\" next", [[1, 3], [2, 6]]],
+            ["  \"\"\"first\rb\"\"\" next", [[1, 3], [2, 6]]],
+            ["  \"\"\"first\r\nb\"\"\" next", [[1, 3], [2, 6]]],
+            ["\"\"\"first\n\n  second  \r\n  \"\"\" next", [[1, 1], [4, 7]]],
+            ["\"\"\"first\nb\"\"\" \"\"\"c\nd\"\"\" next", [[1, 1], [2, 6], [3, 6]]],
+          ].each do |query, positions|
+            it "reports block string positions in #{query.inspect}" do
+              tokens = subject.tokenize(query)
+
+              assert_equal positions, tokens.map { |token| [token.line, token.col] }
+            end
+          end
+
           it "tokenizes 10 quote edge case correctly" do
             tokens = subject.tokenize('""""""""""')
             assert_equal '""', tokens[0].value # first 8 quotes are a valid block string """"""""

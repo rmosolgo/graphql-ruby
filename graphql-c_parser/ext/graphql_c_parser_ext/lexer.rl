@@ -241,6 +241,7 @@ void emit(GraphQLTokenType tt, char *ts, char *te, Meta *meta) {
   }
   int quotes_length = 0; // set by string tokens below
   int line_incr = 0;
+  int next_col = meta->col + (te - ts);
   VALUE token_sym = Qnil;
   VALUE token_content = Qnil;
   int this_token_is_number = 0;
@@ -350,7 +351,15 @@ void emit(GraphQLTokenType tt, char *ts, char *te, Meta *meta) {
       token_sym = ID2SYM(rb_intern("STRING"));
       quotes_length = 3;
       token_content = rb_utf8_str_new(ts + quotes_length, (te - ts - (2 * quotes_length)));
-      line_incr = FIX2INT(rb_funcall(token_content, rb_intern("count"), 1, rb_utf8_str_new_cstr("\n")));
+      for (char *c = ts; c < te; c++) {
+        if (*c == '\r' || *c == '\n') {
+          if (*c == '\r' && c + 1 < te && c[1] == '\n') {
+            c++;
+          }
+          line_incr++;
+          next_col = te - c;
+        }
+      }
       break;
     // These are used only by the parser, this is never reached
     case STRING:
@@ -412,8 +421,8 @@ void emit(GraphQLTokenType tt, char *ts, char *te, Meta *meta) {
     }
     meta->preceeded_by_number = this_token_is_number;
   }
-  // Bump the column counter for the next token
-  meta->col += te - ts;
+  // Update the position for the next token
+  meta->col = next_col;
   meta->line += line_incr;
 }
 
