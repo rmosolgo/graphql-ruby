@@ -103,6 +103,18 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class WriteAttemptError < StandardError; end
+
+    class Resolver10 < BaseResolver
+      argument :record_id, ID
+
+      type String, null: true
+
+      def resolve(record_id:)
+        raise WriteAttemptError, "can't write #{record_id} from a read-only connection"
+      end
+    end
+
     class GreetingExtension < GraphQL::Schema::FieldExtension
       def resolve(object: nil, objects: nil, arguments:, **rest)
         if objects
@@ -500,6 +512,7 @@ describe GraphQL::Schema::Resolver do
       field :resolver_7, resolver: Resolver7
       field :resolver_8, resolver: Resolver8
       field :resolver_9, resolver: Resolver9
+      field :resolver_10, resolver: Resolver10
       field :resolver_with_extension, resolver: ResolverWithExtension
       field :resolver_with_path, resolver: ResolverWithPath
 
@@ -552,6 +565,10 @@ describe GraphQL::Schema::Resolver do
       rescue_from SpecialError do |err|
         raise GraphQL::ExecutionError, "A special error was raised from #{err.id.inspect}"
       end
+
+      rescue_from WriteAttemptError do |err, obj, args, ctx, field|
+        raise GraphQL::ExecutionError, "#{err.message} (field: #{field.path}, args: #{args.inspect}, object: #{obj.inspect})"
+      end
     end
   end
 
@@ -576,6 +593,13 @@ describe GraphQL::Schema::Resolver do
     result = exec_query "{ resolver9(message: \"Replace Me\") }"
     assert_equal "Replacement String", result["data"]["resolver9"]
     refute result.key?("errors")
+  end
+
+  it "passes the field, arguments, and object to rescue_from handlers for errors raised in #resolve" do
+    result = exec_query("{ resolver10(recordId: \"123\") }", root_value: :root)
+    assert_nil result["data"]["resolver10"]
+    expected_message = "can't write 123 from a read-only connection (field: Query.resolver10, args: {record_id: \"123\"}, object: :root)"
+    assert_equal [expected_message], result["errors"].map { |e| e["message"] }
   end
 
   describe ".path" do
