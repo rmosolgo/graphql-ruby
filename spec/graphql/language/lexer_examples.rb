@@ -74,7 +74,14 @@ module LexerExamples
 
             assert_equal [:LCURLY, :IDENTIFIER, :IDENTIFIER, :RCURLY], tokens.map(&:name)
             assert_equal ["{", "a", "b", "}"], tokens.map(&:value)
+            assert_equal [[2, 1], [2, 3], [3, 2], [3, 4]], tokens.map { |token| [token.line, token.col] }
           end
+        end
+
+        it "reports positions after consecutive and mixed line terminators" do
+          tokens = subject.tokenize("{\r\n\r\n  a\r\r\n b\n  c\r}\r")
+
+          assert_equal [[1, 1], [3, 3], [5, 2], [6, 3], [7, 1]], tokens.map { |token| [token.line, token.col] }
         end
 
         it "force encodes to utf-8" do
