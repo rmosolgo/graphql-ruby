@@ -1,18 +1,22 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     class VariablesAreInputTypesError < StaticValidation::Error
+      #: String
       attr_reader :type_name
+      #: String
       attr_reader :variable_name
 
-      def initialize(message, path: nil, nodes: [], type:, name:)
+      #: (String message, type: String, name: String, ?path: Array[String | Integer]?, ?nodes: GraphQL::Language::Nodes::AbstractNode | Array[GraphQL::Language::Nodes::AbstractNode]) -> void
+      def initialize(message, type:, name:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
-        @type_name = type
-        @variable_name = name
+        @type_name = type #: String
+        @variable_name = name #: String
       end
 
       # A hash representation of this Message
+      #: -> Hash[String, untyped]
       def to_h
         extensions = {
           "code" => code,
@@ -25,6 +29,7 @@ module GraphQL
         })
       end
 
+      #: -> String
       def code
         "variableRequiresValidType"
       end

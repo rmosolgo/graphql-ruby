@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
@@ -11,9 +11,12 @@ module GraphQL
         return super unless parent.is_a?(GraphQL::Language::Nodes::Argument)
 
         parent_type = get_parent_type(context, parent)
-        return super unless parent_type && parent_type.kind.input_object? && parent_type.one_of?
+        return super unless parent_type && parent_type.kind.input_object?
+        # Its kind is INPUT_OBJECT, so it's an input object class:
+        input_object_type = parent_type #: as singleton(GraphQL::Schema::InputObject)
+        return super unless input_object_type.one_of?
 
-        validate_one_of_input_object(node, context, parent_type)
+        validate_one_of_input_object(node, context, input_object_type)
         super
       end
 
@@ -46,7 +49,7 @@ module GraphQL
             OneOfInputObjectsAreValidError.new(
               "Argument '#{input_object_type}.#{field}' must be non-null.",
               path: [*context.path, field],
-              nodes: ast_node.arguments.first,
+              nodes: argument,
               input_object_type: input_object_type
             )
           )
@@ -55,6 +58,8 @@ module GraphQL
 
         if value.is_a?(GraphQL::Language::Nodes::VariableIdentifier)
           variable_name = value.name
+          # `VariableUsagesAreAllowed` sets this, if it's in use. This no-op assignment declares its type for Sorbet.
+          @declared_variables ||= nil #: Hash[String, GraphQL::Language::Nodes::VariableDefinition]?
           variable_definition = @declared_variables && @declared_variables[variable_name]
           # Undeclared variables are reported by VariablesAreUsedAndDefined
           return if variable_definition.nil?

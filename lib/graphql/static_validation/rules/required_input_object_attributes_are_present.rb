@@ -1,11 +1,12 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     # @requires_ancestor: GraphQL::StaticValidation::ArgumentsAreDefined
     module RequiredInputObjectAttributesArePresent
+      #: (GraphQL::Language::Nodes::InputObject node, GraphQL::Language::Nodes::AbstractNode parent) -> void
       def on_input_object(node, parent)
         if parent.is_a? GraphQL::Language::Nodes::Argument
           validate_input_object(node, context, parent)
@@ -15,6 +16,7 @@ module GraphQL
 
       private
 
+      #: (GraphQL::StaticValidation::ValidationContext context, GraphQL::Language::Nodes::Argument parent) -> GraphQL::Schema::Member::type_definition?
       def get_parent_type(context, parent)
         # If argument_definition is defined we're at nested object
         # and need to refer to the containing input object type rather
@@ -34,6 +36,7 @@ module GraphQL
         parent_type ? parent_type.type.unwrap : nil
       end
 
+      #: (GraphQL::Language::Nodes::InputObject ast_node, GraphQL::StaticValidation::ValidationContext context, GraphQL::Language::Nodes::Argument parent) -> void
       def validate_input_object(ast_node, context, parent)
         parent_type = get_parent_type(context, parent)
         return unless parent_type && parent_type.kind.input_object?

@@ -1,18 +1,22 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     class FieldsHaveAppropriateSelectionsError < StaticValidation::Error
+      #: String?
       attr_reader :type_name
+      #: String
       attr_reader :node_name
 
-      def initialize(message, path: nil, nodes: [], node_name:, type: nil)
+      #: (String message, node_name: String, ?path: Array[String | Integer]?, ?nodes: GraphQL::Language::Nodes::AbstractNode | Array[GraphQL::Language::Nodes::AbstractNode], ?type: String?) -> void
+      def initialize(message, node_name:, path: nil, nodes: [], type: nil)
         super(message, path: path, nodes: nodes)
-        @node_name = node_name
-        @type_name = type
+        @node_name = node_name #: String
+        @type_name = type #: String?
       end
 
       # A hash representation of this Message
+      #: -> Hash[String, untyped]
       def to_h
         extensions = {
           "code" => code,
@@ -24,6 +28,7 @@ module GraphQL
         })
       end
 
+      #: -> String
       def code
         "selectionMismatch"
       end

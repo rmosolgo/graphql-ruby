@@ -1,16 +1,19 @@
 # frozen_string_literal: true
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     class UniqueDirectivesPerLocationError < StaticValidation::Error
+      #: String
       attr_reader :directive_name
 
-      def initialize(message, path: nil, nodes: [], directive:)
+      #: (String message, directive: String, ?path: Array[String | Integer]?, ?nodes: GraphQL::Language::Nodes::AbstractNode | Array[GraphQL::Language::Nodes::AbstractNode]) -> void
+      def initialize(message, directive:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
-        @directive_name = directive
+        @directive_name = directive #: String
       end
 
       # A hash representation of this Message
+      #: -> Hash[String, untyped]
       def to_h
         extensions = {
           "code" => code,
@@ -22,6 +25,7 @@ module GraphQL
         })
       end
 
+      #: -> String
       def code
         "directiveNotUniqueForLocation"
       end
