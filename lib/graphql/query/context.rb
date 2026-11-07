@@ -340,21 +340,24 @@ module GraphQL
       # :call-seq:
       #   scoped() -> Context::Scoped
       def scoped
-        Scoped.new(@scoped_context, current_path)
+        next_owners, next_field_key, _field_definition = @scoped_context.current_next_scope
+        Scoped.new(@scoped_context, current_path || GraphQL::EmptyObjects::EMPTY_ARRAY, next_owners: next_owners, next_field_key: next_field_key)
       end
 
       class Scoped
-        def initialize(scoped_context, path)
+        def initialize(scoped_context, path, next_owners: nil, next_field_key: nil)
           @path = path
           @scoped_context = scoped_context
+          @next_owners = next_owners
+          @next_field_key = next_field_key
         end
 
         def merge!(hash)
-          @scoped_context.merge!(hash, at: @path)
+          @scoped_context.merge!(hash, at: @path, next_owners: @next_owners, next_field_key: @next_field_key)
         end
 
         def set!(key, value)
-          @scoped_context.merge!({ key => value }, at: @path)
+          merge!({ key => value })
           nil
         end
       end
