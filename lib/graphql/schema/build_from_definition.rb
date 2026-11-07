@@ -373,7 +373,7 @@ module GraphQL
             return false
           end
 
-          own_types = schema_class.send(:own_types)
+          own_types = schema_class.__send__(:own_types)
           found_types.each do |type|
             if !(Module === type)
               return false
@@ -413,9 +413,9 @@ module GraphQL
             end
           end
 
-          schema_class.send(:own_possible_types).merge!(possible_types) { |key, old_val, new_val| old_val + new_val }
-          schema_class.send(:own_union_memberships).merge!(union_memberships)
-          own_references_to = schema_class.send(:own_references_to)
+          schema_class.__send__(:own_possible_types).merge!(possible_types) { |key, old_val, new_val| old_val + new_val }
+          schema_class.__send__(:own_union_memberships).merge!(union_memberships)
+          own_references_to = schema_class.__send__(:own_references_to)
           type_links.references.each do |thing, new_refs|
             prev_refs = own_references_to[thing]
             own_references_to[thing] = prev_refs ? (prev_refs + (new_refs - prev_refs)) : new_refs

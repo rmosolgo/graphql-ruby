@@ -396,7 +396,7 @@ describe GraphQL::Schema::Visibility do
   it "defaults to preload: true for Rails.env.staging?" do
     if defined?(Rails)
       prev_rails = Rails
-      Object.send :remove_const, :Rails
+      Object.__send__ :remove_const, :Rails
     end
     mock_env = OpenStruct.new(:staging? => true)
     Object.const_set(:Rails, OpenStruct.new(env: mock_env))
@@ -416,7 +416,7 @@ describe GraphQL::Schema::Visibility do
     refute Rails.env.staging?
     refute schema.visibility.preload?
   ensure
-    Object.send(:remove_const, :Rails)
+    Object.__send__(:remove_const, :Rails)
     if prev_rails
       Object.const_set(:Rails, prev_rails)
     end
