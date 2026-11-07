@@ -166,7 +166,10 @@ module GraphQL
           when Set
             member1_array = member1.to_a.sort_by(&:graphql_name)
             member2_array = member2.to_a.sort_by(&:graphql_name)
-            member1_array.each_with_index do |inner_member1, idx|
+            if member1_array.size != member2_array.size
+              return false
+            end
+            member1_array.each_with_index.all? do |inner_member1, idx|
               inner_member2 = member2_array[idx]
               equivalent_schema_members?(inner_member1, inner_member2)
             end
