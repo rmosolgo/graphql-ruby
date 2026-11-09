@@ -174,6 +174,7 @@ module GraphQL
       end
 
       def gather_selections(type_defn, ast_selections, selections_step, query, all_selections, prototype_result, into:, inlined_fragments: nil)
+        inlined_fragments = inlined_fragments #: Hash[untyped, Hash[String, bool]]?
         ast_selections.each do |ast_selection|
           next if !directives_include?(query, ast_selection)
 

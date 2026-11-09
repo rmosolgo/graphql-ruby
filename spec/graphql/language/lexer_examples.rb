@@ -211,12 +211,18 @@ GRAPHQL
 
         it "rejects bad unicode after many valid escapes without backtracking" do
           escapes = "\\u0041" * 2_000
-          previous_timeout = Regexp.timeout
-          Regexp.timeout = 1.0
+          # Regexp.timeout was added in Ruby 3.2
+          has_regexp_timeout = Regexp.respond_to?(:timeout=)
+          if has_regexp_timeout
+            previous_timeout = Regexp.timeout
+            Regexp.timeout = 1.0
+          end
           begin
             assert_bad_unicode("\"#{escapes}\\uZZZZ\"", "Bad unicode escape in \"#{escapes.gsub("\\", "\\\\\\\\")}\\\\uZZZZ\"")
           ensure
-            Regexp.timeout = previous_timeout
+            if has_regexp_timeout
+              Regexp.timeout = previous_timeout
+            end
           end
         end
 

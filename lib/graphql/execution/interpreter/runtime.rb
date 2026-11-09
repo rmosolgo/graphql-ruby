@@ -220,8 +220,9 @@ module GraphQL
           end
         end
 
-        #: (untyped, untyped, untyped, untyped, Array[untyped]?, untyped, untyped) -> untyped
+        #: (untyped, untyped, untyped, untyped, Array[untyped]?, untyped, untyped, ?inlined_fragments: Hash[untyped, Hash[String, bool]]?) -> untyped
         def gather_selections(graphql_response, owner_object, owner_type, selections, selections_to_run, selections_by_name, ordered_result_keys, inlined_fragments: nil)
+          inlined_fragments = inlined_fragments #: Hash[untyped, Hash[String, bool]]?
           selections.each do |node|
             if node.is_a?(GraphQL::Language::Nodes::Field)
               response_key = node.alias || node.name

@@ -345,6 +345,7 @@ module GraphQL
       end
 
       def find_selections(subselections_by_type, selections_on_type, selected_type, ast_selections, arguments, inlined_fragments: nil)
+        inlined_fragments = inlined_fragments #: Hash[untyped, Hash[String, bool]]?
         ast_selections.each do |ast_selection|
           next if skipped_by_directive?(ast_selection)
 
