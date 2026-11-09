@@ -653,6 +653,8 @@
   <span class="ruby-ivar">@types</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">types</span>
   <span class="ruby-ivar">@response_path</span> = []
   <span class="ruby-ivar">@skip_stack</span> = [<span class="ruby-keyword">false</span>]
+  <span class="ruby-comment"># For each selection set being visited, the fragments already inlined into it.</span>
+  <span class="ruby-ivar">@inlined_fragments_stack</span> = [{}]
   <span class="ruby-ivar">@timeout_time</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">timeout</span>
     <span class="ruby-constant">Process</span>.<span class="ruby-identifier">clock_gettime</span>(<span class="ruby-constant">Process</span><span class="ruby-operator">::</span><span class="ruby-constant">CLOCK_MONOTONIC</span>, <span class="ruby-value">:</span><span class="ruby-value">float_second</span>) <span class="ruby-operator">+</span> <span class="ruby-identifier">timeout</span>
   <span class="ruby-keyword">else</span>
@@ -728,7 +730,7 @@
 
 
           <div class="method-source-code" id="argument_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 293</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 305</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">argument_definition</span>
   <span class="ruby-ivar">@argument_definitions</span>.<span class="ruby-identifier">last</span>
 <span class="ruby-keyword">end</span></pre>
@@ -784,7 +786,7 @@
 
 
           <div class="method-source-code" id="arguments_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 66</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 68</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments_for</span>(<span class="ruby-identifier">ast_node</span>, <span class="ruby-identifier">field_definition</span>)
   <span class="ruby-ivar">@query</span>.<span class="ruby-identifier">arguments_for</span>(<span class="ruby-identifier">ast_node</span>, <span class="ruby-identifier">field_definition</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -842,7 +844,7 @@
 
 
           <div class="method-source-code" id="directive_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 283</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 295</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">directive_definition</span>
   <span class="ruby-ivar">@directive_definitions</span>.<span class="ruby-identifier">last</span>
 <span class="ruby-keyword">end</span></pre>
@@ -898,7 +900,7 @@
 
 
           <div class="method-source-code" id="field_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 263</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 275</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_definition</span>
   <span class="ruby-ivar">@field_definitions</span>.<span class="ruby-identifier">last</span>
 <span class="ruby-keyword">end</span></pre>
@@ -951,7 +953,7 @@
 
 
           <div class="method-source-code" id="on_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 196</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 202</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_argument</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">check_timeout</span>
   <span class="ruby-identifier">argument_defn</span> = <span class="ruby-keyword">if</span> (<span class="ruby-identifier">arg</span> = <span class="ruby-ivar">@argument_definitions</span>.<span class="ruby-identifier">last</span>)
@@ -1028,7 +1030,7 @@
 
 
           <div class="method-source-code" id="on_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 186</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 192</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_directive</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">check_timeout</span>
   <span class="ruby-identifier">directive_defn</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">directives</span>[<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>]
@@ -1089,7 +1091,7 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 158</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 162</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">check_timeout</span>
   <span class="ruby-ivar">@response_path</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">alias</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>)
@@ -1108,10 +1110,12 @@
   <span class="ruby-ivar">@skipping</span> = <span class="ruby-ivar">@skip_stack</span>.<span class="ruby-identifier">last</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">skip?</span>(<span class="ruby-identifier">node</span>)
   <span class="ruby-ivar">@skip_stack</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-ivar">@skipping</span>
 
+  <span class="ruby-ivar">@inlined_fragments_stack</span>.<span class="ruby-identifier">push</span>({})
   <span class="ruby-identifier">call_on_enter_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@skipping</span> = <span class="ruby-ivar">@skip_stack</span>.<span class="ruby-identifier">pop</span>
   <span class="ruby-identifier">call_on_leave_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
+  <span class="ruby-ivar">@inlined_fragments_stack</span>.<span class="ruby-identifier">pop</span>
   <span class="ruby-ivar">@response_path</span>.<span class="ruby-identifier">pop</span>
   <span class="ruby-ivar">@field_definitions</span>.<span class="ruby-identifier">pop</span>
   <span class="ruby-ivar">@object_types</span>.<span class="ruby-identifier">pop</span>
@@ -1168,7 +1172,7 @@
 
 
           <div class="method-source-code" id="on_fragment_spread-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 222</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 228</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_spread</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">check_timeout</span>
   <span class="ruby-ivar">@path</span>.<span class="ruby-identifier">push</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">... </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>)
@@ -1176,10 +1180,16 @@
   <span class="ruby-ivar">@skip_stack</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-ivar">@skipping</span>
 
   <span class="ruby-identifier">call_on_enter_fragment_spread</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-identifier">enter_fragment_spread_inline</span>(<span class="ruby-identifier">node</span>)
+  <span class="ruby-comment"># Spreading the same fragment again into this selection set adds no new selections, so don&#39;t visit it again.</span>
+  <span class="ruby-identifier">inlined_fragments</span> = <span class="ruby-ivar">@inlined_fragments_stack</span>.<span class="ruby-identifier">last</span>
+  <span class="ruby-identifier">inlined_key</span> = [<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>, <span class="ruby-ivar">@object_types</span>.<span class="ruby-identifier">last</span>, <span class="ruby-ivar">@skipping</span>]
+  <span class="ruby-keyword">if</span> (<span class="ruby-identifier">inline_fragment</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">inlined_fragments</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">inlined_key</span>))
+    <span class="ruby-identifier">inlined_fragments</span>[<span class="ruby-identifier">inlined_key</span>] = <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">enter_fragment_spread_inline</span>(<span class="ruby-identifier">node</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">inline_fragment</span>
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@skipping</span> = <span class="ruby-ivar">@skip_stack</span>.<span class="ruby-identifier">pop</span>
-  <span class="ruby-identifier">leave_fragment_spread_inline</span>(<span class="ruby-identifier">node</span>)
+  <span class="ruby-identifier">leave_fragment_spread_inline</span>(<span class="ruby-identifier">node</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">inline_fragment</span>
   <span class="ruby-identifier">call_on_leave_fragment_spread</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@path</span>.<span class="ruby-identifier">pop</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1234,7 +1244,7 @@
 
 
           <div class="method-source-code" id="on_inline_fragment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 139</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 143</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_inline_fragment</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">check_timeout</span>
   <span class="ruby-identifier">object_type</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>
@@ -1304,15 +1314,17 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 127</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 129</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">check_timeout</span>
   <span class="ruby-identifier">object_type</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">root_type_for_operation</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span>)
   <span class="ruby-ivar">@object_types</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">object_type</span>)
   <span class="ruby-ivar">@path</span>.<span class="ruby-identifier">push</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">operation_type</span><span class="ruby-string">}</span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">?</span> <span class="ruby-string">&quot;</span><span class="ruby-string"> </span><span class="ruby-string">#{</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span><span class="ruby-string">}</span><span class="ruby-string">&quot;</span>)
+  <span class="ruby-ivar">@inlined_fragments_stack</span>.<span class="ruby-identifier">push</span>({})
   <span class="ruby-identifier">call_on_enter_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">call_on_leave_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
+  <span class="ruby-ivar">@inlined_fragments_stack</span>.<span class="ruby-identifier">pop</span>
   <span class="ruby-ivar">@object_types</span>.<span class="ruby-identifier">pop</span>
   <span class="ruby-ivar">@path</span>.<span class="ruby-identifier">pop</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1370,7 +1382,7 @@
 
 
           <div class="method-source-code" id="parent_type_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 253</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 265</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">parent_type_definition</span>
   <span class="ruby-ivar">@object_types</span>[-<span class="ruby-value">2</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1426,7 +1438,7 @@
 
 
           <div class="method-source-code" id="previous_argument_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 303</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 315</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">previous_argument_definition</span>
   <span class="ruby-ivar">@argument_definitions</span>[-<span class="ruby-value">2</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1482,7 +1494,7 @@
 
 
           <div class="method-source-code" id="previous_field_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 273</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 285</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">previous_field_definition</span>
   <span class="ruby-ivar">@field_definitions</span>[-<span class="ruby-value">2</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -1538,7 +1550,7 @@
 
 
           <div class="method-source-code" id="response_path-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 96</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 98</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">response_path</span>
   <span class="ruby-ivar">@response_path</span>.<span class="ruby-identifier">dup</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1594,7 +1606,7 @@
 
 
           <div class="method-source-code" id="skipping-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 86</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 88</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">skipping?</span>
   <span class="ruby-ivar">@skipping</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1650,7 +1662,7 @@
 
 
           <div class="method-source-code" id="type_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 243</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 255</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_definition</span>
   <span class="ruby-ivar">@object_types</span>.<span class="ruby-identifier">last</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1703,7 +1715,7 @@
 
 
           <div class="method-source-code" id="visit-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 51</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visit</span>
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">unless</span> <span class="ruby-ivar">@document</span>
   <span class="ruby-keyword">super</span>
@@ -1762,7 +1774,7 @@
 
 
           <div class="method-source-code" id="visiting_fragment_definition-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 76</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/analysis/visitor.rb, line 78</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visiting_fragment_definition?</span>
   <span class="ruby-ivar">@in_fragment_def</span>
 <span class="ruby-keyword">end</span></pre>

@@ -1134,7 +1134,7 @@
               <div class="method-heading">
                 <a href="#method-i-gather_selections" title="Link to this method">
                   <span class="method-name">gather_selections</span>
-                  <span class="method-args">(type_defn, ast_selections, selections_step, query, all_selections, prototype_result, into:)</span>
+                  <span class="method-args">(type_defn, ast_selections, selections_step, query, all_selections, prototype_result, into:, inlined_fragments: nil)</span>
                 </a>
               </div>
 
@@ -1154,7 +1154,7 @@
 
           <div class="method-source-code" id="gather_selections-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 176</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">gather_selections</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">ast_selections</span>, <span class="ruby-identifier">selections_step</span>, <span class="ruby-identifier">query</span>, <span class="ruby-identifier">all_selections</span>, <span class="ruby-identifier">prototype_result</span>, <span class="ruby-value">into:</span>)
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">gather_selections</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">ast_selections</span>, <span class="ruby-identifier">selections_step</span>, <span class="ruby-identifier">query</span>, <span class="ruby-identifier">all_selections</span>, <span class="ruby-identifier">prototype_result</span>, <span class="ruby-value">into:</span>, <span class="ruby-value">inlined_fragments:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">ast_selections</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">ast_selection</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">directives_include?</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">ast_selection</span>)
 
@@ -1179,7 +1179,7 @@
           <span class="ruby-identifier">all_selections</span> <span class="ruby-operator">&lt;&lt;</span> (<span class="ruby-identifier">into</span> = { <span class="ruby-value">__node</span><span class="ruby-value">:</span> <span class="ruby-identifier">ast_selection</span> })
           <span class="ruby-identifier">all_selections</span> <span class="ruby-operator">&lt;&lt;</span> (<span class="ruby-identifier">prototype_result</span> = {})
         <span class="ruby-keyword">end</span>
-        <span class="ruby-identifier">gather_selections</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">ast_selection</span>.<span class="ruby-identifier">selections</span>, <span class="ruby-identifier">selections_step</span>, <span class="ruby-identifier">query</span>, <span class="ruby-identifier">all_selections</span>, <span class="ruby-identifier">prototype_result</span>, <span class="ruby-value">into</span><span class="ruby-value">:</span> <span class="ruby-identifier">into</span>)
+        <span class="ruby-identifier">gather_selections</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">ast_selection</span>.<span class="ruby-identifier">selections</span>, <span class="ruby-identifier">selections_step</span>, <span class="ruby-identifier">query</span>, <span class="ruby-identifier">all_selections</span>, <span class="ruby-identifier">prototype_result</span>, <span class="ruby-value">into</span><span class="ruby-value">:</span> <span class="ruby-identifier">into</span>, <span class="ruby-value">inlined_fragments</span><span class="ruby-value">:</span> <span class="ruby-identifier">inlined_fragments</span>)
       <span class="ruby-keyword">end</span>
     <span class="ruby-keyword">when</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">FragmentSpread</span>
       <span class="ruby-identifier">fragment_definition</span> = <span class="ruby-identifier">query</span>.<span class="ruby-identifier">fragments</span>[<span class="ruby-identifier">ast_selection</span>.<span class="ruby-identifier">name</span>]
@@ -1189,7 +1189,13 @@
           <span class="ruby-identifier">all_selections</span> <span class="ruby-operator">&lt;&lt;</span> (<span class="ruby-identifier">into</span> = { <span class="ruby-value">__node</span><span class="ruby-value">:</span> <span class="ruby-identifier">ast_selection</span> })
           <span class="ruby-identifier">all_selections</span> <span class="ruby-operator">&lt;&lt;</span> (<span class="ruby-identifier">prototype_result</span> = {})
         <span class="ruby-keyword">end</span>
-        <span class="ruby-identifier">gather_selections</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">fragment_definition</span>.<span class="ruby-identifier">selections</span>, <span class="ruby-identifier">selections_step</span>, <span class="ruby-identifier">query</span>, <span class="ruby-identifier">all_selections</span>, <span class="ruby-identifier">prototype_result</span>, <span class="ruby-value">into</span><span class="ruby-value">:</span> <span class="ruby-identifier">into</span>)
+        <span class="ruby-comment"># Spreading the same fragment again into these selections adds nothing, so only gather it once.</span>
+        <span class="ruby-identifier">inlined_fragments</span> ||= {}.<span class="ruby-identifier">compare_by_identity</span>
+        <span class="ruby-identifier">inlined_names</span> = (<span class="ruby-identifier">inlined_fragments</span>[<span class="ruby-identifier">into</span>] ||= {})
+        <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">inlined_names</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">ast_selection</span>.<span class="ruby-identifier">name</span>)
+          <span class="ruby-identifier">inlined_names</span>[<span class="ruby-identifier">ast_selection</span>.<span class="ruby-identifier">name</span>] = <span class="ruby-keyword">true</span>
+          <span class="ruby-identifier">gather_selections</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">fragment_definition</span>.<span class="ruby-identifier">selections</span>, <span class="ruby-identifier">selections_step</span>, <span class="ruby-identifier">query</span>, <span class="ruby-identifier">all_selections</span>, <span class="ruby-identifier">prototype_result</span>, <span class="ruby-value">into</span><span class="ruby-value">:</span> <span class="ruby-identifier">into</span>, <span class="ruby-value">inlined_fragments</span><span class="ruby-value">:</span> <span class="ruby-identifier">inlined_fragments</span>)
+        <span class="ruby-keyword">end</span>
       <span class="ruby-keyword">end</span>
     <span class="ruby-keyword">else</span>
       <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;</span><span class="ruby-string">Unsupported graphql selection node: </span><span class="ruby-string">#{</span><span class="ruby-identifier">ast_selection</span>.<span class="ruby-identifier">class</span><span class="ruby-string">}</span><span class="ruby-string"> (</span><span class="ruby-string">#{</span><span class="ruby-identifier">ast_selection</span>.<span class="ruby-identifier">inspect</span><span class="ruby-string">}</span><span class="ruby-string">)</span><span class="ruby-string">&quot;</span>
@@ -1242,7 +1248,7 @@
 
 
           <div class="method-source-code" id="lazy-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 219</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 225</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">lazy?</span>(<span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">obj_class</span> = <span class="ruby-identifier">object</span>.<span class="ruby-identifier">class</span>
   <span class="ruby-identifier">is_lazy</span> = <span class="ruby-ivar">@lazy_cache</span>[<span class="ruby-identifier">obj_class</span>]
@@ -1297,7 +1303,7 @@
 
 
           <div class="method-source-code" id="type_condition_applies-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 228</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 234</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_condition_applies?</span>(<span class="ruby-identifier">context</span>, <span class="ruby-identifier">concrete_type</span>, <span class="ruby-identifier">type_name</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">type_name</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">concrete_type</span>.<span class="ruby-identifier">graphql_name</span>
     <span class="ruby-keyword">true</span>

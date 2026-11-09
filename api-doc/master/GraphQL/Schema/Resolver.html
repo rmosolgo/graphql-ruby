@@ -496,7 +496,7 @@
 
         <li class="calls-super" ><a href="#method-c-argument">argument</a></li>
 
-        <li ><a href="#method-c-authorizes-3F">authorizes?</a></li>
+        <li class="calls-super" ><a href="#method-c-authorizes-3F">authorizes?</a></li>
 
         <li ><a href="#method-c-broadcastable">broadcastable</a></li>
 
@@ -1006,7 +1006,7 @@
           <div class="method-source-code" id="authorizes-3F-source">
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/resolver.rb, line 267</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">authorizes?</span>(<span class="ruby-identifier">context</span>)
-  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">instance_method</span>(<span class="ruby-value">:</span><span class="ruby-value">authorized?</span>).<span class="ruby-identifier">owner</span> <span class="ruby-operator">!=</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Resolver</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">instance_method</span>(<span class="ruby-value">:</span><span class="ruby-value">authorized?</span>).<span class="ruby-identifier">owner</span> <span class="ruby-operator">!=</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Resolver</span> <span class="ruby-operator">||</span> <span class="ruby-keyword">super</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1017,6 +1017,11 @@
 
           
 
+
+            <div class="method-calls-super">
+              Calls superclass method
+              
+            </div>
 
         </div>
 
