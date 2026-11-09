@@ -987,6 +987,9 @@ module GraphQL
 
           if max_possible_page_size.nil?
             max_possible_page_size = default_page_size || query.schema.default_page_size || max_page_size || query.schema.default_max_page_size
+          elsif max_possible_page_size < 0
+            # Pagination returns no items for a negative `first:` or `last:`, so it mustn't subtract from the total.
+            max_possible_page_size = 0
           end
 
           if max_possible_page_size.nil?
