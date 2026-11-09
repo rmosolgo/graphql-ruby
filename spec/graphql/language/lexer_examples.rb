@@ -209,6 +209,21 @@ GRAPHQL
           assert_bad_unicode('"\\u0XXF \\u0009"', "Bad unicode escape in \"\\\\u0XXF \\\\u0009\"")
         end
 
+        it "rejects bad unicode after many valid escapes without backtracking" do
+          escapes = "\\u0041" * 2_000
+          previous_timeout = Regexp.timeout
+          Regexp.timeout = 1.0
+          begin
+            assert_bad_unicode("\"#{escapes}\\uZZZZ\"", "Bad unicode escape in \"#{escapes.gsub("\\", "\\\\\\\\")}\\\\uZZZZ\"")
+          ensure
+            Regexp.timeout = previous_timeout
+          end
+        end
+
+        it "unescapes surrogate pairs after many escapes" do
+          assert_equal "A" * 100 + "😀", subject.tokenize("\"#{"\\u0041" * 100}\\uD83D\\uDE00\"").first.to_s
+        end
+
         it "rejects truly invalid UTF-8 bytes" do
           error_filename = "spec/support/parser/filename_example_invalid_utf8.graphql"
           text = File.read(error_filename)

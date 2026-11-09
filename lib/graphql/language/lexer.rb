@@ -152,7 +152,9 @@ module GraphQL
         "\\t" => "\t",
       }
       UTF_8 = /\\u(?:([\da-f]{4})|\{([\da-f]+)\})(?:\\u([\da-f]{4}))?/i
-      VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
+      # Surrogate pairs are combined by `UTF_8` during replacement; validating each escape alone keeps this unambiguous, so it can't backtrack exponentially.
+      VALID_UTF_8 = /\\u(?:[\da-f]{4}|\{[\da-f]+\})/i
+      VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{VALID_UTF_8})*\z/o
       ESCAPED = /(?:#{ESCAPES}|#{UTF_8})/o
 
       def string_value
