@@ -25,6 +25,8 @@ module GraphQL
         @types = query.types
         @response_path = []
         @skip_stack = [false]
+        # For each selection set being visited, the fragments already inlined into it.
+        @inlined_fragments_stack = [{}]
         @timeout_time = if timeout
           Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_second) + timeout
         else
@@ -129,9 +131,11 @@ module GraphQL
         object_type = @schema.root_type_for_operation(node.operation_type)
         @object_types.push(object_type)
         @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
+        @inlined_fragments_stack.push({})
         call_on_enter_operation_definition(node, parent)
         super
         call_on_leave_operation_definition(node, parent)
+        @inlined_fragments_stack.pop
         @object_types.pop
         @path.pop
       end
@@ -173,10 +177,12 @@ module GraphQL
         @skipping = @skip_stack.last || skip?(node)
         @skip_stack << @skipping
 
+        @inlined_fragments_stack.push({})
         call_on_enter_field(node, parent)
         super
         @skipping = @skip_stack.pop
         call_on_leave_field(node, parent)
+        @inlined_fragments_stack.pop
         @response_path.pop
         @field_definitions.pop
         @object_types.pop
@@ -226,10 +232,16 @@ module GraphQL
         @skip_stack << @skipping
 
         call_on_enter_fragment_spread(node, parent)
-        enter_fragment_spread_inline(node)
+        # Spreading the same fragment again into this selection set adds no new selections, so don't visit it again.
+        inlined_fragments = @inlined_fragments_stack.last
+        inlined_key = [node.name, @object_types.last, @skipping]
+        if (inline_fragment = !inlined_fragments.key?(inlined_key))
+          inlined_fragments[inlined_key] = true
+        end
+        enter_fragment_spread_inline(node) if inline_fragment
         super
         @skipping = @skip_stack.pop
-        leave_fragment_spread_inline(node)
+        leave_fragment_spread_inline(node) if inline_fragment
         call_on_leave_fragment_spread(node, parent)
         @path.pop
       end
