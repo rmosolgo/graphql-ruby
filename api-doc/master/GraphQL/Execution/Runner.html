@@ -1027,10 +1027,14 @@
 
     <span class="ruby-identifier">results</span> = {}.<span class="ruby-identifier">compare_by_identity</span>
     <span class="ruby-identifier">queries</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">query</span><span class="ruby-operator">|</span>
-      <span class="ruby-keyword">if</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">validate</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">query</span>.<span class="ruby-identifier">valid?</span>
+      <span class="ruby-comment"># `valid?` also covers variable, operation name and analysis errors, which apply even with `validate: false`.</span>
+      <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">query</span>.<span class="ruby-identifier">valid?</span> <span class="ruby-operator">||</span> <span class="ruby-operator">!</span><span class="ruby-identifier">query</span>.<span class="ruby-identifier">context</span>.<span class="ruby-identifier">errors</span>.<span class="ruby-identifier">empty?</span>
         <span class="ruby-identifier">results</span>[<span class="ruby-identifier">query</span>] = {
           <span class="ruby-string">&quot;</span><span class="ruby-string">errors</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">static_errors</span>.<span class="ruby-identifier">map</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">to_h</span>)
         }
+        <span class="ruby-keyword">next</span>
+      <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">query</span>.<span class="ruby-identifier">selected_operation</span>.<span class="ruby-identifier">nil?</span>
+        <span class="ruby-identifier">results</span>[<span class="ruby-identifier">query</span>] = {}
         <span class="ruby-keyword">next</span>
       <span class="ruby-keyword">end</span>
 
@@ -1153,8 +1157,9 @@
 
 
           <div class="method-source-code" id="gather_selections-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 176</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 180</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">gather_selections</span>(<span class="ruby-identifier">type_defn</span>, <span class="ruby-identifier">ast_selections</span>, <span class="ruby-identifier">selections_step</span>, <span class="ruby-identifier">query</span>, <span class="ruby-identifier">all_selections</span>, <span class="ruby-identifier">prototype_result</span>, <span class="ruby-value">into:</span>, <span class="ruby-value">inlined_fragments:</span> <span class="ruby-keyword">nil</span>)
+  <span class="ruby-identifier">inlined_fragments</span> = <span class="ruby-identifier">inlined_fragments</span> <span class="ruby-comment">#: Hash[untyped, Hash[String, bool]]?</span>
   <span class="ruby-identifier">ast_selections</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">ast_selection</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">directives_include?</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">ast_selection</span>)
 
@@ -1248,7 +1253,7 @@
 
 
           <div class="method-source-code" id="lazy-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 225</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 230</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">lazy?</span>(<span class="ruby-identifier">object</span>)
   <span class="ruby-identifier">obj_class</span> = <span class="ruby-identifier">object</span>.<span class="ruby-identifier">class</span>
   <span class="ruby-identifier">is_lazy</span> = <span class="ruby-ivar">@lazy_cache</span>[<span class="ruby-identifier">obj_class</span>]
@@ -1303,7 +1308,7 @@
 
 
           <div class="method-source-code" id="type_condition_applies-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 234</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/runner.rb, line 239</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">type_condition_applies?</span>(<span class="ruby-identifier">context</span>, <span class="ruby-identifier">concrete_type</span>, <span class="ruby-identifier">type_name</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">type_name</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">concrete_type</span>.<span class="ruby-identifier">graphql_name</span>
     <span class="ruby-keyword">true</span>
