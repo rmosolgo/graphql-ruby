@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: strict
 
 require 'digest/sha2'

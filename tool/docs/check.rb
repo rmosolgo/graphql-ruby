@@ -11,7 +11,14 @@ module GraphQLDocs
     def check
       errors = []
       ruby_files.each do |path|
+        previous_line = nil
         File.foreach(path).with_index(1) do |line, number|
+          # RDoc doesn't strip Sorbet sigils, so it would render them as module docs.
+          # `#--` hides them (https://github.com/ruby/rdoc/issues/1614).
+          if line.match?(/^#\s*typed:/) && previous_line&.chomp != "#--"
+            errors << "#{path}:#{number}: Sorbet sigil must be preceded by `#--`"
+          end
+          previous_line = line
           errors << "#{path}:#{number}: YARD tag" if line.match?(/^\s*# @(?:[A-Za-z0-9_!]+)/) && !line.match?(/^\s*# @requires_ancestor:/) # Sorbet annotation
           if line.match?(/^\s*#\s*(?:@api\s+private|\*\*API:\*\*\s+[Pp]rivate)/)
             errors << "#{path}:#{number}: private API marker must use :nodoc:"
