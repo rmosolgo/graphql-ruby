@@ -27,8 +27,6 @@ module GraphQL
           @object.node
         end
 
-        #--
-        # @requires_ancestor: singleton(GraphQL::Schema::Object)
         module ClassMethods
           def inherited(child_class)
             super

@@ -59,6 +59,19 @@ module SorbetConsumer
     field :name, String, null: false
   end
 
+  # Interfaces can include the connection and edge behaviors, too.
+  module NodeEdge
+    include BaseInterface
+    include GraphQL::Types::Relay::EdgeBehaviors
+    node_type(Node, null: false)
+  end
+
+  module NodeConnection
+    include BaseInterface
+    include GraphQL::Types::Relay::ConnectionBehaviors
+    edge_type(NodeEdge, edges_nullable: false, edge_nullable: false, node_nullable: false)
+  end
+
   class Query < BaseObject
     include GraphQL::Types::Relay::HasNodeField
     field :things, Thing.connection_type, null: false
