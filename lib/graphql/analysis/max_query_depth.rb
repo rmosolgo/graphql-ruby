@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module Analysis
     class MaxQueryDepth < QueryDepth
+      #: -> GraphQL::AnalysisError?
       def result
         configured_max_depth = if query
           query.max_depth

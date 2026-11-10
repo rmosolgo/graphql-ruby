@@ -3,7 +3,8 @@
 
   IDENTIFIER =    [_A-Za-z][_0-9A-Za-z]*;
   NEWLINE =       [\c\r\n];
-  BLANK   =       ([, \t] | 0xEF 0xBB 0xBF)+;
+  BLANK   =       [, \t]+;
+  BOM     =       0xEF 0xBB 0xBF;
   COMMENT =       '#' [^\n\r]*;
   INT =           '-'? ('0'|[1-9][0-9]*);
   EXPONENT =      ('e' | 'E') ('+' | '-')? [0-9]+;
@@ -52,8 +53,8 @@
   BLOCK_STRING = ('"""' ('\\"""' | ^'"' | '"'{1,2} ^'"')* '"'{0,2} '"""');
 
   main := |*
-    INT           => { emit(INT, ts, te, meta); };
-    FLOAT         => { emit(FLOAT, ts, te, meta); };
+    INT           => { emit(INT_LITERAL, ts, te, meta); };
+    FLOAT         => { emit(FLOAT_LITERAL, ts, te, meta); };
     ON            => { emit(ON, ts, te, meta); };
     FRAGMENT      => { emit(FRAGMENT, ts, te, meta); };
     TRUE_LITERAL  => { emit(TRUE_LITERAL, ts, te, meta); };
@@ -67,10 +68,10 @@
     TYPE_LITERAL  => { emit(TYPE_LITERAL, ts, te, meta); };
     EXTEND        => { emit(EXTEND, ts, te, meta); };
     IMPLEMENTS    => { emit(IMPLEMENTS, ts, te, meta); };
-    INTERFACE     => { emit(INTERFACE, ts, te, meta); };
+    INTERFACE     => { emit(INTERFACE_LITERAL, ts, te, meta); };
     UNION         => { emit(UNION, ts, te, meta); };
     ENUM          => { emit(ENUM, ts, te, meta); };
-    INPUT         => { emit(INPUT, ts, te, meta); };
+    INPUT         => { emit(INPUT_LITERAL, ts, te, meta); };
     DIRECTIVE     => { emit(DIRECTIVE, ts, te, meta); };
     REPEATABLE    => { emit(REPEATABLE, ts, te, meta); };
     RCURLY        => { emit(RCURLY, ts, te, meta); };
@@ -97,7 +98,7 @@
       meta->preceeded_by_number = 0;
     };
 
-    BLANK   => {
+    BLANK | BOM => {
       meta->col += te - ts;
       meta->preceeded_by_number = 0;
     };
@@ -148,7 +149,7 @@ static VALUE GraphQL_type_str;
 static VALUE GraphQL_true_str;
 static VALUE GraphQL_false_str;
 static VALUE GraphQL_null_str;
-typedef enum TokenType {
+typedef enum GraphQLTokenType {
   AMP,
   BANG,
   COLON,
@@ -159,13 +160,13 @@ typedef enum TokenType {
   EQUALS,
   EXTEND,
   FALSE_LITERAL,
-  FLOAT,
+  FLOAT_LITERAL,
   FRAGMENT,
   IDENTIFIER,
-  INPUT,
+  INPUT_LITERAL,
   IMPLEMENTS,
-  INT,
-  INTERFACE,
+  INT_LITERAL,
+  INTERFACE_LITERAL,
   LBRACKET,
   LCURLY,
   LPAREN,
@@ -191,7 +192,7 @@ typedef enum TokenType {
   UNKNOWN_CHAR,
   COMMENT,
   BAD_UNICODE_ESCAPE
-} TokenType;
+} GraphQLTokenType;
 
 typedef struct Meta {
   int line;
@@ -218,7 +219,7 @@ typedef struct Meta {
   token_content = rb_utf8_str_new(ts, te - ts); \
   break;
 
-void emit(TokenType tt, char *ts, char *te, Meta *meta) {
+void emit(GraphQLTokenType tt, char *ts, char *te, Meta *meta) {
   meta->tokens_count++;
   // -1 indicates that there is no limit:
   if (meta->max_tokens > 0 && meta->tokens_count > meta->max_tokens) {
@@ -263,12 +264,18 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
     STATIC_VALUE_TOKEN(SCALAR, "scalar")
     STATIC_VALUE_TOKEN(EXTEND, "extend")
     STATIC_VALUE_TOKEN(IMPLEMENTS, "implements")
-    STATIC_VALUE_TOKEN(INTERFACE, "interface")
     STATIC_VALUE_TOKEN(UNION, "union")
     STATIC_VALUE_TOKEN(ENUM, "enum")
     STATIC_VALUE_TOKEN(DIRECTIVE, "directive")
-    STATIC_VALUE_TOKEN(INPUT, "input")
     // For these, the enum name doesn't match the symbol name:
+    case INTERFACE_LITERAL:
+      token_sym = ID2SYM(rb_intern("INTERFACE"));
+      token_content = GraphQLTokenStringINTERFACE;
+      break;
+    case INPUT_LITERAL:
+      token_sym = ID2SYM(rb_intern("INPUT"));
+      token_content = GraphQLTokenStringINPUT;
+      break;
     case TYPE_LITERAL:
       token_sym = ID2SYM(rb_intern("TYPE"));
       token_content = GraphQL_type_str;
@@ -310,12 +317,12 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
     // Can't use these while we're in backwards-compat mode:
     // DYNAMIC_VALUE_TOKEN(INT)
     // DYNAMIC_VALUE_TOKEN(FLOAT)
-    case INT:
+    case INT_LITERAL:
       token_sym = ID2SYM(rb_intern("INT"));
       token_content = rb_utf8_str_new(ts, te - ts);
       this_token_is_number = 1;
       break;
-    case FLOAT:
+    case FLOAT_LITERAL:
       token_sym = ID2SYM(rb_intern("FLOAT"));
       token_content = rb_utf8_str_new(ts, te - ts);
       this_token_is_number = 1;

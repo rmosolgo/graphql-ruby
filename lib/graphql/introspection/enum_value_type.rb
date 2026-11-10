@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module Introspection
     class EnumValueType < Introspection::BaseObject
@@ -13,10 +13,12 @@ module GraphQL
       field :is_deprecated, Boolean, null: false, resolve_each: :resolve_is_deprecated
       field :deprecation_reason, String
 
+      #: (GraphQL::Schema::EnumValue object, GraphQL::Query::Context context) -> bool
       def self.resolve_is_deprecated(object, context)
         !!object.deprecation_reason
       end
 
+      #: -> bool
       def is_deprecated
         self.class.resolve_is_deprecated(object, context)
       end

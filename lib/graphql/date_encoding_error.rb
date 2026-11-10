@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   # This error is raised when `Types::ISO8601Date` is asked to return a value
   # that cannot be parsed to a Ruby Date.
@@ -8,8 +8,10 @@ module GraphQL
   # See [GraphQL::Types::ISO8601Date](rdoc-ref:GraphQL::Types::ISO8601Date) which raises this error
   class DateEncodingError < GraphQL::RuntimeTypeError
     # The value which couldn't be encoded
+    #: untyped
     attr_reader :date_value
 
+    #: (untyped value) -> void
     def initialize(value)
       @date_value = value
       super("Date cannot be parsed: #{value}. \nDate must be able to be parsed as a Ruby Date object.")

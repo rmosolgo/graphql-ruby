@@ -26,6 +26,7 @@ module GraphQL
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasAuthorization
+      extend GraphQL::Schema::Member::HasAuthorization::ClassConfigured
       extend GraphQL::Schema::Member::HasValidators
       include Schema::Member::HasPath
       extend Schema::Member::HasPath
@@ -126,7 +127,7 @@ module GraphQL
         exec_result[exec_index] = err
       rescue StandardError => stderr
         exec_result[exec_index] = begin
-          context.query.handle_or_reraise(stderr)
+          context.query.handle_or_reraise(stderr, field: @field, arguments: @prepared_arguments, object: object)
         rescue GraphQL::ExecutionError => ex_err
           ex_err
         end
@@ -266,7 +267,7 @@ module GraphQL
       end
 
       def self.authorizes?(context)
-        self.instance_method(:authorized?).owner != GraphQL::Schema::Resolver
+        self.instance_method(:authorized?).owner != GraphQL::Schema::Resolver || super
       end
 
       # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.

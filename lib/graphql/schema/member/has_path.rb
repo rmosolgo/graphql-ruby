@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -14,6 +14,7 @@ module GraphQL
         #
         # :call-seq:
         #   path() -> String
+        #: -> String?
         def path
           member = self #: untyped
           path_str = if member.respond_to?(:graphql_name)

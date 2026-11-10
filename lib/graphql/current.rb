@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   # This module exposes Fiber-level runtime information.
@@ -33,6 +33,7 @@ module GraphQL
     #
     # :call-seq:
     #   operation_name() -> String | nil
+    #: () -> String?
     def self.operation_name
       if (m = Fiber[:__graphql_current_multiplex])
         m.context[:__graphql_current_operation_name] ||= begin
@@ -56,6 +57,7 @@ module GraphQL
     #
     # :call-seq:
     #   field() -> GraphQL::Field | nil
+    #: () -> GraphQL::Schema::Field?
     def self.field
       if (interpreter_info = Fiber[:__graphql_runtime_info])
         interpreter_info.values&.first&.current_field
@@ -72,6 +74,7 @@ module GraphQL
     #
     # :call-seq:
     #   dataloader_source_class() -> Class | nil
+    #: () -> singleton(GraphQL::Dataloader::Source)?
     def self.dataloader_source_class
       Fiber[:__graphql_current_dataloader_source]&.class
     end
@@ -82,6 +85,7 @@ module GraphQL
     #
     # :call-seq:
     #   dataloader_source() -> GraphQL::Dataloader::Source | nil
+    #: () -> GraphQL::Dataloader::Source?
     def self.dataloader_source
       Fiber[:__graphql_current_dataloader_source]
     end

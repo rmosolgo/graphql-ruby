@@ -10,6 +10,18 @@ describe GraphQL::Language::Parser do
     assert_equal "field", document.definitions.first.selections.first.name
   end
 
+  ["#\r{ field }", "#a#b\n{ field }", "{ field }#", "{ field }#\r", "{ field }#a#b"].each do |query|
+    it "parses #{query.inspect} exactly at max_tokens including comments" do
+      document = subject.parse(query, max_tokens: 4)
+      assert_equal "field", document.definitions.first.selections.first.name
+    end
+
+    it "rejects #{query.inspect} one token over max_tokens including comments" do
+      error = assert_raises(GraphQL::ParseError) { subject.parse(query, max_tokens: 3) }
+      assert_equal "This query is too large to execute.", error.message
+    end
+  end
+
   it "reports executable and type system definitions as expected at the top level" do
     error = assert_raises(GraphQL::ParseError) { GraphQL::Language::Parser.parse("? { a }") }
     expected_tokens = "QUERY, MUTATION, SUBSCRIPTION, FRAGMENT, LCURLY, EXTEND, STRING, SCHEMA, SCALAR, TYPE, ENUM, INPUT, UNION, INTERFACE, DIRECTIVE"

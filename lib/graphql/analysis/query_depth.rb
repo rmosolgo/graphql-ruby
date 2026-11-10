@@ -31,7 +31,7 @@ module GraphQL
     # ```
     class QueryDepth < Analyzer
       def initialize(query)
-        @max_depth = 0
+        @max_depth = 0 #: Integer
         @current_depth = 0
         @count_introspection_fields = query.schema.count_introspection_fields
         super

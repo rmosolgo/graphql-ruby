@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module VariableDefaultValuesAreCorrectlyTyped
+      #: (GraphQL::Language::Nodes::VariableDefinition node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_variable_definition(node, parent)
         if !node.default_value.nil?
           value = node.default_value

@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   module Execution
     class Errors
+      # One level of a schema's `rescue_from` index: the handler registered for `class` (if any),
+      # plus handlers for its subclasses, keyed by error class.
+      # (Sorbet doesn't support recursive type aliases, so the nested entries are `untyped`.)
+      #: type handler_entry = { class: singleton(Exception)?, handler: Proc?, subclass_handlers: Hash[singleton(Exception), untyped] }
+
       # Register this handler, updating the
       # internal handler index to maintain least-to-most specific.
       #
@@ -20,9 +25,10 @@ module GraphQL
       #
       # :call-seq:
       #   register_rescue_from(Class[Exception] error_class, Hash error_handlers, Proc error_handler) -> void
+      #: (singleton(Exception) error_class, Hash[singleton(Exception), handler_entry] error_handlers, Proc error_handler) -> void
       def self.register_rescue_from(error_class, error_handlers, error_handler)
-        subclasses_handlers = {}
-        this_level_subclasses = []
+        subclasses_handlers = {} #: Hash[singleton(Exception), handler_entry]
+        this_level_subclasses = [] #: Array[singleton(Exception)]
         # During this traversal, do two things:
         # - Identify any already-registered subclasses of this error class
         #   and gather them up to be inserted _under_ this class
@@ -47,7 +53,7 @@ module GraphQL
           # See if any keys in this hash are superclasses of this new class:
           next_index_point = error_handlers.find { |err_class, handler| error_class < err_class }
           if next_index_point
-            error_handlers = next_index_point[1][:subclass_handlers]
+            error_handlers = next_index_point[1][:subclass_handlers] #: as Hash[singleton(Exception), handler_entry]
           else
             # this new handler doesn't belong to any sub-handlers,
             # so insert it in the current set of `handlers`
@@ -56,7 +62,8 @@ module GraphQL
         end
         # Having found the point at which to insert this handler,
         # register it and merge any subclass handlers back in at this point.
-        this_class_handlers = error_handlers[error_class]
+        # `error_handlers` has a default proc, so this is never `nil`:
+        this_class_handlers = error_handlers[error_class] #: as !nil
         this_class_handlers[:handler] = error_handler
         this_class_handlers[:subclass_handlers].merge!(subclasses_handlers)
         nil
@@ -68,9 +75,10 @@ module GraphQL
       #
       # :call-seq:
       #   find_handler_for(schema, error_class) -> Proc | nil
+      #: (singleton(GraphQL::Schema) schema, singleton(Exception) error_class) -> handler_entry?
       def self.find_handler_for(schema, error_class)
         handlers = schema.error_handlers[:subclass_handlers]
-        handler = nil #: untyped
+        handler = nil #: handler_entry?
         while (handlers) do
           _err_class, next_handler = handlers.find { |err_class, handler| error_class <= err_class }
           if next_handler
@@ -85,7 +93,10 @@ module GraphQL
 
         # check for a handler from a parent class:
         if schema.superclass.respond_to?(:error_handlers)
-          parent_handler = find_handler_for(schema.superclass, error_class)
+          parent_handler = find_handler_for(
+            schema.superclass, #: as singleton(GraphQL::Schema)
+            error_class,
+          )
         end
 
         # If the inherited handler is more specific than the one defined here,

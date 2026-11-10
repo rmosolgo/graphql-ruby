@@ -99,6 +99,10 @@ class NoFieldsCalledHello < GraphQL::Analysis::Analyzer
 end
 ```
 
+If a query analyzer raises [GraphQL::ExecutionError](rdoc-ref:GraphQL::ExecutionError) during analysis, including from `result`, the query is rejected before execution and the error is included in the response. The error's `extensions` are preserved.
+
+A raised [GraphQL::UnauthorizedError](rdoc-ref:GraphQL::UnauthorizedError) is converted to an `AnalysisError` with the same message. These raised errors reject only the affected query; other queries in a multiplex can still execute.
+
 ### Conditional Analysis
 
 Some analyzers might only make sense in certain context, or some might be too expensive to run for every query. To handle these scenarios, your analyzers may answer to an `analyze?` method:

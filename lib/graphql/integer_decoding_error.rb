@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   # This error is raised when `Types::Int` is given an input value outside of 32-bit integer range.
   #
@@ -9,8 +9,10 @@ module GraphQL
   # See [GraphQL::Types::Int](rdoc-ref:GraphQL::Types::Int) which raises this error
   class IntegerDecodingError < GraphQL::RuntimeTypeError
     # The value which couldn't be decoded
+    #: Integer
     attr_reader :integer_value
 
+    #: (Integer value) -> void
     def initialize(value)
       @integer_value = value
       super("Integer out of bounds: #{value}. \nConsider using GraphQL::Types::BigInt instead.")

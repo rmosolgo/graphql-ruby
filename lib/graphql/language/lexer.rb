@@ -33,17 +33,16 @@ module GraphQL
       attr_reader :pos, :tokens_count
 
       def advance
-        loop do
-          @scanner.skip(IGNORE_REGEXP)
-          if @scanner.skip(COMMENT_REGEXP)
-            @tokens_count += 1
-            if @tokens_count > @max_tokens
-              @pos = @scanner.pos
-              raise_parse_error("This query is too large to execute.")
-            end
-            next
+        @scanner.skip(IGNORE_REGEXP)
+        # A failed skip clears matched_size, which debug_token_value relies on for UNKNOWN_CHAR.
+        while @scanner.skip("#")
+          @scanner.skip(COMMENT_BODY_REGEXP)
+          @tokens_count += 1
+          if @tokens_count > @max_tokens
+            @pos = @scanner.pos
+            raise_parse_error("This query is too large to execute.")
           end
-          break
+          @scanner.skip(IGNORE_REGEXP)
         end
 
         if @scanner.eos?
@@ -51,10 +50,10 @@ module GraphQL
           return false
         end
         @tokens_count += 1
+        @pos = @scanner.pos
         if @tokens_count > @max_tokens
           raise_parse_error("This query is too large to execute.")
         end
-        @pos = @scanner.pos
         next_byte = @string.getbyte(@pos)
         next_byte_is_for = FIRST_BYTES[next_byte]
         case next_byte_is_for
@@ -154,7 +153,9 @@ module GraphQL
         "\\t" => "\t",
       }
       UTF_8 = /\\u(?:([\da-f]{4})|\{([\da-f]+)\})(?:\\u([\da-f]{4}))?/i
-      VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
+      # Surrogate pairs are combined by `UTF_8` during replacement; validating each escape alone keeps this unambiguous, so it can't backtrack exponentially.
+      VALID_UTF_8 = /\\u(?:[\da-f]{4}|\{[\da-f]+\})/i
+      VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{VALID_UTF_8})*\z/o
       ESCAPED = /(?:#{ESCAPES}|#{UTF_8})/o
 
       def string_value
@@ -207,7 +208,7 @@ module GraphQL
       end
 
       IGNORE_REGEXP = /[, \r\n\t\uFEFF]+/
-      COMMENT_REGEXP = /\#[^\n\r]*/
+      COMMENT_BODY_REGEXP = /[^\n\r]*/
       IDENTIFIER_REGEXP = /[_A-Za-z][_0-9A-Za-z]*/
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
       FLOAT_DECIMAL_REGEXP = /[.][0-9]+/

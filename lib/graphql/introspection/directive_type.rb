@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module Introspection
     class DirectiveType < Introspection::BaseObject
@@ -23,12 +23,14 @@ module GraphQL
 
       field :is_repeatable, Boolean, method: :repeatable?
 
+      #: (singleton(GraphQL::Schema::Directive) object, GraphQL::Query::Context context, include_deprecated: bool) -> Array[GraphQL::Schema::Argument]
       def self.resolve_args(object, context, include_deprecated:)
         args = context.types.arguments(object)
         args = args.reject(&:deprecation_reason) unless include_deprecated
         args
       end
 
+      #: (include_deprecated: bool) -> Array[GraphQL::Schema::Argument]
       def args(include_deprecated:)
         self.class.resolve_args(object, context, include_deprecated: include_deprecated)
       end

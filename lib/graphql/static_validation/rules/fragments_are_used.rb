@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module FragmentsAreUsed
+      #: (GraphQL::Language::Nodes::Document node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_document(node, parent)
         super
         dependency_map = context.dependencies

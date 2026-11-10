@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
     class Field
       class ScopeExtension < GraphQL::Schema::FieldExtension
+        #: (object: untyped, arguments: Hash[Symbol, untyped], context: GraphQL::Query::Context, value: untyped, memo: untyped) -> untyped
         def after_resolve(object:, arguments:, context:, value:, memo:)
           if object.is_a?(GraphQL::Schema::Object)
             if value.nil?

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     # The validation context gets passed to each validator.
@@ -13,22 +13,40 @@ module GraphQL
     class ValidationContext
       extend Forwardable
 
-      attr_reader :query, :errors, :visitor,
-        :on_dependency_resolve_handlers,
-        :max_errors, :types, :schema
+      #: GraphQL::Query
+      attr_reader :query
+
+      #: Array[GraphQL::StaticValidation::Error]
+      attr_reader :errors
+
+      #: GraphQL::StaticValidation::BaseVisitor
+      attr_reader :visitor
+
+      #: Array[^(GraphQL::Language::Nodes::OperationDefinition | GraphQL::Language::Nodes::FragmentDefinition, Array[GraphQL::Language::Nodes::FragmentSpread], GraphQL::Language::Nodes::FragmentDefinition) -> void]
+      attr_reader :on_dependency_resolve_handlers
+
+      #: Integer | Float
+      attr_reader :max_errors
+
+      #: GraphQL::Schema::Visibility::Profile | GraphQL::Schema::Warden::VisibilityProfile
+      attr_reader :types
+
+      #: singleton(GraphQL::Schema)
+      attr_reader :schema
 
 
       def_delegators :@query, :document, :fragments, :operations
 
+      #: (GraphQL::Query query, singleton(GraphQL::StaticValidation::BaseVisitor) visitor_class, Integer? max_errors) -> void
       def initialize(query, visitor_class, max_errors)
-        @query = query
-        @types = query.types
-        @schema = query.schema
-        @input_values = query.input_values
-        @errors = []
-        @max_errors = max_errors || Float::INFINITY
-        @on_dependency_resolve_handlers = []
-        @visitor = visitor_class.new(document, self)
+        @query = query #: GraphQL::Query
+        @types = query.types #: GraphQL::Schema::Visibility::Profile | GraphQL::Schema::Warden::VisibilityProfile
+        @schema = query.schema #: singleton(GraphQL::Schema)
+        @input_values = query.input_values #: GraphQL::Execution::InputValues
+        @errors = [] #: Array[GraphQL::StaticValidation::Error]
+        @max_errors = max_errors || Float::INFINITY #: Integer | Float
+        @on_dependency_resolve_handlers = [] #: Array[^(GraphQL::Language::Nodes::OperationDefinition | GraphQL::Language::Nodes::FragmentDefinition, Array[GraphQL::Language::Nodes::FragmentSpread], GraphQL::Language::Nodes::FragmentDefinition) -> void]
+        @visitor = visitor_class.new(document, self) #: GraphQL::StaticValidation::BaseVisitor
       end
 
       # TODO stop using def_delegators because of Array allocations
@@ -36,13 +54,15 @@ module GraphQL
         :path, :type_definition, :field_definition, :argument_definition,
         :parent_type_definition, :directive_definition, :dependencies
 
+      #: () { (GraphQL::Language::Nodes::OperationDefinition | GraphQL::Language::Nodes::FragmentDefinition, Array[GraphQL::Language::Nodes::FragmentSpread], GraphQL::Language::Nodes::FragmentDefinition) -> void } -> void
       def on_dependency_resolve(&handler)
         @on_dependency_resolve_handlers << handler
       end
 
-      INVALID_RESULT = GraphQL::Query::InputValidationResult.new(valid: false, problems: EmptyObjects::EMPTY_ARRAY).freeze
+      INVALID_RESULT = GraphQL::Query::InputValidationResult.new(valid: false, problems: EmptyObjects::EMPTY_ARRAY).freeze #: GraphQL::Query::InputValidationResult
       private_constant :INVALID_RESULT
 
+      #: (untyped ast_value, GraphQL::Schema::Member::type_definition | GraphQL::Schema::NonNull | GraphQL::Schema::List type) -> GraphQL::Query::InputValidationResult
       def validate_literal(ast_value, type)
         @input_values.value_from_ast(ast_value, type, validate: true)
         GraphQL::Query::InputValidationResult::VALID
@@ -56,14 +76,17 @@ module GraphQL
         Query::InputValidationResult.from_problem(coercion_err.message, message: coercion_err.message, extensions: coercion_err.extensions)
       end
 
+      #: () -> bool
       def too_many_errors?
         @errors.length >= @max_errors
       end
 
+      #: () -> Hash[String, singleton(GraphQL::Schema::Directive)]
       def schema_directives
-        @schema_directives ||= schema.directives
+        @schema_directives ||= schema.directives #: Hash[String, singleton(GraphQL::Schema::Directive)]?
       end
 
+      #: (String name, Array[String] options) -> String?
       def did_you_mean_suggestion(name, options)
         if did_you_mean = schema.did_you_mean
           suggestions = did_you_mean.const_get(:SpellChecker).new(dictionary: options).correct(name)

@@ -38,6 +38,8 @@ module GraphQL
 
       def validate_location(ast_directive, ast_parent, directives)
         directive_defn = directives[ast_directive.name]
+        # Undefined directives are reported by DirectivesAreDefined
+        return if directive_defn.nil?
         case ast_parent
         when Nodes::OperationDefinition
           required_location = GraphQL::Schema::Directive.const_get(ast_parent.operation_type.upcase)

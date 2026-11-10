@@ -98,17 +98,16 @@ module GraphQL
           EmptyObjects::EMPTY_ARRAY
         end
       end
-    rescue TimeoutError => err
+    rescue GraphQL::ExecutionError => err
       [err]
-    rescue GraphQL::UnauthorizedError, GraphQL::ExecutionError
-      # This error was raised during analysis and will be returned the client before execution
-      EmptyObjects::EMPTY_ARRAY
+    rescue GraphQL::UnauthorizedError => err
+      [GraphQL::AnalysisError.new(err.message)]
     end
 
     def analysis_errors(parent_errors, results)
       if !results.empty?
         results = results.flatten
-        results.select! { |r| r.is_a?(GraphQL::AnalysisError) }
+        results.select! { |r| r.is_a?(GraphQL::ExecutionError) }
       end
 
       if parent_errors.empty?

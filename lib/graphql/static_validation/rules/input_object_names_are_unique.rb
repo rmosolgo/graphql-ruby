@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
     # @requires_ancestor: GraphQL::StaticValidation::BaseVisitor
     module InputObjectNamesAreUnique
+      #: (GraphQL::Language::Nodes::InputObject node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_input_object(node, parent)
         validate_input_fields(node)
         super
@@ -13,6 +14,7 @@ module GraphQL
 
       private
 
+      #: (GraphQL::Language::Nodes::InputObject node) -> void
       def validate_input_fields(node)
         input_field_defns = node.arguments
         input_fields_by_name = Hash.new { |h, k| h[k] = [] }

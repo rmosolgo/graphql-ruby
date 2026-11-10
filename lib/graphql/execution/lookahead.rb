@@ -345,7 +345,8 @@ module GraphQL
         false
       end
 
-      def find_selections(subselections_by_type, selections_on_type, selected_type, ast_selections, arguments)
+      def find_selections(subselections_by_type, selections_on_type, selected_type, ast_selections, arguments, inlined_fragments: nil)
+        inlined_fragments = inlined_fragments #: Hash[untyped, Hash[String, bool]]?
         ast_selections.each do |ast_selection|
           next if skipped_by_directive?(ast_selection)
 
@@ -370,13 +371,19 @@ module GraphQL
               on_type = @query.types.type(t.name)
               subselections_on_type = subselections_by_type[on_type] ||= {}
             end
-            find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments)
+            find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments, inlined_fragments: inlined_fragments)
           when GraphQL::Language::Nodes::FragmentSpread
             frag_defn = lookup_fragment(ast_selection)
             # Again, assuming a valid AST
             on_type = @query.types.type(frag_defn.type.name)
             subselections_on_type = subselections_by_type[on_type] ||= {}
-            find_selections(subselections_by_type, subselections_on_type, on_type, frag_defn.selections, arguments)
+            # Spreading the same fragment again into these selections adds nothing, so only find its selections once.
+            inlined_fragments ||= {}.compare_by_identity
+            inlined_names = (inlined_fragments[subselections_on_type] ||= {})
+            if !inlined_names.key?(ast_selection.name)
+              inlined_names[ast_selection.name] = true
+              find_selections(subselections_by_type, subselections_on_type, on_type, frag_defn.selections, arguments, inlined_fragments: inlined_fragments)
+            end
           else
             raise "Invariant: Unexpected selection type: #{ast_selection.class}"
           end
@@ -385,7 +392,7 @@ module GraphQL
 
       # If a selection on `node` matches `field_name` (which is backed by `field_defn`)
       # and matches the `arguments:` constraints, then add that node to `matches`
-      def find_selected_nodes(node, field_name, field_defn, arguments:, matches:, alias_name: NOT_CONFIGURED)
+      def find_selected_nodes(node, field_name, field_defn, arguments:, matches:, alias_name: NOT_CONFIGURED, inlined_fragments: nil)
         return if skipped_by_directive?(node)
         case node
         when GraphQL::Language::Nodes::Field
@@ -398,10 +405,14 @@ module GraphQL
             end
           end
         when GraphQL::Language::Nodes::InlineFragment
-          node.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches, alias_name: alias_name) }
+          node.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches, alias_name: alias_name, inlined_fragments: inlined_fragments) }
         when GraphQL::Language::Nodes::FragmentSpread
-          frag_defn = lookup_fragment(node)
-          frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches, alias_name: alias_name) }
+          # A fragment spread again would only add the same nodes, so only search it once.
+          if inlined_fragments.nil? || !inlined_fragments.key?(node.name)
+            (inlined_fragments ||= {})[node.name] = true
+            frag_defn = lookup_fragment(node)
+            frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches, alias_name: alias_name, inlined_fragments: inlined_fragments) }
+          end
         else
           raise "Unexpected selection comparison on #{node.class.name} (#{node})"
         end
@@ -426,9 +437,10 @@ module GraphQL
 
         next_nodes = []
         field_name = field_defn.name
+        inlined_fragments = {}
         @ast_nodes.each do |ast_node|
           ast_node.selections.each do |selection|
-            find_selected_nodes(selection, field_name, field_defn, arguments: arguments, matches: next_nodes, alias_name: alias_name)
+            find_selected_nodes(selection, field_name, field_defn, arguments: arguments, matches: next_nodes, alias_name: alias_name, inlined_fragments: inlined_fragments)
           end
         end
 

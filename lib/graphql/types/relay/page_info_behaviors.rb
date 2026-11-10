@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module Types
     module Relay
       module PageInfoBehaviors
+        #: (singleton(GraphQL::Schema::Object) child_class) -> void
         def self.included(child_class)
           child_class.extend ClassMethods
           child_class.description "Information about pagination in a connection."
@@ -23,10 +24,12 @@ module GraphQL
       end
 
       module ClassMethods
+        #: () -> bool
         def default_relay?
           true
         end
 
+        #: () -> bool
         def default_broadcastable?
           true
         end
