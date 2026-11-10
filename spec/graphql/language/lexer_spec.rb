@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require "timeout"
 require_relative "./lexer_examples"
 describe GraphQL::Language::Lexer do
   subject { GraphQL::Language::Lexer }
@@ -14,6 +15,14 @@ describe GraphQL::Language::Lexer do
 
   it "rejects unicode escapes outside the valid range" do
     assert_bad_unicode('"\\u{FFFFFFFFFF}"', 'Bad unicode escape in "\\\\u{FFFFFFFFFF}"')
+  end
+
+  it "rejects unterminated block strings without backtracking" do
+    ["\\", '\\"', '"a'].each do |fragment|
+      assert_raises(GraphQL::ParseError) do
+        Timeout.timeout(1) { subject.tokenize('"""' + fragment * 1_000) }
+      end
+    end
   end
 
   it "reports positions correctly after multibyte input" do
