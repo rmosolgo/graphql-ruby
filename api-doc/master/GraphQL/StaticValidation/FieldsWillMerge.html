@@ -560,7 +560,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 54</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@conflict_count</span> = <span class="ruby-value">0</span>
@@ -656,7 +656,7 @@
 
 
           <div class="method-source-code" id="on_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 89</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_field</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">node</span>.<span class="ruby-identifier">selections</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">selections_may_conflict?</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">selections</span>)
     <span class="ruby-identifier">check_selection_set</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">type_definition</span>)
@@ -714,7 +714,7 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 85</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_will_merge.rb, line 84</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-identifier">check_selection_set</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">type_definition</span>)
   <span class="ruby-keyword">super</span>

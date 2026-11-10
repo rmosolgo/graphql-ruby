@@ -508,7 +508,7 @@
 
 
           <div class="method-source-code" id="after_lazy-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 56</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 57</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">after_lazy</span>(<span class="ruby-identifier">value</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-keyword">defined?</span>(<span class="ruby-ivar">@runtime_instance</span>)
     <span class="ruby-ivar">@runtime_instance</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">interpreter_runtime</span>)[<span class="ruby-value">:</span><span class="ruby-value">runtime</span>]
@@ -566,7 +566,7 @@
 
 
           <div class="method-source-code" id="arguments_cache-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 86</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 87</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments_cache</span>
   <span class="ruby-ivar">@arguments_cache</span> ||= <span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Interpreter</span><span class="ruby-operator">::</span><span class="ruby-constant">ArgumentsCache</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -619,7 +619,7 @@
 
 
           <div class="method-source-code" id="arguments_for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 82</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query.rb, line 83</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">arguments_for</span>(<span class="ruby-identifier">ast_node</span>, <span class="ruby-identifier">definition</span>, <span class="ruby-value">parent_object:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">arguments_cache</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">ast_node</span>, <span class="ruby-identifier">definition</span>, <span class="ruby-identifier">parent_object</span>)
 <span class="ruby-keyword">end</span></pre>

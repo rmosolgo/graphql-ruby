@@ -661,7 +661,7 @@
 
 
           <div class="method-source-code" id="authorized_new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 90</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 91</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">authorized_new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">query</span>.<span class="ruby-identifier">current_trace</span>.<span class="ruby-identifier">begin_authorized</span>(<span class="ruby-keyword">self</span>, <span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">raised_auth_err</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: GraphQL::UnauthorizedError?</span>
@@ -786,7 +786,7 @@
 
 
           <div class="method-source-code" id="const_missing-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 159</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 160</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">const_missing</span>(<span class="ruby-identifier">name</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">name</span> <span class="ruby-operator">==</span> <span class="ruby-value">:</span><span class="ruby-value">InvalidNullError</span>
     <span class="ruby-identifier">custom_err_class</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">InvalidNullError</span>.<span class="ruby-identifier">subclass_for</span>(<span class="ruby-keyword">self</span>)
@@ -847,7 +847,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 169</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 170</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">OBJECT</span>
 <span class="ruby-keyword">end</span></pre>
@@ -897,7 +897,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 151</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 152</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-ivar">@object</span> = <span class="ruby-identifier">object</span>
   <span class="ruby-ivar">@context</span> = <span class="ruby-identifier">context</span>
@@ -948,7 +948,7 @@
 
 
           <div class="method-source-code" id="scoped_new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 146</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 147</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scoped_new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -998,7 +998,7 @@
 
 
           <div class="method-source-code" id="wrap-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 58</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 59</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">wrap</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">authorized_new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1048,7 +1048,7 @@
 
 
           <div class="method-source-code" id="wrap_scoped-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">wrap_scoped</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">scoped_new</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -1115,7 +1115,7 @@
 
 
           <div class="method-source-code" id="dataloader-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 38</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 39</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">dataloader</span>
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">dataloader</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1168,7 +1168,7 @@
 
 
           <div class="method-source-code" id="raw_value-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/object.rb, line 45</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">raw_value</span>(<span class="ruby-identifier">obj</span>)
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Execution</span><span class="ruby-operator">::</span><span class="ruby-constant">Interpreter</span><span class="ruby-operator">::</span><span class="ruby-constant">RawValue</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">obj</span>)
 <span class="ruby-keyword">end</span></pre>

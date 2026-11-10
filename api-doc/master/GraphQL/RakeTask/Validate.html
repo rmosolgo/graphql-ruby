@@ -535,7 +535,7 @@
 
 
           <div class="method-source-code" id="credentials-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rake_task/validate.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rake_task/validate.rb, line 32</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">credentials</span>
   <span class="ruby-identifier">creds</span> = <span class="ruby-keyword">if</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-constant">Bundler</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-constant">Bundler</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:</span><span class="ruby-value">settings</span>)
     <span class="ruby-constant">Bundler</span>.<span class="ruby-identifier">settings</span>[<span class="ruby-string">&quot;</span><span class="ruby-string">gems.graphql.pro</span><span class="ruby-string">&quot;</span>]
@@ -596,7 +596,7 @@
 
 
           <div class="method-source-code" id="fetch_gem_digest-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rake_task/validate.rb, line 47</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rake_task/validate.rb, line 48</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fetch_gem_digest</span>(<span class="ruby-identifier">version</span>, <span class="ruby-identifier">creds</span>)
   <span class="ruby-identifier">user</span>, <span class="ruby-identifier">pass</span> = <span class="ruby-identifier">creds</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">:</span><span class="ruby-string">&quot;</span>, <span class="ruby-value">2</span>)
   <span class="ruby-identifier">uri</span> = <span class="ruby-constant">URI</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">https://gems.graphql.pro/gems/graphql-pro-</span><span class="ruby-string">#{</span><span class="ruby-identifier">version</span><span class="ruby-string">}</span><span class="ruby-string">.gem</span><span class="ruby-string">&quot;</span>)
@@ -651,7 +651,7 @@
 
 
           <div class="method-source-code" id="fetch_published_digest-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rake_task/validate.rb, line 57</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rake_task/validate.rb, line 58</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">fetch_published_digest</span>(<span class="ruby-identifier">uri</span>)
   <span class="ruby-identifier">res</span> = <span class="ruby-constant">Net</span><span class="ruby-operator">::</span><span class="ruby-constant">HTTP</span>.<span class="ruby-identifier">get_response</span>(<span class="ruby-identifier">uri</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">nil</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">res</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Net</span><span class="ruby-operator">::</span><span class="ruby-constant">HTTPSuccess</span>)
@@ -705,7 +705,7 @@
 
 
           <div class="method-source-code" id="normalize_version-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rake_task/validate.rb, line 20</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/rake_task/validate.rb, line 21</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">normalize_version</span>(<span class="ruby-identifier">version</span>)
   <span class="ruby-comment"># `Gem::Version.correct?` accepts `nil` and `&quot;&quot;`, so check those first</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">version</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">version</span>.<span class="ruby-identifier">strip</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">||</span> <span class="ruby-operator">!</span><span class="ruby-constant">Gem</span><span class="ruby-operator">::</span><span class="ruby-constant">Version</span>.<span class="ruby-identifier">correct?</span>(<span class="ruby-identifier">version</span>)

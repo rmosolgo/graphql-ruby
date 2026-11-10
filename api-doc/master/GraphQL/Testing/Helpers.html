@@ -526,7 +526,7 @@
 
 
           <div class="method-source-code" id="for-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 18</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 19</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">for</span>(<span class="ruby-identifier">schema_class</span>)
   <span class="ruby-constant">SchemaHelpers</span>.<span class="ruby-identifier">for</span>(<span class="ruby-identifier">schema_class</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -598,7 +598,7 @@
 
 
           <div class="method-source-code" id="run_graphql_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 53</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 54</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_graphql_field</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-identifier">field_path</span>, <span class="ruby-identifier">object</span>, <span class="ruby-value">arguments:</span> {}, <span class="ruby-value">context:</span> {}, <span class="ruby-value">ast_node:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">lookahead:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">visibility_profile:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">ast_node</span> = <span class="ruby-identifier">ast_node</span> <span class="ruby-comment">#: GraphQL::Language::Nodes::Field?</span>
   <span class="ruby-identifier">lookahead</span> = <span class="ruby-identifier">lookahead</span> <span class="ruby-comment">#: GraphQL::Execution::Lookahead?</span>
@@ -711,7 +711,7 @@
 
 
           <div class="method-source-code" id="with_resolution_context-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 120</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/testing/helpers.rb, line 121</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">with_resolution_context</span>(<span class="ruby-identifier">schema</span>, <span class="ruby-value">type:</span>, <span class="ruby-value">object:</span>, <span class="ruby-value">context:</span>{}, <span class="ruby-value">visibility_profile:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">resolution_context</span> = <span class="ruby-constant">ResolutionAssertionContext</span>.<span class="ruby-identifier">new</span>(
     <span class="ruby-keyword">self</span>,

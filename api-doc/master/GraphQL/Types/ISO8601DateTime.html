@@ -550,7 +550,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 85</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 86</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">str_value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-constant">Time</span>.<span class="ruby-identifier">iso8601</span>(<span class="ruby-identifier">str_value</span>)
 <span class="ruby-keyword">rescue</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-constant">TypeError</span>
@@ -630,7 +630,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 60</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 61</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">_ctx</span>)
   <span class="ruby-keyword">case</span> <span class="ruby-identifier">value</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">Date</span>
@@ -703,7 +703,7 @@
 
 
           <div class="method-source-code" id="time_precision-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 34</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 35</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">time_precision</span>
   <span class="ruby-ivar">@time_precision</span> <span class="ruby-operator">||</span> <span class="ruby-constant">DEFAULT_TIME_PRECISION</span>
 <span class="ruby-keyword">end</span></pre>
@@ -761,7 +761,7 @@
 
 
           <div class="method-source-code" id="time_precision-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date_time.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">time_precision=</span>(<span class="ruby-identifier">value</span>)
   <span class="ruby-ivar">@time_precision</span> = <span class="ruby-identifier">value</span> <span class="ruby-comment">#: Integer?</span>
 <span class="ruby-keyword">end</span></pre>

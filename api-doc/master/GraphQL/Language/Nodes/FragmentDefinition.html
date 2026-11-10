@@ -636,7 +636,7 @@
 
 
           <div class="method-source-code" id="from_a-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 635</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 636</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">from_a</span>(<span class="ruby-identifier">filename</span>, <span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>, <span class="ruby-identifier">name</span>, <span class="ruby-identifier">type</span>, <span class="ruby-identifier">directives</span>, <span class="ruby-identifier">selections</span>)
   <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">filename</span><span class="ruby-value">:</span> <span class="ruby-identifier">filename</span>, <span class="ruby-value">line</span><span class="ruby-value">:</span> <span class="ruby-identifier">line</span>, <span class="ruby-value">col</span><span class="ruby-value">:</span> <span class="ruby-identifier">col</span>, <span class="ruby-value">name</span><span class="ruby-value">:</span> <span class="ruby-identifier">name</span>, <span class="ruby-value">type</span><span class="ruby-value">:</span> <span class="ruby-identifier">type</span>, <span class="ruby-value">directives</span><span class="ruby-value">:</span> <span class="ruby-identifier">directives</span>, <span class="ruby-value">selections</span><span class="ruby-value">:</span> <span class="ruby-identifier">selections</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -688,7 +688,7 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 623</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 624</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">name:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">type:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">directives:</span> <span class="ruby-constant">NONE</span>, <span class="ruby-value">selections:</span> <span class="ruby-constant">NONE</span>, <span class="ruby-value">filename:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">pos:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">source:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">line:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">col:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@name</span> = <span class="ruby-identifier">name</span>
   <span class="ruby-ivar">@type</span> = <span class="ruby-identifier">type</span>
@@ -760,7 +760,7 @@
 
 
           <div class="method-source-code" id="children-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 669</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 670</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">children</span>
   <span class="ruby-ivar">@children</span> ||= <span class="ruby-keyword">begin</span>
     <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@selections</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">||</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@directives</span>.<span class="ruby-identifier">empty?</span>
@@ -820,7 +820,7 @@
 
 
           <div class="method-source-code" id="marshal_dump-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 639</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 640</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">marshal_dump</span>
   [<span class="ruby-identifier">line</span>, <span class="ruby-identifier">col</span>, <span class="ruby-ivar">@filename</span>, <span class="ruby-ivar">@name</span>, <span class="ruby-ivar">@type</span>, <span class="ruby-ivar">@directives</span>, <span class="ruby-ivar">@selections</span>]
 <span class="ruby-keyword">end</span></pre>
@@ -870,7 +870,7 @@
 
 
           <div class="method-source-code" id="marshal_load-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 643</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 644</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">marshal_load</span>(<span class="ruby-identifier">values</span>)
   <span class="ruby-ivar">@line</span>, <span class="ruby-ivar">@col</span>, <span class="ruby-ivar">@filename</span>, <span class="ruby-ivar">@name</span>, <span class="ruby-ivar">@type</span>, <span class="ruby-ivar">@directives</span>, <span class="ruby-ivar">@selections</span> = <span class="ruby-identifier">values</span>
 <span class="ruby-keyword">end</span></pre>
@@ -920,7 +920,7 @@
 
 
           <div class="method-source-code" id="merge_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 665</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 666</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge_directive</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">node_opts</span>)
   <span class="ruby-identifier">merge</span>(<span class="ruby-value">directives</span><span class="ruby-value">:</span> <span class="ruby-identifier">directives</span> <span class="ruby-operator">+</span> [<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">Directive</span>.<span class="ruby-identifier">new</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">node_opts</span>)])
 <span class="ruby-keyword">end</span></pre>
@@ -970,7 +970,7 @@
 
 
           <div class="method-source-code" id="merge_selection-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 661</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 662</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge_selection</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">node_opts</span>)
   <span class="ruby-identifier">merge</span>(<span class="ruby-value">selections</span><span class="ruby-value">:</span> <span class="ruby-identifier">selections</span> <span class="ruby-operator">+</span> [<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">Field</span>.<span class="ruby-identifier">new</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">node_opts</span>)])
 <span class="ruby-keyword">end</span></pre>
@@ -1020,7 +1020,7 @@
 
 
           <div class="method-source-code" id="scalars-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 652</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 653</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scalars</span>
   <span class="ruby-ivar">@scalars</span> ||= [<span class="ruby-ivar">@name</span>, <span class="ruby-ivar">@type</span>].<span class="ruby-identifier">freeze</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1070,7 +1070,7 @@
 
 
           <div class="method-source-code" id="visit_method-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 618</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/nodes.rb, line 619</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">visit_method</span>
   <span class="ruby-value">:</span><span class="ruby-value">on_fragment_definition</span>
 <span class="ruby-keyword">end</span></pre>
