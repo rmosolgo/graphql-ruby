@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: strict
 require 'rails/engine'
 require 'action_controller'
