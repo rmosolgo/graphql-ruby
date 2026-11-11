@@ -75,6 +75,27 @@ describe GraphQL::Pagination::RelationConnection do
     end
   end
 
+  it "accepts a zero offset for after cursors only" do
+    schema = Class.new(GraphQL::Schema) do
+      cursor_encoder(ConnectionAssertions::NonceEnabledEncoder)
+    end
+    context = GraphQL::Query.new(schema, "{ __typename }").context
+    connection_class = Class.new(GraphQL::Pagination::RelationConnection) do
+      private
+
+      def relation_offset(_relation)
+        nil
+      end
+    end
+    connection = connection_class.new([], context: context)
+    encoded_cursor = ConnectionAssertions::NonceEnabledEncoder.encode("0")
+
+    assert_equal 0, connection.send(:offset_from_cursor, encoded_cursor, allow_zero: true)
+    assert_raises(GraphQL::ExecutionError) do
+      connection.send(:offset_from_cursor, encoded_cursor)
+    end
+  end
+
   it "paginates duplicate nodes by position" do
     connection_class = Class.new(GraphQL::Pagination::RelationConnection) do
       private
