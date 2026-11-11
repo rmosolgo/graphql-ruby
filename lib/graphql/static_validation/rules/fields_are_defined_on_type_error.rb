@@ -1,19 +1,23 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     class FieldsAreDefinedOnTypeError < StaticValidation::Error
+      #: String
       attr_reader :type_name
+      #: String
       attr_reader :field_name
 
-      def initialize(message, path: nil, nodes: [], type:, field:)
+      #: (String message, type: String, field: String, ?path: Array[String | Integer]?, ?nodes: GraphQL::Language::Nodes::AbstractNode | Array[GraphQL::Language::Nodes::AbstractNode]) -> void
+      def initialize(message, type:, field:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
-        @type_name = type
-        @field_name = field
+        @type_name = type #: String
+        @field_name = field #: String
       end
 
       # A hash representation of this Message
+      #: -> Hash[String, untyped]
       def to_h
         extensions = {
           "code" => code,
@@ -26,6 +30,7 @@ module GraphQL
         })
       end
 
+      #: -> String
       def code
         "undefinedField"
       end

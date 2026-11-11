@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -9,13 +9,15 @@ module GraphQL
         locations(GraphQL::Schema::Directive::INPUT_OBJECT)
         default_directive true
 
-        def initialize(...)
+        #: (singleton(GraphQL::Schema::InputObject) owner, **untyped arguments) -> void
+        def initialize(owner, **arguments)
           super
 
           owner.extend(IsOneOf)
         end
 
         module IsOneOf
+          #: -> bool
           def one_of?
             true
           end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
@@ -8,11 +8,13 @@ module GraphQL
     module NoDefinitionsArePresent
       include GraphQL::StaticValidation::Error::ErrorHelper
 
-      def initialize(*)
+      #: (GraphQL::Language::Nodes::Document document, GraphQL::StaticValidation::ValidationContext context) -> void
+      def initialize(document, context)
         super
-        @schema_definition_nodes = []
+        @schema_definition_nodes = [] #: Array[GraphQL::Language::Nodes::AbstractNode]
       end
 
+      #: (GraphQL::Language::Nodes::AbstractNode node, GraphQL::Language::Nodes::AbstractNode? parent) -> nil
       def on_invalid_node(node, parent)
         @schema_definition_nodes << node
         nil
@@ -34,6 +36,7 @@ module GraphQL
       alias :on_union_type_extension :on_invalid_node
       alias :on_enum_type_extension :on_invalid_node
 
+      #: (GraphQL::Language::Nodes::Document node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_document(node, parent)
         super
         if !@schema_definition_nodes.empty?

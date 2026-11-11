@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module Language
     module BlockString
       # Remove leading and trailing whitespace from a block string.
       # See "Block Strings" in https://github.com/facebook/graphql/blob/master/spec/Section%202%20--%20Language.md
+      #: (String str) -> String
       def self.trim_whitespace(str)
         # Early return for the most common cases:
         if str == ""
@@ -44,10 +45,10 @@ module GraphQL
         end
 
         # Remove leading & trailing blank lines
-        while lines.size > 0 && contains_only_whitespace?(lines.first)
+        while (first_line = lines.first) && contains_only_whitespace?(first_line)
           lines.shift
         end
-        while lines.size > 0 && contains_only_whitespace?(lines.last)
+        while (last_line = lines.last) && contains_only_whitespace?(last_line)
           lines.pop
         end
 
@@ -55,6 +56,7 @@ module GraphQL
         lines.size > 1 ? lines.join("\n") : (lines.first || "".dup)
       end
 
+      #: (String str, ?indent: String) -> String
       def self.print(str, indent: '')
         line_length = 120 - indent.length
         block_str = "".dup
@@ -88,13 +90,16 @@ module GraphQL
 
       private
 
-      def self.break_line(line, length)
+      #: (String line, Integer length) { (String) -> void } -> void
+      def self.break_line(line, length, &block)
         return yield(line) if line.length < length + 5
 
         parts = line.split(Regexp.new("((?: |^).{15,#{length - 40}}(?= |$))"))
         return yield(line) if parts.length < 4
 
-        yield(parts.slice!(0, 3).join)
+        # `parts` has at least 4 items:
+        first_parts = parts.slice!(0, 3) #: as !nil
+        yield(first_parts.join)
 
         parts.each_with_index do |part, i|
           next if i % 2 == 1
@@ -104,6 +109,7 @@ module GraphQL
         nil
       end
 
+      #: (String line) -> bool
       def self.contains_only_whitespace?(line)
         line.match?(/^\s*$/)
       end

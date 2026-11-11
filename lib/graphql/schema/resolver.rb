@@ -51,7 +51,7 @@ module GraphQL
         context.types.arguments(self.class).each do |arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
-        @prepared_arguments = nil
+        @prepared_arguments = nil #: Hash[Symbol, untyped]?
       end
 
       attr_accessor :exec_result, :exec_index, :field_resolve_step, :raw_arguments

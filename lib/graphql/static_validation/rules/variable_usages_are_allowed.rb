@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module StaticValidation
     #--
@@ -10,31 +10,35 @@ module GraphQL
       # `list_depth` is the number of list literals around the variable.
       FragmentVariableUsage = Struct.new(:argument_owner, :arg_node, :variable_name, :list_depth, :path, :checked_variable_types)
 
-      def initialize(*)
+      #: (GraphQL::Language::Nodes::Document document, GraphQL::StaticValidation::ValidationContext context) -> void
+      def initialize(document, context)
         super
         # holds { name => ast_node } pairs
         @declared_variables = {} #: Hash[String, GraphQL::Language::Nodes::VariableDefinition]
         @operation_declared_variables = {}.compare_by_identity #: Hash[GraphQL::Language::Nodes::OperationDefinition, Hash[String, GraphQL::Language::Nodes::VariableDefinition]]
-        @variable_usages_fragment_definition = nil
+        @variable_usages_fragment_definition = nil #: GraphQL::Language::Nodes::FragmentDefinition?
         @fragment_variable_usages = nil #: Hash[GraphQL::Language::Nodes::FragmentDefinition, Array[FragmentVariableUsage]]?
         @reported_fragment_variable_errors = nil #: Hash[GraphQL::Language::Nodes::Argument, Hash[String, bool]]?
-        @allow_legacy_invalid_variable_usages = @schema.allow_legacy_invalid_variable_usages
+        @allow_legacy_invalid_variable_usages = schema.allow_legacy_invalid_variable_usages #: bool?
         # The arguments and variables which have an error from the legacy check
         @legacy_errors = nil #: Hash[GraphQL::Language::Nodes::Argument, Hash[String, bool]]?
       end
 
+      #: (GraphQL::Language::Nodes::OperationDefinition node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_operation_definition(node, parent)
         @declared_variables = node.variables.each_with_object({}) { |var, memo| memo[var.name] = var }
         @operation_declared_variables[node] = @declared_variables
         super
       end
 
+      #: (GraphQL::Language::Nodes::FragmentDefinition node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_fragment_definition(node, parent)
         @variable_usages_fragment_definition = node
         super
         @variable_usages_fragment_definition = nil
       end
 
+      #: (GraphQL::Language::Nodes::Document node, GraphQL::Language::Nodes::AbstractNode? parent) -> void
       def on_document(node, parent)
         super
         # A fragment can come before the operations which use it, and many operations can use it.
@@ -71,6 +75,7 @@ module GraphQL
         end
       end
 
+      #: (GraphQL::Language::Nodes::Argument node, GraphQL::Language::Nodes::AbstractNode parent) -> void
       def on_argument(node, parent)
         variables = variables_in_value(node.value, 0, nil)
 
@@ -165,7 +170,7 @@ module GraphQL
       def validate_usage(argument_owner, arg_node, ast_var, list_depth, path: nil, var_type: usage_variable_type(ast_var), legacy_reported: false)
         return if var_type.nil?
 
-        arg_defn = @types.argument(argument_owner, arg_node.name)
+        arg_defn = types.argument(argument_owner, arg_node.name)
         error_message = usage_error(arg_defn, var_type, list_depth)
         return if error_message.nil?
 
@@ -175,7 +180,7 @@ module GraphQL
           return if @legacy_errors&.dig(arg_node, ast_var.name)
 
           if @allow_legacy_invalid_variable_usages == true
-            legacy_handling = @schema.legacy_invalid_variable_usages(context.query, ast_var, arg_node)
+            legacy_handling = schema.legacy_invalid_variable_usages(context.query, ast_var, arg_node)
             case legacy_handling
             when nil
               return
@@ -184,7 +189,7 @@ module GraphQL
             when String
               message_override = legacy_handling
             else
-              raise GraphQL::Error, "#{@schema}.legacy_invalid_variable_usages returned unexpected value: #{legacy_handling.inspect}. Expected `nil`, String, or `:return_validation_error`."
+              raise GraphQL::Error, "#{schema}.legacy_invalid_variable_usages returned unexpected value: #{legacy_handling.inspect}. Expected `nil`, String, or `:return_validation_error`."
             end
           else
             context.query.logger.warn <<~WARN
@@ -233,7 +238,7 @@ module GraphQL
         return if var_type.nil?
 
         list_depth = depth_of_array(arg_node.value) if list_depth == 1
-        arg_defn = @types.argument(argument_owner, arg_node.name)
+        arg_defn = types.argument(argument_owner, arg_node.name)
         error_message = usage_error(arg_defn, var_type, list_depth)
         return if error_message.nil?
 
@@ -287,6 +292,7 @@ module GraphQL
         var_type
       end
 
+      #: (untyped type) -> Integer
       def list_dimension(type)
         if type.kind.list?
           1 + list_dimension(type.of_type)
@@ -297,6 +303,7 @@ module GraphQL
         end
       end
 
+      #: (untyped arg_type, untyped var_type) -> bool
       def non_null_levels_match(arg_type, var_type)
         if arg_type.kind.non_null? && !var_type.kind.non_null?
           false
