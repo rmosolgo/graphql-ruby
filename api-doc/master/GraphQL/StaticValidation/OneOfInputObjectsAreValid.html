@@ -515,9 +515,12 @@
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">super</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">parent</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Nodes</span><span class="ruby-operator">::</span><span class="ruby-constant">Argument</span>)
 
   <span class="ruby-identifier">parent_type</span> = <span class="ruby-identifier">get_parent_type</span>(<span class="ruby-identifier">context</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-keyword">return</span> <span class="ruby-keyword">super</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">parent_type</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">parent_type</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">input_object?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">parent_type</span>.<span class="ruby-identifier">one_of?</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">super</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">parent_type</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">parent_type</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">input_object?</span>
+  <span class="ruby-comment"># Its kind is INPUT_OBJECT, so it&#39;s an input object class:</span>
+  <span class="ruby-identifier">input_object_type</span> = <span class="ruby-identifier">parent_type</span> <span class="ruby-comment">#: as singleton(GraphQL::Schema::InputObject)</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">super</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">input_object_type</span>.<span class="ruby-identifier">one_of?</span>
 
-  <span class="ruby-identifier">validate_one_of_input_object</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">parent_type</span>)
+  <span class="ruby-identifier">validate_one_of_input_object</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">input_object_type</span>)
   <span class="ruby-keyword">super</span>
 <span class="ruby-keyword">end</span></pre>
           </div>

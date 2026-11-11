@@ -513,6 +513,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="../Types/String.html" class="rbs-type">String</a></code></span>
+
         </div>
 
         <div class="method-description">
@@ -529,6 +531,8 @@
             <span class="method-name">name</span>
             <span class="attribute-access-type">[R]</span>
           </a>
+
+          <span class="method-type-signature"><code><a href="../Types/String.html" class="rbs-type">String</a></code></span>
 
         </div>
 
@@ -547,6 +551,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="../Schema/Field.html" class="rbs-type">GraphQL::Schema::Field</a> | singleton(GraphQL::Schema::Directive) | GraphQL::Schema::Member::type_definition</code></span>
+
         </div>
 
         <div class="method-description">
@@ -563,6 +569,8 @@
             <span class="method-name">type_name</span>
             <span class="attribute-access-type">[R]</span>
           </a>
+
+          <span class="method-type-signature"><code><a href="../Types/String.html" class="rbs-type">String</a></code></span>
 
         </div>
 
@@ -595,11 +603,13 @@
               <div class="method-heading">
                 <a href="#method-c-new" title="Link to this method">
                   <span class="method-name">new</span>
-                  <span class="method-args">(message, path: nil, nodes: [], name:, type:, argument_name:, parent:)</span>
+                  <span class="method-args">(message, name:, type:, argument_name:, parent:, path: nil, nodes: [])</span>
                 </a>
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Types/String.html" class="rbs-type">String</a> message, name: <a href="../Types/String.html" class="rbs-type">String</a>, type: <a href="../Types/String.html" class="rbs-type">String</a>, argument_name: <a href="../Types/String.html" class="rbs-type">String</a>, parent: <a href="../Schema/Field.html" class="rbs-type">GraphQL::Schema::Field</a> | singleton(GraphQL::Schema::Directive) | GraphQL::Schema::Member::type_definition, ?path: Array[<a href="../Types/String.html" class="rbs-type">String</a> | Integer]?, ?nodes: <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> | Array[<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>]) &rarr; void</code></pre>
 
           </div>
 
@@ -614,13 +624,13 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/arguments_are_defined_error.rb, line 12</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">path:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">nodes:</span> [], <span class="ruby-value">name:</span>, <span class="ruby-value">type:</span>, <span class="ruby-value">argument_name:</span>, <span class="ruby-value">parent:</span>)
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/arguments_are_defined_error.rb, line 17</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">name:</span>, <span class="ruby-value">type:</span>, <span class="ruby-value">argument_name:</span>, <span class="ruby-value">parent:</span>, <span class="ruby-value">path:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">nodes:</span> [])
   <span class="ruby-keyword">super</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">path</span>, <span class="ruby-value">nodes</span><span class="ruby-value">:</span> <span class="ruby-identifier">nodes</span>)
-  <span class="ruby-ivar">@name</span> = <span class="ruby-identifier">name</span>
-  <span class="ruby-ivar">@type_name</span> = <span class="ruby-identifier">type</span>
-  <span class="ruby-ivar">@argument_name</span> = <span class="ruby-identifier">argument_name</span>
-  <span class="ruby-ivar">@parent</span> = <span class="ruby-identifier">parent</span>
+  <span class="ruby-ivar">@name</span> = <span class="ruby-identifier">name</span> <span class="ruby-comment">#: String</span>
+  <span class="ruby-ivar">@type_name</span> = <span class="ruby-identifier">type</span> <span class="ruby-comment">#: String</span>
+  <span class="ruby-ivar">@argument_name</span> = <span class="ruby-identifier">argument_name</span> <span class="ruby-comment">#: String</span>
+  <span class="ruby-ivar">@parent</span> = <span class="ruby-identifier">parent</span> <span class="ruby-comment">#: GraphQL::Schema::Field | singleton(GraphQL::Schema::Directive) | GraphQL::Schema::Member::type_definition</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -674,6 +684,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; <a href="../Types/String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -687,7 +699,7 @@
 
 
           <div class="method-source-code" id="code-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/arguments_are_defined_error.rb, line 34</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/arguments_are_defined_error.rb, line 41</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">code</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">argumentNotAccepted</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -724,6 +736,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Hash[<a href="../Types/String.html" class="rbs-type">String</a>, untyped]</code></pre>
+
           </div>
 
 
@@ -737,7 +751,7 @@
 
 
           <div class="method-source-code" id="to_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/arguments_are_defined_error.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/arguments_are_defined_error.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_h</span>
   <span class="ruby-identifier">extensions</span> = {
     <span class="ruby-string">&quot;</span><span class="ruby-string">code</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">code</span>,

@@ -495,6 +495,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Argument.html" class="rbs-type">GraphQL::Language::Nodes::Argument</a> node, <a href="../Language/Nodes/Field.html" class="rbs-type">GraphQL::Language::Nodes::Field</a> | <a href="../Language/Nodes/Directive.html" class="rbs-type">GraphQL::Language::Nodes::Directive</a> | <a href="../Language/Nodes/InputObject.html" class="rbs-type">GraphQL::Language::Nodes::InputObject</a> parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -508,16 +510,16 @@
 
 
           <div class="method-source-code" id="on_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/arguments_are_defined.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/arguments_are_defined.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_argument</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">parent_defn</span> = <span class="ruby-identifier">parent_definition</span>(<span class="ruby-identifier">parent</span>)
 
-  <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_defn</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">argument</span>(<span class="ruby-identifier">parent_defn</span>, <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_defn</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">types</span>.<span class="ruby-identifier">argument</span>(<span class="ruby-identifier">parent_defn</span>, <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>)
     <span class="ruby-keyword">super</span>
   <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">parent_defn</span>
     <span class="ruby-identifier">kind_of_node</span> = <span class="ruby-identifier">node_type</span>(<span class="ruby-identifier">parent</span>)
     <span class="ruby-identifier">error_arg_name</span> = <span class="ruby-identifier">parent_name</span>(<span class="ruby-identifier">parent</span>, <span class="ruby-identifier">parent_defn</span>)
-    <span class="ruby-identifier">suggestion</span> = <span class="ruby-keyword">if</span> <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">did_you_mean</span>
+    <span class="ruby-identifier">suggestion</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">did_you_mean</span>
       <span class="ruby-identifier">arg_names</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-identifier">parent_defn</span>).<span class="ruby-identifier">map</span>(<span class="ruby-operator">&amp;</span><span class="ruby-value">:</span><span class="ruby-value">graphql_name</span>)
       <span class="ruby-identifier">context</span>.<span class="ruby-identifier">did_you_mean_suggestion</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>, <span class="ruby-identifier">arg_names</span>)
     <span class="ruby-keyword">end</span>

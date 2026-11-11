@@ -525,11 +525,13 @@
               <div class="method-heading">
                 <a href="#method-c-new" title="Link to this method">
                   <span class="method-name">new</span>
-                  <span class="method-args">(*)</span>
+                  <span class="method-args">(document, context)</span>
                 </a>
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a> document, <a href="ValidationContext.html" class="rbs-type">GraphQL::StaticValidation::ValidationContext</a> context) &rarr; void</code></pre>
 
           </div>
 
@@ -544,16 +546,16 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 13</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 14</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">document</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-comment"># holds { name =&gt; ast_node } pairs</span>
   <span class="ruby-ivar">@declared_variables</span> = {} <span class="ruby-comment">#: Hash[String, GraphQL::Language::Nodes::VariableDefinition]</span>
   <span class="ruby-ivar">@operation_declared_variables</span> = {}.<span class="ruby-identifier">compare_by_identity</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::OperationDefinition, Hash[String, GraphQL::Language::Nodes::VariableDefinition]]</span>
-  <span class="ruby-ivar">@variable_usages_fragment_definition</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-ivar">@variable_usages_fragment_definition</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: GraphQL::Language::Nodes::FragmentDefinition?</span>
   <span class="ruby-ivar">@fragment_variable_usages</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::FragmentDefinition, Array[FragmentVariableUsage]]?</span>
   <span class="ruby-ivar">@reported_fragment_variable_errors</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::Argument, Hash[String, bool]]?</span>
-  <span class="ruby-ivar">@allow_legacy_invalid_variable_usages</span> = <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">allow_legacy_invalid_variable_usages</span>
+  <span class="ruby-ivar">@allow_legacy_invalid_variable_usages</span> = <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">allow_legacy_invalid_variable_usages</span> <span class="ruby-comment">#: bool?</span>
   <span class="ruby-comment"># The arguments and variables which have an error from the legacy check</span>
   <span class="ruby-ivar">@legacy_errors</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[GraphQL::Language::Nodes::Argument, Hash[String, bool]]?</span>
 <span class="ruby-keyword">end</span></pre>
@@ -609,6 +611,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Argument.html" class="rbs-type">GraphQL::Language::Nodes::Argument</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -622,7 +626,7 @@
 
 
           <div class="method-source-code" id="on_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 74</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 79</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_argument</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">variables</span> = <span class="ruby-identifier">variables_in_value</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">value</span>, <span class="ruby-value">0</span>, <span class="ruby-keyword">nil</span>)
 
@@ -718,6 +722,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -731,7 +737,7 @@
 
 
           <div class="method-source-code" id="on_document-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 38</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 42</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_document</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-comment"># A fragment can come before the operations which use it, and many operations can use it.</span>
@@ -805,6 +811,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/FragmentDefinition.html" class="rbs-type">GraphQL::Language::Nodes::FragmentDefinition</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -818,7 +826,7 @@
 
 
           <div class="method-source-code" id="on_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 32</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 35</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@variable_usages_fragment_definition</span> = <span class="ruby-identifier">node</span>
   <span class="ruby-keyword">super</span>
@@ -862,6 +870,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/OperationDefinition.html" class="rbs-type">GraphQL::Language::Nodes::OperationDefinition</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -875,7 +885,7 @@
 
 
           <div class="method-source-code" id="on_operation_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 26</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variable_usages_are_allowed.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_operation_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@declared_variables</span> = <span class="ruby-identifier">node</span>.<span class="ruby-identifier">variables</span>.<span class="ruby-identifier">each_with_object</span>({}) { <span class="ruby-operator">|</span><span class="ruby-identifier">var</span>, <span class="ruby-identifier">memo</span><span class="ruby-operator">|</span> <span class="ruby-identifier">memo</span>[<span class="ruby-identifier">var</span>.<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">var</span> }
   <span class="ruby-ivar">@operation_declared_variables</span>[<span class="ruby-identifier">node</span>] = <span class="ruby-ivar">@declared_variables</span>

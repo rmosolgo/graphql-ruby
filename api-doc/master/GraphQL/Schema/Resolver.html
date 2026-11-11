@@ -1774,7 +1774,7 @@
   <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">arguments</span>(<span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>).<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">arg</span><span class="ruby-operator">|</span>
     <span class="ruby-ivar">@arguments_by_keyword</span>[<span class="ruby-identifier">arg</span>.<span class="ruby-identifier">keyword</span>] = <span class="ruby-identifier">arg</span>
   <span class="ruby-keyword">end</span>
-  <span class="ruby-ivar">@prepared_arguments</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-ivar">@prepared_arguments</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: Hash[Symbol, untyped]?</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 

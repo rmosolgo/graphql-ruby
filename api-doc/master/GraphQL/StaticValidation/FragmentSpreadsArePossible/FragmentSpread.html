@@ -498,6 +498,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="../../Language/Nodes/FragmentSpread.html" class="rbs-type">GraphQL::Language::Nodes::FragmentSpread</a></code></span>
+
         </div>
 
         <div class="method-description">
@@ -515,6 +517,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code>GraphQL::Schema::Member::type_definition?</code></span>
+
         </div>
 
         <div class="method-description">
@@ -531,6 +535,8 @@
             <span class="method-name">path</span>
             <span class="attribute-access-type">[R]</span>
           </a>
+
+          <span class="method-type-signature"><code>Array[<a href="../../Types/String.html" class="rbs-type">String</a> | Integer]</code></span>
 
         </div>
 
@@ -569,6 +575,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(node: <a href="../../Language/Nodes/FragmentSpread.html" class="rbs-type">GraphQL::Language::Nodes::FragmentSpread</a>, parent_type: GraphQL::Schema::Member::type_definition?, path: Array[<a href="../../Types/String.html" class="rbs-type">String</a> | Integer]) &rarr; void</code></pre>
+
           </div>
 
 
@@ -582,11 +590,11 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 69</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 84</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">node:</span>, <span class="ruby-value">parent_type:</span>, <span class="ruby-value">path:</span>)
-  <span class="ruby-ivar">@node</span> = <span class="ruby-identifier">node</span>
-  <span class="ruby-ivar">@parent_type</span> = <span class="ruby-identifier">parent_type</span>
-  <span class="ruby-ivar">@path</span> = <span class="ruby-identifier">path</span>
+  <span class="ruby-ivar">@node</span> = <span class="ruby-identifier">node</span> <span class="ruby-comment">#: GraphQL::Language::Nodes::FragmentSpread</span>
+  <span class="ruby-ivar">@parent_type</span> = <span class="ruby-identifier">parent_type</span> <span class="ruby-comment">#: GraphQL::Schema::Member::type_definition?</span>
+  <span class="ruby-ivar">@path</span> = <span class="ruby-identifier">path</span> <span class="ruby-comment">#: Array[String | Integer]</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 

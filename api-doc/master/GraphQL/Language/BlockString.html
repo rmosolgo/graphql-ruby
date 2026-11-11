@@ -495,6 +495,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Types/String.html" class="rbs-type">String</a> line, Integer length) { (<a href="../Types/String.html" class="rbs-type">String</a>) &rarr; void } &rarr; void</code></pre>
+
           </div>
 
 
@@ -508,14 +510,16 @@
 
 
           <div class="method-source-code" id="break_line-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 91</span>
-<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">break_line</span>(<span class="ruby-identifier">line</span>, <span class="ruby-identifier">length</span>)
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 94</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">break_line</span>(<span class="ruby-identifier">line</span>, <span class="ruby-identifier">length</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">yield</span>(<span class="ruby-identifier">line</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">line</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">length</span> <span class="ruby-operator">+</span> <span class="ruby-value">5</span>
 
   <span class="ruby-identifier">parts</span> = <span class="ruby-identifier">line</span>.<span class="ruby-identifier">split</span>(<span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">new</span>(<span class="ruby-string">&quot;</span><span class="ruby-string">((?: |^).{15,</span><span class="ruby-string">#{</span><span class="ruby-identifier">length</span> <span class="ruby-operator">-</span> <span class="ruby-value">40</span><span class="ruby-string">}</span><span class="ruby-string">}(?= |$))</span><span class="ruby-string">&quot;</span>))
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">yield</span>(<span class="ruby-identifier">line</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&lt;</span> <span class="ruby-value">4</span>
 
-  <span class="ruby-keyword">yield</span>(<span class="ruby-identifier">parts</span>.<span class="ruby-identifier">slice!</span>(<span class="ruby-value">0</span>, <span class="ruby-value">3</span>).<span class="ruby-identifier">join</span>)
+  <span class="ruby-comment"># `parts` has at least 4 items:</span>
+  <span class="ruby-identifier">first_parts</span> = <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">slice!</span>(<span class="ruby-value">0</span>, <span class="ruby-value">3</span>) <span class="ruby-comment">#: as !nil</span>
+  <span class="ruby-keyword">yield</span>(<span class="ruby-identifier">first_parts</span>.<span class="ruby-identifier">join</span>)
 
   <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">part</span>, <span class="ruby-identifier">i</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">i</span> <span class="ruby-operator">%</span> <span class="ruby-value">2</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span>
@@ -557,6 +561,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Types/String.html" class="rbs-type">String</a> line) &rarr; bool</code></pre>
+
           </div>
 
 
@@ -570,7 +576,7 @@
 
 
           <div class="method-source-code" id="contains_only_whitespace-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 107</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 113</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">contains_only_whitespace?</span>(<span class="ruby-identifier">line</span>)
   <span class="ruby-identifier">line</span>.<span class="ruby-identifier">match?</span>(<span class="ruby-regexp">/^\s*$/</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -607,6 +613,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Types/String.html" class="rbs-type">String</a> str, ?indent: <a href="../Types/String.html" class="rbs-type">String</a>) &rarr; <a href="../Types/String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -620,7 +628,7 @@
 
 
           <div class="method-source-code" id="print-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 58</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">print</span>(<span class="ruby-identifier">str</span>, <span class="ruby-value">indent:</span> <span class="ruby-string">&#39;</span><span class="ruby-string">&#39;</span>)
   <span class="ruby-identifier">line_length</span> = <span class="ruby-value">120</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">indent</span>.<span class="ruby-identifier">length</span>
   <span class="ruby-identifier">block_str</span> = <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>.<span class="ruby-identifier">dup</span>
@@ -684,6 +692,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Types/String.html" class="rbs-type">String</a> str) &rarr; <a href="../Types/String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -697,7 +707,7 @@
 
 
           <div class="method-source-code" id="trim_whitespace-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/block_string.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">trim_whitespace</span>(<span class="ruby-identifier">str</span>)
   <span class="ruby-comment"># Early return for the most common cases:</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">str</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;</span><span class="ruby-string">&quot;</span>
@@ -736,10 +746,10 @@
   <span class="ruby-keyword">end</span>
 
   <span class="ruby-comment"># Remove leading &amp; trailing blank lines</span>
-  <span class="ruby-keyword">while</span> <span class="ruby-identifier">lines</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">contains_only_whitespace?</span>(<span class="ruby-identifier">lines</span>.<span class="ruby-identifier">first</span>)
+  <span class="ruby-keyword">while</span> (<span class="ruby-identifier">first_line</span> = <span class="ruby-identifier">lines</span>.<span class="ruby-identifier">first</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">contains_only_whitespace?</span>(<span class="ruby-identifier">first_line</span>)
     <span class="ruby-identifier">lines</span>.<span class="ruby-identifier">shift</span>
   <span class="ruby-keyword">end</span>
-  <span class="ruby-keyword">while</span> <span class="ruby-identifier">lines</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">contains_only_whitespace?</span>(<span class="ruby-identifier">lines</span>.<span class="ruby-identifier">last</span>)
+  <span class="ruby-keyword">while</span> (<span class="ruby-identifier">last_line</span> = <span class="ruby-identifier">lines</span>.<span class="ruby-identifier">last</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">contains_only_whitespace?</span>(<span class="ruby-identifier">last_line</span>)
     <span class="ruby-identifier">lines</span>.<span class="ruby-identifier">pop</span>
   <span class="ruby-keyword">end</span>
 

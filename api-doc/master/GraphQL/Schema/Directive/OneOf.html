@@ -504,11 +504,13 @@
               <div class="method-heading">
                 <a href="#method-c-new" title="Link to this method">
                   <span class="method-name">new</span>
-                  <span class="method-args">(...)</span>
+                  <span class="method-args">(owner, **arguments)</span>
                 </a>
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(singleton(GraphQL::Schema::InputObject) owner, **untyped arguments) &rarr; void</code></pre>
 
           </div>
 
@@ -523,8 +525,8 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/one_of.rb, line 12</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(...)
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/one_of.rb, line 13</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">owner</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">arguments</span>)
   <span class="ruby-keyword">super</span>
 
   <span class="ruby-identifier">owner</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">IsOneOf</span>)

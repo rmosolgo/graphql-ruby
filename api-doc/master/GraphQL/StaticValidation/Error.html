@@ -507,6 +507,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="../Types/String.html" class="rbs-type">String</a>?</code></span>
+
         </div>
 
         <div class="method-description">
@@ -524,6 +526,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code>Array[<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>]</code></span>
+
         </div>
 
         <div class="method-description">
@@ -540,6 +544,8 @@
             <span class="method-name">path</span>
             <span class="attribute-access-type">[RW]</span>
           </a>
+
+          <span class="method-type-signature"><code>Array[<a href="../Types/String.html" class="rbs-type">String</a> | Integer]?</code></span>
 
         </div>
 
@@ -578,6 +584,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Types/String.html" class="rbs-type">String</a>? message, ?path: Array[<a href="../Types/String.html" class="rbs-type">String</a> | Integer]?, ?nodes: <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> | Array[<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>]) &rarr; void</code></pre>
+
           </div>
 
 
@@ -591,11 +599,11 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/error.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/error.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">path:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">nodes:</span> [])
-  <span class="ruby-ivar">@message</span> = <span class="ruby-identifier">message</span>
-  <span class="ruby-ivar">@nodes</span> = <span class="ruby-constant">Array</span>(<span class="ruby-identifier">nodes</span>)
-  <span class="ruby-ivar">@path</span> = <span class="ruby-identifier">path</span>
+  <span class="ruby-ivar">@message</span> = <span class="ruby-identifier">message</span> <span class="ruby-comment">#: String?</span>
+  <span class="ruby-ivar">@nodes</span> = <span class="ruby-constant">Array</span>(<span class="ruby-identifier">nodes</span>) <span class="ruby-comment">#: Array[GraphQL::Language::Nodes::AbstractNode]</span>
+  <span class="ruby-ivar">@path</span> = <span class="ruby-identifier">path</span> <span class="ruby-comment">#: Array[String | Integer]?</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -644,6 +652,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Hash[<a href="../Types/String.html" class="rbs-type">String</a>, untyped]</code></pre>
+
           </div>
 
 
@@ -657,7 +667,7 @@
 
 
           <div class="method-source-code" id="to_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/error.rb, line 30</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/error.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_h</span>
   {
     <span class="ruby-string">&quot;</span><span class="ruby-string">message</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">message</span>,

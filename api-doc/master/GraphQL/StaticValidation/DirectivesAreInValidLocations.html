@@ -552,6 +552,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Directive.html" class="rbs-type">GraphQL::Language::Nodes::Directive</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -565,7 +567,7 @@
 
 
           <div class="method-source-code" id="on_directive-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/directives_are_in_valid_locations.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/directives_are_in_valid_locations.rb, line 12</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_directive</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">validate_location</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>, <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema_directives</span>)
   <span class="ruby-keyword">super</span>

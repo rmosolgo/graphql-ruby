@@ -506,11 +506,13 @@
               <div class="method-heading">
                 <a href="#method-c-new" title="Link to this method">
                   <span class="method-name">new</span>
-                  <span class="method-args">(*)</span>
+                  <span class="method-args">(document, context)</span>
                 </a>
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a> document, <a href="ValidationContext.html" class="rbs-type">GraphQL::StaticValidation::ValidationContext</a> context) &rarr; void</code></pre>
 
           </div>
 
@@ -525,10 +527,10 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 9</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 11</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">document</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">super</span>
-  <span class="ruby-ivar">@spreads_to_validate</span> = []
+  <span class="ruby-ivar">@spreads_to_validate</span> = [] <span class="ruby-comment">#: Array[FragmentSpread]</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -582,6 +584,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -595,14 +599,14 @@
 
 
           <div class="method-source-code" id="on_document-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 29</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 34</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_document</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-ivar">@spreads_to_validate</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">frag_spread</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">frag_node</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">fragments</span>[<span class="ruby-identifier">frag_spread</span>.<span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>]
     <span class="ruby-keyword">if</span> <span class="ruby-identifier">frag_node</span>
       <span class="ruby-identifier">fragment_child_name</span> = <span class="ruby-identifier">frag_node</span>.<span class="ruby-identifier">type</span>.<span class="ruby-identifier">name</span>
-      <span class="ruby-identifier">fragment_child</span> = <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">fragment_child_name</span>)
+      <span class="ruby-identifier">fragment_child</span> = <span class="ruby-identifier">types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">fragment_child_name</span>)
       <span class="ruby-comment"># Might be non-existent type name</span>
       <span class="ruby-keyword">if</span> <span class="ruby-identifier">fragment_child</span>
         <span class="ruby-identifier">validate_fragment_in_scope</span>(<span class="ruby-identifier">frag_spread</span>.<span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">fragment_child</span>, <span class="ruby-identifier">frag_spread</span>.<span class="ruby-identifier">node</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">frag_spread</span>.<span class="ruby-identifier">path</span>)
@@ -648,6 +652,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/FragmentSpread.html" class="rbs-type">GraphQL::Language::Nodes::FragmentSpread</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -661,9 +667,9 @@
 
 
           <div class="method-source-code" id="on_fragment_spread-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_spread</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-identifier">fragment_parent</span> = <span class="ruby-ivar">@current_object_type</span>
+  <span class="ruby-identifier">fragment_parent</span> = <span class="ruby-identifier">type_definition</span>
   <span class="ruby-ivar">@spreads_to_validate</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-constant">FragmentSpread</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">node</span><span class="ruby-value">:</span> <span class="ruby-identifier">node</span>, <span class="ruby-value">parent_type</span><span class="ruby-value">:</span> <span class="ruby-identifier">fragment_parent</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">path</span>)
   <span class="ruby-keyword">super</span>
 <span class="ruby-keyword">end</span></pre>
@@ -705,6 +711,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/InlineFragment.html" class="rbs-type">GraphQL::Language::Nodes::InlineFragment</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -718,10 +726,10 @@
 
 
           <div class="method-source-code" id="on_inline_fragment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 14</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_inline_fragment</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
-  <span class="ruby-identifier">fragment_parent</span> = <span class="ruby-ivar">@parent_object_type</span>
-  <span class="ruby-identifier">fragment_child</span> = <span class="ruby-ivar">@current_object_type</span>
+  <span class="ruby-identifier">fragment_parent</span> = <span class="ruby-identifier">parent_type_definition</span>
+  <span class="ruby-identifier">fragment_child</span> = <span class="ruby-identifier">type_definition</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">fragment_child</span>
     <span class="ruby-identifier">validate_fragment_in_scope</span>(<span class="ruby-identifier">fragment_parent</span>, <span class="ruby-identifier">fragment_child</span>, <span class="ruby-identifier">node</span>, <span class="ruby-identifier">context</span>, <span class="ruby-identifier">context</span>.<span class="ruby-identifier">path</span>)
   <span class="ruby-keyword">end</span>

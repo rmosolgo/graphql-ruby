@@ -495,6 +495,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Argument.html" class="rbs-type">GraphQL::Language::Nodes::Argument</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -508,7 +510,7 @@
 
 
           <div class="method-source-code" id="on_argument-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_literals_are_compatible.rb, line 10</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/argument_literals_are_compatible.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_argument</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-comment"># Check the child arguments first;</span>
   <span class="ruby-comment"># don&#39;t add a new error if one of them reports an error</span>
@@ -519,10 +521,14 @@
     <span class="ruby-keyword">return</span>
   <span class="ruby-keyword">end</span>
 
-  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">error_bubbling</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">errors</span>.<span class="ruby-identifier">none?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">err</span><span class="ruby-operator">|</span> <span class="ruby-identifier">err</span>.<span class="ruby-identifier">path</span>.<span class="ruby-identifier">take</span>(<span class="ruby-ivar">@path_depth</span>) <span class="ruby-operator">==</span> <span class="ruby-ivar">@path</span>[<span class="ruby-value">0</span>, <span class="ruby-ivar">@path_depth</span>] }
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">schema</span>.<span class="ruby-identifier">error_bubbling</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">context</span>.<span class="ruby-identifier">errors</span>.<span class="ruby-identifier">none?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">err</span><span class="ruby-operator">|</span>
+      <span class="ruby-comment"># `add_error` sets the path of every error</span>
+      <span class="ruby-identifier">err_path</span> = <span class="ruby-identifier">err</span>.<span class="ruby-identifier">path</span> <span class="ruby-comment">#: as !nil</span>
+      <span class="ruby-identifier">err_path</span>.<span class="ruby-identifier">take</span>(<span class="ruby-identifier">path_depth</span>) <span class="ruby-operator">==</span> <span class="ruby-identifier">path</span>
+    }
     <span class="ruby-identifier">parent_defn</span> = <span class="ruby-identifier">parent_definition</span>(<span class="ruby-identifier">parent</span>)
 
-    <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_defn</span> <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">arg_defn</span> = <span class="ruby-ivar">@types</span>.<span class="ruby-identifier">argument</span>(<span class="ruby-identifier">parent_defn</span>, <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>))
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_defn</span> <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">arg_defn</span> = <span class="ruby-identifier">types</span>.<span class="ruby-identifier">argument</span>(<span class="ruby-identifier">parent_defn</span>, <span class="ruby-identifier">node</span>.<span class="ruby-identifier">name</span>))
       <span class="ruby-identifier">validation_result</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">validate_literal</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">value</span>, <span class="ruby-identifier">arg_defn</span>.<span class="ruby-identifier">type</span>)
       <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">validation_result</span>.<span class="ruby-identifier">valid?</span>
         <span class="ruby-identifier">kind_of_node</span> = <span class="ruby-identifier">node_type</span>(<span class="ruby-identifier">parent</span>)

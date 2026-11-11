@@ -513,6 +513,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="../Types/String.html" class="rbs-type">String</a></code></span>
+
         </div>
 
         <div class="method-description">
@@ -529,6 +531,8 @@
             <span class="method-name">type_name</span>
             <span class="attribute-access-type">[R]</span>
           </a>
+
+          <span class="method-type-signature"><code><a href="../Types/String.html" class="rbs-type">String</a>?</code></span>
 
         </div>
 
@@ -561,11 +565,13 @@
               <div class="method-heading">
                 <a href="#method-c-new" title="Link to this method">
                   <span class="method-name">new</span>
-                  <span class="method-args">(message, path: nil, nodes: [], node_name:, type: nil)</span>
+                  <span class="method-args">(message, node_name:, path: nil, nodes: [], type: nil)</span>
                 </a>
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Types/String.html" class="rbs-type">String</a> message, node_name: <a href="../Types/String.html" class="rbs-type">String</a>, ?path: Array[<a href="../Types/String.html" class="rbs-type">String</a> | Integer]?, ?nodes: <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> | Array[<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>], ?type: <a href="../Types/String.html" class="rbs-type">String</a>?) &rarr; void</code></pre>
 
           </div>
 
@@ -580,11 +586,11 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_have_appropriate_selections_error.rb, line 10</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">path:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">nodes:</span> [], <span class="ruby-value">node_name:</span>, <span class="ruby-value">type:</span> <span class="ruby-keyword">nil</span>)
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_have_appropriate_selections_error.rb, line 13</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">node_name:</span>, <span class="ruby-value">path:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">nodes:</span> [], <span class="ruby-value">type:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">super</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">path</span>, <span class="ruby-value">nodes</span><span class="ruby-value">:</span> <span class="ruby-identifier">nodes</span>)
-  <span class="ruby-ivar">@node_name</span> = <span class="ruby-identifier">node_name</span>
-  <span class="ruby-ivar">@type_name</span> = <span class="ruby-identifier">type</span>
+  <span class="ruby-ivar">@node_name</span> = <span class="ruby-identifier">node_name</span> <span class="ruby-comment">#: String</span>
+  <span class="ruby-ivar">@type_name</span> = <span class="ruby-identifier">type</span> <span class="ruby-comment">#: String?</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -638,6 +644,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; <a href="../Types/String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -651,7 +659,7 @@
 
 
           <div class="method-source-code" id="code-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_have_appropriate_selections_error.rb, line 28</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_have_appropriate_selections_error.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">code</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">selectionMismatch</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -688,6 +696,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Hash[<a href="../Types/String.html" class="rbs-type">String</a>, untyped]</code></pre>
+
           </div>
 
 
@@ -701,7 +711,7 @@
 
 
           <div class="method-source-code" id="to_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_have_appropriate_selections_error.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fields_have_appropriate_selections_error.rb, line 21</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_h</span>
   <span class="ruby-identifier">extensions</span> = {
     <span class="ruby-string">&quot;</span><span class="ruby-string">code</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">code</span>,

@@ -495,6 +495,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/VariableDefinition.html" class="rbs-type">GraphQL::Language::Nodes::VariableDefinition</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -508,22 +510,22 @@
 
 
           <div class="method-source-code" id="on_variable_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_input_types.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/variables_are_input_types.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_variable_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-identifier">type_name</span> = <span class="ruby-identifier">get_type_name</span>(<span class="ruby-identifier">node</span>.<span class="ruby-identifier">type</span>)
   <span class="ruby-identifier">type</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">type</span>(<span class="ruby-identifier">type_name</span>)
 
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">type</span>.<span class="ruby-identifier">nil?</span>
-    <span class="ruby-identifier">suggestion</span> = <span class="ruby-keyword">if</span> <span class="ruby-ivar">@schema</span>.<span class="ruby-identifier">did_you_mean</span>
+    <span class="ruby-identifier">suggestion</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">schema</span>.<span class="ruby-identifier">did_you_mean</span>
       <span class="ruby-ivar">@all_possible_input_type_names</span> ||= <span class="ruby-keyword">begin</span>
-        <span class="ruby-identifier">names</span> = []
+        <span class="ruby-identifier">names</span> = [] <span class="ruby-comment">#: Array[String]</span>
         <span class="ruby-identifier">context</span>.<span class="ruby-identifier">types</span>.<span class="ruby-identifier">all_types</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span>(<span class="ruby-identifier">t</span>)<span class="ruby-operator">|</span>
           <span class="ruby-keyword">if</span> <span class="ruby-identifier">t</span>.<span class="ruby-identifier">kind</span>.<span class="ruby-identifier">input?</span>
             <span class="ruby-identifier">names</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">t</span>.<span class="ruby-identifier">graphql_name</span>
           <span class="ruby-keyword">end</span>
         }
         <span class="ruby-identifier">names</span>
-      <span class="ruby-keyword">end</span>
+      <span class="ruby-keyword">end</span> <span class="ruby-comment">#: Array[String]?</span>
       <span class="ruby-identifier">context</span>.<span class="ruby-identifier">did_you_mean_suggestion</span>(<span class="ruby-identifier">type_name</span>, <span class="ruby-ivar">@all_possible_input_type_names</span>)
     <span class="ruby-keyword">end</span>
     <span class="ruby-identifier">add_error</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">StaticValidation</span><span class="ruby-operator">::</span><span class="ruby-constant">VariablesAreInputTypesError</span>.<span class="ruby-identifier">new</span>(

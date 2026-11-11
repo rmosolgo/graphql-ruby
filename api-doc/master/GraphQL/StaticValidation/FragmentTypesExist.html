@@ -497,6 +497,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/FragmentDefinition.html" class="rbs-type">GraphQL::Language::Nodes::FragmentDefinition</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? _parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -510,7 +512,7 @@
 
 
           <div class="method-source-code" id="on_fragment_definition-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_types_exist.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_types_exist.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_fragment_definition</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">validate_type_exists</span>(<span class="ruby-identifier">node</span>)
     <span class="ruby-keyword">super</span>
@@ -554,6 +556,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/InlineFragment.html" class="rbs-type">GraphQL::Language::Nodes::InlineFragment</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? _parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -567,7 +571,7 @@
 
 
           <div class="method-source-code" id="on_inline_fragment-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_types_exist.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/fragment_types_exist.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_inline_fragment</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">_parent</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">validate_type_exists</span>(<span class="ruby-identifier">node</span>)
     <span class="ruby-keyword">super</span>
