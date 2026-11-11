@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: true
 module GraphQL
   module Analysis
@@ -308,7 +309,8 @@ module GraphQL
             field_complexity(composite_scopes.last, max_complexity: field_cost, child_complexity: child_complexity)
           end
 
-          total + field_cost
+          # Like `merged_max_complexity`, a field never reduces the cost of its siblings.
+          field_cost > 0 ? total + field_cost : total
         end
       end
     end

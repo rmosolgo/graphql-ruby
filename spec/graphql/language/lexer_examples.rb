@@ -44,11 +44,20 @@ module LexerExamples
         |}
         let(:tokens) { subject.tokenize(query_string) }
 
-        ["\uFEFF{ field }", "{\uFEFFfield\uFEFF}", "{ field }\uFEFF", "\uFEFF\uFEFF, \r\n\t{\uFEFF field }\uFEFF"].each do |query|
+        # Ruby counts a BOM as one character; C counts its three UTF-8 bytes.
+        [
+          ["\uFEFF{ field }", [2, 4, 10], [4, 6, 12]],
+          ["{\uFEFFfield\uFEFF}", [1, 3, 9], [1, 5, 13]],
+          ["{ field }\uFEFF", [1, 3, 9], [1, 3, 9]],
+          ["\uFEFF\uFEFF, \r\n\t{\uFEFF field }\uFEFF", [2, 5, 11], [2, 7, 13]],
+          [" \t,\uFEFF \uFEFF\t{ \uFEFF,\tfield \uFEFF }", [8, 13, 21], [12, 19, 29]],
+        ].each do |query, ruby_columns, c_columns|
           it "ignores byte order marks in #{query.inspect}" do
             tokens = subject.tokenize(query)
             assert_equal [:LCURLY, :IDENTIFIER, :RCURLY], tokens.map(&:name)
             assert_equal ["{", "field", "}"], tokens.map(&:value)
+            expected_columns = subject == GraphQL::Language::Lexer ? ruby_columns : c_columns
+            assert_equal expected_columns, tokens.map(&:col)
           end
         end
 
@@ -74,6 +83,12 @@ module LexerExamples
 
             assert_equal [:LCURLY, :IDENTIFIER, :IDENTIFIER, :RCURLY], tokens.map(&:name)
             assert_equal ["{", "a", "b", "}"], tokens.map(&:value)
+          end
+        end
+
+        ["#", "#\r", "#a#b"].each do |comment|
+          it "returns no tokens for #{comment.inspect}" do
+            assert_empty subject.tokenize(comment)
           end
         end
 
@@ -192,6 +207,27 @@ GRAPHQL
 
         it "rejects bad unicode, even when there's good unicode in the string" do
           assert_bad_unicode('"\\u0XXF \\u0009"', "Bad unicode escape in \"\\\\u0XXF \\\\u0009\"")
+        end
+
+        it "rejects bad unicode after many valid escapes without backtracking" do
+          escapes = "\\u0041" * 2_000
+          # Regexp.timeout was added in Ruby 3.2
+          has_regexp_timeout = Regexp.respond_to?(:timeout=)
+          if has_regexp_timeout
+            previous_timeout = Regexp.timeout
+            Regexp.timeout = 1.0
+          end
+          begin
+            assert_bad_unicode("\"#{escapes}\\uZZZZ\"", "Bad unicode escape in \"#{escapes.gsub("\\", "\\\\\\\\")}\\\\uZZZZ\"")
+          ensure
+            if has_regexp_timeout
+              Regexp.timeout = previous_timeout
+            end
+          end
+        end
+
+        it "unescapes surrogate pairs after many escapes" do
+          assert_equal "A" * 100 + "😀", subject.tokenize("\"#{"\\u0041" * 100}\\uD83D\\uDE00\"").first.to_s
         end
 
         it "rejects truly invalid UTF-8 bytes" do
@@ -315,12 +351,12 @@ string with \\"""
           result4 = parent_schema.execute(query_str2)
           assert_equal({ "__typename" => "Query" }, result4["data"])
 
-          # Leading comments alone exceed the limit before any real tokens are seen.
-          # Previously the count check was skipped for comments, so the lexer would
-          # return false (EOF) instead of raising a ParseError.
-          query_str3 = "#{5001.times.map { |n| "# comment #{n}\n" }.join}{ __typename }"
-          result5 = child_schema.execute(query_str3)
-          assert_equal ["This query is too large to execute."], result5["errors"].map { |e| e["message"] }
+          # Leading comments count toward the limit, including when they exactly exhaust it.
+          [4999, 5000, 5001].each do |comment_count|
+            query_str3 = "# comment\n" * comment_count + "{ __typename }"
+            result5 = child_schema.execute(query_str3)
+            assert_equal ["This query is too large to execute."], result5["errors"].map { |e| e["message"] }
+          end
         end
       end
     end

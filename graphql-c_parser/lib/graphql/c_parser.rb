@@ -15,11 +15,6 @@ module GraphQL
       parse(contents, filename: filename)
     end
 
-    def self.tokenize_with_c(str)
-      reject_numbers_followed_by_names = GraphQL.respond_to?(:reject_numbers_followed_by_names) && GraphQL.reject_numbers_followed_by_names
-      tokenize_with_c_internal(str, false, reject_numbers_followed_by_names)
-    end
-
     def self.prepare_parse_error(message, parser)
       query_str = parser.query_string
       filename = parser.filename

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: true
 require "graphql/schema/visibility/profile"
 require "graphql/schema/visibility/migration"

@@ -10,7 +10,41 @@
 
 ### Bug fixes
 
+# 2.6.15 (9 Nov 2026)
+
+## Security
+
+This release includes security patches for the following:
+
+- Analysis: https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-8wfw-p943-3jjp
+- Parsing, analysis, execution: https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-qv9r-jc8m-v7ph
+- Complexity: https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-wc34-88mf-j95m
+- Parser: https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-pjx7-wx97-6wf8
+- Authorization, Execution::Next: https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-rf3p-x6p2-rr4g
+
+### New features
+
+- Continue Sorbet adoption #5867 #5872
+- Analysis: also support GraphQL::ExecutionError #5870
+
+### Bug fixes
+
 - Directives: don't drop repeated instances of repeatable directives on interfaces or on subclasses with inherited directives #5823
+- Parser: improve stack overflow error message #5857
+- Parser: reject variables in default values #5864
+- Parser: improve handling of CR line endings #5848 #5847
+- Generator: improve generated controller for `@defer` handling #5855
+- Parser: improve numeric lexical boudaries #5856
+- ActionCable: improve memory cleanup #5860
+- Parser: preserve newlines after escaped backslashes #5858
+- Execution::Next: remove duplicate input coercion
+- Validation: fix NoMethodError #5876
+- Validation: update callers to `types` #5868
+- Lexer: speedup #5880 , documentation #5883
+- Parser: fix column count with BOM #5886
+- Parser: improve token limit handling #5887
+- Execution::Next: improve `rescue_from` compatibility
+
 
 # 2.6.14 (29 Oct 2026)
 

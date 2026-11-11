@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: true
 
 module GraphQL
@@ -26,8 +27,6 @@ module GraphQL
           add_page_info_field(child_class)
         end
 
-        #--
-        # @requires_ancestor: singleton(GraphQL::Schema::Object)
         module ClassMethods
           def inherited(child_class)
             super

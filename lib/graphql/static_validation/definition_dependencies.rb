@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: true
 module GraphQL
   module StaticValidation
@@ -148,6 +149,8 @@ module GraphQL
         # with that name has a dependency, we record it.
         independent_fragment_nodes = @defdep_fragment_definitions.values.flatten - @defdep_immediate_dependencies.keys
         visited_fragment_names = Set.new
+        # Fragments that share dependencies would otherwise copy them once per path, doubling with each layer.
+        recorded_dependencies = Hash.new { |h, k| h[k] = {}.compare_by_identity }.compare_by_identity
         while fragment_node = independent_fragment_nodes.pop
           if visited_fragment_names.add?(fragment_node.name)
             # this is a new fragment name
@@ -170,8 +173,18 @@ module GraphQL
           else
             fragment_usages.each do |definition_node|
               # Register the dependency AND second-order dependencies
-              dependency_map[definition_node] << fragment_node
-              dependency_map[definition_node].concat(dependency_map[fragment_node])
+              definition_dependencies = dependency_map[definition_node]
+              recorded = recorded_dependencies[definition_node]
+              if !recorded.key?(fragment_node)
+                recorded[fragment_node] = true
+                definition_dependencies << fragment_node
+              end
+              dependency_map[fragment_node].each do |transitive_node|
+                if !recorded.key?(transitive_node)
+                  recorded[transitive_node] = true
+                  definition_dependencies << transitive_node
+                end
+              end
               # Since we've registered it, remove it from our to-do list
               deps = @defdep_immediate_dependencies[definition_node]
               # Can't find a way to _just_ delete from `deps` and return the deleted entries

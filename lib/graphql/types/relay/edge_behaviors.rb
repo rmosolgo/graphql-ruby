@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: true
 
 module GraphQL
@@ -27,8 +28,6 @@ module GraphQL
           @object.node
         end
 
-        #--
-        # @requires_ancestor: singleton(GraphQL::Schema::Object)
         module ClassMethods
           def inherited(child_class)
             super

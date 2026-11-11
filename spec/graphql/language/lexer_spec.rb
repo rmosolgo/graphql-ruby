@@ -25,6 +25,22 @@ describe GraphQL::Language::Lexer do
     assert_equal 14, err.col
   end
 
+  [
+    ["{ __typename }", 0, 1, 1],
+    ["# comment\n# comment\n  { __typename }", 2, 3, 3],
+    ["{\n  __typename\n}", 1, 2, 3],
+  ].each do |query, max_tokens, line, col|
+    it "reports the token exceeding max_tokens=#{max_tokens} at #{line}:#{col}" do
+      lexer = subject.new(query, max_tokens: max_tokens)
+      err = assert_raises(GraphQL::ParseError) do
+        lexer.advance until lexer.finished?
+      end
+
+      assert_equal "This query is too large to execute.", err.message
+      assert_equal [line, col], [err.line, err.col]
+    end
+  end
+
   it "reports column one after a newline" do
     tokens = subject.tokenize("{ field }\n# 日本語\nfragment F on Type { field }")
     fragment_token = tokens.find { |token| token.first == :FRAGMENT }

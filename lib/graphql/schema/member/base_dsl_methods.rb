@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: true
 
 require "graphql/schema/find_inherited_value"

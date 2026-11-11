@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: strict
 module GraphQL
   module Introspection
@@ -8,4 +9,3 @@ module GraphQL
     INTROSPECTION_QUERY = GraphQL::Introspection.query #: String
   end
 end
-

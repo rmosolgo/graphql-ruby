@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: true
 require "securerandom"
 require "graphql/subscriptions/broadcast_analyzer"

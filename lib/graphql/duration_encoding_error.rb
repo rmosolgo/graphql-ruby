@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: strict
 module GraphQL
   # This error is raised when `Types::ISO8601Duration` is asked to return a value

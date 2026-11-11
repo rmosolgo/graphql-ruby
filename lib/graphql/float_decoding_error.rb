@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+#--
 # typed: strict
 module GraphQL
   # This error is raised when `Types::Float` is given a non-finite input value.
