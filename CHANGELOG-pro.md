@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.30.6 (11 Nov 2025)
+
+- OperationStore: don't create standalone trace instance when `trace: true` #5895
+
 # 1.30.5 (30 Oct 2025)
 
 ## Security

@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.7.1 (11 Nov 2026)
+
+- `ActiveOperationLimiter`: fix usage with `OperationStore` and `trace: true` #5895
+
 # 1.7.0 (24 Apr 2026)
 
 - Support GraphQL-Ruby's new `Execution::Next` runtime
