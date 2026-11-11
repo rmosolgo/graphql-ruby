@@ -585,7 +585,7 @@ describe GraphQL::Schema::Subscription do
       matz = SubscriptionFieldSchema::USERS["matz"]
       obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: matz)
       SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, obj)
-      assert_equal [":tootWasTooted:handle:matz"], SubscriptionFieldSchema::InMemorySubscriptions::EVENT_REGISTRY.keys
+      assert_equal ['[null,"tootWasTooted",{"handle":"matz"}]'], SubscriptionFieldSchema::InMemorySubscriptions::EVENT_REGISTRY.keys
     end
   end
 
