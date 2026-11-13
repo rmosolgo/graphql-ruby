@@ -290,18 +290,66 @@ describe GraphQL::Schema::Scalar do
         end
       end
 
+      # Uses the new API: return a coerced value (including nil) from validate_non_null_input
+      class BlankToNil < GraphQL::Schema::Scalar
+        def self.coerce_input(value, _ctx)
+          Integer(value)
+        rescue ArgumentError
+          raise GraphQL::CoercionError, "Invalid blank-to-nil value"
+        end
+
+        def self.coerce_result(value, _ctx)
+          value.to_s
+        end
+
+        def self.validate_non_null_input(value, ctx, max_errors: nil)
+          if value == ""
+            GraphQL::Query::InputValidationResult.coerced(nil)
+          else
+            super
+          end
+        end
+      end
+
       class Query < GraphQL::Schema::Object
-        field :echo, String, null: false do
+        field :echo, String, null: false, resolve_static: true do
           argument :value, Lenient, required: false
         end
 
-        def echo(value: nil)
+        def self.echo(_context, value: nil)
           value.inspect
+        end
+
+        def echo(value: nil)
+          self.class.echo(context, value: value)
+        end
+
+        field :echo_list, String, null: false, resolve_static: true do
+          argument :values, [Lenient, null: true]
+        end
+
+        def self.echo_list(_context, values:)
+          values.inspect
+        end
+
+        def echo_list(values:)
+          self.class.echo_list(context, values: values)
+        end
+
+        field :echo_blank_to_nil, String, null: false, resolve_static: true do
+          argument :value, BlankToNil, required: false
+        end
+
+        def self.echo_blank_to_nil(_context, value: nil)
+          value.inspect
+        end
+
+        def echo_blank_to_nil(value: nil)
+          self.class.echo_blank_to_nil(context, value: value)
         end
       end
 
       query(Query)
-      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
     end
 
     def exec_lenient(value)
@@ -321,6 +369,53 @@ describe GraphQL::Schema::Scalar do
       assert_nil res["data"]
       assert_equal ["Invalid lenient value"], res["errors"].map { |e| e["message"] }
       assert_equal ["echo"], res["errors"].first["path"]
+    end
+
+    it "works the same for literals" do
+      res = LenientScalarSchema.execute('{ a: echo(value: "") b: echo(value: "42") }').to_h
+      assert_equal({ "data" => { "a" => "nil", "b" => "42" } }, res)
+
+      res = LenientScalarSchema.execute('{ echo(value: "oops") }').to_h
+      assert_nil res["data"]
+      assert_equal ["Invalid lenient value"], res["errors"].map { |e| e["message"] }
+      assert_equal ["echo"], res["errors"].first["path"]
+    end
+
+    it "coerces values inside lists at runtime" do
+      res = LenientScalarSchema.execute("query($v: [Lenient]!) { echoList(values: $v) }", variables: { "v" => ["", "1"] }).to_h
+      assert_equal({ "data" => { "echoList" => "[nil, 1]" } }, res)
+
+      res = LenientScalarSchema.execute('{ echoList(values: ["", "2"]) }').to_h
+      assert_equal({ "data" => { "echoList" => "[nil, 2]" } }, res)
+
+      res = LenientScalarSchema.execute("query($v: [Lenient]!) { echoList(values: $v) }", variables: { "v" => ["1", "oops"] }).to_h
+      assert_nil res["data"]
+      assert_equal ["Invalid lenient value"], res["errors"].map { |e| e["message"] }
+      assert_equal ["echoList"], res["errors"].first["path"]
+    end
+
+    it "accepts a nil coerced value from InputValidationResult.coerced" do
+      query_str = "query($v: BlankToNil) { echoBlankToNil(value: $v) }"
+      assert_equal({ "data" => { "echoBlankToNil" => "5" } }, LenientScalarSchema.execute(query_str, variables: { "v" => "5" }).to_h)
+
+      # Execution::Next uses the coerced value from validation.
+      # The legacy runtime calls `coerce_input` again at runtime, so `coerce_input` decides.
+      blank_to_nil_result = if_exec_next(
+        { "data" => { "echoBlankToNil" => "nil" } },
+        { "data" => nil, "errors" => [{ "message" => "Invalid blank-to-nil value", "path" => ["echoBlankToNil"] }] },
+      )
+      [
+        LenientScalarSchema.execute(query_str, variables: { "v" => "" }).to_h,
+        LenientScalarSchema.execute('{ echoBlankToNil(value: "") }').to_h,
+      ].each do |res|
+        res["errors"]&.each { |e| e.delete("locations") }
+        assert_equal blank_to_nil_result, res
+      end
+
+      # Problems from `super` are still variable errors
+      res = LenientScalarSchema.execute(query_str, variables: { "v" => "oops" }).to_h
+      assert_equal ["Variable $v of type BlankToNil was provided invalid value"], res["errors"].map { |e| e["message"] }
+      assert_equal "Invalid blank-to-nil value", res["errors"].first["extensions"]["problems"].first["explanation"]
     end
   end
 end

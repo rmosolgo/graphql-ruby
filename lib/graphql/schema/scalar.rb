@@ -42,6 +42,19 @@ module GraphQL
           @default_scalar ||= false
         end
 
+        # Coerce `value` with [coerce_input](rdoc-ref:#coerce_input) and report any problems.
+        #
+        # GraphQL-Ruby calls this for variable and literal input values. When the value is valid,
+        # it returns a result with [coerced_value](rdoc-ref:GraphQL::Query::InputValidationResult#coerced_value),
+        # which is used as the argument value.
+        #
+        # Overrides may return `InputValidationResult.coerced(value)` to provide a coerced value (including `nil`).
+        # If an override returns a valid result _without_ a coerced value, `coerce_input` will be called at runtime,
+        # and any `GraphQL::CoercionError` it raises will be added as a field error.
+        #
+        # **Returns**
+        #
+        # - `GraphQL::Query::InputValidationResult, nil`
         def validate_non_null_input(value, ctx, max_errors: nil)
           coerced_result = begin
             coerce_input(value, ctx)
@@ -56,7 +69,7 @@ module GraphQL
           elsif coerced_result.is_a?(GraphQL::CoercionError)
             Query::InputValidationResult.from_problem(coerced_result.message, message: coerced_result.message, extensions: coerced_result.extensions)
           else
-            nil
+            Query::InputValidationResult.coerced(coerced_result)
           end
         end
       end

@@ -57,6 +57,10 @@ module GraphQL
       private
 
       def argument_value(argument_values, argument_key, argument_definition, arg_value, override_type, field_resolve_step)
+        if arg_value.is_a?(DeferredCoercion)
+          # Raises CoercionError, which becomes a field error
+          arg_value = arg_value.coerce(@query.context)
+        end
         treat_as_type = override_type || argument_definition.type
         if treat_as_type.non_null?
           if arg_value.nil?
@@ -164,9 +168,28 @@ module GraphQL
         # - `String, nil` — A description of the problem, if there is one
         attr_reader :explanation
 
-        def initialize(explanation = nil)
+        # **Returns**
+        #
+        # - `GraphQL::Query::InputValidationResult, nil` — The result from `validate_non_null_input`, if there was one
+        attr_reader :validation_result
+
+        def initialize(explanation = nil, validation_result: nil)
           @explanation = explanation
+          @validation_result = validation_result
           super(explanation || "Invalid literal value")
+        end
+      end
+
+      # Stands in for a scalar value whose `validate_non_null_input` accepted it without returning a coerced value.
+      # [argument_values](rdoc-ref:#argument_values) calls `coerce_input` when it finds one of these.
+      class DeferredCoercion # :nodoc:
+        def initialize(type, value)
+          @type = type
+          @value = value
+        end
+
+        def coerce(context)
+          @type.coerce_input(@value, context)
         end
       end
 
@@ -321,15 +344,27 @@ module GraphQL
         else
           value_node
         end
-        coerced_value = begin
-          type.coerce_input(ruby_value, @query.context)
+        scalar_result = begin
+          type.validate_non_null_input(ruby_value, @query.context)
         rescue GraphQL::CoercionError
           raise
         rescue StandardError => err
-          @query.handle_or_reraise(err)
+          return literals[value_node] = @query.handle_or_reraise(err)
         end
-        if coerced_value.nil?
-          raise InvalidLiteralError, "Could not coerce value #{GraphQL::Language.serialize(ruby_value)} to #{type.graphql_name}"
+
+        coerced_value = if scalar_result && !scalar_result.valid?
+          problems = scalar_result.problems
+          if problems.nil? || problems.empty?
+            raise InvalidLiteralError, "Could not coerce value #{GraphQL::Language.serialize(ruby_value)} to #{type.graphql_name}"
+          else
+            raise InvalidLiteralError.new(problems.first["explanation"], validation_result: scalar_result)
+          end
+        elsif scalar_result&.coerced_value?
+          scalar_result.coerced_value
+        else
+          # A custom `validate_non_null_input` accepted this value but didn't provide a coerced value.
+          # Call `coerce_input` at runtime, like GraphQL-Ruby did before 2.6.15.
+          DeferredCoercion.new(type, ruby_value)
         end
         literals[value_node] = coerced_value
       end

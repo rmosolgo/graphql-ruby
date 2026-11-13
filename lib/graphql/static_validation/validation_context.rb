@@ -67,7 +67,9 @@ module GraphQL
         @input_values.value_from_ast(ast_value, type, validate: true)
         GraphQL::Query::InputValidationResult::VALID
       rescue Execution::InputValues::InvalidLiteralError => err
-        if err.explanation
+        if err.validation_result
+          err.validation_result
+        elsif err.explanation
           Query::InputValidationResult.from_problem(err.explanation)
         else
           INVALID_RESULT
