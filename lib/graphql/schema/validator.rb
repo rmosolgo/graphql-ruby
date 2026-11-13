@@ -22,8 +22,8 @@ module GraphQL
       #   initialize(GraphQL::Schema::Argument | GraphQL::Schema::Field | GraphQL::Schema::Resolver | Class[GraphQL::Schema::InputObject] validated:, bool allow_blank:, bool allow_null:)
       def initialize(validated:, allow_blank: false, allow_null: false)
         @validated = validated
-        @allow_blank = allow_blank
-        @allow_null = allow_null
+        @allow_blank = allow_blank #: bool | Proc | nil
+        @allow_null = allow_null #: bool | Proc | nil
       end
 
       # **Parameters**

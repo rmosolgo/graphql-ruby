@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module Types
     # This scalar takes `Duration`s and transmits them as strings,
@@ -38,7 +38,7 @@ module GraphQL
       #   seconds_precision=(Integer | nil value)
       #: (Integer? value) -> Integer?
       def self.seconds_precision=(value)
-        @seconds_precision = value
+        @seconds_precision = value #: Integer?
       end
 
       # **Parameters**
@@ -91,6 +91,7 @@ module GraphQL
       #
       # :call-seq:
       #   coerce_input(String | ActiveSupport::Duration value, ctx) -> ActiveSupport::Duration | nil | GraphQL::Error | GraphQL::DurationEncodingError
+      #: (untyped value, GraphQL::Query::Context ctx) -> untyped
       def self.coerce_input(value, ctx)
         unless defined?(ActiveSupport::Duration)
           raise GraphQL::Error, "ActiveSupport >= 5.0 must be loaded to use the built-in ISO8601Duration type."

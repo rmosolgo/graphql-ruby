@@ -1,24 +1,28 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   class Schema
     class Scalar < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
+        #: (untyped val, GraphQL::Query::Context ctx) -> untyped
         def coerce_input(val, ctx)
           val
         end
 
+        #: (untyped val, GraphQL::Query::Context ctx) -> untyped
         def coerce_result(val, ctx)
           val
         end
 
+        #: -> GraphQL::TypeKinds::TypeKind
         def kind
           GraphQL::TypeKinds::SCALAR
         end
 
+        #: (?String? new_url) -> String?
         def specified_by_url(new_url = nil)
           if new_url
             directive(GraphQL::Schema::Directive::SpecifiedBy, url: new_url)
@@ -31,17 +35,20 @@ module GraphQL
           end
         end
 
+        #: (?bool? is_default) -> bool?
         def default_scalar(is_default = nil)
           if !is_default.nil?
-            @default_scalar = is_default
+            @default_scalar = is_default #: bool?
           end
           @default_scalar
         end
 
+        #: -> bool
         def default_scalar?
           @default_scalar ||= false
         end
 
+        #: (untyped value, GraphQL::Query::Context ctx, ?max_errors: Integer?) -> GraphQL::Query::InputValidationResult?
         def validate_non_null_input(value, ctx, max_errors: nil)
           coerced_result = begin
             coerce_input(value, ctx)

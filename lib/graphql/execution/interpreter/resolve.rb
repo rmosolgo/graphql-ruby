@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   module Execution
@@ -15,6 +15,7 @@ module GraphQL
         #
         # :call-seq:
         #   resolve_all(results, dataloader) -> void
+        #: (Array[untyped] results, GraphQL::Dataloader dataloader) -> nil
         def self.resolve_all(results, dataloader)
           backtrace = caller(1, 5) #: as !nil
           warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{backtrace.map { |l| "\n    #{l}"}.join}"
@@ -23,6 +24,7 @@ module GraphQL
         end
 
         # **Deprecated:** Call `dataloader.run` instead
+        #: (Hash[Integer, Array[GraphQL::Execution::Lazy]] lazies_at_depth, GraphQL::Dataloader dataloader) -> nil
         def self.resolve_each_depth(lazies_at_depth, dataloader)
           backtrace = caller(1, 5) #: as !nil
           warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{backtrace.map { |l| "\n    #{l}"}.join}"
@@ -36,7 +38,7 @@ module GraphQL
           end
 
           if smallest_depth
-            lazies = lazies_at_depth.delete(smallest_depth)
+            lazies = lazies_at_depth.delete(smallest_depth) #: as !nil
             if !lazies.empty?
               lazies.each do |l|
                 dataloader.append_job { l.value }
@@ -50,6 +52,7 @@ module GraphQL
         end
 
         # **Deprecated:** Call `dataloader.run` instead
+        #: (Array[untyped] results, GraphQL::Dataloader dataloader) -> nil
         def self.resolve(results, dataloader)
           backtrace = caller(1, 5) #: as !nil
           warn "#{self}.#{__method__} is deprecated; Use `dataloader.run` instead.#{backtrace.map { |l| "\n    #{l}"}.join}"

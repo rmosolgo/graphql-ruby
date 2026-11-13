@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   class Schema
     module BuildFromDefinition
       class ResolveMap
         class DefaultResolve
+          #: (Hash[String, untyped] field_map, String field_name) -> void
           def initialize(field_map, field_name)
-            @field_map = field_map
-            @field_name = field_name
+            @field_map = field_map #: Hash[String, untyped]
+            @field_name = field_name #: String
           end
 
           # Make some runtime checks about
@@ -19,6 +20,7 @@ module GraphQL
           #   - call the implementation now (to satisfy this field execution)
           #
           # If `obj` doesn't implement `field_name`, raise an error.
+          #: (untyped obj, untyped args, GraphQL::Query::Context ctx) -> untyped
           def call(obj, args, ctx)
             method_name = @field_name
             if !obj.respond_to?(method_name)

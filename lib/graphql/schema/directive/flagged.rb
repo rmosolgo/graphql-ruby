@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -8,6 +8,7 @@ module GraphQL
       #
       # In this case, the server hides types and fields _entirely_, unless the current context has certain `:flags` present.
       class Flagged < GraphQL::Schema::Directive
+        #: (untyped target, **untyped options) -> void
         def initialize(target, **options)
           if target.is_a?(Module)
             # This is type class of some kind, `include` will put this module
@@ -46,10 +47,12 @@ module GraphQL
         # @requires_ancestor: GraphQL::Schema::Member::HasDirectives
 
         module VisibleByFlag
+          #: (Module[untyped] schema_class) -> void
           def self.included(schema_class)
             schema_class.extend(self)
           end
 
+          #: (GraphQL::Query::Context context) -> bool
           def visible?(context)
             if dir = self.directives.find { |d| d.is_a?(Flagged) }
               relevant_flags = (f = context[:flags]) && dir.arguments[:by] & f # rubocop:disable Development/ContextIsPassedCop -- definition-related

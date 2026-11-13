@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -25,13 +25,15 @@ module GraphQL
         #
         # :call-seq:
         #   initialize(Array in:, String message:, **default_options)
+        #: (in: Array[untyped] | Proc, ?message: String | Proc, **untyped default_options) -> void
         def initialize(in:, message: "%{validated} is not included in the list", **default_options)
           # `in` is a reserved word, so work around that
-          @in_list = binding.local_variable_get(:in)
-          @message = message
+          @in_list = binding.local_variable_get(:in) #: Array[untyped] | Proc
+          @message = message #: String | Proc
           super(**default_options)
         end
 
+        #: (untyped _object, GraphQL::Query::Context _context, untyped value) -> String?
         def validate(_object, _context, value)
           if permitted_empty_value?(value)
             # pass

@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   module Types
     class Float < GraphQL::Schema::Scalar
       description "Represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point)."
 
+      #: (untyped value, GraphQL::Query::Context ctx) -> untyped
       def self.coerce_input(value, ctx)
         return if !value.is_a?(Numeric)
 
@@ -19,6 +20,7 @@ module GraphQL
         end
       end
 
+      #: (untyped value, GraphQL::Query::Context ctx) -> untyped
       def self.coerce_result(value, ctx)
         value = value.to_f
         if value.finite?
