@@ -23,7 +23,7 @@ module GraphQL
         #
         # :call-seq:
         #   initialize(String message:, Array in:, **default_options)
-        def initialize(message: "%{validated} is reserved", in:, **default_options)
+        def initialize(in:, message: "%{validated} is reserved", **default_options)
           # `in` is a reserved word, so work around that
           @in_list = binding.local_variable_get(:in)
           @message = message
