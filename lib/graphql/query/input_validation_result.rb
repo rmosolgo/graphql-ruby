@@ -24,6 +24,9 @@ module GraphQL
       # **Returns**
       #
       # - `GraphQL::Query::InputValidationResult`
+      #
+      # :call-seq:
+      #   coerced(Object value) -> GraphQL::Query::InputValidationResult
       def self.coerced(value)
         result = self.new
         result.coerced_value = value
@@ -50,6 +53,9 @@ module GraphQL
       # **Returns**
       #
       # - `Boolean` — true if a coerced value was given with [coerced_value=](rdoc-ref:#coerced_value=)
+      #
+      # :call-seq:
+      #   coerced_value?() -> bool
       def coerced_value?
         @has_coerced_value
       end

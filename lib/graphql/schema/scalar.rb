@@ -42,7 +42,7 @@ module GraphQL
           @default_scalar ||= false
         end
 
-        # Coerce `value` with [coerce_input](rdoc-ref:#coerce_input) and report any problems.
+        # Coerce `value` with [coerce_input](rdoc-ref:::coerce_input) and report any problems.
         #
         # GraphQL-Ruby calls this for variable and literal input values. When the value is valid,
         # it returns a result with [coerced_value](rdoc-ref:GraphQL::Query::InputValidationResult#coerced_value),
@@ -55,6 +55,9 @@ module GraphQL
         # **Returns**
         #
         # - `GraphQL::Query::InputValidationResult, nil`
+        #
+        # :call-seq:
+        #   validate_non_null_input(value, ctx, max_errors:) -> GraphQL::Query::InputValidationResult | nil
         def validate_non_null_input(value, ctx, max_errors: nil)
           coerced_result = begin
             coerce_input(value, ctx)
