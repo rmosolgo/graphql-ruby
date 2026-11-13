@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 require "timeout"
 
 module GraphQL
@@ -26,9 +26,10 @@ module GraphQL
       #
       # :call-seq:
       #   initialize(GraphQL::Schema schema:, Array[#validate(context)] rules:)
+      #: (schema: singleton(GraphQL::Schema), ?rules: Array[Module[untyped]]) -> void
       def initialize(schema:, rules: GraphQL::StaticValidation::ALL_RULES)
-        @schema = schema
-        @rules = rules
+        @schema = schema #: singleton(GraphQL::Schema)
+        @rules = rules #: Array[Module[untyped]]
       end
 
       # Validate `query` against the schema. Returns an array of message hashes.
@@ -46,6 +47,7 @@ module GraphQL
       #
       # :call-seq:
       #   validate(GraphQL::Query query, bool validate:, Float timeout:, Integer max_errors:) -> Array[Hash]
+      #: (GraphQL::Query query, ?validate: bool?, ?timeout: Numeric?, ?max_errors: Integer?) -> Hash[Symbol, untyped]
       def validate(query, validate: true, timeout: nil, max_errors: nil)
         errors = nil #: untyped
         query.current_trace.begin_validate(query, validate)
@@ -98,6 +100,7 @@ module GraphQL
       #
       # :call-seq:
       #   handle_timeout(GraphQL::Query query, GraphQL::StaticValidation::ValidationContext context)
+      #: (GraphQL::Query query, GraphQL::StaticValidation::ValidationContext context) -> void
       def handle_timeout(query, context)
         context.errors << GraphQL::StaticValidation::ValidationTimeoutError.new(
           "Timeout on validation of query"

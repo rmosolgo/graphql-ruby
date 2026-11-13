@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -11,6 +11,7 @@ module GraphQL
         # **Returns**
         #
         # - `String, nil` — Explains why this member was deprecated (if present, this will be marked deprecated in introspection)
+        #: String?
         attr_reader :deprecation_reason
 
         # Set the deprecation reason for this member, or remove it by assigning `nil`
@@ -21,8 +22,9 @@ module GraphQL
         #
         # :call-seq:
         #   deprecation_reason=(String | nil text)
+        #: (String? text) -> void
         def deprecation_reason=(text)
-          @deprecation_reason = text
+          @deprecation_reason = text #: String?
           if text.nil?
             remove_directive(GraphQL::Schema::Directive::Deprecated)
           else
@@ -31,6 +33,7 @@ module GraphQL
           end
         end
 
+        #: (Module[untyped] child_class) -> void
         def self.extended(child_class)
           super
           child_class.extend(ClassMethods)
@@ -39,6 +42,7 @@ module GraphQL
         #--
         # @requires_ancestor: GraphQL::Schema::Member::HasDeprecationReason
         module ClassMethods
+          #: (?untyped new_reason) -> String?
           def deprecation_reason(new_reason = NOT_CONFIGURED)
             if NOT_CONFIGURED.equal?(new_reason)
               super()
