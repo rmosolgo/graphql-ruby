@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -8,6 +8,7 @@ module GraphQL
       class ConnectionExtension < GraphQL::Schema::FieldExtension
         extras [:lookahead]
 
+        #: -> void
         def apply
           field.argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
           field.argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
@@ -16,6 +17,7 @@ module GraphQL
         end
 
         # Remove pagination args before passing it to a user method
+        #: (arguments: Hash[Symbol, untyped], context: GraphQL::Query::Context, ?object: untyped, ?objects: untyped) { (untyped, Hash[Symbol, untyped], Hash[Symbol, untyped]) -> untyped } -> untyped
         def resolve(arguments:, context:, object: nil, objects: nil, &block)
           next_args = arguments.dup
           next_args.delete(:first)
@@ -27,6 +29,7 @@ module GraphQL
           yield(object || objects, next_args, original_arguments)
         end
 
+        #: (value: untyped, object: untyped, arguments: Hash[Symbol, untyped], context: GraphQL::Query::Context, memo: untyped) -> untyped
         def after_resolve(value:, object:, arguments:, context:, memo:)
           original_arguments = memo
           lookahead = arguments[:lookahead]

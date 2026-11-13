@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module Types
     # This scalar takes `Date`s and transmits them as strings,
@@ -43,6 +43,7 @@ module GraphQL
       #
       # :call-seq:
       #   coerce_input(value, ctx) -> Date | nil
+      #: (untyped value, GraphQL::Query::Context ctx) -> untyped
       def self.coerce_input(value, ctx)
         if value.is_a?(::Date)
           value

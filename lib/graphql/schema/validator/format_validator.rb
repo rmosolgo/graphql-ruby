@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -33,18 +33,20 @@ module GraphQL
         #
         # :call-seq:
         #   initialize(RegExp | nil with:, Regexp | nil without:, String message:, **default_options)
+        #: (?with: Regexp | Proc | nil, ?without: Regexp | Proc | nil, ?message: String | Proc, **untyped default_options) -> void
         def initialize(
           with: nil,
           without: nil,
           message: "%{validated} is invalid",
           **default_options
         )
-          @with_pattern = with
-          @without_pattern = without
-          @message = message
+          @with_pattern = with #: Regexp | Proc | nil
+          @without_pattern = without #: Regexp | Proc | nil
+          @message = message #: String | Proc
           super(**default_options)
         end
 
+        #: (untyped _object, GraphQL::Query::Context _context, untyped value) -> String?
         def validate(_object, _context, value)
           if permitted_empty_value?(value)
             # Do nothing

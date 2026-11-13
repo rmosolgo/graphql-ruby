@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   module Types
@@ -8,9 +8,10 @@ module GraphQL
     class Int < GraphQL::Schema::Scalar
       description "Represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1."
 
-      MIN = -(1 << 31)
-      MAX = (1 << 31) - 1
+      MIN = -(1 << 31) #: Integer
+      MAX = (1 << 31) - 1 #: Integer
 
+      #: (untyped value, GraphQL::Query::Context ctx) -> untyped
       def self.coerce_input(value, ctx)
         return if !value.is_a?(Integer)
 
@@ -22,6 +23,7 @@ module GraphQL
         end
       end
 
+      #: (untyped value, GraphQL::Query::Context ctx) -> untyped
       def self.coerce_result(value, ctx)
         value = value.to_i
         if value >= MIN && value <= MAX

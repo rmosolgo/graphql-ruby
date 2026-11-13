@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 require "fiber"
 require "graphql/execution/interpreter/argument_value"
 require "graphql/execution/interpreter/arguments"
@@ -31,6 +31,7 @@ module GraphQL
         #
         # :call-seq:
         #   run_all(GraphQL::Schema schema, query_options, Hash context:, Integer | nil max_complexity:) -> Array[GraphQL::Query::Result]
+        #: (singleton(GraphQL::Schema) schema, Array[untyped] query_options, ?context: Hash[Symbol, untyped], ?max_complexity: Integer?) -> Array[GraphQL::Query::Result]
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
           previous_multiplex = Fiber[:__graphql_current_multiplex]
           queries = query_options.map do |opts|
@@ -43,7 +44,7 @@ module GraphQL
               raise "Expected Hash or GraphQL::Query, not #{opts.class} (#{opts.inspect})"
             end
             query
-          end
+          end #: Array[untyped]
 
           return GraphQL::EmptyObjects::EMPTY_ARRAY if queries.empty?
 
@@ -51,8 +52,8 @@ module GraphQL
           trace = multiplex.current_trace
           Fiber[:__graphql_current_multiplex] = multiplex
           trace.execute_multiplex(multiplex: multiplex) do
-            schema = multiplex.schema
-            queries = multiplex.queries
+            schema = multiplex.schema #: singleton(GraphQL::Schema)
+            queries = multiplex.queries #: Array[untyped]
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
@@ -156,6 +157,7 @@ module GraphQL
       end
 
       class ListResultFailedError < GraphQL::Error
+        #: (value: untyped, path: Array[String | Integer], field: GraphQL::Schema::Field) -> void
         def initialize(value:, path:, field:)
           message = "Failed to build a GraphQL list result for field `#{field.path}` at path `#{path.join(".")}`.\n".dup
 
