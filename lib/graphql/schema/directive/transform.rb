@@ -43,7 +43,7 @@ module GraphQL
           # ??
         ]
         # Implement the Directive API
-        def self.resolve(object, arguments, context)
+        def self.resolve(object, arguments, context, &block)
           path = context.namespace(:interpreter)[:current_path]
           return_value = yield
           transform_name = arguments[:by]
