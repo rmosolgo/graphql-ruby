@@ -16,7 +16,7 @@ module GraphQL
         end
 
         # Remove pagination args before passing it to a user method
-        def resolve(object: nil, objects: nil, arguments:, context:)
+        def resolve(arguments:, context:, object: nil, objects: nil, &block)
           next_args = arguments.dup
           next_args.delete(:first)
           next_args.delete(:last)
