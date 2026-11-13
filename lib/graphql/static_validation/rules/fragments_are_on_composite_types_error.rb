@@ -5,7 +5,11 @@ module GraphQL
   module StaticValidation
     class FragmentsAreOnCompositeTypesError < StaticValidation::Error
       attr_reader :type_name
-      attr_reader :argument_name
+
+      # This error never has an argument name
+      def argument_name
+        nil
+      end
 
       def initialize(message, type:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
