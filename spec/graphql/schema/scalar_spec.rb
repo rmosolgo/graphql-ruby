@@ -268,4 +268,59 @@ describe GraphQL::Schema::Scalar do
     null_input_result = CoerceNullSchema.execute('{ hello(input: null) }')
     assert_equal(["Invalid value: nil"], null_input_result["errors"].map { |err| err["message"] })
   end
+
+  describe "overriding validate_non_null_input" do
+    # https://github.com/rmosolgo/graphql-ruby/issues/5898
+    class LenientScalarSchema < GraphQL::Schema
+      class Lenient < GraphQL::Schema::Scalar
+        def self.coerce_input(value, _ctx)
+          return nil if value == "" # blank => nil
+          Integer(value)
+        rescue ArgumentError
+          raise GraphQL::CoercionError, "Invalid lenient value"
+        end
+
+        def self.coerce_result(value, _ctx)
+          value.to_s
+        end
+
+        # Skip up-front validation; let coercion happen at execution time
+        def self.validate_non_null_input(_value, _ctx, max_errors: nil)
+          GraphQL::Query::InputValidationResult.new
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :echo, String, null: false do
+          argument :value, Lenient, required: false
+        end
+
+        def echo(value: nil)
+          value.inspect
+        end
+      end
+
+      query(Query)
+      use GraphQL::Execution::Next if TESTING_EXEC_NEXT
+    end
+
+    def exec_lenient(value)
+      LenientScalarSchema.execute("query($v: Lenient) { echo(value: $v) }", variables: { "v" => value }).to_h
+    end
+
+    it "accepts variable values which coerce to nil" do
+      assert_equal({ "data" => { "echo" => "nil" } }, exec_lenient(""))
+    end
+
+    it "coerces valid variable values" do
+      assert_equal({ "data" => { "echo" => "42" } }, exec_lenient("42"))
+    end
+
+    it "returns coercion errors at execution time, as field errors" do
+      res = exec_lenient("oops")
+      assert_nil res["data"]
+      assert_equal ["Invalid lenient value"], res["errors"].map { |e| e["message"] }
+      assert_equal ["echo"], res["errors"].first["path"]
+    end
+  end
 end
