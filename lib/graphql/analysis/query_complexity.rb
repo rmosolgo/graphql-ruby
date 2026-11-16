@@ -161,6 +161,8 @@ module GraphQL
           possible_scope_types.delete(possible_scope_type)
         end
 
+        complexities_by_selections = {}
+
         # Aggregate the lexical selections that may apply to each possible type,
         # and then return the maximum cost among possible typed selections.
         possible_scope_types.each_key.reduce(0) do |max, possible_scope_type|
@@ -172,7 +174,8 @@ module GraphQL
           end
 
           # Find the maximum complexity for the scope type among possible lexical branches.
-          complexity = case mode
+          selections_key = all_inner_selections.map(&:object_id)
+          complexity = complexities_by_selections[selections_key] ||= case mode
           when :legacy
             legacy_merged_max_complexity(query, all_inner_selections)
           when :future
