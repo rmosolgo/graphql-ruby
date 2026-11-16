@@ -131,11 +131,8 @@ module GraphQL
               @graphql_result[@key] = add_field_error(@authorization_error)
             end
           rescue GraphQL::RuntimeError => err
-            if @is_non_null
-              @graphql_result[@key] = @field_resolve_step.add_non_null_error(@is_from_array)
-            else
-              @graphql_result[@key] = add_field_error(err)
-            end
+            # Like the classic runtime, report the raised error itself; add_graphql_error propagates the null for non-null types.
+            @graphql_result[@key] = add_field_error(err)
           end
         end
 

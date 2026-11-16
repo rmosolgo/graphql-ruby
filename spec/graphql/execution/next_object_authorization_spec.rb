@@ -36,10 +36,15 @@ describe "Next Execution object authorization" do
       end
     end
 
+    class Folder < GraphQL::Schema::Object
+      field :document, Document, null: false, hash_key: :document
+    end
+
     class Query < GraphQL::Schema::Object
       field :documents, [Document, null: true], hash_key: :documents
       field :non_null_documents, [Document], hash_key: :documents
       field :document, Document, null: false, hash_key: :document
+      field :folder, Folder, hash_key: :folder
     end
 
     query Query
@@ -49,6 +54,10 @@ describe "Next Execution object authorization" do
     rescue_from(RescuedToTrue) { true }
 
     def self.unauthorized_object(err)
+      if err.context[:raise_from_hook]
+        raise GraphQL::ExecutionError.new("forbidden", extensions: { "code" => "FORBIDDEN" })
+      end
+
       err.context[:redact] ? { title: "REDACTED" } : nil
     end
   end
@@ -56,6 +65,7 @@ describe "Next Execution object authorization" do
   ROOT_VALUE = {
     documents: [{ title: "public" }, { title: "SECRET", private: true }],
     document: { title: "SECRET", private: true },
+    folder: { document: { title: "SECRET", private: true } },
   }.freeze
 
   MODES = %i[
@@ -67,6 +77,7 @@ describe "Next Execution object authorization" do
     "{ documents { title } }",
     "{ nonNullDocuments { title } }",
     "{ document { title } }",
+    "{ folder { document { title } } }",
   ]
 
   def run_both(query_str, context)
@@ -102,6 +113,17 @@ describe "Next Execution object authorization" do
       _legacy, next_result = run_both("{ documents { title } }", { mode: mode })
       assert_equal [{ "title" => "public" }, nil], next_result["data"]["documents"]
       assert_equal 1, next_result["errors"].size
+    end
+  end
+
+  it "reports errors raised by unauthorized_object, including on non-null fields" do
+    %i[return_false raise_unauthorized lazy_false lazy_unauthorized].each do |mode|
+      QUERIES.each do |query_str|
+        legacy, next_result = run_both(query_str, { mode: mode, raise_from_hook: true })
+        assert_equal legacy, next_result, "#{query_str} should match (#{mode})"
+        assert_equal ["FORBIDDEN"], next_result["errors"].map { |e| e["extensions"]["code"] }, "#{query_str} (#{mode})"
+        refute_includes next_result.inspect, "SECRET"
+      end
     end
   end
 
