@@ -11,9 +11,6 @@ module GraphQL
 
         def self.extended(child_class)
           child_class.extend(ClassConfigured)
-          child_class.class_exec do
-            @authorizes = false
-          end
         end
 
         def authorized?(object, context)
