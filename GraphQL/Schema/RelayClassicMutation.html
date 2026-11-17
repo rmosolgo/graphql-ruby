@@ -1390,6 +1390,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; void</code></pre>
+
           </div>
 
 
@@ -1403,13 +1405,15 @@
 
 
           <div class="method-source-code" id="call-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/relay_classic_mutation.rb, line 54</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/relay_classic_mutation.rb, line 57</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call</span>
-  <span class="ruby-identifier">input</span> = <span class="ruby-ivar">@prepared_arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">input</span>]&amp;.<span class="ruby-identifier">to_kwargs</span>
+  <span class="ruby-comment"># The runtime prepares arguments before calling this</span>
+  <span class="ruby-identifier">prepared_arguments</span> = <span class="ruby-ivar">@prepared_arguments</span> <span class="ruby-comment">#: as !nil</span>
+  <span class="ruby-identifier">input</span> = <span class="ruby-identifier">prepared_arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">input</span>]&amp;.<span class="ruby-identifier">to_kwargs</span>
 
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">input</span>
     <span class="ruby-identifier">client_mutation_id</span> = <span class="ruby-identifier">input</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:</span><span class="ruby-value">client_mutation_id</span>)
-    <span class="ruby-ivar">@prepared_arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">input</span>] = <span class="ruby-identifier">input</span>
+    <span class="ruby-identifier">prepared_arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">input</span>] = <span class="ruby-identifier">input</span>
   <span class="ruby-keyword">end</span>
 
   <span class="ruby-keyword">super</span>
@@ -1456,6 +1460,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(**untyped inputs) &rarr; untyped</code></pre>
+
           </div>
 
 
@@ -1469,7 +1475,7 @@
 
 
           <div class="method-source-code" id="resolve_with_support-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/relay_classic_mutation.rb, line 34</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/relay_classic_mutation.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve_with_support</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">inputs</span>)
   <span class="ruby-identifier">input</span> = <span class="ruby-identifier">inputs</span>[<span class="ruby-value">:</span><span class="ruby-value">input</span>].<span class="ruby-identifier">to_kwargs</span>
 

@@ -1400,11 +1400,13 @@
               <div class="method-heading">
                 <a href="#method-c-new" title="Link to this method">
                   <span class="method-name">new</span>
-                  <span class="method-args">(*)</span>
+                  <span class="method-args">(document, context)</span>
                 </a>
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a> document, <a href="ValidationContext.html" class="rbs-type">GraphQL::StaticValidation::ValidationContext</a> context) &rarr; void</code></pre>
 
           </div>
 
@@ -1419,10 +1421,10 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/no_definitions_are_present.rb, line 10</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-operator">*</span>)
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/no_definitions_are_present.rb, line 12</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">document</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-keyword">super</span>
-  <span class="ruby-ivar">@schema_definition_nodes</span> = []
+  <span class="ruby-ivar">@schema_definition_nodes</span> = [] <span class="ruby-comment">#: Array[GraphQL::Language::Nodes::AbstractNode]</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1476,6 +1478,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
+
           </div>
 
 
@@ -1517,6 +1521,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/Document.html" class="rbs-type">GraphQL::Language::Nodes::Document</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; void</code></pre>
+
           </div>
 
 
@@ -1530,7 +1536,7 @@
 
 
           <div class="method-source-code" id="on_document-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/no_definitions_are_present.rb, line 36</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/no_definitions_are_present.rb, line 40</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_document</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@schema_definition_nodes</span>.<span class="ruby-identifier">empty?</span>
@@ -1575,6 +1581,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
+
           </div>
 
 
@@ -1615,6 +1623,8 @@
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
 
           </div>
 
@@ -1657,6 +1667,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
+
           </div>
 
 
@@ -1697,6 +1709,8 @@
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
 
           </div>
 
@@ -1739,6 +1753,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
+
           </div>
 
 
@@ -1779,6 +1795,8 @@
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
 
           </div>
 
@@ -1821,6 +1839,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
+
           </div>
 
 
@@ -1834,7 +1854,7 @@
 
 
           <div class="method-source-code" id="on_invalid_node-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/no_definitions_are_present.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/no_definitions_are_present.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">on_invalid_node</span>(<span class="ruby-identifier">node</span>, <span class="ruby-identifier">parent</span>)
   <span class="ruby-ivar">@schema_definition_nodes</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">node</span>
   <span class="ruby-keyword">nil</span>
@@ -1875,6 +1895,8 @@
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
 
           </div>
 
@@ -1917,6 +1939,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
+
           </div>
 
 
@@ -1957,6 +1981,8 @@
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
 
           </div>
 
@@ -1999,6 +2025,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
+
           </div>
 
 
@@ -2039,6 +2067,8 @@
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
 
           </div>
 
@@ -2081,6 +2111,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
+
           </div>
 
 
@@ -2122,6 +2154,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
+
           </div>
 
 
@@ -2162,6 +2196,8 @@
               </div>
 
 
+
+            <pre class="method-type-signature"><code>(<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> node, <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>? parent) &rarr; nil</code></pre>
 
           </div>
 

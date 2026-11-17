@@ -1355,6 +1355,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="../Types/String.html" class="rbs-type">String</a></code></span>
+
         </div>
 
         <div class="method-description">
@@ -1392,6 +1394,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../Types/String.html" class="rbs-type">String</a> message, path: Array[<a href="../Types/String.html" class="rbs-type">String</a> | Integer]?, nodes: <a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> | Array[<a href="../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a>], input_object_type: <a href="../Types/String.html" class="rbs-type">String</a>) &rarr; void</code></pre>
+
           </div>
 
 
@@ -1405,10 +1409,10 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/one_of_input_objects_are_valid_error.rb, line 8</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/one_of_input_objects_are_valid_error.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">path:</span>, <span class="ruby-value">nodes:</span>, <span class="ruby-value">input_object_type:</span>)
   <span class="ruby-keyword">super</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value">path</span><span class="ruby-value">:</span> <span class="ruby-identifier">path</span>, <span class="ruby-value">nodes</span><span class="ruby-value">:</span> <span class="ruby-identifier">nodes</span>)
-  <span class="ruby-ivar">@input_object_type</span> = <span class="ruby-identifier">input_object_type</span>
+  <span class="ruby-ivar">@input_object_type</span> = <span class="ruby-identifier">input_object_type</span> <span class="ruby-comment">#: String</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1462,6 +1466,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; <a href="../Types/String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -1475,7 +1481,7 @@
 
 
           <div class="method-source-code" id="code-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/one_of_input_objects_are_valid_error.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/one_of_input_objects_are_valid_error.rb, line 30</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">code</span>
   <span class="ruby-string">&quot;</span><span class="ruby-string">invalidOneOfInputObject</span><span class="ruby-string">&quot;</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1512,6 +1518,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Hash[<a href="../Types/String.html" class="rbs-type">String</a>, untyped]</code></pre>
+
           </div>
 
 
@@ -1525,7 +1533,7 @@
 
 
           <div class="method-source-code" id="to_h-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/one_of_input_objects_are_valid_error.rb, line 14</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/static_validation/rules/one_of_input_objects_are_valid_error.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_h</span>
   <span class="ruby-identifier">extensions</span> = {
     <span class="ruby-string">&quot;</span><span class="ruby-string">code</span><span class="ruby-string">&quot;</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">code</span>,

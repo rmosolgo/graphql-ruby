@@ -1382,6 +1382,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped val, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> ctx) &rarr; untyped</code></pre>
+
           </div>
 
 
@@ -1395,7 +1397,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 11</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">val</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">val</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1432,6 +1434,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped val, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> ctx) &rarr; untyped</code></pre>
+
           </div>
 
 
@@ -1445,7 +1449,7 @@
 
 
           <div class="method-source-code" id="coerce_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 13</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 16</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">coerce_result</span>(<span class="ruby-identifier">val</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">val</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1482,6 +1486,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(?bool? is_default) &rarr; bool?</code></pre>
+
           </div>
 
 
@@ -1495,10 +1501,10 @@
 
 
           <div class="method-source-code" id="default_scalar-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 33</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 39</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_scalar</span>(<span class="ruby-identifier">is_default</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">is_default</span>.<span class="ruby-identifier">nil?</span>
-    <span class="ruby-ivar">@default_scalar</span> = <span class="ruby-identifier">is_default</span>
+    <span class="ruby-ivar">@default_scalar</span> = <span class="ruby-identifier">is_default</span> <span class="ruby-comment">#: bool?</span>
   <span class="ruby-keyword">end</span>
   <span class="ruby-ivar">@default_scalar</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1535,6 +1541,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; bool</code></pre>
+
           </div>
 
 
@@ -1548,7 +1556,7 @@
 
 
           <div class="method-source-code" id="default_scalar-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 40</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 47</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_scalar?</span>
   <span class="ruby-ivar">@default_scalar</span> ||= <span class="ruby-keyword">false</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1585,6 +1593,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; <a href="../TypeKinds/TypeKind.html" class="rbs-type">GraphQL::TypeKinds::TypeKind</a></code></pre>
+
           </div>
 
 
@@ -1598,7 +1608,7 @@
 
 
           <div class="method-source-code" id="kind-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 17</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 21</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">kind</span>
   <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">TypeKinds</span><span class="ruby-operator">::</span><span class="ruby-constant">SCALAR</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1635,6 +1645,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(?<a href="../Types/String.html" class="rbs-type">String</a>? new_url) &rarr; <a href="../Types/String.html" class="rbs-type">String</a>?</code></pre>
+
           </div>
 
 
@@ -1648,7 +1660,7 @@
 
 
           <div class="method-source-code" id="specified_by_url-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 21</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">specified_by_url</span>(<span class="ruby-identifier">new_url</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_url</span>
     <span class="ruby-identifier">directive</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Directive</span><span class="ruby-operator">::</span><span class="ruby-constant">SpecifiedBy</span>, <span class="ruby-value">url</span><span class="ruby-value">:</span> <span class="ruby-identifier">new_url</span>)
@@ -1684,14 +1696,19 @@
         <div class="method-header">
           <div class="method-heading-group">
 
-              <div class="method-heading">
-                <a href="#method-c-validate_non_null_input" title="Link to this method">
-                  <span class="method-name">validate_non_null_input</span>
-                  <span class="method-args">(value, ctx, max_errors: nil)</span>
-                </a>
-              </div>
+
+                <div class="method-heading">
+                  <a href="#method-c-validate_non_null_input" title="Link to this method">
+                    <span class="method-callseq">
+                      validate_non_null_input(value, ctx, max_errors:) &rarr; GraphQL::Query::InputValidationResult | nil
+                    </span>
+                  </a>
+                </div>
 
 
+
+
+            <pre class="method-type-signature"><code>(untyped value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> ctx, ?max_errors: Integer?) &rarr; <a href="../Query/InputValidationResult.html" class="rbs-type">GraphQL::Query::InputValidationResult</a>?</code></pre>
 
           </div>
 
@@ -1706,7 +1723,7 @@
 
 
           <div class="method-source-code" id="validate_non_null_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 44</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 68</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_non_null_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-value">max_errors:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">coerced_result</span> = <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
@@ -1721,7 +1738,7 @@
   <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">coerced_result</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">CoercionError</span>)
     <span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">InputValidationResult</span>.<span class="ruby-identifier">from_problem</span>(<span class="ruby-identifier">coerced_result</span>.<span class="ruby-identifier">message</span>, <span class="ruby-value">message</span><span class="ruby-value">:</span> <span class="ruby-identifier">coerced_result</span>.<span class="ruby-identifier">message</span>, <span class="ruby-value">extensions</span><span class="ruby-value">:</span> <span class="ruby-identifier">coerced_result</span>.<span class="ruby-identifier">extensions</span>)
   <span class="ruby-keyword">else</span>
-    <span class="ruby-keyword">nil</span>
+    <span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">InputValidationResult</span>.<span class="ruby-identifier">coerced</span>(<span class="ruby-identifier">coerced_result</span>)
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -1731,7 +1748,16 @@
         <div class="method-description">
 
 
-          
+          <p>Coerce <code>value</code> with <a href="Scalar.html#method-c-coerce_input">coerce_input</a> and report any problems.</p>
+
+<p>GraphQL-Ruby calls this for variable and literal input values. When the value is valid, it returns a result with <a href="../Query/InputValidationResult.html#attribute-i-coerced_value">coerced_value</a>, which is used as the argument value.</p>
+
+<p>Overrides may return <code>InputValidationResult.coerced(value)</code> to provide a coerced value (including <code>nil</code>). If an override returns a valid result <em>without</em> a coerced value, <a href="Scalar.html#method-c-coerce_input"><code>coerce_input</code></a> will be called at runtime, and any <a href="../CoercionError.html"><code>GraphQL::CoercionError</code></a> it raises will be added as a field error.</p>
+
+<p><strong>Returns</strong></p>
+<ul><li>
+<p><code>GraphQL::Query::InputValidationResult, nil</code></p>
+</li></ul>
 
 
         </div>

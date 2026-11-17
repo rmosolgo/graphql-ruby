@@ -1393,6 +1393,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(?untyped obj) &rarr; void</code></pre>
+
           </div>
 
 
@@ -1406,9 +1408,9 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/handles_raw_value.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/handles_raw_value.rb, line 18</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">obj</span> = <span class="ruby-keyword">nil</span>)
-  <span class="ruby-ivar">@object</span> = <span class="ruby-identifier">obj</span>
+  <span class="ruby-ivar">@object</span> = <span class="ruby-identifier">obj</span> <span class="ruby-comment">#: untyped</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -1457,6 +1459,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Query.html" class="rbs-type">GraphQL::Query</a> query, untyped result_data, <a href="../../Types/String.html" class="rbs-type">String</a> | Integer result_key) &rarr; void</code></pre>
+
           </div>
 
 
@@ -1470,7 +1474,7 @@
 
 
           <div class="method-source-code" id="finalize_graphql_result-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/handles_raw_value.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/handles_raw_value.rb, line 13</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">finalize_graphql_result</span>(<span class="ruby-identifier">query</span>, <span class="ruby-identifier">result_data</span>, <span class="ruby-identifier">result_key</span>)
   <span class="ruby-identifier">result_data</span>[<span class="ruby-identifier">result_key</span>] = <span class="ruby-ivar">@object</span>
 <span class="ruby-keyword">end</span></pre>
@@ -1507,6 +1511,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; untyped</code></pre>
+
           </div>
 
 
@@ -1520,7 +1526,7 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/handles_raw_value.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/handles_raw_value.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">resolve</span>
   <span class="ruby-ivar">@object</span>
 <span class="ruby-keyword">end</span></pre>
