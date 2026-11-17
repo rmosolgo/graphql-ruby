@@ -842,12 +842,15 @@
         <div class="method-header">
           <div class="method-heading-group">
 
-              <div class="method-heading">
-                <a href="#method-c-validate_non_null_input" title="Link to this method">
-                  <span class="method-name">validate_non_null_input</span>
-                  <span class="method-args">(value, ctx, max_errors: nil)</span>
-                </a>
-              </div>
+
+                <div class="method-heading">
+                  <a href="#method-c-validate_non_null_input" title="Link to this method">
+                    <span class="method-callseq">
+                      validate_non_null_input(value, ctx, max_errors:) &rarr; GraphQL::Query::InputValidationResult | nil
+                    </span>
+                  </a>
+                </div>
+
 
 
 
@@ -864,7 +867,7 @@
 
 
           <div class="method-source-code" id="validate_non_null_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 45</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/scalar.rb, line 61</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_non_null_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>, <span class="ruby-value">max_errors:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-identifier">coerced_result</span> = <span class="ruby-keyword">begin</span>
     <span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
@@ -879,7 +882,7 @@
   <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">coerced_result</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">CoercionError</span>)
     <span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">InputValidationResult</span>.<span class="ruby-identifier">from_problem</span>(<span class="ruby-identifier">coerced_result</span>.<span class="ruby-identifier">message</span>, <span class="ruby-value">message</span><span class="ruby-value">:</span> <span class="ruby-identifier">coerced_result</span>.<span class="ruby-identifier">message</span>, <span class="ruby-value">extensions</span><span class="ruby-value">:</span> <span class="ruby-identifier">coerced_result</span>.<span class="ruby-identifier">extensions</span>)
   <span class="ruby-keyword">else</span>
-    <span class="ruby-keyword">nil</span>
+    <span class="ruby-constant">Query</span><span class="ruby-operator">::</span><span class="ruby-constant">InputValidationResult</span>.<span class="ruby-identifier">coerced</span>(<span class="ruby-identifier">coerced_result</span>)
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -889,7 +892,16 @@
         <div class="method-description">
 
 
-          
+          <p>Coerce <code>value</code> with <a href="Scalar.html#method-c-coerce_input">coerce_input</a> and report any problems.</p>
+
+<p>GraphQL-Ruby calls this for variable and literal input values. When the value is valid, it returns a result with <a href="../Query/InputValidationResult.html#attribute-i-coerced_value">coerced_value</a>, which is used as the argument value.</p>
+
+<p>Overrides may return <code>InputValidationResult.coerced(value)</code> to provide a coerced value (including <code>nil</code>). If an override returns a valid result <em>without</em> a coerced value, <a href="Scalar.html#method-c-coerce_input"><code>coerce_input</code></a> will be called at runtime, and any <a href="../CoercionError.html"><code>GraphQL::CoercionError</code></a> it raises will be added as a field error.</p>
+
+<p><strong>Returns</strong></p>
+<ul><li>
+<p><code>GraphQL::Query::InputValidationResult, nil</code></p>
+</li></ul>
 
 
         </div>

@@ -842,11 +842,8 @@
         <span class="ruby-ivar">@graphql_result</span>[<span class="ruby-ivar">@key</span>] = <span class="ruby-identifier">add_field_error</span>(<span class="ruby-ivar">@authorization_error</span>)
       <span class="ruby-keyword">end</span>
     <span class="ruby-keyword">rescue</span> <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">RuntimeError</span> <span class="ruby-operator">=&gt;</span> <span class="ruby-identifier">err</span>
-      <span class="ruby-keyword">if</span> <span class="ruby-ivar">@is_non_null</span>
-        <span class="ruby-ivar">@graphql_result</span>[<span class="ruby-ivar">@key</span>] = <span class="ruby-ivar">@field_resolve_step</span>.<span class="ruby-identifier">add_non_null_error</span>(<span class="ruby-ivar">@is_from_array</span>)
-      <span class="ruby-keyword">else</span>
-        <span class="ruby-ivar">@graphql_result</span>[<span class="ruby-ivar">@key</span>] = <span class="ruby-identifier">add_field_error</span>(<span class="ruby-identifier">err</span>)
-      <span class="ruby-keyword">end</span>
+      <span class="ruby-comment"># Like the classic runtime, report the raised error itself; add_graphql_error propagates the null for non-null types.</span>
+      <span class="ruby-ivar">@graphql_result</span>[<span class="ruby-ivar">@key</span>] = <span class="ruby-identifier">add_field_error</span>(<span class="ruby-identifier">err</span>)
     <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">end</span>
 

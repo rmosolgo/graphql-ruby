@@ -406,6 +406,8 @@
       </summary>
       <ul class="nav-list" role="directory">
 
+        <li ><a href="#method-c-coerced">coerced</a></li>
+
         <li ><a href="#method-c-from_problem">from_problem</a></li>
 
         <li ><a href="#method-c-new">new</a></li>
@@ -430,6 +432,10 @@
       <ul class="nav-list" role="directory">
 
         <li ><a href="#method-i-add_problem">add_problem</a></li>
+
+        <li ><a href="#method-i-coerced_value-3D">coerced_value=</a></li>
+
+        <li ><a href="#method-i-coerced_value-3F">coerced_value?</a></li>
 
         <li ><a href="#method-i-merge_result-21">merge_result!</a></li>
 
@@ -527,6 +533,26 @@
       </header>
 
 
+      <div id="attribute-i-coerced_value" class="method-detail anchor-link">
+        <div class="method-heading attribute-method-heading">
+          <a href="#attribute-i-coerced_value" title="Link to this attribute">
+            <span class="method-name">coerced_value</span>
+            <span class="attribute-access-type">[R]</span>
+          </a>
+
+        </div>
+
+        <div class="method-description">
+
+
+        <p><strong>Returns</strong></p>
+<ul><li>
+<p><code>Object</code> — The coerced value, if one was given with <a href="InputValidationResult.html#method-i-coerced_value-3D">coerced_value=</a></p>
+</li></ul>
+
+        </div>
+      </div>
+
       <div id="attribute-i-problems" class="method-detail anchor-link">
         <div class="method-heading attribute-method-heading">
           <a href="#attribute-i-problems" title="Link to this attribute">
@@ -555,6 +581,73 @@
        <header>
          <h3 id="public-class-untitled-methods"><a href="#public-class-untitled-methods">Public Class Methods</a></h3>
        </header>
+
+
+      <span id="coerced-class_method" class="legacy-anchor"></span>
+<div id="method-c-coerced" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+
+                <div class="method-heading">
+                  <a href="#method-c-coerced" title="Link to this method">
+                    <span class="method-callseq">
+                      coerced(Object value) &rarr; GraphQL::Query::InputValidationResult
+                    </span>
+                  </a>
+                </div>
+
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="coerced-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 30</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerced</span>(<span class="ruby-identifier">value</span>)
+  <span class="ruby-identifier">result</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">new</span>
+  <span class="ruby-identifier">result</span>.<span class="ruby-identifier">coerced_value</span> = <span class="ruby-identifier">value</span>
+  <span class="ruby-identifier">result</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          <p>Build a valid result which carries the coerced Ruby value for this input.</p>
+
+<p>Return this from <code>validate_non_null_input</code> to give GraphQL-Ruby the coerced value, so that it doesn’t call <code>coerce_input</code> again. <code>value</code> may be <code>nil</code>.</p>
+
+<p><strong>Parameters</strong></p>
+<ul><li>
+<p><code>value</code> (<code>Object</code>) — The coerced Ruby value</p>
+</li></ul>
+
+<p><strong>Returns</strong></p>
+<ul><li>
+<p><a href="InputValidationResult.html"><code>GraphQL::Query::InputValidationResult</code></a></p>
+</li></ul>
+
+
+        </div>
+
+
+
+
+
+      </div>
 
 
       <span id="from_problem-class_method" class="legacy-anchor"></span>
@@ -636,10 +729,12 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 36</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">valid:</span> <span class="ruby-keyword">true</span>, <span class="ruby-value">problems:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@valid</span> = <span class="ruby-identifier">valid</span>
   <span class="ruby-ivar">@problems</span> = <span class="ruby-identifier">problems</span>
+  <span class="ruby-ivar">@coerced_value</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-ivar">@has_coerced_value</span> = <span class="ruby-keyword">false</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -701,7 +796,7 @@
 
 
           <div class="method-source-code" id="add_problem-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 67</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add_problem</span>(<span class="ruby-identifier">explanation</span>, <span class="ruby-identifier">path</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">extensions:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">message:</span> <span class="ruby-keyword">nil</span>)
   <span class="ruby-ivar">@problems</span> ||= []
   <span class="ruby-ivar">@valid</span> = <span class="ruby-keyword">false</span>
@@ -722,6 +817,113 @@
 
 
           
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="coerced_value=-instance_method" class="legacy-anchor"></span>
+<div id="method-i-coerced_value-3D" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+              <div class="method-heading">
+                <a href="#method-i-coerced_value-3D" title="Link to this method">
+                  <span class="method-name">coerced_value=</span>
+                  <span class="method-args">(new_value)</span>
+                </a>
+              </div>
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="coerced_value-3D-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 48</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">coerced_value=</span>(<span class="ruby-identifier">new_value</span>)
+  <span class="ruby-ivar">@coerced_value</span> = <span class="ruby-identifier">new_value</span>
+  <span class="ruby-ivar">@has_coerced_value</span> = <span class="ruby-keyword">true</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          
+
+
+        </div>
+
+
+
+
+
+      </div>
+
+
+      <span id="coerced_value?-instance_method" class="legacy-anchor"></span>
+<div id="method-i-coerced_value-3F" class="method-detail anchor-link ">
+        <div class="method-header">
+          <div class="method-heading-group">
+
+
+                <div class="method-heading">
+                  <a href="#method-i-coerced_value-3F" title="Link to this method">
+                    <span class="method-callseq">
+                      coerced_value?() &rarr; bool
+                    </span>
+                  </a>
+                </div>
+
+
+
+
+          </div>
+
+
+            <div class="method-controls">
+              <details class="method-source-toggle">
+                <summary><span class="method-source-icon" aria-hidden="true">{}</span> Source</summary>
+              </details>
+            </div>
+
+        </div>
+
+
+          <div class="method-source-code" id="coerced_value-3F-source">
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 59</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">coerced_value?</span>
+  <span class="ruby-ivar">@has_coerced_value</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+
+
+
+        <div class="method-description">
+
+
+          <p><strong>Returns</strong></p>
+<ul><li>
+<p><code>Boolean</code> — true if a coerced value was given with <a href="InputValidationResult.html#method-i-coerced_value-3D">coerced_value=</a></p>
+</li></ul>
 
 
         </div>
@@ -760,7 +962,7 @@
 
 
           <div class="method-source-code" id="merge_result-21-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 37</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 80</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">merge_result!</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">inner_result</span>)
   <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">inner_result</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">inner_result</span>.<span class="ruby-identifier">valid?</span>
 
@@ -819,7 +1021,7 @@
 
 
           <div class="method-source-code" id="valid-3F-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 20</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/query/input_validation_result.rb, line 63</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">valid?</span>
   <span class="ruby-ivar">@valid</span>
 <span class="ruby-keyword">end</span></pre>
