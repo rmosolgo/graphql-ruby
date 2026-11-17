@@ -206,8 +206,8 @@ module GraphQL
       end
 
       def coerce_scalar_value(value, type, path, result)
-        coerced_value = begin
-          type.coerce_input(value, @context)
+        scalar_result = begin
+          type.validate_non_null_input(value, @context)
         rescue GraphQL::CoercionError => err
           result.add_problem(err.message, path.dup, message: err.message, extensions: err.extensions)
           return nil
@@ -215,13 +215,26 @@ module GraphQL
           result.add_problem(err.message, path.dup)
           return nil
         rescue StandardError => err
-          @query.handle_or_reraise(err)
+          return @query.handle_or_reraise(err)
         end
 
-        if coerced_value.nil?
-          result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{type.graphql_name}", path.dup)
+        if scalar_result && !scalar_result.valid?
+          problems = scalar_result.problems
+          if problems.nil? || problems.empty?
+            result.add_problem("Could not coerce value #{GraphQL::Language.serialize(value)} to #{type.graphql_name}", path.dup)
+          else
+            problems.each do |problem|
+              result.add_problem(problem["explanation"], [*path, *problem["path"]], message: problem["message"], extensions: problem["extensions"])
+            end
+          end
+          nil
+        elsif scalar_result&.coerced_value?
+          scalar_result.coerced_value
+        else
+          # A custom `validate_non_null_input` accepted this value but didn't provide a coerced value.
+          # Call `coerce_input` at runtime, like GraphQL-Ruby did before 2.6.15.
+          GraphQL::Execution::InputValues::DeferredCoercion.new(type, value)
         end
-        coerced_value
       end
 
       def add_max_errors_reached_message

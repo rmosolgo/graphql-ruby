@@ -12,9 +12,52 @@ module GraphQL
         result
       end
 
+      # Build a valid result which carries the coerced Ruby value for this input.
+      #
+      # Return this from `validate_non_null_input` to give GraphQL-Ruby the coerced value,
+      # so that it doesn't call `coerce_input` again. `value` may be `nil`.
+      #
+      # **Parameters**
+      #
+      # - `value` (`Object`) — The coerced Ruby value
+      #
+      # **Returns**
+      #
+      # - `GraphQL::Query::InputValidationResult`
+      #
+      # :call-seq:
+      #   coerced(Object value) -> GraphQL::Query::InputValidationResult
+      def self.coerced(value)
+        result = self.new
+        result.coerced_value = value
+        result
+      end
+
       def initialize(valid: true, problems: nil)
         @valid = valid
         @problems = problems
+        @coerced_value = nil
+        @has_coerced_value = false
+      end
+
+      # **Returns**
+      #
+      # - `Object` — The coerced value, if one was given with [coerced_value=](rdoc-ref:#coerced_value=)
+      attr_reader :coerced_value
+
+      def coerced_value=(new_value)
+        @coerced_value = new_value
+        @has_coerced_value = true
+      end
+
+      # **Returns**
+      #
+      # - `Boolean` — true if a coerced value was given with [coerced_value=](rdoc-ref:#coerced_value=)
+      #
+      # :call-seq:
+      #   coerced_value?() -> bool
+      def coerced_value?
+        @has_coerced_value
       end
 
       def valid?
