@@ -1042,4 +1042,57 @@ To opt into the future behavior, configure your schema (MaxOfPossibleScopes) wit
       end
     end
   end
+
+  describe "nested fields on an abstract type with many possible types" do
+    module SelfReferencingNode
+      include GraphQL::Schema::Interface
+      field :name, String
+      field :owner, SelfReferencingNode
+
+      def self.resolve_type(_obj, _ctx)
+        raise "Not used in this test"
+      end
+    end
+
+    class SelfReferencingSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :node, SelfReferencingNode
+      end
+
+      query(Query)
+      20.times do |i|
+        orphan_types(Class.new(GraphQL::Schema::Object) {
+          graphql_name("SelfReferencingImpl#{i}")
+          implements(SelfReferencingNode)
+        })
+      end
+    end
+
+    class CountingQueryComplexity < GraphQL::Analysis::QueryComplexity
+      def initialize(query)
+        super
+        @field_complexity_calls = 0
+      end
+
+      def field_complexity(scoped_type_complexity, max_complexity:, child_complexity: nil)
+        @field_complexity_calls += 1
+      end
+
+      def result
+        [super, @field_complexity_calls]
+      end
+    end
+
+    [:future, :legacy].each do |mode|
+      it "calculates shared selections once per level, not once per possible type (#{mode})" do
+        depth = 10
+        query_string = "{ node #{"{ owner " * depth}{ name }#{" }" * depth} }"
+        mode_schema = Class.new(SelfReferencingSchema) { complexity_cost_calculation_mode(mode) }
+        query = GraphQL::Query.new(mode_schema, query_string)
+        complexity, field_complexity_calls = GraphQL::Analysis.analyze_query(query, [CountingQueryComplexity]).first
+        assert_equal depth + 2, complexity
+        assert_equal depth + 2, field_complexity_calls
+      end
+    end
+  end
 end
