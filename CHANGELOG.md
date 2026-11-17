@@ -10,6 +10,27 @@
 
 ### Bug fixes
 
+# 2.6.16 (17 Nov 2026)
+
+## Security
+
+This release includes patches for the following:
+
+- Parser: https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-5f8h-c2xc-j37j
+- Execution (Legacy only): https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-492h-6x29-69mq
+- Complexity: https://github.com/rmosolgo/graphql-ruby/security/advisories/GHSA-wqwf-8p4q-mwqj
+
+## New features
+
+- Continue Sorbet adoption #5892 #5894 #5893 #5879 #5900
+
+## Bug fixes
+
+- Connection compatibility: support crafted cursors with value `0` #5862
+- Scalars: reinstate support for custom `validate_non_null_input` #5899
+- Execution::Next: Fix compatibility with GraphQL::ExecutionError raised from `unauthorized_object` #5901
+- Remove unused `@authorizes` class instance variable #5902
+
 # 2.6.15 (9 Nov 2026)
 
 ## Security
