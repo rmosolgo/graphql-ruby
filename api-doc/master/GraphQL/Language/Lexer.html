@@ -536,7 +536,7 @@
 
         <dd>
 
-          
+          <p>Keep repeated alternatives disjoint to avoid exponential backtracking on older Rubies.</p>
         </dd>
 
 
@@ -903,7 +903,7 @@
 
 
           <div class="method-source-code" id="replace_escaped_characters_in_place-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 359</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 358</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">replace_escaped_characters_in_place</span>(<span class="ruby-identifier">raw_string</span>)
   <span class="ruby-identifier">raw_string</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-constant">ESCAPED</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">matched_str</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword">if</span> (<span class="ruby-identifier">point_str_1</span> = <span class="ruby-identifier">$1</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">$2</span>)
@@ -974,7 +974,7 @@
 
 
           <div class="method-source-code" id="tokenize-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 386</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/language/lexer.rb, line 385</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">tokenize</span>(<span class="ruby-identifier">string</span>)
   <span class="ruby-identifier">lexer</span> = <span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Language</span><span class="ruby-operator">::</span><span class="ruby-constant">Lexer</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">string</span>)
   <span class="ruby-identifier">tokens</span> = []
