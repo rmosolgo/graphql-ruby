@@ -117,7 +117,7 @@ describe GraphQL::Subscriptions::Serialize do
       end
 
       time_utc = klass.new(Time.at(1), ActiveSupport::TimeZone["UTC"])
-      time_est = klass.new(Time.at(1), ActiveSupport::TimeZone["EST"])
+      time_est = klass.new(Time.at(1), ActiveSupport::TimeZone["America/New_York"])
 
       serialized_utc = serialize_dump(time_utc)
       reloaded_utc = serialize_load(serialized_utc)
@@ -129,7 +129,7 @@ describe GraphQL::Subscriptions::Serialize do
       assert_equal time_est, reloaded_est, "#{time_est.inspect} is serialized to #{serialized_est.inspect} and reloaded"
 
       assert_equal "UTC", time_utc.time_zone.name, "#{time_utc.inspect} is parsed within the UTC time zone"
-      assert_equal "EST", time_est.time_zone.name, "#{time_est.inspect} is parsed within the EST time zone"
+      assert_equal "America/New_York", time_est.time_zone.name, "#{time_est.inspect} is parsed within the America/New_York time zone"
     end
   end
 

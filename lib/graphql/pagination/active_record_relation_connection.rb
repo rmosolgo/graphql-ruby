@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 require "graphql/pagination/relation_connection"
 
 module GraphQL
@@ -9,6 +9,7 @@ module GraphQL
     class ActiveRecordRelationConnection < Pagination::RelationConnection
       private
 
+      #: (untyped relation) -> Integer
       def relation_count(relation)
         int_or_hash = if already_loaded?(relation)
           relation.size
@@ -26,6 +27,7 @@ module GraphQL
         end
       end
 
+      #: (untyped relation) -> Integer?
       def relation_limit(relation)
         if relation.is_a?(Array)
           nil
@@ -34,6 +36,7 @@ module GraphQL
         end
       end
 
+      #: (untyped relation) -> Integer?
       def relation_offset(relation)
         if relation.is_a?(Array)
           nil
@@ -42,6 +45,7 @@ module GraphQL
         end
       end
 
+      #: (untyped relation) -> untyped
       def null_relation(relation)
         if relation.respond_to?(:none)
           relation.none
@@ -51,6 +55,7 @@ module GraphQL
         end
       end
 
+      #: (untyped nodes, Integer limit) -> untyped
       def set_limit(nodes, limit)
         if already_loaded?(nodes)
           nodes.take(limit)
@@ -59,6 +64,7 @@ module GraphQL
         end
       end
 
+      #: (untyped nodes, Integer offset) -> untyped
       def set_offset(nodes, offset)
         if already_loaded?(nodes)
           # If the client sent a bogus cursor beyond the size of the relation,
@@ -71,6 +77,7 @@ module GraphQL
 
       private
 
+      #: (untyped relation) -> bool
       def already_loaded?(relation)
         relation.is_a?(Array) || relation.loaded?
       end

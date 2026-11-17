@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   module Types
     # An untyped JSON scalar that maps to Ruby hashes, arrays, strings, integers, floats, booleans and nils.
@@ -15,10 +15,12 @@ module GraphQL
     class JSON < GraphQL::Schema::Scalar
       description "Represents untyped JSON"
 
+      #: (untyped value, GraphQL::Query::Context _context) -> untyped
       def self.coerce_input(value, _context)
         value
       end
 
+      #: (untyped value, GraphQL::Query::Context _context) -> untyped
       def self.coerce_result(value, _context)
         value
       end

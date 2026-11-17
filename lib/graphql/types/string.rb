@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   module Types
     class String < GraphQL::Schema::Scalar
       description "Represents textual data as UTF-8 character sequences. This type is most often used by GraphQL to represent free-form human-readable text."
 
+      #: (untyped value, GraphQL::Query::Context ctx) -> untyped
       def self.coerce_result(value, ctx)
         str = value.to_s
         if str.encoding == Encoding::UTF_8 || str.ascii_only?
