@@ -498,4 +498,97 @@ describe GraphQL::Schema::Member::Scoped do
       end
     end
   end
+
+  describe "when a scoped connection field halts" do
+    class ScopeFlagLeakSchema < GraphQL::Schema
+      class Project < GraphQL::Schema::Object
+        reauthorize_scoped_objects(false)
+        field :name, String, null: false
+
+        def self.scope_items(items, ctx)
+          items.select { |i| i[:owner] == ctx[:viewer] }
+        end
+
+        def self.authorized?(obj, ctx)
+          obj[:owner] == ctx[:viewer]
+        end
+      end
+
+      class Payroll < GraphQL::Schema::Object
+        field :salaries, String, null: false
+
+        def self.authorized?(_obj, ctx)
+          ctx[:admin] == true
+        end
+      end
+
+      class Viewer < GraphQL::Schema::Object
+        field :project, Project do
+          argument :index, Integer
+        end
+
+        def project(index:)
+          Query::PROJECTS[index]
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        PROJECTS = [{ name: "Alice's Project", owner: "alice" }, { name: "Bob's Project", owner: "bob" }]
+
+        field :projects, Project.connection_type
+
+        def projects
+          PROJECTS
+        end
+
+        field :payroll, Payroll
+
+        def payroll
+          { salaries: "Secret" }
+        end
+
+        field :project, Project do
+          argument :index, Integer
+        end
+
+        def project(index:)
+          PROJECTS[index]
+        end
+
+        field :viewer, Viewer
+
+        def viewer
+          {}
+        end
+      end
+
+      query(Query)
+    end
+
+    class ScopeFlagLeakDataloaderSchema < ScopeFlagLeakSchema
+      use GraphQL::Dataloader
+    end
+
+    [ScopeFlagLeakSchema, ScopeFlagLeakDataloaderSchema].each do |schema|
+      it "doesn't skip authorization on later objects (#{schema.name.split("::").last})" do
+        context = { viewer: "alice", admin: false }
+        [
+          'projects(after: "x") { nodes { name } }',
+          'projects(before: "x") { edges { cursor } }',
+          'projects(after: "x") { edges { node { name } } }',
+        ].each do |bad_connection|
+          res = schema.execute("{ #{bad_connection} payroll { salaries } project(index: 1) { name } viewer { project(index: 1) { name } } }", context: context)
+          assert_equal ["Invalid input: \"x\""], res["errors"].map { |e| e["message"] }
+          assert_nil res["data"]["projects"].values.first
+          assert_nil res["data"]["payroll"], "A different type is still authorized after #{bad_connection}"
+          assert_nil res["data"]["project"], "The scoped type is still authorized after #{bad_connection}"
+          assert_nil res["data"]["viewer"]["project"], "A nested field is still authorized after #{bad_connection}"
+        end
+
+        res = schema.execute("{ projects { nodes { name } } payroll { salaries } }", context: context)
+        assert_equal [{ "name" => "Alice's Project" }], res["data"]["projects"]["nodes"]
+        assert_nil res["data"]["payroll"]
+      end
+    end
+  end
 end
