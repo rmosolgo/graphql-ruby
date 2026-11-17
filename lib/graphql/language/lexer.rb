@@ -313,12 +313,11 @@ module GraphQL
       ESCAPED_QUOTE = /\\"/;
       STRING_CHAR = /#{ESCAPED_QUOTE}|[^"\\\n\r]|#{UNICODE_ESCAPE}|#{STRING_ESCAPE}/
       QUOTED_STRING_REGEXP = %r{#{QUOTE} (?:#{STRING_CHAR})* #{QUOTE}}x
+      # Keep repeated alternatives disjoint to avoid exponential backtracking on older Rubies.
       BLOCK_STRING_REGEXP = %r{
         #{BLOCK_QUOTE}
-        (?: [^"\\]               |  # Any characters that aren't a quote or slash
-           (?<!") ["]{1,2} (?!") |  # Any quotes that don't have quotes next to them
-           \\"{0,3}(?!")         |  # A slash followed by <= 3 quotes that aren't followed by a quote
-           \\                    |  # A slash
+        (?: [^"]                |  # Any character that isn't a quote
+           (?<=\\) "{3} (?!")    |  # Escaped triple quotes
            "{1,2}(?!")              # 1 or 2 " followed by something that isn't a quote
         )*
         (?:"")?
