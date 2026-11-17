@@ -503,7 +503,7 @@ describe GraphQL::Schema::Member::Scoped do
     class ScopeFlagLeakSchema < GraphQL::Schema
       class Project < GraphQL::Schema::Object
         reauthorize_scoped_objects(false)
-        field :name, String, null: false
+        field :name, String, null: false, hash_key: :name
 
         def self.scope_items(items, ctx)
           items.select { |i| i[:owner] == ctx[:viewer] }
@@ -515,7 +515,7 @@ describe GraphQL::Schema::Member::Scoped do
       end
 
       class Payroll < GraphQL::Schema::Object
-        field :salaries, String, null: false
+        field :salaries, String, null: false, hash_key: :salaries
 
         def self.authorized?(_obj, ctx)
           ctx[:admin] == true
@@ -523,7 +523,7 @@ describe GraphQL::Schema::Member::Scoped do
       end
 
       class Viewer < GraphQL::Schema::Object
-        field :project, Project do
+        field :project, Project, resolve_legacy_instance_method: true do
           argument :index, Integer
         end
 
@@ -535,19 +535,19 @@ describe GraphQL::Schema::Member::Scoped do
       class Query < GraphQL::Schema::Object
         PROJECTS = [{ name: "Alice's Project", owner: "alice" }, { name: "Bob's Project", owner: "bob" }]
 
-        field :projects, Project.connection_type
+        field :projects, Project.connection_type, resolve_legacy_instance_method: true
 
         def projects
           PROJECTS
         end
 
-        field :payroll, Payroll
+        field :payroll, Payroll, resolve_legacy_instance_method: true
 
         def payroll
           { salaries: "Secret" }
         end
 
-        field :project, Project do
+        field :project, Project, resolve_legacy_instance_method: true do
           argument :index, Integer
         end
 
@@ -555,7 +555,7 @@ describe GraphQL::Schema::Member::Scoped do
           PROJECTS[index]
         end
 
-        field :viewer, Viewer
+        field :viewer, Viewer, resolve_legacy_instance_method: true
 
         def viewer
           {}

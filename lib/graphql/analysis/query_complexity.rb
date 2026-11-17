@@ -175,13 +175,15 @@ module GraphQL
 
           # Find the maximum complexity for the scope type among possible lexical branches.
           selections_key = all_inner_selections.map(&:object_id)
-          complexity = complexities_by_selections[selections_key] ||= case mode
-          when :legacy
-            legacy_merged_max_complexity(query, all_inner_selections)
-          when :future
-            merged_max_complexity(query, all_inner_selections)
-          else
-            raise ArgumentError, "Expected :legacy or :future, not: #{mode.inspect}"
+          complexity = complexities_by_selections[selections_key] ||= begin
+            case mode
+            when :legacy
+              legacy_merged_max_complexity(query, all_inner_selections)
+            when :future
+              merged_max_complexity(query, all_inner_selections)
+            else
+              raise ArgumentError, "Expected :legacy or :future, not: #{mode.inspect}"
+            end
           end
           complexity > max ? complexity : max
         end
