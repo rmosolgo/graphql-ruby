@@ -29,14 +29,14 @@ describe GraphQL::Subscriptions::Event do
   it "should serialize a JSON argument into the topic name" do
     field = EventSchema.subscription.fields["jsonSubscription"]
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: build_dummy_context, scope: nil)
-    assert_equal %Q{:jsonSubscription:someJson:{"a":0,"b":1}}, event.topic
+    assert_equal [nil, "jsonSubscription", { "someJson" => '{"a":0,"b":1}' }].to_json, event.topic
   end
 
   it "should not serialize the context into the topic name" do
     field = EventSchema.subscription.fields["jsonSubscription"]
     context = build_dummy_context({ my_id: "abc" })
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: context, scope: nil)
-    assert_equal %Q{:jsonSubscription:someJson:{"a":0,"b":1}}, event.topic
+    assert_equal [nil, "jsonSubscription", { "someJson" => '{"a":0,"b":1}' }].to_json, event.topic
     assert_equal event.context[:my_id], "abc"
   end
 
@@ -58,24 +58,24 @@ describe GraphQL::Subscriptions::Event do
       "a" => 0
     }
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => nested_hash }, field: field, context: build_dummy_context, scope: nil)
-    assert_equal %Q{:jsonSubscription:someJson:{"a":0,"b":1,"c":{"y":99,"z":100}}}, event.topic
+    assert_equal [nil, "jsonSubscription", { "someJson" => '{"a":0,"b":1,"c":{"y":99,"z":100}}' }].to_json, event.topic
   end
 
   it "should serialize a hash inside an array as a sorted hash" do
     field = EventSchema.subscription.fields["jsonSubscription"]
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => [{ "b" => 1, "a" => 0 }] }, field: field, context: build_dummy_context, scope: nil)
-    assert_equal %Q{:jsonSubscription:someJson:[{"a":0,"b":1}]}, event.topic
+    assert_equal [nil, "jsonSubscription", { "someJson" => '[{"a":0,"b":1}]' }].to_json, event.topic
   end
 
   it "should serialize a hash inside an array of an array as a sorted hash" do
     field = EventSchema.subscription.fields["jsonSubscription"]
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => [[{ "b" => 1, "a" => 0 }]] }, field: field, context: build_dummy_context, scope: nil)
-    assert_equal %Q{:jsonSubscription:someJson:[[{"a":0,"b":1}]]}, event.topic
+    assert_equal [nil, "jsonSubscription", { "someJson" => '[[{"a":0,"b":1}]]' }].to_json, event.topic
   end
 
   it "should serialize a hash inside an array inside of a hash" do
     field = EventSchema.subscription.fields["jsonSubscription"]
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "key" => [{ "b" => 1, "a" => 0}]} }, field: field, context: build_dummy_context, scope: nil)
-    assert_equal %Q{:jsonSubscription:someJson:{"key":[{"a":0,"b":1}]}}, event.topic
+    assert_equal [nil, "jsonSubscription", { "someJson" => '{"key":[{"a":0,"b":1}]}' }].to_json, event.topic
   end
 end

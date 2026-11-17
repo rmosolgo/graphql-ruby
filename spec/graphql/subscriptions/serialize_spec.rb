@@ -21,6 +21,44 @@ describe GraphQL::Subscriptions::Serialize do
     GraphQL::Subscriptions::Serialize.load(v)
   end
 
+  describe ".dump_recursive" do
+    it "distinguishes values and container boundaries in topics" do
+      pairs = [
+        [{ "roomId" => "7", "threadId" => "3" }, { "roomId" => "7:threadId:3" }],
+        [["tenant", "one", { "arg" => "two:" }], ["tenant:one:arg", "two", {}]],
+        [{ "a" => { "b" => "c" } }, { "a:b" => "c" }],
+        [["a:b", "c"], ["a", "b:c"]],
+        [[["a", "b"], ["c"]], [["a"], ["b", "c"]]],
+        [{ "a" => "b" }, ["a", "b"]],
+        [["a"], "a"],
+        [nil, ""],
+        [[], ""],
+        [{}, ""],
+        [[], {}],
+        [["a", "b"], '["a","b"]'],
+        [{ "a" => "b" }, '{"a":"b"}'],
+        [["a\",\"b", "c"], ["a", "b\",\"c"]],
+      ]
+
+      pairs.each do |left, right|
+        refute_equal GraphQL::Subscriptions::Serialize.dump_recursive(left), GraphQL::Subscriptions::Serialize.dump_recursive(right), "#{left.inspect} and #{right.inspect} must have distinct topics"
+      end
+    end
+
+    it "preserves scalar identifiers and escapes special characters" do
+      value = "7:\"thread\\3\n"
+      assert_equal value, JSON.parse(GraphQL::Subscriptions::Serialize.dump_recursive(value))
+      assert_equal GraphQL::Subscriptions::Serialize.dump_recursive(7), GraphQL::Subscriptions::Serialize.dump_recursive("7")
+      assert_equal GraphQL::Subscriptions::Serialize.dump_recursive(:room), GraphQL::Subscriptions::Serialize.dump_recursive("room")
+
+      object = Object.new
+      object.define_singleton_method(:to_param) { value }
+      assert_equal GraphQL::Subscriptions::Serialize.dump_recursive(value), GraphQL::Subscriptions::Serialize.dump_recursive(object)
+      object.define_singleton_method(:to_gid_param) { "gid:#{value}" }
+      assert_equal GraphQL::Subscriptions::Serialize.dump_recursive("gid:#{value}"), GraphQL::Subscriptions::Serialize.dump_recursive(object)
+    end
+  end
+
   if defined?(GlobalID)
     it "should serialize GlobalID::Identification in Array/Hash" do
       user_a = GlobalIDUser.new("a")

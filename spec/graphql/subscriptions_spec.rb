@@ -667,15 +667,15 @@ describe GraphQL::Subscriptions do
             # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
             expected_sub_count = if schema == ClassBasedInMemoryBackend::Schema
               {
-                ":eventSubscription:payloadType:one:userId:3" => 1,
-                ":eventSubscription:payloadType:one:userId:4" => 2,
-                ":eventSubscription:payloadType:two:userId:3" => 1,
+                '[null,"eventSubscription",{"payloadType":"one","userId":"3"}]' => 1,
+                '[null,"eventSubscription",{"payloadType":"one","userId":"4"}]' => 2,
+                '[null,"eventSubscription",{"payloadType":"two","userId":"3"}]' => 1,
               }
             else
               {
-                ":eventSubscription:payloadType:ONE:userId:3" => 1,
-                ":eventSubscription:payloadType:ONE:userId:4" => 2,
-                ":eventSubscription:payloadType:TWO:userId:3" => 1,
+                '[null,"eventSubscription",{"payloadType":"ONE","userId":"3"}]' => 1,
+                '[null,"eventSubscription",{"payloadType":"ONE","userId":"4"}]' => 2,
+                '[null,"eventSubscription",{"payloadType":"TWO","userId":"3"}]' => 1,
               }
             end
             assert_equal expected_sub_count, subscriptions_by_topic
@@ -715,15 +715,15 @@ describe GraphQL::Subscriptions do
             # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
             expected_sub_count = if schema == ClassBasedInMemoryBackend::Schema
               {
-                ":event:stream:payloadType:one:user_id:3" => 1,
-                ":event:stream:payloadType:two:user_id:3" => 1,
-                ":event:stream:payloadType:one:user_id:4" => 2,
+                '[null,"event",{"stream":{"payloadType":"one","user_id":"3"}}]' => 1,
+                '[null,"event",{"stream":{"payloadType":"two","user_id":"3"}}]' => 1,
+                '[null,"event",{"stream":{"payloadType":"one","user_id":"4"}}]' => 2,
               }
             else
               {
-                ":event:stream:payloadType:ONE:user_id:3" => 1,
-                ":event:stream:payloadType:TWO:user_id:3" => 1,
-                ":event:stream:payloadType:ONE:user_id:4" => 2,
+                '[null,"event",{"stream":{"payloadType":"ONE","user_id":"3"}}]' => 1,
+                '[null,"event",{"stream":{"payloadType":"TWO","user_id":"3"}}]' => 1,
+                '[null,"event",{"stream":{"payloadType":"ONE","user_id":"4"}}]' => 2,
               }
             end
             assert_equal expected_sub_count, subscriptions_by_topic
@@ -1090,8 +1090,8 @@ describe GraphQL::Subscriptions do
 
       schema.subscriptions.trigger(:mySubscription, { "myEnum" => "ONE" }, nil)
 
-      assert_equal(":mySubscription:myEnum:one", write_subscription_events[0].topic)
-      assert_equal(":mySubscription:myEnum:one", execute_all_events[0].topic)
+      assert_equal('[null,"mySubscription",{"myEnum":"one"}]', write_subscription_events[0].topic)
+      assert_equal('[null,"mySubscription",{"myEnum":"one"}]', execute_all_events[0].topic)
     end
   end
 
@@ -1167,8 +1167,8 @@ describe GraphQL::Subscriptions do
 
       schema.subscriptions.trigger(:mySubscription, { 'input' => { 'innerInput' => nil } }, nil)
 
-      assert_equal(':mySubscription:input:innerInput:', write_subscription_events[0].topic)
-      assert_equal(':mySubscription:input:innerInput:', execute_all_events[0].topic)
+      assert_equal('[null,"mySubscription",{"input":{"innerInput":null}}]', write_subscription_events[0].topic)
+      assert_equal('[null,"mySubscription",{"input":{"innerInput":null}}]', execute_all_events[0].topic)
     end
 
     it 'correctly generates subscription topics when triggering with nil as input value' do
@@ -1184,8 +1184,8 @@ describe GraphQL::Subscriptions do
 
       schema.subscriptions.trigger(:mySubscription, { 'input' => nil }, nil)
 
-      assert_equal(':mySubscription:input:', write_subscription_events[0].topic)
-      assert_equal(':mySubscription:input:', execute_all_events[0].topic)
+      assert_equal('[null,"mySubscription",{"input":null}]', write_subscription_events[0].topic)
+      assert_equal('[null,"mySubscription",{"input":null}]', execute_all_events[0].topic)
     end
   end
 end
