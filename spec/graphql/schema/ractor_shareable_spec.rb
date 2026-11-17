@@ -54,15 +54,15 @@ if RUN_RACTOR_TESTS
       ractor = Ractor.new do
         parent = Ractor.receive
         query = GraphQL::Query.new(RactorExampleSchema, "{ __typename i e }" )
-        parent.send(query.class.name)
+        parent << query.class.name
         result = query.result.to_h
-        parent.send(result)
+        parent << result
       rescue StandardError => err
         puts err.message
         puts err.backtrace
-        parent.send(err)
+        parent << err
       end
-      ractor.send(Ractor.current)
+      ractor << Ractor.current
       assert_equal "GraphQL::Query", Ractor.receive
       expected_result = {
         "data" => {
@@ -78,13 +78,13 @@ if RUN_RACTOR_TESTS
       ractor = Ractor.new do
         parent = Ractor.receive
         result = RactorExampleSchema.execute("{ error1 error2 }")
-        parent.send(result.to_h)
+        parent << result.to_h
       rescue StandardError => err
         puts err.message
         puts err.backtrace
-        parent.send(err)
+        parent << err
       end
-      ractor.send(Ractor.current)
+      ractor << Ractor.current
       expected_result = {
         "errors" => [
           {
@@ -104,19 +104,19 @@ if RUN_RACTOR_TESTS
     it "can get schema members by name" do
       ractor = Ractor.new do
         parent = Ractor.receive
-        parent.send(RactorExampleSchema.get_field("Query", "__typename").class.name)
-        parent.send(RactorExampleSchema.get_type("Query").class.name)
-        parent.send(RactorExampleSchema.get_field("Query", "i").class.name)
-        parent.send([
+        parent << RactorExampleSchema.get_field("Query", "__typename").class.name
+        parent << RactorExampleSchema.get_type("Query").class.name
+        parent << RactorExampleSchema.get_field("Query", "i").class.name
+        parent << [
           RactorExampleSchema.query.graphql_name,
           RactorExampleSchema.mutation
-        ])
+        ]
       rescue StandardError => err
         puts err.message
         puts err.backtrace
-        parent.send(err.message)
+        parent << err.message
       end
-      ractor.send(Ractor.current)
+      ractor << Ractor.current
       assert_equal "GraphQL::Schema::Field", Ractor.receive
       assert_equal "Class", Ractor.receive
       assert_equal "GraphQL::Schema::Field", Ractor.receive
@@ -130,10 +130,10 @@ if RUN_RACTOR_TESTS
         inner_schema_str = Ractor.receive
         schema_ast = GraphQL.parse(inner_schema_str)
         Ractor.make_shareable(schema_ast)
-        parent.send(schema_ast)
+        parent << schema_ast
       end
-      ractor.send(Ractor.current)
-      ractor.send(schema_str)
+      ractor << Ractor.current
+      ractor << schema_str
       parsed_schema_ast = Ractor.receive
       assert_equal schema_str.chomp, parsed_schema_ast.to_query_string
     end

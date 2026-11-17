@@ -96,8 +96,8 @@ module GraphQL
               warden_schema = Class.new(schema) #: as singleton(GraphQL::Schema)
               warden_schema.use_visibility_profile = false
               # TODO public API
-              warden_schema.send(:add_type_and_traverse, [warden_schema.query, warden_schema.mutation, warden_schema.subscription].compact, root: true)
-              warden_schema.send(:add_type_and_traverse, warden_schema.directives.values + warden_schema.orphan_types, root: false)
+              warden_schema.__send__(:add_type_and_traverse, [warden_schema.query, warden_schema.mutation, warden_schema.subscription].compact, root: true)
+              warden_schema.__send__(:add_type_and_traverse, warden_schema.directives.values + warden_schema.orphan_types, root: false)
               schema.const_set(:WardenCompatSchema, warden_schema)
             end
             warden_ctx = GraphQL::Query::Context.new(query: context.query, values: warden_ctx_vals)

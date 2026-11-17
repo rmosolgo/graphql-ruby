@@ -12,6 +12,6 @@ describe GraphQL::Schema::Addition do
       end
     }
     duplicate_types_schema.orphan_types(duplicate_types)
-    assert_equal 2, duplicate_types_schema.send(:own_types)["Thing"].size
+    assert_equal 2, duplicate_types_schema.__send__(:own_types)["Thing"].size
   end
 end

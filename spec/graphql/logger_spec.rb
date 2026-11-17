@@ -37,7 +37,7 @@ describe "Logger" do
         assert_equal false, Rails.logger
         assert_instance_of Logger, GraphQL::Schema.default_logger
       ensure
-        Object.send :remove_const, :Rails
+        Object.__send__ :remove_const, :Rails
       end
     end
 

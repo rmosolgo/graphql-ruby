@@ -69,7 +69,7 @@ describe GraphQL::Pagination::RelationConnection do
     ["-1", "0", "abc", "1e10", (2**63).to_s, (10**100).to_s].each do |cursor|
       encoded_cursor = ConnectionAssertions::NonceEnabledEncoder.encode(cursor)
       error = assert_raises(GraphQL::ExecutionError) do
-        connection.send(:offset_from_cursor, encoded_cursor)
+        connection.__send__(:offset_from_cursor, encoded_cursor)
       end
       assert_includes error.message, "Invalid cursor"
     end

@@ -6,7 +6,7 @@ describe GraphQL::Schema::Field do
     it "doesn't allocate a Hash in initialize" do
       # Ruby allocates a Hash on every call to a method when a keyword after the 31st has a non-literal default.
       owner = Class.new(GraphQL::Schema::Object) { graphql_name("Thing") }
-      new_field = -> { GraphQL::Schema::Field.allocate.send(:initialize, name: "f", type: GraphQL::Types::String, owner: owner) }
+      new_field = -> { GraphQL::Schema::Field.allocate.__send__(:initialize, name: "f", type: GraphQL::Types::String, owner: owner) }
       new_field.call
       counts = {} # reused, so that counting doesn't allocate a Hash
       GC.start
