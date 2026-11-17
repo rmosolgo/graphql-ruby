@@ -787,8 +787,8 @@
             <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator.rb, line 23</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-value">validated:</span>, <span class="ruby-value">allow_blank:</span> <span class="ruby-keyword">false</span>, <span class="ruby-value">allow_null:</span> <span class="ruby-keyword">false</span>)
   <span class="ruby-ivar">@validated</span> = <span class="ruby-identifier">validated</span>
-  <span class="ruby-ivar">@allow_blank</span> = <span class="ruby-identifier">allow_blank</span>
-  <span class="ruby-ivar">@allow_null</span> = <span class="ruby-identifier">allow_null</span>
+  <span class="ruby-ivar">@allow_blank</span> = <span class="ruby-identifier">allow_blank</span> <span class="ruby-comment">#: bool | Proc | nil</span>
+  <span class="ruby-ivar">@allow_null</span> = <span class="ruby-identifier">allow_null</span> <span class="ruby-comment">#: bool | Proc | nil</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 

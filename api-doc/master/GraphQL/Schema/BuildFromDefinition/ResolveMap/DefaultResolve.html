@@ -535,6 +535,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Hash[<a href="../../../Types/String.html" class="rbs-type">String</a>, untyped] field_map, <a href="../../../Types/String.html" class="rbs-type">String</a> field_name) &rarr; void</code></pre>
+
           </div>
 
 
@@ -548,10 +550,10 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/build_from_definition/resolve_map/default_resolve.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/build_from_definition/resolve_map/default_resolve.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">field_map</span>, <span class="ruby-identifier">field_name</span>)
-  <span class="ruby-ivar">@field_map</span> = <span class="ruby-identifier">field_map</span>
-  <span class="ruby-ivar">@field_name</span> = <span class="ruby-identifier">field_name</span>
+  <span class="ruby-ivar">@field_map</span> = <span class="ruby-identifier">field_map</span> <span class="ruby-comment">#: Hash[String, untyped]</span>
+  <span class="ruby-ivar">@field_name</span> = <span class="ruby-identifier">field_name</span> <span class="ruby-comment">#: String</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -600,6 +602,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped obj, untyped args, <a href="../../../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> ctx) &rarr; untyped</code></pre>
+
           </div>
 
 
@@ -613,7 +617,7 @@
 
 
           <div class="method-source-code" id="call-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/build_from_definition/resolve_map/default_resolve.rb, line 22</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/build_from_definition/resolve_map/default_resolve.rb, line 24</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">call</span>(<span class="ruby-identifier">obj</span>, <span class="ruby-identifier">args</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-identifier">method_name</span> = <span class="ruby-ivar">@field_name</span>
   <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">obj</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">method_name</span>)

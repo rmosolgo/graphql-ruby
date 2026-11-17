@@ -514,6 +514,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped value, <a href="../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> ctx) &rarr; untyped</code></pre>
+
           </div>
 
 
@@ -527,7 +529,7 @@
 
 
           <div class="method-source-code" id="coerce_input-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date.rb, line 46</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/iso_8601_date.rb, line 47</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">coerce_input</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">ctx</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(::<span class="ruby-constant">Date</span>)
     <span class="ruby-identifier">value</span>

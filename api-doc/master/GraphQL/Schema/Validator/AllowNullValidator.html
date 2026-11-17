@@ -549,6 +549,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(?(bool | Proc | nil) allow_null_positional, ?allow_null: bool | Proc | nil, ?message: <a href="../../Types/String.html" class="rbs-type">String</a> | Proc, **untyped default_options) &rarr; void</code></pre>
+
           </div>
 
 
@@ -562,9 +564,9 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/allow_null_validator.rb, line 19</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/allow_null_validator.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">allow_null_positional</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-value">allow_null:</span> <span class="ruby-keyword">nil</span>, <span class="ruby-value">message:</span> <span class="ruby-constant">MESSAGE</span>, <span class="ruby-operator">**</span><span class="ruby-identifier">default_options</span>)
-  <span class="ruby-ivar">@message</span> = <span class="ruby-identifier">message</span>
+  <span class="ruby-ivar">@message</span> = <span class="ruby-identifier">message</span> <span class="ruby-comment">#: String | Proc</span>
   <span class="ruby-keyword">super</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">default_options</span>)
   <span class="ruby-ivar">@allow_null</span> = <span class="ruby-identifier">allow_null</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">allow_null_positional</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">allow_null</span>
 <span class="ruby-keyword">end</span></pre>
@@ -620,6 +622,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped _object, <a href="../../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> _context, untyped value) &rarr; <a href="../../Types/String.html" class="rbs-type">String</a>?</code></pre>
+
           </div>
 
 
@@ -633,7 +637,7 @@
 
 
           <div class="method-source-code" id="validate-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/allow_null_validator.rb, line 25</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/validator/allow_null_validator.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">validate</span>(<span class="ruby-identifier">_object</span>, <span class="ruby-identifier">_context</span>, <span class="ruby-identifier">value</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">validation_parameter</span>(<span class="ruby-ivar">@allow_null</span>)
     <span class="ruby-identifier">validation_parameter</span>(<span class="ruby-ivar">@message</span>)

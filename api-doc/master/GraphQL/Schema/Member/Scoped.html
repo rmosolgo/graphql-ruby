@@ -505,6 +505,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Module[untyped] subclass) &rarr; void</code></pre>
+
           </div>
 
 
@@ -518,11 +520,11 @@
 
 
           <div class="method-source-code" id="inherited-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/scoped.rb, line 43</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/scoped.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">subclass</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">subclass</span>.<span class="ruby-identifier">class_exec</span> <span class="ruby-keyword">do</span>
-    <span class="ruby-ivar">@reauthorize_scoped_objects</span> = <span class="ruby-keyword">nil</span>
+    <span class="ruby-ivar">@reauthorize_scoped_objects</span> = <span class="ruby-keyword">nil</span> <span class="ruby-comment">#: bool?</span>
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -563,6 +565,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(?bool? new_value) &rarr; bool?</code></pre>
+
           </div>
 
 
@@ -576,7 +580,7 @@
 
 
           <div class="method-source-code" id="reauthorize_scoped_objects-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/scoped.rb, line 31</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/scoped.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">reauthorize_scoped_objects</span>(<span class="ruby-identifier">new_value</span> = <span class="ruby-keyword">nil</span>)
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_value</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-keyword">if</span> <span class="ruby-ivar">@reauthorize_scoped_objects</span> <span class="ruby-operator">!=</span> <span class="ruby-keyword">nil</span>
@@ -585,7 +589,7 @@
       <span class="ruby-identifier">find_inherited_value</span>(<span class="ruby-value">:</span><span class="ruby-value">reauthorize_scoped_objects</span>, <span class="ruby-keyword">true</span>)
     <span class="ruby-keyword">end</span>
   <span class="ruby-keyword">else</span>
-    <span class="ruby-ivar">@reauthorize_scoped_objects</span> = <span class="ruby-identifier">new_value</span>
+    <span class="ruby-ivar">@reauthorize_scoped_objects</span> = <span class="ruby-identifier">new_value</span> <span class="ruby-comment">#: bool?</span>
   <span class="ruby-keyword">end</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -624,6 +628,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped items, <a href="../../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> context) &rarr; untyped</code></pre>
+
           </div>
 
 
@@ -637,7 +643,7 @@
 
 
           <div class="method-source-code" id="scope_items-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/scoped.rb, line 27</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/scoped.rb, line 28</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">scope_items</span>(<span class="ruby-identifier">items</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">items</span>
 <span class="ruby-keyword">end</span></pre>

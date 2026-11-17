@@ -502,6 +502,8 @@
             <span class="attribute-access-type">[R]</span>
           </a>
 
+          <span class="method-type-signature"><code><a href="../../Types/String.html" class="rbs-type">String</a>?</code></span>
+
         </div>
 
         <div class="method-description">
@@ -542,6 +544,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Module[untyped] child_class) &rarr; void</code></pre>
+
           </div>
 
 
@@ -555,7 +559,7 @@
 
 
           <div class="method-source-code" id="extended-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_deprecation_reason.rb, line 34</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_deprecation_reason.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">extended</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-keyword">super</span>
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ClassMethods</span>)
@@ -615,6 +619,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Types/String.html" class="rbs-type">String</a>? text) &rarr; void</code></pre>
+
           </div>
 
 
@@ -628,9 +634,9 @@
 
 
           <div class="method-source-code" id="deprecation_reason-3D-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_deprecation_reason.rb, line 24</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/member/has_deprecation_reason.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">deprecation_reason=</span>(<span class="ruby-identifier">text</span>)
-  <span class="ruby-ivar">@deprecation_reason</span> = <span class="ruby-identifier">text</span>
+  <span class="ruby-ivar">@deprecation_reason</span> = <span class="ruby-identifier">text</span> <span class="ruby-comment">#: String?</span>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">text</span>.<span class="ruby-identifier">nil?</span>
     <span class="ruby-identifier">remove_directive</span>(<span class="ruby-constant">GraphQL</span><span class="ruby-operator">::</span><span class="ruby-constant">Schema</span><span class="ruby-operator">::</span><span class="ruby-constant">Directive</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecated</span>)
   <span class="ruby-keyword">else</span>

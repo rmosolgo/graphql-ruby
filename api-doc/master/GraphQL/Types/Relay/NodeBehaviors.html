@@ -514,6 +514,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(GraphQL::Schema::Member::interface_definition child_module) &rarr; void</code></pre>
+
           </div>
 
 
@@ -527,7 +529,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/node_behaviors.rb, line 11</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/node_behaviors.rb, line 12</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">child_module</span>)
   <span class="ruby-identifier">child_module</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ClassMethods</span>)
   <span class="ruby-identifier">child_module</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ExecutionMethods</span>)
@@ -581,6 +583,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; <a href="../String.html" class="rbs-type">String</a></code></pre>
+
           </div>
 
 
@@ -594,7 +598,7 @@
 
 
           <div class="method-source-code" id="default_global_id-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/node_behaviors.rb, line 18</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/node_behaviors.rb, line 20</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">default_global_id</span>
   <span class="ruby-identifier">node_class</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span> <span class="ruby-comment">#: as GraphQL::Types::Relay::NodeBehaviors::ExecutionMethods</span>
   <span class="ruby-identifier">node_class</span>.<span class="ruby-identifier">default_global_id</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">context</span>)

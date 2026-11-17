@@ -514,6 +514,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; untyped</code></pre>
+
           </div>
 
 
@@ -527,7 +529,7 @@
 
 
           <div class="method-source-code" id="field_block-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_node_field.rb, line 41</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_node_field.rb, line 46</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_block</span>
   <span class="ruby-constant">Proc</span>.<span class="ruby-identifier">new</span> {
     <span class="ruby-comment">#: self as GraphQL::Schema::Field</span>
@@ -568,6 +570,8 @@
 
 
 
+            <pre class="method-type-signature"><code>&rarr; Hash[Symbol, untyped]</code></pre>
+
           </div>
 
 
@@ -581,7 +585,7 @@
 
 
           <div class="method-source-code" id="field_options-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_node_field.rb, line 29</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_node_field.rb, line 33</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">field_options</span>
   {
     <span class="ruby-value">name</span><span class="ruby-value">:</span> <span class="ruby-string">&quot;</span><span class="ruby-string">node</span><span class="ruby-string">&quot;</span>,
@@ -626,6 +630,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(singleton(GraphQL::Schema::Object) child_class) &rarr; void</code></pre>
+
           </div>
 
 
@@ -639,7 +645,7 @@
 
 
           <div class="method-source-code" id="included-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_node_field.rb, line 12</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_node_field.rb, line 13</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">child_class</span>)
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">field</span>(<span class="ruby-operator">**</span><span class="ruby-identifier">field_options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">field_block</span>)
   <span class="ruby-identifier">child_class</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ExecutionMethods</span>)
@@ -691,6 +697,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(id: <a href="../String.html" class="rbs-type">String</a>) &rarr; untyped</code></pre>
+
           </div>
 
 
@@ -704,7 +712,7 @@
 
 
           <div class="method-source-code" id="get_relay_node-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_node_field.rb, line 23</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/types/relay/has_node_field.rb, line 26</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">get_relay_node</span>(<span class="ruby-value">id:</span>)
   <span class="ruby-identifier">query_class</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span> <span class="ruby-comment">#: as GraphQL::Types::Relay::HasNodeField::ExecutionMethods</span>
   <span class="ruby-identifier">query_class</span>.<span class="ruby-identifier">get_relay_node</span>(<span class="ruby-identifier">context</span>, <span class="ruby-value">id</span><span class="ruby-value">:</span> <span class="ruby-identifier">id</span>)

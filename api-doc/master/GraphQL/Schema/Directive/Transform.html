@@ -543,6 +543,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(untyped object, Hash[Symbol, untyped] arguments, <a href="../../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> context) { () &rarr; untyped } &rarr; nil</code></pre>
+
           </div>
 
 
@@ -556,8 +558,8 @@
 
 
           <div class="method-source-code" id="resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 46</span>
-<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 47</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve</span>(<span class="ruby-identifier">object</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
   <span class="ruby-identifier">path</span> = <span class="ruby-identifier">context</span>.<span class="ruby-identifier">namespace</span>(<span class="ruby-value">:</span><span class="ruby-value">interpreter</span>)[<span class="ruby-value">:</span><span class="ruby-value">current_path</span>]
   <span class="ruby-identifier">return_value</span> = <span class="ruby-keyword">yield</span>
   <span class="ruby-identifier">transform_name</span> = <span class="ruby-identifier">arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">by</span>]
@@ -611,6 +613,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Array[<a href="../../Language/Nodes/Field.html" class="rbs-type">GraphQL::Language::Nodes::Field</a>] ast_nodes, untyped parent_type, <a href="../Field.html" class="rbs-type">GraphQL::Schema::Field</a> field_defn, Array[untyped] objects, Hash[Symbol, untyped] arguments, <a href="../../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> context) &rarr; <a href="Transform/Transformer.html" class="rbs-type">Transformer</a>?</code></pre>
+
           </div>
 
 
@@ -624,7 +628,7 @@
 
 
           <div class="method-source-code" id="resolve_field-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 68</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 70</span>
 <span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">resolve_field</span>(<span class="ruby-identifier">ast_nodes</span>, <span class="ruby-identifier">parent_type</span>, <span class="ruby-identifier">field_defn</span>, <span class="ruby-identifier">objects</span>, <span class="ruby-identifier">arguments</span>, <span class="ruby-identifier">context</span>)
   <span class="ruby-identifier">transform_name</span> = <span class="ruby-identifier">arguments</span>[<span class="ruby-value">:</span><span class="ruby-value">by</span>]
   <span class="ruby-keyword">if</span> <span class="ruby-constant">TRANSFORMS</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">transform_name</span>)

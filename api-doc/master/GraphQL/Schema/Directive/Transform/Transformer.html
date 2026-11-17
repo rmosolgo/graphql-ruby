@@ -559,6 +559,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../../Types/String.html" class="rbs-type">String</a> transform) &rarr; void</code></pre>
+
           </div>
 
 
@@ -572,9 +574,9 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 79</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">transform</span>)
-  <span class="ruby-ivar">@transform</span> = <span class="ruby-identifier">transform</span>
+  <span class="ruby-ivar">@transform</span> = <span class="ruby-identifier">transform</span> <span class="ruby-comment">#: String</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -623,6 +625,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(Array[untyped] field_results) &rarr; Array[untyped]</code></pre>
+
           </div>
 
 
@@ -636,7 +640,7 @@
 
 
           <div class="method-source-code" id="after_resolve-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 82</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/schema/directive/transform.rb, line 86</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">after_resolve</span>(<span class="ruby-identifier">field_results</span>)
   <span class="ruby-identifier">field_results</span>.<span class="ruby-identifier">map!</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-ivar">@transform</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">public_send</span>(<span class="ruby-ivar">@transform</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">r</span> }
   <span class="ruby-identifier">field_results</span>

@@ -529,6 +529,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Query/Context.html" class="rbs-type">GraphQL::Query::Context</a> ctx, <a href="../../Language/Nodes/AbstractNode.html" class="rbs-type">GraphQL::Language::Nodes::AbstractNode</a> ast_node, Array[<a href="../../Types/String.html" class="rbs-type">String</a> | Integer] path) &rarr; void</code></pre>
+
           </div>
 
 
@@ -542,11 +544,11 @@
 
 
           <div class="method-source-code" id="new-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/execution_errors.rb, line 9</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/execution_errors.rb, line 10</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">ctx</span>, <span class="ruby-identifier">ast_node</span>, <span class="ruby-identifier">path</span>)
-  <span class="ruby-ivar">@context</span> = <span class="ruby-identifier">ctx</span>
-  <span class="ruby-ivar">@ast_node</span> = <span class="ruby-identifier">ast_node</span>
-  <span class="ruby-ivar">@path</span> = <span class="ruby-identifier">path</span>
+  <span class="ruby-ivar">@context</span> = <span class="ruby-identifier">ctx</span> <span class="ruby-comment">#: GraphQL::Query::Context</span>
+  <span class="ruby-ivar">@ast_node</span> = <span class="ruby-identifier">ast_node</span> <span class="ruby-comment">#: GraphQL::Language::Nodes::AbstractNode</span>
+  <span class="ruby-ivar">@path</span> = <span class="ruby-identifier">path</span> <span class="ruby-comment">#: Array[String | Integer]</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
 
@@ -595,6 +597,8 @@
 
 
 
+            <pre class="method-type-signature"><code>(<a href="../../Schema/Object.html" class="rbs-type">Object</a> err_or_msg) &rarr; void</code></pre>
+
           </div>
 
 
@@ -608,7 +612,7 @@
 
 
           <div class="method-source-code" id="add-source">
-            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/execution_errors.rb, line 15</span>
+            <pre class="ruby"><span class="ruby-comment"># File lib/graphql/execution/interpreter/execution_errors.rb, line 17</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">add</span>(<span class="ruby-identifier">err_or_msg</span>)
   <span class="ruby-identifier">err</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">err_or_msg</span>
   <span class="ruby-keyword">when</span> <span class="ruby-constant">String</span>
