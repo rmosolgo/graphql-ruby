@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -24,10 +24,12 @@ module GraphQL
         #
         # :call-seq:
         #   scope_items(Object items, GraphQL::Query::Context context) -> Object
+        #: (untyped items, GraphQL::Query::Context context) -> untyped
         def scope_items(items, context)
           items
         end
 
+        #: (?bool? new_value) -> bool?
         def reauthorize_scoped_objects(new_value = nil)
           if new_value.nil?
             if @reauthorize_scoped_objects != nil
@@ -36,14 +38,15 @@ module GraphQL
               find_inherited_value(:reauthorize_scoped_objects, true)
             end
           else
-            @reauthorize_scoped_objects = new_value
+            @reauthorize_scoped_objects = new_value #: bool?
           end
         end
 
+        #: (Module[untyped] subclass) -> void
         def inherited(subclass)
           super
           subclass.class_exec do
-            @reauthorize_scoped_objects = nil
+            @reauthorize_scoped_objects = nil #: bool?
           end
         end
       end

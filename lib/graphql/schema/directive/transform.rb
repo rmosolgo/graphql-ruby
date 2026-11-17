@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 module GraphQL
   class Schema
     class Directive < GraphQL::Schema::Member
@@ -41,9 +41,10 @@ module GraphQL
           "upcase",
           "downcase",
           # ??
-        ]
+        ] #: Array[String]
         # Implement the Directive API
-        def self.resolve(object, arguments, context)
+        #: (untyped object, Hash[Symbol, untyped] arguments, GraphQL::Query::Context context) { () -> untyped } -> nil
+        def self.resolve(object, arguments, context, &block)
           path = context.namespace(:interpreter)[:current_path]
           return_value = yield
           transform_name = arguments[:by]
@@ -65,6 +66,7 @@ module GraphQL
           end
         end
 
+        #: (Array[GraphQL::Language::Nodes::Field] ast_nodes, untyped parent_type, GraphQL::Schema::Field field_defn, Array[untyped] objects, Hash[Symbol, untyped] arguments, GraphQL::Query::Context context) -> Transformer?
         def self.resolve_field(ast_nodes, parent_type, field_defn, objects, arguments, context)
           transform_name = arguments[:by]
           if TRANSFORMS.include?(transform_name)
@@ -76,9 +78,11 @@ module GraphQL
 
         class Transformer
           include Execution::PostProcessor
+          #: (String transform) -> void
           def initialize(transform)
-            @transform = transform
+            @transform = transform #: String
           end
+          #: (Array[untyped] field_results) -> Array[untyped]
           def after_resolve(field_results)
             field_results.map! { |r| r.respond_to?(@transform) ? r.public_send(@transform) : r }
             field_results

@@ -106,7 +106,9 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
+    # graphql-c_parser requires Ruby 3.0+ (it uses rb_enc_interned_str), so don't build it on 2.7
     - run: bundle exec rake compile
+      if: ${{ matrix.ruby != '2.7' }}
     - run: bundle exec rake test
   javascript_test:
     runs-on: ubuntu-latest

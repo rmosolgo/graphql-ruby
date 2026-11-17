@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #--
-# typed: true
+# typed: strict
 
 module GraphQL
   class Schema
@@ -15,12 +15,14 @@ module GraphQL
       # argument :name, String, required: true, validate: { allow_blank: false }
       # ```
       class AllowBlankValidator < Validator
+        #: (?(bool | Proc | nil) allow_blank_positional, ?allow_blank: bool | Proc | nil, ?message: String | Proc, **untyped default_options) -> void
         def initialize(allow_blank_positional = nil, allow_blank: nil, message: "%{validated} can't be blank", **default_options)
-          @message = message
+          @message = message #: String | Proc
           super(**default_options)
           @allow_blank = allow_blank.nil? ? allow_blank_positional : allow_blank
         end
 
+        #: (untyped _object, GraphQL::Query::Context _context, untyped value) -> String?
         def validate(_object, _context, value)
           if value.respond_to?(:blank?) && value.blank?
             if (value.nil? && validation_parameter(@allow_null)) || validation_parameter(@allow_blank)
