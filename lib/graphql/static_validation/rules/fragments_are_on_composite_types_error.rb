@@ -7,12 +7,6 @@ module GraphQL
       #: String
       attr_reader :type_name
 
-      # This error never has an argument name
-      #: -> nil
-      def argument_name
-        nil
-      end
-
       #: (String message, type: String, ?path: Array[String | Integer]?, ?nodes: GraphQL::Language::Nodes::AbstractNode | Array[GraphQL::Language::Nodes::AbstractNode]) -> void
       def initialize(message, type:, path: nil, nodes: [])
         super(message, path: path, nodes: nodes)
