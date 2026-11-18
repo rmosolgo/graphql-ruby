@@ -125,7 +125,30 @@ module GraphQL
 
       class << self
         def authorizes?(ctx)
-          self.method(:authorized?).owner != GraphQL::Schema::InputObject
+          # Traverse input types here to avoid recursive calls through Argument#authorizes?
+          input_types = [self]
+          checked_types = {}.compare_by_identity
+          while (input_type = input_types.pop)
+            next if checked_types[input_type]
+            checked_types[input_type] = true
+            return true if input_type.method(:authorized?).owner != GraphQL::Schema::InputObject.singleton_class
+
+            ctx.types.arguments(input_type).each do |argument|
+              argument_type = argument.type.unwrap
+              if argument_type.kind.input_object? &&
+                  argument.method(:authorizes?).owner == GraphQL::Schema::Argument &&
+                  argument_type.method(:authorizes?).owner == GraphQL::Schema::InputObject.singleton_class
+                return true if argument.method(:authorized?).owner != GraphQL::Schema::Argument
+                input_types << argument_type
+              elsif argument_type.kind.input_object?
+                # Custom predicates may recurse through super, so keep authorization enabled.
+                return true
+              elsif argument.authorizes?(ctx)
+                return true
+              end
+            end
+          end
+          false
         end
 
         def authorized?(obj, value, ctx)

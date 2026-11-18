@@ -135,6 +135,131 @@ describe 'Has Authorization' do
       end
     end
 
+    describe "input object types" do
+      let(:context) { GraphQL::Query::NullContext.instance }
+      let(:plain_input) do
+        Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "PlainInput"
+          argument :value, String
+        end
+      end
+
+      it "is false without an authorization hook" do
+        refute GraphQL::Schema::InputObject.authorizes?(context)
+        refute plain_input.authorizes?(context)
+        refute Class.new(plain_input).authorizes?(context)
+      end
+
+      it "detects direct and inherited authorization hooks" do
+        input = Class.new(plain_input) do
+          def self.authorized?(object, value, context)
+            false
+          end
+        end
+        assert input.authorizes?(context)
+        assert Class.new(input).authorizes?(context)
+        assert Class.new(plain_input) { extend HasAuthorization::DefinesAuthorized }.authorizes?(context)
+      end
+
+      it "checks visible argument authorization hooks" do
+        input = Class.new(plain_input) do
+          argument_class HasAuthorization::DirectAuthorizedObject::DirectAuthorizedArgument
+          argument :secret, String
+        end
+        visible_context = GraphQL::Query.new(HasAuthorization::Schema, "{ __typename }").context
+        hidden_context = GraphQL::Query.new(HasAuthorization::Schema, "{ __typename }", context: { hide_arg: true }).context
+        assert input.authorizes?(visible_context)
+        refute input.authorizes?(hidden_context)
+      end
+
+      it "checks nested input objects and lists" do
+        input = plain_input
+        wrapper = Class.new(plain_input) { argument :nested, [input] }
+        refute wrapper.authorizes?(context)
+
+        input.extend(HasAuthorization::DefinesAuthorized)
+        assert wrapper.authorizes?(context)
+      end
+
+      it "handles recursive inputs without authorization hooks" do
+        input = Class.new(plain_input) { argument :nested, [self], required: false }
+        refute input.authorizes?(context)
+      end
+
+      it "finds authorization hooks after a recursive reference" do
+        input = Class.new(plain_input) do
+          argument :nested, self, required: false
+          argument_class HasAuthorization::IndirectAuthorizedObject::IndirectAuthorizedArgument
+          argument :secret, String
+        end
+        assert input.authorizes?(context)
+      end
+
+      it "checks mutually recursive inputs from either entry point" do
+        left = Class.new(plain_input)
+        right = Class.new(plain_input)
+        left.argument :right, right, required: false
+        right.argument :left, left, required: false
+        refute left.authorizes?(context)
+        refute right.authorizes?(context)
+
+        left.argument_class HasAuthorization::IndirectAuthorizedObject::IndirectAuthorizedArgument
+        left.argument :secret, String
+        assert left.authorizes?(context)
+        assert right.authorizes?(context)
+      end
+
+      it "keeps authorization enabled for recursive custom input predicates" do
+        input = Class.new(plain_input) do
+          argument :nested, self, required: false
+
+          def self.authorizes?(context)
+            super
+          end
+        end
+        assert input.authorizes?(context)
+      end
+
+      it "keeps authorization enabled for recursive custom argument predicates" do
+        input = Class.new(plain_input) do
+          argument_class(Class.new(GraphQL::Schema::Argument) do
+            def authorizes?(context)
+              super
+            end
+          end)
+          argument :nested, self, required: false
+        end
+        assert input.authorizes?(context)
+      end
+
+      it "keeps authorization enabled for mutually recursive custom input predicates" do
+        left, right = 2.times.map do
+          Class.new(plain_input) do
+            def self.authorizes?(context)
+              super
+            end
+          end
+        end
+        left.argument :right, right, required: false
+        right.argument :left, left, required: false
+        assert left.authorizes?(context)
+        assert right.authorizes?(context)
+      end
+
+      it "keeps authorization enabled for mutually recursive custom argument predicates" do
+        custom_argument = Class.new(GraphQL::Schema::Argument) do
+          def authorizes?(context)
+            super
+          end
+        end
+        left, right = 2.times.map { Class.new(plain_input) { argument_class custom_argument } }
+        left.argument :right, right, required: false
+        right.argument :left, left, required: false
+        assert left.authorizes?(context)
+        assert right.authorizes?(context)
+      end
+    end
+
     describe "object types" do
       it "is false when no method override is present in inheritance chain" do
         assert_equal false, GraphQL::Schema::Object.authorizes?({})
