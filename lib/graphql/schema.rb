@@ -2142,7 +2142,7 @@ module GraphQL
       # :call-seq:
       #   multiplex(Array[Hash] queries, **kwargs) -> Array[GraphQL::Query::Result]
       def multiplex(queries, **kwargs)
-        if @default_execution_next
+        if default_execution_next
           multiplex_next(queries, **kwargs)
         else
           GraphQL::Execution::Interpreter.run_all(self, queries, **kwargs)
