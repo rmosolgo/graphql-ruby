@@ -189,6 +189,38 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     assert_equal expected_msg, err.message
   end
 
+  describe "execution engine inheritance" do
+    it "uses the configured engine for execute and multiplex" do
+      parent_schema = Class.new(GraphQL::Schema) do
+        query(Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+          field :value, String
+        end)
+        use GraphQL::Execution::Next, as_default: true
+      end
+      child_schema = Class.new(parent_schema)
+      legacy_schema = Class.new(child_schema) do
+        default_execution_next(false)
+      end
+
+      {
+        parent_schema => true,
+        child_schema => true,
+        Class.new(child_schema) => true,
+        legacy_schema => false,
+        Class.new(legacy_schema) => false,
+      }.each do |schema, next_execution|
+        results = [schema.execute("{ __typename }")] + schema.multiplex([
+          { query: "{ __typename }" },
+          { query: "{ __typename }" },
+        ])
+
+        assert_equal [{ "data" => { "__typename" => "Query" } }] * 3, results.map(&:to_h)
+        assert_equal [next_execution] * 3, results.map { |result| !!result.context[:__graphql_execute_next] }
+      end
+    end
+  end
+
   describe ".references_to" do
     it "doesn't include any duplicates" do
       [Dummy::Schema, Jazz::Schema].each do |schema_class|
