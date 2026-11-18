@@ -1279,6 +1279,10 @@ module GraphQL
         end
       end
 
+      # Add documentation-only types to introspection results and printed SDL,
+      # even when the type's or schema's `visible?` hook returns `false`.
+      # Registering a type here does not make it available for use in queries.
+      #
       # **Parameters**
       #
       # - `new_extra_types` (`Module`) — Type definitions to include in printing and introspection, even though they aren't referenced in the schema

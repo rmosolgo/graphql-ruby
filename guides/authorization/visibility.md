@@ -30,6 +30,8 @@ These methods are called with the query context, based on the hash you pass as `
 - In introspection, the member will _not_ be included in the result
 - In normal queries, if a query references that member, it will return a validation error, since that member doesn't exist
 
+Types registered with [Schema.extra_types](rdoc-ref:GraphQL::Schema.extra_types) are an exception: they are included in `__schema.types`, `__type(name:)`, and printed SDL even when the type's or schema's `visible?` hook returns `false`. `extra_types` is intended for documentation-only types and does not make them available for use in queries.
+
 ## Visibility Profiles
 
 You can use named profiles to cache your schema's visibility modes. For example:
@@ -77,7 +79,7 @@ Now, the following bits of GraphQL will return validation errors:
 - Fields that return `SecretFeature`, eg `query { findSecretFeature { ... } }`
 - Fragments on `SecretFeature`, eg `Fragment SF on SecretFeature`
 
-And in introspection:
+Unless `SecretFeature` is registered with `extra_types`, introspection behaves as follows:
 
 - `__schema { types { ... } }` will not include `SecretFeature`
 - `__type(name: "SecretFeature")` will return `nil`
