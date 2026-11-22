@@ -7,6 +7,7 @@ end
 
 module Sentry
   SPAN_OPS = []
+  FINISHED_CHILD_SPAN_OPS = []
   SPAN_DATA = []
   SPAN_DESCRIPTIONS = []
   TRANSACTION_NAMES = []
@@ -73,6 +74,7 @@ module Sentry
     SPAN_DATA.clear
     SPAN_DESCRIPTIONS.clear
     SPAN_OPS.clear
+    FINISHED_CHILD_SPAN_OPS.clear
     TRANSACTION_NAMES.clear
     configuration.data_collection.graphql.document = true
     configuration.data_collection.graphql.variables = true
@@ -90,10 +92,21 @@ module Sentry
 
     def start_child(op:)
       SPAN_OPS << op
+      DummyChildSpan.new(op)
     end
 
     def finish
       # no-op
+    end
+  end
+
+  class DummyChildSpan
+    def initialize(op)
+      @op = op
+    end
+
+    def finish
+      FINISHED_CHILD_SPAN_OPS << @op
     end
   end
 
