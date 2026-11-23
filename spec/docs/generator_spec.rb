@@ -11,7 +11,7 @@ describe RDoc::Generator::GraphQLRuby do
     generator = RDoc::Generator::GraphQLRuby.allocate
     generator.instance_variable_set(:@classes, [graphql, graphql_rails])
 
-    generator.send(:disambiguate_case_insensitive_paths)
+    generator.__send__(:disambiguate_case_insensitive_paths)
 
     _(graphql.path).must_equal "GraphQL.html"
     _(graphql_rails.path).must_equal "Graphql/index.html"
@@ -19,7 +19,7 @@ describe RDoc::Generator::GraphQLRuby do
 
   it "deduplicates API entries while retaining guide entries" do
     generator = RDoc::Generator::GraphQLRuby.allocate
-    entries = generator.send(:deduplicate_search_entries, [
+    entries = generator.__send__(:deduplicate_search_entries, [
       { type: "class", full_name: "GraphQL::Schema" },
       { type: "class", full_name: "GraphQL::Schema" },
       { type: "guide", full_name: "Guide: Getting Started" },
@@ -31,14 +31,14 @@ describe RDoc::Generator::GraphQLRuby do
   it "preserves API visibility text and escapes search snippets" do
     generator = RDoc::Generator::GraphQLRuby.allocate
 
-    private_entry = generator.send(:sanitize_search_entry, {
+    private_entry = generator.__send__(:sanitize_search_entry, {
       type: "class",
       full_name: "GraphQL::Internal",
       snippet: "<p><strong>API:</strong> private</p>",
     })
     _(private_entry[:snippet]).must_equal "API: private"
 
-    entry = generator.send(:sanitize_search_entry, {
+    entry = generator.__send__(:sanitize_search_entry, {
       type: "class",
       full_name: "GraphQL::Schema",
       "snippet" => "<p>See [Schema](rdoc-ref:GraphQL::Schema) <script>alert(1)</script></p>",
@@ -52,7 +52,7 @@ describe RDoc::Generator::GraphQLRuby do
       File.write(path, '<p>[Schema](rdoc-ref:GraphQL::Schema)</p><code>rdoc-ref:Query#initialize</code>')
 
       generator = RDoc::Generator::GraphQLRuby.allocate
-      generator.send(:remove_unresolved_rdoc_refs, Pathname.new(path))
+      generator.__send__(:remove_unresolved_rdoc_refs, Pathname.new(path))
 
       html = File.read(path)
       _(html).must_include("Schema")
@@ -67,7 +67,7 @@ describe RDoc::Generator::GraphQLRuby do
       File.write(path, '<h1>graphql &lt;img src=“<img src="logo.png" />” height=“40” alt=“graphql-ruby”/&gt;</h1>')
 
       generator = RDoc::Generator::GraphQLRuby.allocate
-      generator.send(:normalize_malformed_html_images, Pathname.new(path))
+      generator.__send__(:normalize_malformed_html_images, Pathname.new(path))
 
       html = File.read(path)
       _(html).must_include('<img src="logo.png" height="40" alt="graphql-ruby">')
@@ -83,7 +83,7 @@ describe RDoc::Generator::GraphQLRuby do
       File.write(path, '<p><img src="/object_cache/query-without-cache.png"></p>')
 
       generator = RDoc::Generator::GraphQLRuby.allocate
-      generator.send(:normalize_root_relative_image_paths, path, output)
+      generator.__send__(:normalize_root_relative_image_paths, path, output)
 
       _(File.read(path)).must_include('<img src="../../object_cache/query-without-cache.png">')
     end
@@ -146,8 +146,8 @@ describe RDoc::Generator::GraphQLRuby do
         "docs/maintenance_md.html" => "Documentation maintenance",
         "readme_md.html" => "README",
       }
-      generator.send(:normalize_page_titles_in_sidebar, authorization, output, page_titles)
-      generator.send(:nest_guide_pages_in_sidebar, authorization, output, page_titles)
+      generator.__send__(:normalize_page_titles_in_sidebar, authorization, output, page_titles)
+      generator.__send__(:nest_guide_pages_in_sidebar, authorization, output, page_titles)
 
       html = File.read(authorization)
       _(html).must_include('<summary>Authorization</summary>')
@@ -178,7 +178,7 @@ describe RDoc::Generator::GraphQLRuby do
 
       generator = RDoc::Generator::GraphQLRuby.allocate
       generator.instance_variable_set(:@options, Struct.new(:title).new("GraphQL Ruby API Documentation"))
-      generator.send(:normalize_guide_page_title, path, output, {
+      generator.__send__(:normalize_guide_page_title, path, output, {
         "guides/changesets/overview_md.html" => "API Versioning for GraphQL-Ruby",
       })
 
@@ -194,7 +194,7 @@ describe RDoc::Generator::GraphQLRuby do
     generator = RDoc::Generator::GraphQLRuby.allocate
     generator.instance_variable_set(:@options, RDoc::Options.new)
 
-    excerpt = generator.send(:excerpt, comment)
+    excerpt = generator.__send__(:excerpt, comment)
 
     _(excerpt).must_equal("A result from Schema.execute.")
   end
@@ -205,7 +205,7 @@ describe RDoc::Generator::GraphQLRuby do
       path.dirname.mkpath
       File.write(path, '<h2 id="root-types"><a href="#root-types">Root <a href="Types.html"><code>Types</code></a></a></h2>')
 
-      RDoc::Generator::GraphQLRuby.allocate.send(:normalize_heading_links, path)
+      RDoc::Generator::GraphQLRuby.allocate.__send__(:normalize_heading_links, path)
 
       _(File.read(path)).must_equal '<h2 id="root-types"><a href="#root-types">Root <code>Types</code></a></h2>'
     end
@@ -217,7 +217,7 @@ describe RDoc::Generator::GraphQLRuby do
       path.dirname.mkpath
       File.write(path, '<div class="method-source-code" id="parse-source"></div><div class="method-source-code" id="parse-source"></div>')
 
-      RDoc::Generator::GraphQLRuby.allocate.send(:normalize_method_source_ids, path)
+      RDoc::Generator::GraphQLRuby.allocate.__send__(:normalize_method_source_ids, path)
 
       _(File.read(path)).must_equal '<div class="method-source-code" id="parse-source"></div><div class="method-source-code" id="parse-source-2"></div>'
     end
@@ -235,9 +235,9 @@ describe RDoc::Generator::GraphQLRuby do
       end
 
       generator = RDoc::Generator::GraphQLRuby.allocate
-      generator.send(:inject_product_callout, pro, output)
-      generator.send(:inject_product_callout, enterprise, output)
-      generator.send(:inject_product_callout, oss, output)
+      generator.__send__(:inject_product_callout, pro, output)
+      generator.__send__(:inject_product_callout, enterprise, output)
+      generator.__send__(:inject_product_callout, oss, output)
 
       _(File.read(pro)).must_include("GraphQL-Pro feature")
       _(File.read(pro)).must_include("https://graphql.pro")

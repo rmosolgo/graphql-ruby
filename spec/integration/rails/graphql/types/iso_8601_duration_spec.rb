@@ -97,7 +97,7 @@ describe GraphQL::Types::ISO8601Duration do
   describe "when ActiveSupport is not defined" do
     it "coerce_result and coerce_input raise GraphQL::Error" do
       old_active_support = defined?(ActiveSupport) ? ActiveSupport : nil
-      Object.send(:remove_const, :ActiveSupport) if defined?(ActiveSupport)
+      Object.__send__(:remove_const, :ActiveSupport) if defined?(ActiveSupport)
 
       assert_raises GraphQL::Error do
         GraphQL::Types::ISO8601Duration.coerce_result("", context)

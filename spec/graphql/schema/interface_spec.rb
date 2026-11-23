@@ -189,7 +189,7 @@ describe GraphQL::Schema::Interface do
       assert new_object.respond_to?(:resolver_test_2)
       refute new_object.respond_to?(:not_a_resolver)
     ensure
-      Object.send :remove_const, :ResolverMethods
+      Object.__send__ :remove_const, :ResolverMethods
     end
   end
 

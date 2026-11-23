@@ -7,7 +7,7 @@ module Graphql
   module Generators
     module Core
       def self.included(base)
-        base.send(
+        base.__send__(
           :class_option,
           :directory,
           type: :string,

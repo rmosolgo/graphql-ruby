@@ -98,6 +98,9 @@ Style/FrozenStringLiteralComment:
 Layout/IndentationWidth:
   Width: 2
 
+Style/Send:
+  Enabled: true
+
 Style/LambdaCall:
   EnforcedStyle: call
 
