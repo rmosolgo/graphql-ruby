@@ -86,9 +86,9 @@ module GraphQL
 
         class Event < MonitorTrace::Monitor::Event
           def start
-            if Sentry.initialized? && (@span = Sentry.get_current_scope.get_span)
+            if Sentry.initialized? && (parent_span = Sentry.get_current_scope.get_span)
               span_name = @monitor.name_for(@keyword, @object)
-              @span.start_child(op: span_name)
+              @span = parent_span.start_child(op: span_name)
             end
           end
 

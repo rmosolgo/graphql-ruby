@@ -111,6 +111,18 @@ describe GraphQL::Tracing::SentryTrace do
     assert_equal expected_span_ops, Sentry::SPAN_OPS
   end
 
+  it "finishes the child spans it starts" do
+    exec_query("{ int thing { str } }")
+    expected_finished_span_ops = [
+      "graphql.analyze",
+      "graphql.authorized.Query",
+      "graphql.Query.thing",
+      "graphql.authorized.Thing",
+    ].compact
+
+    assert_equal expected_finished_span_ops.sort, Sentry::FINISHED_CHILD_SPAN_OPS.sort
+  end
+
   it "sets span descriptions for an anonymous query" do
     exec_query("{ int }")
     assert_equal ["query"], Sentry::SPAN_DESCRIPTIONS
