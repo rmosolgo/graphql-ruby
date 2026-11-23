@@ -115,7 +115,6 @@ describe GraphQL::Tracing::SentryTrace do
     exec_query("{ int thing { str } }")
     expected_finished_span_ops = [
       "graphql.analyze",
-      (USING_C_PARSER ? "graphql.lex" : nil),
       "graphql.authorized.Query",
       "graphql.Query.thing",
       "graphql.authorized.Thing",
