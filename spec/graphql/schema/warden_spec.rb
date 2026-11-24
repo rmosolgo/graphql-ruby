@@ -1125,6 +1125,44 @@ describe GraphQL::Schema::Warden do
     end
   end
 
+  describe "#get_type and #get_field" do
+    it "keep the first result for each name during a query" do
+      thing = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Thing"
+        field :name, String
+
+        def self.get_field(name, context = GraphQL::Query::NullContext.instance)
+          context[:hidden] ? nil : super
+        end
+      end
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :thing, thing
+      end
+      schema = Class.new(GraphQL::Schema) do
+        self.use_visibility_profile = false
+        query(query_type)
+
+        def self.get_type(name, context = GraphQL::Query::NullContext.instance, use_visibility_profile = use_visibility_profile?)
+          context[:hidden] && name == "Thing" ? nil : super
+        end
+      end
+
+      query = GraphQL::Query.new(schema, "{ __typename }")
+      warden = query.warden
+      field = warden.get_field(thing, +"name")
+      assert_equal "Thing.name", field.path
+      assert_equal thing, warden.get_type(+"Thing")
+      query.context[:hidden] = true
+      assert_equal field, warden.get_field(thing, +"name")
+      assert_equal thing, warden.get_type(+"Thing")
+
+      hidden_warden = GraphQL::Query.new(schema, "{ __typename }", context: { hidden: true }).warden
+      assert_nil hidden_warden.get_field(thing, +"name")
+      assert_nil hidden_warden.get_type(+"Thing")
+    end
+  end
+
   describe "PassThruWarden is used when no warden is used" do
     it "uses PassThruWarden when a hash is used for context" do
       assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context({})
