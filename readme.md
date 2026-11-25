@@ -56,4 +56,4 @@ Besides that, Pro customers get email support and an opportunity to support grap
 
 - __Say hi & ask questions__ in the #graphql-ruby channel on [Discord](https://discord.com/invite/xud7bH9).
 - __Report bugs__ by posting a description, full stack trace, and all relevant code in a  [GitHub issue](https://github.com/rmosolgo/graphql-ruby/issues).
-- __Start hacking__ with the [Development guide](https://graphql-ruby.org/development).
+- __Start hacking__ with the [Development guide](https://graphql-ruby.org/guides/development/development_md.html).
