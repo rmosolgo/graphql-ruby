@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 #--
 # typed: true
+require "monitor"
 require "graphql/schema/visibility/profile"
 require "graphql/schema/visibility/migration"
 require "graphql/schema/visibility/visit"
@@ -53,6 +54,9 @@ module GraphQL
         @types = nil
         @all_references = nil
         @loaded_all = false
+        @loaded_all_done = false
+        # Reentrant, so a traversal that calls back into `load_all` on the same thread does not deadlock
+        @load_all_monitor = Monitor.new
         @configuration_inherited = configuration_inherited
         if preload
           self.preload
@@ -64,6 +68,9 @@ module GraphQL
         @visit = true
         @interface_type_memberships.default_proc = nil
         @all_references.default_proc = nil
+        # Everything is loaded, so `load_all` takes the fast path from now on.
+        # Drop the lock: a Monitor can't be made Ractor-shareable.
+        @load_all_monitor = nil
         super
       end
 
@@ -221,6 +228,14 @@ module GraphQL
       end
 
       def load_all(types: nil)
+        # Fast path, without the lock, once every type was visited and the index is complete:
+        return if types.nil? && @loaded_all_done
+        # Other threads wait here until the first traversal finishes,
+        # so they never read a partially built index.
+        @load_all_monitor.synchronize { load_all_synchronized(types) }
+      end
+
+      def load_all_synchronized(types)
         if @visit.nil?
           # Set up the visit system
           @interface_type_memberships = Hash.new { |h, interface_type|
@@ -317,6 +332,10 @@ module GraphQL
           union_type.all_possible_types.each do |object_type|
             @all_references[object_type] |= refs # Add new items
           end
+        end
+
+        if types.nil?
+          @loaded_all_done = true
         end
       end
     end
