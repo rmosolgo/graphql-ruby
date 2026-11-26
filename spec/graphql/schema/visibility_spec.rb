@@ -393,6 +393,57 @@ describe GraphQL::Schema::Visibility do
     assert_equal "Hat", res["data"]["node"]["name"]
   end
 
+  describe "concurrent first load" do
+    it "makes other threads wait until the reference index is complete" do
+      started = Queue.new
+      resume = Queue.new
+      icon = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Icon"
+        field :name, String
+      end
+      image = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Image"
+        field :url, String
+      end
+      avatar = Class.new(GraphQL::Schema::Union) do
+        graphql_name "Avatar"
+        possible_types(icon, image)
+        @pause = false
+        singleton_class.attr_accessor(:pause)
+        # Pause the first visibility traversal after it has started,
+        # before the union propagates its references to its members
+        define_singleton_method(:all_possible_types) do |*args, **kwargs|
+          if @pause
+            @pause = false
+            started << true
+            resume.pop
+          end
+          super(*args, **kwargs)
+        end
+      end
+      query = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :avatar, avatar
+      end
+      schema = Class.new(GraphQL::Schema) do
+        query(query)
+        use GraphQL::Schema::Visibility, preload: false
+      end
+      visibility = schema.visibility
+      avatar.pause = true
+
+      loader = Thread.new { visibility.all_references }
+      started.pop
+      reader = Thread.new { visibility.all_references[icon].size }
+      # Without a lock, the reader returns the partial index here
+      reader.join(0.2)
+      resume << true
+      loader.join
+      assert_equal 1, reader.value, "the reader sees Icon's reference from Avatar"
+      assert_equal 1, visibility.all_references[icon].size
+    end
+  end
+
   it "defaults to preload: true for Rails.env.staging?" do
     if defined?(Rails)
       prev_rails = Rails
