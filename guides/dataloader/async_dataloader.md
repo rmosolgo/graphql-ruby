@@ -68,6 +68,47 @@ end
 
 Modify the example according to your database configuration and abstract class hierarchy.
 
+### Request state (`CurrentAttributes` and friends)
+
+With `isolation_level = :fiber`, everything Rails keeps in `ActiveSupport::IsolatedExecutionState` is per Fiber, so a new Fiber also starts with empty `ActiveSupport::CurrentAttributes` (for example, `Current.user`) and an empty `ActiveSupport::ExecutionContext`. Dataloader only copies `Thread.current[...]` values into new Fibers (see `get_fiber_variables`), so resolvers and sources that read `Current` will see `nil` unless you pass those values on too.
+
+Rails has no public API that lists the current `CurrentAttributes` instances, so the example below uses `ActiveSupport::ExecutionContext.current_attributes_instances`, which is internal (`:nodoc:`); you can instead list your `CurrentAttributes` classes explicitly. Copy the values rather than sharing the parent's state: AsyncDataloader switches Fibers whenever one waits on IO, so state shared by reference is visible to siblings _in the middle of_ a block. A sibling paused inside `Current.set(...) { ... }`, `Model.where(...).scoping { ... }` or `Model.unscoped { ... }` would otherwise leak its temporary values or relation scope into the queries of the Fiber that runs next.
+
+```ruby
+def get_fiber_variables
+  vars = super
+  vars[:current_attributes] = ActiveSupport::ExecutionContext.current_attributes_instances.values.map { |c| [c.class, c.attributes] }
+  vars
+end
+
+def set_fiber_variables(vars)
+  current_attributes = vars.delete(:current_attributes)
+  super(vars)
+  # Each Fiber gets its own copy, so a Current.set in one can't show through in another:
+  current_attributes.each { |current_class, attributes| current_class.instance.attributes = attributes }
+end
+```
+
+Because each Fiber holds a copy, a value a Fiber sets lazily (for example, `Current.request_id ||= SecureRandom.uuid`) stays in that Fiber. Set such values before the query runs if every Fiber must see the same one.
+
+### Query cache
+
+Each Fiber leases its own database connection, and Rails gives each connection the query cache of the Fiber that checked it out. So a Fiber starts with an empty, disabled query cache: queries the request already cached run again, and identical queries in sibling Fibers aren't shared. Expect more queries per request than with the non-async Dataloader.
+
+### GraphQL::Batch
+
+If a schema also uses [GraphQL::Batch](https://github.com/Shopify/graphql-batch), its loaders aren't safe to suspend: a loader is marked as resolving while it runs `#perform`, so if that Fiber waits on IO, another Fiber calling `Promise#sync` on the same loader finds it still pending and raises `Promise::BrokenError`. Run batch loaders without yielding to the scheduler:
+
+```ruby
+module BlockingBatchLoaderResolve
+  def resolve
+    Fiber.blocking { super }
+  end
+end
+
+GraphQL::Batch::Loader.prepend(BlockingBatchLoaderResolve)
+```
+
 ## Other Options
 
 You can also manually implement parallelism with Dataloader. See the [Dataloader Parallelism](/dataloader/parallelism) guide for details.
